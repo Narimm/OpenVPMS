@@ -160,6 +160,15 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param patient the patient. May be <tt>null</tt>
      */
     public void setPatient(Party patient) {
+        setPatientRef(patient != null ? patient.getObjectReference() : null);
+    }
+
+    /**
+     * Sets the patient.
+     *
+     * @param patient a reference to the patient. May be <tt>null</tt>
+     */
+    public void setPatientRef(IMObjectReference patient) {
         setParticipant("patient", patient);
     }
 
@@ -184,12 +193,57 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Sets the clinician.
+     *
+     * @param clinician a reference to the clinician. May be <tt>null</tt>
+     */
+    public void setClinician(User clinician) {
+        setClinicianRef(clinician != null ? clinician.getObjectReference() : null);
+    }
+
+    /**
+     * Sets the clinician.
+     *
+     * @param clinician a reference to the clinician. May be <tt>null</tt>
+     */
+    public void setClinicianRef(IMObjectReference clinician) {
+        setParticipant("clinician", clinician);
+    }
+
+    /**
      * Sets the product quantity.
      *
      * @param quantity the product quantity
      */
     public void setQuantity(BigDecimal quantity) {
         getProperty("quantity").setValue(quantity);
+    }
+
+    /**
+     * Sets the fixed price.
+     *
+     * @param fixedPrice the fixed price
+     */
+    public void setFixedPrice(BigDecimal fixedPrice) {
+        getProperty("fixedPrice").setValue(fixedPrice);
+    }
+
+    /**
+     * Sets the unit price.
+     *
+     * @param unitPrice the unit price
+     */
+    public void setUnitPrice(BigDecimal unitPrice) {
+        getProperty("unitPrice").setValue(unitPrice);
+    }
+
+    /**
+     * Sets the discount.
+     *
+     * @param discount the discount
+     */
+    public void setDiscount(BigDecimal discount) {
+        getProperty("discount").setValue(discount);
     }
 
     /**

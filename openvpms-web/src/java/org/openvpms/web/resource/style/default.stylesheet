@@ -681,6 +681,13 @@
         </properties>
     </style>
 
+    <style name="ChildEditDialog" base-name="EditDialog" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${ChildEditDialog.width}"/>
+            <property name="height" value="${ChildEditDialog.height}"/>
+        </properties>
+    </style>
+
     <style name="BrowserDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>

@@ -60,12 +60,12 @@ public class SaveHelper {
      * @return <tt>true</tt> if the object was saved successfully
      */
     public static boolean save(final IMObjectEditor editor) {
-        Object result = null;
+        Boolean result = null;
         try {
             TransactionTemplate template = new TransactionTemplate(
                     ServiceHelper.getTransactionManager());
-            result = template.execute(new TransactionCallback<Object>() {
-                public Object doInTransaction(TransactionStatus status) {
+            result = template.execute(new TransactionCallback<Boolean>() {
+                public Boolean doInTransaction(TransactionStatus status) {
                     return editor.save();
                 }
             });
@@ -79,7 +79,26 @@ public class SaveHelper {
                                           userName);
             error(editor.getDisplayName(), context, exception);
         }
-        return (result != null) && (Boolean) result;
+        return (result != null) && result;
+    }
+
+    /**
+     * Invokes a callback to save objects.
+     *
+     * @param displayName the primary display name, for error reporting
+     * @param callback    the callback to execute
+     * @return <tt>true</tt> if the save was successful
+     */
+    public static boolean save(String displayName, TransactionCallback<Boolean> callback) {
+        boolean saved = false;
+        try {
+            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
+            Boolean result = template.execute(callback);
+            saved = (result != null) && result;
+        } catch (Throwable exception) {
+            error(displayName, null, exception);
+        }
+        return saved;
     }
 
     /**

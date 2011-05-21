@@ -20,19 +20,26 @@ package org.openvpms.web.app.customer.estimation;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.WindowPaneEvent;
 import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
-import static org.openvpms.archetype.rules.act.FinancialActStatus.*;
+import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
+import static org.openvpms.archetype.rules.act.FinancialActStatus.COMPLETED;
+import static org.openvpms.archetype.rules.act.FinancialActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.act.FinancialActStatus.POSTED;
 import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
+import org.openvpms.web.app.customer.charge.CustomerInvoiceEditDialog;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -151,27 +158,28 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * Invoked when the 'invoice' button is pressed.
      */
     protected void onInvoice() {
-        final Act act = getObject();
-        String status = act.getStatus();
-        if (CANCELLED.equals(status) || INVOICED.equals(status)) {
-            showStatusError(act, "customer.estimation.noinvoice.title",
-                            "customer.estimation.noinvoice.message");
-        } else if (act.getActivityEndTime() != null
-                   && act.getActivityEndTime().before(new Date())) {
-            showStatusError(act, "customer.estimation.expired.title",
-                            "customer.estimation.expired.message");
+        final Act act = IMObjectHelper.reload(getObject()); // make sure we have the latest version
+        if (act != null) {
+            String status = act.getStatus();
+            if (CANCELLED.equals(status) || INVOICED.equals(status)) {
+                showStatusError(act, "customer.estimation.noinvoice.title",
+                                "customer.estimation.noinvoice.message");
+            } else if (act.getActivityEndTime() != null && act.getActivityEndTime().before(new Date())) {
+                showStatusError(act, "customer.estimation.expired.title", "customer.estimation.expired.message");
+            } else {
+                String title = Messages.get("customer.estimation.invoice.title");
+                String message = Messages.get("customer.estimation.invoice.message");
+                ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        invoice(act);
+                    }
+                });
+                dialog.show();
+            }
         } else {
-            String title = Messages.get("customer.estimation.invoice.title");
-            String message = Messages.get(
-                    "customer.estimation.invoice.message");
-            ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-            dialog.addWindowPaneListener(new PopupDialogListener() {
-                @Override
-                public void onOK() {
-                    invoice(act);
-                }
-            });
-            dialog.show();
+            ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
         }
     }
 
@@ -180,15 +188,17 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      *
      * @param estimation the estimation
      */
-    private void invoice(Act estimation) {
+    private void invoice(final Act estimation) {
         rules = new EstimationRules();
         try {
-            GlobalContext context = GlobalContext.getInstance();
-            rules.invoice(estimation, context.getClinician());
-            setObject(estimation);
-            CRUDWindowListener<Act> listener = getListener();
-            if (listener != null) {
-                listener.saved(estimation, false);
+            EstimationInvoicer invoicer = new EstimationInvoicer();
+            CustomerInvoiceEditDialog editor = invoicer.invoice(estimation);
+            if (editor != null) {
+                editor.addWindowPaneListener(new WindowPaneListener() {
+                    public void onClose(WindowPaneEvent event) {
+                        onRefresh(estimation);
+                    }
+                });
             }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("customer.estimation.invoice.failed");
