@@ -86,6 +86,7 @@ class PatientActEditorManager {
         // create an edit dialog with OK and Skip buttons 
         EditDialog dialog = new EditDialog(editor, false, false, false, true);
         dialog.setTitle(getTitle(editor));
+        dialog.setStyleName("ChildEditDialog");
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

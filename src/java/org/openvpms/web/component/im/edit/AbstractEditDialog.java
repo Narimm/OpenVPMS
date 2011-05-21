@@ -275,7 +275,17 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @return <tt>true</tt> if the object was saved
      */
     protected boolean doSave() {
-        return editor != null && SaveHelper.save(editor);
+        return (editor != null && save(editor));
+    }
+
+    /**
+     * Saves the editor in a transaction.
+     *
+     * @param editor the editor
+     * @return <tt>true</tt> if the save was successful
+     */
+    protected boolean save(IMObjectEditor editor) {
+        return SaveHelper.save(editor);
     }
 
     /**

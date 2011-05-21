@@ -30,7 +30,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.act.ActHelper;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -43,8 +42,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -60,7 +59,12 @@ import java.util.Set;
 public class CustomerChargeActEditor extends FinancialActEditor {
 
     /**
-     * Constructs a new <tt>CustomerChargeActEditor</tt>.
+     * Determines if a default item should added if no items are present.
+     */
+    private final boolean addDefaultItem;
+
+    /**
+     * Constructs a <tt>CustomerChargeActEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
@@ -68,9 +72,23 @@ public class CustomerChargeActEditor extends FinancialActEditor {
      */
     public CustomerChargeActEditor(FinancialAct act, IMObject parent,
                                    LayoutContext context) {
+        this(act, parent, context, true);
+    }
+
+    /**
+     * Constructs a <tt>CustomerChargeActEditor</tt>.
+     *
+     * @param act            the act to edit
+     * @param parent         the parent object. May be <tt>null</tt>
+     * @param context        the layout context
+     * @param addDefaultItem if <tt>true</tt> add a default item if the act has none
+     */
+    public CustomerChargeActEditor(FinancialAct act, IMObject parent,
+                                   LayoutContext context, boolean addDefaultItem) {
         super(act, parent, context);
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
+        this.addDefaultItem = addDefaultItem;
     }
 
     /**
@@ -161,6 +179,26 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Adds a new charge item, returning its editor.
+     *
+     * @return the charge item editor, or <tt>null</tt> if an item couldn't be created
+     */
+    public CustomerChargeActItemEditor addItem() {
+        CustomerChargeActItemEditor result = null;
+        ActRelationshipCollectionEditor items = getEditor();
+        IMObject item = items.create();
+        if (item != null) {
+            result = (CustomerChargeActItemEditor) items.getEditor(item);
+            result.getComponent();
+            items.addEdited(result);
+            items.editSelected();
+            // set the default focus to that of the item editor
+            getFocusGroup().setDefault(result.getFocusGroup().getDefaultFocus());
+        }
+        return result;
+    }
+
+    /**
      * Invoked when layout has completed.
      * <p/>
      * This invokes {@link #initItems()}.
@@ -181,20 +219,15 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
-     * Adds a default invoice item if there are no items present.
+     * Adds a default invoice item if there are no items present and {@link #addDefaultItem} is <tt>true</tt>.
      */
     private void initItems() {
-        ActRelationshipCollectionEditor items = getEditor();
-        CollectionProperty property = items.getCollection();
-        if (property.getValues().size() == 0) {
-            // no invoice items, so add one
-            IMObject item = items.create();
-            if (item != null) {
-                IMObjectEditor editor = items.getEditor(item);
-                items.addEdited(editor);
-                items.editSelected();
-                // set the default focus to that of the item editor
-                getFocusGroup().setDefault(editor.getFocusGroup().getDefaultFocus());
+        if (addDefaultItem) {
+            ActRelationshipCollectionEditor items = getEditor();
+            CollectionProperty property = items.getCollection();
+            if (property.getValues().size() == 0) {
+                // no invoice items, so add one
+                addItem();
             }
         }
     }
