@@ -28,6 +28,9 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Layout strategy for <em>act.customerAccountInvoiceItem</em> that hides
@@ -44,38 +47,74 @@ public class CustomerInvoiceItemLayoutStrategy extends AbstractLayoutStrategy {
     private boolean hideDispensing;
 
     /**
+     * Determines if the investigations node should be hidden.
+     */
+    private boolean hideInvestigations;
+
+    /**
+     * Determines if the reminders node should be hidden.
+     */
+    private boolean hideReminders;
+
+    /**
+     * The dispensing node name.
+     */
+    private static final String DISPENSING = "dispensing";
+
+    /**
+     * The investigations node name.
+     */
+    private static final String INVESTIGATIONS = "investigations";
+
+    /**
+     * The reminders node name.
+     */
+    private static final String REMINDERS = "reminders";
+
+    /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a <code>Component</code>, using a factory to
+     * This renders an object in a <tt>Component</tt>, using a factory to
      * create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent     the parent object. May be <code>null</code>
+     * @param parent     the parent object. May be <tt>null</tt>
      * @param context    the layout context
-     * @return the component containing the rendered <code>object</code>
+     * @return the component containing the rendered <tt>object</tt>
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
         ActBean bean = new ActBean((Act) object);
-        hideDispensing = bean.getValues("dispensing").isEmpty();
+        hideDispensing = bean.getValues(DISPENSING).isEmpty();
+        hideInvestigations = bean.getValues(INVESTIGATIONS).isEmpty();
+        hideReminders = bean.getValues(REMINDERS).isEmpty();
         return super.apply(object, properties, parent, context);
     }
 
     /**
      * Returns a node filter to filter nodes.
      *
-     * @param object
+     * @param object  the object
      * @param context the context
-     * @return a node filter to filter nodes, or <code>null</code> if no
-     *         filterering is required
+     * @return a node filter to filter nodes, or <tt>null</tt> if no filterering is required
      */
     @Override
     protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         NodeFilter filter;
-        if (hideDispensing) {
-            filter = getNodeFilter(context, new NamedNodeFilter("dispensing"));
+        if (hideDispensing || hideInvestigations || hideReminders) {
+            List<String> nodes = new ArrayList<String>();
+            if (hideDispensing) {
+                nodes.add(DISPENSING);
+            }
+            if (hideInvestigations) {
+                nodes.add(INVESTIGATIONS);
+            }
+            if (hideReminders) {
+                nodes.add(REMINDERS);
+            }
+            filter = getNodeFilter(context, new NamedNodeFilter(nodes));
         } else {
             filter = super.getNodeFilter(object, context);
         }

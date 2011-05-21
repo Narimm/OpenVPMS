@@ -22,6 +22,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
+import java.util.List;
+
 
 /**
  * Node filter that enables nodes to be excluded by name.
@@ -32,18 +34,27 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public class NamedNodeFilter implements NodeFilter {
 
     /**
-     * Set of nodes to exclude. May be <code>null</code>.
+     * Set of nodes to exclude.
      */
-    private final String[] _exclude;
+    private final String[] exclude;
 
 
     /**
-     * Construct a new <code>NamedNodeFilter</code>.
+     * Constructs a <tt>NamedNodeFilter</tt>.
      *
      * @param exclude the names of the nodes to exclude
      */
     public NamedNodeFilter(String... exclude) {
-        _exclude = exclude;
+        this.exclude = exclude;
+    }
+
+    /**
+     * Constructs a <tt>NamedNodeFilter</tt>.
+     *
+     * @param exclude the names of the nodes to exclude
+     */
+    public NamedNodeFilter(List<String> exclude) {
+        this.exclude = exclude.toArray(new String[exclude.size()]);
     }
 
     /**
@@ -58,11 +69,11 @@ public class NamedNodeFilter implements NodeFilter {
             return false;
         }
         NamedNodeFilter other = (NamedNodeFilter) obj;
-        if (_exclude.length != other._exclude.length) {
+        if (exclude.length != other.exclude.length) {
             return false;
         }
-        for (String excluded : _exclude) {
-            if (!ArrayUtils.contains(other._exclude, excluded)) {
+        for (String excluded : exclude) {
+            if (!ArrayUtils.contains(other.exclude, excluded)) {
                 return false;
             }
         }
@@ -74,12 +85,11 @@ public class NamedNodeFilter implements NodeFilter {
      *
      * @param descriptor the node descriptor
      * @param object     the object
-     * @return <code>true</code> if the node should be included; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the node should be included; otherwise <tt>false</tt>
      */
     public boolean include(NodeDescriptor descriptor, IMObject object) {
         boolean result = true;
-        for (String excluded : _exclude) {
+        for (String excluded : exclude) {
             if (excluded.equals(descriptor.getName())) {
                 result = false;
                 break;
