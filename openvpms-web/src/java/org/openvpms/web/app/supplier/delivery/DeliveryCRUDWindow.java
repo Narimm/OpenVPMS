@@ -214,9 +214,9 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     @Override
     protected boolean post(Act act) {
         boolean result = false;
-        act.setStatus(ActStatus.POSTED);
         // use the editor to ensure that the validation rules are invoked
         DeliveryEditor editor = new DeliveryEditor((FinancialAct) act, null, createLayoutContext());
+        editor.setStatus(ActStatus.POSTED);
         Validator validator = new Validator();
         if (!editor.validate(validator)) {
             // pop up an editor for the delivery and display the errors
