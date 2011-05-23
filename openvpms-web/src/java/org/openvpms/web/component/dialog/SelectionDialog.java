@@ -99,7 +99,7 @@ public class SelectionDialog extends PopupDialog {
      * @param list    the list of items to select from
      */
     public SelectionDialog(String title, String message, ListBox list) {
-        super(title, STYLE, CANCEL);
+        super(title, STYLE, OK_CANCEL);
         setModal(true);
         focus = new FocusCommand();
 
@@ -159,4 +159,13 @@ public class SelectionDialog extends PopupDialog {
         close();
     }
 
+    /**
+     * Invoked when the 'OK' button is pressed.
+     * <p/>
+     * This invokes {@link #onSelected()}.
+     */
+    @Override
+    protected void onOK() {
+        onSelected();
+    }
 }
