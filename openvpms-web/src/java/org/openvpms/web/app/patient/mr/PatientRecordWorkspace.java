@@ -262,6 +262,21 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     }
 
     /**
+     * Invoked when the browser is queried.
+     * <p/>
+     * This implementation selects the first available object and determines the associated event, if any.
+     */
+    @Override
+    protected void onBrowserQuery() {
+        super.onBrowserQuery();
+        CRUDWindow<Act> window = getCRUDWindow();
+        if (window instanceof PatientRecordCRUDWindow) {
+            Act event = getEvent(window.getObject());
+            ((PatientRecordCRUDWindow) window).setEvent(event);
+        }
+    }
+
+    /**
      * Changes the CRUD window depending on the current browser view.
      */
     private void changeCRUDWindow() {
