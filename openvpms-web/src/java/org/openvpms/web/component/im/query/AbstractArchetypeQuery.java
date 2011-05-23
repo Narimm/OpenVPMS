@@ -156,6 +156,15 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
+     * Determines if objects must be active.
+     *
+     * @param active if <tt>true</tt> only query active objects, otherwise query both active and inactive objects
+     */
+    public void setActiveOnly(boolean active) {
+        getInactive().setSelected(!active);
+    }
+
+    /**
      * Performs the query.
      *
      * @param sort the sort constraint. May be <tt>null</tt>
