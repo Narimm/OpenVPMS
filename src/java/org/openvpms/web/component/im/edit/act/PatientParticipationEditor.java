@@ -31,6 +31,9 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.PatientObjectSetQuery;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryAdapter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
@@ -124,6 +127,24 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
                         customerEditor.setEntity(customer);
                     }
                 }
+            }
+
+            /**
+             * Determines if a reference is valid.
+             * <p/>
+             * This implementation allows both active and inactive patients.
+             *
+             * @param reference the reference to check
+             * @return <tt>true</tt> if the query selects the reference
+             */
+            @Override
+            protected boolean isValidReference(IMObjectReference reference) {
+                Query<Party> query = createQuery(null);
+                if (query instanceof QueryAdapter && ((QueryAdapter) query).getQuery() instanceof PatientObjectSetQuery) {
+                    PatientObjectSetQuery q = (PatientObjectSetQuery) ((QueryAdapter) query).getQuery();
+                    q.setActiveOnly(false);
+                }
+                return query.selects(reference);
             }
         };
     }

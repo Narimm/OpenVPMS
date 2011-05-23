@@ -411,8 +411,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         IMObjectReference reference = (IMObjectReference) getProperty().getValue();
         boolean result = true;
         if (reference != null && !reference.isNew()) {
-            Query<T> query = createQuery(null);
-            if (!query.selects(reference)) {
+            if (!isValidReference(reference)) {
                 result = false;
                 ArchetypeId archetypeId = reference.getArchetypeId();
                 String displayName = DescriptorHelper.getDisplayName(archetypeId.getShortName());
@@ -421,6 +420,19 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
             }
         }
         return result;
+    }
+
+    /**
+     * Determines if a reference is valid.
+     * <p/>
+     * This implementation determines if the query returned by {#link #createQuery} selects the reference.
+     *
+     * @param reference the reference to check
+     * @return <tt>true</tt> if the query selects the reference
+     */
+    protected boolean isValidReference(IMObjectReference reference) {
+        Query<T> query = createQuery(null);
+        return query.selects(reference);
     }
 
 }
