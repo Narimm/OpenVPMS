@@ -155,6 +155,8 @@ public class RelationshipState {
                     targetDescription = parent.getDescription();
                 }
             }
+        } else {
+            active = true;
         }
     }
 
