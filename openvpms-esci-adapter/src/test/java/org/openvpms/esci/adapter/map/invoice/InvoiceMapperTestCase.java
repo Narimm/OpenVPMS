@@ -248,8 +248,8 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that the package units and size in the delivery is populated from the invoice, if they
-     * are not specified in the original order, nor the invoice.
+     * Verifies that the package units and size in the delivery is populated from the product/supplier relationship,
+     * if they are not specified in the original order, nor the invoice.
      */
     @Test
     public void testPackageInfoDefaultsFromProductSupplier() {
