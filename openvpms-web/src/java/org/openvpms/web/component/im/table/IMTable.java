@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.table;
 
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
+import nextapp.echo2.app.list.ListSelectionModel;
 import nextapp.echo2.app.table.TableModel;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
 import org.openvpms.web.component.table.KeyTable;
@@ -85,13 +86,18 @@ public class IMTable<T> extends KeyTable {
 
     /**
      * Sets the selected object.
+     * <p/>
+     * If the object doesn't exist in the table, any existing selection will be cleared.
      *
      * @param object the object to select
      */
     public void setSelected(T object) {
         int index = getObjects().indexOf(object);
+        ListSelectionModel selection = getSelectionModel();
         if (index != -1) {
-            getSelectionModel().setSelectedIndex(index, true);
+            selection.setSelectedIndex(index, true);
+        } else {
+            selection.clearSelection();
         }
     }
 

@@ -20,8 +20,8 @@ package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -259,6 +259,37 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
                 }
             }
         }
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     * <p/>
+     * If the current window is the summary view, this implementation attempts to select the next object in the browser,
+     * or the prior object if there is no next object. This is so that when the browser is refreshed, the selection will
+     * be retained.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(Act object) {
+        CRUDWindow<Act> window = getCRUDWindow();
+        if (window instanceof SummaryCRUDWindow) {
+            List<Act> list = getBrowser().getObjects();
+            int index = list.indexOf(object);
+            if (index != -1 && list.size() > 1) {
+                // select another object. If there is one after the object being deleted, select that, else select
+                // the one before it
+                if (index + 1 < list.size()) {
+                    ++index;
+                } else {
+                    --index;
+                }
+                Act select = list.get(index);
+                ((SummaryCRUDWindow) window).setEvent(getEvent(select));
+                getBrowser().setSelected(select);
+            }
+        }
+        super.onDeleted(object);
     }
 
     /**
