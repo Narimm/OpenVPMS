@@ -87,7 +87,7 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
         Lookup lookup = AlertHelper.getAlertType((Act) object);
 
         ComponentState alertType = set.get("alertType");
-        if (alertType != null) {
+        if (lookup != null && alertType != null) {
             initAlertType(lookup, alertType.getComponent());
         }
 
@@ -119,12 +119,14 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Returns the component state of the priority field.
      *
-     * @param alertType the alert type lookup
+     * @param alertType the alert type lookup. May be <tt>null</tt>
      * @return the priority field, populated with the alert type
      */
     private ComponentState getPriority(Lookup alertType) {
-        priority.setText(AlertHelper.getPriorityName(alertType));
         String displayName = DescriptorHelper.getDisplayName("lookup.customerAlertType", "priority");
+        if (alertType != null) {
+            priority.setText(AlertHelper.getPriorityName(alertType));
+        }
         return new ComponentState(priority, null, null, displayName);
     }
 }
