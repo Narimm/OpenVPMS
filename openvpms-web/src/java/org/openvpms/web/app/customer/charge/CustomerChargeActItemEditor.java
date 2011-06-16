@@ -497,6 +497,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                     if (act != null) {
                         boolean dispensingLabel = hasDispensingLabel(product);
                         IMObjectEditor editor = createMedicationEditor(act);
+                        dispensing.setModified(act, true); // dispensing acts are always retained 
                         if (dispensingLabel) {
                             // queue editing of the act
                             queuePatientActEditor(editor);

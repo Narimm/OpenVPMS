@@ -230,12 +230,14 @@ public class ActRelationshipCollectionEditor
      */
     @Override
     protected void onCurrentEditorModified() {
-        super.onCurrentEditorModified();
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
+            // flag the editor as modified before delegating to super, otherwise it may be needlessly unmapped from the
+            // collection by excludeObjectWithDefaultValues()
             Act object = (Act) editor.getObject();
             setModified(object, true);
         }
+        super.onCurrentEditorModified();
     }
 
     /**
