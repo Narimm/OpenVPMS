@@ -93,8 +93,24 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         final TestEditor editor = createActRelationshipCollectionEditor(invoice, 0);
         editor.onNew(); // add a single item
 
+        assertTrue(editor.isValid());
         save(invoice, editor);
         checkItems(invoice, 0);     // verify the invoice has no items
+    }
+
+    /**
+     * Verifies that a new item with default values is not excluded when
+     * {@link ActRelationshipCollectionEditor#setExcludeDefaultValueObject(boolean)} is false.
+     */
+    @Test
+    public void testDisableExcludeDefaultItemsForMinCardinalityZero() {
+        final FinancialAct invoice = createInvoice();
+
+        final TestEditor editor = createActRelationshipCollectionEditor(invoice, 0);
+        editor.setExcludeDefaultValueObject(false);
+        editor.onNew(); // add a single item
+
+        assertFalse(editor.isValid());  // if the object was excluded, the editor would be valid
     }
 
     /**

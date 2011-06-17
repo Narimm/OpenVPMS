@@ -115,7 +115,27 @@ public class IMObjectSorter {
     }
 
     /**
+     * Returns a comparator that sorts objects on name.
+     * <p/>
+     * This comparator handles nulls.
+     *
+     * @param ascending if <tt>true</tt> sort in ascending order; otherwise sort in descending order
+     * @return a new comparator
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends IMObject> Comparator<T> getNameComparator(boolean ascending) {
+        final Comparator comparator = getComparator(ascending);
+        return new Comparator<T>() {
+            public int compare(T o1, T o2) {
+                return comparator.compare(o1.getName(), o2.getName());
+            }
+        };
+    }
+
+    /**
      * Returns a new comparator to sort in ascending or descending order.
+     * <p/>
+     * This comparator handles nulls.
      *
      * @param ascending if <tt>true</tt> sort in ascending order; otherwise sort in descending order
      * @return a new comparator

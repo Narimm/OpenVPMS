@@ -70,6 +70,11 @@ public class ActRelationshipCollectionEditor
      */
     private Map<IMObjectReference, Boolean> modified = new HashMap<IMObjectReference, Boolean>();
 
+    /**
+     * Determines if a new object with default values should be excluded from commit.
+     */
+    private boolean excludeDefaultValueObject = true;
+
 
     /**
      * Constructs an <tt>ActRelationshipCollectionEditor</tt>.
@@ -144,6 +149,24 @@ public class ActRelationshipCollectionEditor
      */
     public void editSelected() {
         onEdit();
+    }
+
+    /**
+     * Determines if a new object in the collection that has default values should be removed prior to save.
+     * <p/>
+     * This only applies to the object currently being edited.
+     * <p/>
+     * An object is considered to have default values if it hasn't been modified since the editor was created.
+     * <p/>
+     * This is so that incomplete objects that contain no user-entered data can be excluded from commits.
+     * An object will only be removed if its removal won't invalidate the collection's minimum cardinality.
+     * <p/>
+     * Defaults to <tt>true</tt>.
+     *
+     * @param exclude if <tt>true</tt> exclude objects with
+     */
+    public void setExcludeDefaultValueObject(boolean exclude) {
+        excludeDefaultValueObject = exclude;
     }
 
     /**
@@ -335,6 +358,7 @@ public class ActRelationshipCollectionEditor
     /**
      * Excludes the current object being edited from the collection if:
      * <ul>
+     * <li>excludeWithDefaultValues is <tt>true</tt>
      * <li>it has default values; and
      * <li>excluding the object won't invalidate the collection's minimum cardinality
      * </ul>
@@ -346,7 +370,7 @@ public class ActRelationshipCollectionEditor
     private boolean excludeObjectWithDefaultValues() {
         IMObjectEditor editor = getCurrentEditor();
         boolean excluded = false;
-        if (editor != null) {
+        if (excludeDefaultValueObject && editor != null) {
             CollectionPropertyEditor collection = getCollectionPropertyEditor();
             IMObject object = editor.getObject();
             List<IMObject> list = collection.getObjects();
@@ -378,7 +402,7 @@ public class ActRelationshipCollectionEditor
     /**
      * Determines if an object associated with an editor contains default values.
      * <p/>
-     * This only applies to new objects. These are considered as have default values if they haven't been modified
+     * This only applies to new objects. These are considered to have default values if they haven't been modified
      * since the editor was created (the editor typically initialises default values within its constructor).
      *
      * @param editor the editor
