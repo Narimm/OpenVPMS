@@ -20,10 +20,10 @@ package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.LinkedList;
@@ -45,14 +45,16 @@ class PatientActEditorManager {
 
         /**
          * Invoked when the edit is complete.
+         *
+         * @param skipped if <tt>true</tt> indicates that the edit was skipped
          */
-        void completed();
+        void completed(boolean skipped);
     }
 
     /**
      * The queue of editors.
      */
-    private LinkedList<Pair> queue = new LinkedList<Pair>();
+    private LinkedList<State> queue = new LinkedList<State>();
 
     /**
      * Determines if an edit is in progress.
@@ -64,10 +66,11 @@ class PatientActEditorManager {
      * Queue an edit.
      *
      * @param editor   the medication act editor
+     * @param skip     if <tt>true</tt>, indicates that the edit can be skipped
      * @param listener the listener to notify on completion
      */
-    public void queue(IMObjectEditor editor, Listener listener) {
-        queue.addLast(new Pair(editor, listener));
+    public void queue(IMObjectEditor editor, boolean skip, Listener listener) {
+        queue.addLast(new State(editor, listener, skip));
         if (!editing) {
             editNext();
         }
@@ -80,30 +83,30 @@ class PatientActEditorManager {
         if (queue.isEmpty()) {
             return;
         }
-        Pair pair = queue.removeFirst();
-        IMObjectEditor editor = pair.editor;
-        final Listener listener = pair.listener;
-        // create an edit dialog with OK and Skip buttons 
-        EditDialog dialog = new EditDialog(editor, false, false, false, true);
+        State state = queue.removeFirst();
+        final IMObjectEditor editor = state.editor;
+        final Listener listener = state.listener;
+        // create an edit dialog with OK and (for non-medication acts) Skip buttons
+        EditDialog dialog = new EditDialog(editor, false, false, false, state.skip);
         dialog.setTitle(getTitle(editor));
         dialog.setStyleName("ChildEditDialog");
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                doNext();
+                doNext(false);
             }
 
             @Override
             public void onSkip() {
-                doNext();
+                doNext(true);
             }
 
-            private void doNext() {
+            private void doNext(boolean skipped) {
                 editing = false;
-                listener.completed();
+                listener.completed(skipped);
                 editNext();
             }
-            
+
         });
         editing = true;
         dialog.show();
@@ -136,13 +139,15 @@ class PatientActEditorManager {
     /**
      * Helper to associate an {@link IMObjectEditor} and {@link Listener}.
      */
-    private static class Pair {
+    private static class State {
         final IMObjectEditor editor;
         final Listener listener;
+        final boolean skip;
 
-        public Pair(IMObjectEditor editor, Listener listener) {
+        public State(IMObjectEditor editor, Listener listener, boolean skip) {
             this.editor = editor;
             this.listener = listener;
+            this.skip = skip;
         }
     }
 

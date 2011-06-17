@@ -20,6 +20,7 @@ package org.openvpms.web.app.customer.charge;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
@@ -65,6 +66,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -82,7 +84,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 
 /**
@@ -356,7 +360,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         NodeFilter currentFilter = getFilter();
         IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
         NodeFilter expectedFilter = getFilterForProduct(productRef);
-        if (!currentFilter.equals(expectedFilter)) {
+        if (!ObjectUtils.equals(currentFilter, expectedFilter)) {
             changeLayout(expectedFilter);
             if (patientActPopups == 0) {
                 // no current popups, so move focus to the product
@@ -422,8 +426,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (customer != null && getProductRef() != null && practice != null) {
             FinancialAct act = (FinancialAct) getObject();
             BigDecimal previousTax = act.getTaxAmount();
-            CustomerTaxRules rules
-                    = new CustomerTaxRules(practice);
+            CustomerTaxRules rules = new CustomerTaxRules(practice);
             BigDecimal tax = rules.calculateTax(act, customer);
             if (tax.compareTo(previousTax) != 0) {
                 Property property = getProperty("tax");
@@ -496,11 +499,17 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                     Act act = (Act) dispensing.create();
                     if (act != null) {
                         boolean dispensingLabel = hasDispensingLabel(product);
-                        IMObjectEditor editor = createMedicationEditor(act);
-                        dispensing.setModified(act, true); // dispensing acts are always retained 
+                        LayoutContext context = new DefaultLayoutContext(true);
+                        context.setContext(getLayoutContext().getContext());
+                        IMObjectEditor editor = dispensing.createEditor(act, context);
+                        if (editor instanceof PatientMedicationActEditor) {
+                            // display the product read-only to ensure it is consistent with the charge item
+                            ((PatientMedicationActEditor) editor).setProductReadOnly(true);
+                        }
+                        dispensing.addEdited(editor);
                         if (dispensingLabel) {
                             // queue editing of the act
-                            queuePatientActEditor(editor);
+                            queuePatientActEditor(editor, false, dispensing);
                         }
                     }
                 }
@@ -537,7 +546,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                         investigations.addEdited(editor);
 
                         // queue editing of the act
-                        queuePatientActEditor(editor);
+                        queuePatientActEditor(editor, true, investigations);
                     }
                 }
             }
@@ -556,32 +565,31 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             for (Act act : reminders.getCurrentActs()) {
                 reminders.remove(act);
             }
-            for (EntityRelationship relationship : getReminderTypes(product)) {
-                IMObjectBean bean = new IMObjectBean(relationship);
-                Entity reminderType = (Entity) bean.getObject("target");
-                if (reminderType != null && reminderType.isActive()) {
+            Map<Entity, EntityRelationship> reminderTypes = getReminderTypes(product);
+            for (Map.Entry<Entity, EntityRelationship> entry : reminderTypes.entrySet()) {
+                Entity reminderType = entry.getKey();
+                EntityRelationship relationship = entry.getValue();
+                Act act = (Act) reminders.create();
+                if (act != null) {
+                    IMObjectEditor editor = reminders.createEditor(act, getLayoutContext());
+                    if (editor instanceof ReminderEditor) {
+                        ReminderEditor reminder = (ReminderEditor) editor;
+                        Date startTime = getStartTime();
+                        reminder.setStartTime(startTime);
+                        reminder.setReminderType(reminderType);
+                        reminder.setPatient(getPatient());
+                        reminder.setProduct(product);
+
+                        // override the due date calculated from the reminder type
+                        Date dueDate = reminderRules.calculateProductReminderDueDate(startTime, relationship);
+                        reminder.setEndTime(dueDate);
+                    }
+                    reminders.addEdited(editor);
+                    IMObjectBean bean = new IMObjectBean(relationship);
                     boolean interactive = bean.getBoolean("interactive");
-                    Act act = (Act) reminders.create();
-                    if (act != null) {
-                        IMObjectEditor editor = reminders.createEditor(act, getLayoutContext());
-                        if (editor instanceof ReminderEditor) {
-                            ReminderEditor reminder = (ReminderEditor) editor;
-                            Date startTime = getStartTime();
-                            reminder.setStartTime(startTime);
-                            reminder.setReminderType(reminderType);
-                            reminder.setPatient(getPatient());
-                            reminder.setProduct(product);
-
-                            // override the due date calculated from the reminder type
-                            Date dueDate = reminderRules.calculateProductReminderDueDate(startTime, relationship);
-                            reminder.setEndTime(dueDate);
-                        }
-                        reminders.addEdited(editor);
-
-                        if (interactive) {
-                            // queue editing of the act
-                            queuePatientActEditor(editor);
-                        }
+                    if (interactive) {
+                        // queue editing of the act
+                        queuePatientActEditor(editor, true, reminders);
                     }
                 }
             }
@@ -607,6 +615,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to return the investigation types for a product.
+     * <p/>
+     * If there are multiple investigation types, these will be sorted on name.
      *
      * @param product the product
      * @return a list of investigation types
@@ -617,21 +627,32 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         final String node = "investigationTypes";
         if (bean.hasNode(node)) {
             result = bean.getNodeTargetEntities(node);
+            Collections.sort(result, IMObjectSorter.getNameComparator(true));
         }
         return result;
     }
 
     /**
-     * Helper to return the reminder type relationships for a product.
+     * Helper to return the reminder types and their relationships for a product.
+     * <p/>
+     * If there are multiple reminder types, these will be sorted on name.
      *
      * @param product the product
      * @return a the reminder type relationships
      */
-    private List<EntityRelationship> getReminderTypes(Product product) {
-        List<EntityRelationship> result = Collections.emptyList();
-        EntityBean bean = new EntityBean(product);
-        if (bean.hasNode(REMINDERS)) {
-            result = bean.getNodeRelationships(REMINDERS);
+    private Map<Entity, EntityRelationship> getReminderTypes(Product product) {
+        Map<Entity, EntityRelationship> result = Collections.emptyMap();
+        EntityBean productBean = new EntityBean(product);
+        if (productBean.hasNode(REMINDERS)) {
+            List<EntityRelationship> relationships = productBean.getNodeRelationships(REMINDERS);
+            result = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
+            for (EntityRelationship relationship : relationships) {
+                IMObjectBean bean = new IMObjectBean(relationship);
+                Entity reminderType = (Entity) bean.getObject("target");
+                if (reminderType != null && reminderType.isActive()) {
+                    result.put(reminderType, relationship);
+                }
+            }
         }
         return result;
     }
@@ -639,14 +660,24 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Queues an editor for display in a popup dialog.
      * Use this when there may be multiple editors requiring display.
+     * <p/>
+     * NOTE: all objects should be added to the collection prior to them being edited. If they are skipped,
+     * they will subsequently be removed. This is necessary as the layout excludes nodes based on elements being
+     * present.
      *
-     * @param editor the editor to queue
+     * @param editor     the editor to queue
+     * @param skip       if <tt>true</tt>, indicates that the editor may be skipped
+     * @param collection the collection to remove the object from, if the editor is skipped
      */
-    private void queuePatientActEditor(IMObjectEditor editor) {
+    private void queuePatientActEditor(final IMObjectEditor editor, boolean skip,
+                                       final ActRelationshipCollectionEditor collection) {
         if (patientActMgr != null) {
             ++patientActPopups;
-            patientActMgr.queue(editor, new PatientActEditorManager.Listener() {
-                public void completed() {
+            patientActMgr.queue(editor, skip, new PatientActEditorManager.Listener() {
+                public void completed(boolean skipped) {
+                    if (skipped) {
+                        collection.remove(editor.getObject());
+                    }
                     --patientActPopups;
                     if (patientActPopups == 0) {
                         moveFocusToProduct();
@@ -658,24 +689,6 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
             });
         }
-    }
-
-    /**
-     * Creates a new editor for a medication act.
-     *
-     * @param act the medication act
-     * @return a new editor for the act
-     */
-    private IMObjectEditor createMedicationEditor(Act act) {
-        LayoutContext context = new DefaultLayoutContext(true);
-        context.setContext(getLayoutContext().getContext());
-        IMObjectEditor editor = dispensing.createEditor(act, context);
-        if (editor instanceof PatientMedicationActEditor) {
-            // display the product read-only to ensure it is consistent with the charge item
-            ((PatientMedicationActEditor) editor).setProductReadOnly(true);
-        }
-        dispensing.addEdited(editor);
-        return editor;
     }
 
     /**
@@ -910,6 +923,8 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to create a collection editor for an act relationship node, if the node exists.
+     * <p/>
+     * The returned editor is configured to not exclude default value objects.
      *
      * @param name the collection node name
      * @param act  the act
@@ -921,6 +936,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (collection != null && !collection.isHidden()) {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
                     collection, act, getLayoutContext());
+            editor.setExcludeDefaultValueObject(false);
         }
         return editor;
     }
