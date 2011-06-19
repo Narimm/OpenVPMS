@@ -41,10 +41,14 @@ import java.util.List;
 class ReminderPrintProcessor extends AbstractReminderProcessor {
 
     /**
-     * The name of the selected printer. Once a printer has been selected,
-     * printing will occur in the background.
+     * Determines if a print dialog is being displayed.
      */
-    private String printerName;
+    private boolean interactive;
+
+    /**
+     * The printer to fallback to, if none is specified by the document templates. This is selected once.
+     */
+    private String fallbackPrinter;
 
     /**
      * The listener for printer events.
@@ -53,7 +57,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
 
 
     /**
-     * Creates a new <tt>ReminderPrintProcessor</tt>.
+     * Constructs a <tt>ReminderPrintProcessor</tt>.
      *
      * @param groupTemplate the grouped reminder document template
      * @param listener      the listener for printer events
@@ -70,7 +74,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      *         printed in the background
      */
     public boolean isInteractive() {
-        return (printerName == null);
+        return interactive;
     }
 
     /**
@@ -98,25 +102,31 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
     /**
      * Performs a print.
      * <p/>
-     * If a printer has been selected, the print will occur in the background, otherwise a print dialog will be popped
-     * up.
+     * If a printer is configured, the print will occur in the background, otherwise a print dialog will be popped up.
      *
      * @param printer the printer
      */
     private <T> void print(IMPrinter<T> printer) {
         final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer);
-        if (printerName != null) {
-            iPrinter.setInteractive(false);
+        String printerName = printer.getDefaultPrinter();
+        if (printerName == null) {
+            printerName = fallbackPrinter;
         }
+        interactive = printerName == null;
+        iPrinter.setInteractive(interactive);
 
-        // create a delegating listener to keep track of printer name selections
-        PrinterListener l = new DelegatingPrinterListener(listener) {
-            public void printed(String printer) {
-                printerName = printer;
-                super.printed(printer);
-            }
-        };
-        iPrinter.setListener(l);
+        if (interactive) {
+            // register a listener to grab the selected printer, to avoid popping up a print dialog each time
+            PrinterListener l = new DelegatingPrinterListener(listener) {
+                public void printed(String printer) {
+                    fallbackPrinter = printer;
+                    super.printed(printer);
+                }
+            };
+            iPrinter.setListener(l);
+        } else {
+            iPrinter.setListener(listener);
+        }
         iPrinter.print(printerName);
     }
 
