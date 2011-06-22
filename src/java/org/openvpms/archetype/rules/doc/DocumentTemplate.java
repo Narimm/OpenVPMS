@@ -509,6 +509,27 @@ public class DocumentTemplate {
     }
 
     /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        return bean.getObject().hashCode();
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return <tt>true</tt> if this object is the same as the obj argument; <tt>false</tt> otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof DocumentTemplate) && ((DocumentTemplate) obj).bean.getObject().equals(bean.getObject());
+    }
+
+    /**
      * Helper to convert a custom paper size to a {@link MediaSizeName}.
      *
      * @param width  the page width
