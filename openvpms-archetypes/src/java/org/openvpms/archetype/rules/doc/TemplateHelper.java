@@ -20,20 +20,25 @@ package org.openvpms.archetype.rules.doc;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -79,7 +84,8 @@ public class TemplateHelper {
     public Document getDocument(String name) {
         Document result = null;
         ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT, false, true);
-        query.add(new NodeConstraint("name", name));
+        query.add(Constraints.eq("name", name));
+        query.add(Constraints.sort("id"));
         query.setFirstResult(0);
         query.setMaxResults(1);
         Iterator<DocumentAct> iterator = new IMObjectQueryIterator<DocumentAct>(service, query);
@@ -102,13 +108,46 @@ public class TemplateHelper {
     public Entity getTemplateForArchetype(String shortName) {
         Entity result = null;
         ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE, false, true);
+        query.add(Constraints.sort("id"));
         Iterator<Entity> iterator = new IMObjectQueryIterator<Entity>(service, query);
         while (iterator.hasNext()) {
-            EntityBean bean = new EntityBean(iterator.next(), service);
-            String archetype = bean.getString("archetype");
-            if (archetype != null && TypeHelper.matches(shortName, archetype)) {
-                result = bean.getEntity();
+            Entity template = iterator.next();
+            if (hasArchetype(template, shortName)) {
+                result = template;
                 break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns an <em>entity.documentTemplate</em> for the specified archetype, associated with an organisation
+     * location or practice.
+     * <p/>
+     * If there are multiple relationships, the lowest id will be returned.
+     *
+     * @param shortName    the archetype short name
+     * @param organisation the <em>party.organisationLocation</em> or <em>party.organisationPractice</em>
+     * @return the template corresponding to <tt>shortName</tt> or <tt>null</tt> if none can be found
+     */
+    public Entity getTemplateForArchetype(String shortName, Party organisation) {
+        Entity result = null;
+        EntityBean bean = new EntityBean(organisation, service);
+        List<EntityRelationship> list = bean.getNodeRelationships("templates", IsActiveRelationship.ACTIVE_NOW);
+        Collections.sort(list, new Comparator<EntityRelationship>() {
+            public int compare(EntityRelationship o1, EntityRelationship o2) {
+                long id1 = (o1.getSource() != null) ? o1.getSource().getId() : -1;
+                long id2 = (o2.getSource() != null) ? o2.getSource().getId() : -1;
+                return (id1 < id2 ? -1 : (id1 == id2 ? 0 : 1));
+            }
+        });
+        for (EntityRelationship relationship : list) {
+            Entity template = (Entity) get(relationship.getSource());
+            if (template != null && template.isActive()) {
+                if (hasArchetype(template, shortName)) {
+                    result = template;
+                    break;
+                }
             }
         }
         return result;
@@ -123,6 +162,20 @@ public class TemplateHelper {
      */
     public DocumentTemplate getDocumentTemplate(String shortName) {
         Entity result = getTemplateForArchetype(shortName);
+        return (result != null) ? new DocumentTemplate(result, service) : null;
+    }
+
+    /**
+     * Returns the document template for the specified archetype, associated with an organisation location or practice.
+     * <p/>
+     * If there are multiple relationships, the lowest id will be returned.
+     *
+     * @param shortName    the archetype short name
+     * @param organisation the <em>party.organisationLocation</em> or <em>party.organisationPractice</em>
+     * @return the template corresponding to <tt>shortName</tt> or <tt>null</tt> if none can be found
+     */
+    public DocumentTemplate getDocumentTemplate(String shortName, Party organisation) {
+        Entity result = getTemplateForArchetype(shortName, organisation);
         return (result != null) ? new DocumentTemplate(result, service) : null;
     }
 
@@ -195,6 +248,19 @@ public class TemplateHelper {
         query.setMaxResults(1);
         List<IMObject> rows = service.get(query).getResults();
         return (!rows.isEmpty()) ? (Participation) rows.get(0) : null;
+    }
+
+    /**
+     * Determine if a template is for a particular archetype.
+     *
+     * @param template the template
+     * @param shortName the archetype short name
+     * @return <tt>true</tt> if the template has the archetype short name, otherwise <tt>false</tt>
+     */
+    private boolean hasArchetype(Entity template, String shortName) {
+        EntityBean bean = new EntityBean(template, service);
+        String archetype = bean.getString("archetype");
+        return (archetype != null && TypeHelper.matches(shortName, archetype));
     }
 
     /**
