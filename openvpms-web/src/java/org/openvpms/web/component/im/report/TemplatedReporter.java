@@ -19,10 +19,8 @@
 package org.openvpms.web.component.im.report;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
@@ -35,73 +33,67 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public abstract class TemplatedReporter<T> extends Reporter<T> {
 
     /**
-     * The archetype short name to determine which template to use.
-     */
-    private final String shortName;
-
-    /**
      * The document template entity to use. May be <tt>null</tt>
      */
     private DocumentTemplate template;
 
+    /**
+     * The document template locator.
+     */
+    private DocumentTemplateLocator locator;
+
 
     /**
-     * Constructs a new <tt>TemplatedReporter</tt> for a single object.
+     * Constructs a <tt>TemplatedReporter</tt> for a single object.
      *
-     * @param object    the object
-     * @param shortName the archetype short name to determine the template to use
+     * @param object  the object
+     * @param template the document template to use
      */
-    public TemplatedReporter(T object, String shortName) {
-        this(object, shortName, null);
-    }
-
-    /**
-     * Constructs a new <tt>TemplatedReporter</tt> for a single object.
-     *
-     * @param object    the object
-     * @param shortName the archetype short name to determine the template to use
-     * @param template  the document template to use. May be <tt>null</tt>
-     */
-    public TemplatedReporter(T object, String shortName, DocumentTemplate template) {
+    public TemplatedReporter(T object, DocumentTemplate template) {
         super(object);
-        this.shortName = shortName;
         this.template = template;
     }
 
     /**
-     * Constructs a new <tt>TemplatedReporter</tt> to print a collection of
-     * objects.
+     * Constructs a <tt>TemplatedReporter</tt> for a single object.
      *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to
-     *                  use
-     * @throws OpenVPMSException for any error
+     * @param object  the object
+     * @param locator the document template locator
      */
-    public TemplatedReporter(Iterable<T> objects, String shortName) {
-        this(objects, shortName, null);
+    public TemplatedReporter(T object, DocumentTemplateLocator locator) {
+        super(object);
+        this.locator = locator;
     }
 
     /**
-     * Constructs a new <tt>TemplatedReporter</tt> to print a collection of
-     * objects.
+     * Constructs a <tt>TemplatedReporter</tt> to print a collection of objects.
      *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to use
-     * @param template  the document template to use. May be <tt>null</tt>
+     * @param objects the objects to print
+     * @param template the document template to use
      */
-    public TemplatedReporter(Iterable<T> objects, String shortName, DocumentTemplate template) {
+    public TemplatedReporter(Iterable<T> objects, DocumentTemplate template) {
         super(objects);
-        this.shortName = shortName;
         this.template = template;
     }
 
     /**
-     * Returns archetype short name to determine which template to use.
+     * Constructs a <tt>TemplatedReporter</tt> to print a collection of objects.
+     *
+     * @param objects the objects to print
+     * @param locator the document template locator
+     */
+    public TemplatedReporter(Iterable<T> objects, DocumentTemplateLocator locator) {
+        super(objects);
+        this.locator = locator;
+    }
+
+    /**
+     * Returns the archetype short name that the template applies to.
      *
      * @return the archetype short name
      */
     public String getShortName() {
-        return shortName;
+        return locator.getShortName();
     }
 
     /**
@@ -111,9 +103,8 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentTemplate getTemplate() {
-        if (template == null) {
-            TemplateHelper helper = new TemplateHelper();
-            template = helper.getDocumentTemplate(shortName);
+        if (template == null && locator != null) {
+            template = locator.getTemplate();
         }
         return template;
     }

@@ -35,7 +35,11 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.web.app.reporting.ReportingException;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
+import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.component.im.report.ObjectSetReporter;
 import org.openvpms.web.system.ServiceHelper;
@@ -106,6 +110,8 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
 
     /**
      * Processes a list of reminder events.
+     * <p/>
+     * TODO - remove dependency on global context
      *
      * @param events           the events
      * @param shortName        the report archetype short name, used to select the document template if none specified
@@ -114,6 +120,12 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
     protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
         ReminderEvent event = events.get(0);
         Contact contact = event.getContact();
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(documentTemplate, shortName,
+                                                                             GlobalContext.getInstance());
+        documentTemplate = locator.getTemplate();
+        if (documentTemplate == null) {
+            throw new ReportingException(ReminderMissingDocTemplate);
+        }
 
         try {
             MimeMessage message = sender.createMimeMessage();
@@ -134,7 +146,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
             }
             helper.setText(body);
 
-            final Document reminder = createReport(events, shortName, documentTemplate);
+            final Document reminder = createReport(events, documentTemplate);
             final DocumentHandler handler = handlers.get(reminder.getName(), reminder.getArchetypeId().getShortName(),
                                                          reminder.getMimeType());
 
@@ -156,11 +168,18 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         }
     }
 
-    private Document createReport(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
+    /**
+     * Creates a new report.
+     *
+     * @param events           the reminder events
+     * @param documentTemplate the document template
+     * @return a new report
+     */
+    private Document createReport(List<ReminderEvent> events, DocumentTemplate documentTemplate) {
         Document result;
         if (events.size() > 1) {
             List<ObjectSet> sets = createObjectSets(events);
-            ObjectSetReporter reporter = new ObjectSetReporter(sets, shortName, documentTemplate);
+            ObjectSetReporter reporter = new ObjectSetReporter(sets, documentTemplate);
             IMReport<ObjectSet> report = reporter.getReport();
             result = report.generate(sets.iterator(), DocFormats.PDF_TYPE);
         } else {
@@ -168,7 +187,7 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
             for (ReminderEvent event : events) {
                 acts.add(event.getReminder());
             }
-            IMObjectReporter<Act> reporter = new IMObjectReporter<Act>(acts, shortName, documentTemplate);
+            IMObjectReporter<Act> reporter = new IMObjectReporter<Act>(acts, documentTemplate);
             IMReport<Act> report = reporter.getReport();
             result = report.generate(acts.iterator(), DocFormats.PDF_TYPE);
         }

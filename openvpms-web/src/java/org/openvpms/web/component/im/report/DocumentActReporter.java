@@ -54,7 +54,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
      * @throws DocumentException         if the template cannot be found
      */
     public DocumentActReporter(DocumentAct act) {
-        super(act, act.getArchetypeId().getShortName(), getTemplate(act));
+        super(act, getTemplate(act));
     }
 
     /**
@@ -65,7 +65,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentActReporter(DocumentAct act, DocumentTemplate template) {
-        super(act, act.getArchetypeId().getShortName(), template);
+        super(act, template);
     }
 
     /**

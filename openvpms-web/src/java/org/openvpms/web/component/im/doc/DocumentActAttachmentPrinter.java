@@ -26,7 +26,9 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.PrintException;
 import org.openvpms.web.component.im.print.TemplatedIMPrinter;
 import org.openvpms.web.component.im.report.IMObjectReporter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -43,12 +45,14 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
      * Constructs a new <tt>DocumentActPrinter</tt>.
+     * TODO - fix this so it is not dependendent on the global context
      *
      * @param object the object to print
      * @throws ArchetypeServiceException for any archetype service error
      */
     public DocumentActAttachmentPrinter(DocumentAct object) {
-        super(new IMObjectReporter<IMObject>(object));
+        super(new IMObjectReporter<IMObject>(object,
+                                             new ContextDocumentTemplateLocator(object, GlobalContext.getInstance())));
     }
 
     /**
