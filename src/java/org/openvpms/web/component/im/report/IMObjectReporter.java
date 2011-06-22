@@ -25,11 +25,12 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
+import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -43,47 +44,44 @@ import org.openvpms.web.system.ServiceHelper;
 public class IMObjectReporter<T extends IMObject> extends TemplatedReporter<T> {
 
     /**
-     * Constructs a new <tt>IMObjectReporter</tt> for a single object.
-     *
-     * @param object the object
-     * @throws OpenVPMSException for any error
-     */
-    public IMObjectReporter(T object) {
-        this(object, null);
-    }
-
-    /**
-     * Constructs a new <tt>IMObjectReporter</tt> for a single object.
+     * Constructs an <tt>IMObjectReporter</tt> for a single object.
      *
      * @param object   the object
-     * @param template the document template to use. May be <tt>null</tt>
+     * @param template the document template to use
      */
     public IMObjectReporter(T object, DocumentTemplate template) {
-        super(object, object.getArchetypeId().getShortName(), template);
+        super(object, template);
     }
 
     /**
-     * Constructs a new <tt>IMObjectReporter</tt> for a collection of objects.
+     * Constructs an <tt>IMObjectReporter</tt> for a single object.
      *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to
-     *                  use
+     * @param object  the object
+     * @param locator the document template locator
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReporter(Iterable<T> objects, String shortName) {
-        this(objects, shortName, null);
+    public IMObjectReporter(T object, DocumentTemplateLocator locator) {
+        super(object, locator);
     }
 
     /**
-     * Constructs a new <tt>IMObjectReporter</tt> for a collection of objects.
+     * Constructs an <tt>IMObjectReporter</tt> for a collection of objects.
      *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to
-     *                  use
-     * @param template  the document template to use. May be <tt>null</tt>
+     * @param objects  the objects to print
+     * @param template the document template to use
      */
-    public IMObjectReporter(Iterable<T> objects, String shortName, DocumentTemplate template) {
-        super(objects, shortName, template);
+    public IMObjectReporter(Iterable<T> objects, DocumentTemplate template) {
+        super(objects, template);
+    }
+
+    /**
+     * Constructs an <tt>IMObjectReporter</tt> for a collection of objects.
+     *
+     * @param objects the objects to print
+     * @param locator the document template locator
+     */
+    public IMObjectReporter(Iterable<T> objects, DocumentTemplateLocator locator) {
+        super(objects, locator);
     }
 
     /**
@@ -96,20 +94,18 @@ public class IMObjectReporter<T extends IMObject> extends TemplatedReporter<T> {
      */
     @SuppressWarnings("unchecked")
     public IMReport<T> getReport() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         DocumentTemplate template = getTemplate();
-        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-        IMReport<IMObject> report;
         if (template == null) {
-            report = ReportFactory.createIMObjectReport(getShortName(), service, handlers);
-        } else {
-            Document doc = getTemplateDocument();
-            if (doc == null) {
-                throw new DocumentException(NotFound);
-            }
-            report = ReportFactory.createIMObjectReport(doc, service, handlers);
+            String displayName = DescriptorHelper.getDisplayName(getShortName());
+            throw new ReportException(NoTemplateForArchetype, displayName);
         }
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+        Document doc = getTemplateDocument();
+        if (doc == null) {
+            throw new DocumentException(NotFound);
+        }
+        IMReport<IMObject> report = ReportFactory.createIMObjectReport(doc, service, handlers);
         return (IMReport<T>) report;
     }
 

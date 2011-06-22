@@ -25,10 +25,11 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
+import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -42,25 +43,23 @@ import org.openvpms.web.system.ServiceHelper;
 public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
 
     /**
-     * Constructs a new <tt>ObjectSetReporter</tt> for a collection of objects.
+     * Constructs an <tt>ObjectSetReporter</tt> for a collection of objects.
      *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to use
-     * @throws OpenVPMSException for any error
+     * @param objects  the objects to print
+     * @param template the document template to use
      */
-    public ObjectSetReporter(Iterable<ObjectSet> objects, String shortName) {
-        this(objects, shortName, null);
+    public ObjectSetReporter(Iterable<ObjectSet> objects, DocumentTemplate template) {
+        super(objects, template);
     }
 
     /**
-     * Constructs a new <tt>ObjectSetReporter</tt> for a collection of objects.
+     * Constructs an <tt>ObjectSetReporter</tt> for a collection of objects.
      *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to use
-     * @param template  the document template to use. May be <tt>null</tt>
+     * @param objects the objects to print
+     * @param locator the document template locator
      */
-    public ObjectSetReporter(Iterable<ObjectSet> objects, String shortName, DocumentTemplate template) {
-        super(objects, shortName, template);
+    public ObjectSetReporter(Iterable<ObjectSet> objects, DocumentTemplateLocator locator) {
+        super(objects, locator);
     }
 
     /**
@@ -73,19 +72,17 @@ public class ObjectSetReporter extends TemplatedReporter<ObjectSet> {
      */
     public IMReport<ObjectSet> getReport() {
         DocumentTemplate template = getTemplate();
+        if (template == null) {
+            String displayName = DescriptorHelper.getDisplayName(getShortName());
+            throw new ReportException(NoTemplateForArchetype, displayName);
+        }
         IArchetypeService service = ServiceHelper.getArchetypeService();
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-        IMReport<ObjectSet> report;
-        if (template == null) {
-            report = ReportFactory.createObjectSetReport(getShortName(), service, handlers);
-        } else {
-            Document doc = getTemplateDocument();
-            if (doc == null) {
-                throw new DocumentException(NotFound);
-            }
-            report = ReportFactory.createObjectSetReport(doc, service, handlers);
+        Document doc = getTemplateDocument();
+        if (doc == null) {
+            throw new DocumentException(NotFound);
         }
-        return report;
+        return ReportFactory.createObjectSetReport(doc, service, handlers);
     }
 
 }

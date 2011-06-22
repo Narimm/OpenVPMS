@@ -25,7 +25,10 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
@@ -43,27 +46,29 @@ public class PatientInvestigationPrinter extends IMObjectReportPrinter<Act> {
      * @throws OpenVPMSException for any error
      */
     public PatientInvestigationPrinter(Act investigation) {
-        super(investigation, getTemplate(investigation));
+        super(investigation, getTemplateLocator(investigation));
     }
 
     /**
-     * Returns the template associated with the act's investigation type.
+     * Returns a document template locator.
+     * <p/>
+     * TODO - this should not be dependent on the global context
      *
      * @param investigation the investigation
-     * @return the associated investigation template, or <tt>null</tt> if none is found
+     * @return a new document template locator
      */
-    private static DocumentTemplate getTemplate(Act investigation) {
-        DocumentTemplate result = null;
+    private static DocumentTemplateLocator getTemplateLocator(Act investigation) {
+        DocumentTemplate template = null;
         ActBean act = new ActBean(investigation);
         Entity investigationType = act.getParticipant(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION);
         if (investigationType != null) {
             EntityBean bean = new EntityBean(investigationType);
             Entity entity = bean.getNodeTargetEntity("template");
             if (entity != null) {
-                result = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+                template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
             }
         }
-        return result;
+        return new ContextDocumentTemplateLocator(template, investigation, GlobalContext.getInstance());
     }
 
 }

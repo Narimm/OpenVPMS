@@ -22,6 +22,9 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.IMReport;
+import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.ObjectSetReporter;
 
 
@@ -34,26 +37,37 @@ import org.openvpms.web.component.im.report.ObjectSetReporter;
 public class ObjectSetReportPrinter extends TemplatedIMPrinter<ObjectSet> {
 
     /**
-     * Creates a new <tt>ObjectSetReportPrinter</tt>.
+     * Constructs an <tt>ObjectSetReportPrinter</tt>.
      *
-     * @param set       the set to print
-     * @param shortName the archetype short name
+     * @param set      the set to print
+     * @param template the document template to use
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName) {
-        this(set, shortName, null);
+    public ObjectSetReportPrinter(Iterable<ObjectSet> set, DocumentTemplate template) {
+        super(new ObjectSetReporter(set, template));
     }
 
     /**
      * Creates a new <tt>ObjectSetReportPrinter</tt>.
      *
-     * @param set       the set to print
-     * @param shortName the archetype short name
-     * @param template  the document template. May be <tt>null</tt>
+     * @param set     the set to print
+     * @param locator the document template locator
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName, DocumentTemplate template) {
-        super(new ObjectSetReporter(set, shortName, template));
+    public ObjectSetReportPrinter(Iterable<ObjectSet> set, DocumentTemplateLocator locator) {
+        super(new ObjectSetReporter(set, locator));
+    }
+
+    /**
+     * Creates a new <tt>ObjectSetReportPrinter</tt>.
+     * TODO - should be removed as it is dependendent on the global context
+     *
+     * @param set       the set to print
+     * @param shortName the archetype short name to determine the template to use
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName) {
+        this(set, new ContextDocumentTemplateLocator(shortName, GlobalContext.getInstance()));
     }
 
 }

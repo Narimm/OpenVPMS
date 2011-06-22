@@ -26,7 +26,10 @@ import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.app.GlobalContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,16 +88,19 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      * @param template  the document template to use. May be <tt>null</tt>
      */
     protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate template) {
+        // TODO - fix this so its not dependent on the global context
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, shortName,
+                                                                             GlobalContext.getInstance());
         if (events.size() > 1) {
             List<ObjectSet> sets = createObjectSets(events);
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, shortName, template);
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, locator);
             print(printer);
         } else {
             List<Act> acts = new ArrayList<Act>();
             for (ReminderEvent event : events) {
                 acts.add(event.getReminder());
             }
-            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, shortName, template);
+            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator);
             print(printer);
         }
     }

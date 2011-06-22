@@ -22,7 +22,10 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.IMObjectReporter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -31,24 +34,25 @@ import org.openvpms.web.component.im.report.IMObjectReporter;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectReportPrinter<T extends IMObject>
-        extends TemplatedIMPrinter<T> {
+public class IMObjectReportPrinter<T extends IMObject> extends TemplatedIMPrinter<T> {
 
     /**
-     * Constructs a new <tt>IMObjectReportPrinter</tt>.
+     * Constructs an <tt>IMObjectReportPrinter</tt>.
      *
-     * @param object the object to print
+     * TODO - should be removed as it is dependendent on the global context
+     *
+     * @param object   the object to print
      * @throws OpenVPMSException for any error
      */
     public IMObjectReportPrinter(T object) {
-        this(object, null);
+        super(new IMObjectReporter<T>(object, new ContextDocumentTemplateLocator(object, GlobalContext.getInstance())));
     }
 
     /**
-     * Constructs a new <tt>IMObjectReportPrinter</tt>.
+     * Constructs an <tt>IMObjectReportPrinter</tt>.
      *
      * @param object   the object to print
-     * @param template the document template to use. May be <tt>null</tt>
+     * @param template the document template to use
      * @throws OpenVPMSException for any error
      */
     public IMObjectReportPrinter(T object, DocumentTemplate template) {
@@ -56,30 +60,50 @@ public class IMObjectReportPrinter<T extends IMObject>
     }
 
     /**
-     * Constructs a new <tt>IMReportPrinter</tt> to print a collection of
-     * objects.
+     * Constructs an <tt>IMObjectReportPrinter</tt>.
      *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to
-     *                  use
+     * @param object  the object to print
+     * @param locator the document template locator
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(Iterable<T> objects, String shortName) {
-        this(objects, shortName, null);
+    public IMObjectReportPrinter(T object, DocumentTemplateLocator locator) {
+        super(new IMObjectReporter<T>(object, locator));
     }
 
     /**
-     * Constructs a new <tt>IMReportPrinter</tt> to print a collection of
-     * objects.
+     * Constructs an <tt>IMObjectReportPrinter</tt> to print a collection of objects.
      *
-     * @param objects   the objects to print
-     * @param shortName the archetype short name to determine the template to
-     *                  use
-     * @param template  the document template to use. May be <tt>null</tt>
+     * @param objects  the objects to print
+     * @param template the document template to use
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(Iterable<T> objects, String shortName, DocumentTemplate template) {
-        super(new IMObjectReporter<T>(objects, shortName, template));
+    public IMObjectReportPrinter(Iterable<T> objects, DocumentTemplate template) {
+        super(new IMObjectReporter<T>(objects, template));
+    }
+
+    /**
+     * Constructs an <tt>IMObjectReportPrinter</tt> to print a collection of objects.
+     *
+     * @param objects the objects to print
+     * @param locator the document template locator
+     * @throws OpenVPMSException for any error
+     */
+    public IMObjectReportPrinter(Iterable<T> objects, DocumentTemplateLocator locator) {
+        super(new IMObjectReporter<T>(objects, locator));
+    }
+
+    /**
+     * Constructs an <tt>IMObjectReportPrinter</tt> to print a collection of objects.
+     *
+     * TODO - should be removed as it is dependendent on the global context
+     *
+     * @param objects the objects to print
+     * @param shortName the archetype short name to determine the template to use
+     * @throws OpenVPMSException for any error
+     */
+    public IMObjectReportPrinter(Iterable<T> objects, String shortName) {
+        super(new IMObjectReporter<T>(objects,
+                                      new ContextDocumentTemplateLocator(shortName, GlobalContext.getInstance())));
     }
 
 }
