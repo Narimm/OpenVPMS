@@ -132,7 +132,7 @@ public class ESCIDispatcherJob implements InterruptableJob, StatefulJob {
         UserRules rules = new UserRules(service);
         User user = rules.getUser(runAs);
         if (user == null) {
-            throw new IllegalArgumentException("User ' + " + runAs + "' does not correspond to a valid user");
+            throw new IllegalArgumentException("User '" + runAs + "' does not correspond to a valid user");
         }
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         UsernamePasswordAuthenticationToken authentication
