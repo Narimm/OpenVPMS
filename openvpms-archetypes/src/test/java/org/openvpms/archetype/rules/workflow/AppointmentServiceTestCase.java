@@ -404,8 +404,9 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
+        User author = TestHelper.createClinician();
         Act appointment = ScheduleTestHelper.createAppointment(
-                startTime, endTime, schedule, customer, patient, clinician);
+                startTime, endTime, schedule, customer, patient, clinician, author);
         if (save) {
             save(appointment);
         }

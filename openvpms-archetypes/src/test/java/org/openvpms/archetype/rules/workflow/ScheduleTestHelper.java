@@ -172,8 +172,7 @@ public class ScheduleTestHelper extends TestHelper {
     public static Act createAppointment(Date startTime, Date endTime,
                                         Party schedule, Party customer,
                                         Party patient) {
-        return createAppointment(startTime, endTime, schedule, customer,
-                                 patient, null);
+        return createAppointment(startTime, endTime, schedule, customer, patient, null, null);
     }
 
     /**
@@ -185,11 +184,12 @@ public class ScheduleTestHelper extends TestHelper {
      * @param customer  the customer
      * @param patient   the patient. May be <tt>null</tt>
      * @param clinician the clinician. May be <tt>null</tt>
+     * @param author    the author. May be <tt>null</tt>
      * @return a new act
      */
     public static Act createAppointment(Date startTime, Date endTime,
                                         Party schedule, Party customer,
-                                        Party patient, User clinician) {
+                                        Party patient, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.APPOINTMENT);
         Lookup reason = TestHelper.getLookup("lookup.appointmentReason", "XREASON", "Reason X", true);
 
@@ -209,6 +209,9 @@ public class ScheduleTestHelper extends TestHelper {
         bean.setParticipant("participation.appointmentType", appointmentType);
         if (clinician != null) {
             bean.setParticipant("participation.clinician", clinician);
+        }
+        if (author != null) {
+            bean.setParticipant("participation.author", author);
         }
         return act;
     }
@@ -300,8 +303,7 @@ public class ScheduleTestHelper extends TestHelper {
      */
     public static Act createTask(Date startTime, Date endTime, Party schedule,
                                  Party customer, Party patient) {
-        return createTask(startTime, endTime, schedule, customer, patient,
-                          null);
+        return createTask(startTime, endTime, schedule, customer, patient, null, null);
     }
 
     /**
@@ -313,11 +315,12 @@ public class ScheduleTestHelper extends TestHelper {
      * @param customer  the customer
      * @param patient   the patient. May be <tt>null</tt>
      * @param clinician the clinician. May be <tt>null</tt>
+     * @param author    the author. May be <tt>null</tt>
      * @return a new act
      */
     public static Act createTask(Date startTime, Date endTime,
                                  Party schedule, Party customer,
-                                 Party patient, User clinician) {
+                                 Party patient, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.TASK);
 
         ActBean bean = new ActBean(act);
@@ -335,6 +338,9 @@ public class ScheduleTestHelper extends TestHelper {
         bean.setParticipant("participation.taskType", taskType);
         if (clinician != null) {
             bean.setParticipant("participation.clinician", clinician);
+        }
+        if (author != null) {
+            bean.setParticipant("participation.author", author);
         }
         return act;
     }
