@@ -32,6 +32,9 @@ import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -138,17 +141,18 @@ abstract class ScheduleEventQuery {
                 current = createEvent(actRef, set);
             }
             IMObjectReference entityRef = getEntity(set);
+            String participation = set.getString("participation.shortName");
             String entityName = set.getString("entity.name");
-            if (TypeHelper.isA(entityRef, "party.customer*")) {
+            if (CustomerArchetypes.CUSTOMER_PARTICIPATION.equals(participation)) {
                 current.set(ScheduleEvent.CUSTOMER_REFERENCE, entityRef);
                 current.set(ScheduleEvent.CUSTOMER_NAME, entityName);
-            } else if (TypeHelper.isA(entityRef, "party.patient*")) {
+            } else if (PatientArchetypes.PATIENT_PARTICIPATION.equals(participation)) {
                 current.set(ScheduleEvent.PATIENT_REFERENCE, entityRef);
                 current.set(ScheduleEvent.PATIENT_NAME, entityName);
             } else if (TypeHelper.isA(entityRef, scheduleType)) {
                 current.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, entityRef);
                 current.set(ScheduleEvent.SCHEDULE_TYPE_NAME, entityName);
-            } else if (TypeHelper.isA(entityRef, "security.user")) {
+            } else if (UserArchetypes.CLINICIAN_PARTICIPATION.equals(participation)) {
                 current.set(ScheduleEvent.CLINICIAN_REFERENCE, entityRef);
                 current.set(ScheduleEvent.CLINICIAN_NAME, entityName);
             }
@@ -194,6 +198,7 @@ abstract class ScheduleEventQuery {
                                                  "act.details_Values",
                                                  "act.status", "act.reason",
                                                  "act.description",
+                                                 "participation.shortName",
                                                  "entity.archetypeId",
                                                  "entity.id", "entity.linkId",
                                                  "entity.name");

@@ -228,8 +228,9 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
+        User author = TestHelper.createClinician();
         Act task = ScheduleTestHelper.createTask(
-                startTime, endTime, workList, customer, patient, clinician);
+                startTime, endTime, workList, customer, patient, clinician, author);
         save(task);
         return task;
     }

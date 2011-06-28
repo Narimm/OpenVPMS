@@ -68,10 +68,12 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
             Party customer = TestHelper.createCustomer();
             Party patient = TestHelper.createPatient();
             User clinician = TestHelper.createClinician();
+            User author = TestHelper.createClinician();
             Act appointment = ScheduleTestHelper.createAppointment(
                     startTime, endTime, schedule, customer, patient);
             ActBean bean = new ActBean(appointment);
             bean.addParticipation("participation.clinician", clinician);
+            bean.addParticipation("participation.author", author);
             bean.setValue("arrivalTime", arrivalTime);
             appointments[i] = appointment;
             startTimes[i] = getTimestamp(startTime);
