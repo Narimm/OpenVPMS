@@ -132,6 +132,8 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * will be added.
      */
     private void updateCustomFields() {
+        getComponent(); // force render to ensure the stategy has a focus group set
+
         String species = (String) getProperty("species").getValue();
         String shortName = getCustomFieldsArchetype(species);
         String currentShortName = null;
