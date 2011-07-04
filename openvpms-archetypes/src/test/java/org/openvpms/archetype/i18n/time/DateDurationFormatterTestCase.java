@@ -160,6 +160,23 @@ public class DateDurationFormatterTestCase {
     }
 
     /**
+     * Tests formatting where months, and weeks are shown.
+     */
+    @Test
+    public void testMonthsWeeks() {
+        Date from = getDate("2010-07-16");
+        Date to1 = getDate("2011-07-03");
+        Date to2 = getDate("2011-08-03");
+        Date to3 = getDate("2011-08-16");
+        Date to4 = getDate("2011-08-23");
+        checkFormat("0 Weeks", from, from, false, true, true, false);
+        checkFormat("11 Months 2 Weeks", from, to1, false, true, true, false);
+        checkFormat("12 Months 2 Weeks", from, to2, false, true, true, false);
+        checkFormat("13 Months", from, to3, false, true, true, false);
+        checkFormat("13 Months 1 Week", from, to4, false, true, true, false);
+    }
+
+    /**
      * Tests formatting where months, weeks and days are shown.
      */
     @Test
