@@ -230,7 +230,10 @@ public class DateDurationFormatter implements DurationFormatter {
         }
         if (showWeeks) {
             if (showMonths) {
-                DateTime start = to.withDayOfMonth(1);
+                DateTime start = to.withDayOfMonth(from.getDayOfMonth());
+                if (from.getDayOfMonth() > to.getDayOfMonth()) {
+                    start = start.minusMonths(1);
+                }
                 weeks = Weeks.weeksBetween(start, to).getWeeks();
             } else {
                 weeks = Weeks.weeksBetween(from, to).getWeeks();
