@@ -118,16 +118,18 @@ public class CustomerChargeActEditor extends FinancialActEditor {
         }
         for (Act act : editor.getCurrentActs()) {
             ActBean item = new ActBean(act);
-            Party patient = (Party) item.getNodeParticipant("patient");
-            if (patient != null) {
-                Entity clinician = item.getNodeParticipant("clinician");
-                if (clinician == null) {
-                    clinician = defaultClinician;
-                }
-                Date startTime = act.getActivityStartTime();
-                Act event = rules.getEventForAddition(patient, startTime, clinician);
-                if (event.isNew()) {
-                    ServiceHelper.getArchetypeService().save(event);
+            if (needsEvent(item)) {
+                Party patient = (Party) item.getNodeParticipant("patient");
+                if (patient != null) {
+                    Entity clinician = item.getNodeParticipant("clinician");
+                    if (clinician == null) {
+                        clinician = defaultClinician;
+                    }
+                    Date startTime = act.getActivityStartTime();
+                    Act event = rules.getEventForAddition(patient, startTime, clinician);
+                    if (event.isNew()) {
+                        ServiceHelper.getArchetypeService().save(event);
+                    }
                 }
             }
         }
@@ -262,6 +264,18 @@ public class CustomerChargeActEditor extends FinancialActEditor {
         BigDecimal unitCost = bean.getBigDecimal("unitCost", BigDecimal.ZERO);
         BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
         return unitCost.multiply(quantity);
+    }
+
+    /**
+     * Determines if an item needs an <em>act.patientClinicalEvent</em>.
+     *
+     * @param item the item
+     * @return <tt>true</tt> if the item needs an event, otherwise <tt>false</tt>
+     */
+    private boolean needsEvent(ActBean item) {
+        return !item.getValues("dispensing").isEmpty()
+               || !item.getValues("investigations").isEmpty()
+               || !item.getValues("documents").isEmpty();
     }
 
 }
