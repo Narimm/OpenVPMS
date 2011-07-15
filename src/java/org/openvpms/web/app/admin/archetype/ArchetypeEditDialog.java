@@ -18,19 +18,25 @@
 package org.openvpms.web.app.admin.archetype;
 
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.AbstractIMObjectFactory;
 import org.openvpms.component.business.service.archetype.IMObjectFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.AbstractLayoutContext;
+import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
+
+import java.util.Arrays;
 
 
 /**
@@ -39,7 +45,7 @@ import org.openvpms.web.component.util.ErrorHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ArchetypeEditDialog extends EditDialog {
+public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor> {
 
     /**
      * The object factory. This uses the archetype descriptor being edited when creating test objects.
@@ -48,18 +54,46 @@ public class ArchetypeEditDialog extends EditDialog {
 
 
     /**
-     * Constructs a new <tt>ArchetypeEditDialog</tt>.
+     * Constructs an <tt>ArchetypeEditDialog</tt>.
      *
-     * @param editor the editor
+     * @param title the window title
+     * @param first the first object to edit
+     * @param set   the set of results to edit
      */
-    public ArchetypeEditDialog(IMObjectEditor editor) {
-        super(editor);
+    public ArchetypeEditDialog(String title, ArchetypeDescriptor first, ResultSet<ArchetypeDescriptor> set) {
+        super(title, first, set);
         factory = new ObjectFactory();
         addButton("test", new ActionListener() {
             public void onAction(ActionEvent e) {
                 onTest();
             }
         });
+    }
+
+    /**
+     * Saves the current object.
+     *
+     * @return <tt>true</tt> if the object was saved
+     */
+    @Override
+    protected boolean doSave() {
+        IMObjectEditor editor = getEditor();
+        boolean saved = false;
+        if (editor != null) {
+            ArchetypeDescriptor current = (ArchetypeDescriptor) editor.getObject();
+            ArchetypeDescriptor old = IMObjectHelper.reload(current);
+            saved = super.doSave();
+            if (saved && old != null) {
+                Change change = new Change(current, old);
+                boolean updateDerived = change.hasChangedDerivedNodes();
+                boolean updateAssertions = change.hasAddedAssertions(BatchArchetypeUpdater.ASSERTIONS);
+                if (updateDerived || updateAssertions) {
+                    ConfirmingBatchArchetypeUpdater updater = new ConfirmingBatchArchetypeUpdater();
+                    updater.confirmUpdate(Arrays.asList(change));
+                }
+            }
+        }
+        return saved;
     }
 
     /**
