@@ -165,7 +165,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
         } else {
             final FocusCommand focus = new FocusCommand();
             String title = Messages.get("editor.edit.title", getArchetypes().getDisplayName());
-            EditResultSetDialog<T> dialog = new EditResultSetDialog<T>(title, object, set);
+            EditResultSetDialog<T> dialog = createEditResultSetDialog(object, title);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {
@@ -176,6 +176,17 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
             });
             dialog.show();
         }
+    }
+
+    /**
+     * Creates a new result set dialog for editing.
+     *
+     * @param object the first object to edit
+     * @param title the dialog title
+     * @return a new dialog
+     */
+    protected EditResultSetDialog<T> createEditResultSetDialog(T object, String title) {
+        return new EditResultSetDialog<T>(title, object, set);
     }
 
     /**

@@ -34,16 +34,13 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -54,7 +51,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -96,6 +92,19 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     }
 
     /**
+     * Creates a new result set dialog for editing.
+     *
+     * @param object the first object to edit
+     * @param title  the dialog title
+     * @return a new dialog
+     */
+    @Override
+    protected EditResultSetDialog<ArchetypeDescriptor> createEditResultSetDialog(ArchetypeDescriptor object,
+                                                                                 String title) {
+        return new ArchetypeEditDialog(title, object, getResultSet());
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -128,34 +137,6 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         buttons.setEnabled(EXPORT_ID, enable);
-    }
-
-    /**
-     * Invoked when the object has been saved. If derived nodes have changed,
-     * this prompts to update associated objects.
-     *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
-     */
-    @Override
-    protected void onSaved(ArchetypeDescriptor object, boolean isNew) {
-        Change change = new Change(object, getObject());
-        super.onSaved(object, isNew);
-        boolean updateDerived = change.hasChangedDerivedNodes();
-        boolean updateAssertions = change.hasAddedAssertions(BatchArchetypeUpdater.ASSERTIONS);
-        if (updateDerived || updateAssertions) {
-            confirmUpdateNodes(Arrays.asList(change));
-        }
-    }
-
-    /**
-     * Creates a new edit dialog.
-     *
-     * @param editor the editor
-     */
-    @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new ArchetypeEditDialog(editor);
     }
 
     /**
@@ -275,54 +256,11 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
                 }
             }
             if (!update.isEmpty()) {
-                confirmUpdateNodes(update);
+                ConfirmingBatchArchetypeUpdater updater = new ConfirmingBatchArchetypeUpdater();
+                updater.confirmUpdate(update);
             }
         }
     }
 
-    /**
-     * Prompts to update nodes of objects associated with the supplied archetype changes.
-     *
-     * @param changes the archetype changes
-     */
-    private void confirmUpdateNodes(final List<Change> changes) {
-        StringBuffer names = new StringBuffer();
-        for (Change change : changes) {
-            if (names.length() != 0) {
-                names.append(", ");
-            }
-            names.append(change.getNewVersion().getDisplayName());
-        }
-
-        String title = Messages.get("archetype.update.title");
-        String message = Messages.get("archetype.update.message", names);
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                updateNodes(changes);
-            }
-        });
-        dialog.show();
-    }
-
-    /**
-     * Updates nodes of objects associated with the supplied changed archetype descriptors.
-     *
-     * @param changes the changed archetypes
-     */
-    private void updateNodes(List<Change> changes) {
-        BatchArchetypeUpdater updater = new BatchArchetypeUpdater(changes);
-        updater.setListener(new BatchProcessorListener() {
-            public void completed() {
-            }
-
-            public void error(Throwable exception) {
-                ErrorHelper.show(exception);
-            }
-        });
-        updater.process();
-    }
 
 }
