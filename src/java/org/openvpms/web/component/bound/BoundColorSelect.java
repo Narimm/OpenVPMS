@@ -39,6 +39,7 @@ public class BoundColorSelect extends ColorSelect {
      * The property binder.
      */
     private final Binder binder;
+    private PropertyChangeListener listener;
 
 
     /**
@@ -47,6 +48,12 @@ public class BoundColorSelect extends ColorSelect {
      * @param property the property to bind
      */
     public BoundColorSelect(Property property) {
+        listener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                binder.setProperty();
+            }
+        };
+        addPropertyChangeListener(listener);
         binder = new Binder(property) {
             protected Object getFieldValue() {
                 return ColourHelper.getString(getColor());
@@ -54,15 +61,15 @@ public class BoundColorSelect extends ColorSelect {
 
             protected void setFieldValue(Object value) {
                 Color color = convert(value);
-                setColor(color);
+                try {
+                    removePropertyChangeListener(listener);
+                    setColor(color);
+                } finally {
+                    addPropertyChangeListener(listener);
+                }
             }
 
         };
-        addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                binder.setProperty();
-            }
-        });
     }
 
     /**
