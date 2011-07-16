@@ -19,11 +19,18 @@ package org.openvpms.web.app.admin.lookup;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.util.MappingCopyHandler;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -41,12 +48,13 @@ import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.util.List;
 
 
 /**
@@ -163,7 +171,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
     }
 
     /**
-     * Replaces references to the source lookup with the target lookup, and deletes the source lookup.
+     * Replaces references to the source lookup with the target lookup, optionally deleting the source lookup.
      *
      * @param source the source lookup
      * @param target the target lookup
@@ -175,6 +183,9 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
             public Object doInTransaction(TransactionStatus status) {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
                 ILookupService lookupService = ServiceHelper.getLookupService();
+                if (copyRelationships(source, target)) {
+                    service.save(target);
+                }
                 lookupService.replace(source, target);
                 if (delete) {
                     service.remove(source);
@@ -182,6 +193,71 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
                 return null;
             }
         });
+    }
+
+    /**
+     * Copies the relationships of the source lookup to the target lookup.
+     *
+     * @param source the lookup to copy relationships from
+     * @param target the lookup to copy relationships to
+     * @return <tt>true</tt> if lookups were copied
+     */
+    private boolean copyRelationships(Lookup source, Lookup target) {
+        boolean result = false;
+        if (!source.getLookupRelationships().isEmpty()) {
+            IMObjectCopier copier = new IMObjectCopier(new LookupRelationshipCopyHandler());
+
+            IMObjectReference targetRef = target.getObjectReference();
+            for (LookupRelationship relationship : source.getSourceLookupRelationships()) {
+                LookupRelationship copy = copyRelationship(copier, relationship);
+                copy.setSource(targetRef);
+                target.addLookupRelationship(copy);
+            }
+
+            for (LookupRelationship relationship : source.getTargetLookupRelationships()) {
+                LookupRelationship copy = copyRelationship(copier, relationship);
+                copy.setTarget(targetRef);
+                target.addLookupRelationship(copy);
+            }
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Copies a relationship.
+     *
+     * @param copier       the copier
+     * @param relationship the relationship to copy
+     * @return a copy of the relationship
+     */
+    private LookupRelationship copyRelationship(IMObjectCopier copier, LookupRelationship relationship) {
+        List<IMObject> list = copier.apply(relationship);
+        if (list.size() != 1) {
+            throw new IllegalStateException("Expected 1 object from LookupRelationshipCopyHandler, got: "
+                                            + list.size());
+        }
+        if (!(list.get(0) instanceof LookupRelationship)) {
+            throw new IllegalStateException("Got a " + list.get(0).getClass().getName()
+                                            + " instead of a LookupRelationship");
+        }
+        return (LookupRelationship) list.get(0);
+    }
+
+    /**
+     * An {@link IMObjectCopyHandler} for copying {@link LookupRelationship}s.
+     * This copies the relationship, and references the existing source and target
+     * objects.
+     */
+    private static class LookupRelationshipCopyHandler extends MappingCopyHandler {
+
+        /**
+         * Constructs a <tt>LookupRelationshipCopyHandler</tt>.
+         */
+        public LookupRelationshipCopyHandler() {
+            setCopy(LookupRelationship.class);
+            setDefaultTreatment(Treatment.REFERENCE);
+        }
     }
 
     private class LookupDeletorListener extends AbstractIMObjectDeletionListener<Lookup> {
