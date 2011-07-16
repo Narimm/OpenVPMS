@@ -53,6 +53,7 @@ import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -357,16 +358,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateReminders(product);
 
         // update the layout if nodes require filtering
-        NodeFilter currentFilter = getFilter();
-        IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
-        NodeFilter expectedFilter = getFilterForProduct(productRef);
-        if (!ObjectUtils.equals(currentFilter, expectedFilter)) {
-            changeLayout(expectedFilter);
-            if (patientActPopups == 0) {
-                // no current popups, so move focus to the product
-                moveFocusToProduct();
-            }
-        }
+        updateLayout(product);
 
         Property discount = getProperty("discount");
         discount.setValue(BigDecimal.ZERO);
@@ -592,6 +584,31 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                         queuePatientActEditor(editor, true, reminders);
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Invoked when the product changes to update the layout, if required.
+     *
+     * @param product the product. May be <tt>null</tt>
+     */
+    private void updateLayout(Product product) {
+        NodeFilter currentFilter = getFilter();
+        IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
+        NodeFilter expectedFilter = getFilterForProduct(productRef);
+        if (!ObjectUtils.equals(currentFilter, expectedFilter)) {
+            Component popupFocus = null;
+            if (patientActPopups != 0) {
+                popupFocus = FocusHelper.getFocus();
+            }
+            changeLayout(expectedFilter);  // this can move the focus away from the popups, if any
+            if (patientActPopups == 0) {
+                // no current popups, so move focus to the product
+                moveFocusToProduct();
+            } else {
+                // move the focus back to the popup
+                FocusHelper.setFocus(popupFocus);
             }
         }
     }
