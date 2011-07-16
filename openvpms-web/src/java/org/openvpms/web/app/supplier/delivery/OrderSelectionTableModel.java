@@ -20,15 +20,14 @@ package org.openvpms.web.app.supplier.delivery;
 
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
@@ -47,18 +46,49 @@ import java.util.List;
 public class OrderSelectionTableModel
         extends DescriptorTableModel<FinancialAct> {
 
-    private int selectedIndex;
+    /**
+     * Listener for order/order item selection events
+     */
+    public interface OrderSelectionListener {
 
-    private int startTimeIndex;
-
-    private int titleIndex;
-
-    private List<CheckBox> selected = new ArrayList<CheckBox>();
-
-    private ActionListener listener;
+        /**
+         * Invoked when an order/order item is selected or deselected.
+         *
+         * @param act      the order/order item
+         * @param row      the selected row
+         * @param selected if <tt>true</tt> indicates the act was selected; if <tt>false</tt> indicates deselection
+         */
+        void onSelected(FinancialAct act, int row, boolean selected);
+    }
 
     /**
-     * Creates a new <tt>OrderSelectionTableModel</tt>.
+     * The selected column index.
+     */
+    private int selectedIndex;
+
+    /**
+     * The start time column index.
+     */
+    private int startTimeIndex;
+
+    /**
+     * The title column index.
+     */
+    private int titleIndex;
+
+    /**
+     * Selection check boxes.
+     */
+    private List<CheckBox> selected = new ArrayList<CheckBox>();
+
+    /**
+     * The selection listener.
+     */
+    private OrderSelectionListener listener;
+
+
+    /**
+     * Constructs an <tt>OrderSelectionTableModel</tt>.
      */
     public OrderSelectionTableModel() {
         super(new String[]{"act.supplierOrderItem"});
@@ -79,12 +109,13 @@ public class OrderSelectionTableModel
     }
 
     /**
-     * Selects an act.
+     * Selects/deselects an act.
      *
-     * @param index the row of the object to select
+     * @param index    the row of the object to select
+     * @param selected if <tt>true</tt>, select the act, otherwise deselect it
      */
-    public void setSelected(int index) {
-        selected.get(index).setSelected(true);
+    public void setSelected(int index, boolean selected) {
+        this.selected.get(index).setSelected(selected);
     }
 
     /**
@@ -119,7 +150,7 @@ public class OrderSelectionTableModel
      *
      * @param listener the listener. May be <tt>null</tt>
      */
-    public void setSelectionListener(ActionListener listener) {
+    public void setSelectionListener(OrderSelectionListener listener) {
         this.listener = listener;
     }
 
@@ -131,8 +162,7 @@ public class OrderSelectionTableModel
      * @param row    the table row
      */
     @Override
-    protected Object getValue(FinancialAct object, TableColumn column,
-                              final int row) {
+    protected Object getValue(FinancialAct object, TableColumn column, final int row) {
         if (column.getModelIndex() == selectedIndex) {
             return selected.get(row);
         }
@@ -148,8 +178,7 @@ public class OrderSelectionTableModel
      * @return the value for the column
      */
     @Override
-    protected Object getValue(FinancialAct object,
-                              DescriptorTableColumn column, int row) {
+    protected Object getValue(FinancialAct object, DescriptorTableColumn column, int row) {
         Object result = null;
         int index = column.getModelIndex();
         boolean orderColumn = (index == startTimeIndex || index == titleIndex);
@@ -186,8 +215,7 @@ public class OrderSelectionTableModel
      * @return a new column model
      */
     @Override
-    protected TableColumnModel createColumnModel(
-            List<ArchetypeDescriptor> archetypes, LayoutContext context) {
+    protected TableColumnModel createColumnModel(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
         TableColumnModel model = super.createColumnModel(archetypes, context);
         TableColumn selected = new TableColumn(getNextModelIndex(model));
         selectedIndex = selected.getModelIndex();
@@ -208,25 +236,19 @@ public class OrderSelectionTableModel
         return model;
     }
 
-    private void onSelected(ActionEvent event, int row, boolean selected) {
-        List<FinancialAct> acts = getObjects();
-        Act act = acts.get(row);
-        if (TypeHelper.isA(act, "act.supplierOrder")) {
-            ++row;
-            while (row < acts.size()) {
-                Act next = acts.get(row);
-                if (TypeHelper.isA(next, "act.supplierOrder")) {
-                    break;
-                } else {
-                    CheckBox box = this.selected.get(row);
-                    box.setSelected(selected);
-                }
-                ++row;
-            }
-        }
+    /**
+     * Invoked when a checkbox is selected.
+     *
+     * @param row      the row
+     * @param selected indicates if the checkbox was selected or deselected
+     */
+    private void onSelected(int row, boolean selected) {
         if (listener != null) {
-            listener.actionPerformed(event);
+            List<FinancialAct> acts = getObjects();
+            FinancialAct act = acts.get(row);
+            listener.onSelected(act, row, selected);
         }
+
     }
 
     private class Toggle extends CheckBox {
@@ -234,7 +256,7 @@ public class OrderSelectionTableModel
         public Toggle(final int row) {
             addActionListener(new ActionListener() {
                 public void onAction(ActionEvent e) {
-                    onSelected(e, row, isSelected());
+                    onSelected(row, isSelected());
                 }
             });
         }
