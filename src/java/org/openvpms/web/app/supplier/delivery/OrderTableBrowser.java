@@ -20,6 +20,7 @@ package org.openvpms.web.app.supplier.delivery;
 
 import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -28,6 +29,7 @@ import org.openvpms.web.component.im.act.ActHierarchyFilter;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
@@ -35,8 +37,12 @@ import org.openvpms.web.component.im.table.PagedIMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -151,31 +157,78 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
 
     /**
      * A paged table model that tracks order selections.
+     * <p/>
+     * NOTE: this must always be supplied with a result set that guarantees to return the same objects when iterated
+     * over multiple times, to ensure internal state consistency.
      */
-    private static class PagedModel
-            extends PagedIMObjectTableModel<FinancialAct> {
-
-        private Set<FinancialAct> selections = new HashSet<FinancialAct>();
+    private static class PagedModel extends PagedIMObjectTableModel<FinancialAct> {
 
         /**
-         * Construct a new <tt>PagedModel</tt>.
+         * The orders.
+         */
+        private List<Order> orders = new ArrayList<Order>();
+
+        /**
+         * Map of acts to their corresponding orders.
+         */
+        private Map<FinancialAct, Order> actsToOrders = new HashMap<FinancialAct, Order>();
+
+        /**
+         * Constructs a <tt>PagedModel</tt>.
          *
          * @param model the underlying table model
          */
         public PagedModel(OrderSelectionTableModel model) {
             super(model);
+            model.setSelectionListener(new OrderSelectionTableModel.OrderSelectionListener() {
+                public void onSelected(FinancialAct act, int row, boolean selected) {
+                    PagedModel.this.onSelected(act, selected);
+                }
+            });
         }
 
         /**
-         * Returns the selected orders.
+         * Sets the result set.
          *
-         * @return the selected orders
+         * @param set the result set
+         */
+        @Override
+        public void setResultSet(ResultSet<FinancialAct> set) {
+            orders.clear();
+            actsToOrders.clear();
+            ResultSetIterator<FinancialAct> iter = new ResultSetIterator<FinancialAct>(set);
+            Order order = null;
+            while (iter.hasNext()) {
+                FinancialAct act = iter.next();
+                if (TypeHelper.isA(act, SupplierArchetypes.ORDER)) {
+                    order = new Order();
+                    orders.add(order);
+                } else {
+                    if (order == null) {
+                        throw new IllegalStateException("Order item without associated order");
+                    }
+                    order.addItem(act);
+                }
+                actsToOrders.put(act, order);
+            }
+            super.setResultSet(set);
+        }
+
+        /**
+         * Returns the selected order items.
+         *
+         * @return the selected order items
          */
         public Set<FinancialAct> getSelections() {
-            OrderSelectionTableModel model
-                    = (OrderSelectionTableModel) getModel();
-            updateSelections(model);
-            return selections;
+            Set<FinancialAct> result = new HashSet<FinancialAct>();
+            for (Order order : orders) {
+                for (FinancialAct item : order.getItems()) {
+                    if (order.isSelected(item)) {
+                        result.add(item);
+                    }
+                }
+            }
+            return result;
         }
 
         /**
@@ -185,29 +238,118 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
          */
         @Override
         protected void setPage(List<FinancialAct> objects) {
-            OrderSelectionTableModel model
-                    = (OrderSelectionTableModel) getModel();
-            updateSelections(model);
+            OrderSelectionTableModel model = (OrderSelectionTableModel) getModel();
             super.setPage(objects);
             for (int i = 0; i < objects.size(); ++i) {
-                if (selections.contains(objects.get(i))) {
-                    model.setSelected(i);
+                FinancialAct act = objects.get(i);
+                Order order = actsToOrders.get(act);
+                if (order != null) {
+                    if (TypeHelper.isA(act, SupplierArchetypes.ORDER) && order.isSelected()) {
+                        model.setSelected(i, true);
+                    } else if (order.isSelected(act)) {
+                        model.setSelected(i, true);
+                    }
                 }
             }
         }
 
         /**
-         * Updates selections from the model.
+         * Invoked when an act is selected/deselected.
          *
-         * @param model the model
+         * @param act the act
+         * @param selected if <tt>true</tt> indicates the act was selected; if <tt>false</tt> indicates deselection
          */
-        private void updateSelections(OrderSelectionTableModel model) {
-            List<FinancialAct> selected = model.getSelected();
-            List<FinancialAct> unselected
-                    = new ArrayList<FinancialAct>(model.getObjects());
-            unselected.removeAll(selected);
-            selections.addAll(selected);
-            selections.removeAll(unselected);
+        private void onSelected(FinancialAct act, boolean selected) {
+            OrderSelectionTableModel model = (OrderSelectionTableModel) getModel();
+            Order order = actsToOrders.get(act);
+            if (TypeHelper.isA(act, SupplierArchetypes.ORDER)) {
+                order.setSelected(selected);
+                for (FinancialAct item : order.getItems()) {
+                    order.setSelected(item, selected);
+                    int index = model.getObjects().indexOf(item);
+                    if (index != -1) {
+                        model.setSelected(index, selected);
+                    }
+                }
+            } else {
+                order.setSelected(act, selected);
+            }
+        }
+
+        /**
+         * Tracks the selection state of an order and its items.
+         */
+        private static class Order {
+
+            /**
+             * Determines if the order is selected.
+             */
+            private boolean selected;
+
+            /**
+             * The order items, and their selection status.
+             */
+            private Map<FinancialAct, Boolean> items = new LinkedHashMap<FinancialAct, Boolean>();
+
+            /**
+             * Adds an order item.
+             *
+             * @param item the order item
+             */
+            public void addItem(FinancialAct item) {
+                setSelected(item, false);
+            }
+
+            /**
+             * Flags the order as selected/deselected. All of the items selection statuses are updated.
+             *
+             * @param selected if <tt>true</tt> selects the order and its items, otherwise deselects them
+             */
+            public void setSelected(boolean selected) {
+                this.selected = selected;
+                for (FinancialAct item : getItems()) {
+                    setSelected(item, selected);
+                }
+            }
+
+            /**
+             * Determines if the order is selected.
+             *
+             * @return <tt>true</tt> if the order is selected
+             */
+            public boolean isSelected() {
+                return selected;
+            }
+
+            /**
+             * Flags an order item as selected/deselected.
+             *
+             * @param item the order item
+             * @param selected if <tt>true</tt> selects the items, otherwise deselects it
+             */
+            public void setSelected(FinancialAct item, boolean selected) {
+                items.put(item, selected);
+            }
+
+            /**
+             * Determines if an order item is selected.
+             *
+             * @param item the order item
+             * @return <tt>true</tt> if the order item is selected
+             */
+            public boolean isSelected(FinancialAct item) {
+                Boolean result = items.get(item);
+                return result != null ? result : false;
+            }
+
+            /**
+             * Returns the order items.
+             *
+             * @return the order items
+             */
+            public Collection<FinancialAct> getItems() {
+                return items.keySet();
+            }
         }
 
     }
@@ -241,8 +383,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
          * @return <tt>true</tt> if there are child acts
          */
         @Override
-        protected boolean include(FinancialAct parent,
-                                  List<FinancialAct> children) {
+        protected boolean include(FinancialAct parent, List<FinancialAct> children) {
             return !children.isEmpty();
         }
 
@@ -256,8 +397,8 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         protected boolean include(FinancialAct child, FinancialAct parent) {
             DeliveryStatus status = rules.getDeliveryStatus(child);
             return (delivery)
-                    ? status != DeliveryStatus.FULL
-                    : status == DeliveryStatus.FULL;
+                   ? status != DeliveryStatus.FULL
+                   : status == DeliveryStatus.FULL;
         }
     }
 }
