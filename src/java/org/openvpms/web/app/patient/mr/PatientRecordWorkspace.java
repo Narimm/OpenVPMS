@@ -277,16 +277,39 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
             List<Act> list = getBrowser().getObjects();
             int index = list.indexOf(object);
             if (index != -1 && list.size() > 1) {
-                // select another object. If there is one after the object being deleted, select that, else select
-                // the one before it
-                if (index + 1 < list.size()) {
-                    ++index;
+                if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
+                    // select the next event, if any
+                    int newIndex = -1;
+                    for (int i = index + 1; i < list.size(); ++i) {
+                        if (TypeHelper.isA(list.get(i), PatientArchetypes.CLINICAL_EVENT)) {
+                            newIndex = i;
+                            break;
+                        }
+                    }
+                    if (newIndex == -1) {
+                        // select the previous event, if any
+                        for (int i = index - 1; i >= 0; --i) {
+                            if (TypeHelper.isA(list.get(i), PatientArchetypes.CLINICAL_EVENT)) {
+                                newIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    index = newIndex;
                 } else {
-                    --index;
+                    // select another object. If there is one after the object being deleted, select that, else select
+                    // the one before it
+                    if (index + 1 < list.size()) {
+                        ++index;
+                    } else {
+                        --index;
+                    }
                 }
-                Act select = list.get(index);
-                ((SummaryCRUDWindow) window).setEvent(getEvent(select));
-                getBrowser().setSelected(select);
+                if (index != -1) {
+                    Act select = list.get(index);
+                    ((SummaryCRUDWindow) window).setEvent(getEvent(select));
+                    getBrowser().setSelected(select);
+                }
             }
         }
         super.onDeleted(object);
