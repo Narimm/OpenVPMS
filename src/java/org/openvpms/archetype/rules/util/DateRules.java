@@ -110,6 +110,32 @@ public class DateRules {
     }
 
     /**
+     * Helper to compare two dates.
+     * <p/>
+     * This is functionally equivalent to the {@link Date#compareTo(Date)}
+     * method, except that it doesn't throw <tt>ClassCastExceptions</tt>
+     * if <tt>lhs</tt> is an instance of a {@link Timestamp Timestamp} and
+     * <tt>rhs</tt> isn't.
+     * <p/>
+     * For timestamps, the nanoseconds are ignored.
+     *
+     * @param lhs the date
+     * @param rhs the date to compare with
+     * @param ignoreMillis if <tt>true</tt>, ignore milliseconds
+     * @return <tt>0</tt> if the <tt>lhs</tt> is equal to <tt>rhs</tt>;
+     *         a value less than <tt>0</tt> if <tt>lhs</tt> is before
+     *         <tt>rhs</tt>; and a value greater than
+     *         <tt>0</tt> if <tt>lhs</tt> is after <tt>rhs</tt>.
+     */
+    public static int compareTo(Date lhs, Date rhs, boolean ignoreMillis) {
+        if (ignoreMillis) {
+            lhs = DateUtils.truncate(lhs, Calendar.SECOND);
+            rhs = DateUtils.truncate(rhs, Calendar.SECOND);
+        }
+        return compareTo(lhs, rhs);
+    }
+
+    /**
      * Determines if two date ranges intersect.
      *
      * @param from1 the start of the first date range
@@ -125,5 +151,17 @@ public class DateRules {
         return (f1f2 < 0 && compareTo(to1, from2) > 0)
                 || (compareTo(from1, to2) < 0 && t1t2 > 0)
                 || (f1f2 >= 0 && t1t2 <= 0);
+    }
+
+    /**
+     * Determines if a date falls between two dates.
+     *
+     * @param date the date to compare
+     * @param lowerBound the lower bound
+     * @param upperBound the upper bound
+     * @return <tt>true</tt> if the date falls between the lower and upper bounds, otherwise <tt>false</tt>
+     */
+    public static boolean between(Date date, Date lowerBound, Date upperBound) {
+        return (compareTo(date, lowerBound) >= 0 && compareTo(date, upperBound) <= 0);
     }
 }
