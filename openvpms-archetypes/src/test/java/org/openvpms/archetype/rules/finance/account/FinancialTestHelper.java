@@ -375,6 +375,28 @@ public class FinancialTestHelper extends TestHelper {
     }
 
     /**
+     * Helper to create a charge item.
+     *
+     * @param itemShortName the charge item short name
+     * @param amount        the amount
+     * @param patient       the patient. May be <tt>null</tt>
+     * @param product       the product. May be <tt>null</tt>
+     * @return a new charge item
+     */
+    public static FinancialAct createItem(String itemShortName, Money amount, Party patient, Product product) {
+        FinancialAct item = (FinancialAct) create(itemShortName);
+        item.setUnitAmount(amount);
+        ActBean itemBean = new ActBean(item);
+        if (patient != null) {
+            itemBean.addParticipation("participation.patient", patient);
+        }
+        if (product != null) {
+            itemBean.addParticipation("participation.product", product);
+        }
+        return item;
+    }
+
+    /**
      * Helper to create and save a new <em>lookup.customerAccountType</em>
      * classification.
      *
@@ -470,15 +492,7 @@ public class FinancialTestHelper extends TestHelper {
             Party patient, Product product, String status) {
         FinancialAct act = createAct(shortName, amount, customer, status);
         ActBean bean = new ActBean(act);
-        FinancialAct item = (FinancialAct) create(itemShortName);
-        item.setUnitAmount(amount);
-        ActBean itemBean = new ActBean(item);
-        if (patient != null) {
-            itemBean.addParticipation("participation.patient", patient);
-        }
-        if (product != null) {
-            itemBean.addParticipation("participation.product", product);
-        }
+        FinancialAct item = createItem(itemShortName, amount, patient, product);
         bean.addRelationship(relationshipShortName, item);
         return Arrays.asList(act, item);
     }

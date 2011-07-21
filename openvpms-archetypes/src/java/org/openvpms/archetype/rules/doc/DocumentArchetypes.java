@@ -42,7 +42,13 @@ public class DocumentArchetypes {
     public static final String DOCUMENT_TEMPLATE_ACT = "act.documentTemplate";
 
     /**
+     * Document template participation.
+     */
+    public static final String DOCUMENT_TEMPLATE_PARTICIPATION = "participation.documentTemplate";
+
+    /**
      * The default document archetype.
      */
     public static final String DEFAULT_DOCUMENT = "document.other";
+
 }
