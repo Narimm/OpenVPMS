@@ -18,7 +18,7 @@
 
 package org.openvpms.web.app.supplier.order;
 
-import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -47,14 +47,14 @@ import java.math.BigDecimal;
 public class OrderItemEditor extends SupplierStockItemEditor {
 
     /**
-     * Determines if the act was posted at construction. If so, only a limited
+     * Determines if the act was POSTED or ACCEPTED at construction. If so, only a limited
      * set of properties may be edited.
      */
-    private final boolean posted;
+    private final boolean postedOrAccepted;
 
 
     /**
-     * Construct a new <tt>OrderItemEditor</tt>.
+     * Constructs an <tt>OrderItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
@@ -68,9 +68,10 @@ public class OrderItemEditor extends SupplierStockItemEditor {
                     "Invalid act type: " + act.getArchetypeId().getShortName());
         }
         if (parent != null) {
-            posted = ActStatus.POSTED.equals(parent.getStatus());
+            String status = parent.getStatus();
+            postedOrAccepted = OrderStatus.POSTED.equals(status) || OrderStatus.ACCEPTED.equals(status);
         } else {
-            posted = false;
+            postedOrAccepted = false;
         }
     }
 
@@ -122,10 +123,9 @@ public class OrderItemEditor extends SupplierStockItemEditor {
             protected ComponentState createComponent(Property property,
                                                      IMObject parent,
                                                      LayoutContext context) {
-                if (posted) {
+                if (postedOrAccepted) {
                     String name = property.getName();
-                    if (!name.equals("status")
-                            && !name.equals("cancelledQuantity")) {
+                    if (!name.equals("status") && !name.equals("cancelledQuantity")) {
                         property = new DelegatingProperty(property) {
                             @Override
                             public boolean isReadOnly() {

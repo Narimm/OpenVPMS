@@ -55,10 +55,16 @@ import java.util.List;
 public class OrderEditor extends FinancialActEditor {
 
     /**
-     * Determines if the act was posted at construction. If so, only a limited
+     * Determines if the act was POSTED at construction. If so, only a limited
      * set of properties may be edited.
      */
     private final boolean posted;
+
+    /**
+     * Determines if the act was ACCEPTED at construction. If so, only a limited
+     * set of properties may be edited.
+     */
+    private final boolean accepted;
 
     /**
      * Order business rules.
@@ -85,7 +91,8 @@ public class OrderEditor extends FinancialActEditor {
             throw new IllegalArgumentException(
                     "Invalid act type: " + act.getArchetypeId().getShortName());
         }
-        posted = OrderStatus.POSTED.equals(act.getStatus()) || OrderStatus.ACCEPTED.equals(act.getStatus());
+        posted = OrderStatus.POSTED.equals(act.getStatus());
+        accepted = OrderStatus.ACCEPTED.equals(act.getStatus());
         rules = new OrderRules();
     }
 
@@ -148,7 +155,7 @@ public class OrderEditor extends FinancialActEditor {
          */
         public LayoutStrategy(IMObjectCollectionEditor editor) {
             super(editor);
-            if (posted) {
+            if (posted || accepted) {
                 editor.setCardinalityReadOnly(true);
             }
         }
@@ -162,14 +169,15 @@ public class OrderEditor extends FinancialActEditor {
                 property = createReadOnly(property);
                 state = super.createComponent(property, parent, context);
                 deliveryStatusField = (TextComponent) state.getComponent();
-            } else if (posted) {
+            } else if (posted || accepted) {
                 if (property.getName().equals("status")) {
-                    LookupQuery query = new NodeLookupQuery(
-                            parent, property.getDescriptor());
-                    query = new LookupFilter(query, true, "POSTED",
-                                             "CANCELLED");
-                    LookupField field = LookupFieldFactory.create(property,
-                                                                  query);
+                    LookupQuery query = new NodeLookupQuery(parent, property.getDescriptor());
+                    if (posted) {
+                        query = new LookupFilter(query, true, OrderStatus.POSTED, OrderStatus.CANCELLED);
+                    } else {
+                        query = new LookupFilter(query, true, OrderStatus.ACCEPTED, OrderStatus.CANCELLED);
+                    }
+                    LookupField field = LookupFieldFactory.create(property, query);
                     state = new ComponentState(field, property);
                 } else {
                     // all other properties are read-only

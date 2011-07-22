@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
+import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -101,7 +102,8 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             FinancialAct object = getObject();
             editEnabled = canEdit(object);
             String status = object.getStatus();
-            deletePostEnabled = !ActStatus.POSTED.equals(status) && !ActStatus.CANCELLED.equals(status);
+            deletePostEnabled = !OrderStatus.POSTED.equals(status) && !OrderStatus.ACCEPTED.equals(status)
+                                && !OrderStatus.CANCELLED.equals(status);
         }
         buttons.setEnabled(EDIT_ID, editEnabled);
         buttons.setEnabled(DELETE_ID, deletePostEnabled);
