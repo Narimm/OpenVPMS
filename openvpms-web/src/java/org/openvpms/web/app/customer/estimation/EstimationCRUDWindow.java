@@ -30,7 +30,7 @@ import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
-import org.openvpms.web.app.customer.charge.CustomerInvoiceEditDialog;
+import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -192,7 +192,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         rules = new EstimationRules();
         try {
             EstimationInvoicer invoicer = new EstimationInvoicer();
-            CustomerInvoiceEditDialog editor = invoicer.invoice(estimation);
+            CustomerChargeActEditDialog editor = invoicer.invoice(estimation);
             if (editor != null) {
                 editor.addWindowPaneListener(new WindowPaneListener() {
                     public void onClose(WindowPaneEvent event) {

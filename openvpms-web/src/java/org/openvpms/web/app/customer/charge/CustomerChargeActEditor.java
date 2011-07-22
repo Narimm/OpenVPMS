@@ -19,17 +19,18 @@
 package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -41,7 +42,6 @@ import org.openvpms.web.system.ServiceHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,41 +101,6 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
-     * Helper to ensure that clinical events exist for each referenced patient.
-     * <p/>
-     * This is a workaround for OVPMS-823.
-     *
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-     *          for any archetype service error
-     */
-    public void createClinicalEvents() {
-        MedicalRecordRules rules = new MedicalRecordRules();
-        ActRelationshipCollectionEditor editor = getEditor();
-        ActBean bean = new ActBean((Act) getObject());
-        Entity defaultClinician = bean.getNodeParticipant("clinician");
-        if (defaultClinician == null) {
-            defaultClinician = getLayoutContext().getContext().getClinician();
-        }
-        for (Act act : editor.getCurrentActs()) {
-            ActBean item = new ActBean(act);
-            if (needsEvent(item)) {
-                Party patient = (Party) item.getNodeParticipant("patient");
-                if (patient != null) {
-                    Entity clinician = item.getNodeParticipant("clinician");
-                    if (clinician == null) {
-                        clinician = defaultClinician;
-                    }
-                    Date startTime = act.getActivityStartTime();
-                    Act event = rules.getEventForAddition(patient, startTime, clinician);
-                    if (event.isNew()) {
-                        ServiceHelper.getArchetypeService().save(event);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Returns any unprinted documents that are flagged for immediate printing.
      *
      * @return the list of unprinted documents
@@ -163,14 +128,16 @@ public class CustomerChargeActEditor extends FinancialActEditor {
                 IMObjectReference target = rel.getTarget();
                 if (target != null && !excludeRefs.contains(target)) {
                     Act document = (Act) IMObjectHelper.getObject(target);
-                    ActBean documentBean = new ActBean(document);
-                    if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
-                        Entity entity = documentBean.getNodeParticipant("documentTemplate");
-                        if (entity != null) {
-                            DocumentTemplate template = new DocumentTemplate(entity,
-                                                                             ServiceHelper.getArchetypeService());
-                            if (template.getPrintMode() == DocumentTemplate.PrintMode.IMMEDIATE) {
-                                result.add(document);
+                    if (document != null) {
+                        ActBean documentBean = new ActBean(document);
+                        if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
+                            Entity entity = documentBean.getNodeParticipant("documentTemplate");
+                            if (entity != null) {
+                                DocumentTemplate template = new DocumentTemplate(entity,
+                                                                                 ServiceHelper.getArchetypeService());
+                                if (template.getPrintMode() == DocumentTemplate.PrintMode.IMMEDIATE) {
+                                    result.add(document);
+                                }
                             }
                         }
                     }
@@ -198,6 +165,36 @@ public class CustomerChargeActEditor extends FinancialActEditor {
             getFocusGroup().setDefault(result.getFocusGroup().getDefaultFocus());
         }
         return result;
+    }
+
+    /**
+     * Save any edits.
+     * <p/>
+     * This links items to their corresponding clinical events, creating events as required, and marks matching
+     * reminders completed.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        List<Act> reminders = getNewReminders();
+        boolean saved = super.doSave();
+        if (saved) {
+            // link the items to their corresponding clinical events
+            ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
+            List<FinancialAct> items = new ArrayList<FinancialAct>();
+            for (Act act : getEditor().getActs()) {
+                items.add((FinancialAct) act);
+            }
+            linker.link(items);
+
+            // mark reminders that match the new reminders completed
+            if (!reminders.isEmpty()) {
+                ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService());
+                rules.markMatchingRemindersCompleted(reminders);
+            }
+        }
+        return super.doSave();
     }
 
     /**
@@ -267,15 +264,24 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
-     * Determines if an item needs an <em>act.patientClinicalEvent</em>.
+     * Returns new reminders from each of the charge items.
      *
-     * @param item the item
-     * @return <tt>true</tt> if the item needs an event, otherwise <tt>false</tt>
+     * @return a list of new reminders
      */
-    private boolean needsEvent(ActBean item) {
-        return !item.getValues("dispensing").isEmpty()
-               || !item.getValues("investigations").isEmpty()
-               || !item.getValues("documents").isEmpty();
+    private List<Act> getNewReminders() {
+        ActRelationshipCollectionEditor items = getEditor();
+        List<Act> reminders = new ArrayList<Act>();
+        for (IMObjectEditor editor : items.getCurrentEditors()) {
+            if (editor instanceof CustomerChargeActItemEditor) {
+                CustomerChargeActItemEditor charge = (CustomerChargeActItemEditor) editor;
+                for (Act reminder : charge.getReminders()) {
+                    if (reminder.isNew()) {
+                        reminders.add(reminder);
+                    }
+                }
+            }
+        }
+        return reminders;
     }
 
 }

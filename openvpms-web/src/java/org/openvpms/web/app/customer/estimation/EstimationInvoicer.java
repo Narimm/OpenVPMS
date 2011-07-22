@@ -24,9 +24,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
-import org.openvpms.web.app.customer.charge.CustomerInvoiceEditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -65,7 +65,7 @@ class EstimationInvoicer {
      * @return an editor for the invoice, or <tt>null</tt> if the editor cannot be created
      * @throws OpenVPMSException for any error
      */
-    public CustomerInvoiceEditDialog invoice(Act estimation) {
+    public CustomerChargeActEditDialog invoice(Act estimation) {
         FinancialAct invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
         if (invoice != null) {
             estimation.setStatus(EstimationActStatus.INVOICED);
@@ -95,7 +95,7 @@ class EstimationInvoicer {
         return null;
     }
 
-    private static class EditDialog extends CustomerInvoiceEditDialog {
+    private static class EditDialog extends CustomerChargeActEditDialog {
 
         /**
          * The estimation.
