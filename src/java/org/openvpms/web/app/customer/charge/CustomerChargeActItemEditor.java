@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -78,6 +79,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -270,6 +272,33 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     public void setMedicationManager(PatientActEditorManager manager) {
         patientActMgr = manager;
+    }
+
+    /**
+     * Returns the reminders.
+     *
+     * @return the reminders
+     */
+    public List<Act> getReminders() {
+        return (reminders != null) ? reminders.getCurrentActs() : Collections.<Act>emptyList();
+    }
+
+    /**
+     * Save any modified child Saveable instances.
+     * <p/>
+     * This implementation also creates/deletes document acts related to the document templates associated with the
+     * product, using {@link ChargeItemDocumentLinker}.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    @Override
+    protected boolean saveChildren() {
+        boolean saved = super.saveChildren();
+        if (saved) {
+            ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(ServiceHelper.getArchetypeService());
+            linker.link((FinancialAct) getObject());
+        }
+        return saved;
     }
 
     /**
