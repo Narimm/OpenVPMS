@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -25,7 +26,6 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -38,13 +38,13 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NamedQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -109,51 +109,62 @@ public class ReminderRules {
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/oror type as that in
-     * the supplied reminder to 'completed'.
+     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminders to 'completed'.
      * <p/>
-     * This only has effect if the reminder is new, and has 'in progress' status.
+     * This only has effect if the reminders have 'in progress' status.
+     * <p/>
+     * This method should be used in preference to {@link #markMatchingRemindersCompleted(Act)} if multiple reminders
+     * are being saved which may contain duplicates. The former won't mark duplicates completed if they are all saved
+     * within the same transaction.
+     * <p/>
+     * Reminders are processed in the order they appear in the list. If later reminders match earlier ones, the later
+     * ones will be marked 'completed'.
      *
-     * @param reminder the reminder
+     * @param reminders the reminders
      * @throws ArchetypeServiceException for any archetype service exception
      */
-    public void markMatchingRemindersCompleted(Act reminder) {
-        if (reminder.isNew() && ReminderStatus.IN_PROGRESS.equals(reminder.getStatus())) {
-            ActBean bean = new ActBean(reminder, service);
-            Entity reminderType = bean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
-            Party patient = (Party) bean.getParticipant(
-                    "participation.patient");
-            if (reminderType != null && patient != null) {
-                markMatchingRemindersCompleted(patient, reminderType);
+    public void markMatchingRemindersCompleted(List<Act> reminders) {
+        if (!reminders.isEmpty()) {
+            reminders = new ArrayList<Act>(reminders);  // copy it so it can be modified
+            while (!reminders.isEmpty()) {
+                Act reminder = reminders.remove(0);
+                if (ReminderStatus.IN_PROGRESS.equals(reminder.getStatus())) {
+                    ActBean bean = new ActBean(reminder, service);
+                    ReminderType type = getReminderType(bean);
+                    IMObjectReference patient = bean.getNodeParticipantRef("patient");
+                    if (type != null && patient != null) {
+                        // compare this reminder with the others, to handle matching instances of these first
+                        for (Act other : reminders.toArray(new Act[reminders.size()])) {
+                            ActBean otherBean = new ActBean(other, service);
+                            if (ObjectUtils.equals(patient, otherBean.getNodeParticipantRef("patient"))
+                                && hasMatchingTypeOrGroup(other, type)) {
+                                markCompleted(other);
+                                reminders.remove(other);
+                            }
+                        }
+                    }
+                    // now mark any persistent matching reminders completed
+                    doMarkMatchingRemindersCompleted(reminder);
+                }
             }
         }
     }
 
     /**
-     * Sets any 'in progress' reminders that have the same patient and reminder
-     * group as that supplied to 'completed'.
+     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminder to 'completed'.
+     * <p/>
+     * This only has effect if the reminder is new and has 'in progress' status.
+     * <p/>
+     * This method is intended to be invoked just prior to a new reminder being saved.
      *
-     * @param patient      the patient
-     * @param reminderType the reminder type
+     * @param reminder the reminder
      * @throws ArchetypeServiceException for any archetype service exception
      */
-    @SuppressWarnings("unchecked")
-    public void markMatchingRemindersCompleted(Party patient, Entity reminderType) {
-        EntityBean bean = new EntityBean(reminderType);
-        List<IMObject> groups = bean.getValues("groups");
-        ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
-        query.add(new NodeConstraint("status", ReminderStatus.IN_PROGRESS));
-        IMObjectReference ref = patient.getObjectReference();
-        CollectionNodeConstraint participations = new CollectionNodeConstraint(
-                "patient", "participation.patient", false, true)
-                .add(new ObjectRefNodeConstraint("entity", ref));
-        query.add(participations);
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List acts = service.get(query).getResults();
-        for (Act act : (List<Act>) acts) {
-            if (hasMatchingTypeOrGroup(act, reminderType, groups)) {
-                markCompleted(act);
-            }
+    public void markMatchingRemindersCompleted(Act reminder) {
+        if (reminder.isNew()) {
+            doMarkMatchingRemindersCompleted(reminder);
         }
     }
 
@@ -191,7 +202,7 @@ public class ReminderRules {
     /**
      * Calculates the due date for a product reminder.
      *
-     * @param startTime the start time
+     * @param startTime    the start time
      * @param relationship the product reminder relationship
      * @return the due date for the reminder
      * @throws ArchetypeServiceException for any archetype service error
@@ -432,39 +443,23 @@ public class ReminderRules {
     }
 
     /**
-     * Sets a reminder's status to completed, and updates its completedDate
-     * to 'now' before saving it.
-     *
-     * @param reminder the reminder
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private void markCompleted(Act reminder) {
-        ActBean bean = new ActBean(reminder, service);
-        bean.setStatus(ReminderStatus.COMPLETED);
-        bean.setValue("completedDate", new Date());
-        bean.save();
-    }
-
-    /**
      * Determines if a reminder is associated with an <em>entity.reminderType</em> that is the same as that specified
      * or has one or more <em>lookup.reminderGroup</em> classifications the same as those specified.
      *
      * @param reminder     the reminder
      * @param reminderType the reminder type
-     * @param groups       the groups
      * @return <tt>true</tt> if the reminder has a matching type or group
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private boolean hasMatchingTypeOrGroup(Act reminder, Entity reminderType, List<IMObject> groups) {
+    protected boolean hasMatchingTypeOrGroup(Act reminder, ReminderType reminderType) {
         boolean result = false;
-        ActBean bean = new ActBean(reminder, service);
-        ReminderType otherType = getReminderType(bean);
+        ReminderType otherType = getReminderType(reminder);
         if (otherType != null) {
-            if (otherType.getEntity().equals(reminderType)) {
+            if (otherType.getEntity().equals(reminderType.getEntity())) {
                 result = true;
             } else {
-                EntityBean typeBean = new EntityBean(otherType.getEntity(), service);
-                for (IMObject group : typeBean.getValues("groups")) {
+                List<Lookup> groups = reminderType.getGroups();
+                for (Lookup group : otherType.getGroups()) {
                     if (groups.contains(group)) {
                         result = true;
                         break;
@@ -475,6 +470,85 @@ public class ReminderRules {
         return result;
     }
 
+    /**
+     * Returns the reminder type associated with an act.
+     *
+     * @param act the act
+     * @return the associated reminder type, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected ReminderType getReminderType(Act act) {
+        return getReminderType(new ActBean(act, service));
+    }
+
+    /**
+     * Returns the reminder type associated with an act.
+     *
+     * @param bean the act bean
+     * @return the associated reminder type, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected ReminderType getReminderType(ActBean bean) {
+        ReminderType reminderType = null;
+        if (reminderTypes != null) {
+            reminderType = reminderTypes.get(
+                    bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION));
+        } else {
+            Entity entity = bean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
+            if (entity != null) {
+                reminderType = new ReminderType(entity, service);
+            }
+        }
+        return reminderType;
+    }
+
+    /**
+     * Sets a reminder's status to completed, and updates its completedDate
+     * to 'now' before saving it.
+     *
+     * @param reminder the reminder
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected void markCompleted(Act reminder) {
+        ActBean bean = new ActBean(reminder, service);
+        bean.setStatus(ReminderStatus.COMPLETED);
+        bean.setValue("completedDate", new Date());
+        bean.save();
+    }
+
+    /**
+     * Sets any 'in progress' reminders that have the same patient and matching reminder group and/or type as that in
+     * the supplied reminder to 'completed'.
+     * <p/>
+     * This only has effect if the reminder has 'in progress' status.
+     *
+     * @param reminder the reminder
+     * @throws ArchetypeServiceException for any archetype service exception
+     */
+    private void doMarkMatchingRemindersCompleted(Act reminder) {
+        if (ReminderStatus.IN_PROGRESS.equals(reminder.getStatus())) {
+            ActBean bean = new ActBean(reminder, service);
+            ReminderType reminderType = getReminderType(bean);
+            IMObjectReference patient = bean.getNodeParticipantRef("patient");
+            if (reminderType != null && patient != null) {
+                ArchetypeQuery query = new ArchetypeQuery(ReminderArchetypes.REMINDER, false, true);
+                query.add(Constraints.eq("status", ReminderStatus.IN_PROGRESS));
+                query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
+                if (!reminder.isNew()) {
+                    query.add(Constraints.ne("id", reminder.getId()));
+                }
+                query.setMaxResults(ArchetypeQuery.ALL_RESULTS); // must query all, otherwise the iteration would change
+                IMObjectQueryIterator<Act> reminders = new IMObjectQueryIterator<Act>(service, query);
+                while (reminders.hasNext()) {
+                    Act act = reminders.next();
+                    if (hasMatchingTypeOrGroup(act, reminderType)) {
+                        markCompleted(act);
+                    }
+                }
+            }
+        }
+    }
+    
     /**
      * Helper to return a count from a named query.
      *
@@ -555,27 +629,6 @@ public class ReminderRules {
             result = fallback;
         }
         return result;
-    }
-
-    /**
-     * Returns the reminder type associated with an act.
-     *
-     * @param bean the act bean
-     * @return the associated reminder type, or <tt>null</tt> if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private ReminderType getReminderType(ActBean bean) {
-        ReminderType reminderType = null;
-        if (reminderTypes != null) {
-            reminderType = reminderTypes.get(
-                    bean.getParticipantRef(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION));
-        } else {
-            Entity entity = bean.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
-            if (entity != null) {
-                reminderType = new ReminderType(entity, service);
-            }
-        }
-        return reminderType;
     }
 
 }

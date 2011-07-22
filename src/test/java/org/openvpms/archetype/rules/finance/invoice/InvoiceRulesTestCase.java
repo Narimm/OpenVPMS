@@ -33,15 +33,14 @@ import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -51,7 +50,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -98,65 +96,6 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
-     * Verifies that <em>act.patientDocument*</em>s are associated with an invoice item when it is saved.
-     */
-    @Test
-    public void testSaveInvoiceItem() {
-        ActBean item = createInvoiceItem();
-        Product product = createProduct(true);
-        Act medication = createMedication(product);
-        item.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
-        item.addRelationship(CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP, medication);
-        save(medication, item.getAct());
-
-        // add investigation acts
-        List<Act> investigations = createInvestigationActs();
-        for (Act investigation : investigations) {
-            item.addRelationship(CustomerAccountArchetypes.INVESTIGATION_ITEM_RELATIONSHIP, investigation);
-            save(investigation);
-        }
-        save(item.getAct());
-        item = reload(item); // reload to ensure the item has saved correctly
-
-        Date startTime = item.getAct().getActivityStartTime();
-
-        // make sure a document has been added
-        List<Act> documents = item.getNodeActs("documents");
-        assertEquals(1, documents.size());
-        Act document = documents.get(0);
-        assertTrue(TypeHelper.isA(document, "act.patientDocumentForm"));
-
-        // verify the start time is the same as the invoice item start time
-        assertEquals(startTime, document.getActivityStartTime());
-
-        // check document participations
-        ActBean docBean = new ActBean(document);
-        assertEquals(patient, docBean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION));
-        assertEquals(template, docBean.getParticipant("participation.documentTemplate"));
-
-        // verify the investigation, dispensing and document acts have been added to the visit
-        MedicalRecordRules medRules = new MedicalRecordRules();
-        Act event = medRules.getEvent(patient, startTime);
-        assertNotNull(event);
-        ActBean eventBean = new ActBean(event);
-        for (Act investigation : investigations) {
-            assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, investigation));
-        }
-        assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, medication));
-        assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, document));
-
-        // change the product participation to one without documents.
-        // The invoice should no longer have any associated documents
-        item.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, createProduct(false));
-        item.save();
-
-        item = reload(item);
-
-        documents = item.getNodeActs("documents");
-        assertTrue(documents.isEmpty());
-    }
-
-    /**
      * Verifies that reminders that don't have status 'Completed' are removed
      * when an invoice item is deleted.
      */
@@ -172,13 +111,19 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
             item.addNodeRelationship("investigations", investigation);
             save(investigation);
         }
+
+        // add document acts
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
+        linker.link((FinancialAct) item.getAct());
+        item.save();
+
         // add a reminder
         Act reminder = createReminder();
         item.addNodeRelationship("reminders", reminder);
 
         save(item.getAct(), reminder);
 
-        item = reload(item); // reload to ensure the item has saved correctly
+        item = get(item); // reload to ensure the item has saved correctly
 
         List<Act> documents = item.getNodeActs("documents");
         assertEquals(1, documents.size());
@@ -219,12 +164,17 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         }
         save(investigations);
 
+        // add document acts
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
+        linker.link((FinancialAct) item.getAct());
+        item.save();
+
         // add a reminder
         Act reminder = createReminder();
         item.addNodeRelationship("reminders", reminder);
 
         save(item.getAct(), reminder);
-        item = reload(item); // reload to ensure the item has saved correctly
+        item = get(item); // reload to ensure the item has saved correctly
 
         List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
@@ -246,7 +196,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         document.setStatus(POSTED);
         save(document);
 
-        item = reload(item); // reload to ensure the item has saved correctly
+        item = get(item); // reload to ensure the item has saved correctly
 
         // remove the item and verify it can't be retrieved
         IMObjectReference actRef = item.getAct().getObjectReference();
@@ -282,13 +232,18 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         invoice.addNodeRelationship("items", item.getAct());
         save(item.getAct(), invoice.getAct());
 
+        // add document acts
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
+        linker.link((FinancialAct) item.getAct());
+        item.save();
+
         // add a reminder
         Act reminder = createReminder();
         item.addNodeRelationship("reminders", reminder);
 
         save(item.getAct(), reminder);
 
-        item = reload(item); // reload to ensure the item has saved correctly
+        item = get(item); // reload to ensure the item has saved correctly
 
         List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
@@ -335,13 +290,18 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         invoice.addNodeRelationship("items", item.getAct());
         save(item.getAct(), invoice.getAct());
 
+        // add document acts
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
+        linker.link((FinancialAct) item.getAct());
+        item.save();
+
         // add a reminder
         Act reminder = createReminder();
         item.addNodeRelationship("reminders", reminder);
 
         save(item.getAct(), reminder);
 
-        item = reload(item); // reload to ensure the item has saved correctly
+        item = get(item); // reload to ensure the item has saved correctly
 
         List<Act> reminders = item.getNodeActs("reminders");
         assertEquals(1, reminders.size());
@@ -421,7 +381,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     private ActBean createInvoice() {
-        Act act = createAct(CustomerAccountArchetypes.INVOICE);
+        Act act = (Act) create(CustomerAccountArchetypes.INVOICE);
         act.setStatus(IN_PROGRESS);
         ActBean bean = new ActBean(act);
         bean.addParticipation(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
@@ -436,7 +396,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     private ActBean createInvoiceItem() {
-        Act act = createAct(CustomerAccountArchetypes.INVOICE_ITEM);
+        Act act = (Act) create(CustomerAccountArchetypes.INVOICE_ITEM);
         ActBean bean = new ActBean(act);
         bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
         bean.addParticipation(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
@@ -463,18 +423,6 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     private Act createReminder() {
         Entity reminderType = ReminderTestHelper.createReminderType();
         return ReminderTestHelper.createReminderWithDueDate(patient, reminderType, new Date());
-    }
-
-    /**
-     * Helper to create a new act.
-     *
-     * @param shortName the act short name
-     * @return a new act
-     */
-    private Act createAct(String shortName) {
-        Act act = (Act) create(shortName);
-        assertNotNull(act);
-        return act;
     }
 
     /**
@@ -513,20 +461,6 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Creates a new <em>act.patientMedication</em>.
-     *
-     * @param product the product
-     * @return a new medication
-     */
-    private Act createMedication(Product product) {
-        Act act = createAct("act.patientMedication");
-        ActBean bean = new ActBean(act);
-        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        bean.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
-        return act;
-    }
-
-    /**
      * Creates <em>act.patientInvestigation</em> acts for each of the investigation types.
      *
      * @return a list of investigation acts
@@ -534,7 +468,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     private List<Act> createInvestigationActs() {
         List<Act> result = new ArrayList<Act>();
         for (Entity investigationType : investigationTypes) {
-            Act act = createAct(InvestigationArchetypes.PATIENT_INVESTIGATION);
+            Act act = (Act) create(InvestigationArchetypes.PATIENT_INVESTIGATION);
             ActBean bean = new ActBean(act);
             bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
             bean.addParticipation(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION, investigationType);
@@ -560,17 +494,6 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         product.addClassification(lookup);
         save(product);
         return product;
-    }
-
-    /**
-     * Helper to reload an act.
-     *
-     * @param bean the act bean
-     * @return the reloaded act
-     */
-    private ActBean reload(ActBean bean) {
-        Act act = (Act) get(bean.getAct().getObjectReference());
-        return new ActBean(act);
     }
 
 }
