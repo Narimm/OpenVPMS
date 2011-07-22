@@ -18,7 +18,9 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -35,8 +37,14 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 
@@ -109,6 +117,83 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         checkReminder(reminder5, ReminderStatus.COMPLETED);
         checkReminder(reminder6, ReminderStatus.IN_PROGRESS);
         checkReminder(reminder7, ReminderStatus.IN_PROGRESS);
+    }
+
+    /**
+     * Verifies that {@link ReminderRules#markMatchingRemindersCompleted(Act)} cannot mark matching reminders
+     * completed if they are saved within the same transaction.
+     * This is because the new reminders cannot be queried until the transaction completes.
+     * If this occurs, consider using {@link ReminderRules#markMatchingRemindersCompleted(List)}.
+     */
+    @Test
+    public void testMarkMatchingRemindersCompletedInTxn() {
+        Entity reminderType = ReminderTestHelper.createReminderType();
+
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+
+        // verify that when reminders are saved in different transactions, they are updated correctly
+        Act reminder1 = ReminderTestHelper.createReminder(patient1, reminderType);
+        Act reminder1dup = ReminderTestHelper.createReminder(patient1, reminderType);
+        save(reminder1dup);
+        save(reminder1);
+
+        checkReminder(reminder1dup, ReminderStatus.COMPLETED);
+        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
+
+        // verify that when reminders are saved in the same transaction, they don't update
+        Act reminder2 = ReminderTestHelper.createReminder(patient2, reminderType);
+        Act reminder2dup = ReminderTestHelper.createReminder(patient2, reminderType);
+
+        // save in same transaction. The rule won't be able to query the new acts
+        save(reminder2, reminder2dup);
+
+        // verify all acts (including duplicate) are in progress
+        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder2dup, ReminderStatus.IN_PROGRESS);
+
+        // now save reminder2 again. As it is no longer new, it shouldn't update reminder2dup
+        save(reminder2);
+        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder2dup, ReminderStatus.IN_PROGRESS);
+    }
+
+    /**
+     * Tests the {@link ReminderRules#markMatchingRemindersCompleted(List)} method.
+     */
+    @Test
+    public void testMarkMatchingRemindersCompletedForList() {
+        Entity reminderType = ReminderTestHelper.createReminderType();
+
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+
+        // create reminders for patient1 and patient2
+        Act reminder0 = ReminderTestHelper.createReminder(patient1, reminderType);
+        Act reminder1 = ReminderTestHelper.createReminder(patient2, reminderType);
+        save(reminder0, reminder1);
+        checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
+
+        Act reminder2 = ReminderTestHelper.createReminder(patient1, reminderType);
+        Act reminder3 = ReminderTestHelper.createReminder(patient2, reminderType);
+        Act reminder3dup = ReminderTestHelper.createReminder(patient2, reminderType); // duplicates reminder3
+        final List<Act> reminders = Arrays.asList(reminder2, reminder3, reminder3dup);
+        PlatformTransactionManager mgr = (PlatformTransactionManager) applicationContext.getBean("txnManager");
+        TransactionTemplate template = new TransactionTemplate(mgr);
+        template.execute(new TransactionCallback<Object>() {
+            public Object doInTransaction(TransactionStatus status) {
+                save(reminders);
+                rules.markMatchingRemindersCompleted(reminders);
+                return null;
+            }
+        });
+
+        checkReminder(reminder0, ReminderStatus.COMPLETED);
+        checkReminder(reminder1, ReminderStatus.COMPLETED);
+        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder3, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder3dup, ReminderStatus.COMPLETED); // as it duplicates reminder3
     }
 
     /**

@@ -20,11 +20,13 @@ package org.openvpms.archetype.test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -125,6 +127,17 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      */
     protected IMObject get(IMObjectReference ref) {
         return service.get(ref);
+    }
+
+    /**
+     * Helper to reload an act.
+     *
+     * @param bean the act bean
+     * @return the reloaded act, or <tt>null</tt> if none is found
+     */
+    protected ActBean get(ActBean bean) {
+        Act act = (Act) get(bean.getAct().getObjectReference());
+        return (act != null) ? new ActBean(act) : null;
     }
 
     /**

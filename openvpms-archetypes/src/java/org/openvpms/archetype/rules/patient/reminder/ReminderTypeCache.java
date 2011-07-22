@@ -68,10 +68,12 @@ public class ReminderTypeCache {
      * Adds a reminder type to the cache.
      *
      * @param reminderType the reminder type to add
+     * @return the reminder type
      */
-    public void add(Entity reminderType) {
-        reminderTypes.put(reminderType.getObjectReference(),
-                          new ReminderType(reminderType));
+    public ReminderType add(Entity reminderType) {
+        ReminderType result = new ReminderType(reminderType, service);
+        reminderTypes.put(reminderType.getObjectReference(), result);
+        return result;
     }
 
     /**
@@ -90,9 +92,8 @@ public class ReminderTypeCache {
             if (result == null) {
                 Entity entity = getEntity(ref);
                 if (entity != null) {
-                    result = new ReminderType(entity);
+                    result = add(entity);
                 }
-                reminderTypes.put(ref, result);
             }
         }
         return result;

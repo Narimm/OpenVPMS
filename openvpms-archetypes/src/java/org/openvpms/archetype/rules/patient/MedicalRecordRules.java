@@ -47,11 +47,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -230,25 +234,16 @@ public class MedicalRecordRules {
      * @param startTime the startTime used to select the event
      */
     public void addToEvents(List<Act> acts, Date startTime) {
-        Map<IMObjectReference, List<Act>> map = getByPatient(acts);
-        for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
-            IMObjectReference patient = entry.getKey();
-            Act event = getEventForAddition(patient, startTime, getClinician(entry.getValue()));
-            boolean save = false;
-            ActBean bean = new ActBean(event, service);
-            for (Act a : entry.getValue()) {
-                if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, a)) {
-                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, a);
-                    save = true;
-                }
-            }
-            if (save) {
-                bean.save();
-            }
+        Map<IMObjectReference, List<Act>> events = new HashMap<IMObjectReference, List<Act>>();
+        Set<Act> changed = addToEvents(acts, startTime, events);
+        if (!changed.isEmpty()) {
+            service.save(changed);
         }
     }
 
     /**
+     * Returns an <em>act.patientClinicalEvent</em> that may have acts added.
+     * <p/>
      * The <em>act.patientClinicalEvent</em> is selected as follows:
      * <ol>
      * <li>find the event intersecting the start time for the patient
@@ -290,32 +285,8 @@ public class MedicalRecordRules {
      * @return an event. May be newly created
      */
     public Act getEventForAddition(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
-        Act event = getEvent(patient, startTime); // get the closest event to the startTime
-        if (event != null) {
-            // get date component of start time so not comparing time components
-            Date startDate = DateRules.getDate(startTime);
-            // get date component of event start and end datetimes
-
-            Date eventStart = DateRules.getDate(event.getActivityStartTime());
-            Date eventEnd = DateRules.getDate(event.getActivityEndTime());
-            if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
-                Date date = DateRules.getDate(startDate, -1, DateUnits.WEEKS);
-                if (eventStart.before(date)) {
-                    event = null; // need to create a new event
-                }
-            } else {  // COMPLETED
-                if (startDate.before(eventStart)
-                    || (eventEnd != null && startDate.after(eventEnd))
-                    || (eventEnd == null && startDate.after(eventStart))) {
-                    event = null; // need to create a new event
-                }
-            }
-        }
-        if (event == null) {
-            event = createEvent(patient, startTime, clinician);
-            event.setStatus(ActStatus.COMPLETED);
-        }
-        return event;
+        Map<IMObjectReference, List<Act>> events = new HashMap<IMObjectReference, List<Act>>();
+        return getEventForAddition(events, patient, startTime, clinician);
     }
 
     /**
@@ -517,6 +488,136 @@ public class MedicalRecordRules {
                     list.add(act);
                     result.put(patient, list);
                 }
+            }
+        }
+        return result;
+    }
+
+    /**
+      * Adds a list of <em>act.patientMedication</em>,
+      * <em>act.patientInvestigation*</em> and <em>act.patientDocument*</em> acts
+      * to an <em>act.patientClinicalEvent</em> associated with each act's
+      * patient.
+      *
+      * @param acts      the acts to add
+      * @param startTime the startTime used to select the event
+      * @param events    the cache of events keyed on patient reference
+      * @return the changed acts
+      */
+     protected Set<Act> addToEvents(List<Act> acts, Date startTime, Map<IMObjectReference, List<Act>> events) {
+         Map<IMObjectReference, List<Act>> map = getByPatient(acts);
+         Set<Act> changed = new HashSet<Act>();
+         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
+             IMObjectReference patient = entry.getKey();
+             Act event = getEventForAddition(events, patient, startTime, getClinician(entry.getValue()));
+             ActBean bean = new ActBean(event, service);
+             for (Act act : entry.getValue()) {
+                 if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act)) {
+                     bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act);
+                     changed.add(event);
+                     changed.add(act);
+                 }
+             }
+         }
+         return changed;
+     }
+
+    /**
+     * Returns an <em>act.patientClinicalEvent</em> that may have acts added.
+     * <p/>
+     * The <em>act.patientClinicalEvent</em> is selected as follows:
+     * <ol>
+     * <li>find the event intersecting the start time for the patient
+     * <li>if it is an <em>IN_PROGRESS</em> and
+     * <pre>event.startTime &gt;= (startTime - 1 week)</pre>
+     * use it
+     * <li>if it is <em>COMPLETED</em> and
+     * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
+     * use it; otherwise
+     * <li>create a new event, with <em>COMPLETED</em> status and startTime
+     * </ol>
+     *
+     * @param events    the cache of events keyed on patient reference
+     * @param patient   the patient to use
+     * @param timestamp the time to select the event
+     * @param clinician the clinician to use when creating new events. May be <tt>null</tt>
+     * @return an event
+     */
+    private Act getEventForAddition(Map<IMObjectReference, List<Act>> events, IMObjectReference patient, Date timestamp,
+                                    IMObjectReference clinician) {
+        List<Act> patientEvents = events.get(patient);
+        Act result = null;
+        if (patientEvents == null) {
+            patientEvents = new ArrayList<Act>();
+            events.put(patient, patientEvents);
+        } else {
+            Date lowerBound = DateRules.getDate(timestamp);
+            Date upperBound = getEndTime(timestamp);
+
+            for (Act event : patientEvents) {
+                Date startTime = event.getActivityStartTime();
+                Date endTime = event.getActivityEndTime();
+                if ((DateRules.compareTo(startTime, lowerBound) <= 0
+                     || DateRules.between(startTime, lowerBound, upperBound))
+                    || (endTime == null
+                        || DateRules.compareTo(endTime, upperBound) >= 0
+                        || DateRules.between(endTime, lowerBound, upperBound))) {
+                    if (result == null || DateRules.compareTo(startTime, timestamp) <= 0) {
+                        result = event;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            result = getEvent(patient, timestamp); // hit the database
+            if (result != null) {
+                patientEvents.add(result);
+            }
+        }
+        if (result != null && !canAddToEvent(result, timestamp)) {
+            result = null;
+        }
+        if (result == null) {
+            result = createEvent(patient, timestamp, clinician);
+            result.setStatus(ActStatus.COMPLETED);
+            patientEvents.add(result);
+        }
+        Collections.sort(patientEvents, new Comparator<Act>() {
+            public int compare(Act o1, Act o2) {
+                return DateRules.compareTo(o1.getActivityStartTime(), o2.getActivityStartTime());
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Determines if an act can be added to an event.
+     *
+     * @param event     the event
+     * @param startTime the act start time
+     * @return <tt>true</tt> if the event can be added to, otherwise <tt>false</tt>
+     */
+    private boolean canAddToEvent(Act event, Date startTime) {
+        boolean result = true;
+        // get date component of start time so not comparing time components
+        Date startDate = DateRules.getDate(startTime);
+        // get date component of event start and end datetimes
+
+        Date eventStart = DateRules.getDate(event.getActivityStartTime());
+        Date eventEnd = DateRules.getDate(event.getActivityEndTime());
+        if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
+            Date date = DateRules.getDate(startDate, -1, DateUnits.WEEKS);
+            if (eventStart.before(date)) {
+                result = false; // need to create a new event
+            }
+        } else {  // COMPLETED
+            if (startDate.before(eventStart)
+                || (eventEnd != null && startDate.after(eventEnd))
+                || (eventEnd == null && startDate.after(eventStart))) {
+                result = false; // need to create a new event
             }
         }
         return result;

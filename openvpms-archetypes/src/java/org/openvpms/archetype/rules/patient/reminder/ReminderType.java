@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -78,7 +79,12 @@ public class ReminderType {
     private final boolean canGroup;
 
     /**
-     * Creates a new <tt>ReminderType</tt>.
+     * The reminder groups.
+     */
+    private final List<Lookup> groups;
+
+    /**
+     * Constructs a <tt>ReminderType</tt>.
      *
      * @param reminderType the <em>entity.reminderType</em>
      */
@@ -104,6 +110,7 @@ public class ReminderType {
             templates.add(new Template(template, service));
         }
         canGroup = bean.getBoolean("group");
+        groups = bean.getValues("groups", Lookup.class);
         this.reminderType = reminderType;
     }
 
@@ -221,7 +228,7 @@ public class ReminderType {
     /**
      * Determines if a reminder is due in the specified date range.
      * <p/>
-     * NOTE: any time component of the specified dates is ignored. 
+     * NOTE: any time component of the specified dates is ignored.
      *
      * @param dueDate       the reminder's due date
      * @param reminderCount the no. of times the reminder has been sent
@@ -257,6 +264,15 @@ public class ReminderType {
      */
     public boolean canGroup() {
         return canGroup;
+    }
+
+    /**
+     * Returns the reminder groups.
+     *
+     * @return the reminder groups
+     */
+    public List<Lookup> getGroups() {
+        return groups;
     }
 
     /**
