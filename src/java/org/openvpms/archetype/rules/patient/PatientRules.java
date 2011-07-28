@@ -351,6 +351,7 @@ public class PatientRules {
         String result;
         IMObjectBean bean = factory.createBean(patient);
         Date birthDate = bean.getDate("dateOfBirth");
+        Date deceasedDate = bean.getDate("deceasedDate");
         synchronized (this) {
             if (formatter == null) {
                 // TODO - this is a hack, but requires refactoring of rules into services to make better
@@ -358,7 +359,12 @@ public class PatientRules {
                 formatter = new PatientAgeFormatter(lookups, new PracticeRules(service), factory);
             }
         }
-        result = formatter.format(birthDate);
+        if (deceasedDate == null) {
+            result = formatter.format(birthDate);      	
+        }
+        else {
+            result = formatter.format(deceasedDate);        	
+        }
         return result;
     }
 
