@@ -33,7 +33,8 @@
         <node name="invoiceNote" path="/details/invoiceNote" type="java.lang.String" maxLength="300"/>
         <node name="visitNote" path="/details/visitNote" type="java.lang.String" maxLength="1000"/>
         <node name="includes" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*">
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.productIncludes" >
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
