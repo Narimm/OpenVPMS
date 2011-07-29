@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentRules;
+import org.openvpms.archetype.rules.patient.InvestigationActStatus;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -31,6 +33,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -250,7 +253,12 @@ class IdLoader extends AbstractLoader {
                 // identical content and file name
                 notifyAlreadyLoaded(file);
             } else {
-                act.setStatus(ActStatus.COMPLETED);
+            	if (TypeHelper.isA(act,InvestigationArchetypes.PATIENT_INVESTIGATION)) {
+            		act.setStatus(InvestigationActStatus.PRELIMINARY);
+            	}
+            	else {
+                    act.setStatus(ActStatus.COMPLETED);            		
+            	}
                 boolean version = (duplicate != act);
                 addDocument(act, doc, version);
                 notifyLoaded(file);
