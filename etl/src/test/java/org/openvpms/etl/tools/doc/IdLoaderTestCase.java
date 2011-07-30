@@ -101,7 +101,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         File noAct1 = new File(source, "0000.gif");
         FileUtils.touch(noAct1);
 
-        File noAct2 = new File(source, "C0001.gif");
+        File noAct2 = new File(source, "C987654321.gif");
         FileUtils.touch(noAct2);
 
         File noAct3 = new File(source, "0000-12345.gif");
