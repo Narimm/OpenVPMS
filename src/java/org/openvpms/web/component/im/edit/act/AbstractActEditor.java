@@ -32,7 +32,6 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -72,7 +71,6 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      */
     protected static final String END_TIME = "endTime";
 
-
     /**
      * Constructs an <tt>AbstractActEditor</tt>.
      *
@@ -92,7 +90,6 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                 onEndTimeChanged();
             }
         };
-
         initParticipant("author", context.getContext().getUser());
     }
 
@@ -277,13 +274,14 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Returns a prticipant.
+     * Returns a participant.
      *
      * @param name the participation property name
      * @return the participant. May be <tt>null</tt>
      */
     protected IMObject getParticipant(String name) {
-        return IMObjectHelper.getObject(getParticipantRef(name));
+        IMObjectReference ref = getParticipantRef(name);
+        return getObject(ref);
     }
 
     /**

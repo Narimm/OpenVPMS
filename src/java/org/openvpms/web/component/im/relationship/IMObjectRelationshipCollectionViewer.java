@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectTableCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 
@@ -53,7 +52,7 @@ public class IMObjectRelationshipCollectionViewer extends IMObjectTableCollectio
     @Override
     protected void browse(IMObject object) {
         IMObjectRelationship relationship = (IMObjectRelationship) object;
-        IMObject target = IMObjectHelper.getObject(relationship.getTarget());
+        IMObject target = getLayoutContext().getCache().get(relationship.getTarget());
         if (target != null) {
             browseTarget(target);
         }

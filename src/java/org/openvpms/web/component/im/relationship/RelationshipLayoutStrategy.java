@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.property.PropertySet;
@@ -93,7 +92,7 @@ public class RelationshipLayoutStrategy implements IMObjectLayoutStrategy {
             IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, context.getContextSwitchListener());
             result = new ComponentState(viewer.getComponent());
         } else {
-            IMObject entity = IMObjectHelper.getObject(ref);
+            IMObject entity = context.getCache().get(ref);
             if (entity != null) {
                 IMObjectLayoutStrategyFactory factory = context.getLayoutStrategyFactory();
                 IMObjectLayoutStrategy strategy = factory.create(entity, object);

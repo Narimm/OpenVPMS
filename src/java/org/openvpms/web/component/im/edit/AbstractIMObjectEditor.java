@@ -41,6 +41,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
@@ -185,7 +186,7 @@ public abstract class AbstractIMObjectEditor
 
         archetype = context.getArchetypeDescriptor(object);
         properties = new PropertySet(object, archetype);
-        editors = new Editors(properties,  listeners);
+        editors = new Editors(properties, listeners);
 
         IMObjectLayoutStrategyFactory strategyFactory = context.getLayoutStrategyFactory();
         if (strategyFactory == null || strategyFactory instanceof ViewLayoutStrategyFactory) {
@@ -774,6 +775,17 @@ public abstract class AbstractIMObjectEditor
         return listeners;
     }
 
+    /**
+     * Helper to return an object given its reference.
+     * <p/>
+     * This implementation uses the cache associated with the layout context.
+     *
+     * @param reference the reference. May be <tt>null</tt>
+     * @return the object corresponding to <tt>reference</tt> or <tt>null</tt> if none exists
+     */
+    protected IMObject getObject(IMObjectReference reference) {
+        return getLayoutContext().getCache().get(reference);
+    }
 
     private class ComponentFactory extends NodeEditorFactory {
 

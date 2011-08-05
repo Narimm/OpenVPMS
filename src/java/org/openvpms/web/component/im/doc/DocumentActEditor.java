@@ -162,7 +162,7 @@ public class DocumentActEditor extends AbstractActEditor {
      * @throws IllegalStateException if the archetype doesn't support documents
      */
     public Document getDocument() {
-        return (Document) IMObjectHelper.getObject(getDocumentRef());
+        return (Document) getObject(getDocumentRef());
     }
 
     /**

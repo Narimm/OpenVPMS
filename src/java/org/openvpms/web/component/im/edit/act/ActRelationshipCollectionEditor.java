@@ -304,7 +304,7 @@ public class ActRelationshipCollectionEditor
     protected boolean expandTemplate(ActItemEditor editor, Act act,
                                      IMObjectReference templateRef) {
         boolean result = false;
-        IMObject template = IMObjectHelper.getObject(templateRef);
+        IMObject template = getObject(templateRef);
         if (template != null) {
             ActRelationshipCollectionPropertyEditor collection = getEditor();
 
@@ -324,8 +324,8 @@ public class ActRelationshipCollectionEditor
                     List<IMObject> objects = copier.apply(act);
                     copy = (Act) objects.get(0);
                     LayoutContext context = new DefaultLayoutContext();
-                    context.setComponentFactory(
-                            new ReadOnlyComponentFactory(context));
+                    context.setComponentFactory(new ReadOnlyComponentFactory(context));
+                    context.setCache(getContext().getCache());
                     editor = (ActItemEditor) createEditor(copy, context);
 
                     // reset the start-time, which may have been set by

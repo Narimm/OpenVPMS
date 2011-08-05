@@ -34,7 +34,6 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.system.ServiceHelper;
@@ -127,11 +126,11 @@ public class CustomerChargeActEditor extends FinancialActEditor {
             for (ActRelationship rel : bean.getValues("documents", ActRelationship.class)) {
                 IMObjectReference target = rel.getTarget();
                 if (target != null && !excludeRefs.contains(target)) {
-                    Act document = (Act) IMObjectHelper.getObject(target);
+                    Act document = (Act) getObject(target);
                     if (document != null) {
                         ActBean documentBean = new ActBean(document);
                         if (!documentBean.getBoolean("printed") && documentBean.hasNode("documentTemplate")) {
-                            Entity entity = documentBean.getNodeParticipant("documentTemplate");
+                            Entity entity = (Entity) getObject(documentBean.getNodeParticipantRef("documentTemplate"));
                             if (entity != null) {
                                 DocumentTemplate template = new DocumentTemplate(entity,
                                                                                  ServiceHelper.getArchetypeService());

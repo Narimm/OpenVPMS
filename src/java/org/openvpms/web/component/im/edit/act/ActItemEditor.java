@@ -33,7 +33,6 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 
@@ -94,7 +93,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         has no parent
      */
     public Party getCustomer() {
-        return (Party) IMObjectHelper.getObject(getCustomerRef());
+        return (Party) getObject(getCustomerRef());
     }
 
     /**
@@ -113,7 +112,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the product, or <tt>null</tt> if the act has no product
      */
     public Product getProduct() {
-        return (Product) IMObjectHelper.getObject(getProductRef());
+        return (Product) getObject(getProductRef());
     }
 
     /**
@@ -137,11 +136,10 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the patient.
      *
-     * @return a reference to the patient, or <tt>null</tt> if the act
-     *         has no patient
+     * @return a reference to the patient, or <tt>null</tt> if the act has no patient
      */
     public Party getPatient() {
-        return (Party) IMObjectHelper.getObject(getPatientRef());
+        return (Party) getObject(getPatientRef());
     }
 
     /**
@@ -178,8 +176,8 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return a reference to the clinician, or <tt>null</tt> if the act has
      *         no clinician
      */
-    public Party getClinician() {
-        return (Party) IMObjectHelper.getObject(getClinicianRef());
+    public User getClinician() {
+        return (User) getObject(getClinicianRef());
     }
 
     /**
@@ -254,8 +252,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param participation the product participation instance
      */
     protected void productModified(Participation participation) {
-        Product product = (Product) IMObjectHelper.getObject(
-                participation.getEntity());
+        Product product = (Product) getObject(participation.getEntity());
         productModified(product);
     }
 

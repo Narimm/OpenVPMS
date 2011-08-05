@@ -93,7 +93,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
             ActBean bean = new ActBean(parent);
             if (bean.hasNode("product")) {
                 // update the product from the parent
-                Product product = (Product) bean.getParticipant(ProductArchetypes.PRODUCT_PARTICIPATION);
+                Product product = (Product) getObject(bean.getNodeParticipantRef("product"));
                 if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
                     setProduct(product);
                     if (bean.hasNode("quantity")) {

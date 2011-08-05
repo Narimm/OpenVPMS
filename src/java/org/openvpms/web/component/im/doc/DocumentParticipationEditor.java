@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
@@ -34,12 +33,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.BasicSelector;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
@@ -231,7 +230,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
         DocumentAct docAct;
         Property act = getProperty("act");
         IMObjectReference ref = (IMObjectReference) act.getValue();
-        docAct = (DocumentAct) IMObjectHelper.getObject(ref);
+        docAct = (DocumentAct) getObject(ref);
         if (docAct == null) {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();

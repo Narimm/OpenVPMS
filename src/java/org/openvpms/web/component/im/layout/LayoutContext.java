@@ -25,6 +25,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
+import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
@@ -49,6 +50,20 @@ public interface LayoutContext {
      * @param context the context
      */
     void setContext(Context context);
+
+    /**
+     * Returns the object cache.
+     *
+     * @return the object cache
+     */
+    IMObjectCache getCache();
+
+    /**
+     * Sets the object cache.
+     *
+     * @param cache the cache
+     */
+    void setCache(IMObjectCache cache);
 
     /**
      * Determines if this is an edit context.

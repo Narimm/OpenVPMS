@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -33,7 +32,7 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 
@@ -80,15 +79,15 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
                                       IMObject parent,
                                       LayoutContext layoutContext) {
         super(relationship, parent, layoutContext);
-        Context context = layoutContext.getContext();
+        IMObjectCache cache = layoutContext.getCache();
         Property sourceProp = getSource();
         Property targetProp = getTarget();
 
         IMObjectReference sourceRef = (IMObjectReference) sourceProp.getValue();
         IMObjectReference targetRef = (IMObjectReference) targetProp.getValue();
 
-        IMObject source = getObject(sourceRef, parent, sourceProp.getArchetypeRange(), context);
-        IMObject target = getObject(targetRef, parent, targetProp.getArchetypeRange(), context);
+        IMObject source = getObject(sourceRef, parent, sourceProp.getArchetypeRange(), cache);
+        IMObject target = getObject(targetRef, parent, targetProp.getArchetypeRange(), cache);
 
         // initialise the properties if null
         if (sourceRef == null && source != null) {
@@ -217,17 +216,18 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @param reference      the reference
      * @param parent         the parent object
      * @param archetypeRange the archetypes that the reference may refer to
-     * @param context        the current context
+     * @param cache          the cache
      * @return the object, or <tt>null</tt> if the reference is set but refers to an invalid object
      */
-    private IMObject getObject(IMObjectReference reference, IMObject parent, String[] archetypeRange, Context context) {
+    private IMObject getObject(IMObjectReference reference, IMObject parent, String[] archetypeRange,
+                               IMObjectCache cache) {
         IMObject result = null;
         if (reference == null) {
             if (TypeHelper.isA(parent, archetypeRange)) {
                 result = parent;
             }
         } else {
-            result = IMObjectHelper.getObject(reference, context);
+            result = cache.get(reference);
         }
         return result;
     }

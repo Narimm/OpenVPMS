@@ -28,7 +28,9 @@ import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
+import org.openvpms.web.component.im.util.DefaultIMObjectCache;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
@@ -54,6 +56,11 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * The context.
      */
     private Context context;
+
+    /**
+     * The cache.
+     */
+    private IMObjectCache cache;
 
     /**
      * Determines if this is an edit context.
@@ -147,6 +154,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     public AbstractLayoutContext(LayoutContext context) {
         this.parent = context;
         this.context = context.getContext();
+        this.cache = context.getCache();
         factory = context.getComponentFactory();
         filter = context.getDefaultNodeFilter();
         edit = context.isEdit();
@@ -175,6 +183,29 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      */
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    /**
+     * Returns the object cache.
+     * <p/>
+     * If no cache exists, a {@link DefaultIMObjectCache} will be created.
+     *
+     * @return the object cache
+     */
+    public IMObjectCache getCache() {
+        if (cache == null) {
+            cache = new DefaultIMObjectCache();
+        }
+        return cache;
+    }
+
+    /**
+     * Sets the object cache.
+     *
+     * @param cache the cache
+     */
+    public void setCache(IMObjectCache cache) {
+        this.cache = cache;
     }
 
     /**

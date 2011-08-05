@@ -28,7 +28,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -93,8 +92,7 @@ public abstract class SupplierActItemEditor extends ActItemEditor {
         if (quantity != null && unitPrice != null) {
             Context context = getLayoutContext().getContext();
             Party practice = context.getPractice();
-            Product product = (Product) IMObjectHelper.getObject(
-                    getProductRef());
+            Product product = (Product) getObject(getProductRef());
             if (product != null && practice != null) {
                 BigDecimal amount = quantity.multiply(unitPrice);
                 BigDecimal previousTax = act.getTaxAmount();

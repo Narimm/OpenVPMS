@@ -18,16 +18,15 @@
 
 package org.openvpms.web.component.im.product;
 
-import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
 
 
 /**
@@ -59,12 +58,12 @@ public class ProductReminderRelationshipEditor extends EntityRelationshipEditor 
 
     private void onReminderTypeChanged() {
         IMObjectReference reference = (IMObjectReference) getTarget().getValue();
-        Entity reminderType = (Entity) IMObjectHelper.getObject(reference);
+        Entity reminderType = (Entity) getObject(reference);
         if (reminderType != null) {
             IMObjectBean bean = new IMObjectBean(reminderType);
             getProperty("interactive").setValue(bean.getBoolean("interactive"));
         }
     }
-    
+
 
 }

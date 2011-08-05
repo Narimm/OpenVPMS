@@ -902,7 +902,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             Act parent = (Act) getParent();
             if (parent != null) {
                 ActBean bean = new ActBean(parent);
-                Party location = (Party) bean.getNodeParticipant("location");
+                Party location = (Party) getObject(bean.getNodeParticipantRef("location"));
                 if (location != null) {
                     stockLocation = rules.getStockLocation(product, location);
                 }
