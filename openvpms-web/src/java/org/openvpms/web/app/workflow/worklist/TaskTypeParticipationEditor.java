@@ -32,7 +32,6 @@ import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
 import java.util.List;
@@ -66,7 +65,7 @@ public class TaskTypeParticipationEditor
         if (!TypeHelper.isA(participation, "participation.taskType")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
-                            + participation.getArchetypeId().getShortName());
+                    + participation.getArchetypeId().getShortName());
         }
     }
 
@@ -144,13 +143,11 @@ public class TaskTypeParticipationEditor
                 = workListBean.getValues("taskTypes", EntityRelationship.class);
         for (EntityRelationship relationship : relationships) {
             if (result == null) {
-                result = (Entity) IMObjectHelper.getObject(
-                        relationship.getTarget());
+                result = (Entity) getObject(relationship.getTarget());
             } else {
                 IMObjectBean bean = new IMObjectBean(relationship);
                 if (bean.getBoolean("default")) {
-                    result = (Entity) IMObjectHelper.getObject(
-                            relationship.getTarget());
+                    result = (Entity) getObject(relationship.getTarget());
                     if (result != null) {
                         break;
                     }

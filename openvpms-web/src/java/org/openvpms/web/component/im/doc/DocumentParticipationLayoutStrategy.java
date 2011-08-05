@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
@@ -46,20 +45,20 @@ public class DocumentParticipationLayoutStrategy
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a <code>Component</code>, using a factory to
+     * This renders an object in a <tt>Component</tt>, using a factory to
      * create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent
+     * @param parent     the parent object. May be <tt>null</tt>
      * @param context    the layout context
-     * @return the component containing the rendered <code>object</code>
+     * @return the component containing the rendered <tt>object</tt>
      */
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
         Property property = properties.get("act");
         IMObjectReference ref = (IMObjectReference) property.getValue();
-        final DocumentAct act = (DocumentAct) IMObjectHelper.getObject(ref);
+        final DocumentAct act = (DocumentAct) context.getCache().get(ref);
         Component component;
         if (act != null && act.getDocument() != null) {
             DocumentActDownloader downloader = new DocumentActDownloader(act);

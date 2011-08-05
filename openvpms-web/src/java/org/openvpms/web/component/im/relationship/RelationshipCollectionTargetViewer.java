@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectTableCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.CheckBoxFactory;
@@ -71,7 +70,7 @@ public class RelationshipCollectionTargetViewer
     @Override
     protected void browse(IMObject object) {
         IMObjectRelationship relationship = (IMObjectRelationship) object;
-        IMObject target = IMObjectHelper.getObject(relationship.getTarget());
+        IMObject target = getLayoutContext().getCache().get(relationship.getTarget());
         if (target != null) {
             browse(target);
         }

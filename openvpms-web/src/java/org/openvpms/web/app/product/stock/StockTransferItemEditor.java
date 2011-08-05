@@ -96,8 +96,8 @@ public class StockTransferItemEditor extends ActItemEditor {
 
         if (parent != null) {
             ActBean bean = new ActBean(parent);
-            setTransferFrom((Party) bean.getNodeParticipant("stockLocation"));
-            setTransferTo((Party) bean.getNodeParticipant("to"));
+            setTransferFrom((Party) getObject(bean.getNodeParticipantRef("stockLocation")));
+            setTransferTo((Party) getObject(bean.getNodeParticipantRef("to")));
         }
     }
 

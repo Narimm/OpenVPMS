@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
@@ -103,8 +102,8 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
             // propagate the parent's supplier and stock location. Can only do
             // this once the product editor is created
             ActBean bean = new ActBean(parent);
-            Party supplier = (Party) bean.getNodeParticipant("supplier");
-            Party location = (Party) bean.getNodeParticipant("stockLocation");
+            Party supplier = (Party) getObject(bean.getNodeParticipantRef("supplier"));
+            Party location = (Party) getObject(bean.getNodeParticipantRef("stockLocation"));
             setSupplier(supplier);
             setStockLocation(location);
         }
@@ -117,7 +116,7 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
      */
     protected void productModified(Participation participation) {
         IMObjectReference entity = participation.getEntity();
-        IMObject object = IMObjectHelper.getObject(entity);
+        IMObject object = getObject(entity);
         if (object instanceof Product) {
             ProductParticipationEditor editor = getProductEditor();
             ProductSupplier ps = editor.getProductSupplier();
@@ -194,12 +193,12 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
                 ps.setPreferred(true);
             }
         } else if (size != ps.getPackageSize()
-                || !ObjectUtils.equals(units, ps.getPackageUnits())
-                || !equals(listPrice, ps.getListPrice())
-                || !equals(unitPrice, ps.getNettPrice())
-                || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
-                || !ObjectUtils.equals(ps.getReorderDescription(),
-                                       reorderDesc)) {
+                   || !ObjectUtils.equals(units, ps.getPackageUnits())
+                   || !equals(listPrice, ps.getListPrice())
+                   || !equals(unitPrice, ps.getNettPrice())
+                   || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
+                   || !ObjectUtils.equals(ps.getReorderDescription(),
+                                          reorderDesc)) {
             // properties are different to an existing relationship
             ps.setPackageSize(size);
             ps.setPackageUnits(units);

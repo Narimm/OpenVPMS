@@ -30,7 +30,6 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
 
@@ -71,7 +70,7 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
             setEntity(customer);
         } else {
             // add the existing customer to the context
-            Party customer = (Party) IMObjectHelper.getObject(customerRef);
+            Party customer = (Party) getObject(customerRef);
             if (customer != null && customer != context.getCustomer()) {
                 ContextHelper.setCustomer(context, customer);
             }

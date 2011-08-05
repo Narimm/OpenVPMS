@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
@@ -53,7 +54,6 @@ public abstract class AbstractIMObjectCollectionEditor
      * The parent object.
      */
     private final IMObject object;
-
 
     /**
      * The layout context.
@@ -484,6 +484,18 @@ public abstract class AbstractIMObjectCollectionEditor
             addEdited(editor);
         }
         return collection.save();
+    }
+
+    /**
+     * Helper to return an object given its reference.
+     * <p/>
+     * This implementation uses the cache associated with the layout context.
+     *
+     * @param reference the reference. May be <tt>null</tt>
+     * @return the object corresponding to <tt>reference</tt> or <tt>null</tt> if none exists
+     */
+    protected IMObject getObject(IMObjectReference reference) {
+        return context.getCache().get(reference);
     }
 
 }

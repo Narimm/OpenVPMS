@@ -28,7 +28,6 @@ import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
@@ -114,7 +113,7 @@ public abstract class ParticipationEditor<T extends Entity>
      */
     @SuppressWarnings("unchecked")
     public T getEntity() {
-        return (T) IMObjectHelper.getObject(getEntityRef());
+        return (T) getObject(getEntityRef());
     }
 
     /**

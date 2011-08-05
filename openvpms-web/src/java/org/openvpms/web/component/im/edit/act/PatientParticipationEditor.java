@@ -34,7 +34,6 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.PatientObjectSetQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryAdapter;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.Property;
 
 
@@ -76,7 +75,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
             setEntity(context.getPatient());
         } else {
             // add the existing patient to the context
-            Party patient = (Party) IMObjectHelper.getObject(patientRef);
+            Party patient = (Party) getObject(patientRef);
             if (patient != null && patient != context.getPatient()) {
                 ContextHelper.setPatient(context, patient);
             }

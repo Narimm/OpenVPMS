@@ -80,7 +80,7 @@ public class StockAdjustItemEditor extends ActItemEditor {
         currentQuantity.setReadOnly(true);
         if (parent != null) {
             ActBean bean = new ActBean(parent);
-            setStockLocation((Party) bean.getNodeParticipant("stockLocation"));
+            setStockLocation((Party) getObject(bean.getNodeParticipantRef("stockLocation")));
         }
     }
 
