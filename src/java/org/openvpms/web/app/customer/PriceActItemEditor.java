@@ -59,6 +59,11 @@ public class PriceActItemEditor extends ActItemEditor {
      */
     private ProductPrice unitProductPrice;
 
+    /**
+     * Default maximum discount.
+     */
+    private static final BigDecimal DEFAULT_MAX_DISCOUNT = new BigDecimal("100");
+
 
     /**
      * Creates a new <tt>PriceActItemEditor</tt>.
@@ -181,18 +186,19 @@ public class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
-     * Returns the maximum discount for a product price, expressed as a
-     * percentage.
+     * Returns the maximum discount for a product price, expressed as a percentage.
      *
      * @param price the price. May be <tt>null</tt>
-     * @return the maximum discount for the product price.
+     * @return the maximum discount for the product price, or {@link #DEFAULT_MAX_DISCOUNT} if there is no price or no
+     *         discount associated with the price.
      */
     protected BigDecimal getMaxDiscount(ProductPrice price) {
+        BigDecimal result = null;
         if (price != null) {
             IMObjectBean bean = new IMObjectBean(price);
-            return bean.getBigDecimal("maxDiscount");
+            result = bean.getBigDecimal("maxDiscount");
         }
-        return new BigDecimal("100");
+        return (result == null) ? DEFAULT_MAX_DISCOUNT : result;
     }
 
     /**
