@@ -20,6 +20,7 @@ package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -29,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -169,8 +171,8 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     /**
      * Save any edits.
      * <p/>
-     * This links items to their corresponding clinical events, creating events as required, and marks matching
-     * reminders completed.
+     * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
+     * matching reminders completed.
      *
      * @return <tt>true</tt> if the save was successful
      */
@@ -178,7 +180,7 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     protected boolean doSave() {
         List<Act> reminders = getNewReminders();
         boolean saved = super.doSave();
-        if (saved) {
+        if (saved && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
             // link the items to their corresponding clinical events
             ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
             List<FinancialAct> items = new ArrayList<FinancialAct>();
