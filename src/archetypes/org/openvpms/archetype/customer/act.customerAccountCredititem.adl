@@ -64,7 +64,7 @@
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
               defaultValue="'0.0'" readOnly="true"/>
         <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              derived="true" derivedValue="/fixedAmount -/details/discount + /quantity * /unitAmount"/>
+              derived="true" derivedValue="math:roundAmount(/fixedAmount -/details/discount + /quantity * /unitAmount)"/>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="true()" readOnly="true" hidden="true"/>
     </archetype>

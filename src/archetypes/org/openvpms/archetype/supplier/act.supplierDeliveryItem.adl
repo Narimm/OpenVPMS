@@ -81,7 +81,7 @@
         </node>
         <node name="total" path="/total"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-              derived="true" derivedValue="/quantity * /unitAmount + /taxAmount">
+              derived="true" derivedValue="math:roundAmount(/quantity * /unitAmount + /taxAmount)">
             <assertion name="nonNegative">
                 <errorMessage>Total must be >= 0.0</errorMessage>
             </assertion>

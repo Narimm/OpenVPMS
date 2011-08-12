@@ -40,7 +40,7 @@
               defaultValue="'0.0'" readOnly="true">
         </node>
         <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-            derived="true" derivedValue="/quantity * /unitAmount + /taxAmount"/>
+            derived="true" derivedValue="math:roundAmount(/quantity * /unitAmount + /taxAmount)"/>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="false()" readOnly="true" hidden="true"/>
     </archetype>
