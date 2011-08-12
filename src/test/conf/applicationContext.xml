@@ -165,6 +165,9 @@
                 </entry>
                 <entry key="date"
                        value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
+                <entry key="math">
+                    <bean class="org.openvpms.archetype.function.math.MathFunctions"/>
+                </entry>
             </map>
         </constructor-arg>
     </bean>
