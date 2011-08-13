@@ -139,7 +139,8 @@
         </node>        
         <node name="discounts" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.discountProduct">
+              hidden="true" filter="entityRelationship.discountProduct">
+            <!-- dummy node. Ideally would have minCardinality=0, but for backwards compatibility, leave as is -->
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
@@ -147,7 +148,6 @@
                                   value="entityRelationship.discountProduct"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active product discount relationship</errorMessage>
