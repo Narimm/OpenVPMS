@@ -74,12 +74,12 @@ public class ProductPriceRules {
     }
 
     /**
-     * Creates a new <tt>ProductPriceRules</tt>.
+     * Constructs a <tt>ProductPriceRules</tt>.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public ProductPriceRules(IArchetypeService service,
-                             ILookupService lookups) {
+    public ProductPriceRules(IArchetypeService service, ILookupService lookups) {
         this.service = service;
         this.lookups = lookups;
     }
@@ -116,27 +116,26 @@ public class ProductPriceRules {
     }
 
     /**
-     * Returns all prices matching the specified short name, active at the
-     * specified date.
+     * Returns all prices matching the specified short name, active at the * specified date.
      *
      * @param product   the product
      * @param shortName the price short name
      * @param date      the date
      * @return the first matching price, or <tt>null</tt> if none is found
      */
-    public Set<ProductPrice> getProductPrices(Product product, String shortName,
-                                              Date date) {
+    public Set<ProductPrice> getProductPrices(Product product, String shortName, Date date) {
         Set<ProductPrice> result = new HashSet<ProductPrice>();
-        ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName,
-                                                                      date);
+        ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
         if (ProductArchetypes.FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
             EntityBean bean = new EntityBean(product, service);
-            for (Entity linked : bean.getNodeTargetEntities("linked", date)) {
-                prices = findPrices((Product) linked, predicate);
-                result.addAll(prices);
+            if (bean.hasNode("linked")) {
+                for (Entity linked : bean.getNodeTargetEntities("linked", date)) {
+                    prices = findPrices((Product) linked, predicate);
+                    result.addAll(prices);
+                }
             }
         }
         return result;
@@ -150,8 +149,7 @@ public class ProductPriceRules {
      * @param product  the product
      * @param cost     the product cost
      * @param markup   the markup percentage
-     * @param practice the <em>party.organisationPractice</em> used to determine
-     *                 product taxes
+     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
      * @param currency the currency, for rounding conventions
      * @return the price
      * @throws ArchetypeServiceException for any archetype service error
@@ -194,8 +192,7 @@ public class ProductPriceRules {
             }
             markup = price.divide(
                     cost.multiply(BigDecimal.ONE.add(taxRate)), 3,
-                    RoundingMode.HALF_UP).subtract(
-                    BigDecimal.ONE).multiply(new BigDecimal(100));
+                    RoundingMode.HALF_UP).subtract(BigDecimal.ONE).multiply(MathRules.ONE_HUNDRED);
             if (markup.compareTo(BigDecimal.ZERO) < 0) {
                 markup = BigDecimal.ZERO;
             }
@@ -210,8 +207,8 @@ public class ProductPriceRules {
      * Returns a list of unit prices whose cost and price have changed.
      *
      * @param product  the product
-     * @param practice the <em>party.organisationPractice</em> used to determine
-     *                 product taxes
+     * @param cost     the new cost
+     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
      * @param currency the currency, for rounding conventions
      * @return the list of any updated prices
      */
@@ -246,9 +243,11 @@ public class ProductPriceRules {
     /**
      * Updates an <em>productPrice.unitPrice</em> if required.
      *
-     * @param price   the price
-     * @param product the associated product
-     * @param cost    the cost price
+     * @param price    the price
+     * @param product  the associated product
+     * @param cost     the cost price
+     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
+     * @param currency the currency, for rounding conventions
      * @return <tt>true</tt> if the price was updated
      */
     private boolean updateUnitPrice(ProductPrice price, Product product,
@@ -258,10 +257,8 @@ public class ProductPriceRules {
         BigDecimal old = priceBean.getBigDecimal("cost", BigDecimal.ZERO);
         if (!MathRules.equals(old, cost)) {
             priceBean.setValue("cost", cost);
-            BigDecimal markup
-                    = priceBean.getBigDecimal("markup", BigDecimal.ZERO);
-            BigDecimal newPrice = getPrice(product, cost, markup,
-                                           practice, currency);
+            BigDecimal markup = priceBean.getBigDecimal("markup", BigDecimal.ZERO);
+            BigDecimal newPrice = getPrice(product, cost, markup, practice, currency);
             price.setPrice(newPrice);
             return true;
         }
@@ -271,7 +268,8 @@ public class ProductPriceRules {
     /**
      * Returns the tax rate of a product.
      *
-     * @param product the product
+     * @param product  the product
+     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
      * @return the product tax rate
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -288,7 +286,7 @@ public class ProductPriceRules {
      */
     private BigDecimal getRate(BigDecimal percent) {
         if (percent.compareTo(BigDecimal.ZERO) != 0) {
-            return MathRules.divide(percent, 100, 3);
+            return MathRules.divide(percent, MathRules.ONE_HUNDRED, 3);
         }
         return BigDecimal.ZERO;
     }
@@ -302,23 +300,23 @@ public class ProductPriceRules {
      * @param date      the date
      * @return a price matching the predicate, or <tt>null</tt> if none is found
      */
-    private ProductPrice getProductPrice(String shortName, Product product,
-                                         Predicate predicate, Date date) {
+    private ProductPrice getProductPrice(String shortName, Product product, Predicate predicate, Date date) {
         boolean useDefault = ProductArchetypes.FIXED_PRICE.equals(shortName);
         ProductPrice result = findPrice(product, predicate, useDefault);
         if (useDefault && (result == null || !isDefault(result))) {
             // see if there is a fixed price in linked products
             EntityBean bean = new EntityBean(product, service);
-            List<Entity> products = bean.getNodeTargetEntities("linked", date);
-            for (Entity linked : products) {
-                ProductPrice price = findPrice((Product) linked, predicate,
-                                               useDefault);
-                if (price != null) {
-                    if (isDefault(price)) {
-                        result = price;
-                        break;
-                    } else if (result == null) {
-                        result = price;
+            if (bean.hasNode("linked")) {
+                List<Entity> products = bean.getNodeTargetEntities("linked", date);
+                for (Entity linked : products) {
+                    ProductPrice price = findPrice((Product) linked, predicate, useDefault);
+                    if (price != null) {
+                        if (isDefault(price)) {
+                            result = price;
+                            break;
+                        } else if (result == null) {
+                            result = price;
+                        }
                     }
                 }
             }
@@ -418,7 +416,7 @@ public class ProductPriceRules {
                 Date from = price.getFromDate();
                 Date to = price.getToDate();
                 if ((from == null || DateRules.compareTo(from, date) <= 0)
-                        && (to == null || DateRules.compareTo(to, date) >= 0)) {
+                    && (to == null || DateRules.compareTo(to, date) >= 0)) {
                     return true;
                 }
             }
@@ -444,10 +442,7 @@ public class ProductPriceRules {
 
         public boolean evaluate(Object object) {
             ProductPrice other = (ProductPrice) object;
-            if (other.getPrice().compareTo(price) == 0) {
-                return super.evaluate(other);
-            }
-            return false;
+            return other.getPrice().compareTo(price) == 0 && super.evaluate(other);
         }
     }
 

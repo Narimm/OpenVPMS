@@ -33,6 +33,12 @@ import java.math.RoundingMode;
 public class MathRules {
 
     /**
+     * Helper to avoid temporary variables.
+     */
+    public static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
+
+
+    /**
      * Rounds a value to the default no. of decimal places.
      * todo - could be configurable via a properies file
      *
@@ -48,6 +54,7 @@ public class MathRules {
      *
      * @param value the value
      * @param scale the no. of decimal places
+     * @return the rounded value
      */
     public static BigDecimal round(BigDecimal value, int scale) {
         return value.setScale(scale, RoundingMode.HALF_UP);
@@ -69,9 +76,9 @@ public class MathRules {
     /**
      * Performs a division, rounding the result to the specified no. of places.
      *
-     * @param dividend   the value to divide
-     * @param divisor the divisor
-     * @param scale   the no. of decimal places
+     * @param dividend the value to divide
+     * @param divisor  the divisor
+     * @param scale    the no. of decimal places
      * @return the divided value
      */
     public static BigDecimal divide(BigDecimal dividend, int divisor, int scale) {

@@ -18,7 +18,10 @@
 
 package org.openvpms.archetype.rules.product;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.Currencies;
@@ -51,11 +54,6 @@ import java.util.Set;
 public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
     /**
-     * The product.
-     */
-    private Product product;
-
-    /**
      * The <em>party.organisationPractice</em>, for taxes.
      */
     private Party practice;
@@ -74,7 +72,117 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link ProductPriceRules#getProductPrice} method.
      */
-    @Test public void testGetProductPrice() {
+    @Test
+    public void testGetProductPrice() {
+        checkProductPrice(createMedication(), false);
+        checkProductPrice(createMerchandise(), false);
+        checkProductPrice(createService(), false);
+        checkProductPrice(createPriceTemplate(), false);
+        checkProductPrice(createTemplate(), false);
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice} method for products that support
+     * <em>product.priceTemplate</em>.
+     */
+    @Test
+    public void testGetProductPriceForProductWithPriceTemplate() {
+        checkProductPrice(createMedication(), true);
+        checkProductPrice(createMerchandise(), true);
+        checkProductPrice(createService(), true);
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date)}  method.
+     */
+    @Test
+    public void testGetProductPriceForPrice() {
+        checkGetProductPriceForPrice(createMedication(), false);
+        checkGetProductPriceForPrice(createMerchandise(), false);
+        checkGetProductPriceForPrice(createService(), false);
+        checkGetProductPriceForPrice(createPriceTemplate(), false);
+        checkGetProductPriceForPrice(createTemplate(), false);
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date)}  method, for
+     * for products that support <em>product.priceTemplate</em>.
+     */
+    @Test
+    public void testGetProductPriceForPriceForProductWithPriceTemplate() {
+        checkGetProductPriceForPrice(createMedication(), true);
+        checkGetProductPriceForPrice(createMerchandise(), true);
+        checkGetProductPriceForPrice(createService(), true);
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrices} method.
+     */
+    @Test
+    public void testGetProductPrices() {
+        checkGetProductPrices(createMedication());
+        checkGetProductPrices(createMerchandise());
+        checkGetProductPrices(createService());
+        checkGetProductPrices(createPriceTemplate());
+        checkGetProductPrices(createTemplate());
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrices} method for products that may be associated with an
+     * <em>product.priceTemplate</em> product.
+     */
+    @Test
+    public void testGetProductPricesForProductWithPriceTemplate() {
+        checkGetProductPricesForProductWithPriceTemplate(createMedication());
+        checkGetProductPricesForProductWithPriceTemplate(createMerchandise());
+        checkGetProductPricesForProductWithPriceTemplate(createService());
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getPrice} method.
+     */
+    @Test
+    public void testGetPrice() {
+        checkGetPrice(createMedication());
+        checkGetPrice(createMerchandise());
+        checkGetPrice(createService());
+        checkGetPrice(createPriceTemplate());
+        checkGetPrice(createTemplate());
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getMarkup} method.
+     */
+    @Test
+    public void testGetMarkup() {
+        checkGetMarkup(createMedication());
+        checkGetMarkup(createMerchandise());
+        checkGetMarkup(createService());
+        checkGetMarkup(createPriceTemplate());
+        checkGetMarkup(createTemplate());
+    }
+
+    /**
+     * Sets up the test case.
+     * <p/>
+     * This sets up the practice to have a 10% tax on all products.
+     */
+    @Before
+    public void setUp() {
+        practice = createPractice();
+        rules = new ProductPriceRules();
+        IMObjectBean bean = new IMObjectBean(practice);
+        Currencies currencies = new Currencies();
+        currency = currencies.getCurrency(bean.getString("currency"));
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getProductPrices} method.
+     *
+     * @param product          the product to use
+     * @param usePriceTemplate if <tt>true</tt> attach an <em>product.priceTemplate</em> to the product
+     */
+    private void checkProductPrice(Product product, boolean usePriceTemplate) {
         ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-01-31", false);
         ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
         ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
@@ -90,47 +198,48 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         product.addProductPrice(unit1);
         product.addProductPrice(unit2);
 
-        checkPrice(null, FIXED_PRICE, "2007-01-01");
-        checkPrice(fixed1, FIXED_PRICE, "2008-01-01");
-        checkPrice(fixed1, FIXED_PRICE, "2008-01-31");
-        checkPrice(fixed2, FIXED_PRICE, "2008-02-01");
-        checkPrice(fixed2, FIXED_PRICE, "2008-12-31");
-        checkPrice(null, FIXED_PRICE, "2009-01-01");
+        checkPrice(null, FIXED_PRICE, "2007-01-01", product);
+        checkPrice(fixed1, FIXED_PRICE, "2008-01-01", product);
+        checkPrice(fixed1, FIXED_PRICE, "2008-01-31", product);
+        checkPrice(fixed2, FIXED_PRICE, "2008-02-01", product);
+        checkPrice(fixed2, FIXED_PRICE, "2008-12-31", product);
+        checkPrice(null, FIXED_PRICE, "2009-01-01", product);
 
-        checkPrice(null, UNIT_PRICE, "2007-12-31");
-        checkPrice(unit1, UNIT_PRICE, "2008-01-01");
-        checkPrice(unit1, UNIT_PRICE, "2008-01-10");
-        checkPrice(null, UNIT_PRICE, "2008-01-11");
-        checkPrice(unit2, UNIT_PRICE, "2008-02-01");
-        checkPrice(unit2, UNIT_PRICE, "2010-02-01"); // unbounded
+        checkPrice(null, UNIT_PRICE, "2007-12-31", product);
+        checkPrice(unit1, UNIT_PRICE, "2008-01-01", product);
+        checkPrice(unit1, UNIT_PRICE, "2008-01-10", product);
+        checkPrice(null, UNIT_PRICE, "2008-01-11", product);
+        checkPrice(unit2, UNIT_PRICE, "2008-02-01", product);
+        checkPrice(unit2, UNIT_PRICE, "2010-02-01", product); // unbounded
 
-        // verify that linked products are used if there are no matching prices
-        // for the date
-        Product priceTemplate = (Product) create(
-                ProductArchetypes.PRICE_TEMPLATE);
-        priceTemplate.addProductPrice(fixed3);
-        priceTemplate.setName("XPriceTemplate");
-        save(priceTemplate);
+        if (usePriceTemplate) {
+            // verify that linked products are used if there are no matching prices
+            // for the date
+            Product priceTemplate = createPriceTemplate();
+            priceTemplate.addProductPrice(fixed3);
+            priceTemplate.setName("XPriceTemplate");
+            save(priceTemplate);
 
-        EntityBean bean = new EntityBean(product);
-        EntityRelationship relationship = bean.addRelationship(
-                ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-        relationship.setActiveStartTime(getDate("2008-01-01"));
-        bean.save();
+            EntityBean bean = new EntityBean(product);
+            EntityRelationship relationship = bean.addRelationship(
+                    ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
+            relationship.setActiveStartTime(getDate("2008-01-01"));
+            bean.save();
 
-        product = get(product);
-        checkPrice(fixed2, FIXED_PRICE, "2008-02-01");
+            checkPrice(fixed2, FIXED_PRICE, "2008-02-01", product);
 
-        // fixed3 overrides fixed2 as it is the default
-        checkPrice(fixed3, FIXED_PRICE, "2008-03-01");
+            // fixed3 overrides fixed2 as it is the default
+            checkPrice(fixed3, FIXED_PRICE, "2008-03-01", product);
+        }
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal,
-     * String, Date)}  method.
+     * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date)}  method.
+     *
+     * @param product          the product to test
+     * @param usePriceTemplate if <tt>true</tt> attach an <em>product.priceTemplate</em> to the product
      */
-    @Test
-    public void testGetProductPriceForPrice() {
+    private void checkGetProductPriceForPrice(Product product, boolean usePriceTemplate) {
         BigDecimal one = BigDecimal.ONE;
         BigDecimal two = new BigDecimal("2.0");
         BigDecimal three = new BigDecimal("3.0");
@@ -150,8 +259,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         unit2.setPrice(two);
 
         // should be no prices returned until one is registered
-        assertNull(rules.getProductPrice(product, one, FIXED_PRICE,
-                                         new Date()));
+        assertNull(rules.getProductPrice(product, one, FIXED_PRICE, new Date()));
         assertNull(rules.getProductPrice(product, one, UNIT_PRICE, new Date()));
 
         // add prices
@@ -160,59 +268,92 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         product.addProductPrice(unit1);
         product.addProductPrice(unit2);
 
-        checkPrice(null, two, FIXED_PRICE, "2008-01-01");
-        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-01");
-        checkPrice(null, two, FIXED_PRICE, "2008-01-31");
-        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-31");
-        checkPrice(null, one, FIXED_PRICE, "2008-02-01");
-        checkPrice(fixed2, two, FIXED_PRICE, "2008-12-31");
-        checkPrice(null, two, FIXED_PRICE, "2009-01-01");
+        checkPrice(null, two, FIXED_PRICE, "2008-01-01", product);
+        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-01", product);
+        checkPrice(null, two, FIXED_PRICE, "2008-01-31", product);
+        checkPrice(fixed1, one, FIXED_PRICE, "2008-01-31", product);
+        checkPrice(null, one, FIXED_PRICE, "2008-02-01", product);
+        checkPrice(fixed2, two, FIXED_PRICE, "2008-12-31", product);
+        checkPrice(null, two, FIXED_PRICE, "2009-01-01", product);
 
-        checkPrice(null, one, UNIT_PRICE, "2007-12-31");
-        checkPrice(null, two, UNIT_PRICE, "2008-01-01");
-        checkPrice(unit1, one, UNIT_PRICE, "2008-01-01");
-        checkPrice(null, two, UNIT_PRICE, "2008-01-10");
-        checkPrice(unit1, one, UNIT_PRICE, "2008-01-10");
-        checkPrice(null, two, UNIT_PRICE, "2008-01-11");
-        checkPrice(null, three, UNIT_PRICE, "2008-02-01");
-        checkPrice(unit2, two, UNIT_PRICE, "2008-02-01");
-        checkPrice(null, three, UNIT_PRICE, "2010-02-01");
-        checkPrice(unit2, two, UNIT_PRICE, "2010-02-01"); // unbounded
+        checkPrice(null, one, UNIT_PRICE, "2007-12-31", product);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-01", product);
+        checkPrice(unit1, one, UNIT_PRICE, "2008-01-01", product);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-10", product);
+        checkPrice(unit1, one, UNIT_PRICE, "2008-01-10", product);
+        checkPrice(null, two, UNIT_PRICE, "2008-01-11", product);
+        checkPrice(null, three, UNIT_PRICE, "2008-02-01", product);
+        checkPrice(unit2, two, UNIT_PRICE, "2008-02-01", product);
+        checkPrice(null, three, UNIT_PRICE, "2010-02-01", product);
+        checkPrice(unit2, two, UNIT_PRICE, "2010-02-01", product); // unbounded
 
-        // verify that linked products are used if there are no matching prices
-        // for the date
-        Product priceTemplate = (Product) create(
-                ProductArchetypes.PRICE_TEMPLATE);
-        priceTemplate.addProductPrice(fixed3);
-        priceTemplate.setName("XPriceTemplate");
-        save(priceTemplate);
+        if (usePriceTemplate) {
+            // verify that linked products are used if there are no matching prices
+            // for the date
+            Product priceTemplate = createPriceTemplate();
+            priceTemplate.addProductPrice(fixed3);
+            priceTemplate.setName("XPriceTemplate");
+            save(priceTemplate);
 
-        EntityBean bean = new EntityBean(product);
-        EntityRelationship relationship = bean.addRelationship(
-                ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-        relationship.setActiveStartTime(getDate("2008-01-01"));
-        bean.save();
+            EntityBean bean = new EntityBean(product);
+            EntityRelationship relationship = bean.addRelationship(
+                    ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
+            relationship.setActiveStartTime(getDate("2008-01-01"));
+            bean.save();
 
-        product = get(product);
-        checkPrice(fixed2, two, FIXED_PRICE, "2008-02-01");
-        checkPrice(fixed3, three, FIXED_PRICE, "2008-03-01");
-        checkPrice(fixed2, two, FIXED_PRICE, "2008-03-01");
+            checkPrice(fixed2, two, FIXED_PRICE, "2008-02-01", product);
+            checkPrice(fixed3, three, FIXED_PRICE, "2008-03-01", product);
+            checkPrice(fixed2, two, FIXED_PRICE, "2008-03-01", product);
+        }
     }
 
     /**
      * Tests the {@link ProductPriceRules#getProductPrices} method.
+     *
+     * @param product the product
      */
-    @Test public void testGetProductPrices() {
+    private void checkGetProductPrices(Product product) {
         ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-01-01", "2008-01-31");
-        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-01-01",
-                                          "2008-12-31");
+        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-01-01", "2008-12-31");
+
+        product.addProductPrice(fixed1);
+        product.addProductPrice(fixed2);
+        save(product);
+
+        product = get(product);
+
+        Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"));
+        assertTrue(prices.isEmpty());
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"));
+        assertEquals(2, prices.size());
+        assertTrue(prices.contains(fixed1));
+        assertTrue(prices.contains(fixed2));
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"));
+        assertEquals(1, prices.size());
+        assertFalse(prices.contains(fixed1));
+        assertTrue(prices.contains(fixed2));
+
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"));
+        assertEquals(0, prices.size());
+    }
+
+    /**
+     * Checks the {@link ProductPriceRules#getProductPrices(Product, String, Date)} method for products that may
+     * be linked to a price template.
+     *
+     * @param product the product. Either a medication, merchandise or service
+     */
+    private void checkGetProductPricesForProductWithPriceTemplate(Product product) {
+        ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-01-01", "2008-01-31");
+        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-01-01", "2008-12-31");
         ProductPrice fixed3 = createPrice(FIXED_PRICE, "2008-02-01", null);
 
         product.addProductPrice(fixed1);
         product.addProductPrice(fixed2);
 
-        Product priceTemplate = (Product) create(
-                ProductArchetypes.PRICE_TEMPLATE);
+        Product priceTemplate = createPriceTemplate();
         priceTemplate.addProductPrice(fixed3);
         priceTemplate.setName("XPriceTemplate");
         save(priceTemplate);
@@ -225,26 +366,22 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
         product = get(product);
 
-        Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE,
-                                                          getDate("2007-01-01"));
+        Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"));
         assertTrue(prices.isEmpty());
 
-        prices = rules.getProductPrices(product, FIXED_PRICE,
-                                        getDate("2008-01-01"));
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"));
         assertEquals(2, prices.size());
         assertTrue(prices.contains(fixed1));
         assertTrue(prices.contains(fixed2));
         assertFalse(prices.contains(fixed3));
 
-        prices = rules.getProductPrices(product, FIXED_PRICE,
-                                        getDate("2008-02-01"));
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"));
         assertEquals(2, prices.size());
         assertFalse(prices.contains(fixed1));
         assertTrue(prices.contains(fixed2));
         assertTrue(prices.contains(fixed3));
 
-        prices = rules.getProductPrices(product, FIXED_PRICE,
-                                        getDate("2009-01-01"));
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"));
         assertEquals(1, prices.size());
         assertFalse(prices.contains(fixed1));
         assertFalse(prices.contains(fixed2));
@@ -252,20 +389,23 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getPrice} method.
+     * Tests the {@link ProductPriceRules#getPrice(Product, BigDecimal, BigDecimal, Party, Currency)} method.
+     *
+     * @param product the product to test
      */
-    @Test public void testGetPrice() {
+    private void checkGetPrice(Product product) {
         BigDecimal cost = BigDecimal.ONE;
         BigDecimal markup = BigDecimal.valueOf(100); // 100% markup
-        BigDecimal price = rules.getPrice(product, cost, markup, practice,
-                                          currency);
+        BigDecimal price = rules.getPrice(product, cost, markup, practice, currency);
         checkEquals(new BigDecimal("2.20"), price);
     }
 
     /**
      * Tests the {@link ProductPriceRules#getMarkup} method.
+     *
+     * @param product the product to test
      */
-    @Test public void testGetMarkup() {
+    private void checkGetMarkup(Product product) {
         BigDecimal cost = BigDecimal.ONE;
         BigDecimal price = new BigDecimal("2.20");
         BigDecimal markup = rules.getMarkup(product, cost, price, practice);
@@ -273,18 +413,60 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Sets up the test case.
-     * <p/>
-     * This sets up the practice to have a 10% tax on all products.
+     * Helper to create a new medication product.
+     *
+     * @return a new medication product
      */
-    @Before
-    public void setUp() {
-        product = TestHelper.createProduct();
-        practice = createPractice();
-        rules = new ProductPriceRules();
-        IMObjectBean bean = new IMObjectBean(practice);
-        Currencies currencies = new Currencies();
-        currency = currencies.getCurrency(bean.getString("currency"));
+    private Product createMedication() {
+        return createProduct(ProductArchetypes.MEDICATION);
+    }
+
+    /**
+     * Helper to create a new merchandise product.
+     *
+     * @return a new merchandise product
+     */
+    private Product createMerchandise() {
+        return createProduct(ProductArchetypes.MERCHANDISE);
+    }
+
+    /**
+     * Helper to create a new service product.
+     *
+     * @return a new service product
+     */
+    private Product createService() {
+        return createProduct(ProductArchetypes.SERVICE);
+    }
+
+    /**
+     * Helper to create a new price template product.
+     *
+     * @return a new price template product
+     */
+    private Product createPriceTemplate() {
+        return createProduct(ProductArchetypes.PRICE_TEMPLATE);
+    }
+
+    /**
+     * Helper to create a new template product.
+     *
+     * @return a new template product
+     */
+    private Product createTemplate() {
+        return createProduct(ProductArchetypes.TEMPLATE);
+    }
+
+    /**
+     * Helper to create a new product.
+     *
+     * @param shortName the product archetype short name
+     * @return a new product
+     */
+    private Product createProduct(String shortName) {
+        Product product = (Product) create(shortName);
+        product.setName("XProduct-" + System.currentTimeMillis());
+        return product;
     }
 
     /**
@@ -293,11 +475,10 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param expected  the expected price
      * @param shortName the price short name
      * @param date      the date that the price applies to
+     * @param product   the product to use
      */
-    private void checkPrice(ProductPrice expected, String shortName,
-                            String date) {
-        assertEquals(expected,
-                     rules.getProductPrice(product, shortName, getDate(date)));
+    private void checkPrice(ProductPrice expected, String shortName, String date, Product product) {
+        assertEquals(expected, rules.getProductPrice(product, shortName, getDate(date)));
     }
 
     /**
@@ -307,12 +488,10 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param price     the price
      * @param shortName the price short name
      * @param date      the date that the price applies to
+     * @param product   the product to use
      */
-    private void checkPrice(ProductPrice expected, BigDecimal price,
-                            String shortName, String date) {
-        assertEquals(expected,
-                     rules.getProductPrice(product, price, shortName,
-                                           getDate(date)));
+    private void checkPrice(ProductPrice expected, BigDecimal price, String shortName, String date, Product product) {
+        assertEquals(expected, rules.getProductPrice(product, price, shortName, getDate(date)));
     }
 
     /**
@@ -323,10 +502,8 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param defaultPrice <tt>true</tt> if the price is the default
      * @return a new fixed price
      */
-    private ProductPrice createFixedPrice(String from, String to,
-                                          boolean defaultPrice) {
-        ProductPrice result = createPrice(ProductArchetypes.FIXED_PRICE,
-                                          from, to);
+    private ProductPrice createFixedPrice(String from, String to, boolean defaultPrice) {
+        ProductPrice result = createPrice(ProductArchetypes.FIXED_PRICE, from, to);
         IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("default", defaultPrice);
         return result;
@@ -352,8 +529,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create an <em>party.organisationPractice</em> with a 10%
-     * tax rate.
+     * Helper to create an <em>party.organisationPractice</em> with a 10% tax rate.
      *
      * @return the practice
      */

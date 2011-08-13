@@ -38,7 +38,9 @@ import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.OrConstraint;
-import static org.openvpms.component.system.common.query.RelationalOp.*;
+import static org.openvpms.component.system.common.query.RelationalOp.GTE;
+import static org.openvpms.component.system.common.query.RelationalOp.IS_NULL;
+import static org.openvpms.component.system.common.query.RelationalOp.LTE;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.math.BigDecimal;
@@ -71,12 +73,6 @@ public class DiscountRules {
      * Percentage discount type.
      */
     private static final String PERCENTAGE = "PERCENTAGE";
-
-    /**
-     * 100% discount.
-     */
-    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
-
 
     /**
      * Constructs a new <tt>DiscountRules</tt>.
@@ -301,7 +297,7 @@ public class DiscountRules {
      */
     private BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate) {
         BigDecimal result = amount.multiply(rate);
-        result = MathRules.divide(result, HUNDRED, 3);
+        result = MathRules.divide(result, MathRules.ONE_HUNDRED, 3);
         return result;
     }
 
