@@ -125,9 +125,9 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     private int patientActPopups = 0;
 
     /**
-     * The medication and investigation act editor manager.
+     * The medication, investigation and reminder act editor manager.
      */
-    private PatientActEditorManager patientActMgr;
+    private PopupEditorManager popupEditorMgr;
 
     /**
      * Listener for changes to the quantity.
@@ -266,12 +266,12 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Sets the medication manager.
+     * Sets the popup editor manager.
      *
-     * @param manager the medication manager. May be <code>null</tt>
+     * @param manager the popup editor manager. May be <code>null</tt>
      */
-    public void setMedicationManager(PatientActEditorManager manager) {
-        patientActMgr = manager;
+    public void setPopupEditorManager(PopupEditorManager manager) {
+        popupEditorMgr = manager;
     }
 
     /**
@@ -717,9 +717,9 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private void queuePatientActEditor(final IMObjectEditor editor, boolean skip,
                                        final ActRelationshipCollectionEditor collection) {
-        if (patientActMgr != null) {
+        if (popupEditorMgr != null) {
             ++patientActPopups;
-            patientActMgr.queue(editor, skip, new PatientActEditorManager.Listener() {
+            popupEditorMgr.queue(editor, skip, new PopupEditorManager.Listener() {
                 public void completed(boolean skipped) {
                     if (skipped) {
                         collection.remove(editor.getObject());

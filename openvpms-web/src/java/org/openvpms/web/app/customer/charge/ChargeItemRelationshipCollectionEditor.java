@@ -36,7 +36,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 /**
  * Editor for <em>actRelationship.customerAccountInvoiceItem</em> and
  * <em>actRelationship.customerAccountCreditItem</em> act relationships.
- * Sets an {@link PatientActEditorManager} on {@link CustomerChargeActItemEditor}
+ * Sets an {@link PopupEditorManager} on {@link CustomerChargeActItemEditor}
  * instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -51,9 +51,9 @@ public class ChargeItemRelationshipCollectionEditor
 	private Date lastItemDate = null;
 	
     /**
-     * The medication manager.
+     * The popup editor manager.
      */
-    private final PatientActEditorManager medicationMgr = new PatientActEditorManager();
+    private final PopupEditorManager popupEditorMgr = new PopupEditorManager();
 
 
     /**
@@ -80,8 +80,7 @@ public class ChargeItemRelationshipCollectionEditor
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         final IMObjectEditor editor = super.createEditor(object, context);
         if (editor instanceof CustomerChargeActItemEditor) {
-            ((CustomerChargeActItemEditor) editor).setMedicationManager(
-                    medicationMgr);
+            ((CustomerChargeActItemEditor) editor).setPopupEditorManager(popupEditorMgr);
         }
         
         // Set startTime to to last used value
