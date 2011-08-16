@@ -185,6 +185,15 @@ public abstract class PopupWindow extends WindowPane {
     }
 
     /**
+     * Returns the buttons.
+     *
+     * @return the buttons
+     */
+    public ButtonSet getButtons() {
+        return row.getButtons();
+    }
+
+    /**
      * Lays out the component prior to display.
      * This implementation is a no-op.
      */
@@ -198,15 +207,6 @@ public abstract class PopupWindow extends WindowPane {
      */
     protected SplitPane getLayout() {
         return layout;
-    }
-
-    /**
-     * Returns the buttons.
-     *
-     * @return the buttons
-     */
-    protected ButtonSet getButtons() {
-        return row.getButtons();
     }
 
     /**

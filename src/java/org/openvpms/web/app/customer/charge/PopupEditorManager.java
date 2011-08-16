@@ -36,7 +36,7 @@ import java.util.LinkedList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-class PatientActEditorManager {
+class PopupEditorManager {
 
     /**
      * Listener to notify completion of the edit.
@@ -79,7 +79,7 @@ class PatientActEditorManager {
     /**
      * Creates and edits the next act, if any.
      */
-    private void editNext() {
+    protected void editNext() {
         if (queue.isEmpty()) {
             return;
         }
@@ -109,6 +109,15 @@ class PatientActEditorManager {
 
         });
         editing = true;
+        edit(dialog);
+    }
+
+    /**
+     * Displays an edit dialog.
+     *
+     * @param dialog the dialog
+     */
+    protected void edit(EditDialog dialog) {
         dialog.show();
     }
 
