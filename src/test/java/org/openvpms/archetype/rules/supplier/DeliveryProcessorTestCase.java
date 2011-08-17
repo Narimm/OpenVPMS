@@ -352,7 +352,7 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         ProductRules rules = new ProductRules();
         Party supplier = get(getSupplier()); // make sure using the latest
         Product product = get(getProduct()); // instance of each
-        return rules.getProductSupplier(product, supplier, packageSize, PACKAGE_UNITS);
+        return rules.getProductSupplier(product, supplier, null, packageSize, PACKAGE_UNITS);
     }
 
     /**
