@@ -17,9 +17,9 @@
  */
 package org.openvpms.esci.adapter.i18n;
 
-import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 import java.math.BigDecimal;
 
@@ -91,6 +91,16 @@ public class ESCIAdapterMessages {
      */
     public static Message connectionFailed(Party supplier, String serviceURL) {
         return messages.getMessage(5, supplier.getId(), supplier.getName(), serviceURL);
+    }
+
+    /**
+     * Creates a new message when a supplier web service cannot be contacted.
+     *
+     * @param path the WSDL resource path
+     * @return a new message
+     */
+    public static Message wsdlNotFound(String path) {
+        return messages.getMessage(6, path);
     }
 
     /**
@@ -547,7 +557,7 @@ public class ESCIAdapterMessages {
      *
      * @param supplier  the supplier
      * @param reference the document reference
-     * @param content the document content
+     * @param content   the document content
      * @return a new message
      */
     public static Message unsupportedDocument(Party supplier, DocumentReferenceType reference,
