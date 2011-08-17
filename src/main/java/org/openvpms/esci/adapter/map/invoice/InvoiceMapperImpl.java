@@ -472,7 +472,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         BigDecimal unitPrice = line.getPriceAmount();
         String packageUnits = getPackageUnits(invoicedUnitCode, pkg);
         int packageSize = getPackageSize(line, pkg);
-        BigDecimal listPrice = getListPrice(line, product, ps, packageSize, packageUnits, context);
+        BigDecimal listPrice = getListPrice(line, product, ps, reorderCode, packageSize, packageUnits, context);
 
         BigDecimal calcLineExtensionAmount = unitPrice.multiply(quantity);
         if (calcLineExtensionAmount.compareTo(lineExtensionAmount) != 0) {
@@ -517,13 +517,14 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * @param line         the invoice line
      * @param product      the product. May be <tt>null</tt>
      * @param ps           the product/supplier relationship. May be <tt>null</tt>
+     * @param reorderCode  the reorder code. May be <tt>null</tt>
      * @param packageSize  the package size
      * @param packageUnits the package units
      * @param context      the mapping context
      * @return the list price
      */
     private BigDecimal getListPrice(UBLInvoiceLine line, Product product, ProductSupplier ps,
-                                    int packageSize, String packageUnits, MappingContext context) {
+                                    String reorderCode, int packageSize, String packageUnits, MappingContext context) {
         BigDecimal listPrice = line.getWholesalePrice();
         if (listPrice != null && listPrice.compareTo(BigDecimal.ZERO) == 0) {
             log.warn("Received 0.0 list price from supplier.");
@@ -531,7 +532,8 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         }
         if (listPrice == null) {
             if (ps == null && product != null) {
-                ps = productRules.getProductSupplier(product, context.getSupplier(), packageSize, packageUnits);
+                ps = productRules.getProductSupplier(product, context.getSupplier(), reorderCode, packageSize,
+                                                     packageUnits);
             }
             if (ps != null) {
                 listPrice = ps.getListPrice();

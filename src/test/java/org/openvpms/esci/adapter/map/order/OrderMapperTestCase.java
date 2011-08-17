@@ -254,8 +254,9 @@ public class OrderMapperTestCase extends AbstractESCITest {
         FinancialAct orderItem = createOrderItem(BigDecimal.ONE, 1, new BigDecimal("1.625"));
         FinancialAct order = createOrder(orderItem);
         order.setStatus(ActStatus.POSTED);
-        ActBean bean = new ActBean(order);
-        bean.save();
+        ActBean bean = new ActBean(orderItem);
+        bean.setValue("reorderCode", "AREORDERCODE");
+        save(orderItem, order);
         String expected = "ESCIA-0115: Too many decimal places in amount: 1.625";
         checkMappingException(order, expected);
     }
