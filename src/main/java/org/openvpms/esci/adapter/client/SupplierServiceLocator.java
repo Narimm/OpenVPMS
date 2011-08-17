@@ -47,7 +47,7 @@ public interface SupplierServiceLocator {
     /**
      * Returns a proxy for a supplier's {@link OrderService}.
      *
-     * @param serviceURL the WSDL document URL of the service
+     * @param serviceURL the URL of the registry service
      * @param username   the username to connect to the service with
      * @param password   the password to connect  to the service with
      * @return a proxy for the service provided by the supplier
