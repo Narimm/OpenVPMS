@@ -18,16 +18,20 @@
 
 package org.openvpms.archetype.rules.product;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 
 import java.math.BigDecimal;
@@ -94,8 +98,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
         checkEquals(unitPrice.getPrice(), priceCopy.getPrice());
 
         // verify the product supplier relationship has been copied
-        ProductSupplier psCopy = rules.getProductSupplier(copy, supplier,
-                                                          ps.getPackageSize(),
+        ProductSupplier psCopy = rules.getProductSupplier(copy, supplier, null, ps.getPackageSize(),
                                                           ps.getPackageUnits());
         assertNotNull(psCopy);
         assertTrue(psCopy.getRelationship().getId() != ps.getRelationship().getId());
@@ -118,15 +121,11 @@ public class ProductRulesTestCase extends AbstractProductTest {
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
 
-        ProductSupplier p1rel1
-                = rules.createProductSupplier(product1, supplier);
-        ProductSupplier p1rel2
-                = rules.createProductSupplier(product1, supplier);
-        ProductSupplier p2rel1
-                = rules.createProductSupplier(product2, supplier);
+        ProductSupplier p1rel1 = rules.createProductSupplier(product1, supplier);
+        ProductSupplier p1rel2 = rules.createProductSupplier(product1, supplier);
+        ProductSupplier p2rel1= rules.createProductSupplier(product2, supplier);
 
-        List<ProductSupplier> relationships
-                = rules.getProductSuppliers(product1, supplier);
+        List<ProductSupplier> relationships = rules.getProductSuppliers(product1, supplier);
         assertEquals(2, relationships.size());
         assertTrue(relationships.contains(p1rel1));
         assertTrue(relationships.contains(p1rel2));
@@ -143,50 +142,64 @@ public class ProductRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductRules#getProductSupplier(Product, Party, int,
-     * String)} method.
+     * Tests the {@link ProductRules#getProductSupplier(Product, Party, String,int, String)} method.
      */
     @Test
     public void testGetProductSupplier() {
         Party supplier = TestHelper.createSupplier();
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
+        Product product3 = TestHelper.createProduct();
 
         // create some relationships
-        ProductSupplier p1rel1
-                = rules.createProductSupplier(product1, supplier);
-        ProductSupplier p1rel2
-                = rules.createProductSupplier(product1, supplier);
-        ProductSupplier p2rel
-                = rules.createProductSupplier(product2, supplier);
+        ProductSupplier p1rel1 = rules.createProductSupplier(product1, supplier);
+        ProductSupplier p1rel2 = rules.createProductSupplier(product1, supplier);
+        ProductSupplier p2rel = rules.createProductSupplier(product2, supplier);
+        ProductSupplier p3rel = rules.createProductSupplier(product3, supplier);
 
         assertEquals(0, p1rel1.getPackageSize()); // default value
         p1rel2.setPackageSize(3);
         p1rel2.setPackageUnits("AMPOULE");
         p2rel.setPackageSize(4);
         p2rel.setPackageUnits("PACKET");
+        p3rel.setReorderCode("p3");
+        p3rel.setPackageSize(4);
+        p3rel.setPackageUnits("PACKET");
 
         // verify that p1rel is returned if there is no corresponding
         // relationship, as its package size isn't set
-        ProductSupplier test1
-                = rules.getProductSupplier(product1, supplier, 4, "BOX");
+        ProductSupplier test1 = rules.getProductSupplier(product1, supplier, null, 4, "BOX");
         assertEquals(p1rel1, test1);
 
         p1rel1.setPackageSize(4);
         p1rel1.setPackageUnits("BOX");
 
         // verify that the correct relationship is returned for exact matches
-        assertEquals(p1rel1, rules.getProductSupplier(product1, supplier, 4,
-                                                      "BOX"));
-        assertEquals(p1rel2, rules.getProductSupplier(product1, supplier, 3,
-                                                      "AMPOULE"));
-        assertEquals(p2rel, rules.getProductSupplier(product2, supplier, 4,
-                                                     "PACKET"));
+        assertEquals(p1rel1, rules.getProductSupplier(product1, supplier, null, 4, "BOX"));
+        assertEquals(p1rel2, rules.getProductSupplier(product1, supplier, null, 3, "AMPOULE"));
+        assertEquals(p2rel, rules.getProductSupplier(product2, supplier, null, 4, "PACKET"));
+        assertEquals(p3rel, rules.getProductSupplier(product3, supplier, "p3", 4, "PACKET"));
+
+        // verify that the correct relationship is returned for a match on reorder code
+        assertEquals(p3rel, rules.getProductSupplier(product3, supplier, "p3", -1, null));
+
+        // verify that the correct relationship is returned for a match on package size and units
+        assertEquals(p1rel1, rules.getProductSupplier(product1, supplier, "foo", 4, "BOX"));
+        assertEquals(p1rel2, rules.getProductSupplier(product1, supplier, "bar", 3, "AMPOULE"));
+        assertEquals(p2rel, rules.getProductSupplier(product2, supplier, "zoo", 4, "PACKET"));
+        assertEquals(p3rel, rules.getProductSupplier(product3, supplier, "p?", 4, "PACKET"));
+
+        // verify that the correct relationship is returned for a match on package size
+        assertEquals(p1rel1, rules.getProductSupplier(product1, supplier, "foo", 4, null));
+        assertEquals(p1rel2, rules.getProductSupplier(product1, supplier, "bar", 3,  null));
+        assertEquals(p2rel, rules.getProductSupplier(product2, supplier, "zoo", 4, null));
+        assertEquals(p3rel, rules.getProductSupplier(product3, supplier, "p?", 4, null));
 
         // verify that nothing is returned if there is no direct match
-        assertNull(rules.getProductSupplier(product1, supplier, 5, "BOX"));
-        assertNull(rules.getProductSupplier(product1, supplier, 5, "PACKET"));
-        assertNull(rules.getProductSupplier(product2, supplier, 5, "PACKET"));
+        assertNull(rules.getProductSupplier(product1, supplier, "foo", 5, "BOX"));
+        assertNull(rules.getProductSupplier(product1, supplier, "bar", 5, "PACKET"));
+        assertNull(rules.getProductSupplier(product2, supplier, "zoo", 5, "PACKET"));
+        assertNull(rules.getProductSupplier(product2, supplier, null, 5, null));
     }
 
     /**

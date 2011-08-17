@@ -21,7 +21,6 @@ package org.openvpms.archetype.rules.product;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -296,7 +295,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     private ProductSupplier getProductSupplier(Product product, Party supplier, int packageSize) {
         ProductRules rules = new ProductRules();
-        return rules.getProductSupplier(product, supplier, packageSize, PACKAGE_UNITS);
+        return rules.getProductSupplier(product, supplier, null, packageSize, PACKAGE_UNITS);
     }
 
     /**
