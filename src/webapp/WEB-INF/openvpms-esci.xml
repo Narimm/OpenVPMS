@@ -131,12 +131,7 @@
     <!-- Support for accessing supplier services                            -->
     <!-- ================================================================== -->
 
-    <bean id="serviceAuthenticators" class="org.openvpms.esci.service.client.DefaultServiceAuthenticators"
-          factory-method="getInstance"/>
-
-    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory">
-        <property name="serviceAuthenticators" ref="serviceAuthenticators"/>
-    </bean>
+    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory"/>
 
     <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator">
         <property name="beanFactory" ref="imObjectBeanFactory"/>
