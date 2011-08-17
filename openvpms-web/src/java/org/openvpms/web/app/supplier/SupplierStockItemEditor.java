@@ -168,14 +168,14 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
     private void checkProductSupplier(Product product, Party supplier) {
         ProductRules rules = new ProductRules();
         ProductSupplier ps = getProductSupplier();
+        String reorderCode = getReorderCode();
         int size = getPackageSize();
         String units = getPackageUnits();
         if (ps == null) {
-            ps = rules.getProductSupplier(product, supplier, size, units);
+            ps = rules.getProductSupplier(product, supplier, reorderCode, size, units);
         }
         boolean save = true;
         String reorderDesc = getReorderDescription();
-        String reorderCode = getReorderCode();
         BigDecimal listPrice = getListPrice();
         BigDecimal unitPrice = getUnitPrice();
         if (ps == null) {
