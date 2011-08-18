@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -34,6 +35,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -54,6 +56,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Tests the {@link CustomerChargeActItemEditor} class.
@@ -63,6 +66,7 @@ import java.util.List;
  */
 public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     private Party practice;
+    private Party customer;
 
     /**
      * Sets up the test case.
@@ -71,6 +75,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     public void setUp() {
         super.setUp();
         practice = TestHelper.getPractice();
+        practice.addClassification(createTaxType());
+        customer = TestHelper.createCustomer();
+        save(practice);
     }
 
     /**
@@ -78,21 +85,135 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      */
     @Test
     public void testInvoiceItemMedication() {
-        LayoutContext context = new DefaultLayoutContext();
-        Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
-        BigDecimal cost = BigDecimal.valueOf(5);
-        BigDecimal price = BigDecimal.valueOf(10);
-        BigDecimal quantity = BigDecimal.valueOf(2);
-        Product product = createMedication(cost, price);
-        User author = TestHelper.createUser();
-        context.getContext().setUser(author); // to propagate to medication acts
+        checkInvoiceItem(ProductArchetypes.MEDICATION);
+    }
+
+    /**
+     * Tests populating an invoice item with a merchandise product.
+     */
+    @Test
+    public void testInvoiceItemMerchandise() {
+        checkInvoiceItem(ProductArchetypes.MERCHANDISE);
+    }
+
+    /**
+     * Tests populating an invoice item with a service product.
+     */
+    @Test
+    public void testInvoiceItemService() {
+        checkInvoiceItem(ProductArchetypes.SERVICE);
+    }
+
+    /**
+     * Tests populating a counter sale item with a medication product.
+     */
+    @Test
+    public void testCounterSaleItemMedication() {
+        checkCounterSaleItem(ProductArchetypes.MEDICATION);
+    }
+
+    /**
+     * Tests populating a counter sale item with a merchandise product.
+     */
+    @Test
+    public void testCounterSaleItemMerchandise() {
+        checkCounterSaleItem(ProductArchetypes.MERCHANDISE);
+    }
+
+    /**
+     * Tests populating a counter sale item with a service product.
+     */
+    @Test
+    public void testCounterSaleItemService() {
+        checkCounterSaleItem(ProductArchetypes.SERVICE);
+    }
+
+    /**
+     * Tests populating a credit item with a medication product.
+     */
+    @Test
+    public void testCreditItemMedication() {
+        checkCreditItem(ProductArchetypes.MEDICATION);
+    }
+
+    /**
+     * Tests populating a credit item with a merchandise product.
+     */
+    @Test
+    public void testCreditItemMerchandise() {
+        checkCreditItem(ProductArchetypes.MERCHANDISE);
+    }
+
+    /**
+     * Tests populating a credit item with a service product.
+     */
+    @Test
+    public void testCreditItemService() {
+        checkCreditItem(ProductArchetypes.SERVICE);
+    }
+
+    /**
+     * Checks populating an invoice item with a product.
+     *
+     * @param productShortName the product archetype short name
+     */
+    private void checkInvoiceItem(String productShortName) {
         List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new Money(100), customer, null, null,
                                                                            ActStatus.IN_PROGRESS);
         FinancialAct invoice = acts.get(0);
         FinancialAct item = acts.get(1);
+        checkItem(invoice, item, productShortName);
+    }
 
-        CustomerChargeActItemEditor editor = new CustomerChargeActItemEditor(item, invoice, context);
+    /**
+     * Checks populating a counter sale item with a product.
+     *
+     * @param productShortName the product archetype short name
+     */
+    private void checkCounterSaleItem(String productShortName) {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesCounter(new Money(100), customer, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct counterSale = acts.get(0);
+        FinancialAct item = acts.get(1);
+        checkItem(counterSale, item, productShortName);
+    }
+
+    /**
+     * Checks populating a credit item with a product.
+     *
+     * @param productShortName the product archetype short name
+     */
+    private void checkCreditItem(String productShortName) {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesCredit(new Money(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct credit = acts.get(0);
+        FinancialAct item = acts.get(1);
+        checkItem(credit, item, productShortName);
+    }
+
+    /**
+     * Checks populating a charge item with a product.
+     *
+     * @param charge           the charge
+     * @param item             the charge item
+     * @param productShortName the product archetype short name
+     */
+    private void checkItem(FinancialAct charge, FinancialAct item, String productShortName) {
+        LayoutContext context = new DefaultLayoutContext();
+        Party patient = TestHelper.createPatient();
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.valueOf(2);
+        BigDecimal total = new BigDecimal("22");
+        Product product = createProduct(productShortName, fixedCost, fixedPrice, unitCost, unitPrice);
+        User author = TestHelper.createUser();
+        context.getContext().setUser(author); // to propagate to acts
+
+        CustomerChargeActItemEditor editor = new CustomerChargeActItemEditor(item, charge, context);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -100,55 +221,68 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         EditorManager mgr = new EditorManager();
         editor.setPopupEditorManager(mgr);
 
-        // populate quantity, patient, product (medication). The product should trigger a patient medication editor
-        // popup
+        // populate quantity, patient, product. If the product is a medication, it should trigger a patient medication
+        // editor popup
         editor.setQuantity(quantity);
-        editor.setPatient(patient);
+
+        if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
+            // counter sale items have no patient
+            editor.setPatient(patient);
+        }
         editor.setProduct(product);
-        assertFalse(editor.isValid());
 
-        checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION); // save the popup editor - should be a medication
-
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
+            && TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            // invoice items have a dispensing node
+            assertFalse(editor.isValid()); // not valid while popup is displayed
+            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION); // save the popup editor - should be a medication
+        }
         // editor should now be valid
         assertTrue(editor.isValid());
 
         // save it
-        checkSave(invoice, editor);
+        checkSave(charge, editor);
 
-        invoice = get(invoice);
+        charge = get(charge);
         item = get(item);
-        assertNotNull(invoice);
+        assertNotNull(charge);
         assertNotNull(item);
 
-        checkItem(item, quantity, new BigDecimal("0"), new BigDecimal("10"),
-                  BigDecimal.ZERO, BigDecimal.ZERO, cost, BigDecimal.ZERO, new BigDecimal("20"));
-        checkMedication(item, patient, product, author);
+        checkItem(item, quantity, unitCost, unitPrice, fixedCost, fixedPrice, discount, tax, total);
+        ActBean itemBean = new ActBean(item);
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
+            && TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            // verify there is a medication act
+            checkMedication(item, patient, product, author);
+        } else {
+            // verify there are no medication acts
+            assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
+        }
     }
-
 
     /**
      * Verifies an item's properties match that expected.
      *
      * @param item       the item to check
      * @param quantity   the expected quantity
-     * @param fixedPrice the expected fixed price
+     * @param unitCost   the expected unit cost
      * @param unitPrice  the expected unit price
-     * @param discount   the expected discount
      * @param fixedCost  the expected fixed cost
-     * @param unitCost   the expected un it cost
+     * @param fixedPrice the expected fixed price
+     * @param discount   the expected discount
      * @param tax        the expected tax
      * @param total      the expected total
      */
-    private void checkItem(FinancialAct item, BigDecimal quantity, BigDecimal fixedPrice, BigDecimal unitPrice,
-                           BigDecimal discount, BigDecimal fixedCost, BigDecimal unitCost, BigDecimal tax,
+    private void checkItem(FinancialAct item, BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice,
+                           BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax,
                            BigDecimal total) {
         ActBean bean = new ActBean(item);
         checkEquals(quantity, bean.getBigDecimal("quantity"));
+        checkEquals(fixedCost, bean.getBigDecimal("fixedCost"));
         checkEquals(fixedPrice, bean.getBigDecimal("fixedPrice"));
         checkEquals(unitPrice, bean.getBigDecimal("unitPrice"));
-        checkEquals(discount, bean.getBigDecimal("discount"));
-        checkEquals(fixedCost, bean.getBigDecimal("fixedCost"));
         checkEquals(unitCost, bean.getBigDecimal("unitCost"));
+        checkEquals(discount, bean.getBigDecimal("discount"));
         checkEquals(tax, bean.getBigDecimal("tax"));
         checkEquals(total, bean.getBigDecimal("total"));
     }
@@ -207,15 +341,20 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     }
 
     /**
-     * Helper to create a medication product.
+     * Helper to create a product.
      *
-     * @param cost  the product cost
-     * @param price the product price
-     * @return a new medication
+     * @param shortName  the product archetype short name
+     * @param fixedCost  the fixed cost
+     * @param fixedPrice the fixed price
+     * @param unitCost   the unit cost
+     * @param unitPrice  the unit price
+     * @return a new product
      */
-    private Product createMedication(BigDecimal cost, BigDecimal price) {
-        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null, false);
-        product.addProductPrice(createUnitPrice(product, cost, price));
+    private Product createProduct(String shortName, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal unitCost,
+                                  BigDecimal unitPrice) {
+        Product product = TestHelper.createProduct(shortName, null, false);
+        product.addProductPrice(createFixedPrice(product, fixedCost, fixedPrice));
+        product.addProductPrice(createUnitPrice(product, unitCost, unitPrice));
         save(product);
         return product;
     }
@@ -229,7 +368,32 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      * @return a new unit price
      */
     private ProductPrice createUnitPrice(Product product, BigDecimal cost, BigDecimal price) {
-        ProductPrice result = (ProductPrice) create(ProductArchetypes.UNIT_PRICE);
+        return createPrice(product, ProductArchetypes.UNIT_PRICE, cost, price);
+    }
+
+    /**
+     * Helper to create a new fixed price.
+     *
+     * @param product the product
+     * @param cost    the cost price
+     * @param price   the price after markup
+     * @return a new unit price
+     */
+    private ProductPrice createFixedPrice(Product product, BigDecimal cost, BigDecimal price) {
+        return createPrice(product, ProductArchetypes.FIXED_PRICE, cost, price);
+    }
+
+    /**
+     * Helper to create a new product price.
+     *
+     * @param product   the product
+     * @param shortName the product price archetype short name
+     * @param cost      the cost price
+     * @param price     the price after markup
+     * @return a new unit price
+     */
+    private ProductPrice createPrice(Product product, String shortName, BigDecimal cost, BigDecimal price) {
+        ProductPrice result = (ProductPrice) create(shortName);
         ProductPriceRules rules = new ProductPriceRules();
         BigDecimal markup = rules.getMarkup(product, cost, price, practice);
         result.setName("XPrice");
@@ -239,6 +403,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         bean.setValue("price", price);
         return result;
     }
+
 
     /**
      * Helper to click OK on an edit dialog.
@@ -250,6 +415,21 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         assertNotNull(ok);
         assertTrue(ok.isEnabled());
         ok.fireActionPerformed(new ActionEvent(ok, ok.getActionCommand()));
+    }
+
+    /**
+     * Helper to create and save a new tax type classification.
+     *
+     * @return a new tax classification
+     */
+    private Lookup createTaxType() {
+        Lookup tax = (Lookup) create("lookup.taxType");
+        IMObjectBean bean = new IMObjectBean(tax);
+        bean.setValue("code", "XTAXRULESTESTCASE_CLASSIFICATION_"
+                              + Math.abs(new Random().nextInt()));
+        bean.setValue("rate", new BigDecimal(10));
+        save(tax);
+        return tax;
     }
 
     private static class EditorManager extends PopupEditorManager {
