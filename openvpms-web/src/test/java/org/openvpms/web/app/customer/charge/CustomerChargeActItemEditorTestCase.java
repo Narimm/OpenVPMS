@@ -20,6 +20,7 @@ package org.openvpms.web.app.customer.charge;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -58,6 +59,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.ErrorHandler;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.springframework.transaction.TransactionStatus;
@@ -65,6 +67,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -88,6 +91,11 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     private Party customer;
 
     /**
+     * Tracks errors logged.
+     */
+    private List<String> errors = new ArrayList<String>();
+
+    /**
      * Sets up the test case.
      */
     @Override
@@ -95,8 +103,15 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         super.setUp();
         practice = TestHelper.getPractice();
         practice.addClassification(createTaxType());
-        customer = TestHelper.createCustomer();
         save(practice);
+        customer = TestHelper.createCustomer();
+
+        // register an ErrorHandler to collect errors
+        ErrorHandler.setInstance(new ErrorHandler() {
+            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
+                errors.add(message);
+            }
+        });
     }
 
     /**
@@ -256,17 +271,29 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     private void checkItem(FinancialAct charge, FinancialAct item, String productShortName) {
         LayoutContext context = new DefaultLayoutContext();
         Party patient = TestHelper.createPatient();
-        BigDecimal quantity = BigDecimal.valueOf(2);
-        BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
-        BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
-        BigDecimal discount = BigDecimal.ZERO;
-        BigDecimal tax = BigDecimal.valueOf(2);
-        BigDecimal total = new BigDecimal("22");
-        Product product = createProduct(productShortName, fixedCost, fixedPrice, unitCost, unitPrice);
-        Entity reminderType = addReminder(product);
-        Entity investigationType = addInvestigation(product);
+
+        BigDecimal quantity1 = BigDecimal.valueOf(2);
+        BigDecimal unitCost1 = BigDecimal.valueOf(5);
+        BigDecimal unitPrice1 = BigDecimal.valueOf(10);
+        BigDecimal fixedCost1 = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice1 = BigDecimal.valueOf(2);
+        BigDecimal discount1 = BigDecimal.ZERO;
+        BigDecimal tax1 = BigDecimal.valueOf(2);
+        BigDecimal total1 = new BigDecimal("22");
+        Product product1 = createProduct(productShortName, fixedCost1, fixedPrice1, unitCost1, unitPrice1);
+        Entity reminderType = addReminder(product1);
+        Entity investigationType = addInvestigation(product1);
+
+        BigDecimal quantity2 = BigDecimal.valueOf(1);
+        BigDecimal unitCost2 = BigDecimal.valueOf(5);
+        BigDecimal unitPrice2 = BigDecimal.valueOf(11);
+        BigDecimal fixedCost2 = BigDecimal.ZERO;
+        BigDecimal fixedPrice2 = BigDecimal.ZERO;
+        BigDecimal discount2 = BigDecimal.ZERO;
+        BigDecimal tax2 = BigDecimal.valueOf(1);
+        BigDecimal total2 = BigDecimal.valueOf(11);
+
+        Product product2 = createProduct(productShortName, fixedCost2, fixedPrice2, unitCost2, unitPrice2);
         User author = TestHelper.createUser();
         context.getContext().setUser(author); // to propagate to acts
 
@@ -278,21 +305,22 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         EditorManager mgr = new EditorManager();
         editor.setPopupEditorManager(mgr);
 
-        // populate quantity, patient, product. If the product is a medication, it should trigger a patient medication
+        // populate quantity, patient, product1. If the product1 is a medication, it should trigger a patient medication
         // editor popup
-        editor.setQuantity(quantity);
+        editor.setQuantity(quantity1);
 
         if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
             // counter sale items have no patient
             editor.setPatient(patient);
         }
-        editor.setProduct(product);
+        editor.setProduct(product1);
 
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
                 // invoice items have a dispensing node
                 assertFalse(editor.isValid()); // not valid while popup is displayed
-                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION); // save the popup editor - should be a medication
+                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
+                // save the popup editor - should be a medication
             }
 
             assertFalse(editor.isValid()); // not valid while popup is displayed
@@ -313,21 +341,61 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         assertNotNull(charge);
         assertNotNull(item);
 
-        checkItem(item, quantity, unitCost, unitPrice, fixedCost, fixedPrice, discount, tax, total);
+        checkItem(item, quantity1, unitCost1, unitPrice1, fixedCost1, fixedPrice1, discount1, tax1, total1);
         ActBean itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
                 // verify there is a medication act
-                checkMedication(item, patient, product, author);
+                checkMedication(item, patient, product1, author);
+            } else {
+                assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             }
             checkInvestigation(item, patient, investigationType, author);
-            checkReminder(item, patient, product, reminderType, author);
+            checkReminder(item, patient, product1, reminderType, author);
         } else {
             // verify there are no medication, investigation nor reminder acts
             assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
             assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
         }
+
+        editor.setProduct(null);       // make sure null's are handled
+        assertFalse(editor.isValid());
+
+        // now replace the product
+        editor.setProduct(product2);
+        editor.setQuantity(quantity2);
+        editor.setDiscount(discount2);
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
+                // invoice items have a dispensing node
+                assertFalse(editor.isValid()); // not valid while popup is displayed
+                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
+                // save the popup editor - should be a medication
+            }
+        }
+        assertTrue(editor.isValid());
+        // save it
+        checkSave(charge, editor);
+
+        item = get(item);
+        assertNotNull(item);
+
+        checkItem(item, quantity2, unitCost2, unitPrice2, fixedCost2, fixedPrice2, discount2, tax2, total2);
+        itemBean = new ActBean(item);
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM) &&
+            TypeHelper.isA(product2, ProductArchetypes.MEDICATION)) {
+            // verify there is a medication act
+            checkMedication(item, patient, product2, author);
+        } else {
+            // verify there is a medication act
+            assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
+        }
+        assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
+        assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
+
+        // verify no errors were logged
+        assertTrue(errors.isEmpty());
     }
 
     /**
@@ -384,6 +452,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         ActBean itemBean = new ActBean(item);
         // verify there are no medication acts
         assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
+
+        // verify no errors were logged
+        assertTrue(errors.isEmpty());
     }
 
     /**

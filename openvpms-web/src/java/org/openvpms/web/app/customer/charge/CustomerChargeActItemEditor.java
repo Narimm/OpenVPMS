@@ -579,38 +579,40 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <p/>
      * This removes any existing reminders, and creates new ones, if required.
      *
-     * @param product the product
+     * @param product the product. May be <tt>null</tt>
      */
     private void updateReminders(Product product) {
         if (reminders != null) {
             for (Act act : reminders.getCurrentActs()) {
                 reminders.remove(act);
             }
-            Map<Entity, EntityRelationship> reminderTypes = getReminderTypes(product);
-            for (Map.Entry<Entity, EntityRelationship> entry : reminderTypes.entrySet()) {
-                Entity reminderType = entry.getKey();
-                EntityRelationship relationship = entry.getValue();
-                Act act = (Act) reminders.create();
-                if (act != null) {
-                    IMObjectEditor editor = reminders.createEditor(act, getLayoutContext());
-                    if (editor instanceof ReminderEditor) {
-                        ReminderEditor reminder = (ReminderEditor) editor;
-                        Date startTime = getStartTime();
-                        reminder.setStartTime(startTime);
-                        reminder.setReminderType(reminderType);
-                        reminder.setPatient(getPatient());
-                        reminder.setProduct(product);
+            if (product != null) {
+                Map<Entity, EntityRelationship> reminderTypes = getReminderTypes(product);
+                for (Map.Entry<Entity, EntityRelationship> entry : reminderTypes.entrySet()) {
+                    Entity reminderType = entry.getKey();
+                    EntityRelationship relationship = entry.getValue();
+                    Act act = (Act) reminders.create();
+                    if (act != null) {
+                        IMObjectEditor editor = reminders.createEditor(act, getLayoutContext());
+                        if (editor instanceof ReminderEditor) {
+                            ReminderEditor reminder = (ReminderEditor) editor;
+                            Date startTime = getStartTime();
+                            reminder.setStartTime(startTime);
+                            reminder.setReminderType(reminderType);
+                            reminder.setPatient(getPatient());
+                            reminder.setProduct(product);
 
-                        // override the due date calculated from the reminder type
-                        Date dueDate = reminderRules.calculateProductReminderDueDate(startTime, relationship);
-                        reminder.setEndTime(dueDate);
-                    }
-                    reminders.addEdited(editor);
-                    IMObjectBean bean = new IMObjectBean(relationship);
-                    boolean interactive = bean.getBoolean("interactive");
-                    if (interactive) {
-                        // queue editing of the act
-                        queuePatientActEditor(editor, true, reminders);
+                            // override the due date calculated from the reminder type
+                            Date dueDate = reminderRules.calculateProductReminderDueDate(startTime, relationship);
+                            reminder.setEndTime(dueDate);
+                        }
+                        reminders.addEdited(editor);
+                        IMObjectBean bean = new IMObjectBean(relationship);
+                        boolean interactive = bean.getBoolean("interactive");
+                        if (interactive) {
+                            // queue editing of the act
+                            queuePatientActEditor(editor, true, reminders);
+                        }
                     }
                 }
             }
