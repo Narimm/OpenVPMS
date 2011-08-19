@@ -24,16 +24,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -41,10 +49,12 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -55,6 +65,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -65,7 +76,15 @@ import java.util.Random;
  * @version $LastChangedDate: $
  */
 public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
+
+    /**
+     * The practice.
+     */
     private Party practice;
+
+    /**
+     * The customer.
+     */
     private Party customer;
 
     /**
@@ -105,6 +124,18 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     }
 
     /**
+     * Tests populating an invoice item with a template product.
+     */
+    @Test
+    public void testInvoiceItemTemplate() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new Money(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct invoice = acts.get(0);
+        FinancialAct item = acts.get(1);
+        checkItemWithTemplate(invoice, item);
+    }
+
+    /**
      * Tests populating a counter sale item with a medication product.
      */
     @Test
@@ -129,6 +160,18 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     }
 
     /**
+     * Tests populating a counter sale item with a template product.
+     */
+    @Test
+    public void testCounterSaleItemTemplate() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesCounter(new Money(100), customer, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct counterSale = acts.get(0);
+        FinancialAct item = acts.get(1);
+        checkItemWithTemplate(counterSale, item);
+    }
+
+    /**
      * Tests populating a credit item with a medication product.
      */
     @Test
@@ -150,6 +193,18 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     @Test
     public void testCreditItemService() {
         checkCreditItem(ProductArchetypes.SERVICE);
+    }
+
+    /**
+     * Tests populating a credit item with a template product.
+     */
+    @Test
+    public void testCreditItemTemplate() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesCredit(new Money(100), customer, null, null,
+                                                                          ActStatus.IN_PROGRESS);
+        FinancialAct credit = acts.get(0);
+        FinancialAct item = acts.get(1);
+        checkItemWithTemplate(credit, item);
     }
 
     /**
@@ -185,7 +240,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      */
     private void checkCreditItem(String productShortName) {
         List<FinancialAct> acts = FinancialTestHelper.createChargesCredit(new Money(100), customer, null, null,
-                                                                           ActStatus.IN_PROGRESS);
+                                                                          ActStatus.IN_PROGRESS);
         FinancialAct credit = acts.get(0);
         FinancialAct item = acts.get(1);
         checkItem(credit, item, productShortName);
@@ -210,6 +265,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         BigDecimal tax = BigDecimal.valueOf(2);
         BigDecimal total = new BigDecimal("22");
         Product product = createProduct(productShortName, fixedCost, fixedPrice, unitCost, unitPrice);
+        Entity reminderType = addReminder(product);
+        Entity investigationType = addInvestigation(product);
         User author = TestHelper.createUser();
         context.getContext().setUser(author); // to propagate to acts
 
@@ -231,12 +288,20 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         }
         editor.setProduct(product);
 
-        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
-            && TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-            // invoice items have a dispensing node
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+                // invoice items have a dispensing node
+                assertFalse(editor.isValid()); // not valid while popup is displayed
+                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION); // save the popup editor - should be a medication
+            }
+
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION); // save the popup editor - should be a medication
+            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
+
+            assertFalse(editor.isValid()); // not valid while popup is displayed
+            checkSavePopup(mgr, ReminderArchetypes.REMINDER);
         }
+
         // editor should now be valid
         assertTrue(editor.isValid());
 
@@ -250,14 +315,75 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
 
         checkItem(item, quantity, unitCost, unitPrice, fixedCost, fixedPrice, discount, tax, total);
         ActBean itemBean = new ActBean(item);
-        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
-            && TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-            // verify there is a medication act
-            checkMedication(item, patient, product, author);
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+                // verify there is a medication act
+                checkMedication(item, patient, product, author);
+            }
+            checkInvestigation(item, patient, investigationType, author);
+            checkReminder(item, patient, product, reminderType, author);
         } else {
-            // verify there are no medication acts
+            // verify there are no medication, investigation nor reminder acts
             assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
+            assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
+            assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
         }
+    }
+
+    /**
+     * Checks populating a charge item with a template product.
+     * <p/>
+     * NOTE: currently, charge items with template products validate correctly, but fail to save.
+     * <p/>This is because the charge item relationship editor will only expand templates if the charge item itself
+     * is valid - marking the item invalid for having a template would prevent this.
+     * TODO - not ideal.
+     *
+     * @param charge the charge
+     * @param item   the charge item
+     */
+    private void checkItemWithTemplate(FinancialAct charge, FinancialAct item) {
+        LayoutContext context = new DefaultLayoutContext();
+        Party patient = TestHelper.createPatient();
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        Product product = createProduct(ProductArchetypes.TEMPLATE, fixedCost, fixedPrice, unitCost, unitPrice);
+        User author = TestHelper.createUser();
+        context.getContext().setUser(author); // to propagate to acts
+
+        CustomerChargeActItemEditor editor = new CustomerChargeActItemEditor(item, charge, context);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        // register a handler for act popups
+        EditorManager mgr = new EditorManager();
+        editor.setPopupEditorManager(mgr);
+
+        // populate quantity, patient, product
+        editor.setQuantity(quantity);
+        if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
+            // counter sale items have no patient
+            editor.setPatient(patient);
+        }
+        editor.setProduct(product);
+
+        // editor should now be valid, but won't save
+        assertTrue(editor.isValid());
+
+        try {
+            save(charge, editor);
+            fail("Expected save to fail");
+        } catch (IllegalStateException expected) {
+            assertEquals("Cannot save with product template: " + product.getName(), expected.getMessage());
+        }
+
+        checkItem(item, quantity, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                  BigDecimal.ZERO, BigDecimal.ZERO);
+        ActBean itemBean = new ActBean(item);
+        // verify there are no medication acts
+        assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
     }
 
     /**
@@ -311,6 +437,57 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies a patient investigation act matches that expected.
+     *
+     * @param item              the charge item, linked to the investigation
+     * @param patient           the expected patient
+     * @param investigationType the expected investigation type
+     * @param author            the expected author
+     */
+    private void checkInvestigation(Act item, Party patient, Entity investigationType, User author) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> investigations = itemBean.getNodeActs("investigations");
+        assertEquals(1, investigations.size());
+
+        Act investigation = investigations.get(0);
+        ActBean bean = new ActBean(investigation);
+        assertTrue(bean.isA(InvestigationArchetypes.PATIENT_INVESTIGATION));
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(investigationType.getObjectReference(), bean.getNodeParticipantRef("investigationType"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+    }
+
+    /**
+     * Verifies a patient reminder act matches that expected.
+     *
+     * @param item         the charge item, linked to the reminder
+     * @param patient      the expected patient
+     * @param product      the expected product
+     * @param reminderType the expected reminder type
+     * @param author       the expected author
+     */
+    private void checkReminder(Act item, Party patient, Product product, Entity reminderType, User author) {
+        ActBean itemBean = new ActBean(item);
+        ReminderRules rules = new ReminderRules();
+        List<Act> reminders = itemBean.getNodeActs("reminders");
+        assertEquals(1, reminders.size());
+
+        EntityBean productBean = new EntityBean(product);
+        List<EntityRelationship> rels = productBean.getNodeRelationships("reminders");
+        assertEquals(1, rels.size());
+        Act reminder = reminders.get(0);
+        ActBean bean = new ActBean(reminder);
+        assertTrue(bean.isA(ReminderArchetypes.REMINDER));
+        assertEquals(item.getActivityStartTime(), reminder.getActivityStartTime());
+        Date dueDate = rules.calculateProductReminderDueDate(item.getActivityStartTime(), rels.get(0));
+        assertEquals(0, DateRules.compareTo(reminder.getActivityEndTime(), dueDate));
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(reminderType.getObjectReference(), bean.getNodeParticipantRef("reminderType"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+    }
+
+    /**
      * Saves the current popup editor.
      *
      * @param mgr       the popup editor manager
@@ -319,9 +496,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     private void checkSavePopup(EditorManager mgr, String shortName) {
         EditDialog dialog = mgr.getCurrent();
         assertNotNull(dialog);
-        assertTrue(TypeHelper.isA(dialog.getEditor().getObject(), shortName));
+        IMObjectEditor editor = dialog.getEditor();
+        assertTrue(TypeHelper.isA(editor.getObject(), shortName));
+        assertTrue(editor.isValid());
         clickDialogOK(dialog);
-        assertTrue(dialog.getEditor().isValid());
     }
 
     /**
@@ -331,13 +509,55 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      * @param editor the charge item editor
      */
     private void checkSave(final FinancialAct charge, final CustomerChargeActItemEditor editor) {
+        boolean result = save(charge, editor);
+        assertTrue(result);
+    }
+
+    /**
+     * Saves a charge and charge item editor in a single transaction.
+     *
+     * @param charge the charge
+     * @param editor the charge item editor
+     * @return <tt>true</tt> if the save was successful, otherwise <tt>false</tt>
+     */
+    private boolean save(final FinancialAct charge, final CustomerChargeActItemEditor editor) {
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-        boolean result = template.execute(new TransactionCallback<Boolean>() {
+        return template.execute(new TransactionCallback<Boolean>() {
             public Boolean doInTransaction(TransactionStatus status) {
                 return SaveHelper.save(charge) && editor.save();
             }
         });
-        assertTrue(result);
+    }
+
+    /**
+     * Adds an investigation type to a product.
+     *
+     * @param product the product
+     * @return the investigation type
+     */
+    private Entity addInvestigation(Product product) {
+        Entity investigation = (Entity) create(InvestigationArchetypes.INVESTIGATION_TYPE);
+        investigation.setName("X-TestInvestigationType-" + investigation.hashCode());
+        EntityBean productBean = new EntityBean(product);
+        productBean.addNodeRelationship("investigationTypes", investigation);
+        save(investigation, product);
+        return investigation;
+    }
+
+    /**
+     * Adds an interactive reminder type to a product.
+     *
+     * @param product the product
+     * @return the reminder type
+     */
+    private Entity addReminder(Product product) {
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        EntityBean productBean = new EntityBean(product);
+        EntityRelationship rel = productBean.addNodeRelationship("reminders", reminderType);
+        IMObjectBean relBean = new IMObjectBean(rel);
+        relBean.setValue("interactive", true);
+        save(product, reminderType);
+        return reminderType;
     }
 
     /**

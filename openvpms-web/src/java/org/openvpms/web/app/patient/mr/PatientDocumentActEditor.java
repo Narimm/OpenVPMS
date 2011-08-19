@@ -18,8 +18,11 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -33,16 +36,24 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 public class PatientDocumentActEditor extends DocumentActEditor {
 
     /**
-     * Creates a new <code>PatientDocumentActEditor</code>.
+     * Constructs a <tt>PatientDocumentActEditor</tt>.
      *
      * @param act     the act
      * @param parent  the parent
      * @param context the layout context
      */
-    public PatientDocumentActEditor(DocumentAct act, IMObject parent,
-                                    LayoutContext context) {
+    public PatientDocumentActEditor(DocumentAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
-        initParticipant("patient", context.getContext().getPatient());
+        boolean initPatient = false;
+        if (parent != null && parent instanceof Act) {
+            ActBean bean = new ActBean((Act) parent);
+            if (bean.hasNode("patient")) {
+                initParticipant("patient", bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION));
+                initPatient = true;
+            }
+        }
+        if (!initPatient) {
+            initParticipant("patient", context.getContext().getPatient());
+        }
     }
-
 }
