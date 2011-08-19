@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -106,6 +107,20 @@ public abstract class SingleIMObjectCollectionEditor
      */
     protected Component doLayout(LayoutContext context) {
         return createComponent();
+    }
+
+    /**
+     * Invoked when the collection or an editor changes. Notifies registered listeners.
+     * <p/>
+     * This implementation ensures that optional collection items are mapped to the collection when they change,
+     * using {@link #mapObject}.
+     *
+     * @param modifiable the modifiable to pass to the listeners
+     */
+    @Override
+    protected void modified(Modifiable modifiable) {
+        super.modified(modifiable);
+        mapObject();
     }
 
     /**
