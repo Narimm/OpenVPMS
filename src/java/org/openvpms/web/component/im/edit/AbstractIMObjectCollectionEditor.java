@@ -119,7 +119,7 @@ public abstract class AbstractIMObjectCollectionEditor
         this.context = context;
         broadcaster = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                listeners.notifyListeners(modifiable);
+                AbstractIMObjectCollectionEditor.this.modified(modifiable);
             }
         };
         collection.addModifiableListener(broadcaster);
@@ -474,10 +474,18 @@ public abstract class AbstractIMObjectCollectionEditor
     }
 
     /**
+     * Invoked when the collection or an editor changes. Notifies registered listeners.
+     *
+     * @param modifiable the modifiable to pass to the listeners
+     */
+    protected void modified(Modifiable modifiable) {
+        listeners.notifyListeners(modifiable);
+    }
+
+    /**
      * Saves any current edits.
      *
-     * @return <tt>true</tt> if edits were saved successfully, otherwise
-     *         <tt>false</tt>
+     * @return <tt>true</tt> if edits were saved successfully, otherwise <tt>false</tt>
      */
     protected boolean doSave() {
         if (editor != null) {
