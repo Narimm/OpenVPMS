@@ -22,10 +22,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierTestHelper;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -36,6 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.system.ServiceHelper;
@@ -143,6 +146,29 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that a template with no products included is replaced with a null when expanded.
+     * <p/>
+     * This ensures that template products are not saved as charge items.
+     */
+    @Test
+    public void testTemplateExpansionForTemplateWithNoIncludes() {
+        final FinancialAct invoice = createInvoice();
+
+        final TestEditor itemsEditor = createActRelationshipCollectionEditor(invoice, 0);
+        itemsEditor.setExcludeDefaultValueObject(false);
+        itemsEditor.onNew(); // add a single item
+
+        CustomerChargeActItemEditor editor = (CustomerChargeActItemEditor) itemsEditor.getCurrentEditor();
+        assertNotNull(editor);
+        Party patient = TestHelper.createPatient();
+        Product product = TestHelper.createProduct(ProductArchetypes.TEMPLATE, null);
+        editor.setPatient(patient);
+        editor.setProduct(product);
+        assertFalse(itemsEditor.isValid());
+        assertNull(editor.getProductRef()); // template product should be replaced with null
+    }
+
+    /**
      * Verifies a parent act has the correct no. of act items.
      *
      * @param parent   the parent act
@@ -169,13 +195,12 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         // NOTE: may trigger addition of relationship to parent if not already present
 
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                save(parent);
-                itemsEditor.save();
-                return true;
+        boolean result = template.execute(new TransactionCallback<Boolean>() {
+            public Boolean doInTransaction(TransactionStatus status) {
+                return SaveHelper.save(parent) && itemsEditor.save();
             }
         });
+        assertTrue(result);
     }
 
     /**

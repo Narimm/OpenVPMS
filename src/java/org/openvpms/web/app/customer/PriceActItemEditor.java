@@ -82,6 +82,26 @@ public class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
+     * Save any edits.
+     * <p/>
+     * This implementation will throw an exception if the product is an <em>product.template</em>.
+     * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
+     * acts. TODO
+     *
+     * @return <tt>true</tt> if the save was successful
+     * @throws IllegalStateException if the product is a template
+     */
+    @Override
+    protected boolean doSave() {
+        if (TypeHelper.isA(getProductRef(), ProductArchetypes.TEMPLATE)) {
+            Product product = getProduct();
+            String name  = product != null ? product.getName() : null;
+            throw new IllegalStateException("Cannot save with product template: " + name);
+        }
+        return super.doSave();
+    }
+
+    /**
      * Invoked when the product is changed.
      *
      * @param product the product. May be <tt>null</tt>

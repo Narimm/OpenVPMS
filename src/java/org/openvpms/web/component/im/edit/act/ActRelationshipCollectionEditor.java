@@ -113,20 +113,41 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
+     * Adds any object being edited to the collection, if it is valid.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object is valid, otherwise <tt>false</tt>
+     */
+    @Override
+    protected boolean addCurrentEdits(Validator validator) {
+        boolean valid = true;
+        IMObjectEditor editor = getCurrentEditor();
+        if (editor != null) {
+            valid = validator.validate(editor);
+            if (valid) {
+                boolean checkValid = needsTemplateExpansion(editor);
+                addEdited(editor);
+                if (checkValid) {
+                    valid = validator.validate(editor);
+                }
+            }
+        }
+        return valid;
+    }
+
+    /**
      * Adds the object being edited to the collection, if it doesn't exist.
      * <p/>
      * The object will be selected.
      *
      * @param editor the editor
-     * @return <code>true</code> if the object was added, otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
      */
     @Override
     public boolean addEdited(IMObjectEditor editor) {
         boolean result = false;
         Act act = (Act) editor.getObject();
-        if (editor instanceof ActItemEditor
-            && hasProductTemplate((ActItemEditor) editor)) {
+        if (needsTemplateExpansion(editor)) {
             IMObjectReference product = ((ActItemEditor) editor).getProductRef();
             if (TypeHelper.isA(product, TEMPLATE)) {
                 result = expandTemplate((ActItemEditor) editor, act, product);
@@ -277,8 +298,8 @@ public class ActRelationshipCollectionEditor
      * Determines if an act contains a product template.
      *
      * @param act the act
-     * @return <code>true</code> if the act contains a product template,
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the act contains a product template,
+     *         otherwise <tt>false</tt>
      */
     protected IMObjectReference getProductTemplate(Act act) {
         Participation participant = IMObjectHelper.getObject(
@@ -298,18 +319,15 @@ public class ActRelationshipCollectionEditor
      * @param editor      the editor
      * @param act         the act
      * @param templateRef a reference to the template
-     * @return <code>true</code> if the template was expanded; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the template was expanded; otherwise <tt>false</tt>
      */
-    protected boolean expandTemplate(ActItemEditor editor, Act act,
-                                     IMObjectReference templateRef) {
+    protected boolean expandTemplate(ActItemEditor editor, Act act, IMObjectReference templateRef) {
         boolean result = false;
         IMObject template = getObject(templateRef);
         if (template != null) {
             ActRelationshipCollectionPropertyEditor collection = getEditor();
 
-            IMObjectCopier copier = new IMObjectCopier(
-                    new ActItemCopyHandler());
+            IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
             IMObjectBean bean = new IMObjectBean(template);
             List<IMObject> values = bean.getValues("includes");
             Act copy = act; // replace the existing act with the first
@@ -328,12 +346,10 @@ public class ActRelationshipCollectionEditor
                     context.setCache(getContext().getCache());
                     editor = (ActItemEditor) createEditor(copy, context);
 
-                    // reset the start-time, which may have been set by
-                    // the editor
+                    // reset the start-time, which may have been set by the editor
                     copy.setActivityStartTime(startTime);
 
-                    // create the component - must do this to ensure that
-                    // the product editor is created
+                    // create the component - must do this to ensure that the product editor is created
                     editor.getComponent();
                 }
                 editor.setProductRef(product);
@@ -351,6 +367,10 @@ public class ActRelationshipCollectionEditor
                 copy = null;
                 result = true;
             }
+        }
+        if (!result) {
+            // template failed to expand. Clear the product reference so its not saved.
+            editor.setProductRef(null);
         }
         return result;
     }
@@ -421,15 +441,17 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
-     * Helper to determine if an editor has a template product that needs
-     * expanding.
+     * Determines if an editor has a template product that needs expanding.
      *
      * @param editor the editor
-     * @return true if the editor has a template product
+     * @return <tt>true</tt> iif the editor has a template product
      */
-    private boolean hasProductTemplate(ActItemEditor editor) {
-        IMObjectReference product = editor.getProductRef();
-        return TypeHelper.isA(product, TEMPLATE);
+    private boolean needsTemplateExpansion(IMObjectEditor editor) {
+        if (editor instanceof ActItemEditor) {
+            IMObjectReference product = ((ActItemEditor) editor).getProductRef();
+            return TypeHelper.isA(product, TEMPLATE);
+        }
+        return false;
     }
 
     private class ActItemCopyHandler extends ActCopyHandler {
