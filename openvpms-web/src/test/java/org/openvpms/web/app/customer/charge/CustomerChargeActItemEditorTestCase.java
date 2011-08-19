@@ -24,6 +24,7 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -270,8 +271,14 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      */
     private void checkItem(FinancialAct charge, FinancialAct item, String productShortName) {
         LayoutContext context = new DefaultLayoutContext();
-        Party patient = TestHelper.createPatient();
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+        User author1 = TestHelper.createUser();
+        User author2 = TestHelper.createUser();
+        User clinician1 = TestHelper.createUser();
+        User clinician2 = TestHelper.createUser();
 
+        // create product1 with reminder and investigation type
         BigDecimal quantity1 = BigDecimal.valueOf(2);
         BigDecimal unitCost1 = BigDecimal.valueOf(5);
         BigDecimal unitPrice1 = BigDecimal.valueOf(10);
@@ -284,6 +291,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         Entity reminderType = addReminder(product1);
         Entity investigationType = addInvestigation(product1);
 
+        // create  product2 with no reminder no investigation type
         BigDecimal quantity2 = BigDecimal.valueOf(1);
         BigDecimal unitCost2 = BigDecimal.valueOf(5);
         BigDecimal unitPrice2 = BigDecimal.valueOf(11);
@@ -294,9 +302,12 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         BigDecimal total2 = BigDecimal.valueOf(11);
 
         Product product2 = createProduct(productShortName, fixedCost2, fixedPrice2, unitCost2, unitPrice2);
-        User author = TestHelper.createUser();
-        context.getContext().setUser(author); // to propagate to acts
 
+        // set up the context
+        context.getContext().setUser(author1); // to propagate to acts
+        context.getContext().setClinician(clinician1);
+
+        // create the editor
         CustomerChargeActItemEditor editor = new CustomerChargeActItemEditor(item, charge, context);
         editor.getComponent();
         assertFalse(editor.isValid());
@@ -305,13 +316,13 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         EditorManager mgr = new EditorManager();
         editor.setPopupEditorManager(mgr);
 
-        // populate quantity, patient, product1. If the product1 is a medication, it should trigger a patient medication
+        // populate quantity, patient, product. If product1 is a medication, it should trigger a patient medication
         // editor popup
         editor.setQuantity(quantity1);
 
         if (!TypeHelper.isA(item, CustomerAccountArchetypes.COUNTER_ITEM)) {
             // counter sale items have no patient
-            editor.setPatient(patient);
+            editor.setPatient(patient1);
         }
         editor.setProduct(product1);
 
@@ -341,17 +352,19 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         assertNotNull(charge);
         assertNotNull(item);
 
-        checkItem(item, quantity1, unitCost1, unitPrice1, fixedCost1, fixedPrice1, discount1, tax1, total1);
+        // verify the item matches that expected
+        checkItem(item, patient1, product1, author1, clinician1, quantity1, unitCost1, unitPrice1, fixedCost1,
+                  fixedPrice1, discount1, tax1, total1);
         ActBean itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
             if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
                 // verify there is a medication act
-                checkMedication(item, patient, product1, author);
+                checkMedication(item, patient1, product1, author1, clinician1);
             } else {
                 assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             }
-            checkInvestigation(item, patient, investigationType, author);
-            checkReminder(item, patient, product1, reminderType, author);
+            checkInvestigation(item, patient1, investigationType, author1, clinician1);
+            checkReminder(item, patient1, product1, reminderType, author1, clinician1);
         } else {
             // verify there are no medication, investigation nor reminder acts
             assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
@@ -359,40 +372,44 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
             assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
         }
 
-        editor.setProduct(null);       // make sure null's are handled
-        assertFalse(editor.isValid());
-
-        // now replace the product
+        // now replace the patient, product, author and clinician
+        if (itemBean.hasNode("patient")) {
+            editor.setPatient(patient2);
+        }
         editor.setProduct(product2);
         editor.setQuantity(quantity2);
         editor.setDiscount(discount2);
-        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
-                // invoice items have a dispensing node
-                assertFalse(editor.isValid()); // not valid while popup is displayed
-                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
-                // save the popup editor - should be a medication
-            }
+        editor.setAuthor(author2);
+        if (itemBean.hasNode("clinician")) {
+            editor.setClinician(clinician2);
         }
+
+        // should be no more popups. For medication products, the
+        assertNull(mgr.getCurrent());  // no new popup - existing medication should update
         assertTrue(editor.isValid());
+
         // save it
         checkSave(charge, editor);
 
         item = get(item);
         assertNotNull(item);
 
-        checkItem(item, quantity2, unitCost2, unitPrice2, fixedCost2, fixedPrice2, discount2, tax2, total2);
+        checkItem(item, patient2, product2, author2, clinician2, quantity2, unitCost2, unitPrice2, fixedCost2,
+                  fixedPrice2, discount2, tax2, total2);
         itemBean = new ActBean(item);
-        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM) &&
-            TypeHelper.isA(product2, ProductArchetypes.MEDICATION)) {
-            // verify there is a medication act
-            checkMedication(item, patient, product2, author);
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
+            && TypeHelper.isA(product2, ProductArchetypes.MEDICATION)) {
+            // verify there is a medication act. Note that it retains the original author
+            checkMedication(item, patient2, product2, author1, clinician2);
         } else {
             // verify there is a medication act
             assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
         }
         assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
         assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
+
+        editor.setProduct(null);       // make sure nulls are handled
+        assertFalse(editor.isValid());
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
@@ -419,7 +436,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         BigDecimal fixedPrice = BigDecimal.valueOf(2);
         Product product = createProduct(ProductArchetypes.TEMPLATE, fixedCost, fixedPrice, unitCost, unitPrice);
         User author = TestHelper.createUser();
+        User clinician = TestHelper.createUser();
         context.getContext().setUser(author); // to propagate to acts
+        context.getContext().setClinician(clinician);
 
         CustomerChargeActItemEditor editor = new CustomerChargeActItemEditor(item, charge, context);
         editor.getComponent();
@@ -447,8 +466,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
             assertEquals("Cannot save with product template: " + product.getName(), expected.getMessage());
         }
 
-        checkItem(item, quantity, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, BigDecimal.ZERO);
+        checkItem(item, patient, product, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
+                  BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         ActBean itemBean = new ActBean(item);
         // verify there are no medication acts
         assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
@@ -461,6 +480,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      * Verifies an item's properties match that expected.
      *
      * @param item       the item to check
+     * @param patient    the expected patient
+     * @param product    the expected product
+     * @param author     the expected author
+     * @param clinician  the expected clinician
      * @param quantity   the expected quantity
      * @param unitCost   the expected unit cost
      * @param unitPrice  the expected unit price
@@ -470,10 +493,18 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      * @param tax        the expected tax
      * @param total      the expected total
      */
-    private void checkItem(FinancialAct item, BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice,
-                           BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax,
-                           BigDecimal total) {
+    private void checkItem(FinancialAct item, Party patient, Product product, User author, User clinician,
+                           BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice, BigDecimal fixedCost,
+                           BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax, BigDecimal total) {
         ActBean bean = new ActBean(item);
+        if (bean.hasNode("patient")) {
+            assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        }
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        if (bean.hasNode("clinician")) {
+            assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        }
         checkEquals(quantity, bean.getBigDecimal("quantity"));
         checkEquals(fixedCost, bean.getBigDecimal("fixedCost"));
         checkEquals(fixedPrice, bean.getBigDecimal("fixedPrice"));
@@ -487,12 +518,14 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     /**
      * Verifies a patient medication act matches that expected.
      *
-     * @param item    the charge item, linked to the medication
-     * @param patient the expected patient
-     * @param product the expected product
-     * @param author  the expected author
+     * @param item      the charge item, linked to the medication
+     * @param patient   the expected patient
+     * @param product   the expected product
+     * @param author    the expected author
+     * @param clinician the expected clinician
      */
-    private void checkMedication(Act item, Party patient, Product product, User author) {
+    private void checkMedication(FinancialAct item, Party patient, Product product, User author,
+                                 User clinician) {
         ActBean itemBean = new ActBean(item);
         List<Act> dispensing = itemBean.getNodeActs("dispensing");
         assertEquals(1, dispensing.size());
@@ -505,6 +538,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
         assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        checkEquals(item.getQuantity(), bean.getBigDecimal("quantity"));
     }
 
     /**
@@ -514,8 +549,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      * @param patient           the expected patient
      * @param investigationType the expected investigation type
      * @param author            the expected author
+     * @param clinician         the expected clinician
      */
-    private void checkInvestigation(Act item, Party patient, Entity investigationType, User author) {
+    private void checkInvestigation(Act item, Party patient, Entity investigationType, User author, User clinician) {
         ActBean itemBean = new ActBean(item);
         List<Act> investigations = itemBean.getNodeActs("investigations");
         assertEquals(1, investigations.size());
@@ -526,6 +562,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         assertEquals(investigationType.getObjectReference(), bean.getNodeParticipantRef("investigationType"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
     }
 
     /**
@@ -536,8 +573,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
      * @param product      the expected product
      * @param reminderType the expected reminder type
      * @param author       the expected author
+     * @param clinician    the expected clinician
      */
-    private void checkReminder(Act item, Party patient, Product product, Entity reminderType, User author) {
+    private void checkReminder(Act item, Party patient, Product product, Entity reminderType, User author,
+                               User clinician) {
         ActBean itemBean = new ActBean(item);
         ReminderRules rules = new ReminderRules();
         List<Act> reminders = itemBean.getNodeActs("reminders");
@@ -556,6 +595,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         assertEquals(reminderType.getObjectReference(), bean.getNodeParticipantRef("reminderType"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
     }
 
     /**
@@ -748,6 +788,15 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         protected void edit(EditDialog dialog) {
             super.edit(dialog);
             current = dialog;
+        }
+
+        /**
+         * Invoked when the edit is completed.
+         */
+        @Override
+        protected void editCompleted() {
+            super.editCompleted();
+            current = null;
         }
     }
 }

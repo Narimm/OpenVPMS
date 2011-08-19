@@ -84,6 +84,9 @@ public class PriceActItemEditor extends ActItemEditor {
     /**
      * Save any edits.
      * <p/>
+     * This implementation saves the current object before children, to ensure deletion of child acts
+     * don't result in StaleObjectStateException exceptions.
+     * <p/>
      * This implementation will throw an exception if the product is an <em>product.template</em>.
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
@@ -98,7 +101,11 @@ public class PriceActItemEditor extends ActItemEditor {
             String name  = product != null ? product.getName() : null;
             throw new IllegalStateException("Cannot save with product template: " + name);
         }
-        return super.doSave();
+        boolean saved = saveObject();
+        if (saved) {
+            saved = saveChildren();
+        }
+        return saved;
     }
 
     /**

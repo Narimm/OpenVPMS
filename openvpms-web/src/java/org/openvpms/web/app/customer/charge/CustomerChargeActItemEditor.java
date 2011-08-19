@@ -861,7 +861,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the editors
      */
     private Set<ReminderEditor> getReminderEditors() {
-        return getActEditors(investigations);
+        return getActEditors(reminders);
     }
 
     /**

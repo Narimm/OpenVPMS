@@ -81,6 +81,7 @@ class PopupEditorManager {
      */
     protected void editNext() {
         if (queue.isEmpty()) {
+            editCompleted();
             return;
         }
         State state = queue.removeFirst();
@@ -119,6 +120,12 @@ class PopupEditorManager {
      */
     protected void edit(EditDialog dialog) {
         dialog.show();
+    }
+
+    /**
+     * Invoked when the edit is completed.
+     */
+    protected void editCompleted() {
     }
 
     /**
