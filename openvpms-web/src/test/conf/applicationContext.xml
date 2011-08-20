@@ -117,21 +117,33 @@
         <constructor-arg index="0" ref="imObjectDao"/>
     </bean>
 
-    <!--  The Archetype Service -->
+    <!-- The Archetype service -->
     <bean id="archetypeService"
           class="org.openvpms.component.business.service.archetype.ArchetypeService">
-        <constructor-arg index="0">
-            <ref local="archetypeDescriptorCache"/>
-        </constructor-arg>
-        <property name="dao">
-            <ref local="imObjectDao"/>
+        <constructor-arg ref="archetypeDescriptorCache"/>
+        <property name="dao" ref="imObjectDao"/>
+        <property name="ruleEngine" ref="ruleEngine"/>
+    </bean>
+
+    <!--  The Archetype Rule service -->
+    <bean id="archetypeRuleService"
+          class="org.openvpms.component.business.service.archetype.rule.ArchetypeRuleService">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="ruleEngine"/>
+        <constructor-arg ref="txnManager"/>
+        <property name="facts">
+            <!-- make currencies available to rules -->
+            <list>
+                <ref bean="currencies"/>
+                <ref bean="lookupService"/>
+            </list>
         </property>
     </bean>
 
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
         <constructor-arg index="0">
-            <ref local="archetypeService"/>
+            <ref local="archetypeRuleService"/>
         </constructor-arg>
     </bean>
 
@@ -172,6 +184,42 @@
         </constructor-arg>
     </bean>
 
+    <!-- ================================================================== -->
+    <!--                 RULES ENGINE (DROOLS)                              -->
+    <!-- ================================================================== -->
+
+    <!-- The local ruleServiceProvider. We can have as many different ruleProviders as we want -->
+    <bean id="ruleServiceProvider"
+          class="org.springmodules.jsr94.factory.DefaultRuleServiceProviderFactoryBean">
+        <property name="provider" value="http://drools.org"/>
+        <property name="providerClass"
+                  value="org.drools.jsr94.rules.RuleServiceProviderImpl"/>
+    </bean>
+
+    <!-- The local ruleRuntime. Usually, there is one ruleRuntime bean for each ruleServiceProvider bean. -->
+    <bean id="ruleRuntime"
+          class="org.springmodules.jsr94.factory.RuleRuntimeFactoryBean">
+        <property name="serviceProvider" ref="ruleServiceProvider"/>
+    </bean>
+
+    <!-- the local ruleAdministrator. Usually, there is one ruleAdministrator bean for each ruleServiceProvider bean -->
+    <bean id="ruleAdministrator"
+          class="org.springmodules.jsr94.factory.RuleAdministratorFactoryBean">
+        <property name="serviceProvider" ref="ruleServiceProvider"/>
+    </bean>
+
+    <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
+    <bean id="ruleSource"
+          class="org.openvpms.component.business.service.ruleengine.RuleDescriptorRuleSource">
+        <property name="ruleRuntime" ref="ruleRuntime"/>
+        <property name="ruleAdministrator" ref="ruleAdministrator"/>
+    </bean>
+
+    <!--  The Rule engine -->
+    <bean id="ruleEngine"
+          class="org.openvpms.component.business.service.ruleengine.RuleEngine">
+        <constructor-arg ref="ruleSource"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        MISC                                        -->

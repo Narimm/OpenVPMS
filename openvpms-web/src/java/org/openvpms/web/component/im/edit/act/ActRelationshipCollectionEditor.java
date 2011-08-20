@@ -405,7 +405,7 @@ public class ActRelationshipCollectionEditor
                 } else if (inListSize - 1 < collection.getMinCardinality()) {
                     if (!inList) {
                         // add it if its required to get closer to min cardinality
-                        collection.add(object);
+                        addEdited(editor);
                     }
                 } else {
                     // can exclude
@@ -413,7 +413,7 @@ public class ActRelationshipCollectionEditor
                 }
             } else {
                 // user has changed the object, so ensure it is added
-                collection.add(object);
+                addEdited(editor);
             }
         }
         return excluded;

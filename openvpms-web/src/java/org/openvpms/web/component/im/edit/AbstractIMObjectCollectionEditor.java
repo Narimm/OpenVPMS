@@ -461,7 +461,9 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     protected boolean addEdited(IMObjectEditor editor) {
         IMObject object = editor.getObject();
-        return collection.add(object);
+        boolean added = collection.add(object);
+        addEditor(object, editor);
+        return added;
     }
 
     /**
