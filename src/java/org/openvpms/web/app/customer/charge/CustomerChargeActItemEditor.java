@@ -64,7 +64,6 @@ import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.reminder.ReminderEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
@@ -524,9 +523,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
                     Act act = (Act) dispensing.create();
                     if (act != null) {
                         boolean dispensingLabel = hasDispensingLabel(product);
-                        LayoutContext context = new DefaultLayoutContext(true);
-                        context.setContext(getLayoutContext().getContext());
-                        IMObjectEditor editor = dispensing.createEditor(act, context);
+                        IMObjectEditor editor = dispensing.getEditor(act);
                         if (editor instanceof PatientMedicationActEditor) {
                             // display the product read-only to ensure it is consistent with the charge item
                             ((PatientMedicationActEditor) editor).setProductReadOnly(true);

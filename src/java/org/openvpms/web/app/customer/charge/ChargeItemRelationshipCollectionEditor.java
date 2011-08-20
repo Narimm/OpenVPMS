@@ -18,8 +18,6 @@
 
 package org.openvpms.web.app.customer.charge;
 
-import java.util.Date;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -31,6 +29,8 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+
+import java.util.Date;
 
 
 /**
@@ -45,28 +45,35 @@ import org.openvpms.web.component.property.ModifiableListener;
 public class ChargeItemRelationshipCollectionEditor
         extends AltModelActRelationshipCollectionEditor {
 
-	/**
+    /**
      * Last Selected Item Date.
      */
-	private Date lastItemDate = null;
-	
+    private Date lastItemDate = null;
+
     /**
      * The popup editor manager.
      */
-    private final PopupEditorManager popupEditorMgr = new PopupEditorManager();
+    private PopupEditorManager popupEditorMgr = new PopupEditorManager();
 
 
     /**
-     * Constructs a new <tt>ChargeItemRelationshipCollectionEditor</tt>.
+     * Constructs a <tt>ChargeItemRelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public ChargeItemRelationshipCollectionEditor(CollectionProperty property,
-                                                  Act act,
-                                                  LayoutContext context) {
+    public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
+    }
+
+    /**
+     * Sets the popup editor manager.
+     *
+     * @param manager the popup editor manager
+     */
+    public void setPopupEditorManager(PopupEditorManager manager) {
+        popupEditorMgr = manager;
     }
 
     /**
@@ -82,20 +89,20 @@ public class ChargeItemRelationshipCollectionEditor
         if (editor instanceof CustomerChargeActItemEditor) {
             ((CustomerChargeActItemEditor) editor).setPopupEditorManager(popupEditorMgr);
         }
-        
+
         // Set startTime to to last used value
         if (lastItemDate != null) {
-        	editor.getProperty("startTime").setValue(lastItemDate);
+            editor.getProperty("startTime").setValue(lastItemDate);
         }
-        
+
         // add a listener to store the last used item starttime.
         ModifiableListener startTimeListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                lastItemDate = (Date)editor.getProperty("startTime").getValue();
+                lastItemDate = (Date) editor.getProperty("startTime").getValue();
             }
         };
-        editor.getProperty("startTime").addModifiableListener(startTimeListener);        
-        
+        editor.getProperty("startTime").addModifiableListener(startTimeListener);
+
         return editor;
     }
 

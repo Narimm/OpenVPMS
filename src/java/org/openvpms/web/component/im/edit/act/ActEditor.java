@@ -66,12 +66,9 @@ public abstract class ActEditor extends AbstractActEditor {
                         LayoutContext context) {
         super(act, parent, context);
         if (editItems) {
-            CollectionProperty items
-                    = (CollectionProperty) getProperty("items");
+            CollectionProperty items = (CollectionProperty) getProperty("items");
             if (items != null && !items.isHidden()) {
-                editor = (ActRelationshipCollectionEditor)
-                        IMObjectCollectionEditorFactory.create(
-                                items, act, getLayoutContext());
+                editor = createItemsEditor(act, items);
                 editor.addModifiableListener(new ModifiableListener() {
                     public void modified(Modifiable modifiable) {
                         onItemsChanged();
@@ -83,9 +80,20 @@ public abstract class ActEditor extends AbstractActEditor {
     }
 
     /**
-     * Returns the act collection editor.
+     * Creates a collection editor for the items collection.
      *
-     * @return the act collection editor. May be <tt>null</tt>
+     * @param act   the act
+     * @param items the items collection
+     * @return a new collection editor
+     */
+    protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
+        return (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(items, act, getLayoutContext());
+    }
+
+    /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be <tt>null</tt>
      */
     protected ActRelationshipCollectionEditor getEditor() {
         return editor;
