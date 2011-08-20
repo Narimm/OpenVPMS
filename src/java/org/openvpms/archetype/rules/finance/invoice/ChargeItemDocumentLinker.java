@@ -55,17 +55,34 @@ import java.util.Set;
 public class ChargeItemDocumentLinker {
 
     /**
+     * The charge item.
+     */
+    private final FinancialAct item;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * The acts to remove.
+     */
+    private List<Act> toRemove = new ArrayList<Act>();
+
+    /**
+     * The acts to save.
+     */
+    private List<Act> toSave = new ArrayList<Act>();
 
 
     /**
      * Constructs a <tt>ChargeItemDocumentLinker</tt>.
      *
-     * @param service the archetype service.
+     * @param item    the item
+     * @param service the archetype service
      */
-    public ChargeItemDocumentLinker(IArchetypeService service) {
+    public ChargeItemDocumentLinker(FinancialAct item, IArchetypeService service) {
+        this.item = item;
         this.service = service;
     }
 
@@ -82,15 +99,26 @@ public class ChargeItemDocumentLinker {
      * </ol>
      * <li>creates acts for each document template that doesn't yet have an act</li>
      * </ol>
-     * This saves all related acts with the exception of the charge item.
+     * This is the same as invoking:
+     * <pre>
+     * prepare();
+     * commit();
+     * </pre>
+     * Use {@link #prepare} and {@link #commit(boolean)} if the charge item must be saved independently.
      *
-     * @param item the invoice item
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void link(FinancialAct item) {
-        List<Act> toRemove = new ArrayList<Act>(); // acts to remove
-        List<Act> toSave = new ArrayList<Act>();   // acts to save
+    public void link() {
+        prepare();
+        commit();
+    }
 
+    /**
+     * Prepares the charge item and documents for commit.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void prepare() {
         // map of template references to their corresponding entity relationship, obtained from the product
         Map<IMObjectReference, EntityRelationship> productTemplates
                 = new HashMap<IMObjectReference, EntityRelationship>();
@@ -116,10 +144,11 @@ public class ChargeItemDocumentLinker {
         // get document acts associated with the item
         List<Act> documents = itemBean.getNodeActs("documents");
 
-        // for each document, determine if the product, patient or clinician has changed. If so, remove the document
+        // for each document, determine if the product, patient, author or clinician has changed. If so, remove it
         for (Act document : documents.toArray(new Act[documents.size()])) {
             ActBean bean = new ActBean(document, service);
-            if (productChanged(bean, product) || patientChanged(bean, itemBean) || clinicianChanged(bean, itemBean)) {
+            if (productChanged(bean, product) || patientChanged(bean, itemBean) || authorChanged(bean, itemBean)
+                || clinicianChanged(bean, itemBean)) {
                 toRemove.add(document);
                 ActRelationship r = itemBean.getRelationship(document);
                 itemBean.removeRelationship(r);
@@ -139,17 +168,39 @@ public class ChargeItemDocumentLinker {
             if (!templateRefs.contains(typeRef)) {
                 Entity entity = (Entity) getObject(typeRef);
                 if (entity != null) {
-                    addDocument(itemBean, entity, toSave);
+                    addDocument(itemBean, entity);
                 }
             }
         }
+    }
 
-        for (IMObject object : toRemove) {
-            service.remove(object);
+    /**
+     * Commits the changes, including the charge item.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void commit() {
+        commit(true);
+    }
+
+    /**
+     * Commits the changes, optionally including the charge item.
+     *
+     * @param saveItem if <tt>true</tt> save the charge item as well
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void commit(boolean saveItem) {
+        if (saveItem) {
+            toSave.add(0, item);
         }
         if (!toSave.isEmpty()) {
             service.save(toSave);
         }
+        for (IMObject object : toRemove) {
+            service.remove(object);
+        }
+        toSave.clear();
+        toRemove.clear();
     }
 
     /**
@@ -157,10 +208,9 @@ public class ChargeItemDocumentLinker {
      *
      * @param itemBean the invoice item
      * @param document the document template
-     * @param toSave   the acts to save
      * @throws ArchetypeServiceException for any error
      */
-    private void addDocument(ActBean itemBean, Entity document, List<Act> toSave) {
+    private void addDocument(ActBean itemBean, Entity document) {
         EntityBean bean = new EntityBean(document, service);
         String shortName = bean.getString("archetype");
         if (StringUtils.isEmpty(shortName)) {
@@ -176,6 +226,10 @@ public class ChargeItemDocumentLinker {
             IMObjectReference patient = itemBean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
             documentAct.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
             documentAct.addParticipation(DocumentArchetypes.DOCUMENT_TEMPLATE_PARTICIPATION, document);
+            IMObjectReference author = itemBean.getParticipantRef(UserArchetypes.AUTHOR_PARTICIPATION);
+            if (author != null) {
+                documentAct.addParticipation(UserArchetypes.AUTHOR_PARTICIPATION, author);
+            }
             IMObjectReference clinician = itemBean.getParticipantRef(UserArchetypes.CLINICIAN_PARTICIPATION);
             if (clinician != null) {
                 documentAct.addParticipation(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
@@ -193,7 +247,7 @@ public class ChargeItemDocumentLinker {
     /**
      * Determines if the product has changed.
      *
-     * @param bean the document act bean
+     * @param bean    the document act bean
      * @param product the item product
      * @return <tt>true</tt> if the product has changed
      */
@@ -205,26 +259,47 @@ public class ChargeItemDocumentLinker {
     /**
      * Determines if the patient has changed.
      *
-     * @param docBean the document act bean
+     * @param docBean  the document act bean
      * @param itemBean the item bean
      * @return <tt>true</tt> if the patient has changed
      */
     private boolean patientChanged(ActBean docBean, ActBean itemBean) {
-        return docBean.hasNode("patient") &&
-               !ObjectUtils.equals(docBean.getNodeParticipantRef("patient"), itemBean.getNodeParticipantRef("patient"));
+        return checkParticipant(docBean, itemBean, "patient");
+    }
+
+    /**
+     * Determines if the author has changed.
+     *
+     * @param docBean  the document act bean
+     * @param itemBean the item bean
+     * @return <tt>true</tt> if the author has changed
+     */
+    private boolean authorChanged(ActBean docBean, ActBean itemBean) {
+        return checkParticipant(docBean, itemBean, "author");
     }
 
     /**
      * Determines if the clinician has changed.
      *
-     * @param docBean the document act bean
+     * @param docBean  the document act bean
      * @param itemBean the item bean
      * @return <tt>true</tt> if the clinician has changed
      */
     private boolean clinicianChanged(ActBean docBean, ActBean itemBean) {
-        return docBean.hasNode("clinician") &&
-               !ObjectUtils.equals(docBean.getNodeParticipantRef("clinician"),
-                                   itemBean.getNodeParticipantRef("clinician"));
+        return checkParticipant(docBean, itemBean, "clinician");
+    }
+
+    /**
+     * Determines if a participant has changed.
+     *
+     * @param docBean  the document act bean
+     * @param itemBean the item bean
+     * @param node     the participant node to check
+     * @return <tt>true</tt> if the participant has changed
+     */
+    private boolean checkParticipant(ActBean docBean, ActBean itemBean, String node) {
+        return docBean.hasNode(node) &&
+               !ObjectUtils.equals(docBean.getNodeParticipantRef(node), itemBean.getNodeParticipantRef(node));
     }
 
     /**
