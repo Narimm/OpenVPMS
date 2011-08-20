@@ -284,7 +284,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Save any modified child Saveable instances.
+     * Saves the object.
      * <p/>
      * For invoice items, this implementation also creates/deletes document acts related to the document templates
      * associated with the product, using {@link ChargeItemDocumentLinker}.
@@ -292,11 +292,15 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return <tt>true</tt> if the save was successful
      */
     @Override
-    protected boolean saveChildren() {
-        boolean saved = super.saveChildren();
-        if (saved && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
-            ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(ServiceHelper.getArchetypeService());
-            linker.link((FinancialAct) getObject());
+    protected boolean saveObject() {
+        ChargeItemDocumentLinker linker = null;
+        if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+            linker = new ChargeItemDocumentLinker((FinancialAct) getObject(), ServiceHelper.getArchetypeService());
+            linker.prepare();
+        }
+        boolean saved = super.saveObject();
+        if (saved && linker != null) {
+            linker.commit(false);
         }
         return saved;
     }

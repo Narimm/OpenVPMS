@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
@@ -290,6 +291,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         Product product1 = createProduct(productShortName, fixedCost1, fixedPrice1, unitCost1, unitPrice1);
         Entity reminderType = addReminder(product1);
         Entity investigationType = addInvestigation(product1);
+        Entity template = addTemplate(product1);
 
         // create  product2 with no reminder no investigation type
         BigDecimal quantity2 = BigDecimal.valueOf(1);
@@ -365,11 +367,13 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
             }
             checkInvestigation(item, patient1, investigationType, author1, clinician1);
             checkReminder(item, patient1, product1, reminderType, author1, clinician1);
+            checkDocument(item, patient1, product1, template, author1, clinician1);
         } else {
-            // verify there are no medication, investigation nor reminder acts
+            // verify there are no medication, investigation, reminder nor document acts
             assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
             assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
+            assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
         }
 
         // now replace the patient, product, author and clinician
@@ -407,6 +411,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         }
         assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
         assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
+        assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
 
         editor.setProduct(null);       // make sure nulls are handled
         assertFalse(editor.isValid());
@@ -599,6 +604,30 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies a document act matches that expected.
+     *
+     * @param item      the charge item, linked to the document act
+     * @param patient   the expected patient
+     * @param product   the expected product
+     * @param template  the expected document template
+     * @param author    the expected author
+     * @param clinician the expected clinician
+     */
+    private void checkDocument(Act item, Party patient, Product product, Entity template, User author, User clinician) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> documents = itemBean.getNodeActs("documents");
+        assertEquals(1, documents.size());
+
+        ActBean bean = new ActBean(documents.get(0));
+        assertTrue(bean.isA(PatientArchetypes.DOCUMENT_FORM));
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(template.getObjectReference(), bean.getNodeParticipantRef("documentTemplate"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+    }
+
+    /**
      * Saves the current popup editor.
      *
      * @param mgr       the popup editor manager
@@ -653,6 +682,21 @@ public class CustomerChargeActItemEditorTestCase extends AbstractAppTest {
         productBean.addNodeRelationship("investigationTypes", investigation);
         save(investigation, product);
         return investigation;
+    }
+
+    /**
+     * Adds a document template to a product.
+     *
+     * @param product the product
+     * @return the document template
+     */
+    private Entity addTemplate(Product product) {
+        Entity template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        template.setName("X-TestDocumentTemplate-" + template.hashCode());
+        EntityBean productBean = new EntityBean(product);
+        productBean.addNodeRelationship("documents", template);
+        save(template, product);
+        return template;
     }
 
     /**
