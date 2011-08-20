@@ -247,9 +247,8 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         save(act, medication, investigation);
 
         // add document acts
-        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
-        linker.link(act);
-        save(act);
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(act, getArchetypeService());
+        linker.link();
         return act;
     }
 
