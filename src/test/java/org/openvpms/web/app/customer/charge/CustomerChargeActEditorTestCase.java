@@ -6,14 +6,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
@@ -21,7 +23,6 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -48,6 +49,51 @@ import java.util.List;
  * @version $LastChangedDate: $
  */
 public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEditorTest {
+
+    /**
+     * The customer.
+     */
+    private Party customer;
+
+    /**
+     * The patient.
+     */
+    private Party patient;
+
+    /**
+     * The author.
+     */
+    private User author;
+
+    /**
+     * The clinician.
+     */
+    private User clinician;
+
+    /**
+     * The layout context.
+     */
+    private LayoutContext layoutContext;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    @Override
+    public void setUp() {
+        super.setUp();
+        customer = TestHelper.createCustomer();
+        patient = TestHelper.createPatient(customer);
+        author = TestHelper.createUser();
+        clinician = TestHelper.createClinician();
+        Party location = TestHelper.createLocation();
+
+        layoutContext = new DefaultLayoutContext();
+        layoutContext.getContext().setCustomer(customer);
+        layoutContext.getContext().setUser(author);
+        layoutContext.getContext().setClinician(clinician);
+        layoutContext.getContext().setLocation(location);
+    }
 
     /**
      * Tests creation and saving of an empty invoice.
@@ -102,12 +148,99 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testDeleteInvoice() {
-        Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
-        Product product = TestHelper.createProduct();
-        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new Money(100), customer, patient, product,
-                                                                           ActStatus.IN_PROGRESS);
-        checkDeleteCharge(acts.get(0), acts.get(1));
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        BigDecimal fixedPrice = BigDecimal.valueOf(11);
+        BigDecimal itemTotal = BigDecimal.valueOf(11);
+        BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
+
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice);
+        Entity reminderType1 = addReminder(product1);
+        Entity investigationType1 = addInvestigation(product1);
+        Entity template1 = addTemplate(product1);
+
+        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
+        Entity reminderType2 = addReminder(product2);
+        Entity investigationType2 = addInvestigation(product2);
+        Entity template2 = addTemplate(product2);
+
+        Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
+        Entity reminderType3 = addReminder(product3);
+        Entity investigationType3 = addInvestigation(product3);
+        Entity investigationType4 = addInvestigation(product3);
+        Entity investigationType5 = addInvestigation(product3);
+        Entity template3 = addTemplate(product3);
+
+        EditorManager mgr = new EditorManager();
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        BigDecimal quantity = BigDecimal.ONE;
+        CustomerChargeActItemEditor item1Editor = addItem(editor, patient, product1, quantity, mgr);
+        CustomerChargeActItemEditor item2Editor = addItem(editor, patient, product2, quantity, mgr);
+        CustomerChargeActItemEditor item3Editor = addItem(editor, patient, product3, quantity, mgr);
+        FinancialAct item1 = (FinancialAct) item1Editor.getObject();
+        FinancialAct item2 = (FinancialAct) item2Editor.getObject();
+        FinancialAct item3 = (FinancialAct) item3Editor.getObject();
+
+        assertTrue(SaveHelper.save(editor));
+        BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
+        checkBalance(customer, balance, BigDecimal.ZERO);
+
+        Act investigation1 = getInvestigation(item1, investigationType1);
+        Act investigation2 = getInvestigation(item2, investigationType2);
+        Act investigation3 = getInvestigation(item3, investigationType3);
+        Act investigation4 = getInvestigation(item3, investigationType4);
+        Act investigation5 = getInvestigation(item3, investigationType5);
+
+        investigation1.setStatus(InvestigationActStatus.IN_PROGRESS);
+        investigation2.setStatus(InvestigationActStatus.COMPLETED);
+        investigation3.setStatus(InvestigationActStatus.CANCELLED);
+        investigation4.setStatus(InvestigationActStatus.PRELIMINARY);
+        investigation5.setStatus(InvestigationActStatus.FINAL);
+        save(investigation1, investigation2, investigation3, investigation4, investigation5);
+        Act reminder1 = getReminder(item1, reminderType1);
+        Act reminder2 = getReminder(item2, reminderType2);
+        Act reminder3 = getReminder(item3, reminderType3);
+        reminder1.setStatus(ReminderStatus.IN_PROGRESS);
+        reminder2.setStatus(ReminderStatus.COMPLETED);
+        reminder3.setStatus(ReminderStatus.CANCELLED);
+        save(reminder1, reminder2, reminder3);
+
+        Act doc1 = getDocument(item1, template1);
+        Act doc2 = getDocument(item2, template2);
+        Act doc3 = getDocument(item3, template3);
+        doc1.setStatus(ActStatus.IN_PROGRESS);
+        doc2.setStatus(ActStatus.COMPLETED);
+        doc3.setStatus(ActStatus.POSTED);
+        save(doc1, doc2, doc3);
+
+        charge = get(charge);
+        ActBean bean = new ActBean(charge);
+        List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
+        assertEquals(3, items.size());
+
+        assertTrue(delete(editor));
+        assertNull(get(charge));
+        for (FinancialAct item : items) {
+            assertNull(get(item));
+        }
+        assertNull(get(investigation1));
+        assertNotNull(get(investigation2));
+        assertNull(get(investigation3));
+        assertNotNull(get(investigation4));
+        assertNotNull(get(investigation5));
+
+        assertNull(get(reminder1));
+        assertNotNull(get(reminder2));
+        assertNull(get(reminder3));
+
+        assertNull(get(doc1));
+        assertNotNull(get(doc2));
+        assertNotNull(get(doc3));
+
+        checkBalance(customer, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
     /**
@@ -115,12 +248,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testDeleteCredit() {
-        Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
-        Product product = TestHelper.createProduct();
-        List<FinancialAct> acts = FinancialTestHelper.createChargesCredit(new Money(100), customer, patient, product,
-                                                                          ActStatus.IN_PROGRESS);
-        checkDeleteCharge(acts.get(0), acts.get(1));
+        checkDeleteCharge((FinancialAct) create(CustomerAccountArchetypes.CREDIT));
     }
 
     /**
@@ -128,11 +256,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      */
     @Test
     public void testDeleteCounterSale() {
-        Party customer = TestHelper.createCustomer();
-        Product product = TestHelper.createProduct();
-        List<FinancialAct> acts = FinancialTestHelper.createChargesCounter(new Money(100), customer, product,
-                                                                           ActStatus.IN_PROGRESS);
-        checkDeleteCharge(acts.get(0), acts.get(1));
+        checkDeleteCharge((FinancialAct) create(CustomerAccountArchetypes.COUNTER));
     }
 
     /**
@@ -160,20 +284,45 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes an invoice and its item.
+     * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a charge and its items.
      *
      * @param charge the charge
-     * @param item   the charge item
      */
-    private void checkDeleteCharge(FinancialAct charge, FinancialAct item) {
-        save(charge, item);
-        final CustomerChargeActEditor editor = new CustomerChargeActEditor(charge, null, new DefaultLayoutContext());
-        editor.getComponent();
-        Boolean result = delete(editor);
-        assertTrue(result);
+    private void checkDeleteCharge(FinancialAct charge) {
+        BigDecimal fixedPrice = BigDecimal.valueOf(11);
+        BigDecimal itemTotal = BigDecimal.valueOf(11);
+        BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
 
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice);
+        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
+        Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
+
+        EditorManager mgr = new EditorManager();
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        BigDecimal quantity = BigDecimal.ONE;
+        addItem(editor, patient, product1, quantity, mgr);
+        addItem(editor, patient, product2, quantity, mgr);
+        addItem(editor, patient, product3, quantity, mgr);
+
+        assertTrue(SaveHelper.save(editor));
+        BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
+        checkBalance(customer, balance, BigDecimal.ZERO);
+
+        charge = get(charge);
+        ActBean bean = new ActBean(charge);
+        List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
+        assertEquals(3, items.size());
+
+        assertTrue(delete(editor));
         assertNull(get(charge));
-        assertNull(get(item));
+        for (FinancialAct item : items) {
+            assertNull(get(item));
+        }
+
+        checkBalance(customer, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
     /**
@@ -182,15 +331,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param charge the charge
      */
     private void checkEmptyCharge(FinancialAct charge) {
-        LayoutContext context = new DefaultLayoutContext();
-        Party customer = TestHelper.createCustomer();
-        Party location = TestHelper.createLocation();
-        User author = TestHelper.createUser();
-        context.getContext().setCustomer(customer);
-        context.getContext().setLocation(location);
-        context.getContext().setUser(author);
-
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, context, new EditorManager());
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, new EditorManager());
         editor.getComponent();
         assertTrue(editor.isValid());
         assertTrue(editor.save());
@@ -207,18 +348,10 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param charge the charge
      */
     private void checkEditCharge(FinancialAct charge) {
-        LayoutContext context = new DefaultLayoutContext();
-        Party customer = TestHelper.createCustomer();
         Party location = TestHelper.createLocation(true);   // enable stock control
         Party stockLocation = createStockLocation(location);
-        Party patient = TestHelper.createPatient(customer);
-        User author = TestHelper.createUser();
-        User clinician = TestHelper.createClinician();
-        context.getContext().setCustomer(customer);
-        context.getContext().setLocation(location);
-        context.getContext().setStockLocation(stockLocation);
-        context.getContext().setUser(author);
-        context.getContext().setClinician(clinician);
+        layoutContext.getContext().setLocation(location);
+        layoutContext.getContext().setStockLocation(stockLocation);
 
         BigDecimal fixedPrice = BigDecimal.valueOf(11);
         BigDecimal itemTax = BigDecimal.valueOf(1);
@@ -252,7 +385,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         initStock(product2, stockLocation, product2Stock);
 
         EditorManager mgr = new EditorManager();
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, context, mgr);
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -294,18 +427,10 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param charge the charge
      */
     private void checkChargeStockUpdate(FinancialAct charge) {
-        LayoutContext context = new DefaultLayoutContext();
-        Party customer = TestHelper.createCustomer();
         Party location = TestHelper.createLocation(true);   // enable stock control
         Party stockLocation = createStockLocation(location);
-        Party patient = TestHelper.createPatient(customer);
-        User author = TestHelper.createUser();
-        User clinician = TestHelper.createClinician();
-        context.getContext().setCustomer(customer);
-        context.getContext().setLocation(location);
-        context.getContext().setStockLocation(stockLocation);
-        context.getContext().setUser(author);
-        context.getContext().setClinician(clinician);
+        layoutContext.getContext().setLocation(location);
+        layoutContext.getContext().setStockLocation(stockLocation);
 
         Product product1 = createProduct(ProductArchetypes.MEDICATION);
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE);
@@ -317,7 +442,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         initStock(product2, stockLocation, product2InitialStock);
 
         EditorManager mgr = new EditorManager();
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, context, mgr);
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
         editor.getComponent();
         assertTrue(editor.isValid());
 
@@ -331,6 +456,16 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         boolean add = TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT);
         BigDecimal product1Stock = checkStock(product1, stockLocation, product1InitialStock, quantity1, add);
         BigDecimal product2Stock = checkStock(product2, stockLocation, product2InitialStock, quantity2, add);
+
+        item1.setQuantity(BigDecimal.ZERO);
+        item1.setQuantity(quantity1);
+        assertTrue(item1.isModified());
+        item2.setQuantity(BigDecimal.ZERO);
+        item2.setQuantity(quantity2);
+        assertTrue(item2.isModified());
+        assertTrue(SaveHelper.save(editor));
+        checkStock(product1, stockLocation, product1Stock);
+        checkStock(product2, stockLocation, product2Stock);
 
         item1.setQuantity(BigDecimal.valueOf(10)); // change product1 stock quantity
         item2.setProduct(product3);                // change the product and verify the stock for product2 reverts
@@ -347,9 +482,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     /**
      * Initialises stock quantities for a product at a stock location.
      *
-     * @param product the product
+     * @param product       the product
      * @param stockLocation the stock location
-     * @param quantity the initial stock quantity
+     * @param quantity      the initial stock quantity
      */
     private void initStock(Product product, Party stockLocation, BigDecimal quantity) {
         StockRules rules = new StockRules();
@@ -359,11 +494,11 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     /**
      * Checks stock for a product at a stock location.
      *
-     * @param product the product
+     * @param product       the product
      * @param stockLocation the stock location
-     * @param initial the initial stock quantity
-     * @param change the change in stock quantity
-     * @param add if <tt>true</tt> add the change, otherwise subtract it
+     * @param initial       the initial stock quantity
+     * @param change        the change in stock quantity
+     * @param add           if <tt>true</tt> add the change, otherwise subtract it
      * @return the new stock quantity
      */
     private BigDecimal checkStock(Product product, Party stockLocation, BigDecimal initial, BigDecimal change,
@@ -376,9 +511,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     /**
      * Checks stock for a product at a stock location.
      *
-     * @param product the product
+     * @param product       the product
      * @param stockLocation the stock location
-     * @param expected the expected stock quantity
+     * @param expected      the expected stock quantity
      */
     private void checkStock(Product product, Party stockLocation, BigDecimal expected) {
         StockRules rules = new StockRules();
@@ -443,15 +578,21 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             } else {
                 assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             }
-            for (Entity investigationType : bean.getNodeTargetEntities("investigationTypes")) {
+            List<Entity> investigations = bean.getNodeTargetEntities("investigationTypes");
+            assertEquals(investigations.size(), itemBean.getNodeActs("investigations").size());
+            for (Entity investigationType : investigations) {
                 checkInvestigation(item, patient, investigationType, author, clinician);
                 ++count;
             }
-            for (Entity reminderType : bean.getNodeTargetEntities("reminders")) {
+            List<Entity> reminderTypes = bean.getNodeTargetEntities("reminders");
+            assertEquals(reminderTypes.size(), itemBean.getNodeActs("reminders").size());
+            for (Entity reminderType : reminderTypes) {
                 checkReminder(item, patient, product, reminderType, author, clinician);
                 ++count;
             }
-            for (Entity template : bean.getNodeTargetEntities("documents")) {
+            List<Entity> templates = bean.getNodeTargetEntities("documents");
+            assertEquals(templates.size(), itemBean.getNodeActs("documents").size());
+            for (Entity template : templates) {
                 checkDocument(item, patient, product, template, author, clinician);
                 ++count;
             }
@@ -595,4 +736,5 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         save(location, stockLocation);
         return stockLocation;
     }
+
 }

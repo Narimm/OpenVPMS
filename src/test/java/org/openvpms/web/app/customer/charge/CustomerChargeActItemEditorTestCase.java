@@ -338,6 +338,11 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             } else {
                 assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             }
+            
+            assertEquals(1, itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).size());
+            assertEquals(1, itemBean.getActs(ReminderArchetypes.REMINDER).size());
+            assertEquals(1, itemBean.getActs("act.patientDocument*").size());
+
             checkInvestigation(item, patient1, investigationType, author1, clinician1);
             checkReminder(item, patient1, product1, reminderType, author1, clinician1);
             checkDocument(item, patient1, product1, template, author1, clinician1);
