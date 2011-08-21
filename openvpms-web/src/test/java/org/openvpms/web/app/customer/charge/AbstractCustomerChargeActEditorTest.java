@@ -262,7 +262,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice) {
-        Product product = TestHelper.createProduct(shortName, null, false);
+        Product product = createProduct(shortName);
         product.addProductPrice(createFixedPrice(product, BigDecimal.ZERO, fixedPrice));
         save(product);
         return product;
@@ -280,11 +280,21 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      */
     protected Product createProduct(String shortName, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal unitCost,
                                     BigDecimal unitPrice) {
-        Product product = TestHelper.createProduct(shortName, null, false);
+        Product product = createProduct(shortName);
         product.addProductPrice(createFixedPrice(product, fixedCost, fixedPrice));
         product.addProductPrice(createUnitPrice(product, unitCost, unitPrice));
         save(product);
         return product;
+    }
+
+    /**
+     * Helper to create a product.
+     *
+     * @param shortName  the product archetype short name
+     * @return a new product
+     */
+    protected Product createProduct(String shortName) {
+        return TestHelper.createProduct(shortName, null, true);
     }
 
     /**

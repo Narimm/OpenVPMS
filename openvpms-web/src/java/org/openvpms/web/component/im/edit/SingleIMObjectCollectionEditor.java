@@ -118,8 +118,8 @@ public abstract class SingleIMObjectCollectionEditor
      * @param modifiable the modifiable to pass to the listeners
      */
     @Override
-    protected void modified(Modifiable modifiable) {
-        super.modified(modifiable);
+    protected void onModified(Modifiable modifiable) {
+        super.onModified(modifiable);
         mapObject();
     }
 
