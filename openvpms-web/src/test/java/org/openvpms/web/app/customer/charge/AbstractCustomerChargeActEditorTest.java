@@ -18,44 +18,45 @@
 
 package org.openvpms.web.app.customer.charge;
 
-import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.product.ProductPriceRules;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ObjectUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
-import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
-import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.dialog.PopupDialog;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
-import java.util.Random;
-import java.util.List;
 import java.util.Date;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.event.ActionEvent;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Abstract base class for customer charge act editor tests.
@@ -103,12 +104,12 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
                              BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax, BigDecimal total) {
         ActBean bean = new ActBean(item);
         if (bean.hasNode("patient")) {
-            org.junit.Assert.assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+            assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         }
-        org.junit.Assert.assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
-        org.junit.Assert.assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         if (bean.hasNode("clinician")) {
-            org.junit.Assert.assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+            assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
         }
         checkEquals(quantity, bean.getBigDecimal("quantity"));
         checkEquals(fixedCost, bean.getBigDecimal("fixedCost"));
@@ -128,8 +129,9 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param product   the expected product
      * @param author    the expected author
      * @param clinician the expected clinician
+     * @return the medication act
      */
-    protected void checkMedication(FinancialAct item, Party patient, Product product, User author, User clinician) {
+    protected Act checkMedication(FinancialAct item, Party patient, Product product, User author, User clinician) {
         ActBean itemBean = new ActBean(item);
         List<Act> dispensing = itemBean.getNodeActs("dispensing");
         assertEquals(1, dispensing.size());
@@ -144,6 +146,29 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
         checkEquals(item.getQuantity(), bean.getBigDecimal("quantity"));
+        return medication;
+    }
+
+    /**
+     * Finds an investigation associated with a charge item, given its investigation type.
+     *
+     * @param item              the item
+     * @param investigationType the investigation type
+     * @return the corresponding investigation
+     */
+    protected Act getInvestigation(Act item, Entity investigationType) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> investigations = itemBean.getNodeActs("investigations");
+        for (Act investigation : investigations) {
+            ActBean bean = new ActBean(investigation);
+            assertTrue(bean.isA(InvestigationArchetypes.PATIENT_INVESTIGATION));
+            if (ObjectUtils.equals(bean.getNodeParticipantRef("investigationType"),
+                                   investigationType.getObjectReference())) {
+                return investigation;
+            }
+        }
+        fail("Investigation not found");
+        return null;
     }
 
     /**
@@ -154,19 +179,38 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param investigationType the expected investigation type
      * @param author            the expected author
      * @param clinician         the expected clinician
+     * @return the investigation act
      */
-    protected void checkInvestigation(Act item, Party patient, Entity investigationType, User author, User clinician) {
-        ActBean itemBean = new ActBean(item);
-        List<Act> investigations = itemBean.getNodeActs("investigations");
-        assertEquals(1, investigations.size());
-
-        Act investigation = investigations.get(0);
+    protected Act checkInvestigation(Act item, Party patient, Entity investigationType, User author, User clinician) {
+        Act investigation = getInvestigation(item, investigationType);
         ActBean bean = new ActBean(investigation);
-        assertTrue(bean.isA(InvestigationArchetypes.PATIENT_INVESTIGATION));
         assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         assertEquals(investigationType.getObjectReference(), bean.getNodeParticipantRef("investigationType"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        return investigation;
+    }
+
+    /**
+     * Finds a reminder associated with a charge item, given its reminder type.
+     *
+     * @param item              the item
+     * @param reminderType the reminder type
+     * @return the corresponding reminder
+     */
+    protected Act getReminder(Act item, Entity reminderType) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> reminders = itemBean.getNodeActs("reminders");
+        for (Act reminder : reminders) {
+            ActBean bean = new ActBean(reminder);
+            assertTrue(bean.isA(ReminderArchetypes.REMINDER));
+            if (ObjectUtils.equals(bean.getNodeParticipantRef("reminderType"),
+                                   reminderType.getObjectReference())) {
+                return reminder;
+            }
+        }
+        fail("Reminder not found");
+        return null;
     }
 
     /**
@@ -178,20 +222,17 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param reminderType the expected reminder type
      * @param author       the expected author
      * @param clinician    the expected clinician
+     * @return the reminder act
      */
-    protected void checkReminder(Act item, Party patient, Product product, Entity reminderType, User author,
-                                 User clinician) {
-        ActBean itemBean = new ActBean(item);
-        ReminderRules rules = new ReminderRules();
-        List<Act> reminders = itemBean.getNodeActs("reminders");
-        assertEquals(1, reminders.size());
-
+    protected Act checkReminder(Act item, Party patient, Product product, Entity reminderType, User author,
+                                User clinician) {
+        Act reminder = getReminder(item, reminderType);
         EntityBean productBean = new EntityBean(product);
+
+        ReminderRules rules = new ReminderRules();
         List<EntityRelationship> rels = productBean.getNodeRelationships("reminders");
         assertEquals(1, rels.size());
-        Act reminder = reminders.get(0);
         ActBean bean = new ActBean(reminder);
-        assertTrue(bean.isA(ReminderArchetypes.REMINDER));
         assertEquals(item.getActivityStartTime(), reminder.getActivityStartTime());
         Date dueDate = rules.calculateProductReminderDueDate(item.getActivityStartTime(), rels.get(0));
         assertEquals(0, DateRules.compareTo(reminder.getActivityEndTime(), dueDate));
@@ -200,6 +241,28 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         assertEquals(reminderType.getObjectReference(), bean.getNodeParticipantRef("reminderType"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        return reminder;
+    }
+
+    /**
+     * Finds a document associated with a charge item, given its document template.
+     *
+     * @param item              the item
+     * @param template the document template
+     * @return the corresponding reminder
+     */
+    protected Act getDocument(Act item, Entity template) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> documents = itemBean.getNodeActs("documents");
+        for (Act document : documents) {
+            ActBean bean = new ActBean(document);
+            assertTrue(bean.isA("act.patientDocument*"));
+            if (ObjectUtils.equals(bean.getNodeParticipantRef("documentTemplate"), template.getObjectReference())) {
+                return document;
+            }
+        }
+        fail("Document not found");
+        return null;
     }
 
     /**
@@ -211,20 +274,19 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param template  the expected document template
      * @param author    the expected author
      * @param clinician the expected clinician
+     * @return the document act
      */
-    protected void checkDocument(Act item, Party patient, Product product, Entity template, User author,
-                                 User clinician) {
-        ActBean itemBean = new ActBean(item);
-        List<Act> documents = itemBean.getNodeActs("documents");
-        assertEquals(1, documents.size());
-
-        ActBean bean = new ActBean(documents.get(0));
+    protected Act checkDocument(Act item, Party patient, Product product, Entity template, User author,
+                                User clinician) {
+        Act document = getDocument(item, template);
+        ActBean bean = new ActBean(document);
         assertTrue(bean.isA(PatientArchetypes.DOCUMENT_FORM));
         assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
         assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
         assertEquals(template.getObjectReference(), bean.getNodeParticipantRef("documentTemplate"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        return document;
     }
 
     /**
@@ -258,7 +320,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * Helper to create a product.
      *
      * @param shortName  the product archetype short name
-     * @param fixedPrice  the fixed price
+     * @param fixedPrice the fixed price
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice) {
@@ -290,7 +352,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     /**
      * Helper to create a product.
      *
-     * @param shortName  the product archetype short name
+     * @param shortName the product archetype short name
      * @return a new product
      */
     protected Product createProduct(String shortName) {
