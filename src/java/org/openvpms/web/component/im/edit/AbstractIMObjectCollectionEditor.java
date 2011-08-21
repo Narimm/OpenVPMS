@@ -119,7 +119,7 @@ public abstract class AbstractIMObjectCollectionEditor
         this.context = context;
         broadcaster = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                AbstractIMObjectCollectionEditor.this.modified(modifiable);
+                onModified(modifiable);
             }
         };
         collection.addModifiableListener(broadcaster);
@@ -480,7 +480,7 @@ public abstract class AbstractIMObjectCollectionEditor
      *
      * @param modifiable the modifiable to pass to the listeners
      */
-    protected void modified(Modifiable modifiable) {
+    protected void onModified(Modifiable modifiable) {
         listeners.notifyListeners(modifiable);
     }
 
