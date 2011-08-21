@@ -273,6 +273,7 @@ public class Editors implements Modifiable {
         for (Modifiable modifiable : editors) {
             if (!validator.validate(modifiable)) {
                 valid = false;
+                break;
             }
         }
         if (valid) {

@@ -20,25 +20,39 @@ package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.dialog.PopupDialog;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 import java.util.Random;
+import java.util.List;
+import java.util.Date;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
@@ -107,6 +121,113 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
+     * Verifies a patient medication act matches that expected.
+     *
+     * @param item      the charge item, linked to the medication
+     * @param patient   the expected patient
+     * @param product   the expected product
+     * @param author    the expected author
+     * @param clinician the expected clinician
+     */
+    protected void checkMedication(FinancialAct item, Party patient, Product product, User author, User clinician) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> dispensing = itemBean.getNodeActs("dispensing");
+        assertEquals(1, dispensing.size());
+
+        Act medication = dispensing.get(0);
+        ActBean bean = new ActBean(medication);
+        assertEquals(item.getActivityStartTime(), medication.getActivityStartTime());
+        assertEquals(item.getActivityEndTime(), medication.getActivityEndTime());
+        assertTrue(bean.isA(PatientArchetypes.PATIENT_MEDICATION));
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        checkEquals(item.getQuantity(), bean.getBigDecimal("quantity"));
+    }
+
+    /**
+     * Verifies a patient investigation act matches that expected.
+     *
+     * @param item              the charge item, linked to the investigation
+     * @param patient           the expected patient
+     * @param investigationType the expected investigation type
+     * @param author            the expected author
+     * @param clinician         the expected clinician
+     */
+    protected void checkInvestigation(Act item, Party patient, Entity investigationType, User author, User clinician) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> investigations = itemBean.getNodeActs("investigations");
+        assertEquals(1, investigations.size());
+
+        Act investigation = investigations.get(0);
+        ActBean bean = new ActBean(investigation);
+        assertTrue(bean.isA(InvestigationArchetypes.PATIENT_INVESTIGATION));
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(investigationType.getObjectReference(), bean.getNodeParticipantRef("investigationType"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+    }
+
+    /**
+     * Verifies a patient reminder act matches that expected.
+     *
+     * @param item         the charge item, linked to the reminder
+     * @param patient      the expected patient
+     * @param product      the expected product
+     * @param reminderType the expected reminder type
+     * @param author       the expected author
+     * @param clinician    the expected clinician
+     */
+    protected void checkReminder(Act item, Party patient, Product product, Entity reminderType, User author,
+                                 User clinician) {
+        ActBean itemBean = new ActBean(item);
+        ReminderRules rules = new ReminderRules();
+        List<Act> reminders = itemBean.getNodeActs("reminders");
+        assertEquals(1, reminders.size());
+
+        EntityBean productBean = new EntityBean(product);
+        List<EntityRelationship> rels = productBean.getNodeRelationships("reminders");
+        assertEquals(1, rels.size());
+        Act reminder = reminders.get(0);
+        ActBean bean = new ActBean(reminder);
+        assertTrue(bean.isA(ReminderArchetypes.REMINDER));
+        assertEquals(item.getActivityStartTime(), reminder.getActivityStartTime());
+        Date dueDate = rules.calculateProductReminderDueDate(item.getActivityStartTime(), rels.get(0));
+        assertEquals(0, DateRules.compareTo(reminder.getActivityEndTime(), dueDate));
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(reminderType.getObjectReference(), bean.getNodeParticipantRef("reminderType"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+    }
+
+    /**
+     * Verifies a document act matches that expected.
+     *
+     * @param item      the charge item, linked to the document act
+     * @param patient   the expected patient
+     * @param product   the expected product
+     * @param template  the expected document template
+     * @param author    the expected author
+     * @param clinician the expected clinician
+     */
+    protected void checkDocument(Act item, Party patient, Product product, Entity template, User author,
+                                 User clinician) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> documents = itemBean.getNodeActs("documents");
+        assertEquals(1, documents.size());
+
+        ActBean bean = new ActBean(documents.get(0));
+        assertTrue(bean.isA(PatientArchetypes.DOCUMENT_FORM));
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(template.getObjectReference(), bean.getNodeParticipantRef("documentTemplate"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+    }
+
+    /**
      * Saves the current popup editor.
      *
      * @param mgr       the popup editor manager
@@ -137,13 +258,12 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * Helper to create a product.
      *
      * @param shortName  the product archetype short name
-     * @param unitCost   the unit cost
-     * @param unitPrice  the unit price
+     * @param fixedPrice  the fixed price
      * @return a new product
      */
-    protected Product createProduct(String shortName, BigDecimal unitCost, BigDecimal unitPrice) {
+    protected Product createProduct(String shortName, BigDecimal fixedPrice) {
         Product product = TestHelper.createProduct(shortName, null, false);
-        product.addProductPrice(createUnitPrice(product, unitCost, unitPrice));
+        product.addProductPrice(createFixedPrice(product, BigDecimal.ZERO, fixedPrice));
         save(product);
         return product;
     }
@@ -165,6 +285,52 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         product.addProductPrice(createUnitPrice(product, unitCost, unitPrice));
         save(product);
         return product;
+    }
+
+    /**
+     * Adds an investigation type to a product.
+     *
+     * @param product the product
+     * @return the investigation type
+     */
+    protected Entity addInvestigation(Product product) {
+        Entity investigation = (Entity) create(InvestigationArchetypes.INVESTIGATION_TYPE);
+        investigation.setName("X-TestInvestigationType-" + investigation.hashCode());
+        EntityBean productBean = new EntityBean(product);
+        productBean.addNodeRelationship("investigationTypes", investigation);
+        save(investigation, product);
+        return investigation;
+    }
+
+    /**
+     * Adds a document template to a product.
+     *
+     * @param product the product
+     * @return the document template
+     */
+    protected Entity addTemplate(Product product) {
+        Entity template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        template.setName("X-TestDocumentTemplate-" + template.hashCode());
+        EntityBean productBean = new EntityBean(product);
+        productBean.addNodeRelationship("documents", template);
+        save(template, product);
+        return template;
+    }
+
+    /**
+     * Adds an interactive reminder type to a product.
+     *
+     * @param product the product
+     * @return the reminder type
+     */
+    protected Entity addReminder(Product product) {
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        EntityBean productBean = new EntityBean(product);
+        EntityRelationship rel = productBean.addNodeRelationship("reminders", reminderType);
+        IMObjectBean relBean = new IMObjectBean(rel);
+        relBean.setValue("interactive", true);
+        save(product, reminderType);
+        return reminderType;
     }
 
     /**
