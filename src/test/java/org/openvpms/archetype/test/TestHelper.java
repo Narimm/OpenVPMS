@@ -219,7 +219,7 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createUser() {
-        return createUser("zuser" + System.currentTimeMillis(), true);
+        return createUser("zuser" + System.nanoTime(), true);
     }
 
     /**
@@ -432,11 +432,23 @@ public class TestHelper extends Assert {
      * @return a new location
      */
     public static Party createLocation() {
+        return createLocation(false);
+    }
+
+    /**
+     * Creates a new <tt>party.organisationLocation</tt>.
+     *
+     * @param stockControl if <tt>true</tt>, enable stock control for the location
+     * @return a new location
+     */
+    public static Party createLocation(boolean stockControl) {
         Party party = (Party) create(PracticeArchetypes.LOCATION);
         party.setName("XLocation");
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
         party.addContact(contact);
-        save(party);
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("stockControl", stockControl);
+        bean.save();
         return party;
     }
 
