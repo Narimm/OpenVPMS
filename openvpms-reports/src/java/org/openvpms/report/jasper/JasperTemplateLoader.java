@@ -21,6 +21,7 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRElement;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JRDesignExpression;
@@ -190,11 +191,15 @@ public class JasperTemplateLoader {
      * Returns the subreport name from a subreport.
      *
      * @param subreport the subreport
-     * @return the subreport name
+     * @return the subreport name. May be <tt>null</tt>
      */
     private String getReportName(JRDesignSubreport subreport) {
-        String name = subreport.getExpression().getText();
-        name = StringUtils.strip(name, " \"");
-        return name;
+        JRExpression expression = subreport.getExpression();
+        if (expression != null) {
+            String name = expression.getText();
+            name = StringUtils.strip(name, " \"");
+            return name;
+        }
+        return null;
     }
 }
