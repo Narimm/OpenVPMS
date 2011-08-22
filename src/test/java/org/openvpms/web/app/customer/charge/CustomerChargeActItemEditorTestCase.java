@@ -418,6 +418,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal fixedCost = BigDecimal.valueOf(1);
         BigDecimal fixedPrice = BigDecimal.valueOf(2);
         Product product = createProduct(ProductArchetypes.TEMPLATE, fixedCost, fixedPrice, unitCost, unitPrice);
+        // costs and prices should be ignored
         User author = TestHelper.createUser();
         User clinician = TestHelper.createUser();
         context.getContext().setUser(author); // to propagate to acts

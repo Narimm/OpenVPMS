@@ -440,15 +440,19 @@ public abstract class IMTableCollectionEditor<T>
     /**
      * Invoked when the "New" button is pressed. Creates a new instance of the
      * selected archetype, and displays it in an editor.
+     *
+     * @return the new editor, or <tt>null</tt> if an object couldn't be created
      */
-    protected void onNew() {
+    protected IMObjectEditor onNew() {
+        IMObjectEditor editor = null;
         if (addCurrentEdits(new Validator()) && shortName != null) {
             IMObject object = create();
             if (object != null) {
-                edit(object);
+                editor = edit(object);
                 addCurrentEdits(new Validator()); // add the object to the table if it is valid
             }
         }
+        return editor;
     }
 
     /**
@@ -495,8 +499,9 @@ public abstract class IMTableCollectionEditor<T>
      * Edit an object.
      *
      * @param object the object to edit
+     * @return the editor
      */
-    protected void edit(final IMObject object) {
+    protected IMObjectEditor edit(final IMObject object) {
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
             editor.removePropertyChangeListener(
@@ -522,6 +527,7 @@ public abstract class IMTableCollectionEditor<T>
         KeyStrokeHelper.reregisterKeyStrokeListeners(container);
 
         enableNavigation(editor.isValid());
+        return editor;
     }
 
     /**

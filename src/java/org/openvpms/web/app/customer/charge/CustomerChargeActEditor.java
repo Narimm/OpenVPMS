@@ -19,8 +19,8 @@
 package org.openvpms.web.app.customer.charge;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -155,14 +155,9 @@ public class CustomerChargeActEditor extends FinancialActEditor {
      * @return the charge item editor, or <tt>null</tt> if an item couldn't be created
      */
     public CustomerChargeActItemEditor addItem() {
-        CustomerChargeActItemEditor result = null;
         ActRelationshipCollectionEditor items = getEditor();
-        IMObject item = items.create();
-        if (item != null) {
-            result = (CustomerChargeActItemEditor) items.getEditor(item);
-            result.getComponent();
-            items.addEdited(result);
-            items.editSelected();
+        CustomerChargeActItemEditor result = (CustomerChargeActItemEditor) items.add();
+        if (result != null && items.getCurrentEditor() == result) {
             // set the default focus to that of the item editor
             getFocusGroup().setDefault(result.getFocusGroup().getDefaultFocus());
         }
