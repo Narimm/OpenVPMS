@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -182,7 +183,9 @@ public class CustomerChargeActEditor extends FinancialActEditor {
         boolean saved = super.doSave();
         if (saved && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
             // link the items to their corresponding clinical events
-            ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
+            Party location = getLayoutContext().getContext().getLocation();
+            ChargeItemEventLinker linker = new ChargeItemEventLinker(getAuthor(), location,
+                                                                     ServiceHelper.getArchetypeService());
             List<FinancialAct> items = new ArrayList<FinancialAct>();
             for (Act act : getEditor().getActs()) {
                 items.add((FinancialAct) act);

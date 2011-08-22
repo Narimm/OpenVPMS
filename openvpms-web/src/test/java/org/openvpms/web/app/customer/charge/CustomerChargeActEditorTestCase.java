@@ -13,6 +13,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
@@ -76,6 +77,12 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     private LayoutContext layoutContext;
 
     /**
+     * Medical record rules.
+     */
+    private MedicalRecordRules records;
+
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -93,6 +100,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         layoutContext.getContext().setUser(author);
         layoutContext.getContext().setClinician(clinician);
         layoutContext.getContext().setLocation(location);
+
+        records = new MedicalRecordRules();
     }
 
     /**
@@ -407,13 +416,22 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
         assertEquals(3, items.size());
         checkCharge(charge, customer, author, clinician, tax, total);
+
+        Act event = records.getEvent(patient);  // get the clinical event. Should be null if not an invoice
+        if (invoice) {
+            assertNotNull(event);
+            checkEvent(event, patient, author, clinician, location);
+        } else {
+            assertNull(event);
+        }
+
         BigDecimal discount = BigDecimal.ZERO;
         checkItem(items, patient, product1, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, product1Acts);
+                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
         checkItem(items, patient, product2, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, product2Acts);
+                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, product2Acts);
         checkItem(items, patient, product3, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
-                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, product3Acts);
+                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, product3Acts);
 
         boolean add = bean.isA(CustomerAccountArchetypes.CREDIT);
         checkStock(product1, stockLocation, product1Stock, quantity, add);
@@ -521,6 +539,23 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Verifies a patient clinical event matches that expected.
+     *
+     * @param event     the event
+     * @param patient   the expected patient
+     * @param author    the expected author
+     * @param clinician the expected clinician
+     * @param location  the expected location
+     */
+    private void checkEvent(Act event, Party patient, User author, User clinician, Party location) {
+        ActBean bean = new ActBean(event);
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        assertEquals(location.getObjectReference(), bean.getNodeParticipantRef("location"));
+    }
+
+    /**
      * Verifies a charge matches that expected.
      *
      * @param charge    the charge
@@ -558,22 +593,26 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param discount   the expected discount
      * @param tax        the expected tax
      * @param total      the expected total
+     * @param event      the clinical event. May be <tt>null</tt> for non-invoice items
      * @param childActs  the expected no. of child acts
      */
     private void checkItem(List<FinancialAct> items, Party patient, Product product, User author, User clinician,
                            BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice, BigDecimal fixedCost,
                            BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax, BigDecimal total,
-                           int childActs) {
+                           Act event, int childActs) {
         int count = 0;
         FinancialAct item = find(items, product);
         checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost, fixedPrice,
                   discount, tax, total);
         ActBean itemBean = new ActBean(item);
         EntityBean bean = new EntityBean(product);
+
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            ActBean eventBean = new ActBean(event);
             if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-                // verify there is a medication act
-                checkMedication(item, patient, product, author, clinician);
+                // verify there is a medication act that is linked to the event
+                Act medication = checkMedication(item, patient, product, author, clinician);
+                assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, medication));
                 ++count;
             } else {
                 assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
@@ -581,7 +620,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             List<Entity> investigations = bean.getNodeTargetEntities("investigationTypes");
             assertEquals(investigations.size(), itemBean.getNodeActs("investigations").size());
             for (Entity investigationType : investigations) {
-                checkInvestigation(item, patient, investigationType, author, clinician);
+                // verify there is an investigation for each investigation type, and it is linked to the event
+                Act investigation = checkInvestigation(item, patient, investigationType, author, clinician);
+                assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, investigation));
                 ++count;
             }
             List<Entity> reminderTypes = bean.getNodeTargetEntities("reminders");
@@ -593,7 +634,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             List<Entity> templates = bean.getNodeTargetEntities("documents");
             assertEquals(templates.size(), itemBean.getNodeActs("documents").size());
             for (Entity template : templates) {
-                checkDocument(item, patient, product, template, author, clinician);
+                // verify there is a document for each template, and it is linked to the event
+                Act document = checkDocument(item, patient, product, template, author, clinician);
+                assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, document));
                 ++count;
             }
         } else {
