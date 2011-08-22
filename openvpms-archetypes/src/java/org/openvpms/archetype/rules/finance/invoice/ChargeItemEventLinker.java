@@ -19,11 +19,15 @@
 package org.openvpms.archetype.rules.finance.invoice;
 
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +48,16 @@ import java.util.Set;
 public class ChargeItemEventLinker {
 
     /**
+     * The author for new clinical events. May be <tt>null</tt>
+     */
+    private final User author;
+
+    /**
+     * The location for new clinical events. May be <tt>null</tt>
+     */
+    private final Party location;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -57,9 +71,13 @@ public class ChargeItemEventLinker {
     /**
      * Constructs a <tt>ChargeItemEventLinker</tt>.
      *
+     * @param author  the author for new clinical events. May be <tt>null</tt>
+     * @param location the location for new clinical events. May be <tt>null</tt>
      * @param service the archetype service
      */
-    public ChargeItemEventLinker(IArchetypeService service) {
+    public ChargeItemEventLinker(User author, Party location, IArchetypeService service) {
+        this.author = author;
+        this.location = location;
         this.service = service;
         rules = new Rules(service);
     }
@@ -98,7 +116,22 @@ public class ChargeItemEventLinker {
             Set<Act> changed = rules.addToEvents(acts, startTime, events);
             toSave.addAll(changed);
         }
+
         if (!toSave.isEmpty()) {
+            if (author != null || location != null) {
+                // add author participation to new events
+                for (Act changed : toSave) {
+                    if (changed.isNew() && TypeHelper.isA(changed, PatientArchetypes.CLINICAL_EVENT)) {
+                        ActBean bean = new ActBean(changed, service);
+                        if (author != null) {
+                            bean.addNodeParticipation("author", author);
+                        }
+                        if (location != null) {
+                            bean.addNodeParticipation("location", location);
+                        }
+                    }
+                }
+            }
             service.save(toSave);
         }
     }
