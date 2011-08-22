@@ -293,6 +293,30 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Test template expansion for an invoice.
+     */
+    @Test
+    public void testExpandTemplateInvoice() {
+        checkExpandTemplate((FinancialAct) create(CustomerAccountArchetypes.INVOICE));
+    }
+
+    /**
+     * Test template expansion for a credit.
+     */
+    @Test
+    public void testExpandTemplateCredit() {
+        checkExpandTemplate((FinancialAct) create(CustomerAccountArchetypes.CREDIT));
+    }
+
+    /**
+     * Test template expansion for a counter sale.
+     */
+    @Test
+    public void testExpandTemplateCounterSale() {
+        checkExpandTemplate((FinancialAct) create(CustomerAccountArchetypes.COUNTER));
+    }
+
+    /**
      * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes a charge and its items.
      *
      * @param charge the charge
@@ -495,6 +519,76 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(delete(editor));
         checkStock(product1, stockLocation, product1InitialStock);
         checkStock(product2, stockLocation, product2InitialStock);
+    }
+
+    /**
+     * Tests template expansion.
+     *
+     * @param charge the charge to edit
+     */
+    private void checkExpandTemplate(FinancialAct charge) {
+        Party location = TestHelper.createLocation(true);   // enable stock control
+        Party stockLocation = createStockLocation(location);
+        layoutContext.getContext().setLocation(location);
+        layoutContext.getContext().setStockLocation(stockLocation);
+
+        BigDecimal quantity = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(11);
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal itemTax = BigDecimal.valueOf(1);
+        BigDecimal itemTotal = BigDecimal.valueOf(11);
+        BigDecimal tax = itemTax.multiply(BigDecimal.valueOf(3));
+        BigDecimal total = itemTotal.multiply(BigDecimal.valueOf(3));
+
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, fixedPrice);
+        Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
+        Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
+        Product template = createProduct(ProductArchetypes.TEMPLATE);
+        EntityBean templateBean = new EntityBean(template);
+        templateBean.addNodeRelationship("includes", product1);
+        templateBean.addNodeRelationship("includes", product2);
+        templateBean.addNodeRelationship("includes", product3);
+        save(template);
+
+        EditorManager mgr = new EditorManager();
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        editor.getComponent();
+        addItem(editor, patient, template, BigDecimal.ONE, mgr);
+
+        // need to add a new item to force template to expand. As it is not populated, it won't be saved
+        editor.addItem();
+
+        boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
+        int product1Acts = 0;     // expected child acts for product1
+        if (invoice) {
+            // close medication popup
+            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
+            product1Acts++;
+        }
+
+        assertTrue(SaveHelper.save(editor));
+        BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
+        checkBalance(customer, balance, BigDecimal.ZERO);
+
+        charge = get(charge);
+        ActBean bean = new ActBean(charge);
+        List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
+        assertEquals(3, items.size());
+        checkCharge(charge, customer, author, clinician, tax, total);
+        Act event = records.getEvent(patient);  // get the clinical event. Should be null if not an invoice
+        if (invoice) {
+            assertNotNull(event);
+            checkEvent(event, patient, author, clinician, location);
+        } else {
+            assertNull(event);
+        }
+
+        checkItem(items, patient, product1, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
+                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, product1Acts);
+        checkItem(items, patient, product2, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
+                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
+        checkItem(items, patient, product3, author, clinician, quantity, BigDecimal.ZERO, BigDecimal.ZERO,
+                  BigDecimal.ZERO, fixedPrice, discount, itemTax, itemTotal, event, 0);
     }
 
     /**
@@ -714,14 +808,16 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
                 // save the popup editor - should be a medication
             }
 
-            EntityBean bean = new EntityBean(product);
-            for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
-                assertFalse(editor.isValid()); // not valid while popup is displayed
-                checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
-            }
-            for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
-                assertFalse(editor.isValid()); // not valid while popup is displayed
-                checkSavePopup(mgr, ReminderArchetypes.REMINDER);
+            if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+                EntityBean bean = new EntityBean(product);
+                for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
+                    assertFalse(editor.isValid()); // not valid while popup is displayed
+                    checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
+                }
+                for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
+                    assertFalse(editor.isValid()); // not valid while popup is displayed
+                    checkSavePopup(mgr, ReminderArchetypes.REMINDER);
+                }
             }
         }
         assertTrue(itemEditor.isValid());

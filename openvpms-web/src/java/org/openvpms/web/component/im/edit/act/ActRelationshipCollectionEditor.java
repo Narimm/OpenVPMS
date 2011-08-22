@@ -113,6 +113,15 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
+     * Adds a new item to the collection.
+     *
+     * @return the editor for the item, or <tt>null</tt> a new item cannot be created.
+     */
+    public IMObjectEditor add() {
+        return onNew();
+    }
+
+    /**
      * Adds any object being edited to the collection, if it is valid.
      *
      * @param validator the validator

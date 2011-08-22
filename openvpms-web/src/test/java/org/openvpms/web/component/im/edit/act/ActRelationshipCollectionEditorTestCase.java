@@ -21,24 +21,23 @@ package org.openvpms.web.component.im.edit.act;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierTestHelper;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.system.ServiceHelper;
@@ -63,8 +62,8 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
     @Test
     public void testAddRelationship() {
         final FinancialAct invoice = createInvoice();
-        final TestEditor itemsEditor = createActRelationshipCollectionEditor(invoice, 0);
-        itemsEditor.onNew(); // add a single item
+        final ActRelationshipCollectionEditor itemsEditor = createActRelationshipCollectionEditor(invoice, 0);
+        itemsEditor.add(); // add a single item
 
         CustomerChargeActItemEditor editor1 = (CustomerChargeActItemEditor) itemsEditor.getCurrentEditor();
         assertNotNull(editor1);
@@ -76,7 +75,7 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         save(invoice, itemsEditor);
         checkItems(invoice, 1);     // verify the invoice has a single item
 
-        itemsEditor.onNew();       // add another item
+        itemsEditor.add();       // add another item
         CustomerChargeActItemEditor editor2 = (CustomerChargeActItemEditor) itemsEditor.getCurrentEditor();
         assertNotNull(editor2);
         editor2.setProduct(product);
@@ -93,8 +92,8 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
     public void testExcludeDefaultItemsForMinCardinalityZero() {
         final FinancialAct invoice = createInvoice();
 
-        final TestEditor editor = createActRelationshipCollectionEditor(invoice, 0);
-        editor.onNew(); // add a single item
+        final ActRelationshipCollectionEditor editor = createActRelationshipCollectionEditor(invoice, 0);
+        editor.add(); // add a single item
 
         assertTrue(editor.isValid());
         save(invoice, editor);
@@ -109,9 +108,9 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
     public void testDisableExcludeDefaultItemsForMinCardinalityZero() {
         final FinancialAct invoice = createInvoice();
 
-        final TestEditor editor = createActRelationshipCollectionEditor(invoice, 0);
+        final ActRelationshipCollectionEditor editor = createActRelationshipCollectionEditor(invoice, 0);
         editor.setExcludeDefaultValueObject(false);
-        editor.onNew(); // add a single item
+        editor.add(); // add a single item
 
         assertFalse(editor.isValid());  // if the object was excluded, the editor would be valid
     }
@@ -122,9 +121,9 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
     @Test
     public void testIncludeDefaultItemsForMinCardinalityOne() {
         final FinancialAct delivery1 = createDelivery();
-        final TestEditor editor1 = createActRelationshipCollectionEditor(delivery1, 1);
+        final ActRelationshipCollectionEditor editor1 = createActRelationshipCollectionEditor(delivery1, 1);
         editor1.getComponent();
-        editor1.onNew(); // add a single item
+        editor1.add(); // add a single item
 
         save(delivery1, editor1);
         checkItems(delivery1, 1);  // verify the delivery has a single item
@@ -132,11 +131,11 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         // now test with 2 items. The second item with default values should be discarded as the min cardinality
         // constraints have been met.
         final FinancialAct delivery2 = createDelivery();
-        final TestEditor editor2 = createActRelationshipCollectionEditor(delivery2, 1);
+        final ActRelationshipCollectionEditor editor2 = createActRelationshipCollectionEditor(delivery2, 1);
         editor2.getComponent();
-        editor2.onNew();
+        editor2.add();
         FinancialAct first = (FinancialAct) editor2.getCurrentEditor().getObject();
-        editor2.onNew();
+        editor2.add();
         FinancialAct second = (FinancialAct) editor2.getCurrentEditor().getObject();
 
         save(delivery2, editor2);
@@ -154,9 +153,9 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
     public void testTemplateExpansionForTemplateWithNoIncludes() {
         final FinancialAct invoice = createInvoice();
 
-        final TestEditor itemsEditor = createActRelationshipCollectionEditor(invoice, 0);
+        final ActRelationshipCollectionEditor itemsEditor = createActRelationshipCollectionEditor(invoice, 0);
         itemsEditor.setExcludeDefaultValueObject(false);
-        itemsEditor.onNew(); // add a single item
+        itemsEditor.add(); // add a single item
 
         CustomerChargeActItemEditor editor = (CustomerChargeActItemEditor) itemsEditor.getCurrentEditor();
         assertNotNull(editor);
@@ -190,7 +189,7 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
      * @param parent      the parent
      * @param itemsEditor the items editor
      */
-    private void save(final FinancialAct parent, final TestEditor itemsEditor) {
+    private void save(final FinancialAct parent, final ActRelationshipCollectionEditor itemsEditor) {
         assertTrue(itemsEditor.isValid());
         // NOTE: may trigger addition of relationship to parent if not already present
 
@@ -210,7 +209,7 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
      * @param minCardinality the expected minimum cardinality of the "items" node
      * @return a new editor
      */
-    private TestEditor createActRelationshipCollectionEditor(FinancialAct parent, int minCardinality) {
+    private ActRelationshipCollectionEditor createActRelationshipCollectionEditor(FinancialAct parent, int minCardinality) {
         User user = TestHelper.createUser();
         LayoutContext context = new DefaultLayoutContext();
         context.getContext().setUser(user);
@@ -218,7 +217,7 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         CollectionProperty items = (CollectionProperty) set.get("items");
         assertNotNull(items);
         assertEquals(minCardinality, items.getMinCardinality());
-        TestEditor result = new TestEditor(items, parent, context);
+        ActRelationshipCollectionEditor result = new ActRelationshipCollectionEditor(items, parent, context);
         result.getComponent(); // ensure it is rendered
         return result;
     }
@@ -251,29 +250,5 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         bean.addNodeParticipation("stockLocation", stockLocation);
         return delivery;
     }
-
-    private static class TestEditor extends ActRelationshipCollectionEditor {
-
-        /**
-         * Constructs a <tt>TestEditor</tt>.
-         *
-         * @param property the collection property
-         * @param act      the parent act
-         * @param context  the layout context
-         */
-        public TestEditor(CollectionProperty property, Act act, LayoutContext context) {
-            super(property, act, context);
-        }
-
-        /**
-         * Invoked when the "New" button is pressed. Creates a new instance of the
-         * selected archetype, and displays it in an editor.
-         */
-        @Override
-        public void onNew() {
-            super.onNew();
-        }
-    }
-
 
 }
