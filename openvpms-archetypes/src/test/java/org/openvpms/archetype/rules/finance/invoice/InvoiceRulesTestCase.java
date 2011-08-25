@@ -113,9 +113,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         }
 
         // add document acts
-        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
-        linker.link((FinancialAct) item.getAct());
-        item.save();
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker((FinancialAct) item.getAct(),
+                                                                       getArchetypeService());
+        linker.link();
 
         // add a reminder
         Act reminder = createReminder();
@@ -165,9 +165,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         save(investigations);
 
         // add document acts
-        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
-        linker.link((FinancialAct) item.getAct());
-        item.save();
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker((FinancialAct) item.getAct(),
+                                                                       getArchetypeService());
+        linker.link();
 
         // add a reminder
         Act reminder = createReminder();
@@ -233,9 +233,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         save(item.getAct(), invoice.getAct());
 
         // add document acts
-        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
-        linker.link((FinancialAct) item.getAct());
-        item.save();
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker((FinancialAct) item.getAct(),
+                                                                       getArchetypeService());
+        linker.link();
 
         // add a reminder
         Act reminder = createReminder();
@@ -291,9 +291,9 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         save(item.getAct(), invoice.getAct());
 
         // add document acts
-        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(getArchetypeService());
-        linker.link((FinancialAct) item.getAct());
-        item.save();
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker((FinancialAct) item.getAct(),
+                                                                       getArchetypeService());
+        linker.link();
 
         // add a reminder
         Act reminder = createReminder();

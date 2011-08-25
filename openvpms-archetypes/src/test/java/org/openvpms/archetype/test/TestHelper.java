@@ -84,6 +84,17 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Helper to save an array of objects.
+     *
+     * @param objects the objects to save
+     * @throws ArchetypeServiceException if the service cannot save the object
+     * @throws ValidationException       if the object cannot be validated
+     */
+    public static void save(IMObject ... objects) {
+        save(Arrays.asList(objects));
+    }
+
+    /**
      * Helper to save a collection of objects.
      *
      * @param objects the objects to save
@@ -219,7 +230,8 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createUser() {
-        return createUser("zuser" + System.currentTimeMillis(), true);
+        // use an int to avoid exceeding the length of the db field
+        return createUser("zuser" + Math.abs((int) System.nanoTime()), true);
     }
 
     /**
@@ -432,11 +444,23 @@ public class TestHelper extends Assert {
      * @return a new location
      */
     public static Party createLocation() {
+        return createLocation(false);
+    }
+
+    /**
+     * Creates a new <tt>party.organisationLocation</tt>.
+     *
+     * @param stockControl if <tt>true</tt>, enable stock control for the location
+     * @return a new location
+     */
+    public static Party createLocation(boolean stockControl) {
         Party party = (Party) create(PracticeArchetypes.LOCATION);
         party.setName("XLocation");
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
         party.addContact(contact);
-        save(party);
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("stockControl", stockControl);
+        bean.save();
         return party;
     }
 

@@ -162,7 +162,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
 
         Party workList2 = ScheduleTestHelper.createWorkList();
         ActBean bean = new ActBean(task);
-        bean.setParticipant("participation.worklist", workList2);
+        bean.setParticipant(ScheduleArchetypes.WORKLIST_PARTICIPATION, workList2);
 
         getArchetypeService().save(task);
 
