@@ -42,10 +42,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
@@ -143,12 +143,12 @@ public class DeliveryProcessor {
     /**
      * Applies changes, if the act is POSTED and hasn't already been posted.
      *
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws ArchetypeServiceException  for any archetype service error
      * @throws DeliveryProcessorException if an item is missing a product
      */
     public void apply() {
         if (ActStatus.POSTED.equals(act.getStatus())
-                && !ActStatusHelper.isPosted(act, service)) {
+            && !ActStatusHelper.isPosted(act, service)) {
             ActBean bean = new ActBean(act, service);
             supplier = (Party) bean.getNodeParticipant("supplier");
             stockLocation = (Party) bean.getNodeParticipant(
@@ -173,7 +173,7 @@ public class DeliveryProcessor {
      * Processes a delivery/return item.
      *
      * @param item the delivery/return item
-     * @throws ArchetypeServiceException for any archetype service error
+     * @throws ArchetypeServiceException  for any archetype service error
      * @throws DeliveryProcessorException if the item is missing a product
      */
     private void processItem(Act item) {
@@ -339,7 +339,7 @@ public class DeliveryProcessor {
             } else if (status == DeliveryStatus.PART) {
                 newStatus = status;
             } else if (status == DeliveryStatus.PENDING
-                    && newStatus != DeliveryStatus.PART) {
+                       && newStatus != DeliveryStatus.PART) {
                 newStatus = status;
             }
         }
@@ -428,8 +428,7 @@ public class DeliveryProcessor {
         String reorderDesc = deliveryItemBean.getString("reorderDescription");
         BigDecimal listPrice = deliveryItemBean.getBigDecimal("listPrice");
         BigDecimal nettPrice = deliveryItemBean.getBigDecimal("unitPrice");
-        ProductSupplier ps = rules.getProductSupplier(product, supplier,
-                                                      size, units);
+        ProductSupplier ps = rules.getProductSupplier(product, supplier, reorderCode, size, units);
         boolean save = true;
         if (ps == null) {
             // no product-supplier relationship, so create a new one
@@ -442,12 +441,11 @@ public class DeliveryProcessor {
             ps.setNettPrice(nettPrice);
             ps.setPreferred(true);
         } else if (size != ps.getPackageSize()
-                || !ObjectUtils.equals(units, ps.getPackageUnits())
-                || !MathRules.equals(listPrice, ps.getListPrice())
-                || !MathRules.equals(nettPrice, ps.getNettPrice())
-                || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
-                || !ObjectUtils.equals(ps.getReorderDescription(),
-                                       reorderDesc)) {
+                   || !ObjectUtils.equals(units, ps.getPackageUnits())
+                   || !MathRules.equals(listPrice, ps.getListPrice())
+                   || !MathRules.equals(nettPrice, ps.getNettPrice())
+                   || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
+                   || !ObjectUtils.equals(ps.getReorderDescription(), reorderDesc)) {
             // properties are different to an existing relationship
             ps.setPackageSize(size);
             ps.setPackageUnits(units);

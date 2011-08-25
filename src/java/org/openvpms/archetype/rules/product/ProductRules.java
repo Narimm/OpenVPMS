@@ -120,32 +120,59 @@ public class ProductRules {
 
     /**
      * Returns an <em>entityRelationship.productSupplier</em> relationship
-     * for a product, supplier and package size and units.
+     * for a product, supplier, reorder code, package size and units.
      * <p/>
+     * If there is a match on reorder code
      * If there is a match on supplier and product, but no match on package
      * size, but there is a relationship where the size is <tt>0</tt>, then
      * this will be returned.
      *
      * @param product      the product
      * @param supplier     the supplier
+     * @param reorderCode  the reorder code. May be <tt>null</tt>
      * @param packageSize  the package size
-     * @param packageUnits the package units
-     * @return the relationship, wrapped in a {@link ProductSupplier}, or
-     *         <tt>null</tt> if none is found
+     * @param packageUnits the package units. May be <tt>null</tt>
+     * @return the relationship, wrapped in a {@link ProductSupplier}, or <tt>null</tt> if none is found
      */
-    public ProductSupplier getProductSupplier(Product product, Party supplier,
-                                              int packageSize,
-                                              String packageUnits) {
-        for (ProductSupplier ps : getProductSuppliers(product, supplier)) {
-            if (ps.getPackageSize() == packageSize
-                    && ObjectUtils.equals(ps.getPackageUnits(),
-                                          packageUnits)) {
-                return ps;
+    public ProductSupplier getProductSupplier(Product product, Party supplier, String reorderCode,
+                                              int packageSize, String packageUnits) {
+        ProductSupplier result = null;
+        ProductSupplier reorderMatch = null;
+        ProductSupplier packageMatch = null;
+        ProductSupplier sizeMatch = null;
+        ProductSupplier zeroMatch = null;
+        List<ProductSupplier> list = getProductSuppliers(product, supplier);
+        for (ProductSupplier ps : list) {
+            boolean reorderEq = ObjectUtils.equals(reorderCode, ps.getReorderCode());
+            boolean sizeEq = packageSize == ps.getPackageSize();
+            boolean unitEq = ObjectUtils.equals(packageUnits, ps.getPackageUnits());
+            if (reorderEq && sizeEq && unitEq) {
+                result = ps;
+                break;
+            } else if (reorderEq && reorderCode != null) {
+                reorderMatch = ps;
+            } else if (sizeEq && unitEq) {
+                packageMatch = ps;
+            } else if (sizeEq) {
+                sizeMatch = ps;
             } else if (ps.getPackageSize() == 0) {
-                return ps;
+                zeroMatch = ps;
             }
         }
-        return null;
+        if (result == null) {
+            if (reorderMatch != null) {
+                result = reorderMatch;
+            } else if (packageMatch != null) {
+                result = packageMatch;
+            } else if (reorderMatch != null) {
+                result = reorderMatch;
+            } else if (sizeMatch != null) {
+                result = sizeMatch;
+            } else if (zeroMatch != null) {
+                result = zeroMatch;
+            }
+        }
+        return result;
     }
 
     /**
@@ -175,12 +202,11 @@ public class ProductRules {
      * @param supplier the supplier
      * @return the relationship, wrapped in a {@link ProductSupplier}
      */
-    public ProductSupplier createProductSupplier(Product product,
-                                                 Party supplier) {
-
+    public ProductSupplier createProductSupplier(Product product, Party supplier) {
         EntityBean bean = new EntityBean(product, service);
         EntityRelationship rel = bean.addRelationship(
                 ProductArchetypes.PRODUCT_SUPPLIER_RELATIONSHIP, supplier);
         return new ProductSupplier(rel, service);
     }
+
 }

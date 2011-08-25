@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -76,7 +79,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @return a new appointment type
      */
     public static Entity createAppointmentType(String name, boolean save) {
-        Entity appointmentType = (Entity) create("entity.appointmentType");
+        Entity appointmentType = (Entity) create(ScheduleArchetypes.APPOINTMENT_TYPE);
         appointmentType.setName(name);
         if (save) {
             save(appointmentType);
@@ -104,7 +107,7 @@ public class ScheduleTestHelper extends TestHelper {
      */
     public static Party createSchedule(int slotSize, String slotUnits,
                                        int noSlots, Entity appointmentType) {
-        Party schedule = (Party) create("party.organisationSchedule");
+        Party schedule = (Party) create(ScheduleArchetypes.ORGANISATION_SCHEDULE);
         EntityBean bean = new EntityBean(schedule);
         bean.setValue("name", "XSchedule");
         bean.setValue("slotSize", slotSize);
@@ -133,8 +136,7 @@ public class ScheduleTestHelper extends TestHelper {
                                                         boolean isDefault) {
         EntityBean bean = new EntityBean(schedule);
         EntityRelationship relationship = bean.addRelationship(
-                "entityRelationship.scheduleAppointmentType",
-                appointmentType);
+                ScheduleArchetypes.SCHEDULE_APPOINTMENT_TYPE_RELATIONSHIP, appointmentType);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("noSlots", noSlots);
         if (isDefault) {
@@ -241,10 +243,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @return a new task type
      */
     public static Entity createTaskType() {
-        Entity taskType = (Entity) create("entity.taskType");
-        taskType.setName("XTaskType");
-        save(taskType);
-        return taskType;
+        return createTaskType("XTaskType", true);
     }
 
     /**
@@ -255,7 +254,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @return a new task type
      */
     public static Entity createTaskType(String name, boolean save) {
-        Entity taskType = (Entity) create("entity.taskType");
+        Entity taskType = (Entity) create(ScheduleArchetypes.TASK_TYPE);
         taskType.setName(name);
         if (save) {
             save(taskType);
@@ -263,17 +262,53 @@ public class ScheduleTestHelper extends TestHelper {
         return taskType;
     }
 
-
     /**
      * Helper to create a new <em>party.organisationWorkList</em>.
      *
      * @return a new work list
      */
     public static Party createWorkList() {
-        Party workList = (Party) create("party.organisationWorkList");
+        return createWorkList(2, null);
+    }
+
+    /**
+     * Helper to create a new <em>party.organisationWorkList</em>, linked to a task type.
+     *
+     * @param taskType the task type. May be <tt>null</tt>
+     * @param noSlots the no. of slots
+     * @return a new work list
+     */
+    public static Party createWorkList(int noSlots, Entity taskType) {
+        Party workList = (Party) create(ScheduleArchetypes.ORGANISATION_WORKLIST);
         workList.setName("XWorkList");
-        save(workList);
+        if (taskType != null) {
+            addTaskType(workList, taskType, noSlots, true);
+            save(workList, taskType);
+        } else {
+            save(workList);
+        }
         return workList;
+    }
+
+    /**
+     * Helper to add a appointment type to a schedule.
+     *
+     * @param workList        the work list
+     * @param taskType the appointment type
+     * @param noSlots         the work list no. of slots
+     * @param isDefault       determines if the appointment type is the default
+     * @return the new <em>entityRelationship.scheduleAppointmentType</em>
+     */
+    public static EntityRelationship addTaskType(Party workList, Entity taskType, int noSlots, boolean isDefault) {
+        EntityBean bean = new EntityBean(workList);
+        EntityRelationship relationship = bean.addRelationship(ScheduleArchetypes.WORKLIST_TASK_TYPE_RELATIONSHIP,
+                                                               taskType);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("noSlots", noSlots);
+        if (isDefault) {
+            relBean.setValue("default", true);
+        }
+        return relationship;
     }
 
     /**
@@ -284,8 +319,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param workList  the work list
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime,
-                                 Party workList) {
+    public static Act createTask(Date startTime, Date endTime, Party workList) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         return createTask(startTime, endTime, workList, customer, patient);
@@ -311,16 +345,15 @@ public class ScheduleTestHelper extends TestHelper {
      *
      * @param startTime the act start time
      * @param endTime   the act end time
-     * @param schedule  the schedule
+     * @param worklist  the work list
      * @param customer  the customer
      * @param patient   the patient. May be <tt>null</tt>
      * @param clinician the clinician. May be <tt>null</tt>
      * @param author    the author. May be <tt>null</tt>
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime,
-                                 Party schedule, Party customer,
-                                 Party patient, User clinician, User author) {
+    public static Act createTask(Date startTime, Date endTime, Party worklist, Party customer, Party patient,
+                                 User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.TASK);
 
         ActBean bean = new ActBean(act);
@@ -328,19 +361,17 @@ public class ScheduleTestHelper extends TestHelper {
         bean.setValue("endTime", endTime);
         bean.setValue("status", TaskStatus.IN_PROGRESS);
         Entity taskType = createTaskType();
-        taskType.setName("XTaskType");
-        save(taskType);
-        bean.setParticipant("participation.customer", customer);
+        bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
         if (patient != null) {
-            bean.setParticipant("participation.patient", patient);
+            bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
         }
-        bean.setParticipant("participation.worklist", schedule);
-        bean.setParticipant("participation.taskType", taskType);
+        bean.setParticipant(ScheduleArchetypes.WORKLIST_PARTICIPATION, worklist);
+        bean.setParticipant(ScheduleArchetypes.TASK_TYPE_PARTICIPATION, taskType);
         if (clinician != null) {
-            bean.setParticipant("participation.clinician", clinician);
+            bean.setParticipant(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
         }
         if (author != null) {
-            bean.setParticipant("participation.author", author);
+            bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
         }
         return act;
     }

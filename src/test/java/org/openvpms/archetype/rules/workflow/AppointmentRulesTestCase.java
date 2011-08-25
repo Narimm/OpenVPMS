@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -306,9 +307,9 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         bean.setStatus(WorkflowStatus.PENDING);
         bean.setValue("startTime", new Date());
         bean.setValue("endTime", new Date());
-        bean.addParticipation("participation.taskType", taskType);
-        bean.addParticipation("participation.customer", customer);
-        bean.addParticipation("participation.worklist", workList);
+        bean.addParticipation(ScheduleArchetypes.TASK_TYPE_PARTICIPATION, taskType);
+        bean.addParticipation(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
+        bean.addParticipation(ScheduleArchetypes.WORKLIST_PARTICIPATION, workList);
         bean.save();
         return act;
     }
@@ -338,7 +339,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      * @return a new task type
      */
     protected Entity createTaskType() {
-        Entity taskType = (Entity) create("entity.taskType");
+        Entity taskType = (Entity) create(ScheduleArchetypes.TASK_TYPE);
         taskType.setName("XTaskType");
         save(taskType);
         return taskType;
