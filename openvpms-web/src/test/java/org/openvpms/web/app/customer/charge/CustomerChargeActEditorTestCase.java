@@ -171,13 +171,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
         Entity reminderType2 = addReminder(product2);
         Entity investigationType2 = addInvestigation(product2);
+        Entity investigationType3 = addInvestigation(product2);
         Entity template2 = addTemplate(product2);
 
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         Entity reminderType3 = addReminder(product3);
-        Entity investigationType3 = addInvestigation(product3);
         Entity investigationType4 = addInvestigation(product3);
         Entity investigationType5 = addInvestigation(product3);
+        Entity investigationType6 = addInvestigation(product3);
+        
         Entity template3 = addTemplate(product3);
 
         EditorManager mgr = new EditorManager();
@@ -199,16 +201,18 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         Act investigation1 = getInvestigation(item1, investigationType1);
         Act investigation2 = getInvestigation(item2, investigationType2);
-        Act investigation3 = getInvestigation(item3, investigationType3);
+        Act investigation3 = getInvestigation(item2, investigationType3);
         Act investigation4 = getInvestigation(item3, investigationType4);
         Act investigation5 = getInvestigation(item3, investigationType5);
+        Act investigation6 = getInvestigation(item3, investigationType5);
 
         investigation1.setStatus(InvestigationActStatus.IN_PROGRESS);
         investigation2.setStatus(InvestigationActStatus.COMPLETED);
         investigation3.setStatus(InvestigationActStatus.CANCELLED);
         investigation4.setStatus(InvestigationActStatus.PRELIMINARY);
         investigation5.setStatus(InvestigationActStatus.FINAL);
-        save(investigation1, investigation2, investigation3, investigation4, investigation5);
+        investigation6.setStatus(InvestigationActStatus.RECEIVED);
+        save(investigation1, investigation2, investigation3, investigation4, investigation5, investigation6);
         Act reminder1 = getReminder(item1, reminderType1);
         Act reminder2 = getReminder(item2, reminderType2);
         Act reminder3 = getReminder(item3, reminderType3);
@@ -240,6 +244,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertNull(get(investigation3));
         assertNotNull(get(investigation4));
         assertNotNull(get(investigation5));
+        assertNotNull(get(investigation6));
 
         assertNull(get(reminder1));
         assertNotNull(get(reminder2));
