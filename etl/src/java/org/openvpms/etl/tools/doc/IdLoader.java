@@ -254,7 +254,7 @@ class IdLoader extends AbstractLoader {
                 notifyAlreadyLoaded(file);
             } else {
             	if (TypeHelper.isA(act,InvestigationArchetypes.PATIENT_INVESTIGATION)) {
-            		act.setStatus(InvestigationActStatus.PRELIMINARY);
+            		act.setStatus(InvestigationActStatus.RECEIVED);
             	}
             	else {
                     act.setStatus(ActStatus.COMPLETED);            		
