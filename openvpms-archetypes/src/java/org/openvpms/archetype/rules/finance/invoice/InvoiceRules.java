@@ -50,6 +50,7 @@ public class InvoiceRules {
      * invoice item is deleted.
      */
     private static final String[] INVESTIGATION_STATUSES = {InvestigationActStatus.COMPLETED,
+    														InvestigationActStatus.RECEIVED,
                                                             InvestigationActStatus.PRELIMINARY,
                                                             InvestigationActStatus.FINAL};
 
