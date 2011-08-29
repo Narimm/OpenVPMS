@@ -34,6 +34,7 @@
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
+                    <property name="RECEIVED" value="Received"/>
                     <property name="COMPLETED" value="Completed"/>
                     <property name="CANCELLED" value="Cancelled"/>
                     <property name="PRELIMINARY" value="Preliminary"/>

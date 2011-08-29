@@ -185,6 +185,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         investigations.get(0).setStatus(InvestigationActStatus.COMPLETED);
         investigations.get(1).setStatus(InvestigationActStatus.PRELIMINARY);
         investigations.get(2).setStatus(InvestigationActStatus.FINAL);
+        investigations.get(3).setStatus(InvestigationActStatus.RECEIVED);
         save(investigations);
 
         // set the reminder status to 'Completed'
@@ -313,6 +314,8 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         investigations.get(0).setStatus(InvestigationActStatus.COMPLETED);
         investigations.get(1).setStatus(InvestigationActStatus.PRELIMINARY);
         investigations.get(2).setStatus(InvestigationActStatus.FINAL);
+        investigations.get(3).setStatus(InvestigationActStatus.RECEIVED);
+        
         save(investigations);
 
         // set the reminder status to 'Completed'
@@ -369,7 +372,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         clinician = TestHelper.createClinician();
         patient = TestHelper.createPatient();
         investigationTypes = new HashSet<Entity>();
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 4; ++i) {
             investigationTypes.add(createInvestigationType());
         }
         template = createDocumentTemplate();
