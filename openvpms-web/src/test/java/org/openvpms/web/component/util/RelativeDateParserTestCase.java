@@ -21,6 +21,7 @@ package org.openvpms.web.component.util;
 import org.junit.Test;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
+import org.openvpms.archetype.test.TestHelper;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -66,6 +67,22 @@ public class RelativeDateParserTestCase {
     }
 
     /**
+     * Verifies that date parsing works as expected for leap years.
+     * <p/>
+     * The results can vary if years are processed before months;.
+     */
+    @Test
+    public void testLeapYear() {
+        Date expected1 = TestHelper.getDate("2008-02-29");
+        Date expected2 = TestHelper.getDate("2008-02-28");
+        Date source = TestHelper.getDate("2011-08-30");
+
+        RelativeDateParser parser = new RelativeDateParser();
+        assertEquals(expected1, parser.parse("-3y 6m", source));
+        assertEquals(expected2, parser.parse("-6m 3y", source));
+    }
+
+    /**
      * Tests the {@link RelativeDateParser#parse(String, Date)} method when
      * supplied with invalid strings.
      */
@@ -95,7 +112,7 @@ public class RelativeDateParserTestCase {
     private void checkEquals(String source, int day, int week,
                              int month, int year) {
         RelativeDateParser parser = new RelativeDateParser();
-        Date date = new Date();
+        Date date = TestHelper.getDate("2011-04-10");
         Date relative = parser.parse(source, date);
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(date);
