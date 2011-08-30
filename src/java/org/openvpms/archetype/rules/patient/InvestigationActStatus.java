@@ -38,4 +38,9 @@ public class InvestigationActStatus extends ActStatus {
      */
     public static final String FINAL = "FINAL";
 
+    /**
+     * Received act status.
+     */
+    public static final String RECEIVED = "RECEIVED";
+
 }

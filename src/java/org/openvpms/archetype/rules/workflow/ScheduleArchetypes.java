@@ -37,7 +37,7 @@ public class ScheduleArchetypes {
      * Organisation work list archetype short name.
      */
     public static String ORGANISATION_WORKLIST = "party.organisationWorkList";
-    
+
     /**
      * The appointment archetype short name.
      */
@@ -67,7 +67,7 @@ public class ScheduleArchetypes {
      * Worklist-task type entity relationship archetype short name.
      */
     public static final String WORKLIST_TASK_TYPE_RELATIONSHIP = "entityRelationship.worklistTaskType";
-    
+
     /**
      * The appointment type participation archetype short name.
      */
