@@ -204,7 +204,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Act investigation3 = getInvestigation(item2, investigationType3);
         Act investigation4 = getInvestigation(item3, investigationType4);
         Act investigation5 = getInvestigation(item3, investigationType5);
-        Act investigation6 = getInvestigation(item3, investigationType5);
+        Act investigation6 = getInvestigation(item3, investigationType6);
 
         investigation1.setStatus(InvestigationActStatus.IN_PROGRESS);
         investigation2.setStatus(InvestigationActStatus.COMPLETED);
