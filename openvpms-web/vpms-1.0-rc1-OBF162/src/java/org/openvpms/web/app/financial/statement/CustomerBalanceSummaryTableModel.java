@@ -1,0 +1,232 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
+package org.openvpms.web.app.financial.statement;
+
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.layout.TableLayoutData;
+import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
+import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.table.AbstractIMTableModel;
+import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.resource.util.Messages;
+
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Date;
+
+
+/**
+ * Customer balance summary table model.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+public class CustomerBalanceSummaryTableModel
+        extends AbstractIMTableModel<ObjectSet> {
+
+    /**
+     * The customer name index.
+     */
+    private static final int CUSTOMER_INDEX = 0;
+
+    /**
+     * The balance index.
+     */
+    private static final int BALANCE_INDEX = 1;
+
+    /**
+     * The overdue balance index.
+     */
+    private static final int OVERDUE_BALANCE_INDEX = 2;
+
+    /**
+     * The credit balance index.
+     */
+    private static final int CREDIT_BALANCE_INDEX = 3;
+
+    /**
+     * The last payment date index.
+     */
+    private static final int LAST_PAYMENT_DATE_INDEX = 4;
+
+    /**
+     * The last payment amount index.
+     */
+    private static final int LAST_PAYMENT_AMOUNT_INDEX = 5;
+
+    /**
+     * The last invoice date index.
+     */
+    private static final int LAST_INVOICE_DATE_INDEX = 6;
+
+    /**
+     * The columns. A 2 dimensional array of the the ObjectSet key and
+     * the corresponding column display name.
+     */
+    private String[][] columns = {
+            {CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE,
+             Messages.get("customerbalancetablemodel.customer")},
+            {CustomerBalanceSummaryQuery.BALANCE,
+             Messages.get("customerbalancetablemodel.balance")},
+            {CustomerBalanceSummaryQuery.OVERDUE_BALANCE,
+             Messages.get("customerbalancetablemodel.overdueBalance")},
+            {CustomerBalanceSummaryQuery.CREDIT_BALANCE, Messages.get(
+                    "customerbalancetablemodel.creditBalance")},
+            {CustomerBalanceSummaryQuery.LAST_PAYMENT_DATE, Messages.get(
+                    "customerbalancetablemodel.lastPaymentDate")},
+            {CustomerBalanceSummaryQuery.LAST_PAYMENT_AMOUNT, Messages.get(
+                    "customerbalancetablemodel.lastPaymentAmount")},
+            {CustomerBalanceSummaryQuery.LAST_INVOICE_DATE, Messages.get(
+                    "customerbalancetablemodel.lastInvoiceDate")}};
+
+
+    /**
+     * Creates a new <tt>AppointmentTableModel</tt>.
+     */
+    public CustomerBalanceSummaryTableModel() {
+        DefaultTableColumnModel model = new DefaultTableColumnModel();
+        for (int i = 0; i < columns.length; ++i) {
+            model.addColumn(new TableColumn(i));
+        }
+        setTableColumnModel(model);
+    }
+
+    /**
+     * Returns the name of the specified column number.
+     *
+     * @param column the column index (0-based)
+     * @return the column name
+     */
+    @Override
+    public String getColumnName(int column) {
+        return columns[column][1];
+    }
+
+    /**
+     * Returns the sort criteria.
+     *
+     * @param column    the primary sort column
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in <code>descending</code> order
+     * @return <tt>null</tt>
+     */
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        return null;
+    }
+
+    /**
+     * Returns the value found at the given coordinate within the table.
+     *
+     * @param set    the object set
+     * @param column the column
+     * @param row    the row
+     * @return the value at the given coordinate.
+     */
+    protected Object getValue(ObjectSet set, TableColumn column, int row) {
+        Object result = null;
+        int index = column.getModelIndex();
+        Object value = set.get(columns[index][0]);
+        switch (index) {
+            case CUSTOMER_INDEX:
+                result = getViewer((IMObjectReference) value,
+                                   (String) set.get(
+                                           CustomerBalanceSummaryQuery.CUSTOMER_NAME));
+                break;
+            case BALANCE_INDEX:
+                result = getAmount((BigDecimal) value);
+                break;
+            case OVERDUE_BALANCE_INDEX:
+                result = getAmount((BigDecimal) value);
+                break;
+            case CREDIT_BALANCE_INDEX:
+                result = getAmount((BigDecimal) value);
+                break;
+            case LAST_PAYMENT_DATE_INDEX:
+                result = getDate((Date) value);
+                break;
+            case LAST_PAYMENT_AMOUNT_INDEX:
+                result = getAmount((BigDecimal) value);
+                break;
+            case LAST_INVOICE_DATE_INDEX:
+                result = getDate((Date) value);
+                break;
+        }
+        return result;
+    }
+
+    /**
+     * Helper to return a component to display a party.
+     *
+     * @param party the party reference
+     * @param name  the party name
+     * @return a component to display the party
+     */
+    private Component getViewer(IMObjectReference party, String name) {
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
+                party, name, true);
+        return viewer.getComponent();
+    }
+
+
+    /**
+     * Helper to return a component to display a date.
+     *
+     * @param date the date. May be <code>null</code>
+     * @return a component to display the date
+     */
+    private Component getDate(Date date) {
+        Label label = LabelFactory.create();
+        if (date != null) {
+            label.setText(DateHelper.formatDate(date, false));
+        }
+        return label;
+    }
+
+    /**
+     * Helper to return a component to display a right justified amount in
+     * a table cell.
+     *
+     * @param amount the amount. May be <code>null</code>
+     * @return a component to display the amount
+     */
+    private Component getAmount(BigDecimal amount) {
+        Label label = LabelFactory.create();
+        if (amount != null) {
+            String text = NumberFormatter.format(
+                    amount, NumberFormat.getCurrencyInstance());
+            label.setText(text);
+            TableLayoutData layout = new TableLayoutData();
+            Alignment right = new Alignment(Alignment.RIGHT,
+                                            Alignment.DEFAULT);
+            layout.setAlignment(right);
+            label.setLayoutData(layout);
+        }
+        return label;
+    }
+
+}

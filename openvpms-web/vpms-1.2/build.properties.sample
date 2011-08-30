@@ -1,0 +1,9 @@
+tomcat.dir=c:/program files/apache software foundation/tomcat 5.5
+
+hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+hibernate.connection.driver_class=com.mysql.jdbc.Driver
+hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms
+hibernate.connection.username=openvpms
+hibernate.connection.password=openvpms
+
+maven.test.skip=true

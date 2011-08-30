@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+        "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+    <!--  Property configuration -->
+    <bean id="props"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:hibernate.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--  The DataSource -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName"
+                  value="${hibernate.connection.driver_class}"/>
+        <property name="url" value="${hibernate.connection.url}"/>
+        <property name="username" value="${hibernate.connection.username}"/>
+        <property name="password" value="${hibernate.connection.password}"/>
+    </bean>
+
+
+    <!--  Entity Interceptor Bean for Hibernate -->
+    <bean id="entityInterceptor"
+          class="org.openvpms.component.system.service.hibernate.EntityInterceptor">
+    </bean>
+
+    <!--  Hibernate session factory -->
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource">
+            <ref local="dataSource"/>
+        </property>
+        <property name="entityInterceptor">
+            <ref local="entityInterceptor"/>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
+                <prop key="hibernate.c3p0.min_size">
+                    ${hibernate.c3p0.min_size}</prop>
+                <prop key="hibernate.c3p0.max_size">
+                    ${hibernate.c3p0.max_size}</prop>
+                <prop key="hibernate.c3p0.timeout">
+                    ${hibernate.c3p0.timeout}</prop>
+                <prop key="hibernate.c3p0.max_statements">
+                    ${hibernate.c3p0.max_statements}
+                </prop>
+            </props>
+        </property>
+        <property name="mappingResources">
+            <list>
+                <value>
+                    /org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/lookup/LookupRelationship.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/act/Act.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/act/ActRelationship.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/common/Entity.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/document/Document.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/common/Participation.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/party/Contact.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/product/ProductPrice.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/archetype/descriptor/ArchetypeDescriptor.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionDescriptor.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionTypeDescriptor.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/archetype/descriptor/NodeDescriptor.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/archetype/descriptor/ActionTypeDescriptor.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/security/SecurityRole.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
+                </value>
+            </list>
+        </property>
+    </bean>
+
+    <!--  The IMObject DAO bean -->
+    <bean id="imObjectDao"
+          class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+        <property name="sessionFactory">
+            <ref local="sessionFactory"/>
+        </property>
+    </bean>
+
+    <bean id="archetypeDescriptorCache"
+          class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
+        <constructor-arg index="0" ref="imObjectDao"/>
+    </bean>
+
+    <!--  The Archetype Service -->
+    <bean id="archetypeService"
+          class="org.openvpms.component.business.service.archetype.ArchetypeService">
+        <constructor-arg index="0">
+            <ref local="archetypeDescriptorCache"/>
+        </constructor-arg>
+        <property name="dao">
+            <ref local="imObjectDao"/>
+        </property>
+        <property name="entityInterceptor">
+            <ref local="entityInterceptor"/>
+        </property>
+    </bean>
+
+    <bean id="archetypeServiceHelper"
+          class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean>
+
+    <!-- The JXPathHelper class, used to register extension functions -->
+    <bean id="jxpathHelper"
+          class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+        <constructor-arg>
+            <map>
+                <entry key="openvpms"
+                       value="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions"/>
+                <entry key="lookup"
+                       value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
+                <entry key="party">
+                    <bean class="org.openvpms.archetype.function.party.PartyFunctions"/>
+                </entry>
+                <entry key="date"
+                       value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+
+    <!-- The macro cache -->
+    <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache"/>
+
+    <!-- The app -->
+    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
+          singleton="false"/>
+
+    <!-- Defines the key stroke combination for accelerator keys.
+          If mask not specified, defaults to 'Alt'.
+       -->
+    <bean id="keyStrokeMask"
+          class="org.openvpms.web.component.util.KeyStrokeMask">
+        <!--  The mask. May contain combinations of Ctrl, Alt, or Shift,
+     separated by '-' -->
+        <property name="mask" value="Ctrl-Shift"/>
+    </bean>
+
+</beans>

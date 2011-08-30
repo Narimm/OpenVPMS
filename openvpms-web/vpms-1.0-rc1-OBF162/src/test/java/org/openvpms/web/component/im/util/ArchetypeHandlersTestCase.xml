@@ -1,0 +1,30 @@
+<handlers>
+    <handler>
+        <shortName>lookup.*</shortName>
+        <type>org.openvpms.web.component.im.query.AutoQuery</type>
+    </handler>
+    <handler>
+        <shortName>security.*</shortName>
+        <type>org.openvpms.web.component.im.query.AutoQuery</type>
+    </handler>
+    <handler>
+        <shortName>party.organisation*</shortName>
+        <type>org.openvpms.web.component.im.query.AutoQuery</type>
+        <properties>
+            <entry>
+                <string>maxResults</string>
+                <int>10</int>
+            </entry>
+        </properties>
+    </handler>
+    <handler>
+        <shortName>party.patient*</shortName>
+        <type>org.openvpms.web.component.im.query.PatientQuery</type>
+        <properties>
+            <entry>
+                <string>maxResults</string>
+                <int>25</int>
+            </entry>
+        </properties>
+    </handler>
+</handlers>

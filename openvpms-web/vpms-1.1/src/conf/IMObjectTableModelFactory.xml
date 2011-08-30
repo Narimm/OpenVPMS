@@ -1,0 +1,29 @@
+<handlers>
+    <handler>
+        <type>org.openvpms.web.app.patient.mr.SummaryTableModel</type>
+        <properties>
+            <entry>
+                <string>expressions</string>
+                <java.util.Map>
+                    <entry>
+                        <string>act.patientClinicalEvent</string>
+                        <string>/description</string>
+                    </entry>
+                    <entry>
+                        <string>act.patientClinicalProblem</string>
+                        <string>/description</string>
+                    </entry>
+                    <entry>
+                        <string>act.patientClinicalNote</string>
+                        <string>/details/note</string>
+                    </entry>
+                    <entry>
+                        <string>act.patientInvestigation*</string>
+                        <string>concat(/description, " [", openvpms:lookup(.,
+                            "status"), "]")</string>
+                    </entry>
+                </java.util.Map>
+            </entry>
+        </properties>
+    </handler>
+</handlers>
