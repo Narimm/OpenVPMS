@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:ws="http://jax-ws.dev.java.net/spring/core"
+       xmlns:wss="http://jax-ws.dev.java.net/spring/servlet"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+          http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+          http://jax-ws.dev.java.net/spring/core http://jax-ws.dev.java.net/spring/core.xsd
+          http://jax-ws.dev.java.net/spring/servlet http://jax-ws.dev.java.net/spring/servlet.xsd
+          http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Order service                                                      -->
+    <!-- ================================================================== -->
+
+    <bean id="orderService" class="org.openvpms.esci.adapter.client.impl.OrderServiceAdapterImpl">
+        <property name="factory" ref="imObjectBeanFactory"/>
+        <property name="orderMapper" ref="orderMapper"/>
+        <property name="supplierServiceLocator" ref="supplierServiceLocator"/>
+    </bean>
+
+    <bean id="orderMapper" class="org.openvpms.esci.adapter.map.order.OrderMapperImpl">
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="locationRules" ref="locationRules"/>
+        <property name="lookupService" ref="lookupService"/>
+        <property name="partyRules" ref="partyRules"/>
+        <property name="practiceRules" ref="practiceRules"/>
+        <property name="supplierRules" ref="supplierRules"/>
+        <property name="currencies" ref="currencies"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Dispatcher                                                         -->
+    <!-- ================================================================== -->
+    <bean id="esciDispatcher" class="org.openvpms.esci.adapter.dispatcher.DefaultESCIDispatcher">
+        <property name="archetypeService" ref="archetypeService"/>
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="supplierServiceLocator" ref="supplierServiceLocator"/>
+        <property name="documentProcessors">
+            <list>
+                <ref bean="orderResponseProcessor"/>
+                <ref bean="invoiceProcessor"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Order response processing                                          -->
+    <!-- ================================================================== -->
+
+    <bean id="orderResponseProcessor" class="org.openvpms.esci.adapter.dispatcher.order.OrderResponseProcessor">
+        <property name="orderResponseMapper" ref="orderResponseMapper"/>
+        <property name="orderResponseListener">
+            <bean class="org.openvpms.esci.adapter.dispatcher.order.SystemMessageOrderResponseListener">
+                <property name="beanFactory" ref="imObjectBeanFactory"/>
+            </bean>
+        </property>
+        <property name="archetypeService" ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="orderResponseMapper" class="org.openvpms.esci.adapter.map.order.OrderResponseMapperImpl">
+        <property name="archetypeService" ref="archetypeRuleService"/>
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Invoice processing                                                 -->
+    <!-- ================================================================== -->
+
+    <bean id="invoiceProcessor" class="org.openvpms.esci.adapter.dispatcher.invoice.InvoiceProcessor">
+        <property name="archetypeService" ref="archetypeRuleService"/>
+        <property name="invoiceListener">
+            <bean class="org.openvpms.esci.adapter.dispatcher.invoice.SystemMessageInvoiceListener">
+                <property name="beanFactory" ref="imObjectBeanFactory"/>
+            </bean>
+        </property>
+        <property name="invoiceMapper" ref="invoiceMapper"/>
+    </bean>
+
+    <bean id="invoiceMapper" class="org.openvpms.esci.adapter.map.invoice.InvoiceMapperImpl">
+        <property name="archetypeService" ref="archetypeRuleService"/>
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="lookupService" ref="lookupService"/>
+        <property name="practiceRules" ref="practiceRules"/>
+        <property name="supplierRules" ref="supplierRules"/>
+        <property name="productRules" ref="productRules"/>
+        <property name="currencies" ref="currencies"/>        
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Scheduling                                                         -->
+    <!-- ================================================================== -->
+
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="jobFactory">
+            <bean class="org.springframework.scheduling.quartz.SpringBeanJobFactory"/>
+        </property>
+        <property name="schedulerContextAsMap">
+            <map>
+                <entry key="ESCIDispatcher" value-ref="esciDispatcher"/>
+                <entry key="ArchetypeService" value-ref="archetypeRuleService"/>
+                <entry key="runAs" value="admin"/> <!-- change this to a valid user -->
+            </map>
+        </property>
+        <property name="triggers">
+            <list>
+                <ref bean="esciDispatcherCronTrigger"/>
+            </list>
+        </property>
+        <property name="quartzProperties">
+            <props>
+                <prop key="org.quartz.plugin.jobHistory.class">org.quartz.plugins.history.LoggingJobHistoryPlugin</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean name="esciDispatcherCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="esciDispatcherJob"/>
+        <!-- run every week day at 5:30 PM -->
+        <!-- See http://www.quartz-scheduler.org/docs/tutorials/crontrigger.html -->
+        <property name="cronExpression" value="0 30 17 ? * MON-FRI"/>
+    </bean>
+
+    <bean name="esciDispatcherJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openvpms.esci.adapter.dispatcher.quartz.ESCIDispatcherJob"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Support for accessing supplier services                            -->
+    <!-- ================================================================== -->
+
+    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory"/>
+
+    <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator">
+        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="serviceLocatorFactory" ref="serviceLocatorFactory"/>
+        <property name="supplierRules" ref="supplierRules"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!-- Business rules                                                     -->
+    <!-- ================================================================== -->
+
+    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+</beans>

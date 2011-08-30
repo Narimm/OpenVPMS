@@ -1,0 +1,178 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
+package org.openvpms.web.app.supplier;
+
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
+
+import java.util.Date;
+import java.util.List;
+
+
+/**
+ * CRUD window for supplier accounts.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
+
+    /**
+     * Reverse button identifier.
+     */
+    private static final String REVERSE_ID = "reverse";
+
+    /**
+     * Statement button identifier.
+     */
+    private static final String STATEMENT_ID = "statement";
+
+    /**
+     * Adjust button identifier.
+     */
+    private static final String ADJUST_ID = "adjust";
+
+
+    /**
+     * Create a new <tt>AccountCRUDWindow</tt>.
+     *
+     * @param archetypes the archetypes that this may create
+     */
+    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes) {
+        super(archetypes);
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(ButtonSet buttons) {
+        Button reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onReverse();
+            }
+        });
+        Button statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onStatement();
+            }
+        });
+        Button adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onAdjust();
+            }
+        });
+        buttons.add(reverse);
+        buttons.add(createPrintButton());
+        buttons.add(statement);
+        buttons.add(adjust);
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param buttons the button set
+     * @param enable  determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(ButtonSet buttons, boolean enable) {
+        buttons.setEnabled(REVERSE_ID, enable);
+        buttons.setEnabled(PRINT_ID, enable);
+        buttons.setEnabled(STATEMENT_ID, enable);
+        buttons.setEnabled(ADJUST_ID, enable);
+    }
+
+    /**
+     * Invoked when the 'reverse' button is pressed.
+     */
+    protected void onReverse() {
+        final Act act = getObject();
+        String status = act.getStatus();
+        if (POSTED.equals(status)) {
+            String name = getArchetypeDescriptor().getDisplayName();
+            String title = Messages.get("supplier.account.reverse.title", name);
+            String message = Messages.get("supplier.account.reverse.message",
+                                          name);
+            final ConfirmationDialog dialog
+                    = new ConfirmationDialog(title, message);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    reverse(act);
+                }
+            });
+            dialog.show();
+        } else {
+            showStatusError(act, "supplier.account.noreverse.title",
+                            "supplier.account.noreverse.message");
+        }
+    }
+
+    /**
+     * Invoked when the 'statement' button is pressed.
+     */
+    protected void onStatement() {
+    }
+
+    /**
+     * Invoked when the 'adjust' button is pressed.
+     */
+    protected void onAdjust() {
+    }
+
+    /**
+     * Reverse an invoice or credit act.
+     *
+     * @param act the act to reverse
+     */
+    private void reverse(Act act) {
+        try {
+            IMObjectCopier copier
+                    = new IMObjectCopier(new SupplierActReversalHandler(act));
+            List<IMObject> objects = copier.apply(act);
+            Act reversal = (Act) objects.get(0);
+            reversal.setStatus(IN_PROGRESS);
+            reversal.setActivityStartTime(new Date());
+            setPrintStatus(reversal, false);
+            SaveHelper.save(objects);
+        } catch (OpenVPMSException exception) {
+            String title = Messages.get("supplier.account.reverse.failed");
+            ErrorHelper.show(title, exception);
+        }
+    }
+
+}

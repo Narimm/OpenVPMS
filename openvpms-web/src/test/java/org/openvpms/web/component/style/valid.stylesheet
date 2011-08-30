@@ -1,0 +1,19 @@
+<stylesheet>
+
+    <style name="button" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="background" value="${background}"/>
+            <property name="foreground" value="${foreground}"/>
+            <property name="border">
+                <border size="1px" style="outset" color="${border}"/>
+            </property>
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+            <property name="pressedEnabled" value="true"/>
+        </properties>
+    </style>
+
+</stylesheet>
