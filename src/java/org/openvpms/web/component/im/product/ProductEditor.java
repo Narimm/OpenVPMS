@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.web.app.product.ProductPriceEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
@@ -47,6 +48,9 @@ import java.util.List;
  */
 public class ProductEditor extends AbstractIMObjectEditor {
 
+    /**
+     * The product price updater.
+     */
     private ProductPriceUpdater updater;
 
     /**
@@ -82,6 +86,9 @@ public class ProductEditor extends AbstractIMObjectEditor {
         }
     }
 
+    /**
+     * Invoked when a product-supplier relationship changes. This recalculates product prices if required.
+     */
     private void onSupplierChanged() {
         AbstractIMObjectCollectionEditor suppliers =
                 (AbstractIMObjectCollectionEditor) getEditor("suppliers");
@@ -101,12 +108,16 @@ public class ProductEditor extends AbstractIMObjectEditor {
         prices.refresh();
     }
 
-    private void updatePriceEditor(ProductPrice price,
-                                   Collection<IMObjectEditor> editors) {
+    /**
+     * Refreshes the price editor associated with a product price.
+     *
+     * @param price   the price
+     * @param editors the price editors
+     */
+    private void updatePriceEditor(ProductPrice price, Collection<IMObjectEditor> editors) {
         for (IMObjectEditor editor : editors) {
-            if (editor.getObject().equals(price)) {
-                editor.getProperty("cost").refresh();
-                editor.getProperty("price").refresh();
+            if (editor.getObject().equals(price) && (editor instanceof ProductPriceEditor)) {
+                ((ProductPriceEditor) editor).refresh();
                 break;
             }
         }
