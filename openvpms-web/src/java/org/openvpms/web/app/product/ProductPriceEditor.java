@@ -46,6 +46,11 @@ import java.math.BigDecimal;
 public class ProductPriceEditor extends AbstractIMObjectEditor {
 
     /**
+     * The cost property listener.
+     */
+    private ModifiableListener costListener;
+
+    /**
      * The price property listener.
      */
     private final ModifiableListener priceListener;
@@ -72,11 +77,12 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
                               LayoutContext layoutContext) {
         super(object, parent, layoutContext);
 
-        getProperty("cost").addModifiableListener(new ModifiableListener() {
+        costListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updatePrice();
             }
-        });
+        };
+        getProperty("cost").addModifiableListener(costListener);
 
         markupListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -92,6 +98,29 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
         };
         getProperty("price").addModifiableListener(priceListener);
         rules = new ProductPriceRules();
+    }
+
+    /**
+     * Refreshes the cost, markup and price fields.
+     * <p/>
+     * This should be invoked if the underlying object changes outside of the editor.
+     * <p/>
+     * Fields will not recalculate.
+     */
+    public void refresh() {
+        Property cost = getProperty("cost");
+        Property markup = getProperty("markup");
+        Property price = getProperty("price");
+        try {
+            cost.removeModifiableListener(costListener);
+            markup.removeModifiableListener(markupListener);
+            price.removeModifiableListener(priceListener);
+            price.refresh();
+        } finally {
+            cost.addModifiableListener(costListener);
+            markup.addModifiableListener(markupListener);
+            price.addModifiableListener(priceListener);
+        }
     }
 
     /**
