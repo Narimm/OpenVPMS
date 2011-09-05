@@ -34,6 +34,9 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
+import org.openvpms.report.openoffice.Converter;
+import org.openvpms.report.openoffice.OOConnection;
+import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -80,24 +83,39 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
         if (doc == null) {
             throw new DocumentException(NotFound);
         }
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
         return ReportFactory.createIMObjectReport(doc, service, handlers);
     }
 
     /**
-     * Creates the document.
+     * Creates the document, in the specified mime type.
      *
+     * @param type the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @return the document
      * @throws OpenVPMSException for any error
      */
     @Override
-    public Document getDocument() {
+    public Document getDocument(String type) {
         DocumentAct object = (DocumentAct) getObject();
-        Document doc = (Document) IMObjectHelper.getObject(
-                object.getDocument());
+        Document doc = (Document) IMObjectHelper.getObject(object.getDocument());
         if (doc == null) {
-            doc = super.getDocument();
+            doc = super.getDocument(type);
+        } else {
+            if (type == null) {
+                type = getMimeType();
+            }
+            if (type != null && !type.equals(doc.getMimeType())) {
+                // convert the document to the appropriate type
+                DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+                OOConnection connection = OpenOfficeHelper.getConnectionPool().getConnection();
+                try {
+                    Converter converter = new Converter(connection, handlers);
+                    doc = converter.convert(doc, type);
+                } finally {
+                    OpenOfficeHelper.close(connection);
+                }
+            }
         }
         return doc;
     }
