@@ -111,11 +111,22 @@ public abstract class Reporter<T> {
     /**
      * Creates the document.
      *
+     * @return the document
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
+        return getDocument(mimeType);
+    }
+
+    /**
+     * Creates the document, in the specified mime type.
+     *
+     * @param type the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @return the document
+     * @throws OpenVPMSException for any error
+     */
+    public Document getDocument(String type) {
         IMReport<T> report = getReport();
-        String type = mimeType;
         if (type == null) {
             type = report.getDefaultMimeType();
         }
