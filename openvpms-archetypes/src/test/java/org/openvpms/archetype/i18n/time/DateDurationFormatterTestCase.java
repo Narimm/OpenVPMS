@@ -63,6 +63,38 @@ public class DateDurationFormatterTestCase {
     }
 
     /**
+     * Tests formatting where only the months are shown and the from day > to day.
+     */
+    @Test
+    public void testMonthsWithFromDayGreaterThanToDay() {
+        Date from1 = getDate("2008-01-31");
+        Date to1 = getDate("2008-02-29");
+        checkFormat("1 Month", from1, to1, false, true, false, false);
+
+        Date from2 = getDate("2008-01-16");
+        Date to2 = getDate("2008-02-15");
+        checkFormat("0 Months", from2, to2, false, true, false, false);
+    }
+
+    /**
+     * Tests formatting where only the months and days are shown and the from day > to day.
+     */
+    @Test
+    public void testMonthsDaysWithFromDayGreaterThanToDay() {
+        Date from1 = getDate("2008-01-31");
+        Date to1 = getDate("2008-02-29");
+        checkFormat("1 Month", from1, to1, false, true, false, true);
+
+        Date from2 = getDate("2008-01-16");
+        Date to2 = getDate("2008-02-15");
+        checkFormat("30 Days", from2, to2, false, true, false, true);
+
+        Date from3 = getDate("2008-01-16");
+        Date to3 = getDate("2008-03-15");
+        checkFormat("1 Month 28 Days", from3, to3, false, true, false, true);
+    }
+
+    /**
      * Tests formatting where only the weeks are shown, where the starting and ending weeks are in the same year.
      */
     @Test
@@ -115,6 +147,24 @@ public class DateDurationFormatterTestCase {
     }
 
     /**
+     * Tests formatting where only the months and days are shown and the from day > to day.
+     */
+    @Test
+    public void testDaysWithFromDayGreaterThanToDay() {
+        Date from1 = getDate("2008-01-31");
+        Date to1 = getDate("2008-02-29");
+        checkFormat("29 Days", from1, to1, false, false, false, true);
+
+        Date from2 = getDate("2008-01-16");
+        Date to2 = getDate("2008-02-15");
+        checkFormat("30 Days", from2, to2, false, false, false, true);
+
+        Date from3 = getDate("2008-01-16");
+        Date to3 = getDate("2008-03-15");
+        checkFormat("59 Days", from3, to3, false, false, false, true);
+    }
+
+    /**
      * Tests formatting where years and months are shown.
      */
     @Test
@@ -127,6 +177,24 @@ public class DateDurationFormatterTestCase {
         checkFormat("1 Year 1 Month", from, to1, true, true, false, false);
         checkFormat("2 Years 1 Month", from, to2, true, true, false, false);
         checkFormat("1 Year 11 Months", from, to3, true, true, false, false);
+    }
+
+    /**
+     * Tests formatting where years and months are shown and the from day > to day.
+     */
+    @Test
+    public void testYearsMonthsWithFromDayGreaterThanToDay() {
+        Date from1 = getDate("2007-01-31");
+        Date to1 = getDate("2008-02-29");
+        checkFormat("1 Year 1 Month", from1, to1, true, true, false, false);
+
+        Date from2 = getDate("2007-01-16");
+        Date to2 = getDate("2008-02-15");
+        checkFormat("1 Year", from2, to2, true, true, false, false);
+
+        Date from3 = getDate("2007-01-16");
+        Date to3 = getDate("2008-03-15");
+        checkFormat("1 Year 1 Month", from3, to3, true, true, false, false);
     }
 
     /**
@@ -145,6 +213,24 @@ public class DateDurationFormatterTestCase {
     }
 
     /**
+     * Tests formatting where years, months and weeks are shown and the from day > to day.
+     */
+    @Test
+    public void testYearsMonthsWeeksWithFromDayGreaterThanToDay() {
+        Date from1 = getDate("2007-01-31");
+        Date to1 = getDate("2008-02-29");
+        checkFormat("1 Year 1 Month", from1, to1, true, true, true, true);
+
+        Date from2 = getDate("2007-01-16");
+        Date to2 = getDate("2008-02-15");
+        checkFormat("1 Year 4 Weeks 2 Days", from2, to2, true, true, true, true);
+
+        Date from3 = getDate("2007-01-16");
+        Date to3 = getDate("2008-03-15");
+        checkFormat("1 Year 1 Month 4 Weeks", from3, to3, true, true, true, true);
+    }
+
+    /**
      * Tests formatting where years, months, weeks and days are shown.
      */
     @Test
@@ -154,9 +240,27 @@ public class DateDurationFormatterTestCase {
         Date to2 = getDate("2010-06-07");
         Date to3 = getDate("2010-04-22");
         checkFormat("0 Days", from, from, true, true, true, true);
-        checkFormat("1 Year 1 Month 1 Week 1 Day", from, to1, true, true, true, true);
-        checkFormat("2 Years 1 Month", from, to2, true, true, true, true);
-        checkFormat("1 Year 11 Months 3 Weeks 1 Day", from, to3, true, true, true, true);
+        checkFormat("1 Year 1 Month 1 Week", from, to1, true, true, true, true);
+        checkFormat("2 Years 1 Month 6 Days", from, to2, true, true, true, true);
+        checkFormat("1 Year 11 Months 3 Weeks", from, to3, true, true, true, true);
+    }
+
+    /**
+     * Tests formatting where years, months, weeks and days are shown and the from day > to day.
+     */
+    @Test
+    public void testYearsMonthsDaysWeeksWithFromDayGreaterThanToDay() {
+        Date from1 = getDate("2007-01-31");
+        Date to1 = getDate("2008-02-29");
+        checkFormat("1 Year 1 Month", from1, to1, true, true, true, true);
+
+        Date from2 = getDate("2007-01-16");
+        Date to2 = getDate("2008-02-15");
+        checkFormat("1 Year 4 Weeks 2 Days", from2, to2, true, true, true, true);
+
+        Date from3 = getDate("2007-01-16");
+        Date to3 = getDate("2008-03-15");
+        checkFormat("1 Year 1 Month 4 Weeks", from3, to3, true, true, true, true);
     }
 
     /**
@@ -177,20 +281,57 @@ public class DateDurationFormatterTestCase {
     }
 
     /**
+     * Tests formatting where months and weeks are shown and the from day > to day.
+     */
+    @Test
+    public void testMonthsWeeksWithFromDayGreaterThanToDay() {
+        Date from1 = getDate("2007-01-31");
+        Date to1 = getDate("2008-02-29");
+        checkFormat("13 Months", from1, to1, false, true, true, false);
+
+        Date from2 = getDate("2007-01-16");
+        Date to2 = getDate("2008-02-15");
+        checkFormat("12 Months 4 Weeks", from2, to2, false, true, true, false);
+
+        Date from3 = getDate("2007-01-16");
+        Date to3 = getDate("2008-03-15");
+        checkFormat("13 Months 4 Weeks", from3, to3, false, true, true, false);
+    }
+
+    /**
      * Tests formatting where months, weeks and days are shown.
      */
     @Test
     public void testMonthsWeeksDays() {
         Date from = getDate("2008-05-01");
         Date to1 = getDate("2009-06-08");
-        Date to2 = getDate("2010-06-07");
-        Date to3 = getDate("2010-04-22");
+        Date to2 = getDate("2009-06-09");
+        Date to3 = getDate("2010-06-07");
+        Date to4 = getDate("2010-04-22");
         checkFormat("0 Days", from, from, false, true, true, true);
-        checkFormat("13 Months 1 Week 1 Day", from, to1, false, true, true, true);
-        checkFormat("25 Months", from, to2, false, true, true, true);
-        checkFormat("23 Months 3 Weeks 1 Day", from, to3, false, true, true, true);
+        checkFormat("13 Months 1 Week", from, to1, false, true, true, true);
+        checkFormat("13 Months 1 Week 1 Day", from, to2, false, true, true, true);
+        checkFormat("25 Months 6 Days", from, to3, false, true, true, true);
+        checkFormat("23 Months 3 Weeks", from, to4, false, true, true, true);
     }
 
+    /**
+     * Tests formatting where months, weeks and days are shown and the from day > to day.
+     */
+    @Test
+    public void testMonthsWeeksDaysWithFromDayGreaterThanToDay() {
+        Date from1 = getDate("2007-01-31");
+        Date to1 = getDate("2008-02-29");
+        checkFormat("13 Months", from1, to1, false, true, true, true);
+
+        Date from2 = getDate("2007-01-16");
+        Date to2 = getDate("2008-02-15");
+        checkFormat("12 Months 4 Weeks 2 Days", from2, to2, false, true, true, true);
+
+        Date from3 = getDate("2007-01-16");
+        Date to3 = getDate("2008-03-15");
+        checkFormat("13 Months 4 Weeks", from3, to3, false, true, true, true);
+    }
     /**
      * Tests behaviour when nothing is shown.
      */

@@ -210,58 +210,36 @@ public class DateDurationFormatter implements DurationFormatter {
      * Formats the duration between two timestamps.
      * <p/>
      * NOTE: this currently doesn't do anything sensible for from > to. Possible solution would be to simply
-     * reverse the times, and then prepend a - between each field using  the 
+     * reverse the times, and then prepend a - between each field using  the
      *
      * @param from the starting time
      * @param to   the ending time
      * @return the formatted duration
      */
     protected String format(DateTime from, DateTime to) {
-        int years = Years.yearsBetween(from, to).getYears();
+        int years = 0;
         int months = 0;
         int weeks = 0;
         int days = 0;
 
+        DateTime start = from;
+        if (showYears) {
+            years = Years.yearsBetween(start, to).getYears();
+            start = start.plusYears(years);
+        }
         if (showMonths) {
-            months = Months.monthsBetween(from, to).getMonths();
-            if (showYears && years > 0) {
-                months -= years * 12;
-            }
+            months = Months.monthsBetween(start, to).getMonths();
+            start = start.plusMonths(months);
         }
         if (showWeeks) {
-            if (showMonths) {
-                DateTime start = to.withDayOfMonth(from.getDayOfMonth());
-                if (from.getDayOfMonth() > to.getDayOfMonth()) {
-                    start = start.minusMonths(1);
-                }
-                weeks = Weeks.weeksBetween(start, to).getWeeks();
-            } else {
-                weeks = Weeks.weeksBetween(from, to).getWeeks();
-                if (showYears && years > 0) {
-                    weeks -= years * 52;
-                }
-            }
+            weeks = Weeks.weeksBetween(start, to).getWeeks();
+            start = start.plusWeeks(weeks);
         }
         if (showDays) {
-            if (showWeeks) {
-                DateTime start = to.withDayOfMonth(1);
-                int diff = Days.daysBetween(start, to).getDays();
-                if (diff != 0) {
-                    ++diff;
-                }
-                days = diff % 7;
-            } else if (showMonths) {
-                DateTime start = to.withDayOfMonth(1);
-                days = Days.daysBetween(start, to).getDays();
-            } else if (showYears) {
-                DateTime start = to.withDayOfYear(1);
-                days = Days.daysBetween(start, to).getDays();
-            } else {
-                days = Days.daysBetween(from, to).getDays();
-            }
+            days = Days.daysBetween(start, to).getDays();
         }
 
-        Period period = new Period((showYears) ? years : 0, months, weeks, days, 0, 0, 0, 0);
+        Period period = new Period(years, months, weeks, days, 0, 0, 0, 0);
         return formatter.print(period);
     }
 }
