@@ -22,7 +22,6 @@ import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
-import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -41,9 +40,12 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -120,17 +122,16 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
     }
 
     /**
-     * Invoked when the 'Print' button is pressed. Runs the reminder generator
-     * for the selected reminder.
+     * Invoked when the 'Print' button is pressed. Prints the selected reminder.
      */
     private void onPrint() {
         try {
             Act selected = browser.getSelected();
             if (selected != null) {
-                DueReminderQuery q = query.createReminderQuery();
-                ReminderGenerator generator = new ReminderGenerator(selected, q.getFrom(), q.getTo(),
-                                                                    GlobalContext.getInstance());
-                generateReminders(generator);
+                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(selected,
+                                                                                     GlobalContext.getInstance());
+                InteractivePrinter printer = new InteractivePrinter(new IMObjectReportPrinter<Act>(selected, locator));
+                printer.print();
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
