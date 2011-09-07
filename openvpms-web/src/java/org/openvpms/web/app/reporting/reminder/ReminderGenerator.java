@@ -36,7 +36,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.app.reporting.ReportingException;
-import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -94,35 +93,6 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     private final DocumentTemplate groupTemplate;
 
-
-    /**
-     * Constructs a new <tt>ReminderGenerator</tt> to print a single reminder.
-     *
-     * @param reminder the reminder
-     * @param from     only process reminder if its next due date &gt;= from
-     * @param to       only process reminder if its next due date &lt;= to
-     * @param context  the context
-     * @throws ArchetypeServiceException  for any archetype service error
-     * @throws ReminderProcessorException for any reminder error
-     * @throws ReportingException         if the reminder has no associated document template
-     */
-    public ReminderGenerator(Act reminder, Date from, Date to, Context context) {
-        this(context);
-        ReminderProcessor processor = new ReminderProcessor(from, to);
-        ReminderCollector collector = new ReminderCollector();
-
-        processor.addListener(collector);
-        processor.process(reminder);
-        List<List<ReminderEvent>> reminders = collector.getReminders();
-        if (reminders.size() == 1) {
-            ReminderEvent event = reminders.get(0).get(0);
-            if (event.getDocumentTemplate() == null) {
-                throw new ReportingException(ReminderMissingDocTemplate);
-            }
-            processors.add(createPrintProcessor(reminders));
-        }
-        popup = false;
-    }
 
     /**
      * Constructs a new <tt>ReminderGenerator</tt> to process a single reminder.

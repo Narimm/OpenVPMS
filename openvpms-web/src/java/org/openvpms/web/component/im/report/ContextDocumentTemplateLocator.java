@@ -39,7 +39,7 @@ public class ContextDocumentTemplateLocator extends LocationDocumentTemplateLoca
 
 
     /**
-     * Constructs a <tt>DefaultDocumentTemplateLocator</tt>.
+     * Constructs a <tt>ContextDocumentTemplateLocator</tt>.
      *
      * @param object  the object to locate a template for
      * @param context the context to use
@@ -49,7 +49,7 @@ public class ContextDocumentTemplateLocator extends LocationDocumentTemplateLoca
     }
 
     /**
-     * Constructs a <tt>DefaultDocumentTemplateLocator</tt>.
+     * Constructs a <tt>ContextDocumentTemplateLocator</tt>.
      *
      * @param shortName the archetype short name that the document template applies to
      * @param context   the context to use
@@ -59,7 +59,7 @@ public class ContextDocumentTemplateLocator extends LocationDocumentTemplateLoca
     }
 
     /**
-     * Constructs a <tt>DefaultDocumentTemplateLocator</tt>.
+     * Constructs a <tt>ContextDocumentTemplateLocator</tt>.
      * <p/>
      * This will use the supplied template if non-null, falling back to that associated with the context if it is.
      *
@@ -72,7 +72,7 @@ public class ContextDocumentTemplateLocator extends LocationDocumentTemplateLoca
     }
 
     /**
-     * Constructs a <tt>DefaultDocumentTemplateLocator</tt>.
+     * Constructs a <tt>ContextDocumentTemplateLocator</tt>.
      * <p/>
      * This will use the supplied template if non-null, falling back to that associated with the context if it is.
      *
