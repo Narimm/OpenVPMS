@@ -76,10 +76,11 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      */
     @Override
     public void setUp() {
-        super.setUp();
+        // NOTE: need to create the practice prior to the application as it caches the practice in the context 
         practice = TestHelper.getPractice();
         practice.addClassification(createTaxType());
         save(practice);
+        super.setUp();
     }
 
     /**
