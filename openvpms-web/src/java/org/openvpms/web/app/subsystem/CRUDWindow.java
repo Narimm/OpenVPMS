@@ -80,6 +80,13 @@ public interface CRUDWindow<T extends IMObject> {
     void create();
 
     /**
+     * Determines if the current object can be edited.
+     *
+     * @return <tt>true</tt> if the current object can be edited
+     */
+    boolean canEdit();
+
+    /**
      * Edits the current object.
      */
     void edit();

@@ -195,6 +195,22 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     }
 
     /**
+     * Determines if the current object can be edited.
+     *
+     * @return <tt>true</tt> if an object exists and the edit button is enabled
+     */
+    public boolean canEdit() {
+        boolean edit = false;
+        if (getObject() != null) {
+            Button button = getButtons().getButton(EDIT_ID);
+            if (button != null && button.isEnabled()) {
+                edit = true;
+            }
+        }
+        return edit;
+    }
+
+    /**
      * Edits the current object.
      */
     public void edit() {
@@ -272,13 +288,16 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
 
     /**
      * Helper to create a new button with id {@link #EDIT_ID} linked to {@link #edit()}.
+     * Editing will only be invoked if {@link #canEdit} is <tt>true</tt>
      *
      * @return a new button
      */
     protected Button createEditButton() {
         return ButtonFactory.create(EDIT_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
-                edit();
+                if (canEdit()) {
+                    edit();
+                }
             }
         });
     }

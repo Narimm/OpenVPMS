@@ -60,9 +60,14 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     private static final String NEXT_ID = "next";
 
     /**
-     * The buttons to display.
+     * The view-only buttons to display.
      */
-    private static final String[] BUTTONS = {CANCEL_ID, EDIT_ID, PREVIOUS_ID, NEXT_ID};
+    private static final String[] VIEW_BUTTONS = {CANCEL_ID, PREVIOUS_ID, NEXT_ID};
+
+    /**
+     * The view/edit buttons to display.
+     */
+    private static final String[] EDIT_BUTTONS = {CANCEL_ID, EDIT_ID, PREVIOUS_ID, NEXT_ID};
 
     /**
      * The object being viewed.
@@ -86,9 +91,10 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      * @param title the window title
      * @param first the first object to view
      * @param set   the set of results to view
+     * @param edit  if <tt>true</tt> display an edit button
      */
-    public ViewResultSetDialog(String title, T first, ResultSet<T> set) {
-        super(title, "IMObjectViewerDialog", BUTTONS);
+    public ViewResultSetDialog(String title, T first, ResultSet<T> set, boolean edit) {
+        super(title, "IMObjectViewerDialog", edit ? EDIT_BUTTONS : VIEW_BUTTONS);
         setDefaultButton(OK_ID);
         iter = new ResultSetIterator<T>(set, first);
         listener = new ContextSwitchListener() {
