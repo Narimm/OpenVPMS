@@ -90,6 +90,16 @@ public abstract class ActCRUDWindow<T extends Act>
         super.setObject(object);
     }
 
+    /**
+     * Determines if the current object can be edited.
+     *
+     * @return <tt>true</tt> if the current object can be edited
+     */
+    @Override
+    public boolean canEdit() {
+        Act act = getObject();
+        return (act != null && canEdit(act));
+    }
 
     /**
      * Invoked when the edit button is pressed. This popups up an {@link org.openvpms.web.component.im.edit.EditDialog}.

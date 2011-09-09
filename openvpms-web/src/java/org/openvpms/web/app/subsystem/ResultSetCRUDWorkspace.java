@@ -102,7 +102,11 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     /**
      * Invoked when a browser object is selected.
      * <p/>
-     * This implementation sets the object in the CRUD window and pops up an editor if it has been double clicked.
+     * This implementation sets the object in the CRUD window and if it has been double clicked:
+     * <ul>
+     * <li>pops up an editor, if editing is supported; otherwise
+     * <li>pops up a viewer
+     * </li>
      *
      * @param object the selected object
      */
@@ -110,8 +114,13 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     protected void onBrowserSelected(T object) {
         updateResultSet();
         super.onBrowserSelected(object);
+        ResultSetCRUDWindow<T> window = getCRUDWindow();
         if (click.isDoubleClick(object.getId())) {
-            getCRUDWindow().edit();
+            if (window.canEdit()) {
+                window.edit();
+            } else {
+                window.view();
+            }
         }
     }
 
