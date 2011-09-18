@@ -25,15 +25,14 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFact
 import org.openvpms.esci.FutureValue;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.client.impl.OrderServiceAdapterImpl;
-import org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator;
 import org.openvpms.esci.adapter.map.order.OrderMapper;
 import org.openvpms.esci.service.DelegatingOrderService;
 import org.openvpms.esci.service.DelegatingRegistryService;
 import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
-import org.openvpms.esci.ubl.order.Order;
 import org.openvpms.esci.ubl.order.OrderType;
+import org.openvpms.esci.ubl.order.Order;
 import org.springframework.test.context.ContextConfiguration;
 
 import javax.annotation.Resource;
@@ -91,21 +90,22 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
         applicationContext.getBean("orderService");    // force registation of the order dispatcher
 
         // add a supplier/stock location relationship for ESCI
-        addESCIConfiguration(getSupplier(), getStockLocation(), "in-vm://registryService");
+        String wsdl = getWSDL("wsdl/RegistryService.wsdl");
+        addESCIConfiguration(getSupplier(), getStockLocation(), wsdl);
 
-        SupplierServiceLocator locator = createSupplierServiceLocator();
+        InVMSupplierServiceLocator vmLocator = createSupplierServiceLocator();
         OrderServiceAdapterImpl adapter = new OrderServiceAdapterImpl();
         adapter.setFactory(factory);
         adapter.setOrderMapper(mapper);
-        adapter.setSupplierServiceLocator(locator);
+        adapter.setSupplierServiceLocator(vmLocator);
 
         delegatingRegistryService.setRegistry(new RegistryService() {
             public String getInboxService() {
-                return "in-vm://inboxService";
+                return getWSDL("wsdl/InboxService.wsdl");
             }
 
             public String getOrderService() {
-                return "in-vm://orderService";
+                return getWSDL("wsdl/OrderService.wsdl");
             }
         });
 
@@ -128,12 +128,12 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
      *
      * @return a new <tt>InVMSupplierServiceLocator</tt>
      */
-    private SupplierServiceLocator createSupplierServiceLocator() {
-        SupplierWebServiceLocator locator = new InVMSupplierServiceLocator();
-        locator.setSupplierRules(new SupplierRules());
-        locator.setBeanFactory(factory);
-        locator.setServiceLocatorFactory(serviceLocatorFactory);
-        return locator;
+    private InVMSupplierServiceLocator createSupplierServiceLocator() {
+        InVMSupplierServiceLocator vmLocator = new InVMSupplierServiceLocator();
+        vmLocator.setSupplierRules(new SupplierRules());
+        vmLocator.setBeanFactory(factory);
+        vmLocator.setServiceLocatorFactory(serviceLocatorFactory);
+        return vmLocator;
     }
 
 }

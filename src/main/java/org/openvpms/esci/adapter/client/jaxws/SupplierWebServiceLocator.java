@@ -33,13 +33,10 @@ import org.openvpms.esci.service.OrderService;
 import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocator;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
-import org.springframework.core.io.ClassPathResource;
 
 import javax.annotation.Resource;
 import javax.xml.ws.WebServiceException;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 
 /**
@@ -115,7 +112,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
     /**
      * Returns a proxy for a supplier's {@link OrderService}.
      *
-     * @param serviceURL the URL of the registry service
+     * @param serviceURL the WSDL document URL of the service
      * @param username   the username to connect to the service with
      * @param password   the password to connect  to the service with
      * @return a proxy for the service provided by the supplier
@@ -150,21 +147,6 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
      */
     protected ServiceLocatorFactory getServiceLocatorFactory() {
         return locatorFactory;
-    }
-
-    /**
-     * Verifies that an endpoint address is valid.
-     * <p/>
-     * This is required as incorrect URLs can otherwise yield unhelpful error messages.
-     *
-     * @param endpointAddress the endpoint address to check
-     * @throws MalformedURLException if the endpoint address is invalid
-     */
-    protected void checkEndpointAddress(String endpointAddress) throws MalformedURLException {
-        if (StringUtils.isEmpty(endpointAddress)) {
-            throw new MalformedURLException(endpointAddress);
-        }
-        new URL(endpointAddress);
     }
 
     /**
@@ -222,7 +204,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
         /**
          * Constructs a <tt>SupplierServices</tt>.
          *
-         * @param serviceURL the registry service URL
+         * @param serviceURL the registry service URL.
          * @param username   the user name to connect as
          * @param password   the user's password
          */
@@ -237,27 +219,48 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
          * Returns the registry service proxy.
          *
          * @return the registry service proxy
-         * @throws ESCIAdapterException for any error
          */
         public RegistryService getRegistryService() {
-            return getService(RegistryService.class, getWSDL("wsdl/RegistryService.wsdl"), serviceURL);
+            return getRegistryService(null);
+        }
+
+        /**
+         * Returns the registry service proxy.
+         *
+         * @param endpointAddress the endpoint address. May be <tt>null</tt>
+         * @return the registry service proxy
+         * @throws ESCIAdapterException for any error
+         */
+        public RegistryService getRegistryService(String endpointAddress) {
+            return getService(RegistryService.class, serviceURL, endpointAddress);
         }
 
         /**
          * Returns the order service proxy.
          *
          * @return the order service proxy
-         * @throws ESCIAdapterException for any error
          */
         public OrderService getOrderService() {
-            RegistryService registry = getRegistryService();
+            return getOrderService(null, null);
+        }
+
+        /**
+         * Returns the order service proxy.
+         *
+         * @param orderEndpointAddress    the order endpoint address. May be <tt>null</tt>
+         * @param registryEndpointAddress the registry endpoint address. May be <tt>null</tt>
+         * @return the order service proxy
+         * @throws ESCIAdapterException for any error
+         */
+        public OrderService getOrderService(String orderEndpointAddress, String registryEndpointAddress) {
+            RegistryService registry = getRegistryService(registryEndpointAddress);
             String order = null;
             try {
                 order = registry.getOrderService();
             } catch (Throwable exception) {
                 throwConnectionFailed(exception);
             }
-            return getService(OrderService.class, getWSDL("wsdl/OrderService.wsdl"), order);
+            return getService(OrderService.class, order, orderEndpointAddress);
         }
 
         /**
@@ -267,6 +270,17 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
          * @throws ESCIAdapterException for any error
          */
         public InboxService getInboxService() {
+            return getInboxService(null);
+        }
+
+        /**
+         * Returns the inbox service proxy.
+         *
+         * @param endpointAddress the inbox service endpoint address. May be <tt>null</tt>
+         * @return the inbox service proxy
+         * @throws ESCIAdapterException for any error
+         */
+        public InboxService getInboxService(String endpointAddress) {
             RegistryService registry = getRegistryService();
             String inbox = null;
             try {
@@ -274,47 +288,37 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
             } catch (Throwable exception) {
                 throwConnectionFailed(exception);
             }
-            return getService(InboxService.class, getWSDL("wsdl/InboxService.wsdl"), inbox);
+            return getService(InboxService.class, inbox, endpointAddress);
         }
 
         /**
-         * Returns a service proxy.
+         * Reutrns a service proxy.
          *
          * @param clazz           the proxy class
-         * @param url             the WSDL URL
-         * @param endpointAddress the endpoint address
+         * @param url             the service URL
+         * @param endpointAddress the endpoint address. May be <tt>null</tt>
          * @return the service proxy
          * @throws ESCIAdapterException for any error
          */
         private <T> T getService(Class<T> clazz, String url, String endpointAddress) {
+            ServiceLocator<T> locator;
+            try {
+                locator = locatorFactory.getServiceLocator(clazz, url, endpointAddress, username, password);
+            } catch (MalformedURLException exception) {
+                if (supplier != null) {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL),
+                                                   exception);
+                } else {
+                    throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(serviceURL), exception);
+                }
+            }
             T service = null;
             try {
-                checkEndpointAddress(endpointAddress);
-                ServiceLocator<T> locator = locatorFactory.getServiceLocator(clazz, url, endpointAddress, username,
-                                                                             password);
                 service = locator.getService();
-            } catch (MalformedURLException exception) {
-                throwInvalidServiceURL(endpointAddress, exception);
             } catch (WebServiceException exception) {
                 throwConnectionFailed(exception);
             }
             return service;
-        }
-
-        /**
-         * Helper to throw an {@link ESCIAdapterException} if an endpoint address is invalid.
-         *
-         * @param endpointAddress the endpoint address
-         * @param exception       the cause
-         * @throws ESCIAdapterException with appropriate message and the cause
-         */
-        private void throwInvalidServiceURL(String endpointAddress, Throwable exception) {
-            if (supplier != null) {
-                throw new ESCIAdapterException(ESCIAdapterMessages.invalidSupplierURL(supplier, endpointAddress),
-                                               exception);
-            } else {
-                throw new ESCIAdapterException(ESCIAdapterMessages.invalidServiceURL(endpointAddress), exception);
-            }
         }
 
         /**
@@ -332,21 +336,6 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator {
             }
         }
 
-        /**
-         * Helper to return the URL of a WSDL file, given its resource path.
-         *
-         * @param resourcePath the path to the WSDL resource
-         * @return the URL of the WSDL resource
-         * @throws ESCIAdapterException if the URL is invalid
-         */
-        private String getWSDL(String resourcePath) {
-            try {
-                ClassPathResource wsdl = new ClassPathResource(resourcePath);
-                return wsdl.getURL().toString();
-            } catch (IOException exception) {
-                throw new ESCIAdapterException(ESCIAdapterMessages.wsdlNotFound(resourcePath), exception);
-            }
-        }
     }
 
 }

@@ -17,9 +17,10 @@
  */
 package org.openvpms.esci.adapter.client;
 
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator;
-
-import java.net.MalformedURLException;
+import org.openvpms.esci.adapter.util.ESCIAdapterException;
+import org.openvpms.esci.service.OrderService;
 
 
 /**
@@ -31,15 +32,35 @@ import java.net.MalformedURLException;
 public class InVMSupplierServiceLocator extends SupplierWebServiceLocator {
 
     /**
-     * Verifies that an endpoint address is valid.
+     * Returns a proxy for a supplier's {@link OrderService}.
+     * <p/>
+     * This uses the <em>entityRelationship.supplierStockLocationESCI</em> associated with the supplier and stock
+     * location to lookup the web service.
      *
-     * @param endpointAddress the endpoint address to check
-     * @throws MalformedURLException if the endpoint address is invalid
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @return a proxy for the service provided by the supplier
+     * @throws ESCIAdapterException if the associated <tt>orderServiceURL</tt> is invalid, or the supplier-stock
+     *                              location relationship is not supported
      */
     @Override
-    protected void checkEndpointAddress(String endpointAddress) throws MalformedURLException {
-        if (!endpointAddress.startsWith("in-vm://")) {
-            super.checkEndpointAddress(endpointAddress);
-        }
+    public OrderService getOrderService(Party supplier, Party stockLocation) {
+        SupplierServices services = new SupplierServices(supplier, stockLocation);
+        return services.getOrderService("in-vm://orderService", "in-vm://registryService");
+    }
+
+    /**
+     * Returns a proxy for a supplier's {@link OrderService}.
+     *
+     * @param serviceURL the WSDL document URL of the service
+     * @param username   the username to connect to the service with
+     * @param password   the password to connect  to the service with
+     * @return a proxy for the service provided by the supplier
+     * @throws ESCIAdapterException if <tt>serviceURL</tt> is invalid
+     */
+    @Override
+    public OrderService getOrderService(String serviceURL, String username, String password) {
+        SupplierServices services = new SupplierServices(serviceURL, username, password);
+        return services.getOrderService("in-vm://orderService", "in-vm://registryService");
     }
 }

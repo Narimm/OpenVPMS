@@ -20,12 +20,12 @@ package org.openvpms.esci.adapter.i18n;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
+import org.openvpms.esci.ubl.common.basic.DocumentTypeType;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.map.UBLHelper;
-import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
-import org.openvpms.esci.ubl.common.basic.DocumentTypeType;
 
 
 /**
@@ -37,16 +37,7 @@ import org.openvpms.esci.ubl.common.basic.DocumentTypeType;
 public class ESCIAdapterMessagesTestCase extends AbstractESCITest {
 
     /**
-     * Tests the {@link ESCIAdapterMessages#wsdlNotFound} method.
-     */
-    @Test
-    public void testWSDLNotFound() {
-        String message = "ESCIA-0006: Failed to find WSDL for path: foo";
-        check(message, ESCIAdapterMessages.wsdlNotFound("foo"));
-    }
-
-    /**
-     * Tests the {@link ESCIAdapterMessages#duplicateOrder} method.
+     * Tests the {@link ESCIAdapterMessages#duplicateOrder}.
      */
     @Test
     public void testDuplicateOrder() {
