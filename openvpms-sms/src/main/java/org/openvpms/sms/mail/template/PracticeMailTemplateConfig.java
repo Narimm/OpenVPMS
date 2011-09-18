@@ -31,7 +31,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeServiceListen
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.sms.SMSArchetypes;
+import org.openvpms.sms.mail.SMSArchetypes;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.i18n.SMSMessages;
 
