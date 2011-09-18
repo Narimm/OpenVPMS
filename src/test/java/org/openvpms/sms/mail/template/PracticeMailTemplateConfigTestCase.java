@@ -29,12 +29,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.sms.SMSArchetypes;
 import org.openvpms.sms.SMSException;
-import org.openvpms.sms.mail.template.MailTemplate;
-import org.openvpms.sms.mail.template.MailTemplateConfig;
-import org.openvpms.sms.mail.template.PracticeMailTemplateConfig;
 import org.openvpms.sms.mail.AbstractSMSTest;
+import org.openvpms.sms.mail.SMSArchetypes;
 
 
 /**

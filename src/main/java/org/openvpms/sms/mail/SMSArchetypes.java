@@ -16,7 +16,7 @@
  *  $Id: $
  */
 
-package org.openvpms.sms;
+package org.openvpms.sms.mail;
 
 /**
  * SMS provider archetypes.
