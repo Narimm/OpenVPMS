@@ -37,7 +37,9 @@ import org.openvpms.esci.adapter.map.UBLHelper;
 import org.openvpms.esci.ubl.common.aggregate.CustomerPartyType;
 import org.openvpms.esci.ubl.common.aggregate.SupplierPartyType;
 import org.openvpms.esci.ubl.common.basic.CustomerAssignedAccountIDType;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 
@@ -98,6 +100,22 @@ public abstract class AbstractESCITest extends AbstractSupplierTest {
         SupplierPartyType result = new SupplierPartyType();
         result.setCustomerAssignedAccountID(UBLHelper.initID(new CustomerAssignedAccountIDType(), supplier.getId()));
         return result;
+    }
+
+    /**
+     * Helper to return the URL of a WSDL file, given its resource path.
+     *
+     * @param resourcePath the path to the WSDL resource
+     * @return the URL of the WSDL resource
+     * @throws RuntimeException if the URL is invalid
+     */
+    protected String getWSDL(String resourcePath) {
+        ClassPathResource wsdl = new ClassPathResource(resourcePath);
+        try {
+            return wsdl.getURL().toString();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     /**
