@@ -1376,6 +1376,9 @@ public class NodeDescriptor extends Descriptor {
                 this.type = type;
             }
         }
+        synchronized (this) {
+            clazz = null;
+        }
     }
 
     /**
