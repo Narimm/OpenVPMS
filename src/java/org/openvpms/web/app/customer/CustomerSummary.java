@@ -18,28 +18,41 @@
 
 package org.openvpms.web.app.customer;
 
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
 import org.openvpms.web.app.summary.PartySummary;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.contact.SMSDialog;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -82,10 +95,10 @@ public class CustomerSummary extends PartySummary {
     protected Component createSummary(Party party) {
         Component column = ColumnFactory.create();
         IMObjectReferenceViewer customerName = new IMObjectReferenceViewer(party.getObjectReference(),
-                party.getName(), true);
+                                                                           party.getName(), true);
         customerName.setStyleName("hyperlink-bold");
         column.add(RowFactory.create("Inset.Small",
-                customerName.getComponent()));
+                                     customerName.getComponent()));
         Label phone = LabelFactory.create();
         phone.setText(partyRules.getHomeTelephone(party));
         column.add(RowFactory.create("Inset.Small", phone));
@@ -111,17 +124,29 @@ public class CustomerSummary extends PartySummary {
         Label unbilledValue = create(unbilled);
 
         Grid grid = GridFactory.create(2, balanceTitle, balanceValue,
-                overdueTitle, overdueValue,
-                currentTitle, currentValue,
-                creditTitle, creditValue,
-                unbilledTitle, unbilledValue);
+                                       overdueTitle, overdueValue,
+                                       currentTitle, currentValue,
+                                       creditTitle, creditValue,
+                                       unbilledTitle, unbilledValue);
         column.add(grid);
         AlertSummary alerts = getAlertSummary(party);
         if (alerts != null) {
             grid.add(create("alerts.title"));
             column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
         }
-        return ColumnFactory.create("PartySummary", column);
+        Column result = ColumnFactory.create("PartySummary", column);
+        final String[] mobiles = getPhonesForSMS(party);
+        if (mobiles.length != 0) {
+            Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    SMSDialog dialog = new SMSDialog(mobiles);
+                    dialog.show();
+                }
+            });
+            result.add(RowFactory.create("Inset.Small", button));
+        }
+
+        return result;
     }
 
     /**
@@ -152,6 +177,43 @@ public class CustomerSummary extends PartySummary {
      */
     protected ResultSet<Act> createAlertsResultSet(Party party, int pageSize) {
         return new CustomerAlertQuery(party).query();
+    }
+
+    /**
+     * Returns phone numbers that are flagged for SMS messaging.
+     * <p/>
+     * The preferred no.s are at the head of the list
+     *
+     * @param party the party
+     * @return a list of phone numbers
+     */
+    private String[] getPhonesForSMS(Party party) {
+        List<String> phones = new ArrayList<String>();
+        List<Contact> contacts = new ArrayList<Contact>();
+        for (Contact contact : party.getContacts()) {
+            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
+                contacts.add(contact);
+            }
+        }
+        int length = contacts.size();
+        if (length > 1) {
+            IMObjectSorter.sort(contacts, "telephoneNumber", true);
+        }
+        for (Contact contact : contacts) {
+            IMObjectBean bean = new IMObjectBean(contact);
+            if (bean.getBoolean("sms")) {
+                String phone = bean.getString("telephoneNumber");
+                if (!StringUtils.isEmpty(phone)) {
+                    if (bean.getBoolean("preferred")) {
+                        phones.add(0, phone);
+                    } else {
+                        phones.add(phone);
+                    }
+                }
+            }
+
+        }
+        return phones.toArray(new String[phones.size()]);
     }
 
     /**

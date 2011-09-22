@@ -557,6 +557,13 @@
         </properties>
     </style>
 
+    <style name="SMSConfigEmailProvider" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="${SMSConfigEmailProvider.separatorPosition}"/>
+        </properties>
+    </style>
+
     <style name="SplitPaneWithButtonRow"
            type="nextapp.echo2.app.SplitPane">
         <properties>

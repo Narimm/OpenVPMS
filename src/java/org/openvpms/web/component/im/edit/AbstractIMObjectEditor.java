@@ -198,7 +198,7 @@ public abstract class AbstractIMObjectEditor
 
         derivedFieldRefresher = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                updateDerivedFields(modifiable);
+                onModified(modifiable);
             }
         };
         editors.addModifiableListener(derivedFieldRefresher);
@@ -678,6 +678,17 @@ public abstract class AbstractIMObjectEditor
      * processing that requires all editors to be created.
      */
     protected void onLayoutCompleted() {
+    }
+
+    /**
+     * Invoked when an object is modified.
+     * <p/>
+     * This implementation updates derived fields
+     *
+     * @param modifiable the modified object
+     */
+    protected void onModified(Modifiable modifiable) {
+        updateDerivedFields(modifiable);
     }
 
     /**

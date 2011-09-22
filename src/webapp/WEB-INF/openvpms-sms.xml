@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:ws="http://jax-ws.dev.java.net/spring/core"
+       xmlns:wss="http://jax-ws.dev.java.net/spring/servlet"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+          http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+          http://jax-ws.dev.java.net/spring/core http://jax-ws.dev.java.net/spring/core.xsd
+          http://jax-ws.dev.java.net/spring/servlet http://jax-ws.dev.java.net/spring/servlet.xsd
+          http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+    <bean id="mailTemplateConfig" class="org.openvpms.sms.mail.template.PracticeMailTemplateConfig">
+        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="1" ref="practiceRules"/>
+    </bean>
+
+    <bean id="mailMessageFactory" class="org.openvpms.sms.mail.template.TemplatedMailMessageFactory">
+        <constructor-arg index="0" ref="mailTemplateConfig"/>
+
+    </bean>
+    <bean id="smsConnectionFactory" class="org.openvpms.sms.mail.MailConnectionFactory">
+        <constructor-arg index="0" ref="mailSender"/>
+        <constructor-arg index="1" ref="mailMessageFactory"/>
+    </bean>
+
+</beans>
