@@ -368,6 +368,38 @@ public class PartyRules {
     }
 
     /**
+     * Returns a formatted mobile telephone number for a party.
+     *
+     * @param party the party
+     * @return a formatted mobile telephone number for the party. May be empty if
+     *         there is no corresponding <em>contact.phoneNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getMobileTelephone(Party party) {
+        Contact contact = getContact(party, ContactArchetypes.PHONE, "MOBILE",
+                                     false);
+        return (contact != null) ? formatPhone(contact) : "";
+    }
+
+    /**
+     * Returns a formatted mobile telephone number for a party associated with
+     * an act via an <em>participation.customer</em> participation.
+     *
+     * @param act the act
+     * @return a formatted mobile telephone number for the party. May be empty if
+     *         there is no customer, or corresponding
+     *         <em>contact.phoneNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getMobileTelephone(Act act) {
+        Party party = getCustomer(act);
+        if (party == null) {
+            party = getOwner(act);
+        }
+        return (party != null) ? getHomeTelephone(party) : "";
+    }
+    
+    /**
      * Returns a formatted work telephone number for a party.
      *
      * @param party the party

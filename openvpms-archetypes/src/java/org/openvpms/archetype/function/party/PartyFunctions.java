@@ -481,6 +481,38 @@ public class PartyFunctions {
     }
 
     /**
+     * Retuurns a formatted mobile telephone number for a customer.
+     *
+     * @param party the customer
+     * @return a formatted telephone number for the party. May be empty if
+     *         there is no corresponding <em>contact.phoneNumber</em> contact
+     *         with <em>MOBILE</em> purpose
+     */
+    public String getMobileTelephone(Party party) {
+        if (party != null) {
+            return getPartyRules().getMobileTelephone(party);
+        }
+        return "";
+    }
+
+    /**
+     * Returns a formatted mobile telephone number for a customer associated with
+     * an act via an <em>participation.customer</em> participation.
+     *
+     * @param act the act
+     * @return a formatted telephone number for the party. May be empty if
+     *         the act has no customer party or the party has no corresponding
+     *         <em>contact.phoneNumber</em> contact with <em>MOBILE</em> purpose
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getMobileTelephone(Act act) {
+        if (act != null) {
+            return getPartyRules().getMobileTelephone(act);
+        }
+        return "";
+    }
+    
+    /**
      * Returns a formatted fax number for a party.
      *
      * @param context the expression context. Expected to reference a party
