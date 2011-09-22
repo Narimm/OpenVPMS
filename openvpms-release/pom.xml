@@ -50,6 +50,11 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-sms</artifactId>
+            <version>${pom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-web</artifactId>
             <version>${pom.version}</version>
             <type>war</type>
@@ -75,7 +80,7 @@
     <build>
         <plugins>
             <plugin>
-                <!-- use the dependency plugin to get the .adl files from archetypes -->
+                <!-- use the dependency plugin to get the .adl files from archetypes and sms-->
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -93,6 +98,13 @@
                             <version>${pom.version}</version>
                             <outputDirectory>target/archetypes</outputDirectory>
                             <includes>org/**/*.adl,org/**/*.xml</includes>
+                        </artifactItem>
+                        <artifactItem>
+                            <groupId>org.openvpms</groupId>
+                            <artifactId>openvpms-sms</artifactId>
+                            <version>${pom.version}</version>
+                            <outputDirectory>target/archetypes</outputDirectory>
+                            <includes>org/**/*.adl</includes>
                         </artifactItem>
                     </artifactItems>
                 </configuration>
