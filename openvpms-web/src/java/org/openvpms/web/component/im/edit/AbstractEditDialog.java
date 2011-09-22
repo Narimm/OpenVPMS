@@ -46,12 +46,12 @@ public abstract class AbstractEditDialog extends PopupDialog {
     /**
      * The editor.
      */
-    protected IMObjectEditor editor;
+    private IMObjectEditor editor;
 
     /**
      * Determines if the dialog should save when apply and OK are pressed.
      */
-    protected final boolean save;
+    private final boolean save;
 
     /**
      * Edit dialog style name.
@@ -229,17 +229,10 @@ public abstract class AbstractEditDialog extends PopupDialog {
         }
         this.editor = editor;
         if (previous != null) {
-            getLayout().remove(previous.getComponent());
-            getFocusGroup().remove(previous.getFocusGroup());
+            removeEditor(previous);
         }
         if (editor != null) {
-            getLayout().add(editor.getComponent());
-            getFocusGroup().add(0, editor.getFocusGroup());
-
-            if (getParent() != null) {
-                // focus in the editor
-                editor.getFocusGroup().setFocus();
-            }
+            addEditor(editor);
         }
     }
 
@@ -308,13 +301,50 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
+     * Adds the editor to the layout, setting the focus if the dialog is displayed.
+     *
+     * @param editor the editor
+     */
+    protected void addEditor(IMObjectEditor editor) {
+        getEditorContainer().add(editor.getComponent());
+        getFocusGroup().add(0, editor.getFocusGroup());
+
+        if (getParent() != null) {
+            // focus in the editor
+            editor.getFocusGroup().setFocus();
+        }
+    }
+
+    /**
+     * Removes the editor from the layout.
+     *
+     * @param editor the editor to remove
+     */
+    protected void removeEditor(IMObjectEditor editor) {
+        getEditorContainer().remove(editor.getComponent());
+        getFocusGroup().remove(editor.getFocusGroup());
+    }
+
+    /**
+     * Retiurns the component containing the editor.
+     * <p/>
+     * This implementation returns {@link #getLayout()}.
+     *
+     * @return the editor container
+     */
+    protected Component getEditorContainer() {
+        return getLayout();
+    }
+
+    /**
      * Invoked when the component changes.
      *
      * @param event the component change event
      */
     protected void onComponentChange(PropertyChangeEvent event) {
-        getLayout().remove((Component) event.getOldValue());
-        getLayout().add((Component) event.getNewValue());
+        Component container = getEditorContainer();
+        container.remove((Component) event.getOldValue());
+        container.add((Component) event.getNewValue());
     }
 
     /**

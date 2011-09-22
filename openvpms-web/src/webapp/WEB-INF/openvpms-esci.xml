@@ -144,28 +144,4 @@
         <property name="supplierRules" ref="supplierRules"/>
     </bean>
 
-    <!-- ================================================================== -->
-    <!-- Business rules                                                     -->
-    <!-- ================================================================== -->
-
-    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
-    <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
-    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
-    <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
-    <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
 </beans>
