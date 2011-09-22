@@ -18,6 +18,8 @@
 
 package org.openvpms.sms.mail;
 
+import org.openvpms.sms.SMSException;
+
 
 /**
  * Factory for messages to send to email-to-SMS providers.
@@ -33,6 +35,7 @@ public interface MailMessageFactory {
      * @param phone the phone number to send the SMS to
      * @param text  the SMS text
      * @return a new email
+     * @throws SMSException if the message cannot be created
      */
     MailMessage createMessage(String phone, String text);
 }

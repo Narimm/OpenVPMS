@@ -22,10 +22,12 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Variables;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.sms.SMSException;
-import org.openvpms.sms.mail.MailMessageFactory;
-import org.openvpms.sms.mail.MailMessage;
 import org.openvpms.sms.i18n.SMSMessages;
+import org.openvpms.sms.mail.MailMessage;
+import org.openvpms.sms.mail.MailMessageFactory;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import java.util.Map;
 
 
@@ -46,6 +48,15 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
     /**
      * Constructs a <tt>TemplatedMailMessageFactory</tt>.
      *
+     * @param template the template
+     */
+    public TemplatedMailMessageFactory(MailTemplate template) {
+        this(new StaticMailTemplateConfig(template));
+    }
+
+    /**
+     * Constructs a <tt>TemplatedMailMessageFactory</tt>.
+     *
      * @param config the template source
      */
     public TemplatedMailMessageFactory(MailTemplateConfig config) {
@@ -58,6 +69,7 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
      * @param phone the phone number to send the SMS to
      * @param text  the SMS text
      * @return a new email
+     * @throws SMSException if the message cannot be created
      */
     public MailMessage createMessage(String phone, String text) {
         MailMessage result = new MailMessage();
@@ -68,13 +80,36 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
         Variables variables = context.getVariables();
         variables.declareVariable("phone", phone);
         variables.declareVariable("message", text);
+        variables.declareVariable("from", template.getFrom());
+        variables.declareVariable("to", template.getTo());
+        variables.declareVariable("replyTo", template.getReplyTo());
+        variables.declareVariable("subject", template.getSubject());
+        variables.declareVariable("text", template.getText());
         for (Map.Entry<String, String> variable : template.getVariables().entrySet()) {
             variables.declareVariable(variable.getKey(), variable.getValue());
         }
-        result.setFrom(template.getFrom());
-        result.setTo(evaluate(template.getTo(), context));
-        result.setSubject(evaluate(template.getSubject(), context));
-        result.setText(evaluate(template.getText(), context));
+        String from = evaluate(template.getFrom(), template.getFromExpression(), context);
+        if (from == null || !isValid(from)) {
+            throw new SMSException(SMSMessages.invalidFromAddress(from));
+        }
+        result.setFrom(from);
+
+        String to = evaluate(template.getTo(), template.getToExpression(), context);
+        if (to == null || !isValid(to)) {
+            throw new SMSException(SMSMessages.invalidToAddress(to));
+        }
+        result.setTo(to);
+
+        String replyTo = evaluate(template.getReplyTo(), template.getReplyToExpression(), context);
+        if (replyTo != null) {
+            if (!isValid(replyTo)) {
+                throw new SMSException(SMSMessages.invalidReplyToAddress(replyTo));
+            }
+            result.setReplyTo(replyTo);
+        }
+
+        result.setSubject(evaluate(template.getSubject(), template.getSubjectExpression(), context));
+        result.setText(evaluate(template.getText(), template.getTextExpression(), context));
         return result;
     }
 
@@ -114,18 +149,41 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
      * Evaluates an expression.
      *
      * @param context    the jxpath context
+     * @param text       the static text. If no expression is provided, this will be returned. May be <tt>null</tt>
      * @param expression the xpath expression. May be <tt>null</tt>
      * @return the value of the expression
      */
-    private String evaluate(String expression, JXPathContext context) {
+    private String evaluate(String text, String expression, JXPathContext context) {
         String result = null;
         if (!StringUtils.isEmpty(expression)) {
             try {
                 Object value = context.getValue(expression, Object.class);
-                result = value.toString();
+                if (value != null) {
+                    result = value.toString();
+                }
             } catch (Throwable exception) {
                 throw new SMSException(SMSMessages.failedToEvaluateExpression(expression), exception);
             }
+        } else if (!StringUtils.isEmpty(text)) {
+            result = text;
+        }
+        return result;
+    }
+
+    /**
+     * Verifies an email address is valid.
+     *
+     * @param address the address
+     * @return <tt>true</tt> if the address is valid, otherwise false
+     * @throws SMSException if the address is invalid
+     */
+    private boolean isValid(String address) {
+        boolean result = false;
+        try {
+            new InternetAddress(address, true);
+            result = true;
+        } catch (AddressException ignore) {
+            // do nothing
         }
         return result;
     }

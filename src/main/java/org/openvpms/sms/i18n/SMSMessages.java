@@ -35,23 +35,72 @@ public class SMSMessages {
      */
     private static Messages messages = new Messages("SMS", SMSMessages.class.getName());
 
+    /**
+     * Creates a message for the situation where there is no <em>entity.SMSConfig*</em> associated with the practice.
+     *
+     * @param practice the practice
+     * @return a new messsage
+     */
     public static Message SMSNotConfigured(Party practice) {
-        return messages.getMessage(1, practice.getName());
+        return messages.getMessage(100, practice.getName());
     }
 
-    public static Message failedToCreateEmail(String reason) {
-        return messages.getMessage(2, reason);
-    }
-
+    /**
+     * Creates a message for failure to find the <em>party.organisationPractice</em>.
+     *
+     * @return a new message
+     */
     public static Message practiceNotFound() {
-        return messages.getMessage(3);
+        return messages.getMessage(101);
     }
 
+    /**
+     * Creates a message for the situation where an email cannot be created.
+     *
+     * @param reason the reason
+     * @return a new message
+     */
+    public static Message failedToCreateEmail(String reason) {
+        return messages.getMessage(200, reason);
+    }
+
+    /**
+     * Creates a message for failure to evaluate an expression.
+     *
+     * @param expression the expression
+     * @return a new message
+     */
     public static Message failedToEvaluateExpression(String expression) {
-        return messages.getMessage(4, expression);
+        return messages.getMessage(300, expression);
     }
 
-    public static Message noEmailAddress(Party practice) {
-        return messages.getMessage(5, practice.getName());
+    /**
+     * Creates a message for an invalid 'From' address.
+     *
+     * @param address the address
+     * @return a new message
+     */
+    public static Message invalidFromAddress(String address) {
+        return messages.getMessage(301, address);
+    }
+
+    /**
+     * Creates a message for an invalid 'To' address.
+     *
+     * @param address the address
+     * @return a new message
+     */
+    public static Message invalidToAddress(String address) {
+        return messages.getMessage(302, address);
+    }
+
+    /**
+     * Creates a message for an invalid 'Reply-To' address.
+     *
+     * @param address the address
+     * @return a new message
+     */
+    public static Message invalidReplyToAddress(String address) {
+        return messages.getMessage(303, address);
     }
 }

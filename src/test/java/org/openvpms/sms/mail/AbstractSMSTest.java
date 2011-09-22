@@ -31,18 +31,25 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 public abstract class AbstractSMSTest extends ArchetypeServiceTest {
 
     /**
-     * Creates an <em>entity.SMSEmailGenericConfiguration</em>.
+     * Creates an <em>entity.SMSConfigEmailGeneric</em>.
      *
-     * @param from the from address
-     * @param to the to address expression
+     * @param from           the from address
+     * @param fromExpression the 'from' address expression
+     * @param to             the 'to' address
+     * @param toExpression   the 'to' address expression
+     * @param textExpression the text expression
      * @return a new configuration
      */
-    protected Entity createConfig(String from, String to) {
-        Entity entity = (Entity) create("entity.SMSEmailGenericConfiguration");
+    protected Entity createConfig(String from, String fromExpression, String to, String toExpression,
+                                  String textExpression) {
+        Entity entity = (Entity) create(SMSArchetypes.GENERIC_SMS_EMAIL_CONFIG);
         IMObjectBean bean = new IMObjectBean(entity);
         bean.setValue("name", "Test");
         bean.setValue("from", from);
+        bean.setValue("fromExpression", fromExpression);
         bean.setValue("to", to);
+        bean.setValue("toExpression", toExpression);
+        bean.setValue("textExpression", textExpression);
         return entity;
     }
 

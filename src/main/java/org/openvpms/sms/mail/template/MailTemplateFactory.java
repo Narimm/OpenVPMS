@@ -27,12 +27,12 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 /**
- * Abstract implementation of {@link MailTemplateConfig} that generates the template from an <em>entity.SMSEmail*</em>.
+ * Factory for creating {@link MailTemplate} instances from <em>entity.SMSConfigEmail*</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public abstract class AbstractMailTemplateConfig implements MailTemplateConfig {
+public class MailTemplateFactory {
 
     /**
      * The archetype service.
@@ -42,15 +42,16 @@ public abstract class AbstractMailTemplateConfig implements MailTemplateConfig {
     /**
      * Nodes which may not appear as variables.
      */
-    private static final String[] RESERVED = {"name", "description", "website", "from", "to", "subject", "text",
-                                              "phone", "message"};
+    private static final String[] RESERVED = {"name", "description", "website", "from", "fromExpression", "to",
+                                              "toExpression", "replyTo", "replyToExpression", "subject",
+                                              "subjectExpression", "text", "textExpression", "phone", "message"};
 
     /**
-     * Constructs a <tt>AbstractMailTemplateConfig</tt>.
+     * Constructs a <tt>MailTemplatePopulator</tt>.
      *
      * @param service the service
      */
-    public AbstractMailTemplateConfig(IArchetypeService service) {
+    public MailTemplateFactory(IArchetypeService service) {
         this.service = service;
     }
 
@@ -60,18 +61,24 @@ public abstract class AbstractMailTemplateConfig implements MailTemplateConfig {
      * @param config the SMS configuration
      * @return the template
      */
-    protected MailTemplate getTemplate(Entity config) {
+    public MailTemplate getTemplate(Entity config) {
         IMObjectBean configBean = new IMObjectBean(config, service);
         ArchetypeDescriptor archetype = service.getArchetypeDescriptor(config.getArchetypeId());
-        String country = StringUtils.trimToNull(configBean.getString("country"));
-        String trunkPrefix = StringUtils.trimToNull(configBean.getString("trunkPrefix"));
-        String from = StringUtils.trimToNull(configBean.getString("from"));
-        String to = StringUtils.trimToNull(configBean.getString("to"));
-        String subject = StringUtils.trimToNull(configBean.getString("subject"));
-        String text = StringUtils.trimToNull(configBean.getString("text"));
-        MailTemplate result = new MailTemplate(country, trunkPrefix, from, to, subject, text);
+        MailTemplate result = new MailTemplate();
+        result.setCountry(getString(configBean, "country"));
+        result.setTrunkPrefix(getString(configBean, "trunkPrefix"));
+        result.setFrom(getString(configBean, "from"));
+        result.setFromExpression(getString(configBean, "fromExpression"));
+        result.setTo(getString(configBean, "to"));
+        result.setToExpression(getString(configBean, "toExpression"));
+        result.setReplyTo(getString(configBean, "replyTo"));
+        result.setReplyToExpression(getString(configBean, "replyToExpression"));
+        result.setSubject(getString(configBean, "subject"));
+        result.setSubjectExpression(getString(configBean, "subjectExpression"));
+        result.setText(getString(configBean, "text"));
+        result.setTextExpression(getString(configBean, "textExpression"));
         for (NodeDescriptor descriptor : archetype.getNodeDescriptorsAsArray()) {
-            if (!descriptor.isDerived() && String.class.getName().equals(descriptor.getType())
+            if (String.class.getName().equals(descriptor.getType())
                 && !ArrayUtils.contains(RESERVED, descriptor.getName())) {
                 Object value = descriptor.getValue(config);
                 result.addVariable(descriptor.getName(), value != null ? value.toString() : null);
@@ -81,11 +88,18 @@ public abstract class AbstractMailTemplateConfig implements MailTemplateConfig {
     }
 
     /**
-     * Returns the archetype service.
+     * Helper to returned the named string from the bean, if it exists.
      *
-     * @return the archetype service
+     * @param bean the bean
+     * @param name the node name
+     * @return the string value. May be <tt>null</tt>
      */
-    protected IArchetypeService getService() {
-        return service;
+    private String getString(IMObjectBean bean, String name) {
+        String result = null;
+        if (bean.hasNode(name)) {
+            result = StringUtils.trimToNull(bean.getString(name));
+        }
+        return result;
     }
+
 }
