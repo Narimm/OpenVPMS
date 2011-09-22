@@ -100,5 +100,16 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="SMS" path="/entityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
+              filter="entityRelationship.practiceSMSConfiguration">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entityRelationship.practiceSMSConfiguration"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
 	</archetype>
 </archetypes>
