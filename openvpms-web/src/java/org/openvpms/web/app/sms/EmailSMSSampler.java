@@ -16,7 +16,7 @@
  *  $Id: $
  */
 
-package org.openvpms.web.app.sms.sms;
+package org.openvpms.web.app.sms;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;

@@ -16,10 +16,9 @@
  *  $Id: $
  */
 
-package org.openvpms.web.component.im.contact;
+package org.openvpms.web.app.sms;
 
 import nextapp.echo2.app.Column;
-import org.openvpms.web.app.sms.sms.SMSEditor;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;

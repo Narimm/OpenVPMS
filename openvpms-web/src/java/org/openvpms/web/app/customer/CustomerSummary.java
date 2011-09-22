@@ -41,7 +41,7 @@ import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
 import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.contact.SMSDialog;
+import org.openvpms.web.app.sms.SMSDialog;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
