@@ -50,6 +50,8 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -75,13 +77,21 @@ public class CustomerSummary extends PartySummary {
      */
     private CustomerAccountRules accountRules;
 
+    /**
+     * The context.
+     */
+    private Context context;
+
 
     /**
      * Constructs a <tt>CustomerSummary</tt>.
+     *
+     * @param context the context
      */
-    public CustomerSummary() {
+    public CustomerSummary(Context context) {
         partyRules = new CustomerRules();
         accountRules = new CustomerAccountRules();
+        this.context = context;
     }
 
     /**
@@ -137,9 +147,11 @@ public class CustomerSummary extends PartySummary {
         Column result = ColumnFactory.create("PartySummary", column);
         final String[] mobiles = getPhonesForSMS(party);
         if (mobiles.length != 0) {
+            Context local = new LocalContext(context);
+            local.setCustomer(party);
             Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    SMSDialog dialog = new SMSDialog(mobiles);
+                    SMSDialog dialog = new SMSDialog(mobiles, context);
                     dialog.show();
                 }
             });

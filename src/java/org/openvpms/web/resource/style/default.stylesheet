@@ -557,6 +557,13 @@
         </properties>
     </style>
 
+    <style name="SMSDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.small.width}"/>
+            <property name="height" value="${dialog.small.height}"/>
+        </properties>
+    </style>
+
     <style name="SMSConfigEmailProvider" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="true"/>

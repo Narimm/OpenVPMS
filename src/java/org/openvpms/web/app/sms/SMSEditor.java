@@ -20,23 +20,27 @@ package org.openvpms.web.app.sms;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
+import org.openvpms.web.component.echo.SMSTextArea;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.resource.util.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -49,19 +53,24 @@ import org.openvpms.web.system.ServiceHelper;
 public class SMSEditor implements Modifiable {
 
     /**
-     * The phone number, if the number may be edited.
+     * The phone number, if 0 or 1 no. are provided.
      */
     private TextField phone;
 
     /**
-     * The phone selector, if a list of phone numbers are provided.
+     * The phone selector, if multiple phone numbers are provided.
      */
     private SelectField phoneSelector;
 
     /**
      * The text message.
      */
-    private TextArea message;
+    private SMSTextArea message;
+
+    /**
+     * The text property. Used to support macro expansion.
+     */
+    private Property property;
 
     /**
      * Determines if this has been modified.
@@ -87,18 +96,25 @@ public class SMSEditor implements Modifiable {
 
     /**
      * Constructs an <tt>SMSEditor</tt>.
+     * <p/>
+     * If no phone numbers are supplied, the phone number will be editable, otherwise it will be read-only.
+     * If there are multiple phone numbers, they will be displayed in a dropdown, with the first no. as the default
      *
-     * @param numbers the available numbers. If <tt>null</null> or empty, the phone number will be editable, otherwise
-     *                it must be selected from a dropdown. The first no. is the default
+     * @param numbers the available numbers. May be <tt>null</tt>
      */
     public SMSEditor(String[] numbers) {
-        if (numbers == null || numbers.length == 0) {
+        int length = (numbers == null) ? 0 : numbers.length;
+        if (length <= 1) {
             phone = TextComponentFactory.create(12);
             phone.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onModified();
                 }
             });
+            if (length == 1) {
+                phone.setText(numbers[0]);
+                phone.setEnabled(false);
+            }
         } else {
             phoneSelector = SelectFieldFactory.create(numbers);
             phoneSelector.addActionListener(new ActionListener() {
@@ -107,7 +123,10 @@ public class SMSEditor implements Modifiable {
                 }
             });
         }
-        message = TextComponentFactory.createTextArea(40, 15);
+        property = new SimpleProperty("property", String.class);
+        property.setTransformer(new StringPropertyTransformer(property, new Object(), false));
+        message = new BoundSMSTextArea(property, 40, 15);
+        message.setStyleName(Styles.DEFAULT);
         message.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onModified();
@@ -132,6 +151,17 @@ public class SMSEditor implements Modifiable {
         ConnectionFactory factory = ServiceHelper.getSMSConnectionFactory();
         Connection connection = factory.createConnection();
         connection.send(getPhone(), getMessage());
+    }
+
+    /**
+     * Declares a variable to be used in macro expansion.
+     *
+     * @param name  the variable name
+     * @param value the variable value
+     */
+    public void declareVariable(String name, Object value) {
+        StringPropertyTransformer transformer = (StringPropertyTransformer) property.getTransformer();
+        transformer.getMacroEvaluator().declareVariable(name, value);
     }
 
     /**
@@ -168,7 +198,7 @@ public class SMSEditor implements Modifiable {
      * @param message the message
      */
     public void setMessage(String message) {
-        this.message.setText(message);
+        property.setValue(message);
     }
 
     /**
@@ -177,7 +207,8 @@ public class SMSEditor implements Modifiable {
      * @return the message to send
      */
     public String getMessage() {
-        return message.getText();
+        Object result = property.getValue();
+        return (result != null) ? result.toString() : null;
     }
 
     /**

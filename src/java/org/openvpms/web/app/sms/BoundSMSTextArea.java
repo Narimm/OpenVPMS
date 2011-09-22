@@ -11,26 +11,27 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: $
  */
 
-package org.openvpms.web.component.bound;
+package org.openvpms.web.app.sms;
 
-import nextapp.echo2.app.TextArea;
+import org.openvpms.web.component.bound.Binder;
+import org.openvpms.web.component.bound.TextAreaComponentBinder;
+import org.openvpms.web.component.echo.SMSTextArea;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.util.TextDocument;
 
-
 /**
- * Binds a {@link Property} to a <tt>TextArea</tt>.
+ * Binds a {@link Property} to an {@link SMSTextArea}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: $
  */
-public class BoundTextArea extends TextArea {
+public class BoundSMSTextArea extends SMSTextArea {
 
     /**
      * The binder.
@@ -47,7 +48,7 @@ public class BoundTextArea extends TextArea {
      * @param columns  the no. of columns to display
      * @param rows     the no. of rows to display
      */
-    public BoundTextArea(Property property, int columns, int rows) {
+    public BoundSMSTextArea(Property property, int columns, int rows) {
         super(new TextDocument());
         binder = new TextAreaComponentBinder(this, property, columns, rows);
     }
@@ -69,5 +70,4 @@ public class BoundTextArea extends TextArea {
         super.dispose();
         binder.unbind();
     }
-
 }
