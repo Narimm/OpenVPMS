@@ -18,8 +18,13 @@
 
 package org.openvpms.web.app.sms;
 
+import echopointng.KeyStrokes;
 import nextapp.echo2.app.Column;
+import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -42,25 +47,36 @@ public class SMSDialog extends PopupDialog {
     /**
      * Constructs an <tt>SMSDialog</tt>.
      *
-     * @param phone the phone number to send to. May be <tt>null</tt>
+     * @param phone   the phone number to send to. May be <tt>null</tt>
+     * @param context the context
      */
-    public SMSDialog(String phone) {
-        this(phone != null ? new String[]{phone} : null);
+    public SMSDialog(String phone, Context context) {
+        this(phone != null ? new String[]{phone} : null, context);
     }
 
     /**
      * Constructs an <tt>SMSDialog</tt>.
      *
-     * @param phones the phone numbers to select from. May be <tt>null</tt>
+     * @param phones  the phone numbers to select from. May be <tt>null</tt>
+     * @param context the context
      */
-    public SMSDialog(String[] phones) {
-        super(Messages.get("sms.send.title"), OK_CANCEL);
+    public SMSDialog(String[] phones, Context context) {
+        super(Messages.get("sms.send.title"), "SMSDialog", OK_CANCEL);
         setModal(true);
 
         editor = new SMSEditor(phones);
+        editor.declareVariable("patient", context.getPatient());
+        editor.declareVariable("customer", context.getCustomer());
+        
         Column column = ColumnFactory.create("Inset", editor.getComponent());
         getLayout().add(column);
         getFocusGroup().add(0, editor.getFocusGroup());
+
+        getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onMacro();
+            }
+        });
     }
 
     /**
@@ -72,6 +88,14 @@ public class SMSDialog extends PopupDialog {
         if (send()) {
             super.onOK();
         }
+    }
+
+    /**
+     * Displays the macros.
+     */
+    protected void onMacro() {
+        MacroDialog dialog = new MacroDialog();
+        dialog.show();
     }
 
     /**
@@ -89,4 +113,5 @@ public class SMSDialog extends PopupDialog {
         }
         return result;
     }
+
 }

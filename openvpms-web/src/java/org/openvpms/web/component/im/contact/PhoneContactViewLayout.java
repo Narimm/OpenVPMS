@@ -29,6 +29,8 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.app.sms.SMSDialog;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -38,7 +40,6 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.app.sms.SMSDialog;
 
 import java.util.List;
 
@@ -63,14 +64,14 @@ public class PhoneContactViewLayout extends AbstractLayoutStrategy {
      */
     @Override
     protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                  PropertySet properties, Component container, LayoutContext context) {
+                                  PropertySet properties, Component container, final LayoutContext context) {
         IMObjectBean bean = new IMObjectBean(object);
         final String phone = bean.getString("telephoneNumber");
         if (bean.getBoolean("sms") && !StringUtils.isEmpty(phone)) {
             Button send = ButtonFactory.create("button.sms.send");
             send.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent e) {
-                    onSend(phone);
+                    onSend(phone, context.getContext());
                 }
             });
             RowLayoutData rowLayout = new RowLayoutData();
@@ -92,9 +93,10 @@ public class PhoneContactViewLayout extends AbstractLayoutStrategy {
      * Displays an SMS dialog to send a message to the specified phone.
      *
      * @param phoneNumber the phone number
+     * @param context     the context
      */
-    private void onSend(String phoneNumber) {
-        SMSDialog dialog = new SMSDialog(phoneNumber);
+    private void onSend(String phoneNumber, Context context) {
+        SMSDialog dialog = new SMSDialog(phoneNumber, context);
         dialog.show();
     }
 }
