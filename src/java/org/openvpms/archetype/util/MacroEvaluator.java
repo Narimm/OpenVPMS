@@ -60,6 +60,11 @@ public class MacroEvaluator {
     private final MacroCache cache;
 
     /**
+     * The variables.
+     */
+    private Map<String, Object> variables;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(MacroEvaluator.class);
@@ -72,6 +77,17 @@ public class MacroEvaluator {
      */
     public MacroEvaluator(MacroCache cache) {
         this.cache = cache;
+        variables = new HashMap<String, Object>();
+    }
+
+    /**
+     * Declares a variable.
+     *
+     * @param name  the variable name
+     * @param value the variable value
+     */
+    public void declareVariable(String name, Object value) {
+        variables.put(name, value);
     }
 
     /**
@@ -104,7 +120,7 @@ public class MacroEvaluator {
                 try {
                     if (ctx == null) {
                         ctx = JXPathHelper.newContext(context);
-                        ctx.setVariables(new MacroVariables(context));
+                        ctx.setVariables(new MacroVariables(context, variables));
                     }
                     ctx.getVariables().declareVariable("number", number);
                     Object value = ctx.getValue(macro);
@@ -149,9 +165,9 @@ public class MacroEvaluator {
         private Map<String, Object> variables;
 
 
-        public MacroVariables(Object context) {
+        public MacroVariables(Object context, Map<String, Object> variables) {
             this.context = context;
-            variables = new HashMap<String, Object>();
+            this.variables = new HashMap<String, Object>(variables);
         }
 
         public void declareVariable(String name, Object value) {
@@ -178,10 +194,7 @@ public class MacroEvaluator {
         }
 
         public boolean isDeclaredVariable(String name) {
-            if (cache.getExpression(name) != null) {
-                return true;
-            }
-            return (variables.containsKey(name));
+            return cache.getExpression(name) != null || variables.containsKey(name);
         }
 
         public void undeclareVariable(String name) {
