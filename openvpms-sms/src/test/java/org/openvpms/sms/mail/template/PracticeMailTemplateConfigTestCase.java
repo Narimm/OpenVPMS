@@ -19,7 +19,6 @@
 package org.openvpms.sms.mail.template;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,8 +75,23 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             config.getTemplate();
             fail("Expected getTemplate() to fail");
         } catch (SMSException expected) {
-            assertEquals("SMS-0001: the SMS provider is not configured for practice " + practice.getName(),
+            assertEquals("SMS-0100: the SMS provider is not configured for practice " + practice.getName(),
                          expected.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Verifies that an {@link SMSException} is thrown if there is no practice.
+     */
+    @Test
+    public void testNoPractice() {
+        remove(practice);
+        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules());
+        try {
+            config.getTemplate();
+            fail("Expected getTemplate() to fail");
+        } catch (SMSException expected) {
+            assertEquals("SMS-0101: Practice not found", expected.getLocalizedMessage());
         }
     }
 
@@ -88,18 +102,24 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
     public void testUpdate() {
         String from1 = "test@openvpms";
         String to1 = "concat($phone, '@test.com')";
-        Entity configA = createConfig(from1, to1);
+        Entity configA = createConfig(from1, null, null, to1, "$message");
         EntityBean bean = new EntityBean(practice);
         EntityRelationship rel = bean.addRelationship(SMSArchetypes.PRACTICE_SMS_CONFIGURATION, configA);
         save(practice, configA);
 
-        check(config.getTemplate(), from1, to1, null, "$message");
+        MailTemplate template = config.getTemplate();
+        assertEquals(from1, template.getFrom());
+        assertEquals(to1, template.getToExpression());
+        assertEquals("$message", template.getTextExpression());
 
         String to2 = "concat($phone, '@new.com')";
-        configA.getDetails().put("to", to2);
+        configA.getDetails().put("toExpression", to2);
         save(configA);
 
-        check(config.getTemplate(), from1, to2, null, "$message");
+        template = config.getTemplate();
+        assertEquals(from1, template.getFrom());
+        assertEquals(to2, template.getToExpression());
+        assertEquals("$message", template.getTextExpression());
 
         practice.removeEntityRelationship(rel);
         save(practice);
@@ -108,33 +128,19 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             config.getTemplate();
             fail("Expected getTemplate() to fail");
         } catch (SMSException expected) {
-            assertEquals("SMS-0001: the SMS provider is not configured for practice " + practice.getName(),
+            assertEquals("SMS-0100: the SMS provider is not configured for practice " + practice.getName(),
                          expected.getLocalizedMessage());
         }
 
         String from2 = "foo@openvpms";
-        Entity configB = createConfig(from2, to1);
+        Entity configB = createConfig(from2, null, null, to1, "$message");
         bean.addRelationship(SMSArchetypes.PRACTICE_SMS_CONFIGURATION, configB);
         save(practice, configB);
-        check(config.getTemplate(), from2, to1, null, "$message");
 
-    }
-
-    /**
-     * Verifies a template matches that expected.
-     *
-     * @param template the template
-     * @param from     the expected from address
-     * @param to       the expected to address
-     * @param subject  the expected subject
-     * @param text     the expected test
-     */
-    private void check(MailTemplate template, String from, String to, String subject, String text) {
-        assertNotNull(template);
-        assertEquals(from, template.getFrom());
-        assertEquals(to, template.getTo());
-        assertEquals(subject, template.getSubject());
-        assertEquals(text, template.getText());
+        template = config.getTemplate();
+        assertEquals(from2, template.getFrom());
+        assertEquals(to1, template.getToExpression());
+        assertEquals("$message", template.getTextExpression());
     }
 
 }

@@ -46,9 +46,29 @@ public class MailTemplate {
     private String from;
 
     /**
+     * The from expression.
+     */
+    private String fromExpression;
+
+    /**
      * The to address.
      */
     private String to;
+
+    /**
+     * The to expression.
+     */
+    private String toExpression;
+
+    /**
+     * The reply-to address.
+     */
+    private String replyTo;
+
+    /**
+     * The reply-to expression.
+     */
+    private String replyToExpression;
 
     /**
      * The subject.
@@ -56,9 +76,19 @@ public class MailTemplate {
     private String subject;
 
     /**
+     * The subject expression.
+     */
+    private String subjectExpression;
+
+    /**
      * The text.
      */
     private String text;
+
+    /**
+     * The text expression.
+     */
+    private String textExpression;
 
     /**
      * Variables.
@@ -71,25 +101,6 @@ public class MailTemplate {
      */
     public MailTemplate() {
 
-    }
-
-    /**
-     * Constructs a <tt>MailTemplate</tt>.
-     *
-     * @param country     the country prefix
-     * @param trunkPrefix the trunk prefix
-     * @param from        the 'from' address
-     * @param to          the 'to' address
-     * @param subject     the message subject
-     * @param text        the message text
-     */
-    public MailTemplate(String country, String trunkPrefix, String from, String to, String subject, String text) {
-        setCountry(country);
-        setTrunkPrefix(trunkPrefix);
-        setFrom(from);
-        setTo(to);
-        setSubject(subject);
-        setText(text);
     }
 
     /**
@@ -151,6 +162,24 @@ public class MailTemplate {
     }
 
     /**
+     * Sets the 'from' address expression.
+     *
+     * @param expression the expression
+     */
+    public void setFromExpression(String expression) {
+        fromExpression = expression;
+    }
+
+    /**
+     * Returns the 'from' address expression.
+     *
+     * @return the 'from' address expression
+     */
+    public String getFromExpression() {
+        return fromExpression;
+    }
+
+    /**
      * Sets the 'to' address.
      *
      * @param to the 'to' address
@@ -166,6 +195,60 @@ public class MailTemplate {
      */
     public String getTo() {
         return to;
+    }
+
+    /**
+     * Sets the 'to' address expression.
+     *
+     * @param expression the expression
+     */
+    public void setToExpression(String expression) {
+        toExpression = expression;
+    }
+
+    /**
+     * Returns the 'to' address expression.
+     *
+     * @return the 'to' address expression
+     */
+    public String getToExpression() {
+        return toExpression;
+    }
+
+    /**
+     * Sets the 'reply-to' address.
+     *
+     * @param replyTo the 'reply-to' address
+     */
+    public void setReplyTo(String replyTo) {
+        this.replyTo = replyTo;
+    }
+
+    /**
+     * Returns the 'reply-to' address.
+     *
+     * @return the 'reply-to' address
+     */
+    public String getReplyTo() {
+        return replyTo;
+    }
+
+    /**
+     * Sets the 'reply-to' address expression.
+     *
+     * @param expression the 'reply-to' address expression
+     */
+    public void setReplyToExpression(String expression) {
+        replyToExpression = expression;
+    }
+
+    /**
+     * Returns the 'reply-to' address expression.
+     *
+     * @return the 'reply-to' address expression
+     */
+    public String getReplyToExpression() {
+        return replyToExpression;
     }
 
     /**
@@ -187,6 +270,24 @@ public class MailTemplate {
     }
 
     /**
+     * Sets the subject expression.
+     *
+     * @param expression the expression
+     */
+    public void setSubjectExpression(String expression) {
+        subjectExpression = expression;
+    }
+
+    /**
+     * Returns the subject expression.
+     *
+     * @return the subject expression
+     */
+    public String getSubjectExpression() {
+        return subjectExpression;
+    }
+
+    /**
      * Sets the message text.
      *
      * @param text the message text
@@ -202,6 +303,24 @@ public class MailTemplate {
      */
     public String getText() {
         return text;
+    }
+
+    /**
+     * Sets the text expression.
+     *
+     * @param expression the expression
+     */
+    public void setTextExpression(String expression) {
+        textExpression = expression;
+    }
+
+    /**
+     * Returns the text expression.
+     *
+     * @return the text expression
+     */
+    public String getTextExpression() {
+        return textExpression;
     }
 
     /**

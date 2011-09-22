@@ -33,70 +33,87 @@ import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
 
 
 /**
- * Tests the {@link TemplatedMailMessageFactory} when configured with an <em>entity.SMSConfigEmailSMSGlobal</em>.
+ * Tests the {@link TemplatedMailMessageFactory} when configured with an <em>entity.SMSConfigEmailClickatell</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class SMSGlobalMessageFactoryTestCase extends ArchetypeServiceTest {
+public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
 
     /**
-     * Checks the default values of the <em>entity.SMSConfigEmailSMSGlobal</em>
+     * Checks the default values of the <em>entity.SMSConfigEmailClickatell</em>
      */
     @Test
     public void testDefaults() {
-        Entity config = (Entity) create("entity.SMSConfigEmailSMSGlobal");
+        Entity config = (Entity) create("entity.SMSConfigEmailClickatell");
         IMObjectBean bean = new IMObjectBean(config);
-        assertEquals("SMS Global Email2SMS Configuration", bean.getString("name"));
+        assertEquals("Clickatell SMTP Connection Configuration", bean.getString("name"));
         assertNull(bean.getString("description"));
-        assertEquals("http://www.smsglobal.com", bean.getString("website"));
+        assertEquals("http://www.clickatell.com", bean.getString("website"));
         assertTrue(bean.getBoolean("active"));
         assertNull(bean.getString("country"));
         assertNull(bean.getString("trunkPrefix"));
+        assertNull(bean.getString("user"));
+        assertNull(bean.getString("password"));
+        assertNull(bean.getString("apiId"));
 
         assertNull(bean.getString("from"));
         assertFalse(bean.hasNode("fromExpression"));
-        assertFalse(bean.hasNode("to"));
-        assertEquals("concat($phone, \"@email.smsglobal.com\")", bean.getString("toExpression"));
-        assertFalse(bean.hasNode("replyTo"));
+        assertNull(bean.getString("replyTo"));
+        assertEquals("sms@messaging.clickatell.com", bean.getString("to"));
         assertFalse(bean.hasNode("replyToExpression"));
         assertFalse(bean.hasNode("subject"));
         assertFalse(bean.hasNode("subjectExpression"));
         assertFalse(bean.hasNode("text"));
-        assertEquals("$message", bean.getString("textExpression"));
+        assertEquals("concat(\"user:\", $user, \"\npassword:\", $password, \"\napi_id:\", $apiId, \"\nto:\", $phone, "
+                     + "\"\nreply:\", $replyTo, \"\ntext:\", replace($message, \"\n\",\"\ntext:\"))",
+                     bean.getString("textExpression"));
     }
 
     /**
-     * Verifies that messages created using an <em>entity.SMSConfigEmailSMSGlobal</em> are populated
+     * Verifies that messages created using an <em>entity.SMSConfigEmailClickatell</em> are populated
      * correctly.
      */
     @Test
     public void testCreateMessage() {
         String from = "test@openvpms";
-        final Entity entity = createConfig(from);
+        String reply = "replies@openvpms";
+        String user = "user";
+        String password = "password";
+        String apiId = "apiId";
+        final Entity entity = createConfig(from, user, password, apiId, reply);
 
         MailTemplateFactory templateFactory = new MailTemplateFactory(getArchetypeService());
         MailMessageFactory factory = new TemplatedMailMessageFactory(templateFactory.getTemplate(entity));
-
         String phone = "0411234567";
-        String text = "text";
+        String text = "text\nover\nmultiple\nlines";
         MailMessage message = factory.createMessage(phone, text);
         assertEquals(from, message.getFrom());
-        assertEquals(phone + "@email.smsglobal.com", message.getTo());
+        assertEquals("sms@messaging.clickatell.com", message.getTo());
         assertEquals(null, message.getSubject());
-        assertEquals(text, message.getText());
+        String expectedText = "user:" + user + "\npassword:" + password + "\napi_id:" + apiId + "\nto:" + phone +
+                              "\nreply:" + reply + "\ntext:text\ntext:over\ntext:multiple\ntext:lines";
+        assertEquals(expectedText, message.getText());
     }
 
     /**
-     * Helper to create an <em>entity.SMSConfigEmailSMSGlobal</em>
+     * Helper to create an <em>entity.SMSConfigEmailClickatell</em>
      *
-     * @param from the from address
+     * @param from     the from address                      \
+     * @param user     the user
+     * @param password the password
+     * @param apiId    the api id
+     * @param replyTo    the replyTo address
      * @return a new configuration
      */
-    private Entity createConfig(String from) {
-        Entity entity = (Entity) create("entity.SMSConfigEmailSMSGlobal");
+    private Entity createConfig(String from, String user, String password, String apiId, String replyTo) {
+        Entity entity = (Entity) create("entity.SMSConfigEmailClickatell");
         IMObjectBean bean = new IMObjectBean(entity);
         bean.setValue("from", from);
+        bean.setValue("user", user);
+        bean.setValue("password", password);
+        bean.setValue("apiId", apiId);
+        bean.setValue("replyTo", replyTo);
         return entity;
     }
 }

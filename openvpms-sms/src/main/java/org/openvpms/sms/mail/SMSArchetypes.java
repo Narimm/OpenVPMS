@@ -34,5 +34,10 @@ public class SMSArchetypes {
     /**
      * Email to SMS provider SMS configuration archetypes.
      */
-    public static final String EMAIL_CONFIGURATIONS = "entity.SMSEmail*";
+    public static final String EMAIL_CONFIGURATIONS = "entity.SMSConfigEmail*";
+
+    /**
+     * Generic Email to SMS provider configuration.
+     */
+    public static final String GENERIC_SMS_EMAIL_CONFIG = "entity.SMSConfigEmailGeneric";
 }

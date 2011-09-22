@@ -19,35 +19,59 @@
 package org.openvpms.sms.mail.template;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.sms.mail.template.MailTemplate;
-import org.openvpms.sms.mail.template.MailTemplateConfig;
-import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
-import org.openvpms.sms.mail.template.AbstractMailTemplateConfig;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.sms.mail.AbstractSMSTest;
-import org.openvpms.sms.mail.MailMessageFactory;
 import org.openvpms.sms.mail.MailMessage;
+import org.openvpms.sms.mail.MailMessageFactory;
+import org.openvpms.sms.mail.SMSArchetypes;
 
 /**
- * Tests the {@link TemplatedMailMessageFactory} when configured with an <em>entity.SMSEmailGenericConfiguration</em>.
+ * Tests the {@link TemplatedMailMessageFactory} when configured with an <em>entity.SMSConfigEmailGeneric</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
 public class GenericConfigurationMessageFactoryTestCase extends AbstractSMSTest {
 
+    /**
+     * Checks the default values of the <em>entity.SMSConfigEmailGeneric</em>.
+     */
+    @Test
+    public void testDefaults() {
+        Entity config = (Entity) create(SMSArchetypes.GENERIC_SMS_EMAIL_CONFIG);
+        IMObjectBean bean = new IMObjectBean(config);
+        assertNull(bean.getString("name"));
+        assertNull(bean.getString("description"));
+        assertNull(bean.getString("website"));
+        assertTrue(bean.getBoolean("active"));
+        assertNull(bean.getString("country"));
+        assertNull(bean.getString("trunkPrefix"));
+        assertNull(bean.getString("from"));
+        assertEquals("$from", bean.getString("fromExpression"));
+        assertNull(bean.getString("to"));
+        assertEquals("$phone", bean.getString("toExpression"));
+        assertNull(bean.getString("replyTo"));
+        assertEquals("$replyTo", bean.getString("replyToExpression"));
+        assertNull(bean.getString("subject"));
+        assertEquals("$subject", bean.getString("subjectExpression"));
+        assertNull(bean.getString("text"));
+        assertEquals("$message", bean.getString("textExpression"));
+    }
+
+    /**
+     * Verifies that messages created using an <em>entity.SMSConfigEmailGeneric</em> are populated
+     * correctly.
+     */
     @Test
     public void testCreateMessage() {
         String from = "test@openvpms";
-        String to = "concat($phone, '@test.com')";
-        final Entity entity = createConfig(from, to);
-        MailTemplateConfig config = new AbstractMailTemplateConfig(getArchetypeService()) {
-            public MailTemplate getTemplate() {
-                return getTemplate(entity);
-            }
-        };
-        MailMessageFactory factory = new TemplatedMailMessageFactory(config);
+        final Entity entity = createConfig(from, null, null, "concat($phone, '@test.com')", "$message");
+        MailTemplateFactory templateFactory = new MailTemplateFactory(getArchetypeService());
+        MailMessageFactory factory = new TemplatedMailMessageFactory(templateFactory.getTemplate(entity));
         String phone = "123456";
         String text = "text";
         MailMessage message = factory.createMessage(phone, text);

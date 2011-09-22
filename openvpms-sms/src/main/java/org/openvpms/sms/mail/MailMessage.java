@@ -43,6 +43,11 @@ public class MailMessage {
     private String to;
 
     /**
+     * The reply-to address.
+     */
+    private String replyTo;
+
+    /**
      * The mail subject.
      */
     private String subject;
@@ -89,6 +94,24 @@ public class MailMessage {
     }
 
     /**
+     * Sets the reply-to address.
+     *
+     * @param replyTo the reply-to address
+     */
+    public void setReplyTo(String replyTo) {
+        this.replyTo = replyTo;
+    }
+
+    /**
+     * Returns the reply-to address.
+     *
+     * @return the reply-to address
+     */
+    public String getReplyTo() {
+        return replyTo;
+    }
+
+    /**
      * Sets the mail subject.
      *
      * @param subject the mail subject
@@ -131,10 +154,16 @@ public class MailMessage {
      * @throws MessagingException if the data is invalid
      */
     public void copyTo(MimeMessage message) throws MessagingException {
-        MimeMessageHelper helper = new MimeMessageHelper(message);
+        MimeMessageHelper helper = new MimeMessageHelper(message);        
+        helper.setValidateAddresses(true);
         helper.setFrom(from);
         helper.setTo(to);
-        helper.setSubject(subject);
+        if (replyTo != null) {
+            helper.setReplyTo(replyTo);
+        }
+        if (subject != null) {
+            helper.setSubject(subject);
+        }
         helper.setText(text);
     }
 

@@ -30,6 +30,8 @@ import org.openvpms.component.system.common.i18n.Message;
  */
 public class SMSException extends OpenVPMSException {
 
+    private final Message message;
+
     /**
      * Constructs an <tt>SMSException</tt>.
      *
@@ -37,6 +39,7 @@ public class SMSException extends OpenVPMSException {
      */
     public SMSException(Message message) {
         super(message.toString());
+        this.message = message;
     }
 
     /**
@@ -47,5 +50,15 @@ public class SMSException extends OpenVPMSException {
      */
     public SMSException(Message message, Throwable cause) {
         super(message.toString(), cause);
+        this.message = message;
+    }
+
+    /**
+     * Returns the internalisation message.
+     *
+     * @return the message
+     */
+    public Message getI18nMessage() {
+        return message;
     }
 }

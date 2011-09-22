@@ -18,22 +18,19 @@
 
 package org.openvpms.sms.mail.template;
 
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.sms.mail.SMSArchetypes;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.i18n.SMSMessages;
+import org.openvpms.sms.mail.SMSArchetypes;
 
 import javax.annotation.PreDestroy;
 
@@ -46,7 +43,12 @@ import javax.annotation.PreDestroy;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class PracticeMailTemplateConfig extends AbstractMailTemplateConfig {
+public class PracticeMailTemplateConfig implements MailTemplateConfig {
+
+    /**
+     * The archetype service.
+     */
+    private IArchetypeService service;
 
     /**
      * The mail template.
@@ -71,7 +73,7 @@ public class PracticeMailTemplateConfig extends AbstractMailTemplateConfig {
      * @param rules   the practice rules
      */
     public PracticeMailTemplateConfig(IArchetypeService service, PracticeRules rules) {
-        super(service);
+        this.service = service;
         this.rules = rules;
         listener = new AbstractArchetypeServiceListener() {
             public void saved(IMObject object) {
@@ -96,17 +98,10 @@ public class PracticeMailTemplateConfig extends AbstractMailTemplateConfig {
         if (template == null) {
             Party practice = rules.getPractice();
             if (practice != null) {
-                IArchetypeService service = getService();
                 EntityBean bean = new EntityBean(practice, service);
                 Entity config = bean.getTargetEntity(SMSArchetypes.PRACTICE_SMS_CONFIGURATION);
                 if (TypeHelper.isA(config, SMSArchetypes.EMAIL_CONFIGURATIONS)) {
-                    template = getTemplate(config);
-                    if (template.getFrom() == null) {
-                        template.setFrom(getEmail(practice));
-                    }
-                    if (template.getFrom() == null) {
-                        throw new SMSException(SMSMessages.noEmailAddress(practice));
-                    }
+                    template = new MailTemplateFactory(service).getTemplate(config);
                 } else {
                     throw new SMSException(SMSMessages.SMSNotConfigured(practice));
                 }
@@ -122,7 +117,6 @@ public class PracticeMailTemplateConfig extends AbstractMailTemplateConfig {
      */
     @PreDestroy
     public void dispose() {
-        IArchetypeService service = getService();
         service.removeListener(PracticeArchetypes.PRACTICE, listener);
         service.removeListener(SMSArchetypes.EMAIL_CONFIGURATIONS, listener);
     }
@@ -132,25 +126,6 @@ public class PracticeMailTemplateConfig extends AbstractMailTemplateConfig {
      */
     private synchronized void clear() {
         template = null;
-    }
-
-    /**
-     * Returns the practice email address.
-     *
-     * @param practice the practice
-     * @return the practice email address or <tt>null</tt> if none is found
-     */
-    private String getEmail(Party practice) {
-        String result = null;
-        IArchetypeService service = getService();
-        for (Contact contact : practice.getContacts()) {
-            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-                IMObjectBean bean = new IMObjectBean(contact, service);
-                result = bean.getString("emailAddress");
-                break;
-            }
-        }
-        return result;
     }
 
 }
