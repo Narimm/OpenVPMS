@@ -65,8 +65,8 @@ public class MailTemplateFactory {
         IMObjectBean configBean = new IMObjectBean(config, service);
         ArchetypeDescriptor archetype = service.getArchetypeDescriptor(config.getArchetypeId());
         MailTemplate result = new MailTemplate();
-        result.setCountry(getString(configBean, "country"));
-        result.setTrunkPrefix(getString(configBean, "trunkPrefix"));
+        result.setCountryPrefix(getString(configBean, "countryPrefix"));
+        result.setAreaPrefix(getString(configBean, "areaPrefix"));
         result.setFrom(getString(configBean, "from"));
         result.setFromExpression(getString(configBean, "fromExpression"));
         result.setTo(getString(configBean, "to"));

@@ -85,9 +85,11 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
         variables.declareVariable("replyTo", template.getReplyTo());
         variables.declareVariable("subject", template.getSubject());
         variables.declareVariable("text", template.getText());
+        variables.declareVariable("nl", "\n");     // to make expressions with newlines simpler
         for (Map.Entry<String, String> variable : template.getVariables().entrySet()) {
             variables.declareVariable(variable.getKey(), variable.getValue());
         }
+
         String from = evaluate(template.getFrom(), template.getFromExpression(), context);
         if (from == null || !isValid(from)) {
             throw new SMSException(SMSMessages.invalidFromAddress(from));
@@ -110,6 +112,9 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
 
         result.setSubject(evaluate(template.getSubject(), template.getSubjectExpression(), context));
         result.setText(evaluate(template.getText(), template.getTextExpression(), context));
+        if (result.getText() == null) {
+            throw new SMSException(SMSMessages.noMessageText());
+        }
         return result;
     }
 
@@ -118,7 +123,7 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
      * <ul>
      * <li>remove any spaces
      * <li>remove any leading +
-     * <li>add a country prefix if specified but not present in the number. Any trunk prefix will be removed
+     * <li>add a country prefix if specified but not present in the number. Any area prefix will be removed
      * first
      * </ul>
      *
@@ -131,12 +136,12 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
         if (phone.startsWith("+")) {
             phone = phone.substring(1);
         } else {
-            String prefix = template.getCountry();
+            String prefix = template.getCountryPrefix();
             if (prefix != null && !phone.startsWith(prefix)) {
-                String trunkPrefix = template.getTrunkPrefix();
-                if (trunkPrefix != null && phone.startsWith(trunkPrefix)) {
-                    // strip off the trunk prefix before adding the country prefix
-                    phone = phone.substring(trunkPrefix.length());
+                String areaPrefix = template.getAreaPrefix();
+                if (areaPrefix != null && phone.startsWith(areaPrefix)) {
+                    // strip off the area prefix before adding the country prefix
+                    phone = phone.substring(areaPrefix.length());
                 }
                 phone = prefix + phone;
             }

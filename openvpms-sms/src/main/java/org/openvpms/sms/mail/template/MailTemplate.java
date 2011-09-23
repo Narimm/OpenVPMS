@@ -33,12 +33,12 @@ public class MailTemplate {
     /**
      * The country prefix.
      */
-    private String country;
+    private String countryPrefix;
 
     /**
-     * The trunk prefix to remove.
+     * The area prefix to remove.
      */
-    private String trunkPrefix;
+    private String areaPrefix;
 
     /**
      * The from address.
@@ -106,10 +106,10 @@ public class MailTemplate {
     /**
      * Sets the country prefix.
      *
-     * @param country the country prefix
+     * @param countryPrefix the country prefix
      */
-    public void setCountry(String country) {
-        this.country = country;
+    public void setCountryPrefix(String countryPrefix) {
+        this.countryPrefix = countryPrefix;
     }
 
     /**
@@ -117,30 +117,30 @@ public class MailTemplate {
      *
      * @return the country prefix
      */
-    public String getCountry() {
-        return country;
+    public String getCountryPrefix() {
+        return countryPrefix;
     }
 
     /**
-     * Sets the trunk prefix.
+     * Sets the area prefix.
      * <p/>
      * In Australia this is the '0' prior to the area code.
      * <p/>
      * If specified, this will be removed from the front of phone numbers, when the country prefix is provided.
      *
-     * @param prefix the trunk prefix
+     * @param prefix the area prefix
      */
-    public void setTrunkPrefix(String prefix) {
-        trunkPrefix = prefix;
+    public void setAreaPrefix(String prefix) {
+        areaPrefix = prefix;
     }
 
     /**
-     * Returns the trunk prefix.
+     * Returns the area prefix.
      *
-     * @return the trunk prefix
+     * @return the area prefix
      */
-    public String getTrunkPrefix() {
-        return trunkPrefix;
+    public String getAreaPrefix() {
+        return areaPrefix;
     }
 
     /**

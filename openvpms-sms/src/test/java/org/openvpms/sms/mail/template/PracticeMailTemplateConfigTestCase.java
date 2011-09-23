@@ -75,7 +75,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             config.getTemplate();
             fail("Expected getTemplate() to fail");
         } catch (SMSException expected) {
-            assertEquals("SMS-0100: the SMS provider is not configured for practice " + practice.getName(),
+            assertEquals("SMS-0100: The SMS provider is not configured for practice " + practice.getName(),
                          expected.getLocalizedMessage());
         }
     }
@@ -128,7 +128,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             config.getTemplate();
             fail("Expected getTemplate() to fail");
         } catch (SMSException expected) {
-            assertEquals("SMS-0100: the SMS provider is not configured for practice " + practice.getName(),
+            assertEquals("SMS-0100: The SMS provider is not configured for practice " + practice.getName(),
                          expected.getLocalizedMessage());
         }
 

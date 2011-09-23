@@ -24,8 +24,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.sms.mail.AbstractSMSTest;
 
-import java.util.Map;
-
 
 /**
  * Tests the {@link MailTemplateFactory} class.
@@ -43,8 +41,8 @@ public class MailTemplateFactoryTestCase extends AbstractSMSTest {
         // populate a entity.SMSConfigEmailGeneric
         Entity config = createConfig("from", "$from", "to", "$to", "$text");
         IMObjectBean bean = new IMObjectBean(config);
-        bean.setValue("country", "61");
-        bean.setValue("trunkPrefix", "0");
+        bean.setValue("countryPrefix", "61");
+        bean.setValue("areaPrefix", "0");
         bean.setValue("replyTo", "replyTo");
         bean.setValue("replyToExpression", "$replyTo");
         bean.setValue("subject", "subject");
@@ -58,8 +56,8 @@ public class MailTemplateFactoryTestCase extends AbstractSMSTest {
         MailTemplate template = factory.getTemplate(config);
 
         // verify the template has the expected details
-        assertEquals("61", template.getCountry());
-        assertEquals("0", template.getTrunkPrefix());
+        assertEquals("61", template.getCountryPrefix());
+        assertEquals("0", template.getAreaPrefix());
         assertEquals("from", template.getFrom());
         assertEquals("$from", template.getFromExpression());
         assertEquals("to", template.getTo());
@@ -70,12 +68,6 @@ public class MailTemplateFactoryTestCase extends AbstractSMSTest {
         assertEquals("$subject", template.getSubjectExpression());
         assertEquals("text", template.getText());
         assertEquals("$text", template.getTextExpression());
-
-        // verify that only country and trunkPrefix are declared as variables
-        Map<String, String> variables = template.getVariables();
-        assertEquals(2, variables.size());
-        assertEquals("61", variables.get("country"));
-        assertEquals("0", variables.get("trunkPrefix"));
     }
 
 }

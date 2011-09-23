@@ -51,8 +51,8 @@ public class MailConnectionTestCase {
     public void testCreateConnection() throws Exception {
         String from = "test@openvpms.com";
         MailTemplate template = new MailTemplate();
-        template.setCountry("61");
-        template.setTrunkPrefix("0");
+        template.setCountryPrefix("61");
+        template.setAreaPrefix("0");
         template.setFrom(from);
         template.setToExpression("concat($phone, '@sms.com')");
         template.setSubject("subject");

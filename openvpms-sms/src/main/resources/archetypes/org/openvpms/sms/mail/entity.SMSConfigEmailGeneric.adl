@@ -23,8 +23,8 @@
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="website" displayName="Web Site" type="java.lang.String" path="/details/website" minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="country" displayName="Country Prefix" path="/details/country" type="java.lang.String" minCardinality="0"/>
-        <node name="trunkPrefix" path="/details/trunkPrefix" type="java.lang.String" minCardinality="0"/>
+        <node name="countryPrefix" path="/details/countryPrefix" type="java.lang.String" minCardinality="0"/>
+        <node name="areaPrefix" path="/details/areaPrefix" type="java.lang.String" minCardinality="0"/>
         <node name="from" path="/details/from" type="java.lang.String" minCardinality="0"/>
         <node name="fromExpression" path="/details/fromExpression" type="java.lang.String" minCardinality="0" defaultValue="'$from'"/>
         <node name="to" path="/details/to" type="java.lang.String" minCardinality="0"/>
@@ -34,6 +34,6 @@
         <node name="subject" path="/details/subject" type="java.lang.String" minCardinality="0"/>
         <node name="subjectExpression" path="/details/subjectExpression" type="java.lang.String" minCardinality="0" defaultValue="'$subject'"/>
         <node name="text" path="/details/text" type="java.lang.String" minCardinality="0"/>
-        <node name="textExpression" path="/details/textExpression" type="java.lang.String" minCardinality="0" defaultValue="'$message'"/>
+        <node name="textExpression" path="/details/textExpression" type="java.lang.String" minCardinality="0" defaultValue="'$message'" maxLength="256"/>
     </archetype>
 </archetypes>
