@@ -51,8 +51,8 @@ public class SMSGlobalMessageFactoryTestCase extends ArchetypeServiceTest {
         assertNull(bean.getString("description"));
         assertEquals("http://www.smsglobal.com", bean.getString("website"));
         assertTrue(bean.getBoolean("active"));
-        assertNull(bean.getString("country"));
-        assertNull(bean.getString("trunkPrefix"));
+        assertNull(bean.getString("countryPrefix"));
+        assertNull(bean.getString("areaPrefix"));
 
         assertNull(bean.getString("from"));
         assertFalse(bean.hasNode("fromExpression"));

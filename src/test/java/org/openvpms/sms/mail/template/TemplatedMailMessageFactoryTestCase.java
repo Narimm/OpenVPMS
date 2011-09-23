@@ -21,9 +21,9 @@ package org.openvpms.sms.mail.template;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Test;
+import org.openvpms.sms.SMSException;
 import org.openvpms.sms.mail.MailMessage;
 import org.openvpms.sms.mail.MailMessageFactory;
-import org.openvpms.sms.SMSException;
 
 /**
  * Tests the {@link TemplatedMailMessageFactory}.
@@ -116,6 +116,7 @@ public class TemplatedMailMessageFactoryTestCase {
     public void testText() {
         MailTemplate template1 = createMailTemplate();
         template1.setText("text1");
+        template1.setTextExpression(null);
         assertEquals("text1", generate(template1).getText());
 
         MailTemplate template2 = createMailTemplate();
@@ -128,23 +129,22 @@ public class TemplatedMailMessageFactoryTestCase {
         assertEquals("text3", generate(template3).getText());
     }
 
-
     /**
      * Tests generation of the 'to' address when the template has no country prefix.
      */
     @Test
     public void testToWithNoPrefix() {
         MailTemplate template = createMailTemplate();
-        template.setTrunkPrefix("0");
+        template.setAreaPrefix("0");
         template.setToExpression("concat($phone, '@test.com')");
 
         String phone1 = "0411123456";
         String phone2 = "+61411123456";
         String phone3 = "1234 567 890";
 
-        assertEquals(phone1 + "@test.com", generate(phone1, null, template).getTo());
-        assertEquals("61411123456@test.com", generate(phone2, null, template).getTo());
-        assertEquals("1234567890@test.com", generate(phone3, null, template).getTo());
+        assertEquals(phone1 + "@test.com", generate(phone1, "abc", template).getTo());
+        assertEquals("61411123456@test.com", generate(phone2, "abc", template).getTo());
+        assertEquals("1234567890@test.com", generate(phone3, "abc", template).getTo());
     }
 
     /**
@@ -153,17 +153,27 @@ public class TemplatedMailMessageFactoryTestCase {
     @Test
     public void testToWithPrefix() {
         MailTemplate template = createMailTemplate();
-        template.setCountry("61");
-        template.setTrunkPrefix("0");
+        template.setCountryPrefix("61");
+        template.setAreaPrefix("0");
         template.setToExpression("concat($phone, '@test.com')");
 
         String phone1 = "0411123456";
         String phone2 = "+61411123456";
         String phone3 = "1234 567 890";
 
-        assertEquals("61411123456@test.com", generate(phone1, null, template).getTo());
-        assertEquals("61411123456@test.com", generate(phone2, null, template).getTo());
-        assertEquals("611234567890@test.com", generate(phone3, null, template).getTo());
+        assertEquals("61411123456@test.com", generate(phone1, "abc", template).getTo());
+        assertEquals("61411123456@test.com", generate(phone2, "abc", template).getTo());
+        assertEquals("611234567890@test.com", generate(phone3, "abc", template).getTo());
+    }
+
+    /**
+     * Verifies that the $nl new-line variable may be referred to in expressions.
+     */
+    @Test
+    public void testNewLine() {
+        MailTemplate template = createMailTemplate();
+        template.setTextExpression("concat('foo', $nl, 'bar')");
+        assertEquals("foo\nbar", generate("1234", "abc", template).getText());
     }
 
     /**
@@ -226,8 +236,21 @@ public class TemplatedMailMessageFactoryTestCase {
         }
     }
 
+    @Test
+    public void testNoText() {
+        MailTemplate template = createMailTemplate();
+        template.setText(null);
+        template.setTextExpression(null);
+        try {
+            generate("123456", null, template);
+            fail("Expected generation to fail");
+        } catch (SMSException exception) {
+            assertEquals("SMS-0304: Message has no text", exception.getMessage());
+        }
+    }
+
     /**
-     * Creates a new template with valid from and to addresses.
+     * Creates a new template with valid from and to addresses, and text expression.
      *
      * @return a new template
      */
@@ -235,6 +258,7 @@ public class TemplatedMailMessageFactoryTestCase {
         MailTemplate result = new MailTemplate();
         result.setFrom("from@test.com");
         result.setTo("to@test.com");
+        result.setTextExpression("$message");
         return result;
     }
 

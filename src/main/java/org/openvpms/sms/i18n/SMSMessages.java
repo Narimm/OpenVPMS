@@ -103,4 +103,13 @@ public class SMSMessages {
     public static Message invalidReplyToAddress(String address) {
         return messages.getMessage(303, address);
     }
+
+    /**
+     * Creates a message for no message text.
+     *
+     * @return a new message
+     */
+    public static Message noMessageText() {
+        return messages.getMessage(304);
+    }
 }

@@ -48,8 +48,8 @@ public class GenericConfigurationMessageFactoryTestCase extends AbstractSMSTest 
         assertNull(bean.getString("description"));
         assertNull(bean.getString("website"));
         assertTrue(bean.getBoolean("active"));
-        assertNull(bean.getString("country"));
-        assertNull(bean.getString("trunkPrefix"));
+        assertNull(bean.getString("countryPrefix"));
+        assertNull(bean.getString("areaPrefix"));
         assertNull(bean.getString("from"));
         assertEquals("$from", bean.getString("fromExpression"));
         assertNull(bean.getString("to"));

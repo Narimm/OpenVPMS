@@ -51,8 +51,8 @@ public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
         assertNull(bean.getString("description"));
         assertEquals("http://www.clickatell.com", bean.getString("website"));
         assertTrue(bean.getBoolean("active"));
-        assertNull(bean.getString("country"));
-        assertNull(bean.getString("trunkPrefix"));
+        assertNull(bean.getString("countryPrefix"));
+        assertNull(bean.getString("areaPrefix"));
         assertNull(bean.getString("user"));
         assertNull(bean.getString("password"));
         assertNull(bean.getString("apiId"));
