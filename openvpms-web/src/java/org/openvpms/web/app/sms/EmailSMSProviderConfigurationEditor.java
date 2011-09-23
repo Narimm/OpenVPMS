@@ -18,19 +18,18 @@
 
 package org.openvpms.web.app.sms;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SplitPane;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.component.property.Property;
 
 
 /**
@@ -56,7 +55,22 @@ public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor 
      */
     public EmailSMSProviderConfigurationEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
+
         sampler = new EmailSMSSampler(object);
+
+        if (object.isNew()) {
+            // default the from address to that of the practice, if it has one
+            Property from = getProperty("from");
+            if (from != null && from.getValue() == null) {
+                Party practice = layoutContext.getContext().getPractice();
+                if (practice != null) {
+                    PartyRules rules = new PartyRules();
+                    Contact email = rules.getContact(practice, ContactArchetypes.EMAIL, null);
+                    IMObjectBean bean = new IMObjectBean(email);
+                    from.setValue(bean.getString("emailAddress"));
+                }
+            }
+        }
     }
 
     /**
@@ -66,7 +80,11 @@ public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor 
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
+        IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+        if (strategy instanceof SMSConfigEmailLayoutStrategy) {
+            ((SMSConfigEmailLayoutStrategy) strategy).setSampler(sampler);
+        }
+        return strategy;
     }
 
     /**
@@ -82,31 +100,4 @@ public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor 
         sampler.refresh();
     }
 
-    private class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Apply the layout strategy.
-         * <p/>
-         * This renders an object in a <code>Component</code>, using a factory to
-         * create the child components.
-         *
-         * @param object     the object to apply
-         * @param properties the object's properties
-         * @param parent     the parent object. May be <tt>null</tt>
-         * @param context    the layout context
-         * @return the component containing the rendered <code>object</code>
-         */
-        @Override
-        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-            ComponentState state = super.apply(object, properties, parent, context);
-            Component container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "SMSConfigEmailProvider");
-            container.add(state.getComponent());
-            container.add(sampler.getComponent());
-            FocusGroup group = new FocusGroup("EmailSMSProviderConfigurationEditor");
-            group.add(state.getFocusGroup());
-            group.add(sampler.getFocusGroup());
-
-            return new ComponentState(container, group);
-        }
-    }
 }

@@ -559,15 +559,21 @@
 
     <style name="SMSDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="${dialog.small.width}"/>
-            <property name="height" value="${dialog.small.height}"/>
+            <property name="width" value="${SMSDialog.width}"/>
+            <property name="height" value="${SMSDialog.height}"/>
         </properties>
     </style>
 
-    <style name="SMSConfigEmailProvider" type="nextapp.echo2.app.SplitPane">
+    <style name="SMSConfigEmail" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="true"/>
-            <property name="separatorPosition" value="${SMSConfigEmailProvider.separatorPosition}"/>
+            <property name="separatorPosition" value="${SMSConfigEmail.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="SMSConfigEmailGeneric" type="nextapp.echo2.app.SplitPane" base-name="SMSConfigEmail">
+        <properties>
+            <property name="separatorPosition" value="${SMSConfigEmailGeneric.separatorPosition}"/>
         </properties>
     </style>
 

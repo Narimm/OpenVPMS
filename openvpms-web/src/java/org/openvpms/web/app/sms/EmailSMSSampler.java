@@ -29,7 +29,6 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
-import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -121,9 +120,9 @@ class EmailSMSSampler implements Modifiable {
     private Button send;
 
     /**
-     * Displays validation errors.
+     * Displays validation status.
      */
-    private Label error;
+    private Label status;
 
     /**
      * Send SMS button identifier.
@@ -165,7 +164,7 @@ class EmailSMSSampler implements Modifiable {
         text = TextComponentFactory.createTextArea(40, 15);
         text.setStyleName("edit");
         text.setEnabled(false);
-        error = LabelFactory.create(true);
+        status = LabelFactory.create(true);
         templateFactory = new MailTemplateFactory(ServiceHelper.getArchetypeService());
         send = ButtonFactory.create(SEND_SMS_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -267,7 +266,7 @@ class EmailSMSSampler implements Modifiable {
     public Component getComponent() {
         Component smsEdit = sms.getComponent();
         Column editCol = ColumnFactory.create("CellSpacing", LabelFactory.create("sms.title", "bold"), smsEdit,
-                                              error, RowFactory.create(send));
+                                              RowFactory.create(send));
 
         Grid resultGrid = GridFactory.create(2,
                                              LabelFactory.create("sms.mail.from"), from,
@@ -285,12 +284,16 @@ class EmailSMSSampler implements Modifiable {
         Column resultCol = ColumnFactory.create("CellSpacing", LabelFactory.create("sms.email.title", "bold"),
                                                 resultGrid);
 
-        // lay out the SMS editor and the resulting email side-by-side, with both aligned in the top of the row
-        Row row = RowFactory.create("WideCellSpacing", editCol, resultCol);
+        Column statusCol = ColumnFactory.create("CellSpacing", LabelFactory.create("sms.email.status.title", "bold"),
+                                                status);
+
+        // lay out the SMS editor, resulting email and status side-by-side, with all aligned in the top of the row
+        Row row = RowFactory.create("WideCellSpacing", editCol, resultCol, statusCol);
         RowLayoutData layout = new RowLayoutData();
         layout.setAlignment(Alignment.ALIGN_TOP);
         editCol.setLayoutData(layout);
         resultCol.setLayoutData(layout);
+        statusCol.setLayoutData(layout);
 
         // add a title and inset everything
         Label title = LabelFactory.create("sms.sample.title", "bold");
@@ -320,44 +323,45 @@ class EmailSMSSampler implements Modifiable {
      */
     public void refresh() {
         String errorMessage = null;
+        boolean valid = false;
+        String fromStr = null;
+        String toStr = null;
+        String replyToStr = null;
+        String subjectStr = null;
+        String textStr = null;
+
         try {
             if (validateConfig() == null) {
                 MailTemplate template = templateFactory.getTemplate(config);
                 MailMessageFactory factory = new TemplatedMailMessageFactory(template);
                 MailMessage mail = factory.createMessage(sms.getPhone(), sms.getMessage());
-                from.setText(mail.getFrom());
-                to.setText(mail.getTo());
-                set(replyTo, mail.getReplyTo());
-                set(subject, mail.getSubject());
-                text.setText(mail.getText());
-                error.setText(null);
-                send.setEnabled(isValid());
+                fromStr = mail.getFrom();
+                toStr = mail.getTo();
+                replyToStr = mail.getReplyTo();
+                textStr = mail.getText();
+                valid = isValid();
             }
         } catch (SMSException exception) {
             errorMessage = exception.getI18nMessage().getMessage();
         } catch (Throwable exception) {
             errorMessage = exception.getLocalizedMessage();
         }
-        if (errorMessage != null) {
-            from.setText(null);
-            to.setText(null);
-            set(replyTo, null);
-            set(subject, null);
-            text.setText(null);
-            error.setText(errorMessage);
-            send.setEnabled(false);
+        from.setText(fromStr);
+        to.setText(toStr);
+        if (replyTo != null) {
+            replyTo.setText(replyToStr);
         }
-    }
-
-    /**
-     * Updates a text field, if present.
-     *
-     * @param text  the text field. May be <tt>null</tt>
-     * @param value the value
-     */
-    private void set(TextComponent text, String value) {
-        if (text != null) {
-            text.setText(value);
+        if (subject != null) {
+            subject.setText(subjectStr);
+        }
+        text.setText(textStr);
+        send.setEnabled(valid);
+        if (valid) {
+            status.setText(Messages.get("sms.email.status.ok"));
+        } else if (errorMessage != null) {
+            status.setText(errorMessage);
+        } else {
+            status.setText(Messages.get("sms.email.status.incomplete"));
         }
     }
 
