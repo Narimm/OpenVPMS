@@ -396,7 +396,7 @@ public class PartyRules {
         if (party == null) {
             party = getOwner(act);
         }
-        return (party != null) ? getHomeTelephone(party) : "";
+        return (party != null) ? getMobileTelephone(party) : "";
     }
     
     /**
