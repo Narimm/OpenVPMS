@@ -27,10 +27,14 @@ import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.mail.template.MailTemplate;
 import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.net.ConnectException;
 import java.util.List;
 
 
@@ -99,14 +103,7 @@ public class MailConnectionTestCase {
      */
     @Test
     public void testFailedToCreateEmail() {
-        MailMessageFactory messageFactory = new MailMessageFactory() {
-            public MailMessage createMessage(String phone, String text) {
-                MailMessage message = new MailMessage();
-                message.setTo("foo");
-                message.setFrom("foo");
-                return message;
-            }
-        };
+        MailMessageFactory messageFactory = createMailMessageFactory("foo", "foo");
         MailSender sender = new MailSender();
         ConnectionFactory factory = new MailConnectionFactory(sender, messageFactory);
         Connection connection = factory.createConnection();
@@ -116,6 +113,95 @@ public class MailConnectionTestCase {
         } catch (SMSException expected) {
             assertEquals("SMS-0200: Failed to create email: Missing final '@domain'", expected.getLocalizedMessage());
         }
+    }
+
+    /**
+     * Verifies an {@link SMSException} is thrown if there is a mail authentication exception.
+     */
+    @Test
+    public void testMailAuthenticationException() {
+        MailMessageFactory messageFactory = createMailMessageFactory("foo@test", "foo@test");
+        MailSender sender = new MailSender() {
+            @Override
+            public void send(MimeMessage mimeMessage) throws MailException {
+                throw new MailAuthenticationException("foo");
+            }
+        };
+        ConnectionFactory factory = new MailConnectionFactory(sender, messageFactory);
+        Connection connection = factory.createConnection();
+        try {
+            connection.send("0411234567", "test");
+            fail("Expected SMSException to be thrown");
+        } catch (SMSException expected) {
+            assertEquals("SMS-0201: Mail server authentication failed: foo", expected.getLocalizedMessage());
+        }
+    }
+
+
+    /**
+     * Verifies an {@link SMSException} is thrown if there is a mail connection exception.
+     */
+    @Test
+    @SuppressWarnings("ThrowableInstanceNeverThrown")
+    public void testMailConnectionFailed() {
+        MailMessageFactory messageFactory = createMailMessageFactory("foo@test", "foo@test");
+        MailSender sender = new MailSender() {
+            @Override
+            public void send(MimeMessage mimeMessage) throws MailException {
+                throw new MailSendException("foo", new MessagingException("bar", new ConnectException()));
+            }
+        };
+        ConnectionFactory factory = new MailConnectionFactory(sender, messageFactory);
+        Connection connection = factory.createConnection();
+        try {
+            connection.send("0411234567", "test");
+            fail("Expected SMSException to be thrown");
+        } catch (SMSException expected) {
+            assertEquals("SMS-0202: Mail server connection failed: bar;\n" +
+                         "  nested exception is:\n" +
+                         "\tjava.net.ConnectException", expected.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Verifies an {@link SMSException} is thrown if there is a mail send exception.
+     */
+    @Test
+    public void testMailSendFailed() {
+        MailMessageFactory messageFactory = createMailMessageFactory("foo@test", "foo@test");
+        MailSender sender = new MailSender() {
+            @Override
+            public void send(MimeMessage mimeMessage) throws MailException {
+                throw new MailSendException("foo");
+            }
+        };
+        ConnectionFactory factory = new MailConnectionFactory(sender, messageFactory);
+        Connection connection = factory.createConnection();
+        try {
+            connection.send("0411234567", "test");
+            fail("Expected SMSException to be thrown");
+        } catch (SMSException expected) {
+            assertEquals("SMS-0203: Failed to send email: foo", expected.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Helper to create a {@link MailMessageFactory} that returns messages with the specified from and to addresses.
+     *
+     * @param from the from address. May be <tt>null</tt>
+     * @param to   the to address. May be <tt>null</tt>
+     * @return a new factory
+     */
+    private MailMessageFactory createMailMessageFactory(final String from, final String to) {
+        return new MailMessageFactory() {
+            public MailMessage createMessage(String phone, String text) {
+                MailMessage message = new MailMessage();
+                message.setTo(to);
+                message.setFrom(from);
+                message.setText(text);
+                return message;
+            }
+        };
     }
 
     /**

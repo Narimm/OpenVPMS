@@ -21,10 +21,13 @@ package org.openvpms.sms.mail;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.i18n.SMSMessages;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.net.ConnectException;
 
 
 /**
@@ -76,7 +79,20 @@ public class MailConnection implements Connection {
         } catch (MessagingException exception) {
             throw new SMSException(SMSMessages.failedToCreateEmail(exception.getLocalizedMessage()), exception);
         }
-        sender.send(mime);
+        try {
+            sender.send(mime);
+        } catch (MailAuthenticationException exception) {
+            throw new SMSException(SMSMessages.mailAuthenticationFailed(exception.getLocalizedMessage()), exception);
+        } catch (MailSendException exception) {
+            if (exception.getCause() instanceof MessagingException) {
+                // try and produce a better error for connection issues
+                MessagingException mailEx = (MessagingException) exception.getCause();
+                if (mailEx.getNextException() instanceof ConnectException) {
+                    throw new SMSException(SMSMessages.mailConnectionFailed(mailEx.getLocalizedMessage()), exception);
+                }
+            }
+            throw new SMSException(SMSMessages.mailSendFailed(exception.getLocalizedMessage()), exception);
+        }
     }
 
     /**

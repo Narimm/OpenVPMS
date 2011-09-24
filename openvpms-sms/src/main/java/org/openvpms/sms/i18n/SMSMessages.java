@@ -65,6 +65,36 @@ public class SMSMessages {
     }
 
     /**
+     * Creates a message for a mail server authentication failure.
+     *
+     * @param reason the reason
+     * @return a new message
+     */
+    public static Message mailAuthenticationFailed(String reason) {
+        return messages.getMessage(201, reason);
+    }
+
+    /**
+     * Creates a message for a mail connection failure.
+     *
+     * @param reason the reason
+     * @return a new message
+     */
+    public static Message mailConnectionFailed(String reason) {
+        return messages.getMessage(202, reason);
+    }
+
+    /**
+     * Creates a message for a mail send failure.
+     *
+     * @param reason the reason
+     * @return a new message
+     */
+    public static Message mailSendFailed(String reason) {
+        return messages.getMessage(203, reason);
+    }
+
+    /**
      * Creates a message for failure to evaluate an expression.
      *
      * @param expression the expression
