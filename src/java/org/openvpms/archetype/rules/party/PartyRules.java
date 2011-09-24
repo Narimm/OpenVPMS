@@ -377,7 +377,7 @@ public class PartyRules {
      */
     public String getMobileTelephone(Party party) {
         Contact contact = getContact(party, ContactArchetypes.PHONE, "MOBILE",
-                                     false);
+                                     true);
         return (contact != null) ? formatPhone(contact) : "";
     }
 
