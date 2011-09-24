@@ -58,7 +58,7 @@ public class SMSMessagesTestCase {
         assertEquals(messages.size(), tests.size());
         for (String message : messages) {
             String test = "test" + message.substring(0, 1).toUpperCase() + message.substring(1);
-            assertTrue(tests.contains(test));
+            assertTrue("No test for: " + message, tests.contains(test));
         }
     }
 
@@ -87,6 +87,32 @@ public class SMSMessagesTestCase {
     @Test
     public void testFailedToCreateEmail() {
         assertEquals("SMS-0200: Failed to create email: foo", SMSMessages.failedToCreateEmail("foo").toString());
+    }
+
+    /**
+     * Tests the {@link SMSMessages#mailAuthenticationFailed} method.
+     */
+    @Test
+    public void testMailAuthenticationFailed() {
+        assertEquals("SMS-0201: Mail server authentication failed: foo",
+                     SMSMessages.mailAuthenticationFailed("foo").toString());
+    }
+
+    /**
+     * Tests the {@link SMSMessages#mailConnectionFailed method.
+     */
+    @Test
+    public void testMailConnectionFailed() {
+        assertEquals("SMS-0202: Mail server connection failed: foo",
+                     SMSMessages.mailConnectionFailed("foo").toString());
+    }
+
+    /**
+     * Tests the {@link SMSMessages#mailSendFailed} method.
+     */
+    @Test
+    public void testMailSendFailed() {
+        assertEquals("SMS-0203: Failed to send email: foo", SMSMessages.mailSendFailed("foo").toString());
     }
 
     /**
