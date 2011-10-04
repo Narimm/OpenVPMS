@@ -46,7 +46,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
 
 
     /**
-     * Creates a new <tt>ReminderPrintProgressBarProcessor</tt>.
+     * Constructs a <tt>ReminderPrintProgressBarProcessor</tt>.
      *
      * @param reminders     the reminders
      * @param groupTemplate the grouped reminder document template
@@ -81,6 +81,16 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
         };
 
         processor = new ReminderPrintProcessor(groupTemplate, listener);
+    }
+
+    /**
+     * Determines if reminders should always be printed interactively.
+     *
+     * @param interactive if <tt>true</tt>, reminders should always be printed interactively. If <tt>false</tt>,
+     *                    reminders will only be printed interactively if a printer needs to be selected
+     */
+    public void setInteractiveAlways(boolean interactive) {
+        processor.setInteractiveAlways(interactive);
     }
 
     /**

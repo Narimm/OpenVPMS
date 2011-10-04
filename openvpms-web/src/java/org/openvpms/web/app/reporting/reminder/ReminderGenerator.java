@@ -112,7 +112,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
                 processors.add(createEmailProcessor(reminders));
                 break;
             case PRINT:
-                processors.add(createPrintProcessor(reminders));
+                processors.add(createPrintProcessor(reminders, true));
                 break;
             case LIST:
             case PHONE:
@@ -187,7 +187,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         }
 
         if (!printReminders.isEmpty()) {
-            processors.add(createPrintProcessor(printReminders));
+            processors.add(createPrintProcessor(printReminders, false));
         }
         if (!emailReminders.isEmpty()) {
             processors.add(createEmailProcessor(emailReminders));
@@ -308,11 +308,16 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * Creates a new print processor.
      *
-     * @param reminders the print reminders
+     * @param reminders   the print reminders
+     * @param interactive if <tt>true</tt>, reminders should always be printed interactively. If <tt>false</tt>,
+     *                    reminders will only be printed interactively if a printer needs to be selected
      * @return a new processor
      */
-    private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders) {
-        return new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics);
+    private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders, boolean interactive) {
+        ReminderPrintProgressBarProcessor result
+                = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics);
+        result.setInteractiveAlways(interactive);
+        return result;
     }
 
     /**
