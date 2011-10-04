@@ -18,7 +18,9 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -172,6 +174,26 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Test the {@link ReminderType#isInteractive()} method.
+     */
+    @Test
+    public void testIsInteractive() {
+        Entity entity = createReminderType();
+        EntityBean bean = new EntityBean(entity);
+        ReminderType t1 = new ReminderType(entity);
+        assertFalse(t1.isInteractive());
+        bean.setValue("interactive", true);
+        assertFalse(t1.isInteractive()); // cached - any good reason for this? TODO
+        ReminderType t2 = new ReminderType(entity);
+        assertTrue(t2.isInteractive());
+        bean.setValue("interactive", false);
+        assertTrue(t2.isInteractive());
+        ReminderType t3 = new ReminderType(entity);
+        assertFalse(t3.isInteractive());
+
+    }
+
+    /**
      * Verifies that due dates are correctly calculated.
      *
      * @param start    the start date
@@ -185,6 +207,8 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
         bean.setValue("defaultUnits", units.toString());
 
         ReminderType type = new ReminderType(bean.getEntity());
+        assertEquals(interval, type.getDefaultInterval());
+        assertEquals(units, type.getDefaultUnits());
         Date due = type.getDueDate(start);
         assertEquals(expected, due);
     }
@@ -203,12 +227,15 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
         bean.setValue("cancelUnits", units.toString());
 
         ReminderType type = new ReminderType(bean.getEntity());
+        assertEquals(interval, type.getCancelInterval());
+        assertEquals(units, type.getCancelUnits());
+
         Date cancel = type.getCancelDate(start);
         assertEquals(expected, cancel);
     }
 
     /**
-     * Tests the {@link ReminderType#shouldCancel method.
+     * Tests the {@link ReminderType#shouldCancel} method.
      *
      * @param dueDate    the due date
      * @param cancelDate the cancel date
@@ -225,7 +252,7 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create a new <em>entity.reminderType</em> wrapped by a bean.
+     * Helper to create a new <em>entity.reminderType</em>.
      *
      * @return a new reminder type
      */
