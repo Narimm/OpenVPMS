@@ -18,11 +18,11 @@
 
 package org.openvpms.web.component.im.product;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.component.property.Modifiable;
@@ -55,15 +55,20 @@ public class ProductReminderRelationshipEditor extends EntityRelationshipEditor 
             }
         });
     }
-
+    /**
+     * Invoked when the reminder type changes.
+     * <p/>
+     * Updates the <em>period</em>, <em>periodUom</em> and <em>interactive</em> nodes from the reminder type.
+     */
     private void onReminderTypeChanged() {
         IMObjectReference reference = (IMObjectReference) getTarget().getValue();
         Entity reminderType = (Entity) getObject(reference);
         if (reminderType != null) {
-            IMObjectBean bean = new IMObjectBean(reminderType);
-            getProperty("interactive").setValue(bean.getBoolean("interactive"));
+            ReminderType type = new ReminderType(reminderType);
+            getProperty("period").setValue(type.getDefaultInterval());
+            getProperty("periodUom").setValue(type.getDefaultUnits().toString());
+            getProperty("interactive").setValue(type.isInteractive());
         }
     }
-
 
 }
