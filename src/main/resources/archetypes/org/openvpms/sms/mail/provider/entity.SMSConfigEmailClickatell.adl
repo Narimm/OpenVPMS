@@ -27,7 +27,7 @@
         <node name="areaPrefix" path="/details/areaPrefix" type="java.lang.String" minCardinality="0"/>
         <node name="user" path="/details/user" type="java.lang.String" minCardinality="1"/>
         <node name="password" path="/details/password" type="java.lang.String" minCardinality="1"/>
-        <node name="apiId" path="/details/apiId" type="java.lang.String" minCardinality="1"/>
+        <node name="apiId" displayName="API ID" path="/details/apiId" type="java.lang.String" minCardinality="1"/>
         <node name="to" path="/details/to" type="java.lang.String" minCardinality="1" defaultValue="'sms@messaging.clickatell.com'" hidden="true"/>
         <node name="from" path="/details/from" type="java.lang.String" minCardinality="1"/>
         <node name="replyTo" path="/details/replyTo" type="java.lang.String" minCardinality="0"/>
