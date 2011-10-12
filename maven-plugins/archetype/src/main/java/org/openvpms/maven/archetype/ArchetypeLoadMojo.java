@@ -46,6 +46,14 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     private File dir;
 
     /**
+     * The assertion types file. If not specified, defaults to <tt>dir/assertionTypes.xml</tt>
+     *
+     * @parameter
+     * @optional
+     */
+    private File assertionTypes;
+
+    /**
      * Determines if existing archetypes should be overwritten.
      *
      * @parameter expression="true"
@@ -104,6 +112,26 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
     }
 
     /**
+     * Sets the assertion types file.
+     * <p/>
+     * Defaults to {@link #getDir() dir}/assertionTypes.xml.
+     *
+     * @param assertionTypes the assertion types file
+     */
+    public void setAssertionTypes(File assertionTypes) {
+        this.assertionTypes = assertionTypes;
+    }
+
+    /**
+     * Returns the assertion types file.
+     *
+     * @return the assertion types file. May be <tt>null</tt>
+     */
+    public File getAssertionTypes() {
+        return assertionTypes;
+    }
+
+    /**
      * Determines if verbose logging is enabled.
      *
      * @param verbose if <tt>true</tt> log verbosely
@@ -143,7 +171,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
      * Executes the archetype load, unless, execution is skipped.
      *
      * @throws MojoExecutionException if an unexpected problem occurs
-     * @throws MojoFailureException if an expected problem (such as a compilation failure) occurs
+     * @throws MojoFailureException   if an expected problem (such as a compilation failure) occurs
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -177,7 +205,7 @@ public class ArchetypeLoadMojo extends AbstractHibernateMojo {
         mgr = (PlatformTransactionManager) context.getBean("txnManager");
         TransactionStatus status = mgr.getTransaction(
                 new DefaultTransactionDefinition());
-        File mappingFile = new File(dir, "assertionTypes.xml");
+        File mappingFile = (assertionTypes != null) ? assertionTypes : new File(dir, "assertionTypes.xml");
         try {
             if (mappingFile.exists()) {
                 loader.loadAssertions(mappingFile.getPath());
