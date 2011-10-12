@@ -207,7 +207,8 @@
                 <artifactId>openvpms-archetype-maven-plugin</artifactId>
                 <version>${pom.version}</version>
                 <configuration>
-                    <dir>target/archetypes/org/openvpms/archetype</dir>
+                    <dir>target/archetypes/org/openvpms</dir>
+                    <assertionTypes>target/archetypes/org/openvpms/archetype/assertionTypes.xml</assertionTypes>
                     <propertyfile>target/classes/hibernate.properties</propertyfile>
                 </configuration>
                 <executions>
