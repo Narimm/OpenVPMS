@@ -66,8 +66,10 @@ public class EmailSMSProviderConfigurationEditor extends AbstractIMObjectEditor 
                 if (practice != null) {
                     PartyRules rules = new PartyRules();
                     Contact email = rules.getContact(practice, ContactArchetypes.EMAIL, null);
-                    IMObjectBean bean = new IMObjectBean(email);
-                    from.setValue(bean.getString("emailAddress"));
+                    if (email != null) {
+                        IMObjectBean bean = new IMObjectBean(email);
+                        from.setValue(bean.getString("emailAddress"));
+                    }
                 }
             }
         }
