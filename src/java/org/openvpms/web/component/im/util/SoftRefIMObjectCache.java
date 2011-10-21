@@ -18,25 +18,25 @@
 
 package org.openvpms.web.component.im.util;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.apache.commons.collections.map.ReferenceMap;
 import org.openvpms.web.system.ServiceHelper;
-
-import java.util.HashMap;
 
 
 /**
- * Default implementation of the {@link IMObjectCache} interface.
+ * An {@link IMObjectCache} that allows objects to be reclaimed by the garbage collector if they are not referenced by
+ * any other object.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class DefaultIMObjectCache extends AbstractIMObjectCache {
+public class SoftRefIMObjectCache extends AbstractIMObjectCache {
 
     /**
-     * Constructs a <tt>DefaultIMObjectCache</tt>.
+     * Constructs a <tt>SoftRefIMObjectCache</tt>.
      */
-    public DefaultIMObjectCache() {
-        super(new HashMap<IMObjectReference, IMObject>(), ServiceHelper.getArchetypeService());
+    @SuppressWarnings("unchecked")
+    public SoftRefIMObjectCache() {
+        super(new ReferenceMap(ReferenceMap.HARD, ReferenceMap.SOFT), ServiceHelper.getArchetypeService());
     }
+
 }
