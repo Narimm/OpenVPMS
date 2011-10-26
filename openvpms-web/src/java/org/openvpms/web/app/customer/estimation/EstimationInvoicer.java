@@ -83,11 +83,14 @@ class EstimationInvoicer {
                 CustomerChargeActItemEditor itemEditor = editor.addItem();
                 if (itemEditor != null) {
                     itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
-                    itemEditor.setProductRef(itemBean.getNodeParticipantRef("product"));
                     itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
                     itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
                     itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
                     itemEditor.setDiscount(itemBean.getBigDecimal("discount"));
+
+                    // NOTE: set the product last as it can trigger popups - want the popups to get the correct
+                    // property values from above
+                    itemEditor.setProductRef(itemBean.getNodeParticipantRef("product"));
                 }
             }
             return dialog;
