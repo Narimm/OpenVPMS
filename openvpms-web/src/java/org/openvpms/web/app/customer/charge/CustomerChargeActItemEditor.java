@@ -749,18 +749,16 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             dispensing.removeModifiableListener(medicationQuantityListener);
             try {
                 PatientMedicationActEditor editor = (PatientMedicationActEditor) dispensing.getCurrentEditor();
-                if (editor != null) {
-                    editor.setQuantity(quantity);
-                } else {
-                    for (Act act : dispensing.getActs()) {
-                        // should only be 1 dispensing act, but zero out any
-                        // additional ones just in case...
-                        ActBean bean = new ActBean(act);
-                        bean.setValue("quantity", quantity);
-                        quantity = BigDecimal.ZERO;
+                if (editor == null) {
+                    List<Act> acts = dispensing.getActs();
+                    if (!acts.isEmpty()) {
+                        editor = (PatientMedicationActEditor) dispensing.getEditor(acts.get(0));
                     }
                 }
-                dispensing.refresh();
+                if (editor != null) {
+                    editor.setQuantity(quantity);
+                    dispensing.refresh();
+                }
             } finally {
                 dispensing.addModifiableListener(medicationQuantityListener);
             }
