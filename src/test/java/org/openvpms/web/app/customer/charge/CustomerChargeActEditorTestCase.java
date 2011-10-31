@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -24,6 +25,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -35,6 +37,9 @@ import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -153,6 +158,241 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Tests the addition of 3 items to an invoice.
+     */
+    @Test
+    public void testAdd3Items() {
+        BigDecimal itemTotal1 = BigDecimal.valueOf(20);
+        BigDecimal itemTotal2 = BigDecimal.valueOf(50);
+        BigDecimal itemTotal3 = new BigDecimal("41.25");
+
+        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
+        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
+        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+        BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
+
+        EditorManager mgr = new EditorManager();
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        BigDecimal quantity = BigDecimal.ONE;
+        addItem(editor, patient, product1, quantity, mgr);
+        addItem(editor, patient, product2, quantity, mgr);
+        addItem(editor, patient, product3, quantity, mgr);
+        assertTrue(SaveHelper.save(editor));
+
+        checkTotal(charge, total);
+    }
+
+    /**
+     * Tests the addition of 3 items to an invoice, followed by the deletion of 1, verifying totals.
+     */
+    @Test
+    public void testAdd3ItemsWithDeletion() {
+        BigDecimal itemTotal1 = BigDecimal.valueOf(20);
+        BigDecimal itemTotal2 = BigDecimal.valueOf(50);
+        BigDecimal itemTotal3 = new BigDecimal("41.25");
+
+        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
+        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
+        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+
+        for (int i = 0, j = 0; i < 3; ++i) {
+            FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+            BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
+
+            EditorManager mgr = new EditorManager();
+            ChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+            editor.getComponent();
+            assertTrue(editor.isValid());
+
+            BigDecimal quantity = BigDecimal.ONE;
+            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, mgr);
+            assertTrue(SaveHelper.save(editor));
+
+            charge = get(charge);
+            assertTrue(charge.getTotal().compareTo(total) == 0);
+            ActCalculator calculator = new ActCalculator(getArchetypeService());
+            BigDecimal itemTotal = calculator.sum(charge, "total");
+            assertTrue(itemTotal.compareTo(total) == 0);
+
+            if (j == 0) {
+                editor.delete((Act) itemEditor1.getObject());
+                total = total.subtract(itemTotal1);
+            } else if (j == 1) {
+                editor.delete((Act) itemEditor2.getObject());
+                total = total.subtract(itemTotal2);
+            } else if (j == 2) {
+                editor.delete((Act) itemEditor3.getObject());
+                total = total.subtract(itemTotal3);
+            }
+            ++j;
+            if (j > 2) {
+                j = 0;
+            }
+            assertTrue(SaveHelper.save(editor));
+            charge = get(charge);
+            checkTotal(charge, total);
+        }
+    }
+
+    /**
+     * Tests the addition of 3 items to an invoice, followed by the deletion of 1 in a new editor, verifying totals.
+     */
+    @Test
+    public void testAdd3ItemsWithDeletionAfterReload() {
+        BigDecimal itemTotal1 = BigDecimal.valueOf(20);
+        BigDecimal itemTotal2 = BigDecimal.valueOf(50);
+        BigDecimal itemTotal3 = new BigDecimal("41.25");
+
+        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
+        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
+        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+
+        for (int i = 0, j = 0; i < 3; ++i) {
+            FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+            BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
+
+            EditorManager mgr = new EditorManager();
+            ChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+            editor.getComponent();
+            assertTrue(editor.isValid());
+
+            BigDecimal quantity = BigDecimal.ONE;
+            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, mgr);
+            assertTrue(SaveHelper.save(editor));
+
+            charge = get(charge);
+            checkTotal(charge, total);
+
+            editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+            editor.getComponent();
+
+            if (j == 0) {
+                editor.delete((Act) itemEditor1.getObject());
+                total = total.subtract(itemTotal1);
+            } else if (j == 1) {
+                editor.delete((Act) itemEditor2.getObject());
+                total = total.subtract(itemTotal2);
+            } else if (j == 2) {
+                editor.delete((Act) itemEditor3.getObject());
+                total = total.subtract(itemTotal3);
+            }
+            ++j;
+            if (j > 2) {
+                j = 0;
+            }
+            assertTrue(SaveHelper.save(editor));
+            charge = get(charge);
+            checkTotal(charge, total);
+        }
+    }
+
+    /**
+     * Tests the addition of 3 items to an invoice, followed by the deletion of 1 before saving.
+     */
+    @Test
+    public void test3ItemsAdditionWithDeletionBeforeSave() {
+        BigDecimal itemTotal1 = BigDecimal.valueOf(20);
+        BigDecimal itemTotal2 = BigDecimal.valueOf(50);
+        BigDecimal itemTotal3 = new BigDecimal("41.25");
+
+        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
+        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
+        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+
+        for (int i = 0, j = 0; i < 3; ++i) {
+            FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+            BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
+
+            EditorManager mgr = new EditorManager();
+            ChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+            editor.getComponent();
+
+            BigDecimal quantity = BigDecimal.ONE;
+            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, mgr);
+
+            if (j == 0) {
+                editor.delete((Act) itemEditor1.getObject());
+                total = total.subtract(itemTotal1);
+            } else if (j == 1) {
+                editor.delete((Act) itemEditor2.getObject());
+                total = total.subtract(itemTotal2);
+            } else if (j == 2) {
+                editor.delete((Act) itemEditor3.getObject());
+                total = total.subtract(itemTotal3);
+            }
+            ++j;
+            if (j > 2) {
+                j = 0;
+            }
+
+            assertTrue(SaveHelper.save(editor));
+            charge = get(charge);
+            checkTotal(charge, total);
+        }
+    }
+
+    /**
+     * Tests the addition of 2 items to an invoice, followed by the change of product of 1 before saving.
+     */
+    @Test
+    public void testItemChange() {
+        BigDecimal itemTotal1 = BigDecimal.valueOf(20);
+        BigDecimal itemTotal2 = BigDecimal.valueOf(50);
+        BigDecimal itemTotal3 = new BigDecimal("41.25");
+
+        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal1);
+        Product product2 = createProduct(ProductArchetypes.SERVICE, itemTotal2);
+        Product product3 = createProduct(ProductArchetypes.SERVICE, itemTotal3);
+
+        for (int i = 0, j = 0; i < 3; ++i) {
+            FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+            BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
+
+            EditorManager mgr = new EditorManager();
+            boolean addDefaultItem = (j == 0);
+            ChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr, addDefaultItem);
+            editor.getComponent();
+
+            BigDecimal quantity = BigDecimal.ONE;
+            CustomerChargeActItemEditor itemEditor1;
+            if (j == 0) {
+                itemEditor1 = editor.getCurrentEditor();
+                setItem(editor, itemEditor1, patient, product1, quantity, mgr);
+            } else {
+                itemEditor1 = addItem(editor, patient, product1, quantity, mgr);
+            }
+            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, mgr);
+
+            if (j == 0) {
+                itemEditor1.setProduct(product3);
+                total = total.subtract(itemTotal1);
+            } else if (j == 1) {
+                itemEditor2.setProduct(product3);
+                total = total.subtract(itemTotal2);
+            }
+            ++j;
+            if (j > 1) {
+                j = 0;
+            }
+
+            assertTrue(SaveHelper.save(editor));
+            charge = get(charge);
+            checkTotal(charge, total);
+        }
+    }
+
+    /**
      * Verifies that the {@link CustomerChargeActEditor#delete()} method deletes an invoice and its item.
      */
     @Test
@@ -179,7 +419,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Entity investigationType4 = addInvestigation(product3);
         Entity investigationType5 = addInvestigation(product3);
         Entity investigationType6 = addInvestigation(product3);
-        
+
         Entity template3 = addTemplate(product3);
 
         EditorManager mgr = new EditorManager();
@@ -319,6 +559,36 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     @Test
     public void testExpandTemplateCounterSale() {
         checkExpandTemplate((FinancialAct) create(CustomerAccountArchetypes.COUNTER));
+    }
+
+    /**
+     * Verifies that an act is invalid if the sum of the item totals don't add up to the charge total.
+     */
+    @Test
+    public void testTotalMismatch() {
+        BigDecimal itemTotal = BigDecimal.valueOf(20);
+        Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+        EditorManager mgr = new EditorManager();
+
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        BigDecimal quantity = BigDecimal.ONE;
+        addItem(editor, patient, product1, quantity, mgr);
+        assertTrue(editor.isValid());
+        charge.setTotal(Money.ONE);
+        Validator validator = new Validator();
+        assertFalse(editor.validate(validator));
+        List<ValidatorError> list = validator.getErrors(editor);
+        assertEquals(1, list.size());
+        String message = Messages.get("act.validation.totalMismatch", editor.getProperty("amount").getDisplayName(),
+                                      charge.getTotal(), editor.getProperty("items").getDisplayName(), itemTotal);
+        String expected = Messages.get(ValidatorError.MSG_KEY, message);
+        assertEquals(expected, list.get(0).toString());
+
     }
 
     /**
@@ -800,6 +1070,23 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(editor.isValid());
         assertFalse(itemEditor.isValid());
 
+        setItem(editor, itemEditor, patient, product, quantity, mgr);
+        return itemEditor;
+    }
+
+    /**
+     * Sets the values of a charge item.
+     * '
+     *
+     * @param editor     the charge editor
+     * @param itemEditor the charge item editor
+     * @param patient    the patient
+     * @param product    the product
+     * @param quantity   the quantity
+     * @param mgr        the popup editor manager
+     */
+    private void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+                         Party patient, Product product, BigDecimal quantity, EditorManager mgr) {
         if (itemEditor.getProperty("patient") != null) {
             itemEditor.setPatient(patient);
         }
@@ -826,7 +1113,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             }
         }
         assertTrue(itemEditor.isValid());
-        return itemEditor;
     }
 
     /**
@@ -843,6 +1129,19 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Chekcs the total of a charge matches that expected, and that the total matches the sum of the item totals.
+     *
+     * @param charge the charge
+     * @param total  the expected total
+     */
+    private void checkTotal(FinancialAct charge, BigDecimal total) {
+        assertTrue(charge.getTotal().compareTo(total) == 0);
+        ActCalculator calculator = new ActCalculator(getArchetypeService());
+        BigDecimal itemTotal = calculator.sum(charge, "total");
+        assertTrue(itemTotal.compareTo(total) == 0);
+    }
+
+    /**
      * Creates a customer charge act editor.
      *
      * @param invoice the charge to edit
@@ -850,10 +1149,23 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param manager the popup editor manager
      * @return a new customer charge act editor
      */
-    private CustomerChargeActEditor createCustomerChargeActEditor(final FinancialAct invoice,
-                                                                  final LayoutContext context,
-                                                                  final PopupEditorManager manager) {
-        return new CustomerChargeActEditor(invoice, null, context, false) {
+    private ChargeEditor createCustomerChargeActEditor(final FinancialAct invoice, final LayoutContext context,
+                                                       final PopupEditorManager manager) {
+        return createCustomerChargeActEditor(invoice, context, manager, false);
+    }
+
+    /**
+     * Creates a customer charge act editor.
+     *
+     * @param invoice        the charge to edit
+     * @param context        the layout context
+     * @param manager        the popup editor manager
+     * @param addDefaultItem if <tt>true</tt> add a default item if the act has none
+     * @return a new customer charge act editor
+     */
+    private ChargeEditor createCustomerChargeActEditor(final FinancialAct invoice, final LayoutContext context,
+                                                       final PopupEditorManager manager, boolean addDefaultItem) {
+        return new ChargeEditor(invoice, context, addDefaultItem) {
             @Override
             protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
                 ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
@@ -881,4 +1193,36 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         return stockLocation;
     }
 
+    private static class ChargeEditor extends CustomerChargeActEditor {
+
+        /**
+         * Constructs a <tt>ChargeEditor</tt>.
+         *
+         * @param act     the act to edit
+         * @param context the layout context
+         * @param addDefaultItem if <tt>true</tt> add a default item if the act has none
+         */
+        public ChargeEditor(FinancialAct act, LayoutContext context, boolean addDefaultItem) {
+            super(act, null, context, addDefaultItem);
+        }
+
+        /**
+         * Deletes an item.
+         *
+         * @param item the item to delete
+         */
+        public void delete(Act item) {
+            getEditor().remove(item);
+        }
+
+        /**
+         * Returns the current editor.
+         *
+         * @return the current editor. May be <tt>null</tt>
+         */
+        public CustomerChargeActItemEditor getCurrentEditor() {
+            return (CustomerChargeActItemEditor) getEditor().getCurrentEditor();
+        }
+
+    }
 }
