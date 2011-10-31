@@ -47,8 +47,15 @@ import java.util.Set;
  */
 class LookupReplaceHelper {
 
+    /**
+     * The archetype service.
+     */
     private final IArchetypeService service;
 
+
+    /**
+     * Constructs a <tt>LookupReplaceHelper</tt>.
+     */
     public LookupReplaceHelper() {
         service = ServiceHelper.getArchetypeService();
     }
@@ -70,7 +77,14 @@ class LookupReplaceHelper {
         });
     }
 
-    private Object doReplace(Lookup source, Lookup target, boolean delete) {
+    /**
+     * Replaces references to the source lookup with the target lookup, optionally deleting the source lookup.
+     *
+     * @param source the source lookup
+     * @param target the target lookup
+     * @param delete if <tt>true</tt> delete the source lookup
+     */
+    private void doReplace(Lookup source, Lookup target, boolean delete) {
         ILookupService lookupService = ServiceHelper.getLookupService();
         boolean move = !delete;
         if (mergeRelationships(source, target, move)) {
@@ -84,7 +98,6 @@ class LookupReplaceHelper {
         if (delete) {
             service.remove(source);
         }
-        return null;
     }
 
     /**
