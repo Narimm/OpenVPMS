@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -112,7 +113,10 @@ public class FinancialActEditor extends ActEditor {
         ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
         FinancialAct act = (FinancialAct) getObject();
         BigDecimal total = calc.getTotal(act);
+
         List<Act> acts = getEditor().getActs();
+        // NOTE: the current act should be mapped into the collection if it has been edited
+
         BigDecimal sum = calc.sum(acts.iterator(), "total");
         result = total.compareTo(sum) == 0;
         if (!result) {
@@ -127,6 +131,10 @@ public class FinancialActEditor extends ActEditor {
                 for (int i = 0; i < acts.size(); ++i) {
                     log.warn("act item (" + (i + 1) + " of " + acts.size() + ") = " + format(acts.get(i)));
                 }
+                IMObjectEditor current = getEditor().getCurrentEditor();
+                if (current != null) {
+                    log.warn("current act item = " + format(current.getObject()));
+                }
             }
         }
         return result;
@@ -138,8 +146,7 @@ public class FinancialActEditor extends ActEditor {
     @Override
     protected void onItemsChanged() {
         Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum((Act) getObject(),
-                                         getEditor().getCurrentActs(), "total");
+        BigDecimal value = ActHelper.sum((Act) getObject(), getEditor().getCurrentActs(), "total");
         amount.setValue(value);
         calculateTax();
     }
@@ -166,14 +173,14 @@ public class FinancialActEditor extends ActEditor {
     }
 
     /**
-     * Helper to format an act for debugging purposes, as the toString() method is not helpful.
+     * Helper to format an object for debugging purposes, as the toString() method is not helpful.
      * TODO.
      *
-     * @param act the act
-     * @return the formatted act
+     * @param object the object
+     * @return the formatted object
      */
-    private String format(Act act) {
-        return new ReflectionToStringBuilder(act, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    private String format(IMObject object) {
+        return new ReflectionToStringBuilder(object, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 
 }

@@ -1,6 +1,5 @@
 package org.openvpms.web.app.customer.charge;
 
-import org.apache.commons.lang.ObjectUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -925,100 +924,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
-     * Verifies a charge matches that expected.
-     *
-     * @param charge    the charge
-     * @param customer  the expected customer
-     * @param author    the expected author
-     * @param clinician the expected clinician
-     * @param tax       the expected tax
-     * @param total     the expected total
-     */
-    private void checkCharge(FinancialAct charge, Party customer, User author, User clinician, BigDecimal tax,
-                             BigDecimal total) {
-        ActBean bean = new ActBean(charge);
-        assertEquals(customer.getObjectReference(), bean.getNodeParticipantRef("customer"));
-        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
-        if (bean.hasNode("clinician")) {
-            assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
-        }
-        checkEquals(tax, bean.getBigDecimal("tax"));
-        checkEquals(total, bean.getBigDecimal("amount"));
-    }
-
-    /**
-     * Verifies an item's properties match that expected.
-     *
-     * @param items      the items to search
-     * @param patient    the expected patient
-     * @param product    the expected product
-     * @param author     the expected author
-     * @param clinician  the expected clinician
-     * @param quantity   the expected quantity
-     * @param unitCost   the expected unit cost
-     * @param unitPrice  the expected unit price
-     * @param fixedCost  the expected fixed cost
-     * @param fixedPrice the expected fixed price
-     * @param discount   the expected discount
-     * @param tax        the expected tax
-     * @param total      the expected total
-     * @param event      the clinical event. May be <tt>null</tt> for non-invoice items
-     * @param childActs  the expected no. of child acts
-     */
-    private void checkItem(List<FinancialAct> items, Party patient, Product product, User author, User clinician,
-                           BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice, BigDecimal fixedCost,
-                           BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax, BigDecimal total,
-                           Act event, int childActs) {
-        int count = 0;
-        FinancialAct item = find(items, product);
-        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost, fixedPrice,
-                  discount, tax, total);
-        ActBean itemBean = new ActBean(item);
-        EntityBean bean = new EntityBean(product);
-
-        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            ActBean eventBean = new ActBean(event);
-            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-                // verify there is a medication act that is linked to the event
-                Act medication = checkMedication(item, patient, product, author, clinician);
-                assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, medication));
-                ++count;
-            } else {
-                assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
-            }
-            List<Entity> investigations = bean.getNodeTargetEntities("investigationTypes");
-            assertEquals(investigations.size(), itemBean.getNodeActs("investigations").size());
-            for (Entity investigationType : investigations) {
-                // verify there is an investigation for each investigation type, and it is linked to the event
-                Act investigation = checkInvestigation(item, patient, investigationType, author, clinician);
-                assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, investigation));
-                ++count;
-            }
-            List<Entity> reminderTypes = bean.getNodeTargetEntities("reminders");
-            assertEquals(reminderTypes.size(), itemBean.getNodeActs("reminders").size());
-            for (Entity reminderType : reminderTypes) {
-                checkReminder(item, patient, product, reminderType, author, clinician);
-                ++count;
-            }
-            List<Entity> templates = bean.getNodeTargetEntities("documents");
-            assertEquals(templates.size(), itemBean.getNodeActs("documents").size());
-            for (Entity template : templates) {
-                // verify there is a document for each template, and it is linked to the event
-                Act document = checkDocument(item, patient, product, template, author, clinician);
-                assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, document));
-                ++count;
-            }
-        } else {
-            // verify there are no medication, investigation, reminder nor document acts
-            assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
-            assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
-            assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
-            assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
-        }
-        assertEquals(childActs, count);
-    }
-
-    /**
      * Deletes a charge.
      *
      * @param editor the editor to use
@@ -1031,26 +936,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
                 return editor.delete();
             }
         });
-    }
-
-    /**
-     * Finds a charge item in a list of items, by product.
-     *
-     * @param items   the items
-     * @param product the product
-     * @return the corresponding item
-     */
-    private FinancialAct find(List<FinancialAct> items, Product product) {
-        FinancialAct result = null;
-        for (FinancialAct item : items) {
-            ActBean current = new ActBean(item);
-            if (ObjectUtils.equals(current.getNodeParticipantRef("product"), product.getObjectReference())) {
-                result = item;
-                break;
-            }
-        }
-        assertNotNull(result);
-        return result;
     }
 
     /**
@@ -1076,7 +961,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
     /**
      * Sets the values of a charge item.
-     * '
      *
      * @param editor     the charge editor
      * @param itemEditor the charge item editor
@@ -1198,8 +1082,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         /**
          * Constructs a <tt>ChargeEditor</tt>.
          *
-         * @param act     the act to edit
-         * @param context the layout context
+         * @param act            the act to edit
+         * @param context        the layout context
          * @param addDefaultItem if <tt>true</tt> add a default item if the act has none
          */
         public ChargeEditor(FinancialAct act, LayoutContext context, boolean addDefaultItem) {
