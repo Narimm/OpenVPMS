@@ -55,58 +55,59 @@ public class PaymentWorkflow extends WorkflowImpl {
 
 
     /**
-     * Creates a new <tt>PaymentWorkflow</tt>.
+     * Constructs a <tt>PaymentWorkflow</tt>.
      *
-     * @param chargeAmount the charge amount that triggered the payment
-     *                     workflow. If <tt>0</tt>, the context will be examined
-     *                     for an invoice to determine the amount
+     * @param chargeAmount the charge amount that triggered the payment workflow. If <tt>0</tt>, the context will be
+     *                     examined for an invoice to determine the amount
+     * @param context      the context
      */
-    public PaymentWorkflow(BigDecimal chargeAmount) {
-        this(new DefaultTaskContext(false), chargeAmount);
+    public PaymentWorkflow(BigDecimal chargeAmount, Context context) {
+        this(new DefaultTaskContext(false), chargeAmount, context);
     }
 
     /**
-     * Creates a new <tt>PaymentWorkflow</tt>.
+     * Constructs a <tt>PaymentWorkflow</tt>.
      *
-     * @param context the task context
+     * @param context         the task context
+     * @param fallbackContext the context to fall back on if an object isn't in the task context
      */
-    public PaymentWorkflow(TaskContext context) {
-        this(context, BigDecimal.ZERO);
+    public PaymentWorkflow(TaskContext context, Context fallbackContext) {
+        this(context, BigDecimal.ZERO, fallbackContext);
     }
 
     /**
-     * Creates a new <tt>PaymentWorkflow</tt>.
+     * Constructs a <tt>PaymentWorkflow</tt>.
      *
-     * @param context      the task context
-     * @param chargeAmount the charge amount that triggered the payment workflow
+     * @param context         the task context
+     * @param chargeAmount    the charge amount that triggered the payment workflow
+     * @param fallbackContext the context to fall back on if an object isn't in the task context
      */
-    public PaymentWorkflow(TaskContext context, BigDecimal chargeAmount) {
-        GlobalContext global = GlobalContext.getInstance();
+    public PaymentWorkflow(TaskContext context, BigDecimal chargeAmount, Context fallbackContext) {
         initial = context;
         this.chargeAmount = chargeAmount;
 
         if (initial.getCustomer() == null) {
-            initial.setCustomer(global.getCustomer());
+            initial.setCustomer(fallbackContext.getCustomer());
         }
         if (initial.getPatient() == null) {
-            initial.setPatient(global.getPatient());
+            initial.setPatient(fallbackContext.getPatient());
         }
         if (initial.getClinician() == null) {
-            initial.setClinician(global.getClinician());
+            initial.setClinician(fallbackContext.getClinician());
         }
         if (initial.getUser() == null) {
-            initial.setUser(global.getUser());
+            initial.setUser(fallbackContext.getUser());
         }
         if (initial.getTill() == null) {
-            initial.setTill(global.getTill());
+            initial.setTill(fallbackContext.getTill());
         }
 
         if (initial.getPractice() == null) {
-            initial.setPractice(global.getPractice());
+            initial.setPractice(fallbackContext.getPractice());
         }
         if (initial.getLocation() == null) {
             // need to set location for cash rounding purposes during payments
-            initial.setLocation(global.getLocation());
+            initial.setLocation(fallbackContext.getLocation());
         }
     }
 

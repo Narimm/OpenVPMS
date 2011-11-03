@@ -306,15 +306,6 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Determines if this can be deleted via {@link #delete()}.
-     *
-     * @return <tt>true</tt>
-     */
-    public boolean canDelete() {
-        return true;
-    }
-
-    /**
      * Determines if the object has been deleted.
      *
      * @return <code>true</code> if the object has been deleted

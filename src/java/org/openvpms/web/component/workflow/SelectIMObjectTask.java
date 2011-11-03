@@ -189,7 +189,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
              */
             private void onNew() {
                 createTask.addTaskListener(getTaskListeners());
-                createTask.start(context);
+                start(createTask, context);
             }
 
         });

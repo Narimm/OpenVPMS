@@ -34,8 +34,9 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.Workflow;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -185,7 +186,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         // beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
             ConsultWorkflow workflow = new ConsultWorkflow(act);
-            workflow.addTaskListener(new TaskListener() {
+            workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
                 }
@@ -204,8 +205,8 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         // make sure the act is still available and has a valid status prior
         // to beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
-            CheckOutWorkflow workflow = new CheckOutWorkflow(act);
-            workflow.addTaskListener(new TaskListener() {
+            CheckOutWorkflow workflow = new CheckOutWorkflow(act, GlobalContext.getInstance());
+            workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
                 }

@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -162,6 +163,24 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
             result = validateStartEndTimes(validator);
         }
         return result;
+    }
+
+    /**
+     * Deletes the object.
+     * <p/>
+     * This uses {@link #deleteChildren()} to delete the children prior to
+     * invoking {@link #deleteObject()}.
+     *
+     * @return <tt>true</tt> if the delete was successful
+     * @throws IllegalStateException if the act is POSTED
+     */
+    @Override
+    protected boolean doDelete() {
+        Act act = (Act) getObject();
+        if (ActStatus.POSTED.equals(act.getStatus())) {
+            throw new IllegalStateException("Cannot delete " + ActStatus.POSTED + " act");
+        }
+        return super.doDelete();
     }
 
     /**

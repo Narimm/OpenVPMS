@@ -84,24 +84,27 @@ public class ConditionalTask extends AbstractTask {
     public void start(TaskContext context) {
         this.context = context;
 
-        condition.addTaskListener(new TaskListener() {
+        condition.addTaskListener(new DefaultTaskListener() {
+            @Override
             public void taskEvent(TaskEvent event) {
                 onConditionEvent(event);
             }
         });
-        task.addTaskListener(new TaskListener() {
+        task.addTaskListener(new DefaultTaskListener() {
+            @Override
             public void taskEvent(TaskEvent event) {
                 onTaskEvent(event);
             }
         });
         if (elseTask != null) {
-            elseTask.addTaskListener(new TaskListener() {
+            elseTask.addTaskListener(new DefaultTaskListener() {
+                @Override
                 public void taskEvent(TaskEvent event) {
                     onTaskEvent(event);
                 }
             });
         }
-        condition.start(context);
+        start(condition, context);
     }
 
     /**
@@ -119,9 +122,9 @@ public class ConditionalTask extends AbstractTask {
                 break;
             case COMPLETED:
                 if (condition.getValue()) {
-                    task.start(context);
+                    start(task, context);
                 } else if (elseTask != null) {
-                    elseTask.start(context);
+                    start(elseTask, context);
                 } else {
                     notifyCompleted();
                 }

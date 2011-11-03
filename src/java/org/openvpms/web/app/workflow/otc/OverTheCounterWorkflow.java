@@ -36,11 +36,11 @@ import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -117,7 +117,8 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
 
         EditIMObjectTask payment = new OTCPaymentTask();
         payment.setDeleteOnCancelOrSkip(true);
-        payment.addTaskListener(new TaskListener() {
+        payment.addTaskListener(new DefaultTaskListener() {
+            @Override
             public void taskEvent(TaskEvent event) {
                 if (event.getType().equals(TaskEvent.Type.CANCELLED)) {
                     cancelSale();
