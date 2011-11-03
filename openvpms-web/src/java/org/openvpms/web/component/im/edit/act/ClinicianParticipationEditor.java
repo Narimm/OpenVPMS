@@ -63,7 +63,7 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
         if (!TypeHelper.isA(participation, "participation.clinician")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
-                            + participation.getArchetypeId().getShortName());
+                    + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
             User clinician = getLayoutContext().getContext().getClinician();
@@ -91,9 +91,9 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
             }
 
             @Override
-            public void setObject(User object) {
-                super.setObject(object);
+            public boolean setObject(User object) {
                 getLayoutContext().getContext().setClinician(object);
+                return super.setObject(object);
             }
         };
     }

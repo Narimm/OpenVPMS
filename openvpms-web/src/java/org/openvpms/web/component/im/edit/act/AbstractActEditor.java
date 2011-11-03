@@ -225,8 +225,15 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @return <tt>true</tt> if the participant was modified, otherwise <tt>false</tt>
      */
     protected boolean setParticipant(String name, IMObject entity) {
-        IMObjectReference ref = (entity != null) ? entity.getObjectReference() : null;
-        return setParticipant(name, ref);
+        boolean modified;
+        ParticipationEditor<Entity> editor = getParticipationEditor(name, false);
+        if (editor != null) {
+            modified = editor.setEntity((Entity) entity);
+        } else {
+            IMObjectReference ref = (entity != null) ? entity.getObjectReference() : null;
+            modified = setParticipant(name, ref);
+        }
+        return modified;
     }
 
     /**
@@ -241,10 +248,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         boolean modified = false;
         ParticipationEditor editor = getParticipationEditor(name, false);
         if (editor != null) {
-            if (!ObjectUtils.equals(editor.getEntityRef(), entity)) {
-                editor.setEntityRef(entity);
-                modified = true;
-            }
+            modified = editor.setEntityRef(entity);
         } else {
             // no editor created yet. Set the participant via the corresponding
             // property

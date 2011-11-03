@@ -36,9 +36,11 @@ public interface IMObjectReferenceEditor<T extends IMObject>
     /**
      * Sets the value of the reference to the supplied object.
      *
-     * @param object the object. May  be <code>null</code>
+     * @param object the object. May be <tt>null</tt>
+     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it cannot be set due to error, or is the same as
+     *         the existing value
      */
-    void setObject(T object);
+    boolean setObject(T object);
 
     /**
      * Returns the component.

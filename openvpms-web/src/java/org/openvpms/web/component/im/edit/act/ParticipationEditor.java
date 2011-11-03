@@ -101,9 +101,11 @@ public abstract class ParticipationEditor<T extends Entity>
      * Sets the participation entity reference.
      *
      * @param reference the entity reference. May be <tt>null</tt>
+     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it cannot be set due to error, or is the same as
+     *         the existing value
      */
-    public void setEntityRef(IMObjectReference reference) {
-        editor.getProperty().setValue(reference);
+    public boolean setEntityRef(IMObjectReference reference) {
+        return editor.getProperty().setValue(reference);
     }
 
     /**
@@ -120,9 +122,11 @@ public abstract class ParticipationEditor<T extends Entity>
      * Sets the participation entity.
      *
      * @param entity the entity. May be <tt>null</tt>
+     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it cannot be set due to error, or is the same as
+     *         the existing value
      */
-    public void setEntity(T entity) {
-        editor.setObject(entity);
+    public boolean setEntity(T entity) {
+        return editor.setObject(entity);
     }
 
     /**
