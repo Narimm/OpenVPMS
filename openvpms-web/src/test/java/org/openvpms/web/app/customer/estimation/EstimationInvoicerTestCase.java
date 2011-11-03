@@ -18,10 +18,7 @@
 
 package org.openvpms.web.app.customer.estimation;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.event.ActionEvent;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActCalculator;
@@ -223,10 +220,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
                 @Override
                 protected void edit(EditDialog dialog) {
                     super.edit(dialog);
-                    Button ok = dialog.getButtons().getButton(PopupDialog.OK_ID);
-                    assertNotNull(ok);
-                    assertTrue(ok.isEnabled());
-                    ok.fireActionPerformed(new ActionEvent(ok, ok.getActionCommand()));
+                    fireDialogButton(dialog, PopupDialog.OK_ID);
                 }
             };
             return new ChargeEditor(invoice, context) {
@@ -242,6 +236,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
 
             };
         }
+
     }
 
 }

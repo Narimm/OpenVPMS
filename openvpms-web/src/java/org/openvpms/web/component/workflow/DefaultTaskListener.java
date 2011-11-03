@@ -11,36 +11,34 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: $
  */
 
 package org.openvpms.web.component.workflow;
 
-import java.util.EventListener;
-
-
 /**
- * Event listener for {@link Task} events.
+ * Default implementation of the {@link TaskListener} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @version $LastChangedDate: $
  */
-public interface TaskListener extends EventListener {
+public class DefaultTaskListener implements TaskListener {
 
     /**
      * Invoked prior to a task starting.
      *
      * @param task the task
      */
-    void starting(Task task);
+    public void starting(Task task) {
+    }
 
     /**
      * Invoked when a task event occurs.
      *
      * @param event the event
      */
-    void taskEvent(TaskEvent event);
-
+    public void taskEvent(TaskEvent event) {
+    }
 }

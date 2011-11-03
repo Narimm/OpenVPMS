@@ -18,13 +18,12 @@
 
 package org.openvpms.web.app.customer.charge;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.ObjectUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
@@ -82,6 +81,67 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         practice.addClassification(createTaxType());
         save(practice);
         super.setUp();
+    }
+
+    /**
+     * Adds a charge item.
+     *
+     * @param editor   the editor
+     * @param patient  the patient
+     * @param product  the product
+     * @param quantity the quantity
+     * @param mgr      the popup editor manager
+     * @return the editor for the new item
+     */
+    protected CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient, Product product,
+                                                  BigDecimal quantity, EditorManager mgr) {
+        CustomerChargeActItemEditor itemEditor = editor.addItem();
+        itemEditor.getComponent();
+        assertTrue(editor.isValid());
+        assertFalse(itemEditor.isValid());
+
+        setItem(editor, itemEditor, patient, product, quantity, mgr);
+        return itemEditor;
+    }
+
+    /**
+     * Sets the values of a charge item.
+     *
+     * @param editor     the charge editor
+     * @param itemEditor the charge item editor
+     * @param patient    the patient
+     * @param product    the product
+     * @param quantity   the quantity
+     * @param mgr        the popup editor manager
+     */
+    protected void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+                           Party patient, Product product, BigDecimal quantity, EditorManager mgr) {
+        if (itemEditor.getProperty("patient") != null) {
+            itemEditor.setPatient(patient);
+        }
+        itemEditor.setProduct(product);
+        itemEditor.setQuantity(quantity);
+        if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
+            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+                // invoice items have a dispensing node
+                assertFalse(itemEditor.isValid());  // not valid while popup is displayed
+                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
+                // save the popup editor - should be a medication
+            }
+
+            if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+                EntityBean bean = new EntityBean(product);
+                for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
+                    assertFalse(editor.isValid()); // not valid while popup is displayed
+                    checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
+                }
+                for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
+                    assertFalse(editor.isValid()); // not valid while popup is displayed
+                    checkSavePopup(mgr, ReminderArchetypes.REMINDER);
+                }
+            }
+        }
+        assertTrue(itemEditor.isValid());
     }
 
     /**
@@ -423,19 +483,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         IMObjectEditor editor = dialog.getEditor();
         assertTrue(TypeHelper.isA(editor.getObject(), shortName));
         assertTrue(editor.isValid());
-        clickDialogOK(dialog);
-    }
-
-    /**
-     * Helper to click OK on an edit dialog.
-     *
-     * @param dialog the dialog
-     */
-    protected void clickDialogOK(EditDialog dialog) {
-        Button ok = dialog.getButtons().getButton(PopupDialog.OK_ID);
-        assertNotNull(ok);
-        assertTrue(ok.isEnabled());
-        ok.fireActionPerformed(new ActionEvent(ok, ok.getActionCommand()));
+        fireDialogButton(dialog, PopupDialog.OK_ID);
     }
 
     /**
@@ -586,7 +634,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         return tax;
     }
 
-    protected static class EditorManager extends PopupEditorManager {
+    public static class EditorManager extends PopupEditorManager {
 
         /**
          * The current edit dialog.

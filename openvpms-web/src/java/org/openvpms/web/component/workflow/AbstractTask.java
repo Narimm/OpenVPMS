@@ -23,8 +23,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.Collection;
 
@@ -98,6 +98,28 @@ public abstract class AbstractTask implements Task {
      */
     public boolean isRequired() {
         return required;
+    }
+
+    /**
+     * Starts a sub-task.
+     *
+     * @param task    the task
+     * @param context the task context
+     */
+    protected void start(Task task, TaskContext context) {
+        notifyStarting(task);
+        task.start(context);
+    }
+
+    /**
+     * Notifies the registered listener of a task about to start.
+     *
+     * @param task the task
+     */
+    protected void notifyStarting(Task task) {
+        if (listeners != null) {
+            listeners.starting(task);
+        }
     }
 
     /**

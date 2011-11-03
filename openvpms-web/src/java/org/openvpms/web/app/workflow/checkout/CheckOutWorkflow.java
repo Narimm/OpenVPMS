@@ -32,12 +32,12 @@ import org.openvpms.web.app.workflow.GetInvoiceTask;
 import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
+import org.openvpms.web.component.workflow.EvalTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
@@ -65,14 +65,21 @@ public class CheckOutWorkflow extends WorkflowImpl {
      */
     private TaskContext initial;
 
+    /**
+     * The external context to access and update.
+     */
+    private final Context external;
+
 
     /**
      * Constructs a new <tt>CheckOutWorkflow</tt> from an
      * <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
-     * @param act the act
+     * @param act     the act
+     * @param context the external context to access and update
      */
-    public CheckOutWorkflow(Act act) {
+    public CheckOutWorkflow(Act act, Context context) {
+        external = context;
         initialise(act);
 
         // update the act status
@@ -88,14 +95,13 @@ public class CheckOutWorkflow extends WorkflowImpl {
         }
         addTask(new UpdateIMObjectTask(act, appProps));
 
-        // add a task to update the global context at the end of the workflow
+        // add a task to update the context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
-                Context global = GlobalContext.getInstance();
-                global.setCustomer(context.getCustomer());
-                global.setPatient(context.getPatient());
-                global.setTill(context.getTill());
-                global.setClinician(context.getClinician());
+                external.setCustomer(context.getCustomer());
+                external.setPatient(context.getPatient());
+                external.setTill(context.getTill());
+                external.setClinician(context.getClinician());
             }
         });
     }
@@ -115,25 +121,23 @@ public class CheckOutWorkflow extends WorkflowImpl {
      */
     private void initialise(Act act) {
         ActBean bean = new ActBean(act);
-        GlobalContext global = GlobalContext.getInstance();
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        User clinician = global.getClinician();
+        User clinician = external.getClinician();
 
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
 
-        initial.setUser(global.getUser());
-        initial.setPractice(global.getPractice());
-        initial.setLocation(global.getLocation());
+        initial.setUser(external.getUser());
+        initial.setPractice(external.getPractice());
+        initial.setLocation(external.getLocation());
 
-        // get the latest invoice, or create one if none is available, and edit
-        // it
+        // get the latest invoice, or create one if none is available, and edit it
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
-        addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
+        addTask(createEditInvoiceTask());
 
         // on save, determine if the user wants to post the invoice, but
         // only if its not already posted
@@ -145,7 +149,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         NodeConditionTask<String> posted = new NodeConditionTask<String>(
                 INVOICE_SHORTNAME, "status", FinancialActStatus.POSTED);
 
-        PaymentWorkflow payWorkflow = new PaymentWorkflow(initial);
+        PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
         payWorkflow.setRequired(false);
         addTask(new ConditionalTask(posted, payWorkflow));
 
@@ -168,6 +172,36 @@ public class CheckOutWorkflow extends WorkflowImpl {
     }
 
     /**
+     * Creates a new task to edit the invoice.
+     *
+     * @return a new task
+     */
+    protected EditIMObjectTask createEditInvoiceTask() {
+        return new EditIMObjectTask(INVOICE_SHORTNAME);
+    }
+
+    /**
+     * Creates a new payment workflow.
+     *
+     * @param context the context
+     * @return a new payment workflow
+     */
+    protected PaymentWorkflow createPaymentWorkflow(TaskContext context) {
+        return new PaymentWorkflow(context, external);
+    }
+
+    /**
+     * Returns a condition task to determine if the invoice should be posted.
+     *
+     * @return a new condition
+     */
+    protected EvalTask<Boolean> getPostCondition() {
+        String invoiceTitle = Messages.get("workflow.checkout.postinvoice.title");
+        String invoiceMsg = Messages.get("workflow.checkout.postinvoice.message");
+        return new ConfirmationTask(invoiceTitle, invoiceMsg);
+    }
+
+    /**
      * Returns a task to post the invoice.
      *
      * @return a task to post the invoice
@@ -181,16 +215,11 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 return new Date(); // workaround for OVPMS-734. todo
             }
         });
-        postTasks.addTask(
-                new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
+        postTasks.addTask(new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
         postTasks.setRequired(false);
 
-        String invoiceTitle = Messages.get(
-                "workflow.checkout.postinvoice.title");
-        String invoiceMsg = Messages.get(
-                "workflow.checkout.postinvoice.message");
-        ConditionalTask post = new ConditionalTask(new ConfirmationTask(
-                invoiceTitle, invoiceMsg), postTasks);
+        EvalTask<Boolean> condition = getPostCondition();
+        ConditionalTask post = new ConditionalTask(condition, postTasks);
         post.setRequired(false);
         return post;
     }

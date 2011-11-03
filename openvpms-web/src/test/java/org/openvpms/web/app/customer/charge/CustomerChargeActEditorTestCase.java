@@ -12,10 +12,8 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
-import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
@@ -936,67 +934,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
                 return editor.delete();
             }
         });
-    }
-
-    /**
-     * Adds a charge item.
-     *
-     * @param editor   the editor
-     * @param patient  the patient
-     * @param product  the product
-     * @param quantity the quantity
-     * @param mgr      the popup editor manager
-     * @return the editor for the new item
-     */
-    private CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient, Product product,
-                                                BigDecimal quantity, EditorManager mgr) {
-        CustomerChargeActItemEditor itemEditor = editor.addItem();
-        itemEditor.getComponent();
-        assertTrue(editor.isValid());
-        assertFalse(itemEditor.isValid());
-
-        setItem(editor, itemEditor, patient, product, quantity, mgr);
-        return itemEditor;
-    }
-
-    /**
-     * Sets the values of a charge item.
-     *
-     * @param editor     the charge editor
-     * @param itemEditor the charge item editor
-     * @param patient    the patient
-     * @param product    the product
-     * @param quantity   the quantity
-     * @param mgr        the popup editor manager
-     */
-    private void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                         Party patient, Product product, BigDecimal quantity, EditorManager mgr) {
-        if (itemEditor.getProperty("patient") != null) {
-            itemEditor.setPatient(patient);
-        }
-        itemEditor.setProduct(product);
-        itemEditor.setQuantity(quantity);
-        if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
-            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-                // invoice items have a dispensing node
-                assertFalse(itemEditor.isValid());  // not valid while popup is displayed
-                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
-                // save the popup editor - should be a medication
-            }
-
-            if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-                EntityBean bean = new EntityBean(product);
-                for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
-                    assertFalse(editor.isValid()); // not valid while popup is displayed
-                    checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
-                }
-                for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
-                    assertFalse(editor.isValid()); // not valid while popup is displayed
-                    checkSavePopup(mgr, ReminderArchetypes.REMINDER);
-                }
-            }
-        }
-        assertTrue(itemEditor.isValid());
     }
 
     /**
