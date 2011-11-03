@@ -78,9 +78,9 @@ public class PatientReferenceEditor
      * @param object the object. May  be <code>null</code>
      */
     @Override
-    public void setObject(Party object) {
-        super.setObject(object);
+    public boolean setObject(Party object) {
         ContextHelper.setPatient(object);
+        return super.setObject(object);
     }
 
     /**

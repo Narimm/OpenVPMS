@@ -19,15 +19,16 @@
 package org.openvpms.web.app.workflow.checkout;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -36,6 +37,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
@@ -89,6 +91,17 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     private Party customer;
 
     /**
+     * The till.
+     */
+    private Party till;
+
+    /**
+     * The clinician.
+     */
+    private User clinician;
+
+
+    /**
      * Tests the check-out workflow when started with an appointment.
      */
     @Test
@@ -103,10 +116,11 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     @Test
     public void testCheckoutWorkflowForTask() {
         Date startTime = new Date();
-        Date endTime = new Date();
+        Date endTime = null; // updated at end of workflow
         Party workList = ScheduleTestHelper.createWorkList();
 
-        Act task = ScheduleTestHelper.createTask(startTime, endTime, workList, customer, patient);
+        Act task = ScheduleTestHelper.createTask(startTime, endTime, workList, customer, patient, clinician, null);
+        save(task);
         checkWorkflow(task);
     }
 
@@ -149,10 +163,10 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     public void testNoFinaliseInvoice() {
         WorkflowRunner workflow = new WorkflowRunner();
         workflow.start();
-        BigDecimal amount = workflow.checkInvoice();
-        workflow.checkConfirmation(PopupDialog.NO_ID);        // skip posting the invoice
+        BigDecimal amount = workflow.checkInvoice(false);
+        workflow.checkConfirmation(PopupDialog.NO_ID);        // skip posting the invoice. Payment is skipped
         workflow.checkPrint();
-        workflow.checkComplete();
+        workflow.checkComplete(true, false, true);
         workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
         assertNull(workflow.getPayment());
     }
@@ -164,9 +178,9 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     public void testCancelFinaliseInvoice() {
         WorkflowRunner workflow = new WorkflowRunner();
         workflow.start();
-        BigDecimal amount = workflow.checkInvoice();
+        BigDecimal amount = workflow.checkInvoice(false);
         workflow.checkConfirmation(PopupDialog.CANCEL_ID);
-        workflow.checkComplete();
+        workflow.checkComplete(false, false, false);
         workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
         assertNull(workflow.getPayment());
     }
@@ -178,11 +192,100 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     public void testUserCloseFinaliseInvoice() {
         WorkflowRunner workflow = new WorkflowRunner();
         workflow.start();
-        BigDecimal amount = workflow.checkInvoice();
-        workflow.checkConfirmation(PopupDialog.CANCEL_ID);
-        workflow.checkComplete();
+        BigDecimal amount = workflow.checkInvoice(false);
+        workflow.checkConfirmation(null);
+        workflow.checkComplete(false, false, false);
         workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
         assertNull(workflow.getPayment());
+    }
+
+    /**
+     * Verifies that the payment can be skipped.
+     */
+    @Test
+    public void testSkipPayment() {
+        WorkflowRunner workflow = new WorkflowRunner();
+        workflow.start();
+        BigDecimal amount = workflow.checkInvoice(true);
+
+        workflow.checkConfirmation(PopupDialog.NO_ID); // skip payment
+
+        workflow.checkPrint();
+        workflow.checkComplete(true, false, true);
+        workflow.checkInvoice(ActStatus.POSTED, amount);
+        assertNull(workflow.getPayment());
+    }
+
+    /**
+     * Verifies that the workflow cancels if the 'Cancel' button is pressed at the payment confirmation.
+     */
+    @Test
+    public void testCancelPaymentConfirmation() {
+        WorkflowRunner workflow = new WorkflowRunner();
+        workflow.start();
+        BigDecimal amount = workflow.checkInvoice(true);
+
+        workflow.checkConfirmation(PopupDialog.CANCEL_ID); // cancel payment
+
+        workflow.checkComplete(false, false, false);
+        workflow.checkInvoice(ActStatus.POSTED, amount);
+        assertNull(workflow.getPayment());
+    }
+
+    /**
+     * Verifies that the workflow cancels if the 'user close' button is pressed at the payment confirmation.
+     */
+    @Test
+    public void testUserClosePaymentConfirmation() {
+        WorkflowRunner workflow = new WorkflowRunner();
+        workflow.start();
+        BigDecimal amount = workflow.checkInvoice(true);
+
+        workflow.checkConfirmation(null); // cancel payment
+
+        workflow.checkComplete(false, false, false);
+        workflow.checkInvoice(ActStatus.POSTED, amount);
+        assertNull(workflow.getPayment());
+    }
+
+    /**
+     * Verifies that the workflow completes after payment is cancelled.
+     */
+    @Test
+    public void testCancelPayment() {
+        WorkflowRunner workflow = new WorkflowRunner();
+        workflow.start();
+        BigDecimal amount = workflow.checkInvoice(true);
+
+        workflow.checkConfirmation(PopupDialog.YES_ID);
+        EditDialog dialog = workflow.addPaymentItem();
+        fireDialogButton(dialog, PopupDialog.CANCEL_ID);
+
+        workflow.checkComplete(false, false, false);
+        workflow.checkInvoice(ActStatus.POSTED, amount);
+        FinancialAct payment = workflow.getPayment();
+        assertNotNull(payment);
+        assertTrue(payment.isNew()); // unsaved
+    }
+
+    /**
+     * Verifies that the workflow completes after payment is cancelled by pressing the 'user close' button.
+     */
+    @Test
+    public void testUserClosePayment() {
+        WorkflowRunner workflow = new WorkflowRunner();
+        workflow.start();
+        BigDecimal amount = workflow.checkInvoice(true);
+
+        workflow.checkConfirmation(PopupDialog.YES_ID);
+        EditDialog dialog = workflow.addPaymentItem();
+        dialog.userClose();
+
+        workflow.checkComplete(false, false, false);
+        workflow.checkInvoice(ActStatus.POSTED, amount);
+        FinancialAct payment = workflow.getPayment();
+        assertNotNull(payment);
+        assertTrue(payment.isNew()); // unsaved
     }
 
     /**
@@ -199,6 +302,8 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
 
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient(customer);
+        till = FinancialTestHelper.createTill();
+        clinician = TestHelper.createClinician();
     }
 
     /**
@@ -211,7 +316,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         workflow.start();
 
         // first task to pause should by the invoice edit task.
-        BigDecimal amount = workflow.checkInvoice();
+        BigDecimal amount = workflow.checkInvoice(false);
 
         // second task to pause should be a confirmation, prompting to post the invoice
         workflow.checkConfirmation(PopupDialog.YES_ID);
@@ -229,7 +334,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         // 5th task to pause should be print dialog
         workflow.checkPrint();
 
-        workflow.checkComplete();
+        workflow.checkComplete(true, true, true);
     }
 
     /**
@@ -265,7 +370,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
             assertTrue(invoice.isNew()); // unsaved
         }
 
-        workflow.checkComplete();
+        workflow.checkComplete(false, false, false);
         assertNull(workflow.getPayment());
     }
 
@@ -279,10 +384,17 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         Date endTime = new Date();
         Party schedule = ScheduleTestHelper.createSchedule();
 
-        return ScheduleTestHelper.createAppointment(startTime, endTime, schedule, customer, patient);
+        Act act = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, customer, patient, clinician, null);
+        save(act);
+        return act;
     }
 
     private class WorkflowRunner {
+
+        /**
+         * The appointment/task.
+         */
+        private Act act;
 
         /**
          * The task tracker.
@@ -305,6 +417,16 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         private FinancialAct payment;
 
         /**
+         * The act end time, prior to running the workflow.
+         */
+        private Date endTime;
+
+        /**
+         * The act status, prior to running the workflow.
+         */
+        private String status;
+
+        /**
          * Constructs a <tt>WorkflowRunner</tt> with an appointment.
          */
         public WorkflowRunner() {
@@ -317,6 +439,9 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
          * @param act the act
          */
         public WorkflowRunner(Act act) {
+            this.act = act;
+            endTime = act.getActivityEndTime();
+            status = act.getStatus();
             tracker = new TaskTracker();
             workflow = new TestWorkflow(act, context);
             workflow.addTaskListener(tracker);
@@ -362,6 +487,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
 
             // get the editor and add an item
             CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
+            editor.setClinician(clinician);
             invoice = (FinancialAct) editor.getObject();
             Product product = createProduct(ProductArchetypes.SERVICE, amount);
             addItem(editor, patient, product, BigDecimal.ONE, editInvoiceTask.getEditorManager());
@@ -371,11 +497,16 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         /**
          * Verifies that the current task is an EditInvoiceTask, and adds invoice item, closing the dialog.
          *
+         * @param post if <tt>true</tt> post the invoice
          * @return the invoice total
          */
-        public BigDecimal checkInvoice() {
+        public BigDecimal checkInvoice(boolean post) {
             BigDecimal amount = BigDecimal.valueOf(20);
             EditDialog dialog = checkAddInvoiceItem(amount);
+            if (post) {
+                CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
+                editor.setStatus(ActStatus.POSTED);
+            }
             fireDialogButton(dialog, PopupDialog.OK_ID);  // save the invoice
             return invoice.getTotal();
         }
@@ -401,15 +532,34 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
          * Verifies that the current task is a {@link PaymentEditTask}, adds a payment item, and closes the dialog.
          */
         public void checkPayment() {
+            EditDialog dialog = addPaymentItem();
+            fireDialogButton(dialog, PopupDialog.OK_ID);  // save the payment
+        }
+
+        /**
+         * Verifies that the current task is a PaymentEditTask, and adds a payment item
+         *
+         * @return the edit dialog
+         */
+        public EditDialog addPaymentItem() {
+            EditDialog dialog = getPaymentEditDialog();
+            CustomerPaymentEditor paymentEditor = (CustomerPaymentEditor) dialog.getEditor();
+            payment = (FinancialAct) paymentEditor.getObject();
+            paymentEditor.setTill(till);
+            paymentEditor.addItem();
+            return dialog;
+        }
+
+        /**
+         * Returns the payment edit dialog.
+         *
+         * @return the payment edit dialog
+         */
+        private EditDialog getPaymentEditDialog() {
             Task current = tracker.getCurrent();
             assertTrue(current instanceof PaymentEditTask);
             PaymentEditTask paymentTask = (PaymentEditTask) current;
-            EditDialog dialog = paymentTask.getEditDialog();
-            CustomerPaymentEditor paymentEditor = (CustomerPaymentEditor) dialog.getEditor();
-            payment = (FinancialAct) paymentEditor.getObject();
-            paymentEditor.setTill(FinancialTestHelper.createTill());
-            paymentEditor.addItem();
-            fireDialogButton(dialog, PopupDialog.OK_ID);  // save the payment
+            return paymentTask.getEditDialog();
         }
 
         /**
@@ -424,9 +574,46 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
 
         /**
          * Verifies that the workflow is complete.
+         *
+         * @param invoiceContextUpdated if <tt>true</tt> expected the context attributes relating to invoicing to have
+         *                              been updated
+         * @param paymentContextUpdated if <tt>true</tt> expected the context attributes relating to payment to have
+         *                              been updated
+         * @param statusUpdated         if <tt>true</tt> expect the appointment/task status to be COMPLETE
          */
-        public void checkComplete() {
+        public void checkComplete(boolean invoiceContextUpdated, boolean paymentContextUpdated,
+                                  boolean statusUpdated) {
             assertNull(tracker.getCurrent());
+            if (invoiceContextUpdated) {
+                assertEquals(customer, context.getCustomer());
+                assertEquals(patient, context.getPatient());
+                assertEquals(clinician, context.getClinician());
+            } else {
+                assertNull(context.getCustomer());
+                assertNull(context.getPatient());
+                assertNull(context.getClinician());
+            }
+            if (paymentContextUpdated) {
+                assertEquals(till, context.getTill());
+            } else {
+                assertNull(context.getTill());
+            }
+            boolean isTask = TypeHelper.isA(act, ScheduleArchetypes.TASK);
+            if (isTask) {
+                assertNull(endTime);
+            }
+            act = get(act);
+            if (statusUpdated) {
+                assertEquals(ActStatus.COMPLETED, act.getStatus());
+                if (isTask) {
+                    assertNotNull(act.getActivityEndTime());
+                }
+            } else {
+                assertEquals(status, act.getStatus());
+                if (isTask) {
+                    assertNull(act.getActivityEndTime());
+                }
+            }
         }
 
         /**

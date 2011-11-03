@@ -163,11 +163,11 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      *
      * @param object the object. May  be <tt>null</tt>
      */
-    public void setObject(T object) {
+    public boolean setObject(T object) {
         if (!inListener) {
             selector.setObject(object);
         }
-        updateProperty(object);
+        return updateProperty(object);
     }
 
     /**
@@ -385,19 +385,23 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Updates the underlying property, notifying any registered listeners.
      *
      * @param object the object. May be <tt>null</tt>
+     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it cannot be set due to error, or is the same as
+     *         the existing value
      */
-    private void updateProperty(IMObject object) {
+    private boolean updateProperty(IMObject object) {
+        boolean modified = false;
         removeModifiableListener(propertyListener);
         try {
             Property property = getProperty();
             if (object != null) {
-                property.setValue(object.getObjectReference());
+                modified = property.setValue(object.getObjectReference());
             } else {
-                property.setValue(null);
+                modified = property.setValue(null);
             }
         } finally {
             addModifiableListener(propertyListener);
         }
+        return modified;
     }
 
     /**
