@@ -29,6 +29,7 @@ import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
 import org.openvpms.web.app.patient.mr.SummaryCRUDWindow;
 import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -53,6 +54,12 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class EditClinicalEventTask extends AbstractTask {
+
+    /**
+     * The dialog.
+     */
+    private BrowserDialog dialog;
+
 
     /**
      * Constructs a <tt>EditClinicalEventTask</tt> to edit an object
@@ -81,6 +88,15 @@ public class EditClinicalEventTask extends AbstractTask {
     }
 
     /**
+     * Returns the browser dialog.
+     *
+     * @return the browser dialog, or <tt>null</tt> if none is being displayed.
+     */
+    public BrowserDialog getBrowserDialog() {
+        return dialog;
+    }
+
+    /**
      * Launches a {@link ClinicalEventBrowserDialog} to select and edit an event.
      * <p/>
      * The supplied event is selected by default.
@@ -104,8 +120,14 @@ public class EditClinicalEventTask extends AbstractTask {
             query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
             SummaryTableBrowser browser = new SummaryTableBrowser(query);
             String title = Messages.get("workflow.consult.selectrecord.title");
-            BrowserDialog dialog = new ClinicalEventBrowserDialog(title, browser, context);
+            dialog = new ClinicalEventBrowserDialog(title, browser, context);
             dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                protected void onAction(PopupDialog dialog) {
+                    EditClinicalEventTask.this.dialog = null;
+                    super.onAction(dialog);
+                }
+
                 @Override
                 public void onOK() {
                     notifyCompleted();

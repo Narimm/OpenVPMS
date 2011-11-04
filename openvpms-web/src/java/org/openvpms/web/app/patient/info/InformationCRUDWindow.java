@@ -107,12 +107,12 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Checks in the current patient.
      */
     private void onCheckIn() {
-        Party customer = GlobalContext.getInstance().getCustomer();
-        Party patient = GlobalContext.getInstance().getPatient();
-        User clinician = GlobalContext.getInstance().getClinician();
+        GlobalContext context = GlobalContext.getInstance();
+        Party customer = context.getCustomer();
+        Party patient = context.getPatient();
+        User clinician = context.getClinician();
         if (customer != null && patient != null) {
-            CheckInWorkflow workflow
-                    = new CheckInWorkflow(customer, patient, clinician);
+            CheckInWorkflow workflow = new CheckInWorkflow(customer, patient, clinician, context);
             workflow.start();
         } else {
             String title = Messages.get("patient.checkin.title");

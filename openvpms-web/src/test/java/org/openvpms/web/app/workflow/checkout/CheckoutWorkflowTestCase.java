@@ -42,6 +42,7 @@ import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
 import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
+import org.openvpms.web.app.workflow.TaskTracker;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -58,13 +59,9 @@ import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.TaskListener;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -377,14 +374,15 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     /**
      * Helper to create an appointment.
      *
-     * @return a new appoingtment
+     * @return a new appointment
      */
     private Act createAppointment() {
         Date startTime = new Date();
         Date endTime = new Date();
         Party schedule = ScheduleTestHelper.createSchedule();
 
-        Act act = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, customer, patient, clinician, null);
+        Act act = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, customer, patient, clinician,
+                                                       null);
         save(act);
         return act;
     }
@@ -722,37 +720,4 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         }
     }
 
-    /**
-     * Helper to track the currently executing task.
-     */
-    private static class TaskTracker implements TaskListener {
-
-        /**
-         * The current tasks.
-         */
-        private List<Task> current = new ArrayList<Task>();
-
-        public Task getCurrent() {
-            return current.size() > 0 ? current.get(current.size() - 1) : null;
-        }
-
-        /**
-         * Invoked prior to a task starting.
-         *
-         * @param task the task
-         */
-        public void starting(Task task) {
-            task.addTaskListener(this);
-            current.add(task);
-        }
-
-        /**
-         * Invoked when a task event occurs.
-         *
-         * @param event the event
-         */
-        public void taskEvent(TaskEvent event) {
-            current.remove(event.getTask());
-        }
-    }
 }
