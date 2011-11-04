@@ -204,7 +204,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         // make sure the act is still available and PENDING prior to beginning
         // workflow
         if (act != null && AppointmentStatus.PENDING.equals(act.getStatus())) {
-            CheckInWorkflow workflow = new CheckInWorkflow(act);
+            CheckInWorkflow workflow = new CheckInWorkflow(act, GlobalContext.getInstance());
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());

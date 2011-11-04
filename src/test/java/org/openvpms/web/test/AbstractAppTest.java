@@ -20,6 +20,7 @@ package org.openvpms.web.test;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -59,6 +60,19 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         assertNotNull(button);
         assertTrue(button.isEnabled());
         button.fireActionPerformed(new ActionEvent(button, button.getActionCommand()));
+    }
+
+    protected static <T extends Component> T findComponent(Component component, Class<T> clazz) {
+        Component result = (clazz.isAssignableFrom(component.getClass())) ? component : null;
+        if (result == null) {
+            for (Component child : component.getComponents()) {
+                result = findComponent(child, clazz);
+                if (result != null) {
+                    break;
+                }
+            }
+        }
+        return clazz.cast(result);
     }
 
 }

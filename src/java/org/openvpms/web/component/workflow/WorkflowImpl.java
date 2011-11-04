@@ -154,6 +154,15 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     }
 
     /**
+     * Returns the task context.
+     *
+     * @return the task context
+     */
+    public TaskContext getContext() {
+        return initial;
+    }
+
+    /**
      * Executes the next task.
      */
     protected void next() {
