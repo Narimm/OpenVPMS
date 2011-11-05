@@ -185,7 +185,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         // make sure the act is still available and has a valid status prior to
         // beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
-            ConsultWorkflow workflow = new ConsultWorkflow(act);
+            ConsultWorkflow workflow = new ConsultWorkflow(act, GlobalContext.getInstance());
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());

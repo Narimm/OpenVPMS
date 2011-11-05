@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.checkout;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -29,7 +30,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import static org.openvpms.web.app.workflow.GetClinicalEventTask.EVENT_SHORTNAME;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
-import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
@@ -136,18 +136,18 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         // get the latest invoice, or create one if none is available, and edit it
         addTask(new GetInvoiceTask());
-        addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
+        addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
         addTask(createEditInvoiceTask());
 
         // on save, determine if the user wants to post the invoice, but
         // only if its not already posted
         NodeConditionTask<String> notPosted = new NodeConditionTask<String>(
-                INVOICE_SHORTNAME, "status", false, FinancialActStatus.POSTED);
+                CustomerAccountArchetypes.INVOICE, "status", false, FinancialActStatus.POSTED);
         addTask(new ConditionalTask(notPosted, getPostTask()));
 
         // if the invoice is posted, prompt to pay the account
         NodeConditionTask<String> posted = new NodeConditionTask<String>(
-                INVOICE_SHORTNAME, "status", FinancialActStatus.POSTED);
+                CustomerAccountArchetypes.INVOICE, "status", FinancialActStatus.POSTED);
 
         PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
         payWorkflow.setRequired(false);
@@ -177,7 +177,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
      * @return a new task
      */
     protected EditIMObjectTask createEditInvoiceTask() {
-        return new EditIMObjectTask(INVOICE_SHORTNAME);
+        return new EditIMObjectTask(CustomerAccountArchetypes.INVOICE);
     }
 
     /**
@@ -215,7 +215,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 return new Date(); // workaround for OVPMS-734. todo
             }
         });
-        postTasks.addTask(new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
+        postTasks.addTask(new UpdateIMObjectTask(CustomerAccountArchetypes.INVOICE, invoiceProps));
         postTasks.setRequired(false);
 
         EvalTask<Boolean> condition = getPostCondition();
@@ -253,7 +253,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
          * @throws OpenVPMSException for any error
          */
         public void execute(TaskContext context) {
-            Date min = getMinStartTime(INVOICE_SHORTNAME, startTime, context);
+            Date min = getMinStartTime(CustomerAccountArchetypes.INVOICE, startTime, context);
             min = getMinStartTime(EVENT_SHORTNAME, min, context);
             PrintDocumentsTask printDocs = new PrintDocumentsTask(min);
             printDocs.setRequired(false);

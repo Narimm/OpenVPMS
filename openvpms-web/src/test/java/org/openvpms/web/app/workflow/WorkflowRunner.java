@@ -19,8 +19,6 @@
 package org.openvpms.web.app.workflow;
 
 import nextapp.echo2.app.Table;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -35,6 +33,9 @@ import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.test.EchoTestHelper;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+
 
 /**
  * Helper to run workflows.
@@ -42,8 +43,7 @@ import org.openvpms.web.test.EchoTestHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public abstract class WorkflowRunner<T extends WorkflowImpl> {
-
+public class WorkflowRunner<T extends WorkflowImpl> {
     /**
      * The task tracker.
      */
@@ -81,14 +81,12 @@ public abstract class WorkflowRunner<T extends WorkflowImpl> {
         return getWorkflow().getContext();
     }
 
-
     /**
      * Starts the workflow.
      */
     public void start() {
         workflow.start();
     }
-
 
     /**
      * Returns the current selection browser dialog.
@@ -147,6 +145,20 @@ public abstract class WorkflowRunner<T extends WorkflowImpl> {
     }
 
     /**
+     * Returns the clinial event dialog.
+     * <p/>
+     * The current task must be an {@link EditClinicalEventTask}.
+     *
+     * @return the dialog
+     */
+    public BrowserDialog editClinicalEvent() {
+        Task current = getTask();
+        assertTrue(current instanceof EditClinicalEventTask);
+        EditClinicalEventTask edit = (EditClinicalEventTask) current;
+        return edit.getBrowserDialog();
+    }
+
+    /**
      * Generates a table row selection event in a browser.
      *
      * @param browser the browser
@@ -180,5 +192,4 @@ public abstract class WorkflowRunner<T extends WorkflowImpl> {
     protected <T extends IMObject> T get(T object) {
         return IMObjectHelper.reload(object);
     }
-
 }
