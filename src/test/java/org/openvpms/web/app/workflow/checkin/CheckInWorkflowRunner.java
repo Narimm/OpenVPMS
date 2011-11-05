@@ -35,7 +35,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.PatientEditor;
-import org.openvpms.web.app.workflow.EditClinicalEventTask;
 import org.openvpms.web.app.workflow.WorkflowRunner;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -48,7 +47,6 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
-import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.test.EchoTestHelper;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
@@ -139,7 +137,7 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
      * @param patient  the expected patient
      * @param customer the expected owner
      */
-    public void checkContextPatient(Party patient, Party customer) {
+    public void checkPatient(Party patient, Party customer) {
         Party p = getContext().getPatient();
         assertEquals(patient, p);
         assertFalse(p.isNew());
@@ -177,20 +175,6 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
     public void printDocumentForm(String buttonId) {
         BrowserDialog<Act> dialog = getSelectionDialog();
         EchoTestHelper.fireDialogButton(dialog, buttonId);
-    }
-
-    /**
-     * Returns the clinial event dialog.
-     * <p/>
-     * The current task must be an {@link EditClinicalEventTask}.
-     *
-     * @return the dialog
-     */
-    public BrowserDialog editClinicalEvent() {
-        Task current = getTask();
-        assertTrue(current instanceof EditClinicalEventTask);
-        EditClinicalEventTask edit = (EditClinicalEventTask) current;
-        return edit.getBrowserDialog();
     }
 
     /**
@@ -305,7 +289,6 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
         } else {
             assertEquals(AppointmentStatus.PENDING, appointment.getStatus());
         }
-
     }
 
 

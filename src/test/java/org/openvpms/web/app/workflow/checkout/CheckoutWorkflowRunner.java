@@ -24,79 +24,40 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
-import org.openvpms.web.app.customer.charge.ChargePopupEditorManager;
-import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
-import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.addItem;
-import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.createProduct;
-import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
-import org.openvpms.web.app.workflow.WorkflowRunner;
+import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.print.BatchPrintDialog;
-import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.Task;
-import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.system.ServiceHelper;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
+
 /**
- * Enter descroption.
+ * Runs the {@link CheckOutWorkflow}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-class CheckoutWorkflowRunner extends WorkflowRunner<CheckoutWorkflowRunner.TestWorkflow> {
+class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRunner.TestWorkflow> {
 
     /**
      * The appointment/task.
      */
     private Act act;
-
-    /**
-     * The practice, used to determine tax rates.
-     */
-    private final Party practice;
-
-    /**
-     * The patient.
-     */
-    private Party patient;
-
-    /**
-     * The clinician.
-     */
-    private User clinician;
-
-    /**
-     * The invoice.
-     */
-    private FinancialAct invoice;
-
-    /**
-     * The payment.
-     */
-    private FinancialAct payment;
 
     /**
      * The act end time, prior to running the workflow.
@@ -117,20 +78,11 @@ class CheckoutWorkflowRunner extends WorkflowRunner<CheckoutWorkflowRunner.TestW
      * @param context  the context
      */
     public CheckoutWorkflowRunner(Act act, Party practice, Context context) {
+        super(practice);
         this.act = act;
-        this.practice = practice;
         endTime = act.getActivityEndTime();
         status = act.getStatus();
         setWorkflow(new TestWorkflow(act, context));
-    }
-
-    /**
-     * Returns the invoice.
-     *
-     * @return the invoice. May be <tt>null</tt>
-     */
-    public FinancialAct getInvoice() {
-        return invoice;
     }
 
     /**
@@ -139,61 +91,7 @@ class CheckoutWorkflowRunner extends WorkflowRunner<CheckoutWorkflowRunner.TestW
      * @return the payment. May be <tt>null</tt>
      */
     public FinancialAct getPayment() {
-        return payment;
-    }
-
-    /**
-     * Sets the patient to add to invoice items.
-     *
-     * @param patient the patient
-     */
-    public void setPatient(Party patient) {
-        this.patient = patient;
-    }
-
-    /**
-     * Sets the clinician to add to invoices.
-     *
-     * @param clinician the clinician
-     */
-    public void setClinician(User clinician) {
-        this.clinician = clinician;
-    }
-
-    /**
-     * Verifies that the current task is an EditInvoiceTask, and adds invoice item for the specified amount.
-     *
-     * @param amount the amount
-     * @return the edit dialog
-     */
-    public EditDialog addInvoiceItem(BigDecimal amount) {
-        EditInvoiceTask task = (EditInvoiceTask) getEditTask();
-        EditDialog dialog = task.getEditDialog();
-
-        // get the editor and add an item
-        CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
-        editor.setClinician(clinician);
-        invoice = (FinancialAct) editor.getObject();
-        Product product = createProduct(ProductArchetypes.SERVICE, amount, practice);
-        addItem(editor, patient, product, BigDecimal.ONE, task.getEditorManager());
-        return dialog;
-    }
-
-    /**
-     * Verifies that the current task is an EditInvoiceTask, and adds invoice item, closing the dialog.
-     *
-     * @param post if <tt>true</tt> post the invoice
-     * @return the invoice total
-     */
-    public BigDecimal checkInvoice(boolean post) {
-        BigDecimal amount = BigDecimal.valueOf(20);
-        EditDialog dialog = addInvoiceItem(amount);
-        if (post) {
-            CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
-            editor.setStatus(ActStatus.POSTED);
-        }
-        fireDialogButton(dialog, PopupDialog.OK_ID);  // save the invoice
-        return invoice.getTotal();
+        return (FinancialAct) getContext().getObject(CustomerAccountArchetypes.PAYMENT);
     }
 
     /**
@@ -215,7 +113,6 @@ class CheckoutWorkflowRunner extends WorkflowRunner<CheckoutWorkflowRunner.TestW
     public EditDialog addPaymentItem(Party till) {
         EditDialog dialog = getPaymentEditDialog();
         CustomerPaymentEditor paymentEditor = (CustomerPaymentEditor) dialog.getEditor();
-        payment = (FinancialAct) paymentEditor.getObject();
         paymentEditor.setTill(till);
         paymentEditor.addItem();
         return dialog;
@@ -270,7 +167,7 @@ class CheckoutWorkflowRunner extends WorkflowRunner<CheckoutWorkflowRunner.TestW
         if (isTask) {
             assertNull(endTime);
         }
-        act = IMObjectHelper.reload(act);
+        act = get(act);
         if (statusUpdated) {
             assertEquals(ActStatus.COMPLETED, act.getStatus());
             if (isTask) {
@@ -285,85 +182,18 @@ class CheckoutWorkflowRunner extends WorkflowRunner<CheckoutWorkflowRunner.TestW
     }
 
     /**
-     * Verifies that the invoice matches the specified details.
-     *
-     * @param status the expected status
-     * @param amount the expected amount
-     */
-    public void checkInvoice(String status, BigDecimal amount) {
-        FinancialAct act = get(invoice);
-        assertEquals(act.getStatus(), status);
-        assertTrue(amount.compareTo(act.getTotal()) == 0);
-        ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
-        BigDecimal itemTotal = calc.sum(act, "total");
-        assertTrue(amount.compareTo(itemTotal) == 0);
-    }
-
-    /**
      * Verifies that the payment matches the specified details.
      *
      * @param status the expected status
      * @param amount the expected amount
      */
     public void checkPayment(String status, BigDecimal amount) {
-        FinancialAct act = get(payment);
+        FinancialAct act = get(getPayment());
         assertEquals(act.getStatus(), status);
         assertTrue(amount.compareTo(act.getTotal()) == 0);
         ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
         BigDecimal itemTotal = calc.sum(act, "amount");
         assertTrue(amount.compareTo(itemTotal) == 0);
-    }
-
-    /**
-     * Helper to edit invoices.
-     * This is required to automatically close popup dialogs.
-     */
-    private static class EditInvoiceTask extends EditIMObjectTask {
-
-        /**
-         * The popup dialog manager.
-         */
-        private ChargePopupEditorManager manager = new ChargePopupEditorManager();
-
-        /**
-         * Constructs an <tt>EditInvoice</tt> to edit an object in the {@link TaskContext}.
-         */
-        public EditInvoiceTask() {
-            super(INVOICE_SHORTNAME);
-        }
-
-        /**
-         * Returns the popup dialog manager.
-         *
-         * @return the popup dialog manager
-         */
-        public ChargePopupEditorManager getEditorManager() {
-            return manager;
-        }
-
-        /**
-         * Creates a new editor for an object.
-         *
-         * @param object  the object to edit
-         * @param context the task context
-         * @return a new editor
-         */
-        @Override
-        protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
-            LayoutContext layout = new DefaultLayoutContext(true);
-            layout.setContext(context);
-            return new CustomerChargeActEditor((FinancialAct) object, null, layout, false) {
-                @Override
-                protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
-                    ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
-                    if (editor instanceof ChargeItemRelationshipCollectionEditor) {
-                        // register a handler for act popups
-                        ((ChargeItemRelationshipCollectionEditor) editor).setPopupEditorManager(manager);
-                    }
-                    return editor;
-                }
-            };
-        }
     }
 
     protected static class TestWorkflow extends CheckOutWorkflow {

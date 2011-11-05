@@ -18,25 +18,24 @@
 
 package org.openvpms.web.app.workflow.checkin;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.workflow.AppointmentStatus;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.createAppointment;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.createWorkList;
+import org.openvpms.web.app.workflow.WorkflowTestHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -46,7 +45,6 @@ import org.openvpms.web.test.AbstractAppTest;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 
 /**
@@ -88,7 +86,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testCheckInFromAppointmentNoPatient() {
-        Act appointment = createAppointment(null);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setPatient(patient);                              // need to pre-set patient and worklist
         workflow.setWorkList(workList);                            // so they can be selected in popups
@@ -121,7 +119,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testCheckInFromAppointmentWithPatient() {
-        Act appointment = createAppointment(patient);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
@@ -144,7 +142,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreatePatient() {
-        Act appointment = createAppointment(null);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setWorkList(workList); // need to pre-set work list so it can be selected in popup
         workflow.start();
@@ -157,7 +155,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         fireDialogButton(editDialog, PopupDialog.OK_ID);
 
         // verify the patient has been created and is owned by the customer
-        workflow.checkContextPatient(newPatient, customer);
+        workflow.checkPatient(newPatient, customer);
 
         workflow.selectWorkList(workList, customer, newPatient);
 
@@ -176,7 +174,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testCancelCreatePatient() {
-        Act appointment = createAppointment(null);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.start();
 
@@ -194,7 +192,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testCancelCreatePatientByUserClose() {
-        Act appointment = createAppointment(null);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.start();
 
@@ -228,7 +226,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testSkipSelectWorkList() {
-        Act appointment = createAppointment(patient);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
@@ -306,7 +304,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testSkipPatientWeight() {
-        Act appointment = createAppointment(patient);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
@@ -325,7 +323,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         IMObject weight = workflow.getContext().getObject(PatientArchetypes.PATIENT_WEIGHT);
         assertNotNull(weight);
         assertTrue(weight.isNew());
-        
+
         workflow.checkComplete(true, customer, patient, context);
     }
 
@@ -367,13 +365,13 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelSelectPatient(boolean userClose) {
-        Act appointment = createAppointment(null);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setPatient(patient);         // need to pre-set patient so it can be selected in popup
         workflow.start();
 
         BrowserDialog<Party> dialog = workflow.getSelectionDialog();
-        cancelDialog(dialog, userClose);
+        WorkflowTestHelper.cancelDialog(dialog, userClose);
         workflow.checkComplete(false, null, null, context);
     }
 
@@ -383,14 +381,14 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelSelectWorkList(boolean userClose) {
-        Act appointment = createAppointment(patient);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setWorkList(workList);        // need to pre-set work-list so it can be selected in popup
         workflow.start();
 
         // cancel work-list selection and verify no task is created
         PopupDialog dialog = workflow.getSelectionDialog();
-        cancelDialog(dialog, userClose);
+        WorkflowTestHelper.cancelDialog(dialog, userClose);
         assertNull(workflow.getContext().getObject(ScheduleArchetypes.TASK));
 
         // verify the workflow is complete
@@ -403,7 +401,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      * @param userClose if <tt>true</tt> cancel the selection by the 'user close' button otherwise via the cancel button
      */
     private void checkCancelSelectDialog(boolean userClose) {
-        Act appointment = createAppointment(patient);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setWorkList(workList);        // need to pre-set work-list so it can be selected in popup
         workflow.start();
@@ -411,7 +409,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.selectWorkList(workList, customer, patient);
 
         BrowserDialog<Act> dialog = workflow.getSelectionDialog();
-        cancelDialog(dialog, userClose);
+        WorkflowTestHelper.cancelDialog(dialog, userClose);
 
         workflow.checkComplete(false, null, null, context);
     }
@@ -422,7 +420,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      * @param userClose if <tt>true</tt> cancel the edit by the 'user close' button otherwise via the cancel button
      */
     private void checkCancelEditEvent(boolean userClose) {
-        Act appointment = createAppointment(patient);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
@@ -433,7 +431,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
         // edit the clinical event
         BrowserDialog eventDialog = workflow.editClinicalEvent();
-        cancelDialog(eventDialog, userClose);
+        WorkflowTestHelper.cancelDialog(eventDialog, userClose);
 
         // event is saved regardless of cancel
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
@@ -442,10 +440,11 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
     /**
      * Verify that the workflow cancels if weight input is cancelled via the 'user close' button.
+     *
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelPatientWeight(boolean userClose) {
-        Act appointment = createAppointment(patient);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
@@ -460,63 +459,8 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
 
         EditDialog editor = workflow.getWeightEditor();
-        cancelDialog(editor, userClose);
+        WorkflowTestHelper.cancelDialog(editor, userClose);
         workflow.checkComplete(false, null, null, context);
-    }
-
-    /**
-     * Cancels a dialog.
-     *
-     * @param dialog    the dialog
-     * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
-     */
-    private void cancelDialog(PopupDialog dialog, boolean userClose) {
-        if (userClose) {
-            dialog.userClose();
-        } else {
-            fireDialogButton(dialog, PopupDialog.CANCEL_ID);
-        }
-    }
-
-    /**
-     * Helper to create an appointment.
-     *
-     * @param patient the patient. May be <tt>null</tt>
-     * @return a new appointment
-     */
-    private Act createAppointment(Party patient) {
-        Date startTime = new Date();
-        Date endTime = new Date();
-        Party schedule = ScheduleTestHelper.createSchedule();
-
-        Act act = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, customer, patient, clinician,
-                                                       null);
-        act.setStatus(AppointmentStatus.PENDING);
-        save(act);
-        return act;
-    }
-
-    /**
-     * Helper to create and save new <tt>party.organisationWorkList</em>.
-     *
-     * @param taskType the task type. May be <tt>null</tt>
-     * @param noSlots  the no. of slots the task type takes up
-     * @return a new schedule
-     */
-    private Party createWorkList(Entity taskType, int noSlots) {
-        Party workList = (Party) create("party.organisationWorkList");
-        EntityBean bean = new EntityBean(workList);
-        bean.setValue("name", "XWorkList");
-        if (taskType != null) {
-            EntityRelationship relationship = bean.addNodeRelationship("taskTypes", taskType);
-            IMObjectBean relBean = new IMObjectBean(relationship);
-            relBean.setValue("noSlots", noSlots);
-            relBean.setValue("default", true);
-            save(workList, taskType);
-        } else {
-            bean.save();
-        }
-        return workList;
     }
 
 }
