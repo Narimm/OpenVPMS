@@ -47,6 +47,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.ErrorHandler;
 import org.openvpms.web.system.ServiceHelper;
+import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.checkSavePopup;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -288,7 +289,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertFalse(editor.isValid());
 
         // register a handler for act popups
-        EditorManager mgr = new EditorManager();
+        ChargePopupEditorManager mgr = new ChargePopupEditorManager();
         editor.setPopupEditorManager(mgr);
 
         // populate quantity, patient, product. If product1 is a medication, it should trigger a patient medication
@@ -429,7 +430,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertFalse(editor.isValid());
 
         // register a handler for act popups
-        EditorManager mgr = new EditorManager();
+        ChargePopupEditorManager mgr = new ChargePopupEditorManager();
         editor.setPopupEditorManager(mgr);
 
         // populate quantity, patient, product
