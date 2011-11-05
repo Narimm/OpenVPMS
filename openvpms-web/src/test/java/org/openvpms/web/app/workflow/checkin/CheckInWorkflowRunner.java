@@ -31,6 +31,7 @@ import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.PatientEditor;
@@ -59,6 +60,9 @@ import java.util.List;
 
 /**
  * Helper to run the check-in workflow.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: $
  */
 class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestCheckInWorkflow> {
 
@@ -175,13 +179,28 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
         EchoTestHelper.fireDialogButton(dialog, buttonId);
     }
 
-    public void clinicalEvent(String buttonId) {
+    /**
+     * Returns the clinial event dialog.
+     * <p/>
+     * The current task must be an {@link EditClinicalEventTask}.
+     *
+     * @return the dialog
+     */
+    public BrowserDialog editClinicalEvent() {
         Task current = getTask();
         assertTrue(current instanceof EditClinicalEventTask);
         EditClinicalEventTask edit = (EditClinicalEventTask) current;
-        EchoTestHelper.fireDialogButton(edit.getBrowserDialog(), buttonId);
+        return edit.getBrowserDialog();
     }
 
+    /**
+     * Verifies the context has a task with the specified attributes.
+     *
+     * @param workList the expected worklist
+     * @param customer the expected customer
+     * @param patient  the expected patient
+     * @param status   the expected status
+     */
     public void checkTask(Party workList, Party customer, Party patient, String status) {
         Act task = (Act) getContext().getObject(ScheduleArchetypes.TASK);
         assertNotNull(task);
@@ -194,6 +213,18 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
     }
 
     /**
+     * Returns the editor for the patient weight.
+     *
+     * @return the patient weight editor
+     */
+    public EditDialog getWeightEditor() {
+        EditDialog dialog = getEditDialog();
+        IMObjectEditor editor = dialog.getEditor();
+        assertTrue(TypeHelper.isA(editor.getObject(), PatientArchetypes.PATIENT_WEIGHT));
+        return dialog;
+    }
+
+    /**
      * Sets the weight for a patient.
      * <p/>
      * The current task must be an {@link EditIMObjectTask} editing an <em>act.patientWeight</em>.
@@ -202,11 +233,27 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
      * @return the edit dialog
      */
     public EditDialog setWeight(BigDecimal weight) {
-        EditDialog dialog = getEditDialog();
+        EditDialog dialog = getWeightEditor();
         IMObjectEditor editor = dialog.getEditor();
-        assertTrue(TypeHelper.isA(editor.getObject(), PatientArchetypes.PATIENT_WEIGHT));
         editor.getProperty("weight").setValue(weight);
         return dialog;
+    }
+
+    /**
+     * Verifies the context has an <em>act.patientClinicalEvent</em> for the specified patient.
+     *
+     * @param patient   the expected patient. May be <tt>null</tt>
+     * @param clinician the expected clinician. May be <tt>null</tt>
+     * @param status    the expected status
+     */
+    public void checkEvent(Party patient, User clinician, String status) {
+        Act event = (Act) getContext().getObject(PatientArchetypes.CLINICAL_EVENT);
+        assertNotNull(event);
+        assertFalse(event.isNew());  // should be saved
+        ActBean bean = new ActBean(event);
+        assertEquals(patient, bean.getNodeParticipant("patient"));
+        assertEquals(clinician, bean.getNodeParticipant("clinician"));
+        assertEquals(status, event.getStatus());
     }
 
     /**
@@ -261,14 +308,27 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
 
     }
 
+
     protected static class TestCheckInWorkflow extends CheckInWorkflow {
 
+        /**
+         * The appointment.
+         */
         private Act appointment;
 
+        /**
+         * The context.
+         */
         private Context context;
 
+        /**
+         * The patient to pre-populate the patient selection browser with.
+         */
         private Party patient;
 
+        /**
+         * The work-list to pre-populate the work-list selection browser with.
+         */
         private Party workList;
 
         /**
@@ -282,10 +342,20 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
             this.context = context;
         }
 
+        /**
+         * Sets the patient to pre-populate the patient selection browser with.
+         *
+         * @param patient the patient. May be <tt>null</tt>
+         */
         public void setPatient(Party patient) {
             this.patient = patient;
         }
 
+        /**
+         * Sets the work-list to pre-populate the work-list selection browser with.
+         *
+         * @param workList the work-list. May be <tt>null</tt>
+         */
         public void setWorkList(Party workList) {
             this.workList = workList;
         }

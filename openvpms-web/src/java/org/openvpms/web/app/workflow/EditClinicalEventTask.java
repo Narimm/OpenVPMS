@@ -58,7 +58,7 @@ public class EditClinicalEventTask extends AbstractTask {
     /**
      * The dialog.
      */
-    private BrowserDialog dialog;
+    private BrowserDialog<Act> dialog;
 
 
     /**
@@ -92,7 +92,7 @@ public class EditClinicalEventTask extends AbstractTask {
      *
      * @return the browser dialog, or <tt>null</tt> if none is being displayed.
      */
-    public BrowserDialog getBrowserDialog() {
+    public BrowserDialog<Act> getBrowserDialog() {
         return dialog;
     }
 

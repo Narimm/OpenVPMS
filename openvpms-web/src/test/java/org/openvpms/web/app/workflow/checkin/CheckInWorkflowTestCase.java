@@ -19,14 +19,20 @@
 package org.openvpms.web.app.workflow.checkin;
 
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -95,8 +101,16 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.selectWorkList(workList, customer, patient);
 
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
-        workflow.clinicalEvent(PopupDialog.OK_ID);
+
+        // edit the clinical event
+        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+
+        // add the patient weight
         workflow.addWeight(patient, BigDecimal.valueOf(10));
+
+        // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
     }
 
@@ -115,7 +129,12 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.selectWorkList(workList, customer, patient);
 
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
-        workflow.clinicalEvent(PopupDialog.OK_ID);
+
+        // edit the clinical event
+        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+
         workflow.addWeight(patient, BigDecimal.valueOf(20));
         workflow.checkComplete(true, customer, patient, context);
     }
@@ -143,7 +162,11 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.selectWorkList(workList, customer, newPatient);
 
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
-        workflow.clinicalEvent(PopupDialog.OK_ID);
+
+        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        workflow.checkEvent(newPatient, clinician, ActStatus.COMPLETED);
+
         workflow.addWeight(newPatient, BigDecimal.ONE);
         workflow.checkComplete(true, customer, newPatient, context);
     }
@@ -189,14 +212,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testCancelSelectPatient() {
-        Act appointment = createAppointment(null);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
-        workflow.setPatient(patient);         // need to pre-set patient so it can be selected in popup
-        workflow.start();
-
-        BrowserDialog<Party> dialog = workflow.getSelectionDialog();
-        fireDialogButton(dialog, PopupDialog.CANCEL_ID);
-        workflow.checkComplete(false, null, null, context);
+        checkCancelSelectPatient(false);
     }
 
     /**
@@ -204,14 +220,129 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     @Test
     public void testCancelSelectPatientByUserClose() {
-        Act appointment = createAppointment(null);
+        checkCancelSelectPatient(true);
+    }
+
+    /**
+     * Verifies that selecting a work list can be skipped, and that no task is created.
+     */
+    @Test
+    public void testSkipSelectWorkList() {
+        Act appointment = createAppointment(patient);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
-        workflow.setPatient(patient);         // need to pre-set patient so it can be selected in popup
+        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
 
-        BrowserDialog<Party> dialog = workflow.getSelectionDialog();
-        dialog.userClose();
-        workflow.checkComplete(false, null, null, context);
+        // skip work-list selection and verify no task is created
+        BrowserDialog<Act> browser = workflow.getSelectionDialog();
+        fireDialogButton(browser, PopupDialog.SKIP_ID);
+        assertNull(workflow.getContext().getObject(ScheduleArchetypes.TASK));
+
+        // run the rest of the workflow
+        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+
+        // edit the clinical event
+        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+
+        // add the patient weight
+        workflow.addWeight(patient, BigDecimal.valueOf(10));
+
+        // verify the workflow is complete
+        workflow.checkComplete(true, customer, patient, context);
+    }
+
+    /**
+     * Verify that the workflow cancels if a work-list selection is cancelled via the cancel button.
+     */
+    @Test
+    public void testCancelSelectWorklist() {
+        checkCancelSelectWorkList(false);
+    }
+
+    /**
+     * Verify that the workflow cancels if a work-list selection is cancelled via the 'user close' button.
+     */
+    @Test
+    public void testCancelSelectWorklistByUserClose() {
+        checkCancelSelectWorkList(true);
+    }
+
+    /**
+     * Verify that the workflow cancels if document selection is cancelled via the cancel button.
+     */
+    @Test
+    public void testCancelSelectDocument() {
+        checkCancelSelectDialog(false);
+    }
+
+    /**
+     * Verify that the workflow cancels if document selection is cancelled via the 'user close' button.
+     */
+    @Test
+    public void testCancelSelectDocumentByUserClose() {
+        checkCancelSelectDialog(true);
+    }
+
+    /**
+     * Tests the behaviour of cancelling the clinical event edit using the cancel button.
+     */
+    @Test
+    public void testCancelEditEvent() {
+        checkCancelEditEvent(false);
+    }
+
+    /**
+     * Tests the behaviour of cancelling the clinical event edit using the 'user close' button.
+     */
+    @Test
+    public void testCancelEditEventByUserClose() {
+        checkCancelEditEvent(true);
+    }
+
+    /**
+     * Verifies that no patient weight act is created if it is skipped.
+     */
+    @Test
+    public void testSkipPatientWeight() {
+        Act appointment = createAppointment(patient);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
+        workflow.start();
+
+        workflow.selectWorkList(workList, customer, patient);
+
+        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+
+        // edit the clinical event
+        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+
+        // skip the weight entry and verify that the context has a weight act that is unsaved
+        fireDialogButton(workflow.getEditDialog(), PopupDialog.SKIP_ID);
+        IMObject weight = workflow.getContext().getObject(PatientArchetypes.PATIENT_WEIGHT);
+        assertNotNull(weight);
+        assertTrue(weight.isNew());
+        
+        workflow.checkComplete(true, customer, patient, context);
+    }
+
+    /**
+     * Verify that the workflow cancels if weight input is cancelled via the cancel button.
+     */
+    @Test
+    public void testCancelEditPatientWeight() {
+        checkCancelPatientWeight(false);
+    }
+
+    /**
+     * Verify that the workflow cancels if weight input is cancelled via the 'user close' button.
+     */
+    @Test
+    public void testCancelEditPatientWeightByUserClose() {
+        checkCancelPatientWeight(true);
     }
 
     /**
@@ -228,6 +359,123 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workList = createWorkList(taskType, 1);
         context = new LocalContext();
         context.setUser(user);
+    }
+
+    /**
+     * Verify that the workflow cancels if a patient selection is cancelled.
+     *
+     * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
+     */
+    private void checkCancelSelectPatient(boolean userClose) {
+        Act appointment = createAppointment(null);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        workflow.setPatient(patient);         // need to pre-set patient so it can be selected in popup
+        workflow.start();
+
+        BrowserDialog<Party> dialog = workflow.getSelectionDialog();
+        cancelDialog(dialog, userClose);
+        workflow.checkComplete(false, null, null, context);
+    }
+
+    /**
+     * Tests that the workflow cancels if the work-list selection is cancelled.
+     *
+     * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
+     */
+    private void checkCancelSelectWorkList(boolean userClose) {
+        Act appointment = createAppointment(patient);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        workflow.setWorkList(workList);        // need to pre-set work-list so it can be selected in popup
+        workflow.start();
+
+        // cancel work-list selection and verify no task is created
+        PopupDialog dialog = workflow.getSelectionDialog();
+        cancelDialog(dialog, userClose);
+        assertNull(workflow.getContext().getObject(ScheduleArchetypes.TASK));
+
+        // verify the workflow is complete
+        workflow.checkComplete(false, null, null, context);
+    }
+
+    /**
+     * Verify that the workflow cancels if document selection is cancelled via the cancel button.
+     *
+     * @param userClose if <tt>true</tt> cancel the selection by the 'user close' button otherwise via the cancel button
+     */
+    private void checkCancelSelectDialog(boolean userClose) {
+        Act appointment = createAppointment(patient);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        workflow.setWorkList(workList);        // need to pre-set work-list so it can be selected in popup
+        workflow.start();
+
+        workflow.selectWorkList(workList, customer, patient);
+
+        BrowserDialog<Act> dialog = workflow.getSelectionDialog();
+        cancelDialog(dialog, userClose);
+
+        workflow.checkComplete(false, null, null, context);
+    }
+
+    /**
+     * Tests the behaviour of cancelling the clinical event edit. The event should save, and the workflow cancel.
+     *
+     * @param userClose if <tt>true</tt> cancel the edit by the 'user close' button otherwise via the cancel button
+     */
+    private void checkCancelEditEvent(boolean userClose) {
+        Act appointment = createAppointment(patient);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
+        workflow.start();
+
+        workflow.selectWorkList(workList, customer, patient);
+
+        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+
+        // edit the clinical event
+        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        cancelDialog(eventDialog, userClose);
+
+        // event is saved regardless of cancel
+        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkComplete(false, null, null, context);
+    }
+
+    /**
+     * Verify that the workflow cancels if weight input is cancelled via the 'user close' button.
+     * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
+     */
+    private void checkCancelPatientWeight(boolean userClose) {
+        Act appointment = createAppointment(patient);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
+        workflow.start();
+
+        workflow.selectWorkList(workList, customer, patient);
+
+        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+
+        // edit the clinical event
+        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+
+        EditDialog editor = workflow.getWeightEditor();
+        cancelDialog(editor, userClose);
+        workflow.checkComplete(false, null, null, context);
+    }
+
+    /**
+     * Cancels a dialog.
+     *
+     * @param dialog    the dialog
+     * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
+     */
+    private void cancelDialog(PopupDialog dialog, boolean userClose) {
+        if (userClose) {
+            dialog.userClose();
+        } else {
+            fireDialogButton(dialog, PopupDialog.CANCEL_ID);
+        }
     }
 
     /**

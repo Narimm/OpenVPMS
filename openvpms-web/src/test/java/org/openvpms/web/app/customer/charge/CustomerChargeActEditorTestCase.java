@@ -637,7 +637,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param charge the charge
      */
     private void checkEmptyCharge(FinancialAct charge) {
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, new ChargePopupEditorManager());
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext,
+                                                                       new ChargePopupEditorManager());
         editor.getComponent();
         assertTrue(editor.isValid());
         assertTrue(editor.save());
