@@ -49,6 +49,7 @@ import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
 import java.util.List;

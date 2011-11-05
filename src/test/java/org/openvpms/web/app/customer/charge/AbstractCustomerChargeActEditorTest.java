@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertFalse;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
@@ -32,7 +31,6 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -42,15 +40,11 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
@@ -84,6 +78,15 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
+     * Returns the practice.
+     *
+     * @return the practice
+     */
+    protected Party getPractice() {
+        return practice;
+    }
+
+    /**
      * Adds a charge item.
      *
      * @param editor   the editor
@@ -94,14 +97,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return the editor for the new item
      */
     protected CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient, Product product,
-                                                  BigDecimal quantity, EditorManager mgr) {
-        CustomerChargeActItemEditor itemEditor = editor.addItem();
-        itemEditor.getComponent();
-        assertTrue(editor.isValid());
-        assertFalse(itemEditor.isValid());
-
-        setItem(editor, itemEditor, patient, product, quantity, mgr);
-        return itemEditor;
+                                                  BigDecimal quantity, ChargePopupEditorManager mgr) {
+        return CustomerChargeTestHelper.addItem(editor, patient, product, quantity, mgr);
     }
 
     /**
@@ -115,33 +112,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param mgr        the popup editor manager
      */
     protected void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                           Party patient, Product product, BigDecimal quantity, EditorManager mgr) {
-        if (itemEditor.getProperty("patient") != null) {
-            itemEditor.setPatient(patient);
-        }
-        itemEditor.setProduct(product);
-        itemEditor.setQuantity(quantity);
-        if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
-            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-                // invoice items have a dispensing node
-                assertFalse(itemEditor.isValid());  // not valid while popup is displayed
-                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
-                // save the popup editor - should be a medication
-            }
-
-            if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-                EntityBean bean = new EntityBean(product);
-                for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
-                    assertFalse(editor.isValid()); // not valid while popup is displayed
-                    checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
-                }
-                for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
-                    assertFalse(editor.isValid()); // not valid while popup is displayed
-                    checkSavePopup(mgr, ReminderArchetypes.REMINDER);
-                }
-            }
-        }
-        assertTrue(itemEditor.isValid());
+                           Party patient, Product product, BigDecimal quantity, ChargePopupEditorManager mgr) {
+        CustomerChargeTestHelper.setItem(editor, itemEditor, patient, product, quantity, mgr);
     }
 
     /**
@@ -472,18 +444,13 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
-     * Saves the current popup editor.
+     * Helper to create a product.
      *
-     * @param mgr       the popup editor manager
-     * @param shortName the expected archetype short name of the object being edited
+     * @param shortName the product archetype short name
+     * @return a new product
      */
-    protected void checkSavePopup(EditorManager mgr, String shortName) {
-        EditDialog dialog = mgr.getCurrent();
-        assertNotNull(dialog);
-        IMObjectEditor editor = dialog.getEditor();
-        assertTrue(TypeHelper.isA(editor.getObject(), shortName));
-        assertTrue(editor.isValid());
-        fireDialogButton(dialog, PopupDialog.OK_ID);
+    public Product createProduct(String shortName) {
+        return CustomerChargeTestHelper.createProduct(shortName);
     }
 
     /**
@@ -494,10 +461,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice) {
-        Product product = createProduct(shortName);
-        product.addProductPrice(createFixedPrice(product, BigDecimal.ZERO, fixedPrice));
-        save(product);
-        return product;
+        return CustomerChargeTestHelper.createProduct(shortName, fixedPrice, practice);
     }
 
     /**
@@ -512,21 +476,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      */
     protected Product createProduct(String shortName, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal unitCost,
                                     BigDecimal unitPrice) {
-        Product product = createProduct(shortName);
-        product.addProductPrice(createFixedPrice(product, fixedCost, fixedPrice));
-        product.addProductPrice(createUnitPrice(product, unitCost, unitPrice));
-        save(product);
-        return product;
-    }
-
-    /**
-     * Helper to create a product.
-     *
-     * @param shortName the product archetype short name
-     * @return a new product
-     */
-    protected Product createProduct(String shortName) {
-        return TestHelper.createProduct(shortName, null, true);
+        return CustomerChargeTestHelper.createProduct(shortName, fixedCost, fixedPrice, unitCost, unitPrice, practice);
     }
 
     /**
@@ -576,51 +526,6 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
-     * Helper to create a new unit price.
-     *
-     * @param product the product
-     * @param cost    the cost price
-     * @param price   the price after markup
-     * @return a new unit price
-     */
-    private ProductPrice createUnitPrice(Product product, BigDecimal cost, BigDecimal price) {
-        return createPrice(product, ProductArchetypes.UNIT_PRICE, cost, price);
-    }
-
-    /**
-     * Helper to create a new fixed price.
-     *
-     * @param product the product
-     * @param cost    the cost price
-     * @param price   the price after markup
-     * @return a new unit price
-     */
-    private ProductPrice createFixedPrice(Product product, BigDecimal cost, BigDecimal price) {
-        return createPrice(product, ProductArchetypes.FIXED_PRICE, cost, price);
-    }
-
-    /**
-     * Helper to create a new product price.
-     *
-     * @param product   the product
-     * @param shortName the product price archetype short name
-     * @param cost      the cost price
-     * @param price     the price after markup
-     * @return a new unit price
-     */
-    private ProductPrice createPrice(Product product, String shortName, BigDecimal cost, BigDecimal price) {
-        ProductPrice result = (ProductPrice) create(shortName);
-        ProductPriceRules rules = new ProductPriceRules();
-        BigDecimal markup = rules.getMarkup(product, cost, price, practice);
-        result.setName("XPrice");
-        IMObjectBean bean = new IMObjectBean(result);
-        bean.setValue("cost", cost);
-        bean.setValue("markup", markup);
-        bean.setValue("price", price);
-        return result;
-    }
-
-    /**
      * Helper to create and save a new tax type classification.
      *
      * @return a new tax classification
@@ -634,40 +539,4 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         return tax;
     }
 
-    public static class EditorManager extends PopupEditorManager {
-
-        /**
-         * The current edit dialog.
-         */
-        private EditDialog current;
-
-        /**
-         * Returns the current popup dialog.
-         *
-         * @return the current popup dialog. May be <tt>null</tt>
-         */
-        public EditDialog getCurrent() {
-            return current;
-        }
-
-        /**
-         * Displays an edit dialog.
-         *
-         * @param dialog the dialog
-         */
-        @Override
-        protected void edit(EditDialog dialog) {
-            super.edit(dialog);
-            current = dialog;
-        }
-
-        /**
-         * Invoked when the edit is completed.
-         */
-        @Override
-        protected void editCompleted() {
-            super.editCompleted();
-            current = null;
-        }
-    }
 }

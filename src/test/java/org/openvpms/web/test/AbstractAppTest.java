@@ -19,15 +19,9 @@
 package org.openvpms.web.test;
 
 import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.web.app.OpenVPMSApp;
-import org.openvpms.web.component.dialog.PopupDialog;
 
 
 /**
@@ -47,32 +41,6 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         app.setApplicationContext(applicationContext);
         ApplicationInstance.setActive(app);
         app.doInit();
-    }
-
-    /**
-     * Helper to click a button on a dialog.
-     *
-     * @param dialog   the dialog
-     * @param buttonId the button identifier
-     */
-    protected static void fireDialogButton(PopupDialog dialog, String buttonId) {
-        Button button = dialog.getButtons().getButton(buttonId);
-        assertNotNull(button);
-        assertTrue(button.isEnabled());
-        button.fireActionPerformed(new ActionEvent(button, button.getActionCommand()));
-    }
-
-    protected static <T extends Component> T findComponent(Component component, Class<T> clazz) {
-        Component result = (clazz.isAssignableFrom(component.getClass())) ? component : null;
-        if (result == null) {
-            for (Component child : component.getComponents()) {
-                result = findComponent(child, clazz);
-                if (result != null) {
-                    break;
-                }
-            }
-        }
-        return clazz.cast(result);
     }
 
 }
