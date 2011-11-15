@@ -345,7 +345,6 @@ public class PatientRules {
      * @param patient the patient
      * @return the age in string format
      * @throws ArchetypeServiceException for any archetype service error
-     *                                   todo - should be localised
      */
     public String getPatientAge(Party patient) {
         String result;
@@ -363,7 +362,7 @@ public class PatientRules {
             result = formatter.format(birthDate);      	
         }
         else {
-            result = formatter.format(deceasedDate);        	
+            result = formatter.format(birthDate, deceasedDate);        	
         }
         return result;
     }
