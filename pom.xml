@@ -134,7 +134,7 @@
     </dependencies>
 
     <properties>
-        <esci.version>1.0-beta-3-SNAPSHOT</esci.version>
+        <esci.version>1.0-beta-3</esci.version>
     </properties>
 
 </project>
