@@ -27,8 +27,11 @@
 		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
         <node name="stockControl" path="/details/stockControl" type="java.lang.Boolean"
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
-        <node name="mailHost" path="/details/mailHost" type="java.lang.String" minCardinality="0" maxCardinality="1"/>
-        <node name="defaultPrinter" displayName="Default Printer" path="/details/defaultPrinter" type="java.lang.String" minCardinality="0"/>        
+        <node name="mailHost" path="/details/mailHost" type="java.lang.String" minCardinality="0"/>
+        <node name="mailPort" path="/details/mailPort" type="java.lang.Integer" minCardinality="0" defaultValue="25"/>
+        <node name="mailUsername" path="/details/mailUsername" type="java.lang.String" minCardinality="0"/>
+        <node name="mailPassword" path="/details/mailPassword" type="java.lang.String" minCardinality="0"/>
+        <node name="defaultPrinter" displayName="Default Printer" path="/details/defaultPrinter" type="java.lang.String" minCardinality="0"/>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

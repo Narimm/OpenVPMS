@@ -24,7 +24,7 @@
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="displayExpression" path="/details/displayExpression" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="displayExpression" path="/details/displayExpression" type="java.lang.String" minCardinality="0" maxLength="600"/>
         <node name="displayNotes" path="/details/displayNotes" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"/>
         <node name="highlight" path="/details/highlight" type="java.lang.String" minCardinality="0" defaultValue="'EVENT_TYPE'">
               <assertion name="lookup.local">

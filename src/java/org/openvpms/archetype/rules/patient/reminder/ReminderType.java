@@ -84,6 +84,11 @@ public class ReminderType {
     private final List<Lookup> groups;
 
     /**
+     * Determines if the reminder is interactive.
+     */
+    private final boolean interactive;
+
+    /**
      * Constructs a <tt>ReminderType</tt>.
      *
      * @param reminderType the <em>entity.reminderType</em>
@@ -111,6 +116,7 @@ public class ReminderType {
         }
         canGroup = bean.getBoolean("group");
         groups = bean.getValues("groups", Lookup.class);
+        interactive = bean.getBoolean("interactive");
         this.reminderType = reminderType;
     }
 
@@ -180,12 +186,30 @@ public class ReminderType {
     }
 
     /**
+     * Returns the default interval.
+     *
+     * @return the default interval
+     */
+    public int getDefaultInterval() {
+        return defaultInterval;
+    }
+
+    /**
      * Returns the default interval's units.
      *
      * @return the default interval's units
      */
     public DateUnits getDefaultUnits() {
         return defaultUnits;
+    }
+
+    /**
+     * Returns the cancel interval.
+     *
+     * @return the cancel interval
+     */
+    public int getCancelInterval() {
+        return cancelInterval;
     }
 
     /**
@@ -273,6 +297,15 @@ public class ReminderType {
      */
     public List<Lookup> getGroups() {
         return groups;
+    }
+
+    /**
+     * Determines if the reminder is interactive.
+     *
+     * @return <tt>true</tt> if the reminder is interactive, otherwise <tt>false</tt>
+     */
+    public boolean isInteractive() {
+        return interactive;
     }
 
     /**
