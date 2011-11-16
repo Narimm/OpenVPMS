@@ -43,6 +43,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.app.Context;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -255,7 +256,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     private Component getCustomerAlerts(Party customer) {
         Component result = null;
-        AlertSummary alerts = new CustomerSummary().getAlertSummary(customer);
+        Context context = getLayoutContext().getContext();
+        AlertSummary alerts = new CustomerSummary(context).getAlertSummary(customer);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", "bold"),
                                           alerts.getComponent());

@@ -34,6 +34,24 @@ import org.openvpms.web.resource.util.Messages;
 public class ValidatorError {
 
     /**
+     * Resource bundle key for validation errors associated with an archetype
+     * node.
+     */
+    public static final String NODE_KEY = ValidatorError.class.getName() + ".node.formatted";
+
+    /**
+     * Resource bundle key for validation errors associated with a simple
+     * property.
+     */
+    public static final String PROP_KEY = ValidatorError.class.getName() + ".prop.formatted";
+
+    /**
+     * Resource bundle key for validation errors not associated with a node
+     * or property.
+     */
+    public static final String MSG_KEY = ValidatorError.class.getName() + ".msg.formatted";
+
+    /**
      * The archetype short name of the object that failed to validate.
      * May be <tt>null</tt>.
      */
@@ -53,27 +71,6 @@ public class ValidatorError {
      * The error message. May be <tt>null</tt>
      */
     private String message;
-
-    /**
-     * Resource bundle key for validation errors associated with an archetype
-     * node.
-     */
-    private static final String NODE_KEY = ValidatorError.class.getName()
-            + ".node.formatted";
-
-    /**
-     * Resource bundle key for validation errors associated with a simple
-     * property.
-     */
-    private static final String PROP_KEY = ValidatorError.class.getName()
-            + ".prop.formatted";
-
-    /**
-     * Resource bundle key for validation errors not associated with a node
-     * or property.
-     */
-    private static final String MSG_KEY = ValidatorError.class.getName()
-            + ".msg.formatted";
 
     /**
      * Constructs a new <tt>ValidatorError</tt> from a validation error.

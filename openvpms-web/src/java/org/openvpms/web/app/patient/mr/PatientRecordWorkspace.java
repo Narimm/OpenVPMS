@@ -143,7 +143,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     @Override
     public Component getSummary() {
-        return new CustomerPatientSummary().getSummary(getObject());
+        return new CustomerPatientSummary(GlobalContext.getInstance()).getSummary(getObject());
     }
 
     /**

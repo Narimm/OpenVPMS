@@ -41,7 +41,7 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -204,8 +204,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         // make sure the act is still available and PENDING prior to beginning
         // workflow
         if (act != null && AppointmentStatus.PENDING.equals(act.getStatus())) {
-            CheckInWorkflow workflow = new CheckInWorkflow(act);
-            workflow.addTaskListener(new TaskListener() {
+            CheckInWorkflow workflow = new CheckInWorkflow(act, GlobalContext.getInstance());
+            workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
                 }

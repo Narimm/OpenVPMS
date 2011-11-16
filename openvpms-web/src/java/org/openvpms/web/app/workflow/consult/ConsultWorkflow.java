@@ -19,16 +19,16 @@
 package org.openvpms.web.app.workflow.consult;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.app.workflow.EditClinicalEventTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
-import org.openvpms.web.app.workflow.EditClinicalEventTask;
-import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -60,9 +60,10 @@ public class ConsultWorkflow extends WorkflowImpl {
      * Constructs a new <code>ConsultWorkflow</code> from an
      * <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
-     * @param act the act
+     * @param act      the act
+     * @param external the external context to access and update
      */
-    public ConsultWorkflow(Act act) {
+    public ConsultWorkflow(Act act, final Context external) {
         // update the act status
         TaskProperties appProps = new TaskProperties();
         appProps.add("status", ActStatus.IN_PROGRESS);
@@ -71,16 +72,15 @@ public class ConsultWorkflow extends WorkflowImpl {
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        final GlobalContext global = GlobalContext.getInstance();
-        User clinician = global.getClinician();
+        User clinician = external.getClinician();
 
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
-        initial.setUser(global.getUser());
-        initial.setPractice(global.getPractice());
-        initial.setLocation(global.getLocation());
+        initial.setUser(external.getUser());
+        initial.setPractice(external.getPractice());
+        initial.setLocation(external.getLocation());
 
         // get the latest clinical event and edit it.
         addTask(new GetClinicalEventTask());
@@ -89,17 +89,15 @@ public class ConsultWorkflow extends WorkflowImpl {
         // Reload the task to refresh the context with any edits made
         addTask(new ReloadTask(GetClinicalEventTask.EVENT_SHORTNAME));
 
-
         // get the latest invoice, or create one if none is available, and edit it
         addTask(new GetInvoiceTask());
-        addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
-        addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
+        addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
+        addTask(createEditInvoiceTask());
 
         // update the task/appointment status to BILLED if the invoice
         // is COMPLETED
         NodeConditionTask<String> invoiceCompleted
-                = new NodeConditionTask<String>(INVOICE_SHORTNAME,
-                                                "status", ActStatus.COMPLETED);
+                = new NodeConditionTask<String>(CustomerAccountArchetypes.INVOICE, "status", ActStatus.COMPLETED);
         TaskProperties billProps = new TaskProperties();
         billProps.add("status", WorkflowStatus.BILLED);
         UpdateIMObjectTask billTask = new UpdateIMObjectTask(act, billProps,
@@ -109,9 +107,9 @@ public class ConsultWorkflow extends WorkflowImpl {
         // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
-                global.setCustomer(context.getCustomer());
-                global.setPatient(context.getPatient());
-                global.setClinician(context.getClinician());
+                external.setCustomer(context.getCustomer());
+                external.setPatient(context.getPatient());
+                external.setClinician(context.getClinician());
             }
         });
     }
@@ -122,6 +120,15 @@ public class ConsultWorkflow extends WorkflowImpl {
     @Override
     public void start() {
         super.start(initial);
+    }
+
+    /**
+     * Creates a new task to edit the invoice.
+     *
+     * @return a new task
+     */
+    protected EditIMObjectTask createEditInvoiceTask() {
+        return new EditIMObjectTask(CustomerAccountArchetypes.INVOICE);
     }
 
 }

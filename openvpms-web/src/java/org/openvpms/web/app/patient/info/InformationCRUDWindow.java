@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -107,12 +107,12 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Checks in the current patient.
      */
     private void onCheckIn() {
-        Party customer = GlobalContext.getInstance().getCustomer();
-        Party patient = GlobalContext.getInstance().getPatient();
-        User clinician = GlobalContext.getInstance().getClinician();
+        GlobalContext context = GlobalContext.getInstance();
+        Party customer = context.getCustomer();
+        Party patient = context.getPatient();
+        User clinician = context.getClinician();
         if (customer != null && patient != null) {
-            CheckInWorkflow workflow
-                    = new CheckInWorkflow(customer, patient, clinician);
+            CheckInWorkflow workflow = new CheckInWorkflow(customer, patient, clinician, context);
             workflow.start();
         } else {
             String title = Messages.get("patient.checkin.title");
@@ -126,7 +126,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      */
     private void onMerge() {
         final MergeWorkflow workflow = new PatientMergeWorkflow(getObject());
-        workflow.addTaskListener(new TaskListener() {
+        workflow.addTaskListener(new DefaultTaskListener() {
             /**
              * Invoked when a task event occurs.
              *

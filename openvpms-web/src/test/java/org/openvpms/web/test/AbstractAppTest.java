@@ -42,4 +42,5 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         ApplicationInstance.setActive(app);
         app.doInit();
     }
+
 }

@@ -125,8 +125,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <property name="background" value="#ff3366"/>
-                        <!-- red -->
+                        <property name="background" value="${reminder.overdue.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -140,8 +139,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <property name="background" value="#ccff66"/>
-                        <!-- yellow -->
+                        <property name="background" value="${reminder.remind.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -155,8 +153,7 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <property name="background" value="#33ff66"/>
-                        <!-- green -->
+                        <property name="background" value="${reminder.default.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -554,6 +551,26 @@
                     </properties>
                 </layout-data>
             </property>
+        </properties>
+    </style>
+
+    <style name="SMSDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${SMSDialog.width}"/>
+            <property name="height" value="${SMSDialog.height}"/>
+        </properties>
+    </style>
+
+    <style name="SMSConfigEmail" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="${SMSConfigEmail.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="SMSConfigEmailGeneric" type="nextapp.echo2.app.SplitPane" base-name="SMSConfigEmail">
+        <properties>
+            <property name="separatorPosition" value="${SMSConfigEmailGeneric.separatorPosition}"/>
         </properties>
     </style>
 

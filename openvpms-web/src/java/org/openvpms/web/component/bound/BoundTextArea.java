@@ -18,11 +18,8 @@
 
 package org.openvpms.web.component.bound;
 
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextArea;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.util.TextDocument;
 
@@ -52,18 +49,7 @@ public class BoundTextArea extends TextArea {
      */
     public BoundTextArea(Property property, int columns, int rows) {
         super(new TextDocument());
-        setWidth(new Extent(columns, Extent.EX));
-        setHeight(new Extent(rows, Extent.EM));
-        binder = new TextComponentBinder(this, property);
-        if (!StringUtils.isEmpty(property.getDescription())) {
-            setToolTipText(property.getDescription());
-        }
-        PropertyTransformer transformer = property.getTransformer();
-        if (!(transformer instanceof StringPropertyTransformer)) {
-            property.setTransformer(new StringPropertyTransformer(property, false));
-        } else {
-            ((StringPropertyTransformer) transformer).setTrim(false);
-        }
+        binder = new TextAreaComponentBinder(this, property, columns, rows);
     }
 
     /**
