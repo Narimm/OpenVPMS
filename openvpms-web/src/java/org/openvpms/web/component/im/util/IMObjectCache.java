@@ -49,7 +49,7 @@ public interface IMObjectCache {
      * <p/>
      * If the object isn't cached, it may be retrieved.
      *
-     * @param reference the object reference
+     * @param reference the object reference. May be <tt>null</tt>
      * @return the object corresponding to <tt>reference</tt> or <tt>null</tt> if none exists
      */
     IMObject get(IMObjectReference reference);

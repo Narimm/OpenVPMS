@@ -51,6 +51,11 @@ public class ConfirmationTask extends EvalTask<Boolean> {
      */
     private final boolean displayNo;
 
+    /**
+     * The confirmation dialog.
+     */
+    private ConfirmationDialog dialog;
+
 
     /**
      * Creates a new <tt>ConfirmationTask</tt>.
@@ -76,23 +81,29 @@ public class ConfirmationTask extends EvalTask<Boolean> {
     }
 
     /**
+     * Returns the dialog.
+     *
+     * @return the dialog, or <tt>null</tt> if the task isn't started
+     */
+    public ConfirmationDialog getConfirmationDialog() {
+        return dialog;
+    }
+
+    /**
      * Starts the task.
      * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
      */
     public void start(TaskContext context) {
-        String[] buttons = (displayNo) ? PopupDialog.YES_NO_CANCEL
-                : PopupDialog.OK_CANCEL;
-        final ConfirmationDialog dialog = new ConfirmationDialog(
-                title, message, buttons);
+        String[] buttons = (displayNo) ? PopupDialog.YES_NO_CANCEL : PopupDialog.OK_CANCEL;
+        dialog = new ConfirmationDialog(title, message, buttons);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 String action = dialog.getAction();
-                if (ConfirmationDialog.YES_ID.equals(action)
-                        || ConfirmationDialog.OK_ID.equals(action)) {
+                dialog = null;
+                if (ConfirmationDialog.YES_ID.equals(action) || ConfirmationDialog.OK_ID.equals(action)) {
                     setValue(true);
                 } else if (ConfirmationDialog.NO_ID.equals(action)) {
                     setValue(false);

@@ -131,36 +131,17 @@
     <!-- Support for accessing supplier services                            -->
     <!-- ================================================================== -->
 
-    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory"/>
+    <bean id="serviceAuthenticators" class="org.openvpms.esci.service.client.DefaultServiceAuthenticators"
+          factory-method="getInstance"/>
+
+    <bean id="serviceLocatorFactory" class="org.openvpms.esci.service.client.DefaultServiceLocatorFactory">
+        <property name="serviceAuthenticators" ref="serviceAuthenticators"/>
+    </bean>
 
     <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator">
         <property name="beanFactory" ref="imObjectBeanFactory"/>
         <property name="serviceLocatorFactory" ref="serviceLocatorFactory"/>
         <property name="supplierRules" ref="supplierRules"/>
-    </bean>
-
-    <!-- ================================================================== -->
-    <!-- Business rules                                                     -->
-    <!-- ================================================================== -->
-
-    <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
-    <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
-    <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
-    <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules">
-        <constructor-arg ref="archetypeRuleService"/>
-    </bean>
-
-    <bean id="userRules" class="org.openvpms.archetype.rules.user.UserRules">
-        <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
 </beans>

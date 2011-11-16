@@ -26,8 +26,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 
 /**
- * Mail service that configures the SMTP host from the <tt>mailHost</tt>
- * attribute of the <em>party.organisationLocation</em> from
+ * Mail service that configures the SMTP details from <em>party.organisationLocation</em> from
  * {@link GlobalContext#getLocation()}, if available.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -42,16 +41,64 @@ public class MailService extends JavaMailSenderImpl {
      */
     @Override
     public String getHost() {
-        String host = super.getHost();
-        if (StringUtils.isEmpty(host)) {
-            Party location = GlobalContext.getInstance().getLocation();
-            if (location != null) {
-                IMObjectBean bean = new IMObjectBean(location);
-                if (bean.hasNode("mailHost")) {
-                    host = bean.getString("mailHost");
-                }
-            }
-        }
-        return host;
+        String host = getString("mailHost");
+        return (host != null) ? host : super.getHost();
     }
+
+    /**
+     * Return the mail server port.
+     */
+    @Override
+    public int getPort() {
+        IMObjectBean bean = getLocationBean();
+        int port = 0;
+        if (bean != null) {
+            port = bean.getInt("mailPort");
+        }
+        if (port == 0) {
+            port = super.getPort();
+        }
+        return port;
+    }
+
+    /**
+     * Return the username for the account at the mail host.
+     */
+    @Override
+    public String getUsername() {
+        String username = getString("mailUsername");
+        return (username != null) ? username : super.getUsername();
+    }
+
+    /**
+     * Return the password for the account at the mail host.
+     */
+    @Override
+    public String getPassword() {
+        String password = getString("mailPassword");
+        return (password != null) ? password : super.getPassword();
+    }
+
+    /**
+     * Returns the <em>party.organisationLocation</em> wrapped in a bean, if one is present in the global context.
+     *
+     * @return the location, or <tt>null</tt> if none is present.
+     */
+    private IMObjectBean getLocationBean() {
+        Party location = GlobalContext.getInstance().getLocation();
+        return (location != null) ? new IMObjectBean(location) : null;
+    }
+
+    /**
+     * Helper to return a string node value from an <em>party.organisationLocation</em>, if there is a location in
+     * the global context.
+     *
+     * @param name the node name
+     * @return the corresponding value. May be <tt>null</tt>
+     */
+    private String getString(String name) {
+        IMObjectBean bean = getLocationBean();
+        return (bean != null) ? StringUtils.trimToNull(bean.getString(name)) : null;
+    }
+
 }

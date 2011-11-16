@@ -56,6 +56,56 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     }
 
     /**
+     * Sets the current object.
+     * <p/>
+     * This is analagous to {@link #setObject} but performs a safe cast to the required type.
+     * <p/>
+     * If the current object is the same instance as that supplied, no changes will be made.
+     *
+     * @param object the current object. May be <tt>null</tt>
+     */
+    @Override
+    public void setIMObject(IMObject object) {
+        boolean select = object != null && object == getObject();
+        super.setIMObject(object);
+        if (select) {
+            // object is slready in the workspace, so setObject() not invoked. Select it instead.
+            select(getType().cast(object));
+        }
+    }
+
+    /**
+     * Sets the current object.
+     *
+     * @param object the object. May be <tt>null</tt>
+     */
+    @Override
+    public void setObject(T object) {
+        super.setObject(object);
+        select(object);
+    }
+
+    /**
+     * Selects an object.
+     *
+     * @param object the object to select. May be <tt>null</tt>
+     */
+    protected void select(T object) {
+        ResultSetCRUDWindow<T> window = getCRUDWindow();
+        window.setObject(object);
+        if (object != null) {
+            QueryBrowser<T> browser = getBrowser();
+            browser.getQuery().setValue(object.getName());
+            browser.query();
+            if (!browser.getObjects().isEmpty()) {
+                // there are objects to display. Not necessarily that just set, but attempt to select it anyway.
+                browser.setSelected(object);
+                window.view();
+            }
+        }
+    }
+
+    /**
      * Creates the workspace component.
      *
      * @return a new workspace

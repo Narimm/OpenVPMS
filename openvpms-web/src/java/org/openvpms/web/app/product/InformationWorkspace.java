@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.product;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
@@ -35,7 +34,7 @@ import org.openvpms.web.component.im.query.QueryBrowser;
 public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
 
     /**
-     * Construct a new <tt>InformationWorkspace</tt>.
+     * Constructs an <tt>InformationWorkspace</tt>.
      */
     public InformationWorkspace() {
         super("product", "info");
@@ -54,17 +53,15 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
     }
 
     /**
-     * Lays out the component.
+     * Returns the latest version of the current context object.
      *
-     * @param container the container
+     * @return the latest version of the context object, or {@link #getObject()}
+     *         if they are the same, or <tt>null</tt> if the context object is
+     *         not supported by the workspace
      */
     @Override
-    protected void doLayout(Component container) {
-        super.doLayout(container);
-        Product product = GlobalContext.getInstance().getProduct();
-        if (product != getObject()) {
-            setObject(product);
-        }
+    protected Product getLatest() {
+        return getLatest(GlobalContext.getInstance().getProduct());
     }
 
     /**

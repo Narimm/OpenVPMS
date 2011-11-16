@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
 
 
 /**
@@ -142,7 +142,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
         // make sure the act is still available
         if (act != null) {
             TransferWorkflow transfer = new TransferWorkflow(act);
-            transfer.addTaskListener(new TaskListener() {
+            transfer.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(act);
                 }

@@ -29,7 +29,8 @@ import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -49,50 +50,113 @@ import org.springframework.transaction.support.TransactionCallback;
  */
 class EstimationInvoicer {
 
-    public EstimationInvoicer() {
-
-    }
-
     /**
      * Creates an invoice for an estimation.
      * <p/>
      * The editor is displayed in a visible dialog, in order for medication and reminder popups to be displayed
      * correctly.
-     * <p/>
-     * TODO - this is not ideal, but is due to the current requirement that all dialogs be parented by the root window.
      *
-     * @param estimation the estimation
+     * @param estimation the estimation to invoice
+     * @param context    the layout context
      * @return an editor for the invoice, or <tt>null</tt> if the editor cannot be created
      * @throws OpenVPMSException for any error
      */
-    public CustomerChargeActEditDialog invoice(Act estimation) {
+    public CustomerChargeActEditDialog invoice(Act estimation, LayoutContext context) {
+        estimation.setStatus(EstimationActStatus.INVOICED);
+        ActBean estimationBean = new ActBean(estimation);
+
         FinancialAct invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
-        if (invoice != null) {
-            estimation.setStatus(EstimationActStatus.INVOICED);
-            ActBean estimationBean = new ActBean(estimation);
-            ActBean invoiceBean = new ActBean(invoice);
-            invoiceBean.addNodeParticipation("customer", estimationBean.getNodeParticipantRef("customer"));
-            CustomerChargeActEditor editor = new CustomerChargeActEditor(invoice, null, new DefaultLayoutContext(true),
-                                                                         false);
-            EditDialog dialog = new EditDialog(editor, estimation);
-            dialog.show();
-            // NOTE: need to display the dialog as the process of populating medications and reminders can display
-            // popups which would parent themselves on the wrong window otherwise.
-            for (Act item : estimationBean.getNodeActs("items")) {
-                ActBean itemBean = new ActBean(item);
-                CustomerChargeActItemEditor itemEditor = editor.addItem();
-                if (itemEditor != null) {
-                    itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
-                    itemEditor.setProductRef(itemBean.getNodeParticipantRef("product"));
-                    itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
-                    itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
-                    itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
-                    itemEditor.setDiscount(itemBean.getBigDecimal("discount"));
-                }
-            }
-            return dialog;
+        if (invoice == null) {
+            throw new IllegalStateException("Failed to create invoice");
         }
-        return null;
+        ActBean invoiceBean = new ActBean(invoice);
+        invoiceBean.addNodeParticipation("customer", estimationBean.getNodeParticipantRef("customer"));
+
+        ChargeEditor editor = createChargeEditor(invoice, context);
+
+        // NOTE: need to display the dialog as the process of populating medications and reminders can display
+        // popups which would parent themselves on the wrong window otherwise.
+        EditDialog dialog = new EditDialog(editor, estimation);
+        dialog.show();
+        for (Act estimationItem : estimationBean.getNodeActs("items")) {
+            ActBean itemBean = new ActBean(estimationItem);
+            CustomerChargeActItemEditor itemEditor = editor.add();
+            itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
+            itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
+
+            // NOTE: setting the product can trigger popups - want the popups to get the correct
+            // property values from above
+            itemEditor.setProductRef(itemBean.getNodeParticipantRef("product"));
+
+            itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
+            itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
+            itemEditor.setDiscount(itemBean.getBigDecimal("discount"));
+        }
+        editor.refresh();
+        return dialog;
+    }
+
+    /**
+     * Creates a new <tt>ChargeEditor</tt>.
+     *
+     * @param invoice the invoice
+     * @param context the layout context
+     * @return a new charge editor
+     */
+    protected ChargeEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
+        return new ChargeEditor(invoice, context);
+    }
+
+    protected static class ChargeEditor extends CustomerChargeActEditor {
+
+        /**
+         * Constructs a <tt>ChargeEditor</tt>.
+         *
+         * @param act     the act to edit
+         * @param context the layout context
+         */
+        public ChargeEditor(FinancialAct act, LayoutContext context) {
+            super(act, null, context, false);
+        }
+
+        /**
+         * Adds a new invoice item.
+         *
+         * @return the invoice item editor
+         */
+        public CustomerChargeActItemEditor add() {
+            CustomerChargeActItemEditor result;
+            ActRelationshipCollectionEditor items = getEditor();
+            Act item = (Act) items.create();
+            if (item == null) {
+                throw new IllegalStateException("Failed to create invoice item");
+            }
+            result = (CustomerChargeActItemEditor) items.createEditor(item, getLayoutContext());
+            result.getComponent();
+            items.addEdited(result);
+
+            // need to flag as modified as the editor isn't hooked in to onCurrentEditorModified() 
+            // to avoid redundant component creation
+            items.setModified(item, true);
+            return result;
+        }
+
+        /**
+         * Refreshes the collection display.
+         */
+        public void refresh() {
+            getEditor().refresh();
+        }
+
+        /**
+         * Returns the items collection editor.
+         *
+         * @return the items collection editor. May be <tt>null</tt>
+         */
+        @Override
+        public ActRelationshipCollectionEditor getEditor() {
+            return super.getEditor();
+        }
     }
 
     private static class EditDialog extends CustomerChargeActEditDialog {
@@ -135,10 +199,12 @@ class EstimationInvoicer {
                     }
                 };
                 result = SaveHelper.save(editor.getDisplayName(), callback);
+                estimationSaved = result;
             } else {
                 result = super.save(editor);
             }
             return result;
         }
     }
+
 }
