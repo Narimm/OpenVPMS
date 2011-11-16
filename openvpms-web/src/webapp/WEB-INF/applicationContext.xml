@@ -366,6 +366,44 @@
 
 
     <!-- ================================================================== -->
+    <!--                    APPOINTMENT SERVICE                             -->
+    <!-- ================================================================== -->
+
+    <bean id="appointmentService"
+          class="org.openvpms.archetype.rules.workflow.AppointmentService">
+        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="1">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="diskPersistent" value="false"/>
+                <property name="cacheName" value="appointmentCache"/>
+                <property name="maxElementsInMemory" value="30"/>
+                <!-- 30 days of data -->
+                <property name="overflowToDisk" value="false"/>
+                <property name="eternal" value="true"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!--                    TASK SERVICE                                    -->
+    <!-- ================================================================== -->
+
+    <bean id="taskService"
+          class="org.openvpms.archetype.rules.workflow.TaskService">
+        <constructor-arg ref="archetypeService" index="0"/>
+        <constructor-arg index="1">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="diskPersistent" value="false"/>
+                <property name="cacheName" value="appointmentCache"/>
+                <property name="maxElementsInMemory" value="30"/>
+                <!-- 30 days of data -->
+                <property name="overflowToDisk" value="false"/>
+                <property name="eternal" value="true"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <!-- ================================================================== -->
     <!--                 RULES ENGINE (DROOLS)                              -->
     <!-- ================================================================== -->
 
@@ -487,6 +525,37 @@
     <!--                        EMAIL                                       -->
     <!-- ================================================================== -->
     <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="prototype"/>
+
+    <!-- ================================================================== -->
+    <!--                        MISC                                        -->
+    <!-- ================================================================== -->
+
+    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="patientAgeFormatter"/>
+    </bean>
+
+    <bean id="patientAgeFormatter" class="org.openvpms.archetype.rules.patient.RefreshablePatientAgeFormatter">
+        <constructor-arg ref="lookupService"/> 
+        <constructor-arg ref="practiceRules"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="imObjectBeanFactory"/>
+    </bean>
+
+    <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache">
+        <constructor-arg index="0" ref="lookupService"/>
+        <constructor-arg index="1" ref="archetypeService"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        PROPER CASING                               -->

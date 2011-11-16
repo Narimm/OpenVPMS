@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -165,15 +164,6 @@ public class CustomerChargeActEditor extends FinancialActEditor {
         return result;
     }
 
-    /**
-     * Sets the clinician.
-     *
-     * @param clinician the clinician. May be <tt>null</ttt>
-     */
-    public void setClinician(User clinician) {
-        setParticipant("clinician", clinician);
-    }
-    
     /**
      * Save any edits.
      * <p/>

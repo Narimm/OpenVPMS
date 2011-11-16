@@ -18,19 +18,21 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.ObjectUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -40,11 +42,15 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
@@ -75,165 +81,6 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         practice.addClassification(createTaxType());
         save(practice);
         super.setUp();
-    }
-
-    /**
-     * Returns the practice.
-     *
-     * @return the practice
-     */
-    protected Party getPractice() {
-        return practice;
-    }
-
-    /**
-     * Adds a charge item.
-     *
-     * @param editor   the editor
-     * @param patient  the patient
-     * @param product  the product
-     * @param quantity the quantity
-     * @param mgr      the popup editor manager
-     * @return the editor for the new item
-     */
-    protected CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient, Product product,
-                                                  BigDecimal quantity, ChargePopupEditorManager mgr) {
-        return CustomerChargeTestHelper.addItem(editor, patient, product, quantity, mgr);
-    }
-
-    /**
-     * Sets the values of a charge item.
-     *
-     * @param editor     the charge editor
-     * @param itemEditor the charge item editor
-     * @param patient    the patient
-     * @param product    the product
-     * @param quantity   the quantity
-     * @param mgr        the popup editor manager
-     */
-    protected void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                           Party patient, Product product, BigDecimal quantity, ChargePopupEditorManager mgr) {
-        CustomerChargeTestHelper.setItem(editor, itemEditor, patient, product, quantity, mgr);
-    }
-
-    /**
-     * Verifies a charge matches that expected.
-     *
-     * @param charge    the charge
-     * @param customer  the expected customer
-     * @param author    the expected author
-     * @param clinician the expected clinician
-     * @param tax       the expected tax
-     * @param total     the expected total
-     */
-    protected void checkCharge(FinancialAct charge, Party customer, User author, User clinician, BigDecimal tax,
-                               BigDecimal total) {
-        ActBean bean = new ActBean(charge);
-        assertEquals(customer.getObjectReference(), bean.getNodeParticipantRef("customer"));
-        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
-        if (bean.hasNode("clinician")) {
-            assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
-        }
-        checkEquals(tax, bean.getBigDecimal("tax"));
-        checkEquals(total, bean.getBigDecimal("amount"));
-    }
-
-    /**
-     * Verifies an item's properties match that expected.
-     *
-     * @param items      the items to search
-     * @param patient    the expected patient
-     * @param product    the expected product
-     * @param author     the expected author
-     * @param clinician  the expected clinician
-     * @param quantity   the expected quantity
-     * @param unitCost   the expected unit cost
-     * @param unitPrice  the expected unit price
-     * @param fixedCost  the expected fixed cost
-     * @param fixedPrice the expected fixed price
-     * @param discount   the expected discount
-     * @param tax        the expected tax
-     * @param total      the expected total
-     * @param event      the clinical event. May be <tt>null</tt>
-     * @param childActs  the expected no. of child acts
-     */
-    protected void checkItem(List<FinancialAct> items, Party patient, Product product, User author, User clinician,
-                             BigDecimal quantity, BigDecimal unitCost, BigDecimal unitPrice, BigDecimal fixedCost,
-                             BigDecimal fixedPrice, BigDecimal discount, BigDecimal tax, BigDecimal total,
-                             Act event, int childActs) {
-        int count = 0;
-        FinancialAct item = find(items, product);
-        checkItem(item, patient, product, author, clinician, quantity, unitCost, unitPrice, fixedCost, fixedPrice,
-                  discount, tax, total);
-        ActBean itemBean = new ActBean(item);
-        EntityBean bean = new EntityBean(product);
-
-        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            ActBean eventBean = (event != null) ? new ActBean(event) : null;
-            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-                // verify there is a medication act that is linked to the event
-                Act medication = checkMedication(item, patient, product, author, clinician);
-                if (eventBean != null) {
-                    assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, medication));
-                }
-                ++count;
-            } else {
-                assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
-            }
-            List<Entity> investigations = bean.getNodeTargetEntities("investigationTypes");
-            assertEquals(investigations.size(), itemBean.getNodeActs("investigations").size());
-            for (Entity investigationType : investigations) {
-                // verify there is an investigation for each investigation type, and it is linked to the event
-                Act investigation = checkInvestigation(item, patient, investigationType, author, clinician);
-                if (eventBean != null) {
-                    assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, investigation));
-                }
-                ++count;
-            }
-            List<Entity> reminderTypes = bean.getNodeTargetEntities("reminders");
-            assertEquals(reminderTypes.size(), itemBean.getNodeActs("reminders").size());
-            for (Entity reminderType : reminderTypes) {
-                checkReminder(item, patient, product, reminderType, author, clinician);
-                ++count;
-            }
-            List<Entity> templates = bean.getNodeTargetEntities("documents");
-            assertEquals(templates.size(), itemBean.getNodeActs("documents").size());
-            for (Entity template : templates) {
-                // verify there is a document for each template, and it is linked to the event
-                Act document = checkDocument(item, patient, product, template, author, clinician);
-                if (eventBean != null) {
-                    assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, document));
-                }
-                ++count;
-            }
-        } else {
-            // verify there are no medication, investigation, reminder nor document acts
-            assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
-            assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
-            assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
-            assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
-        }
-        assertEquals(childActs, count);
-    }
-
-    /**
-     * Finds a charge item in a list of items, by product.
-     *
-     * @param items   the items
-     * @param product the product
-     * @return the corresponding item
-     */
-    private FinancialAct find(List<FinancialAct> items, Product product) {
-        FinancialAct result = null;
-        for (FinancialAct item : items) {
-            ActBean current = new ActBean(item);
-            if (ObjectUtils.equals(current.getNodeParticipantRef("product"), product.getObjectReference())) {
-                result = item;
-                break;
-            }
-        }
-        assertNotNull(result);
-        return result;
     }
 
     /**
@@ -348,7 +195,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     /**
      * Finds a reminder associated with a charge item, given its reminder type.
      *
-     * @param item         the item
+     * @param item              the item
      * @param reminderType the reminder type
      * @return the corresponding reminder
      */
@@ -401,7 +248,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     /**
      * Finds a document associated with a charge item, given its document template.
      *
-     * @param item     the item
+     * @param item              the item
      * @param template the document template
      * @return the corresponding reminder
      */
@@ -444,13 +291,30 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
-     * Helper to create a product.
+     * Saves the current popup editor.
      *
-     * @param shortName the product archetype short name
-     * @return a new product
+     * @param mgr       the popup editor manager
+     * @param shortName the expected archetype short name of the object being edited
      */
-    public Product createProduct(String shortName) {
-        return CustomerChargeTestHelper.createProduct(shortName);
+    protected void checkSavePopup(EditorManager mgr, String shortName) {
+        EditDialog dialog = mgr.getCurrent();
+        assertNotNull(dialog);
+        IMObjectEditor editor = dialog.getEditor();
+        assertTrue(TypeHelper.isA(editor.getObject(), shortName));
+        assertTrue(editor.isValid());
+        clickDialogOK(dialog);
+    }
+
+    /**
+     * Helper to click OK on an edit dialog.
+     *
+     * @param dialog the dialog
+     */
+    protected void clickDialogOK(EditDialog dialog) {
+        Button ok = dialog.getButtons().getButton(PopupDialog.OK_ID);
+        assertNotNull(ok);
+        assertTrue(ok.isEnabled());
+        ok.fireActionPerformed(new ActionEvent(ok, ok.getActionCommand()));
     }
 
     /**
@@ -461,7 +325,10 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return a new product
      */
     protected Product createProduct(String shortName, BigDecimal fixedPrice) {
-        return CustomerChargeTestHelper.createProduct(shortName, fixedPrice, practice);
+        Product product = createProduct(shortName);
+        product.addProductPrice(createFixedPrice(product, BigDecimal.ZERO, fixedPrice));
+        save(product);
+        return product;
     }
 
     /**
@@ -476,7 +343,21 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      */
     protected Product createProduct(String shortName, BigDecimal fixedCost, BigDecimal fixedPrice, BigDecimal unitCost,
                                     BigDecimal unitPrice) {
-        return CustomerChargeTestHelper.createProduct(shortName, fixedCost, fixedPrice, unitCost, unitPrice, practice);
+        Product product = createProduct(shortName);
+        product.addProductPrice(createFixedPrice(product, fixedCost, fixedPrice));
+        product.addProductPrice(createUnitPrice(product, unitCost, unitPrice));
+        save(product);
+        return product;
+    }
+
+    /**
+     * Helper to create a product.
+     *
+     * @param shortName the product archetype short name
+     * @return a new product
+     */
+    protected Product createProduct(String shortName) {
+        return TestHelper.createProduct(shortName, null, true);
     }
 
     /**
@@ -526,6 +407,51 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
+     * Helper to create a new unit price.
+     *
+     * @param product the product
+     * @param cost    the cost price
+     * @param price   the price after markup
+     * @return a new unit price
+     */
+    private ProductPrice createUnitPrice(Product product, BigDecimal cost, BigDecimal price) {
+        return createPrice(product, ProductArchetypes.UNIT_PRICE, cost, price);
+    }
+
+    /**
+     * Helper to create a new fixed price.
+     *
+     * @param product the product
+     * @param cost    the cost price
+     * @param price   the price after markup
+     * @return a new unit price
+     */
+    private ProductPrice createFixedPrice(Product product, BigDecimal cost, BigDecimal price) {
+        return createPrice(product, ProductArchetypes.FIXED_PRICE, cost, price);
+    }
+
+    /**
+     * Helper to create a new product price.
+     *
+     * @param product   the product
+     * @param shortName the product price archetype short name
+     * @param cost      the cost price
+     * @param price     the price after markup
+     * @return a new unit price
+     */
+    private ProductPrice createPrice(Product product, String shortName, BigDecimal cost, BigDecimal price) {
+        ProductPrice result = (ProductPrice) create(shortName);
+        ProductPriceRules rules = new ProductPriceRules();
+        BigDecimal markup = rules.getMarkup(product, cost, price, practice);
+        result.setName("XPrice");
+        IMObjectBean bean = new IMObjectBean(result);
+        bean.setValue("cost", cost);
+        bean.setValue("markup", markup);
+        bean.setValue("price", price);
+        return result;
+    }
+
+    /**
      * Helper to create and save a new tax type classification.
      *
      * @return a new tax classification
@@ -539,4 +465,40 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         return tax;
     }
 
+    protected static class EditorManager extends PopupEditorManager {
+
+        /**
+         * The current edit dialog.
+         */
+        private EditDialog current;
+
+        /**
+         * Returns the current popup dialog.
+         *
+         * @return the current popup dialog. May be <tt>null</tt>
+         */
+        public EditDialog getCurrent() {
+            return current;
+        }
+
+        /**
+         * Displays an edit dialog.
+         *
+         * @param dialog the dialog
+         */
+        @Override
+        protected void edit(EditDialog dialog) {
+            super.edit(dialog);
+            current = dialog;
+        }
+
+        /**
+         * Invoked when the edit is completed.
+         */
+        @Override
+        protected void editCompleted() {
+            super.editCompleted();
+            current = null;
+        }
+    }
 }

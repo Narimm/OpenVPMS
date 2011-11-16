@@ -30,13 +30,6 @@ import java.util.EventListener;
 public interface TaskListener extends EventListener {
 
     /**
-     * Invoked prior to a task starting.
-     *
-     * @param task the task
-     */
-    void starting(Task task);
-
-    /**
      * Invoked when a task event occurs.
      *
      * @param event the event

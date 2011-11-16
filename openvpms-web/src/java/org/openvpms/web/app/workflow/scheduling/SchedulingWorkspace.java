@@ -117,7 +117,7 @@ public abstract class SchedulingWorkspace
     public Component getSummary() {
         if (window != null) {
             Act act = window.getObject();
-            return new CustomerPatientSummary(GlobalContext.getInstance()).getSummary(act);
+            return new CustomerPatientSummary().getSummary(act);
         }
         return null;
     }

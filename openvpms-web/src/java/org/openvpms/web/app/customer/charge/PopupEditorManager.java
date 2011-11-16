@@ -36,7 +36,7 @@ import java.util.LinkedList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PopupEditorManager {
+class PopupEditorManager {
 
     /**
      * Listener to notify completion of the edit.

@@ -301,6 +301,15 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
+     * Determines if this can be deleted via {@link #delete()}.
+     *
+     * @return <tt>true</tt>
+     */
+    public boolean canDelete() {
+        return true;
+    }
+
+    /**
      * Determines if the object has been deleted.
      *
      * @return <tt>true</tt> if the object has been deleted
@@ -770,7 +779,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     private class ComponentFactory extends NodeEditorFactory {
 
         /**
-         * Constructs a <tt>ComponentFactory</tt>.
+         * Construct a new <tt>ComponentFactory</tt>.
          *
          * @param context the layout context
          */

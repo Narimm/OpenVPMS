@@ -18,28 +18,15 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 
 
 /**
@@ -54,12 +41,7 @@ import java.util.List;
 public class FinancialActEditor extends ActEditor {
 
     /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(FinancialAct.class);
-
-    /**
-     * Constructs a <tt>FinancialActEditor</tt>.
+     * Creates a new <tt>FinancialActEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <tt>null</tt>
@@ -84,69 +66,13 @@ public class FinancialActEditor extends ActEditor {
     }
 
     /**
-     * Validates the object.
-     * <p/>
-     * This extends validation by ensuring that the total matches that of the sum of the item totals.
-     *
-     * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
-     */
-    @Override
-    public boolean validate(Validator validator) {
-        boolean result = super.validate(validator);
-        if (result) {
-            result = validateAmounts(validator);
-        }
-        return result;
-    }
-
-    /**
-     * Validates that the amounts match that expected.
-     * <p/>
-     * This should only be necessary for acts that have been migrated from other systems.
-     *
-     * @param validator the validator
-     * @return <tt>true</tt> if the amounts match
-     */
-    protected boolean validateAmounts(Validator validator) {
-        boolean result;
-        ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
-        FinancialAct act = (FinancialAct) getObject();
-        BigDecimal total = calc.getTotal(act);
-
-        List<Act> acts = getEditor().getActs();
-        // NOTE: the current act should be mapped into the collection if it has been edited
-
-        BigDecimal sum = calc.sum(acts.iterator(), "total");
-        result = total.compareTo(sum) == 0;
-        if (!result) {
-            String message = Messages.get("act.validation.totalMismatch", getProperty("amount").getDisplayName(),
-                                          total, getEditor().getProperty().getDisplayName(), sum);
-            validator.add(this, new ValidatorError(message));
-            if (log.isWarnEnabled()) {
-                log.warn(message);
-                User user = GlobalContext.getInstance().getUser();
-                String userName = (user != null) ? user.getUsername() : null;
-                log.warn("username = " + userName + ", act = " + format(act));
-                for (int i = 0; i < acts.size(); ++i) {
-                    log.warn("act item (" + (i + 1) + " of " + acts.size() + ") = " + format(acts.get(i)));
-                }
-                IMObjectEditor current = getEditor().getCurrentEditor();
-                if (current != null) {
-                    log.warn("current act item = " + format(current.getObject()));
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * Updates the amount and tax when an act item changes.
      */
     @Override
     protected void onItemsChanged() {
         Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum((Act) getObject(), getEditor().getCurrentActs(), "total");
+        BigDecimal value = ActHelper.sum((Act) getObject(),
+                                         getEditor().getCurrentActs(), "total");
         amount.setValue(value);
         calculateTax();
     }
@@ -170,17 +96,6 @@ public class FinancialActEditor extends ActEditor {
                 taxAmount.setValue(tax);
             }
         }
-    }
-
-    /**
-     * Helper to format an object for debugging purposes, as the toString() method is not helpful.
-     * TODO.
-     *
-     * @param object the object
-     * @return the formatted object
-     */
-    private String format(IMObject object) {
-        return new ReflectionToStringBuilder(object, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 
 }

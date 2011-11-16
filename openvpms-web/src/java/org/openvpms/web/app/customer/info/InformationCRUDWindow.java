@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.component.workflow.DefaultTaskListener;
+import org.openvpms.web.component.workflow.TaskListener;
 
 
 /**
@@ -95,7 +95,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      */
     private void onMerge() {
         final MergeWorkflow workflow = new CustomerMergeWorkflow(getObject());
-        workflow.addTaskListener(new DefaultTaskListener() {
+        workflow.addTaskListener(new TaskListener() {
             /**
              * Invoked when a task event occurs.
              *

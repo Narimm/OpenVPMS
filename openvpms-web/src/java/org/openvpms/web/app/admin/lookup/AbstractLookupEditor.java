@@ -18,9 +18,7 @@
 package org.openvpms.web.app.admin.lookup;
 
 import nextapp.echo2.app.Component;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -29,10 +27,6 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.property.StringPropertyTransformer;
-import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -75,22 +69,6 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
             code = codeEditor.getComponent();
             code.setEnabled(object.isNew()); // only enable the code field for new objects
         }
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
-     */
-    @Override
-    public boolean validate(Validator validator) {
-        boolean valid = super.validate(validator);
-        if (valid) {
-            valid = validateCode(validator);
-        }
-        return valid;
     }
 
     /**
@@ -143,36 +121,6 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
                 });
             }
         }
-    }
-
-    /**
-     * Validates the lookup code.
-     * <p/>
-     * If the lookup is new, this implementation verifies that the code is unique within the lookup's archetype to
-     * avoid duplicate lookup errors.
-     *
-     * @param validator the validator
-     * @return <tt>true</tt> if the code is valid
-     */
-    protected boolean validateCode(Validator validator) {
-        boolean result = true;
-
-        Lookup lookup = (Lookup) getObject();
-        if (lookup.isNew()) {
-            String code = lookup.getCode();
-            if (!StringUtils.isEmpty(code)) {
-                String node = "code";
-                Property property = getProperty(node);
-                String name = (property != null) ? property.getDisplayName() : node;
-                String archetype = lookup.getArchetypeId().getShortName();
-                if (ServiceHelper.getLookupService().getLookup(archetype, code) != null) {
-                    String message = Messages.get("lookup.validation.duplicate", getDisplayName(), name, code);
-                    validator.add(this, new ValidatorError(archetype, node, message));
-                    result = false;
-                }
-            }
-        }
-        return result;
     }
 
     /**

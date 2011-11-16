@@ -129,21 +129,6 @@ public class TextComponentFactory extends ComponentFactory {
     }
 
     /**
-     * Create a new text area.
-     *
-     * @param columns the columns
-     * @param rows    the rows
-     * @return a new text area
-     */
-    public static TextArea createTextArea(int columns, int rows) {
-        TextArea text = new TextArea(new TextDocument());
-        text.setWidth(new Extent(columns, Extent.EX));
-        text.setHeight(new Extent(rows, Extent.EM));
-        setDefaultStyle(text);
-        return text;
-    }
-
-    /**
      * Create a new bound text area.
      *
      * @param property the property to bind

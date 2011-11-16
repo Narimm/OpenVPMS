@@ -29,13 +29,12 @@ import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.PrintActTask;
 import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.Tasks;
-import org.openvpms.web.component.app.GlobalContext;
 
 import java.math.BigDecimal;
 
@@ -100,13 +99,13 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         String shortName = act.getArchetypeId().getShortName();
         BigDecimal total = act.getTotal();
         if (TypeHelper.isA(act, INVOICE, COUNTER)) {
-            PaymentWorkflow payment = new PaymentWorkflow(total, GlobalContext.getInstance());
+            PaymentWorkflow payment = new PaymentWorkflow(total);
             payment.setRequired(false);
             tasks.addTask(payment);
             // need to reload the act as it may be changed via the payment
             // workflow as part of the CustomerAccountRules
             tasks.addTask(new ReloadTask(shortName));
-            tasks.addTaskListener(new DefaultTaskListener() {
+            tasks.addTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
                     // force a refresh so the summary updates
                     onRefresh(act);

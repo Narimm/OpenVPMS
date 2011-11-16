@@ -20,42 +20,32 @@ package org.openvpms.web.app.admin.organisation;
 
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.print.PrintHelper;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 
 /**
- * Editor for <em>party.organisationLocation</em>
- * <p/>
- * This:
- * <ul>
- * <li>displays a password field for the "mailPassword" node.
- * <li>displays a list of a available printers for the "defaultPrinter" node
- * </ul>
+ * @author tony
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
  */
 public class OrganisationLocationEditor extends AbstractIMObjectEditor {
 
-    /**
-     * Constructs an <tt>OrganisationLocationEditor</tt>
-     *
-     * @param object        the object to edit
-     * @param parent        the parent object. May be <tt>null</tt>
-     * @param layoutContext the layout context. May be <tt>null</tt>.
-     */
-    public OrganisationLocationEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
-        super(object, parent, layoutContext);
-    }
-
+	/**
+	 * @param object
+	 * @param parent
+	 * @param layoutContext
+	 */
+	public OrganisationLocationEditor(IMObject object, IMObject parent,
+			LayoutContext layoutContext) {
+		super(object, parent, layoutContext);
+	}
     /**
      * Creates the layout strategy.
      *
@@ -74,15 +64,16 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
          * @param property the property
          * @param parent   the parent object
          * @param context  the layout context
-         * @return a component to display <tt>property</tt>
+         * @return a component to display <code>property</code>
          */
         @Override
-        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+        protected ComponentState createComponent(Property property,
+                                                 IMObject parent,
+                                                 LayoutContext context) {
             ComponentState result;
-            if (property.getName().equals("mailPassword")) {
-                result = new ComponentState(TextComponentFactory.createPassword(property), property);
-            } else if (property.getName().equals("defaultPrinter")) {
-                DefaultListModel model = new DefaultListModel(PrintHelper.getPrinters());
+            if (property.getName().equals("defaultPrinter")) {
+                DefaultListModel model
+                        = new DefaultListModel(PrintHelper.getPrinters());
                 SelectField field = SelectFieldFactory.create(property, model);
                 result = new ComponentState(field, property);
             } else {

@@ -104,9 +104,9 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
         return new AbstractIMObjectReferenceEditor<Party>(property, getParent(), getLayoutContext(), true) {
 
             @Override
-            public boolean setObject(Party object) {
+            public void setObject(Party object) {
+                super.setObject(object);
                 ContextHelper.setPatient(getLayoutContext().getContext(), object);
-                return super.setObject(object);
             }
 
             /**

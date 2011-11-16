@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.6-SNAPSHOT</version>
+        <version>1.5-beta-3-SNAPSHOT</version>
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
@@ -219,11 +219,6 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-esci-adapter</artifactId>
-            <version>${pom.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-sms</artifactId>
             <version>${pom.version}</version>
         </dependency>
         <dependency>

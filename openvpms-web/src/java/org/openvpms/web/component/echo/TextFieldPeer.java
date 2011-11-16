@@ -38,13 +38,13 @@ public class TextFieldPeer extends nextapp.echo2.webcontainer.syncpeer.TextField
     /**
      * Service to provide supporting JavaScript library.
      */
-    public static final Service TEXT_COMPONENT_SERVICE = JavaScriptService.forResource(
-            "Echo.TextComponent", "/org/openvpms/web/resource/js/TextComponent.js");
+    static final Service TEXT_COMPONENT_SERVICE = JavaScriptService.forResource("Echo.TextComponent",
+                                                                                "/org/openvpms/web/resource/js/TextComponent.js");
 
     static {
         // NOTE: as this extends TextFieldPeer, the broken TextComponent.js script will always be registered prior to
         // this due to static construction order. It can therefore safely be removed and replaced.
-        WebRenderServlet.getServiceRegistry().remove(TEXT_COMPONENT_SERVICE);
+        WebRenderServlet.getServiceRegistry().remove(TEXT_COMPONENT_SERVICE); 
         WebRenderServlet.getServiceRegistry().add(TEXT_COMPONENT_SERVICE);
     }
 }

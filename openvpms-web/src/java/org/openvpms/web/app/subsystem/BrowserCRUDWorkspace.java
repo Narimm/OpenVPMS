@@ -339,9 +339,11 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
      */
     protected void doLayout(Component container) {
         Parent latest = getLatest();
-        Parent object = getObject();
-        if (latest != object) {
+        if (latest != getObject()) {
             setObject(latest);
+        } else if (getObject() == null && getBrowser() == null
+                   && isParentOptional()) {
+            setObject(null);
         } else {
             layoutWorkspace(true);
         }
@@ -350,13 +352,15 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     /**
      * Lays out the workspace.
      *
-     * @param refresh if <tt>true</tt> and the workspace exists, refresh the workspace, otherwise recreate it
+     * @param refresh if <tt>true</tt> and the workspace exists, refresh
+     *                the workspace, otherwise recreate it
      */
     protected void layoutWorkspace(boolean refresh) {
         Parent parent = getObject();
         if (parent != null || isParentOptional()) {
-            Browser<Child> browser = getBrowser();
-            if (refresh && browser != null) {
+            if (refresh && getBrowser() != null) {
+                setCRUDWindow(getCRUDWindow()); // reregister
+                setWorkspace(getWorkspace());
                 browser.query();
             } else {
                 Query<Child> query = createQuery();

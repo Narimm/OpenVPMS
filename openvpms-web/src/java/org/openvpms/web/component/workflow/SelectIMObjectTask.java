@@ -63,11 +63,6 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      */
     private String message;
 
-    /**
-     * The browser dialog.
-     */
-    private BrowserDialog<T> dialog;
-
 
     /**
      * Constructs a new <tt>SelectIMObjectTask</tt>.
@@ -94,7 +89,8 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
     }
 
     /**
-     * Constructs a <tt>SelectIMObjectTask</tt>.
+     * Constructs a new <tt>SelectIMObjectTask</tt>.
+     * The selected object updates the local context.
      *
      * @param query the query
      */
@@ -103,23 +99,14 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
     }
 
     /**
-     * Constructs a <tt>SelectIMObjectTask</tt>.
-     *
-     * @param query      the query
-     * @param createTask if non-null, handles creation of new objects
-     */
-    public SelectIMObjectTask(Query<T> query, Task createTask) {
-        this(getType(query.getShortNames()), query, createTask);
-    }
-
-    /**
-     * Constructs a <tt>SelectIMObjectTask</tt>.
+     * Constructs a new <tt>SelectIMObjectTask</tt>.
      *
      * @param type       the collective noun for the types this may select
      * @param query      the query
      * @param createTask if non-null, handles creation of new objects
      */
-    public SelectIMObjectTask(String type, Query<T> query, Task createTask) {
+    public SelectIMObjectTask(String type, Query<T> query,
+                              Task createTask) {
         this.type = type;
         this.query = query;
         this.createTask = createTask;
@@ -147,15 +134,6 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
     }
 
     /**
-     * Returns the browser dialog.
-     *
-     * @return the browser dialog, or <tt>null</tt> if none is being displayed
-     */
-    public BrowserDialog<T> getBrowserDialog() {
-        return dialog;
-    }
-
-    /**
      * Starts the task.
      * <p/>
      * The registered {@link TaskListener} will be notified on completion or failure.
@@ -169,18 +147,8 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
         }
         String[] buttons = isRequired() ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);
-        dialog = new BrowserDialog<T>(title, message, buttons, browser, addNew);
+        final BrowserDialog<T> dialog = new BrowserDialog<T>(title, message, buttons, browser, addNew);
         dialog.addWindowPaneListener(new PopupDialogListener() {
-
-            @Override
-            protected void onAction(PopupDialog dialog) {
-                try {
-                    super.onAction(dialog);
-                } finally {
-                    SelectIMObjectTask.this.dialog = null;
-                }
-            }
-
             @Override
             public void onOK() {
                 T selected = dialog.getSelected();
@@ -221,7 +189,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
              */
             private void onNew() {
                 createTask.addTaskListener(getTaskListeners());
-                start(createTask, context);
+                createTask.start(context);
             }
 
         });

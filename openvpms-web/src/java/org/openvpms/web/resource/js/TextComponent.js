@@ -172,180 +172,177 @@ EchoTextComponent = Core.extend({
         return document.getElementById(this.elementId);
     },
 
-    $virtual: {
+    /**
+     * Initializes the text component support object.
+     */
+    init: function() {
+        var element = this.getElement();
 
-        /**
-         * Initializes the text component support object.
-         */
-        init: function() {
-            var element = this.getElement();
-
-            if (!this.enabled) {
-                element.readOnly = true;
-            }
-
-            if (this.text) {
-                this.setText(this.text);
-            } else {
-                this.hash = this.hashCode(element.value);
-            }
-
-            if (this.horizontalScroll !== 0) {
-                element.scrollLeft = this.horizontalScroll;
-            }
-
-            this.multipleLines = element.nodeName.toLowerCase() != "input";
-
-            if (this.verticalScroll !== 0) {
-                if (EchoClientProperties.get("quirkIERepaint")) {
-                    // Avoid IE quirk where browser will fail to set scroll bar position.
-                    var originalWidth = element.style.width;
-                    var temporaryWidth = parseInt(element.clientWidth, 10) - 1;
-                    element.style.width = temporaryWidth + "px";
-                    element.style.width = originalWidth;
-                }
-                element.scrollTop = this.verticalScroll;
-            }
-
-            if (EchoClientProperties.get("quirkMozillaTextInputRepaint")) {
-                // Avoid Mozilla quirk where text will be rendered outside of text field
-                // (this appears to be a Mozilla bug).
-                var noValue = !element.value;
-                if (noValue) {
-                    element.value = "-";
-                }
-                var currentWidth = element.style.width;
-                element.style.width = "20px";
-                element.style.width = currentWidth;
-                if (noValue) {
-                    element.value = "";
-                }
-            }
-
-            EchoEventProcessor.addHandler(element, "mouseout", "EchoTextComponent.processChange");
-            EchoEventProcessor.addHandler(element, "blur", "EchoTextComponent.processBlur");
-            EchoEventProcessor.addHandler(element, "focus", "EchoTextComponent.processFocus");
-            EchoEventProcessor.addHandler(element, "keyup", "EchoTextComponent.processKeyUp");
-
-            EchoDomUtil.addEventListener(element, "keypress", EchoTextComponent.processKeyPress, false);
-
-            EchoDomPropertyStore.setPropertyValue(element, "component", this);
-        },
-
-        setText: function(text) {
-            var element = this.getElement();
-            this.hash = this.hashCode(text);
-            element.value = text;
-        },
-
-        /**
-         * Processes a focus blur event:
-         * Records the current state of the text field to the ClientMessage.
-         *
-         * @param echoEvent the event, preprocessed by the
-         *        <code>EchoEventProcessor</code>
-         */
-        processBlur: function(echoEvent) {
-            if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
-                return;
-            }
-
-            this.updateClientMessage();
-            EchoFocusManager.setFocusedState(this.elementId, false);
-        },
-
-        /**
-         * Processes a text change event.
-         * Records the current state of the text field to the ClientMessage.
-         *
-         * @param echoEvent the event, preprocessed by the
-         *        <code>EchoEventProcessor</code>
-         */
-        processChange: function(echoEvent) {
-            if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
-                return;
-            }
-            this.updateClientMessage();
-        },
-
-        /**
-         * Processes a focus event:
-         * Notes focus state in ClientMessage.
-         *
-         * @param echoEvent the event, preprocessed by the
-         *        <code>EchoEventProcessor</code>
-         */
-        processFocus: function(echoEvent) {
-            if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
-                return;
-            }
-
-            EchoFocusManager.setFocusedState(this.elementId, true);
-        },
-
-        /**
-         * Processes a key press event:
-         * Initiates an action in the event that the key pressed was the
-         * ENTER key.
-         *
-         * @param e the DOM Level 2 event
-         */
-        processKeyPress: function(e) {
-            if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), true)) {
-                EchoDomUtil.preventEventDefault(e);
-                return;
-            }
-            if (e.keyCode == 13) {
-                if (!this.multipleLines) {
-                    EchoDomUtil.preventEventDefault(e);
-                }
-                this.doAction();
-            }
-        },
-
-        /**
-         * Processes a key up event:
-         * Records the current state of the text field to the ClientMessage.
-         *
-         * @param echoEvent the event, preprocessed by the
-         *        <code>EchoEventProcessor</code>
-         */
-        processKeyUp: function(echoEvent) {
-            var element = this.getElement();
-            if (!this.enabled || !EchoClientEngine.verifyInput(element, true)) {
-                EchoDomUtil.preventEventDefault(echoEvent);
-                return;
-            }
-
-            if (this.maximumLength >= 0) {
-                if (element.value && element.value.length > this.maximumLength) {
-                    element.value = element.value.substring(0, this.maximumLength);
-                }
-            }
-
-            this.updateClientMessage();
-        },
-
-        /**
-         * Updates the component state in the outgoing <code>ClientMessage</code>.
-         */
-        updateClientMessage: function() {
-            var element = this.getElement();
-            var newHash = this.hashCode(element.value);
-            if (this.hash != newHash) {
-                var textPropertyElement = EchoClientMessage.createPropertyElement(this.elementId, "text");
-
-                if (textPropertyElement.firstChild) {
-                    textPropertyElement.firstChild.nodeValue = element.value;
-                } else {
-                    textPropertyElement.appendChild(EchoClientMessage.messageDocument.createTextNode(element.value));
-                }
-                this.hash = newHash;
-            }
-
-            EchoClientMessage.setPropertyValue(this.elementId, "horizontalScroll", element.scrollLeft);
-            EchoClientMessage.setPropertyValue(this.elementId, "verticalScroll", element.scrollTop);
+        if (!this.enabled) {
+            element.readOnly = true;
         }
+
+        if (this.text) {
+            this.setText(this.text);
+        } else {
+            this.hash = this.hashCode(element.value);
+        }
+
+        if (this.horizontalScroll !== 0) {
+            element.scrollLeft = this.horizontalScroll;
+        }
+
+        this.multipleLines = element.nodeName.toLowerCase() != "input";
+
+        if (this.verticalScroll !== 0) {
+            if (EchoClientProperties.get("quirkIERepaint")) {
+                // Avoid IE quirk where browser will fail to set scroll bar position.
+                var originalWidth = element.style.width;
+                var temporaryWidth = parseInt(element.clientWidth, 10) - 1;
+                element.style.width = temporaryWidth + "px";
+                element.style.width = originalWidth;
+            }
+            element.scrollTop = this.verticalScroll;
+        }
+
+        if (EchoClientProperties.get("quirkMozillaTextInputRepaint")) {
+            // Avoid Mozilla quirk where text will be rendered outside of text field
+            // (this appears to be a Mozilla bug).
+            var noValue = !element.value;
+            if (noValue) {
+                element.value = "-";
+            }
+            var currentWidth = element.style.width;
+            element.style.width = "20px";
+            element.style.width = currentWidth;
+            if (noValue) {
+                element.value = "";
+            }
+        }
+
+        EchoEventProcessor.addHandler(element, "mouseout", "EchoTextComponent.processChange");
+        EchoEventProcessor.addHandler(element, "blur", "EchoTextComponent.processBlur");
+        EchoEventProcessor.addHandler(element, "focus", "EchoTextComponent.processFocus");
+        EchoEventProcessor.addHandler(element, "keyup", "EchoTextComponent.processKeyUp");
+
+        EchoDomUtil.addEventListener(element, "keypress", EchoTextComponent.processKeyPress, false);
+
+        EchoDomPropertyStore.setPropertyValue(element, "component", this);
+    },
+
+    setText: function(text) {
+        var element = this.getElement();
+        this.hash = this.hashCode(text);
+        element.value = text;
+    },
+
+    /**
+     * Processes a focus blur event:
+     * Records the current state of the text field to the ClientMessage.
+     *
+     * @param echoEvent the event, preprocessed by the
+     *        <code>EchoEventProcessor</code>
+     */
+    processBlur: function(echoEvent) {
+        if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+            return;
+        }
+
+        this.updateClientMessage();
+        EchoFocusManager.setFocusedState(this.elementId, false);
+    },
+
+    /**
+     * Processes a text change event.
+     * Records the current state of the text field to the ClientMessage.
+     *
+     * @param echoEvent the event, preprocessed by the
+     *        <code>EchoEventProcessor</code>
+     */
+    processChange: function(echoEvent) {
+        if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+            return;
+        }
+        this.updateClientMessage();
+    },
+
+    /**
+     * Processes a focus event:
+     * Notes focus state in ClientMessage.
+     *
+     * @param echoEvent the event, preprocessed by the
+     *        <code>EchoEventProcessor</code>
+     */
+    processFocus: function(echoEvent) {
+        if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+            return;
+        }
+
+        EchoFocusManager.setFocusedState(this.elementId, true);
+    },
+
+    /**
+     * Processes a key press event:
+     * Initiates an action in the event that the key pressed was the
+     * ENTER key.
+     *
+     * @param e the DOM Level 2 event
+     */
+    processKeyPress: function(e) {
+        if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), true)) {
+            EchoDomUtil.preventEventDefault(e);
+            return;
+        }
+        if (e.keyCode == 13) {
+            if (!this.multipleLines) {
+                EchoDomUtil.preventEventDefault(e);
+            }
+            this.doAction();
+        }
+    },
+
+    /**
+     * Processes a key up event:
+     * Records the current state of the text field to the ClientMessage.
+     *
+     * @param echoEvent the event, preprocessed by the
+     *        <code>EchoEventProcessor</code>
+     */
+    processKeyUp: function(echoEvent) {
+        var element = this.getElement();
+        if (!this.enabled || !EchoClientEngine.verifyInput(element, true)) {
+            EchoDomUtil.preventEventDefault(echoEvent);
+            return;
+        }
+
+        if (this.maximumLength >= 0) {
+            if (element.value && element.value.length > this.maximumLength) {
+                element.value = element.value.substring(0, this.maximumLength);
+            }
+        }
+
+        this.updateClientMessage();
+    },
+
+    /**
+     * Updates the component state in the outgoing <code>ClientMessage</code>.
+     */
+    updateClientMessage: function() {
+        var element = this.getElement();
+        var newHash = this.hashCode(element.value);
+        if (this.hash != newHash) {
+            var textPropertyElement = EchoClientMessage.createPropertyElement(this.elementId, "text");
+
+            if (textPropertyElement.firstChild) {
+                textPropertyElement.firstChild.nodeValue = element.value;
+            } else {
+                textPropertyElement.appendChild(EchoClientMessage.messageDocument.createTextNode(element.value));
+            }
+            this.hash = newHash;
+        }
+
+        EchoClientMessage.setPropertyValue(this.elementId, "horizontalScroll", element.scrollLeft);
+        EchoClientMessage.setPropertyValue(this.elementId, "verticalScroll", element.scrollTop);
     },
 
     hashCode: function(text) {

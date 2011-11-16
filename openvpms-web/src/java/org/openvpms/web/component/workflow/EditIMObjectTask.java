@@ -20,9 +20,9 @@ package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
@@ -31,10 +31,8 @@ import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.util.SilentIMObjectDeletor;
 import org.openvpms.web.component.util.ErrorHelper;
 
 
@@ -86,11 +84,6 @@ public class EditIMObjectTask extends AbstractTask {
      * This only applies when {@link #interactive} is <tt>false</tt>.
      */
     private boolean showEditorOnError = true;
-
-    /**
-     * The current edit dialog.
-     */
-    private EditDialog dialog;
 
 
     /**
@@ -218,7 +211,7 @@ public class EditIMObjectTask extends AbstractTask {
             if (create) {
                 CreateIMObjectTask creator
                         = new CreateIMObjectTask(shortName, createProperties);
-                creator.addTaskListener(new DefaultTaskListener() {
+                creator.addTaskListener(new TaskListener() {
                     public void taskEvent(TaskEvent event) {
                         switch (event.getType()) {
                             case SKIPPED:
@@ -232,22 +225,13 @@ public class EditIMObjectTask extends AbstractTask {
                         }
                     }
                 });
-                start(creator, context);
+                creator.start(context);
             } else {
                 edit(context);
             }
         } else {
             edit(object, context);
         }
-    }
-
-    /**
-     * Returns the edit dialog.
-     *
-     * @return the edit dialog, or <tt>null</tt> if none is being displayed
-     */
-    public EditDialog getEditDialog() {
-        return dialog;
     }
 
     /**
@@ -278,7 +262,7 @@ public class EditIMObjectTask extends AbstractTask {
         try {
             final IMObjectEditor editor = createEditor(object, context);
             if (interactive) {
-                interactiveEdit(editor);
+                interactiveEdit(editor, context);
             } else {
                 backgroundEdit(editor, context);
             }
@@ -297,7 +281,8 @@ public class EditIMObjectTask extends AbstractTask {
      * @param context the task context
      * @return a new editor
      */
-    protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
+    protected IMObjectEditor createEditor(IMObject object,
+                                          TaskContext context) {
         LayoutContext layout = new DefaultLayoutContext(true);
         layout.setContext(context);
         return IMObjectEditorFactory.create(object, layout);
@@ -306,22 +291,22 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Shows the editor in an edit dialog.
      *
-     * @param editor the editor
+     * @param editor  the editor
+     * @param context the task context
      */
-    protected void interactiveEdit(final IMObjectEditor editor) {
+    protected void interactiveEdit(final IMObjectEditor editor,
+                                   TaskContext context) {
         GlobalContext.getInstance().setCurrent(object);
-        dialog = createEditDialog(editor, skip);
+        final EditDialog dialog = createEditDialog(editor, context, skip);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
-                GlobalContext.getInstance().setCurrent(null);
-                String action = dialog.getAction();
-                dialog = null;
-                if (PopupDialog.OK_ID.equals(action)) {
-                    onEditCompleted();
-                } else if (PopupDialog.SKIP_ID.equals(action)) {
-                    onEditSkipped(editor);
+                if (EditDialog.SKIP_ID.equals(dialog.getAction())) {
+                    if (deleteOnCancelOrSkip) {
+                        delete(editor.getObject());
+                    }
+                    notifySkipped();
                 } else {
-                    onEditCancelled(editor);
+                    onEditCompleted(editor);
                 }
             }
 
@@ -355,7 +340,7 @@ public class EditIMObjectTask extends AbstractTask {
             }
         } else {
             // editor invalid. Pop up a dialog.
-            interactiveEdit(editor);
+            interactiveEdit(editor, context);
         }
     }
 
@@ -372,45 +357,34 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Creates a new edit dialog.
      *
-     * @param editor the editor
-     * @param skip   if <tt>true</tt>, editing may be skipped
+     * @param editor  the editor
+     * @param context the task context
+     * @param skip    if <tt>true</tt>, editing may be skipped
      * @return a new edit dialog
      */
-    protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip) {
+    protected EditDialog createEditDialog(IMObjectEditor editor,
+                                          TaskContext context,
+                                          boolean skip) {
         EditDialog dialog = EditDialogFactory.create(editor);
         dialog.addSkip(skip);
         return dialog;
     }
 
     /**
-     * Invoked when editing is complete.
-     */
-    protected void onEditCompleted() {
-        notifyCompleted();
-    }
-
-    /**
-     * Invoked when editing is skipped.
+     * Invoked when the editor is closed.
      *
      * @param editor the editor
      */
-    protected void onEditSkipped(IMObjectEditor editor) {
-        if (deleteOnCancelOrSkip) {
-            delete(editor.getObject());
+    protected void onEditCompleted(IMObjectEditor editor) {
+        GlobalContext.getInstance().setCurrent(null);
+        if (editor.isDeleted() || editor.isCancelled()) {
+            if (editor.isCancelled() && deleteOnCancelOrSkip) {
+                delete(editor.getObject());
+            }
+            notifyCancelled();
+        } else {
+            notifyCompleted();
         }
-        notifySkipped();
-    }
-
-    /**
-     * Invoked when editing is cancelled.
-     *
-     * @param editor the editor
-     */
-    protected void onEditCancelled(IMObjectEditor editor) {
-        if (deleteOnCancelOrSkip) {
-            delete(editor.getObject());
-        }
-        notifyCancelled();
     }
 
     /**
@@ -425,8 +399,7 @@ public class EditIMObjectTask extends AbstractTask {
                 if (object != null) {
                     // make sure the the last saved instance is being deleted
                     // to avoid validation errors
-                    IMObjectDeletor deletor = new SilentIMObjectDeletor();
-                    deletor.delete(object, new DefaultIMObjectDeletionListener());
+                    ArchetypeServiceHelper.getArchetypeService().remove(object);
                 }
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

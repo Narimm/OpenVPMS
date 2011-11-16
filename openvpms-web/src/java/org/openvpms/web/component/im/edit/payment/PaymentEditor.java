@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.account.AccountActEditor;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
@@ -49,21 +48,6 @@ public abstract class PaymentEditor extends AccountActEditor {
     public PaymentEditor(Act act, IMObject parent,
                          LayoutContext context) {
         super(act, parent, context);
-    }
-
-    /**
-     * Adds a new payment item, returning its editor.
-     *
-     * @return the payment item editor, or <tt>null</tt> if an item couldn't be created
-     */
-    public PaymentItemEditor addItem() {
-        ActRelationshipCollectionEditor items = getEditor();
-        PaymentItemEditor result = (PaymentItemEditor) items.add();
-        if (result != null && items.getCurrentEditor() == result) {
-            // set the default focus to that of the item editor
-            getFocusGroup().setDefault(result.getFocusGroup().getDefaultFocus());
-        }
-        return result;
     }
 
     /**

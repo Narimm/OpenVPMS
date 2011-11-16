@@ -108,9 +108,9 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
                 property, getParent(), getLayoutContext(), true) {
 
             @Override
-            public boolean setObject(Party object) {
+            public void setObject(Party object) {
+                super.setObject(object);
                 ContextHelper.setCustomer(getLayoutContext().getContext(), object);
-                return super.setObject(object);
             }
 
             /**

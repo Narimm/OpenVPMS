@@ -163,11 +163,11 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      *
      * @param object the object. May  be <tt>null</tt>
      */
-    public boolean setObject(T object) {
+    public void setObject(T object) {
         if (!inListener) {
             selector.setObject(object);
         }
-        return updateProperty(object);
+        updateProperty(object);
     }
 
     /**
@@ -303,8 +303,9 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         context.setCurrent(object);
         LayoutContext layoutContext = new DefaultLayoutContext(true);
         layoutContext.setContext(context);
-        final IMObjectEditor editor = IMObjectEditorFactory.create(object, parent, layoutContext);
-        final EditDialog dialog = EditDialogFactory.create(editor);
+        final IMObjectEditor editor
+                = IMObjectEditorFactory.create(object, parent, layoutContext);
+        final EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 getFocusGroup().setFocus(); // restore focus
@@ -386,26 +387,23 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Updates the underlying property, notifying any registered listeners.
      *
      * @param object the object. May be <tt>null</tt>
-     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it cannot be set due to error, or is the same as
-     *         the existing value
      */
-    private boolean updateProperty(IMObject object) {
-        boolean modified = false;
+    private void updateProperty(IMObject object) {
         removeModifiableListener(propertyListener);
         try {
             Property property = getProperty();
+            boolean changed;
             if (object != null) {
-                modified = property.setValue(object.getObjectReference());
+                changed = property.setValue(object.getObjectReference());
             } else {
-                modified = property.setValue(null);
+                changed = property.setValue(null);
             }
-            if (modified) {
+            if (changed) {
                 resetValid();
             }
         } finally {
             addModifiableListener(propertyListener);
         }
-        return modified;
     }
 
     /**

@@ -66,11 +66,6 @@ class PrintDocumentsTask extends AbstractTask {
     private final Date startTime;
 
     /**
-     * The print dialog.
-     */
-    private BatchPrintDialog dialog;
-
-    /**
      * The charge acts to print.
      */
     private static final String[] CHARGES = {"act.customerAccountCharges*"};
@@ -108,34 +103,21 @@ class PrintDocumentsTask extends AbstractTask {
         } else {
             String title = Messages.get("workflow.checkout.print.title");
             String[] buttons = isRequired() ? PopupDialog.OK_CANCEL : PopupDialog.OK_SKIP_CANCEL;
-            dialog = new BatchPrintDialog(title, buttons, unprinted);
+            final BatchPrintDialog dialog = new BatchPrintDialog(title, buttons, unprinted);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
-                    try {
-                        String action = dialog.getAction();
-                        if (BatchPrintDialog.OK_ID.equals(action)) {
-                            print(dialog.getSelected(), context);
-                        } else if (BatchPrintDialog.SKIP_ID.equals(action)) {
-                            notifySkipped();
-                        } else {
-                            notifyCancelled();
-                        }
-                    } finally {
-                        dialog = null;
+                    String action = dialog.getAction();
+                    if (BatchPrintDialog.OK_ID.equals(action)) {
+                        print(dialog.getSelected(), context);
+                    } else if (BatchPrintDialog.SKIP_ID.equals(action)) {
+                        notifySkipped();
+                    } else {
+                        notifyCancelled();
                     }
                 }
             });
             dialog.show();
         }
-    }
-
-    /**
-     * Returns the print dialog.
-     *
-     * @return the print dialog, or <tt>null</tt> if none is being displayed
-     */
-    public BatchPrintDialog getPrintDialog() {
-        return dialog;
     }
 
     /**

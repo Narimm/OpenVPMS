@@ -22,9 +22,9 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
+import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
@@ -137,11 +137,6 @@ public abstract class PopupDialog extends PopupWindow {
      */
     private VetoListener cancelListener;
 
-    /**
-     * The default close action.
-     */
-    private String defaultCloseAction;
-
 
     /**
      * Construct a new <tt>PopupDialog</tt>.
@@ -179,9 +174,6 @@ public abstract class PopupDialog extends PopupWindow {
         for (String button : buttons) {
             addButton(button, false);
         }
-        if (buttons.length != 0) {
-            defaultCloseAction = buttons[buttons.length - 1];
-        }
     }
 
     /**
@@ -200,31 +192,6 @@ public abstract class PopupDialog extends PopupWindow {
      */
     public void setCancelListener(VetoListener listener) {
         cancelListener = listener;
-    }
-
-    /**
-     * Sets the default action when the close button is pressed.
-     * <p/>
-     * Defaults to the last button displayed.
-     *
-     * @param action the default action. May be <tt>null</tt>
-     */
-    public void setDefaultCloseAction(String action) {
-        defaultCloseAction = action;
-    }
-
-    /**
-     * Processes a user request to close the window (via the close button).
-     * <p/>
-     * If there is an {@link #defaultCloseAction}, this will be invoked.
-     */
-    @Override
-    public void userClose() {
-        if (action == null && defaultCloseAction != null) {
-            onButton(defaultCloseAction);
-        } else {
-            super.userClose();
-        }
     }
 
     /**

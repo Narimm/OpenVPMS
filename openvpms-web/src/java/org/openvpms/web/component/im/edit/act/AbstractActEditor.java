@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -166,24 +165,6 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Deletes the object.
-     * <p/>
-     * This uses {@link #deleteChildren()} to delete the children prior to
-     * invoking {@link #deleteObject()}.
-     *
-     * @return <tt>true</tt> if the delete was successful
-     * @throws IllegalStateException if the act is POSTED
-     */
-    @Override
-    protected boolean doDelete() {
-        Act act = (Act) getObject();
-        if (ActStatus.POSTED.equals(act.getStatus())) {
-            throw new IllegalStateException("Cannot delete " + ActStatus.POSTED + " act");
-        }
-        return super.doDelete();
-    }
-
-    /**
      * Helper to initialises a participation, if it exists and is empty.
      *
      * @param name   the participation name
@@ -225,15 +206,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @return <tt>true</tt> if the participant was modified, otherwise <tt>false</tt>
      */
     protected boolean setParticipant(String name, IMObject entity) {
-        boolean modified;
-        ParticipationEditor<Entity> editor = getParticipationEditor(name, false);
-        if (editor != null) {
-            modified = editor.setEntity((Entity) entity);
-        } else {
-            IMObjectReference ref = (entity != null) ? entity.getObjectReference() : null;
-            modified = setParticipant(name, ref);
-        }
-        return modified;
+        IMObjectReference ref = (entity != null) ? entity.getObjectReference() : null;
+        return setParticipant(name, ref);
     }
 
     /**
@@ -248,7 +222,10 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         boolean modified = false;
         ParticipationEditor editor = getParticipationEditor(name, false);
         if (editor != null) {
-            modified = editor.setEntityRef(entity);
+            if (!ObjectUtils.equals(editor.getEntityRef(), entity)) {
+                editor.setEntityRef(entity);
+                modified = true;
+            }
         } else {
             // no editor created yet. Set the participant via the corresponding
             // property

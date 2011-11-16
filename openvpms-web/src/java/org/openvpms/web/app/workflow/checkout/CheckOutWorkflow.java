@@ -20,7 +20,6 @@ package org.openvpms.web.app.workflow.checkout;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -30,14 +29,15 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import static org.openvpms.web.app.workflow.GetClinicalEventTask.EVENT_SHORTNAME;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
+import static org.openvpms.web.app.workflow.GetInvoiceTask.INVOICE_SHORTNAME;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
-import org.openvpms.web.component.workflow.EvalTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
@@ -65,21 +65,14 @@ public class CheckOutWorkflow extends WorkflowImpl {
      */
     private TaskContext initial;
 
-    /**
-     * The external context to access and update.
-     */
-    private final Context external;
-
 
     /**
      * Constructs a new <tt>CheckOutWorkflow</tt> from an
      * <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
-     * @param act     the act
-     * @param context the external context to access and update
+     * @param act the act
      */
-    public CheckOutWorkflow(Act act, Context context) {
-        external = context;
+    public CheckOutWorkflow(Act act) {
         initialise(act);
 
         // update the act status
@@ -95,13 +88,14 @@ public class CheckOutWorkflow extends WorkflowImpl {
         }
         addTask(new UpdateIMObjectTask(act, appProps));
 
-        // add a task to update the context at the end of the workflow
+        // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
-                external.setCustomer(context.getCustomer());
-                external.setPatient(context.getPatient());
-                external.setTill(context.getTill());
-                external.setClinician(context.getClinician());
+                Context global = GlobalContext.getInstance();
+                global.setCustomer(context.getCustomer());
+                global.setPatient(context.getPatient());
+                global.setTill(context.getTill());
+                global.setClinician(context.getClinician());
             }
         });
     }
@@ -121,35 +115,37 @@ public class CheckOutWorkflow extends WorkflowImpl {
      */
     private void initialise(Act act) {
         ActBean bean = new ActBean(act);
+        GlobalContext global = GlobalContext.getInstance();
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        User clinician = external.getClinician();
+        User clinician = global.getClinician();
 
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
 
-        initial.setUser(external.getUser());
-        initial.setPractice(external.getPractice());
-        initial.setLocation(external.getLocation());
+        initial.setUser(global.getUser());
+        initial.setPractice(global.getPractice());
+        initial.setLocation(global.getLocation());
 
-        // get the latest invoice, or create one if none is available, and edit it
+        // get the latest invoice, or create one if none is available, and edit
+        // it
         addTask(new GetInvoiceTask());
-        addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
-        addTask(createEditInvoiceTask());
+        addTask(new ConditionalCreateTask(INVOICE_SHORTNAME));
+        addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
 
         // on save, determine if the user wants to post the invoice, but
         // only if its not already posted
         NodeConditionTask<String> notPosted = new NodeConditionTask<String>(
-                CustomerAccountArchetypes.INVOICE, "status", false, FinancialActStatus.POSTED);
+                INVOICE_SHORTNAME, "status", false, FinancialActStatus.POSTED);
         addTask(new ConditionalTask(notPosted, getPostTask()));
 
         // if the invoice is posted, prompt to pay the account
         NodeConditionTask<String> posted = new NodeConditionTask<String>(
-                CustomerAccountArchetypes.INVOICE, "status", FinancialActStatus.POSTED);
+                INVOICE_SHORTNAME, "status", FinancialActStatus.POSTED);
 
-        PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
+        PaymentWorkflow payWorkflow = new PaymentWorkflow(initial);
         payWorkflow.setRequired(false);
         addTask(new ConditionalTask(posted, payWorkflow));
 
@@ -172,36 +168,6 @@ public class CheckOutWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Creates a new task to edit the invoice.
-     *
-     * @return a new task
-     */
-    protected EditIMObjectTask createEditInvoiceTask() {
-        return new EditIMObjectTask(CustomerAccountArchetypes.INVOICE);
-    }
-
-    /**
-     * Creates a new payment workflow.
-     *
-     * @param context the context
-     * @return a new payment workflow
-     */
-    protected PaymentWorkflow createPaymentWorkflow(TaskContext context) {
-        return new PaymentWorkflow(context, external);
-    }
-
-    /**
-     * Returns a condition task to determine if the invoice should be posted.
-     *
-     * @return a new condition
-     */
-    protected EvalTask<Boolean> getPostCondition() {
-        String invoiceTitle = Messages.get("workflow.checkout.postinvoice.title");
-        String invoiceMsg = Messages.get("workflow.checkout.postinvoice.message");
-        return new ConfirmationTask(invoiceTitle, invoiceMsg);
-    }
-
-    /**
      * Returns a task to post the invoice.
      *
      * @return a task to post the invoice
@@ -215,11 +181,16 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 return new Date(); // workaround for OVPMS-734. todo
             }
         });
-        postTasks.addTask(new UpdateIMObjectTask(CustomerAccountArchetypes.INVOICE, invoiceProps));
+        postTasks.addTask(
+                new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
         postTasks.setRequired(false);
 
-        EvalTask<Boolean> condition = getPostCondition();
-        ConditionalTask post = new ConditionalTask(condition, postTasks);
+        String invoiceTitle = Messages.get(
+                "workflow.checkout.postinvoice.title");
+        String invoiceMsg = Messages.get(
+                "workflow.checkout.postinvoice.message");
+        ConditionalTask post = new ConditionalTask(new ConfirmationTask(
+                invoiceTitle, invoiceMsg), postTasks);
         post.setRequired(false);
         return post;
     }
@@ -253,7 +224,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
          * @throws OpenVPMSException for any error
          */
         public void execute(TaskContext context) {
-            Date min = getMinStartTime(CustomerAccountArchetypes.INVOICE, startTime, context);
+            Date min = getMinStartTime(INVOICE_SHORTNAME, startTime, context);
             min = getMinStartTime(EVENT_SHORTNAME, min, context);
             PrintDocumentsTask printDocs = new PrintDocumentsTask(min);
             printDocs.setRequired(false);

@@ -22,14 +22,14 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.app.GlobalContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,11 +47,6 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      * Determines if a print dialog is being displayed.
      */
     private boolean interactive;
-
-    /**
-     * Determines if the print dialog should always be displayed.
-     */
-    private boolean alwaysInteractive;
 
     /**
      * The printer to fallback to, if none is specified by the document templates. This is selected once.
@@ -82,17 +77,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      *         printed in the background
      */
     public boolean isInteractive() {
-        return alwaysInteractive || interactive;
-    }
-
-    /**
-     * Determines if reminders should always be printed interactively.
-     *
-     * @param interactive if <tt>true</tt>, reminders should always be printed interactively. If <tt>false</tt>,
-     *                    reminders will only be printed interactively if a printer needs to be selected
-     */
-    public void setInteractiveAlways(boolean interactive) {
-        alwaysInteractive = interactive;
+        return interactive;
     }
 
     /**
@@ -133,7 +118,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
         if (printerName == null) {
             printerName = fallbackPrinter;
         }
-        interactive = alwaysInteractive || printerName == null;
+        interactive = printerName == null;
         iPrinter.setInteractive(interactive);
 
         if (interactive) {

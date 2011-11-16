@@ -59,36 +59,18 @@ public class TaskListeners implements TaskListener {
     }
 
     /**
-     * Invoked prior to a task starting.
-     * Notifies all registered listeners.
-     *
-     * @param task the task
-     */
-    public void starting(Task task) {
-        for (TaskListener listener : getListeners()) {
-            listener.starting(task);
-        }
-    }
-
-    /**
      * Invoked when a task event occurs.
      * Notifies all registered listeners.
      *
      * @param event the event
      */
     public void taskEvent(TaskEvent event) {
-        for (TaskListener listener : getListeners()) {
-            listener.taskEvent(event);
+        if (listeners != null) {
+            TaskListener[] l = listeners.toArray(new TaskListener[0]);
+            for (TaskListener listener : l) {
+                listener.taskEvent(event);
+            }
         }
-    }
-
-    /**
-     * Helper to return the listeners as an array, to avoid concurrent modification exceptions.
-     *
-     * @return the listeners
-     */
-    private TaskListener[] getListeners() {
-        return (listeners != null) ? listeners.toArray(new TaskListener[listeners.size()]) : new TaskListener[0];
     }
 
 }

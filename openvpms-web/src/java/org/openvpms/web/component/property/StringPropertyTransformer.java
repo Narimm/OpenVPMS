@@ -114,15 +114,6 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     }
 
     /**
-     * Returns the macro evaluator.
-     *
-     * @return the macro evaluator. May be <tt>null</tt>
-     */
-    public MacroEvaluator getMacroEvaluator() {
-        return macros;
-    }
-
-    /**
      * Determines if whitespace should be trimmed.
      *
      * @param trim if <tt>true</tt> trim the string of leading and trailing spaces and new lines

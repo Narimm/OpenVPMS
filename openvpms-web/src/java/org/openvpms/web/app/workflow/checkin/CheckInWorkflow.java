@@ -18,9 +18,7 @@
 
 package org.openvpms.web.app.workflow.checkin;
 
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
-import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -29,7 +27,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctio
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.workflow.EditClinicalEventTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -59,14 +57,15 @@ public class CheckInWorkflow extends WorkflowImpl {
     private TaskContext initial;
 
     /**
-     * The external context to access and update.
-     */
-    private Context external;
-
-    /**
      * Work list archetype short name.
      */
-    protected static final String WORK_LIST_SHORTNAME = "party.organisationWorkList";
+    private static final String WORK_LIST_SHORTNAME
+            = "party.organisationWorkList";
+
+    /**
+     * Task act archetype short name.
+     */
+    private static final String CUSTOMER_TASK_SHORTNAME = "act.customerTask";
 
 
     /**
@@ -75,29 +74,27 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param customer  the customer
      * @param patient   the patient
      * @param clinician the user. May be <tt>null</tt>
-     * @param context   the external context to access and update
      */
-    public CheckInWorkflow(Party customer, Party patient, User clinician, Context context) {
-        initialise(null, customer, patient, clinician, null, null, context);
+    public CheckInWorkflow(Party customer, Party patient, User clinician) {
+        initialise(null, customer, patient, clinician, null,null);
     }
 
     /**
      * Constructs a new <tt>CheckInWorkflow</tt> from an appointment.
      *
      * @param appointment the appointment
-     * @param context     the external context to access and update
      */
-    public CheckInWorkflow(Act appointment, Context context) {
-        initialise(appointment, context);
-    }
+    public CheckInWorkflow(Act appointment) {
+        ActBean bean = new ActBean(appointment);
+        Party customer = (Party) bean.getParticipant("participation.customer");
+        Party patient = (Party) bean.getParticipant("participation.patient");
+        User clinician = (User) bean.getParticipant("participation.clinician");
 
-    /**
-     * Default constructor.
-     * <p/>
-     * The workflow must be initialised via {@link #initialise} prior to use.
-     */
-    protected CheckInWorkflow() {
+        String reason = ArchetypeServiceFunctions.lookup(appointment, "reason", "Appointment");
+        String notes = bean.getString("description", "");
+        String description = Messages.get("workflow.checkin.task.description", reason, notes);
 
+        initialise(appointment, customer, patient, clinician, description,reason);
     }
 
     /**
@@ -109,54 +106,36 @@ public class CheckInWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Initialises the workflow from an appointment.
-     *
-     * @param appointment the appointment
-     * @param context     the external context to access and update
-     */
-    protected void initialise(Act appointment, Context context) {
-        ActBean bean = new ActBean(appointment);
-        Party customer = (Party) bean.getParticipant("participation.customer");
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        User clinician = (User) bean.getParticipant("participation.clinician");
-
-        String reason = ArchetypeServiceFunctions.lookup(appointment, "reason", "Appointment");
-        String notes = bean.getString("description", "");
-        String description = Messages.get("workflow.checkin.task.description", reason, notes);
-
-        initialise(appointment, customer, patient, clinician, description, reason, context);
-    }
-
-    /**
      * Initialise the workflow.
      *
      * @param appointment     the appointment. May be <tt>null</tt>
      * @param customer        the customer
      * @param patient         the patient
      * @param clinician       the clinician. May be <tt>null</tt>
-     * @param taskDescription the description to assign to the <em>act.customerTask</em>. May be <tt>null</tt>
-     * @param reason          the description to assign to the <em>act.patientClinicalEvent</em>. May be <tt>null</tt>
-     * @param context         the external context to access and update
+     * @param taskDescription the description to assign to the
+     *                        <em>act.customerTask</em>. May be
+     *                        <tt>null</tt>
      */
-    private void initialise(Act appointment, Party customer, Party patient, User clinician, String taskDescription,
-                            String reason, Context context) {
-        external = context;
+    private void initialise(Act appointment, Party customer, Party patient,
+                            User clinician, String taskDescription, String reason) {
+        final GlobalContext global = GlobalContext.getInstance();
         initial = new DefaultTaskContext(false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
 
         initial.setClinician(clinician);
-        initial.setUser(external.getUser());
+        initial.setUser(global.getUser());
         initial.setWorkListDate(new Date());
-        initial.setScheduleDate(external.getScheduleDate());
-        initial.setPractice(external.getPractice());
-        initial.setLocation(external.getLocation());
+        initial.setScheduleDate(global.getScheduleDate());
+        initial.setPractice(global.getPractice());
+        initial.setLocation(global.getLocation());
 
         if (patient == null) {
             // select/create a patient
-            EditIMObjectTask patientEditor = new EditIMObjectTask(PatientArchetypes.PATIENT, true);
-            addTask(createSelectPatientTask(initial, patientEditor));
-            addTask(new UpdateIMObjectTask(PatientArchetypes.PATIENT, new TaskProperties(), true));
+            String pet = "party.patientpet";
+            EditIMObjectTask patientEditor = new EditIMObjectTask(pet, true);
+            addTask(new SelectIMObjectTask<Party>(pet, initial, patientEditor));
+            addTask(new UpdateIMObjectTask(pet, new TaskProperties(), true));
         }
 
         // optionally select a worklist and edit a customer task
@@ -174,7 +153,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         // edit the act.patientClinicalEvent
         addTask(new EditClinicalEventTask());
-
+        
         // Reload the task to refresh the context with any edits made
         addTask(new ReloadTask(GetClinicalEventTask.EVENT_SHORTNAME));
 
@@ -191,33 +170,11 @@ public class CheckInWorkflow extends WorkflowImpl {
         // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
-                external.setPatient(context.getPatient());
-                external.setCustomer(context.getCustomer());
+                global.setPatient(context.getPatient());
+                global.setCustomer(context.getCustomer());
             }
         });
     }
-
-    /**
-     * Creates a new {@link SelectIMObjectTask} to select a patient.
-     *
-     * @param context       the context
-     * @param patientEditor the patient editor, if a new patient is selected
-     * @return a new task to select a patient
-     */
-    protected SelectIMObjectTask<Party> createSelectPatientTask(TaskContext context, EditIMObjectTask patientEditor) {
-        return new SelectIMObjectTask<Party>(PatientArchetypes.PATIENT, context, patientEditor);
-    }
-
-    /**
-     * Creates a new {@link SelectIMObjectTask} to select a work list.
-     *
-     * @param context the context
-     * @return a new task to select a worklist
-     */
-    protected SelectIMObjectTask<Party> createSelectWorkListTask(TaskContext context) {
-        return new SelectIMObjectTask<Party>(WORK_LIST_SHORTNAME, context);
-    }
-
 
     private class CustomerTaskWorkflow extends WorkflowImpl {
 
@@ -228,7 +185,9 @@ public class CheckInWorkflow extends WorkflowImpl {
          */
         public CustomerTaskWorkflow(String taskDescription) {
             // select a worklist
-            SelectIMObjectTask<Party> selectWorkList = createSelectWorkListTask(initial);
+            SelectIMObjectTask<Party> selectWorkList
+                    = new SelectIMObjectTask<Party>(WORK_LIST_SHORTNAME,
+                                                    initial);
             selectWorkList.setRequired(false);
             addTask(selectWorkList);
 
@@ -238,8 +197,9 @@ public class CheckInWorkflow extends WorkflowImpl {
             // create and edit an act.customerTask
             TaskProperties taskProps = new TaskProperties();
             taskProps.add("description", taskDescription);
-            addTask(new CreateIMObjectTask(ScheduleArchetypes.TASK, taskProps));
-            addTask(new EditIMObjectTask(ScheduleArchetypes.TASK, false, false));
+            addTask(new CreateIMObjectTask(CUSTOMER_TASK_SHORTNAME, taskProps));
+            addTask(new EditIMObjectTask(CUSTOMER_TASK_SHORTNAME, false,
+                                         false));
         }
 
     }

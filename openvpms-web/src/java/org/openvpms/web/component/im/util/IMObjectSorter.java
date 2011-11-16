@@ -60,16 +60,6 @@ public class IMObjectSorter {
      */
     private static final Log log = LogFactory.getLog(IMObjectSorter.class);
 
-    /**
-     * Sorts a collection of objects.
-     *
-     * @param objects   the objects
-     * @param node      the node name
-     * @param ascending if <tt>true</tt> sort ascending, otherwise sort descending
-     */
-    public static <T extends IMObject> void sort(List<T> objects, String node, boolean ascending) {
-        sort(objects, new NodeSortConstraint(node, ascending));
-    }
 
     /**
      * Sorts a collection of objects.
@@ -78,7 +68,7 @@ public class IMObjectSorter {
      * @param sort    the sort criteria
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> void sort(List<T> objects, SortConstraint... sort) {
+    public static <T extends IMObject> void sort(List<T> objects, SortConstraint[] sort) {
         ComparatorChain comparator = new ComparatorChain();
         for (SortConstraint constraint : sort) {
             if (constraint instanceof VirtualNodeSortConstraint) {

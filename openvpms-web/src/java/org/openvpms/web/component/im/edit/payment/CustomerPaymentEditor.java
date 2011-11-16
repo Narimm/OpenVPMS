@@ -23,7 +23,6 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -147,15 +146,6 @@ public class CustomerPaymentEditor extends PaymentEditor {
      */
     public void setExpectedAmount(BigDecimal amount) {
         expectedAmount = amount;
-    }
-
-    /**
-     * Sets the till.
-     *
-     * @param till the till. May be <tt>null</tt>
-     */
-    public void setTill(Entity till) {
-        setParticipant("till", till);
     }
 
     /**

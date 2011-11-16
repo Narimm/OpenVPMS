@@ -40,7 +40,6 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -193,12 +192,14 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         rules = new EstimationRules();
         try {
             EstimationInvoicer invoicer = new EstimationInvoicer();
-            CustomerChargeActEditDialog editor = invoicer.invoice(estimation, new DefaultLayoutContext(true));
-            editor.addWindowPaneListener(new WindowPaneListener() {
-                public void onClose(WindowPaneEvent event) {
-                    onRefresh(estimation);
-                }
-            });
+            CustomerChargeActEditDialog editor = invoicer.invoice(estimation);
+            if (editor != null) {
+                editor.addWindowPaneListener(new WindowPaneListener() {
+                    public void onClose(WindowPaneEvent event) {
+                        onRefresh(estimation);
+                    }
+                });
+            }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("customer.estimation.invoice.failed");
             ErrorHelper.show(title, exception);

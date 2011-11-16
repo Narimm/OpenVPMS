@@ -32,7 +32,6 @@ import org.openvpms.web.component.im.util.DefaultIMObjectCache;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
-import org.openvpms.web.component.im.util.SoftRefIMObjectCache;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 
@@ -195,7 +194,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      */
     public IMObjectCache getCache() {
         if (cache == null) {
-            cache = new SoftRefIMObjectCache();
+            cache = new DefaultIMObjectCache();
         }
         return cache;
     }

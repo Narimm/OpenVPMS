@@ -66,8 +66,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     public Component getSummary() {
-        GlobalContext context = GlobalContext.getInstance();
-        return new CustomerPatientSummary(context).getSummary(getObject());
+        return new CustomerPatientSummary().getSummary(getObject());
     }
 
     /**

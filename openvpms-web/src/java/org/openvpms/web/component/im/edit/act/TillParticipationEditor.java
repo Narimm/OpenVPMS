@@ -72,9 +72,9 @@ public class TillParticipationEditor extends ParticipationEditor<Party> {
                 property, getParent(), getLayoutContext()) {
 
             @Override
-            public boolean setObject(Party object) {
+            public void setObject(Party object) {
+                super.setObject(object);
                 getLayoutContext().getContext().setTill(object);
-                return super.setObject(object);
             }
         };
     }

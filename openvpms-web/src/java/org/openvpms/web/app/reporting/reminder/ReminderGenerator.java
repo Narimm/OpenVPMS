@@ -48,8 +48,8 @@ import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -112,7 +112,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
                 processors.add(createEmailProcessor(reminders));
                 break;
             case PRINT:
-                processors.add(createPrintProcessor(reminders, true));
+                processors.add(createPrintProcessor(reminders));
                 break;
             case LIST:
             case PHONE:
@@ -187,7 +187,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         }
 
         if (!printReminders.isEmpty()) {
-            processors.add(createPrintProcessor(printReminders, false));
+            processors.add(createPrintProcessor(printReminders));
         }
         if (!emailReminders.isEmpty()) {
             processors.add(createEmailProcessor(emailReminders));
@@ -308,16 +308,11 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * Creates a new print processor.
      *
-     * @param reminders   the print reminders
-     * @param interactive if <tt>true</tt>, reminders should always be printed interactively. If <tt>false</tt>,
-     *                    reminders will only be printed interactively if a printer needs to be selected
+     * @param reminders the print reminders
      * @return a new processor
      */
-    private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders, boolean interactive) {
-        ReminderPrintProgressBarProcessor result
-                = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics);
-        result.setInteractiveAlways(interactive);
-        return result;
+    private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders) {
+        return new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics);
     }
 
     /**
@@ -403,7 +398,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
                 }
             }
             getLayout().add(grid);
-            workflow.addTaskListener(new DefaultTaskListener() {
+            workflow.addTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onGenerationComplete();
                 }
@@ -513,7 +508,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             processor.restart();
             workflow = new WorkflowImpl();
             workflow.addTask(new BatchProcessorTask(processor));
-            workflow.addTaskListener(new DefaultTaskListener() {
+            workflow.addTaskListener(new TaskListener() {
                 public void taskEvent(TaskEvent event) {
                     if (TaskEvent.Type.COMPLETED.equals(event.getType())) {
                         showStatistics();

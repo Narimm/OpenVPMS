@@ -29,7 +29,6 @@ import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleServ
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
-import org.openvpms.sms.ConnectionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -165,15 +164,6 @@ public final class ServiceHelper {
      */
     public static SupplierServiceLocator getSupplierServiceLocator() {
         return (SupplierServiceLocator) getContext().getBean("supplierServiceLocator");
-    }
-
-    /**
-     * Returns the SMS connection factory.
-     *
-     * @return the SMS connection factory
-     */
-    public static ConnectionFactory getSMSConnectionFactory() {
-        return (ConnectionFactory) getContext().getBean("smsConnectionFactory");
     }
 
     /**

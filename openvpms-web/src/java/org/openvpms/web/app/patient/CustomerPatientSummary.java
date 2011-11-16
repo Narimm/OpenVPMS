@@ -27,8 +27,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.LocalContext;
 
 
 /**
@@ -46,20 +44,12 @@ public class CustomerPatientSummary {
      */
     private final PatientRules rules;
 
-    /**
-     * The context.
-     */
-    private final Context context;
-
 
     /**
      * Constructs a <tt>CustomerPatientSummary</tt>.
-     *
-     * @param context the context
      */
-    public CustomerPatientSummary(Context context) {
+    public CustomerPatientSummary() {
         rules = new PatientRules();
-        this.context = context;
     }
 
     /**
@@ -111,17 +101,15 @@ public class CustomerPatientSummary {
      *
      * @param customer the customer
      * @param patient  the patient
-     * @return the summary, or <tt>null</tt> if the customer and patient are both <tt>null</tt>
+     * @return the summary, or <tt>null</tt> if the customer and patient are
+     *         both <tt>null</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Component getSummary(Party customer, Party patient) {
         Component result = null;
         Component customerSummary = null;
         if (customer != null) {
-            Context local = new LocalContext(context);
-            local.setCustomer(customer);
-            local.setPatient(patient);
-            customerSummary = new CustomerSummary(local).getSummary(customer);
+            customerSummary = new CustomerSummary().getSummary(customer);
         }
         Component patientSummary = (patient != null) ?
                                    new PatientSummary().getSummary(patient) : null;

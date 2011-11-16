@@ -19,7 +19,6 @@
 package org.openvpms.web.app.workflow;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -40,6 +39,13 @@ import org.openvpms.web.component.workflow.TaskContext;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class GetInvoiceTask extends QueryIMObjectTask {
+
+    /**
+     * The invoice short name.
+     */
+    public static final String INVOICE_SHORTNAME
+            = "act.customerAccountChargesInvoice";
+
 
     /**
      * Returns the queries to execute.
@@ -68,7 +74,8 @@ public class GetInvoiceTask extends QueryIMObjectTask {
      * @return a new query
      */
     private ArchetypeQuery createQuery(Party customer, String status) {
-        ArchetypeQuery query = new ArchetypeQuery(CustomerAccountArchetypes.INVOICE, false, true);
+        ArchetypeQuery query = new ArchetypeQuery(INVOICE_SHORTNAME, false,
+                                                  true);
         query.setMaxResults(1);
 
         CollectionNodeConstraint participations

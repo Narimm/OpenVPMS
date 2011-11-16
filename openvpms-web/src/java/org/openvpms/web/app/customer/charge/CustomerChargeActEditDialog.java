@@ -59,7 +59,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         super(editor);
         addButton(COMPLETED_ID, false);
         addButton(IN_PROGRESS_ID, false);
-        setDefaultCloseAction(CANCEL_ID);
     }
 
     /**

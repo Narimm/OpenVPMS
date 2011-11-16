@@ -77,8 +77,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      * Constructs a new <code>WorkflowImpl</code>.
      */
     public WorkflowImpl() {
-        taskListener = new DefaultTaskListener() {
-            @Override
+        taskListener = new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 onEvent(event);
             }
@@ -154,15 +153,6 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     }
 
     /**
-     * Returns the task context.
-     *
-     * @return the task context
-     */
-    public TaskContext getContext() {
-        return initial;
-    }
-
-    /**
      * Executes the next task.
      */
     protected void next() {
@@ -173,7 +163,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
             current = tasks.get(taskIndex++);
             try {
                 current.addTaskListener(taskListener);
-                start(current, initial);
+                current.start(initial);
             } catch (Throwable throwable) {
                 cancel = true;
                 ErrorHelper.show(throwable);
