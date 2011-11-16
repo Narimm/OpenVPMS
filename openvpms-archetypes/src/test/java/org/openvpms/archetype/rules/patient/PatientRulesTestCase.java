@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -33,6 +34,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.lookup.LookupService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -45,6 +49,12 @@ import java.util.Date;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientRulesTestCase extends ArchetypeServiceTest {
+
+    @Autowired
+    private LookupService lookups;
+
+    @Autowired
+    private IMObjectBeanFactory factory;
 
     /**
      * The rules.
@@ -205,6 +215,48 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         tagBean.setValue("microchip", "1234567");
         patient.addIdentity(microchip);
         assertEquals("1234567", rules.getMicrochip(patient));
+    }
+
+    /**
+     * Tests {@link PatientRules#getPatientAge} for a patient with no birth date.
+     */
+    @Test
+    public void testGetPatientAgeNoBirthDate() {
+        Party patient = TestHelper.createPatient(false);
+        String age = rules.getPatientAge(patient);
+        assertEquals("No Birthdate", age);
+    }
+
+    /**
+     * Tests {@link PatientRules#getPatientAge} for a patient with a birth date.
+     */
+    @Test
+    public void testGetPatientAgeWithBirthDate() {
+        Party patient = TestHelper.createPatient(false);
+        IMObjectBean bean = new IMObjectBean(patient);
+        Date birthDate = getDate("2010-01-01");
+        bean.setValue("dateOfBirth", birthDate);
+        String age = rules.getPatientAge(patient);
+        PatientAgeFormatter formatter = new PatientAgeFormatter(lookups, new PracticeRules(), factory);
+        String expected = formatter.format(birthDate);
+        assertEquals(expected, age);
+    }
+
+    /**
+     * Tests {@link PatientRules#getPatientAge} for a deceased patient.
+     */
+    @Test
+    public void testGetPatientAgeWithDeceasedDate() {
+        Party patient = TestHelper.createPatient(false);
+        IMObjectBean bean = new IMObjectBean(patient);
+        Date birth = getDate("2010-01-01");
+        Date deceased = getDate("2011-05-01");
+        bean.setValue("dateOfBirth", birth);
+        bean.setValue("deceasedDate", deceased);
+        String age = rules.getPatientAge(patient);
+        PatientAgeFormatter formatter = new PatientAgeFormatter(lookups, new PracticeRules(), factory);
+        String expected = formatter.format(birth, deceased);
+        assertEquals(expected, age);
     }
 
     /**

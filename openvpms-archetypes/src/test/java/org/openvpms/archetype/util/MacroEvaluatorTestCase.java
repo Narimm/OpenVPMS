@@ -155,6 +155,16 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that declare variable can be access by macros.
+     */
+    @Test
+    public void testDeclareVariable() {
+        assertEquals("variableTest", macros.evaluate("variableTest", new Object())); // as variable not defined
+        macros.declareVariable("variable", "foo");
+        assertEquals("foo", macros.evaluate("variableTest", new Object()));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -165,6 +175,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("exceptionMacro", "openvpms:get(., 'invalidnode')");
         MacroTestHelper.createMacro("nested", "concat('nested test: ', $macro1)");
         MacroTestHelper.createMacro("numbertest", "concat('input number: ', $number)");
+        MacroTestHelper.createMacro("variableTest", "$variable");
         macros = new MacroEvaluator(new MacroCache());
     }
 

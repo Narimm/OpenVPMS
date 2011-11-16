@@ -18,13 +18,14 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.party.MergeException;
-import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -39,16 +40,16 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ParticipationConstraint;
 import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -345,7 +346,6 @@ public class PatientRules {
      * @param patient the patient
      * @return the age in string format
      * @throws ArchetypeServiceException for any archetype service error
-     *                                   todo - should be localised
      */
     public String getPatientAge(Party patient) {
         String result;
@@ -360,10 +360,9 @@ public class PatientRules {
             }
         }
         if (deceasedDate == null) {
-            result = formatter.format(birthDate);      	
-        }
-        else {
-            result = formatter.format(deceasedDate);        	
+            result = formatter.format(birthDate);
+        } else {
+            result = formatter.format(birthDate, deceasedDate);
         }
         return result;
     }
@@ -410,22 +409,9 @@ public class PatientRules {
      */
     public String getPatientWeight(Party patient) {
         String result = null;
-        ShortNameConstraint shortName
-                = new ShortNameConstraint("act", PATIENT_WEIGHT);
-        ArchetypeQuery query = new ArchetypeQuery(shortName);
+        ArchetypeQuery query = createWeightQuery(patient);
         query.add(new NodeSelectConstraint("act.description"));
-        CollectionNodeConstraint participation
-                = new CollectionNodeConstraint("patient",
-                                               PATIENT_PARTICIPATION, true,
-                                               true);
-        participation.add(new ObjectRefNodeConstraint(
-                "entity", patient.getObjectReference()));
-        participation.add(new ParticipationConstraint(ActShortName,
-                                                      PATIENT_WEIGHT));
-        query.add(participation);
-        query.add(new NodeSortConstraint("startTime", false));
-        query.setMaxResults(1);
-        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(query);
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
         ObjectSet set = (iterator.hasNext()) ? iterator.next() : null;
         if (set != null) {
             result = (String) set.get("act.description");
@@ -444,6 +430,36 @@ public class PatientRules {
         ActBean bean = factory.createActBean(act);
         Party patient = (Party) bean.getParticipant("participation.patient");
         return getPatientWeight(patient);
+    }
+
+    /**
+     * Returns the patient's weight, in kilograms.
+     *
+     * @param patient the patient
+     * @return the patient's weight in kilograms, or <tt>0</tt> if its weight is not known
+     */
+    public BigDecimal getWeight(Party patient) {
+        BigDecimal weight = BigDecimal.ZERO;
+        ArchetypeQuery query = createWeightQuery(patient);
+        Iterator<IMObject> iterator = new IMObjectQueryIterator<IMObject>(service, query);
+        if (iterator.hasNext()) {
+            IMObject object = iterator.next();
+            IMObjectBean bean = new IMObjectBean(object, service);
+            weight = bean.getBigDecimal("weight", BigDecimal.ZERO);
+            if (!BigDecimal.ZERO.equals(weight)) {
+                String units = bean.getString("units");
+                if ("KILOGRAMS".equals(units)) {
+                    // do nothing
+                } else if ("GRAMS".equals(units)) {
+                    weight = MathRules.divide(weight, MathRules.ONE_THOUSAND, 2);
+                } else if ("POUNDS".equals(units)) {
+                    weight = MathRules.round(weight.multiply(MathRules.ONE_POUND_IN_KILOS));
+                } else {
+                    weight = BigDecimal.ZERO;
+                }
+            }
+        }
+        return weight;
     }
 
     /**
@@ -489,6 +505,23 @@ public class PatientRules {
     public void mergePatients(Party from, Party to) {
         PatientMerger merger = new PatientMerger(service);
         merger.merge(from, to);
+    }
+
+    /**
+     * Helper to create a query to return the most recent <em>act.patientWeight</em> for a patient.
+     *
+     * @param patient the patient
+     * @return the query
+     */
+    private ArchetypeQuery createWeightQuery(Party patient) {
+        ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("act", PATIENT_WEIGHT));
+        JoinConstraint participation = Constraints.join("patient");
+        participation.add(Constraints.eq("entity", patient.getObjectReference()));
+        participation.add(new ParticipationConstraint(ActShortName, PATIENT_WEIGHT));
+        query.add(participation);
+        query.add(Constraints.sort("startTime", false));
+        query.setMaxResults(1);
+        return query;
     }
 
     /**

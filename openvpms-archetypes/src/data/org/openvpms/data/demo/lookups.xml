@@ -86,6 +86,7 @@
 	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
     <data archetype="lookup.contactPurpose" code="HOME" />
     <data archetype="lookup.contactPurpose" code="WORK" />
+    <data archetype="lookup.contactPurpose" code="MOBILE" />
     <data archetype="lookup.contactPurpose" code="POSTAL" />
     <data archetype="lookup.contactPurpose" code="CORRESPONDENCE" />
     <data archetype="lookup.contactPurpose" code="REMINDER" />
