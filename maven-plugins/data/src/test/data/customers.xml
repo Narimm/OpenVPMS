@@ -1,6 +1,0 @@
-<archetype>
-<data id="C1" archetype="party.customerperson" title="MR" firstName="Alan" initials="A" lastName="Lawson" >
-    <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="98754312" preferred="True"  />
-    <data collection="identities" archetype="entityIdentity.code" code="LAWS4312"  />
-</data>
-</archetype>
