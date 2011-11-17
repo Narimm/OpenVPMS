@@ -18,13 +18,17 @@
 
 package org.openvpms.web.app.customer;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.FunctorException;
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -36,22 +40,26 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
-import org.openvpms.web.app.summary.PartySummary;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.app.sms.SMSDialog;
+import org.openvpms.web.app.summary.PartySummary;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -145,17 +153,37 @@ public class CustomerSummary extends PartySummary {
             column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
+        final String[] mailto = getEmailAddresses(party);
+        Button mail = null;
+        if (mailto.length != 0) {
+            mail = ButtonFactory.create("button.mail", new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    MailDialog dialog = new MailDialog(Messages.get("mail.write"), context.getPractice(), mailto);
+                    dialog.show();
+                }
+            });
+        }
         final String[] mobiles = getPhonesForSMS(party);
+        Button sms = null;
         if (mobiles.length != 0) {
             Context local = new LocalContext(context);
             local.setCustomer(party);
-            Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
+            sms = ButtonFactory.create("button.sms.send", new ActionListener() {
                 public void onAction(ActionEvent event) {
                     SMSDialog dialog = new SMSDialog(mobiles, context);
                     dialog.show();
                 }
             });
-            result.add(RowFactory.create("Inset.Small", button));
+        }
+        if (mail != null || sms != null) {
+            Row row = RowFactory.create("CellSpacing");
+            if (mail != null) {
+                row.add(mail);
+            }
+            if (sms != null) {
+                row.add(sms);
+            }
+            result.add(RowFactory.create("Inset.Small", row));
         }
 
         return result;
@@ -200,32 +228,27 @@ public class CustomerSummary extends PartySummary {
      * @return a list of phone numbers
      */
     private String[] getPhonesForSMS(Party party) {
-        List<String> phones = new ArrayList<String>();
-        List<Contact> contacts = new ArrayList<Contact>();
-        for (Contact contact : party.getContacts()) {
-            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-                contacts.add(contact);
-            }
-        }
-        int length = contacts.size();
-        if (length > 1) {
-            IMObjectSorter.sort(contacts, "telephoneNumber", true);
-        }
-        for (Contact contact : contacts) {
-            IMObjectBean bean = new IMObjectBean(contact);
-            if (bean.getBoolean("sms")) {
-                String phone = bean.getString("telephoneNumber");
-                if (!StringUtils.isEmpty(phone)) {
-                    if (bean.getBoolean("preferred")) {
-                        phones.add(0, phone);
-                    } else {
-                        phones.add(phone);
-                    }
-                }
-            }
+        return getContacts(party, new SMSPredicate(), "telephoneNumber");
+    }
 
+    private String[] getEmailAddresses(Party party) {
+        return getContacts(party, new EmailPredicate(), "emailAddress");
+    }
+
+
+    private String[] getContacts(Party party, Predicate predicate, String node) {
+        List<Contact> matches = new ArrayList<Contact>();
+        CollectionUtils.select(party.getContacts(), predicate, matches);
+        if (matches.size() > 1) {
+            SortConstraint[] sort = {new NodeSortConstraint("preferred", true), new NodeSortConstraint(node, true)};
+            IMObjectSorter.sort(matches, sort);
         }
-        return phones.toArray(new String[phones.size()]);
+        List<String> result = new ArrayList<String>();
+        for (Contact contact : matches) {
+            IMObjectBean bean = new IMObjectBean(contact);
+            result.add(bean.getString(node));
+        }
+        return result.toArray(new String[result.size()]);
     }
 
     /**
@@ -246,6 +269,58 @@ public class CustomerSummary extends PartySummary {
      */
     private Label create(BigDecimal value) {
         return LabelFactory.create(value, new GridLayoutData());
+    }
+
+    private static class SMSPredicate implements Predicate {
+
+        /**
+         * Use the specified parameter to perform a test that returns true or false.
+         *
+         * @param object the object to evaluate, should not be changed
+         * @return true or false
+         * @throws ClassCastException       (runtime) if the input is the wrong class
+         * @throws IllegalArgumentException (runtime) if the input is invalid
+         * @throws FunctorException         (runtime) if the predicate encounters a problem
+         */
+        public boolean evaluate(Object object) {
+            boolean result = false;
+            Contact contact = (Contact) object;
+            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
+                IMObjectBean bean = new IMObjectBean(contact);
+                if (bean.getBoolean("sms")) {
+                    String phone = bean.getString("telephoneNumber");
+                    if (!StringUtils.isEmpty(phone)) {
+                        result = true;
+                    }
+                }
+            }
+            return result;
+        }
+    }
+
+    private static class EmailPredicate implements Predicate {
+
+        /**
+         * Use the specified parameter to perform a test that returns true or false.
+         *
+         * @param object the object to evaluate, should not be changed
+         * @return true or false
+         * @throws ClassCastException       (runtime) if the input is the wrong class
+         * @throws IllegalArgumentException (runtime) if the input is invalid
+         * @throws FunctorException         (runtime) if the predicate encounters a problem
+         */
+        public boolean evaluate(Object object) {
+            boolean result = false;
+            Contact contact = (Contact) object;
+            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
+                IMObjectBean bean = new IMObjectBean(contact);
+                if (!StringUtils.isEmpty(bean.getString("emailAddress"))) {
+                    result = true;
+                }
+            }
+            return result;
+        }
+
     }
 
 }

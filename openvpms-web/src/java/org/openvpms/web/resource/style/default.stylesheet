@@ -301,24 +301,27 @@
     <!-- ================================================================== -->
     <!-- customer and patient alert type default colours                    -->
     <!-- NOTE: only the background is used. Any other properties will be    -->
-     <!-- ignored.                                                          -->
+    <!-- ignored.                                                          -->
     <!-- ================================================================== -->
 
     <style name="AlertType.HIGH" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="background" value="#FF0000"/> <!-- red -->
+            <property name="background" value="#FF0000"/>
+            <!-- red -->
         </properties>
     </style>
 
     <style name="AlertType.MEDIUM" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="background" value="#FFFF00"/> <!-- yellow -->
+            <property name="background" value="#FFFF00"/>
+            <!-- yellow -->
         </properties>
     </style>
 
     <style name="AlertType.LOW" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="background" value="#C0C0C0"/> <!-- silver -->
+            <property name="background" value="#C0C0C0"/>
+            <!-- silver -->
         </properties>
     </style>
 
@@ -554,10 +557,40 @@
         </properties>
     </style>
 
+    <style name="MailDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${MailDialog.width}"/>
+            <property name="height" value="${MailDialog.height}"/>
+        </properties>
+    </style>
+
     <style name="SMSDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="${SMSDialog.width}"/>
             <property name="height" value="${SMSDialog.height}"/>
+        </properties>
+    </style>
+
+    <style name="MailEditor" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="${MailEditor.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="MailEditor.grid" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="${MailEditor.gridSeparatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="MailEditor.attachments" type="nextapp.echo2.app.Table">
+        <properties>
+            <property name="rolloverBackground" value="#85c1ff"/>
+            <property name="rolloverEnabled" value="true"/>
+            <property name="selectionBackground" value="#f2f3b3"/>
+            <property name="selectionEnabled" value="true"/>
         </properties>
     </style>
 
@@ -822,6 +855,18 @@
         </properties>
     </style>
 
+    <style name="Inset.Large" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="insets" value="${padding.large}"/>
+        </properties>
+    </style>
+
+    <style name="Inset.Large" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="insets" value="${padding.large}"/>
+        </properties>
+    </style>
+
     <style name="Inset.SmallXLargeY" type="nextapp.echo2.app.Column">
         <properties>
             <property name="insets" value="${padding.small} ${padding.large}"/>
@@ -869,7 +914,7 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="${dialog.small.width}"/>
-            <property name="height" value="${dialog.small.height}"/>           
+            <property name="height" value="${dialog.small.height}"/>
         </properties>
     </style>
 
@@ -1202,10 +1247,8 @@
 
     <style name="download.avi" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/buttons/avi.gif"/>
+            <property name="icon" type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference resource="/org/openvpms/web/resource/image/buttons/avi.gif"/>
             </property>
         </properties>
     </style>
@@ -1801,7 +1844,7 @@
         </properties>
     </style>
 
-      <style name="small.bold" type="nextapp.echo2.app.Label" base-name="default">
+    <style name="small.bold" type="nextapp.echo2.app.Label" base-name="default">
         <properties>
             <property name="font">
                 <font size="${font.small.size}" bold="true">

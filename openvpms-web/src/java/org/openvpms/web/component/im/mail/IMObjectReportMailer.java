@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.report.IMObjectReporter;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class IMObjectReportMailer<T extends IMObject>
-        extends TemplatedIMMailer<T> {
+        extends TemplatedReportMailer<T> {
 
     /**
      * Constructs an <tt>IMObjectReportMailer</tt>.

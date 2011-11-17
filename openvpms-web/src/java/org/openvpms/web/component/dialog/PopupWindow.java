@@ -91,12 +91,9 @@ public abstract class PopupWindow extends WindowPane {
             focusGroup.add(focus);
         }
 
-        row = new ButtonRow(focusGroup, "DialogButtonRow",
-                            ButtonRow.BUTTON_STYLE);
+        row = new ButtonRow(focusGroup, "DialogButtonRow", ButtonRow.BUTTON_STYLE);
 
-        layout = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "PopupWindow.Layout");
+        layout = createSplitPane();
         layout.add(row);
         add(layout);
     }
@@ -116,6 +113,15 @@ public abstract class PopupWindow extends WindowPane {
                 FocusHelper.setFocus(button);
             }
         }
+    }
+
+    /**
+     * Creates the layout split pane.
+     *
+     * @return a new split pane
+     */
+    protected SplitPane createSplitPane() {
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "PopupWindow.Layout");
     }
 
     /**

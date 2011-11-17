@@ -25,8 +25,8 @@ import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -161,7 +161,7 @@ class StatementGenerator extends AbstractStatementGenerator {
             throw new StatementProcessorException(
                     StatementProcessorException.ErrorCode.InvalidConfiguration,
                     "Practice " + practice.getName()
-                            + " has no email contact for statements");
+                    + " has no email contact for statements");
         }
         IMObjectBean bean = new IMObjectBean(email);
         String address = bean.getString("emailAddress");
@@ -170,7 +170,7 @@ class StatementGenerator extends AbstractStatementGenerator {
             throw new StatementProcessorException(
                     StatementProcessorException.ErrorCode.InvalidConfiguration,
                     "Practice " + practice.getName()
-                            + " email contact address is empty");
+                    + " email contact address is empty");
         }
 
         processor = new StatementProcessor(date, practice);
@@ -199,28 +199,7 @@ class StatementGenerator extends AbstractStatementGenerator {
      * @return an email contact, or <tt>null</tt> if none is configured
      */
     private Contact getEmail(Party practice) {
-        Contact preferred = null;
-        Contact fallback = null;
-        for (Contact contact : practice.getContacts()) {
-            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-                IMObjectBean bean = new IMObjectBean(contact);
-                List<Lookup> purposes = bean.getValues("purposes",
-                                                       Lookup.class);
-                for (Lookup purpose : purposes) {
-                    if ("BILLING".equals(purpose.getCode())) {
-                        return contact;
-                    }
-                }
-                if (preferred == null && bean.hasNode("preferred")
-                        && bean.getBoolean("preferred")) {
-                    preferred = contact;
-                } else if (fallback == null) {
-                    fallback = contact;
-                }
-            }
-        }
-        return (preferred != null) ?
-                preferred : (fallback != null) ? fallback : null;
+        return new PartyRules().getContact(practice, ContactArchetypes.EMAIL, "BILLING");
     }
 
     private class StatementDelegator implements ProcessorListener<Statement> {

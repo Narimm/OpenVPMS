@@ -48,6 +48,11 @@ public class DocumentViewer {
     private final IMObject parent;
 
     /**
+     * The document name. May be <tt>null</tt>
+     */
+    private final String name;
+
+    /**
      * Determines if a hyperlink should be created, to enable downloads of
      * the document.
      */
@@ -61,7 +66,7 @@ public class DocumentViewer {
      * @param link if <tt>true</tt> enable an hyperlink to the object
      */
     public DocumentViewer(DocumentAct act, boolean link) {
-        this(act.getDocument(), act, link);
+        this(act.getDocument(), act, act.getFileName(), link);
     }
 
     /**
@@ -71,13 +76,33 @@ public class DocumentViewer {
      * @param parent    the parent. May be <tt>null</tt>
      * @param link      if <tt>true</tt> enable an hyperlink to the object
      */
-    public DocumentViewer(IMObjectReference reference, IMObject parent,
-                          boolean link) {
+    public DocumentViewer(IMObjectReference reference, IMObject parent, boolean link) {
+        this(reference, parent, null, link);
+    }
+
+    /**
+     * Constructs a new <tt>DocumentViewer</tt>.
+     *
+     * @param reference the reference to view. May be <tt>null</tt>
+     * @param parent    the parent. May be <tt>null</tt>
+     * @param name      the document file name. May be <tt>null</tt>
+     * @param link      if <tt>true</tt> enable an hyperlink to the object
+     */
+    public DocumentViewer(IMObjectReference reference, IMObject parent, String name, boolean link) {
         this.reference = reference;
         this.parent = parent;
+        if (name != null) {
+            this.name = name;
+        } else if (parent instanceof DocumentAct) {
+            this.name = ((DocumentAct) parent).getFileName();
+        } else if (reference != null) {
+            this.name = DescriptorHelper.getDisplayName(reference.getArchetypeId().getShortName());
+        } else {
+            this.name = null;
+        }
         this.link = link;
-
     }
+
 
     /**
      * Returns the component.
@@ -102,19 +127,12 @@ public class DocumentViewer {
                     DocumentAct act = (DocumentAct) parent;
                     downloader = new DocumentActDownloader(act);
                 } else {
-                    downloader = new DocumentRefDownloader(reference);
+                    downloader = new DocumentRefDownloader(reference, name);
                 }
                 result = downloader.getComponent();
             } else {
                 Label label = LabelFactory.create();
-                if (parent instanceof DocumentAct) {
-                    DocumentAct act = (DocumentAct) parent;
-                    label.setText(act.getFileName());
-                } else {
-                    String text = DescriptorHelper.getDisplayName(
-                            reference.getArchetypeId().getShortName());
-                    label.setText(text);
-                }
+                label.setText(name);
                 result = label;
             }
         } else {

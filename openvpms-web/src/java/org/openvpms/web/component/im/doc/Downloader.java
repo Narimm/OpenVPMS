@@ -18,7 +18,10 @@
 
 package org.openvpms.web.component.im.doc;
 
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -87,6 +90,41 @@ public abstract class Downloader {
             throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
         return doc;
+    }
+
+    protected void setButtonStyle(Button button, String name) {
+        String tooltip = null;
+        if (name.length() > 18) {
+            tooltip = name;
+            name = name.substring(0, 8) + "..." + name.substring(name.length() - 7);
+        }
+        button.setText(name);
+        if (tooltip != null) {
+            button.setToolTipText(tooltip);
+        }
+        String styleName = getStyleName(name);
+        button.setStyleName(styleName);
+    }
+
+    /**
+     * Helper to determine the button style name from a file name.
+     *
+     * @param name the file name. May be <tt>null</tt>
+     * @return the button style name, or {@link #DEFAULT_BUTTON_STYLE} if the style is not known
+     */
+    protected String getStyleName(String name) {
+        String styleName;
+        if (name != null) {
+            String ext = FilenameUtils.getExtension(name).toLowerCase();
+            styleName = "download." + ext;
+            ApplicationInstance active = ApplicationInstance.getActive();
+            if (active.getStyle(Button.class, styleName) == null) {
+                styleName = DEFAULT_BUTTON_STYLE;
+            }
+        } else {
+            styleName = DEFAULT_BUTTON_STYLE;
+        }
+        return styleName;
     }
 
 }

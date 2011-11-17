@@ -51,16 +51,16 @@ public class MailException extends OpenVPMSException {
      * The appropriate resource file is loaded cached into memory when this
      * class is loaded.
      */
-    private static Messages MESSAGES
-            = Messages.getMessages("org.openvpms.web.component.app."
-            + OpenVPMSException.ERRMESSAGES_FILE);
+    private static Messages MESSAGES = Messages.getMessages("org.openvpms.web.component.im.mail."
+                                                            + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Constructs a new <code>ContextException</code>.
+     * Constructs a <tt>MailException</tt>.
      *
      * @param errorCode the error code
+     * @param args      the format arguments
      */
-    public MailException(MailException.ErrorCode errorCode, Object ... args) {
+    public MailException(MailException.ErrorCode errorCode, Object... args) {
         super(MailException.MESSAGES.getMessage(errorCode.toString(), args));
         this.errorCode = errorCode;
     }

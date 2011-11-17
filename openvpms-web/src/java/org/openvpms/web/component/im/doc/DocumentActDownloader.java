@@ -18,11 +18,9 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
@@ -70,7 +68,7 @@ public class DocumentActDownloader extends Downloader {
      */
     private static final String PDF_STYLE_NAME = "download.pdf";
 
-    
+
     /**
      * Constructs a <tt>DocumentActDownloader</tt>.
      *
@@ -101,25 +99,16 @@ public class DocumentActDownloader extends Downloader {
                 generated = true;
             }
         }
-        String styleName;
         if (generated) {
             // if the document is generated, then its going to be a PDF, at least for the forseeable future.
             // Fairly expensive to determine the mime type otherwise. TODO
-            styleName = PDF_STYLE_NAME;
+            button.setStyleName(PDF_STYLE_NAME);
             button.setText(name);
         } else if (name != null) {
-            // name may be a file name.
-            String ext = FilenameUtils.getExtension(name).toLowerCase();
-            styleName = "download." + ext;
-            button.setText(name);
+            setButtonStyle(button, name);
         } else {
-            styleName = DEFAULT_BUTTON_STYLE;
+            button.setStyleName(DEFAULT_BUTTON_STYLE);
         }
-        ApplicationInstance active = ApplicationInstance.getActive();
-        if (active.getStyle(Button.class, styleName) == null) {
-            styleName = DEFAULT_BUTTON_STYLE;
-        }
-        button.setStyleName(styleName);
 
         if (!generated && Converter.canConvert(name, act.getMimeType(), DocFormats.PDF_TYPE)) {
             Button asPDF = ButtonFactory.create(new ActionListener() {

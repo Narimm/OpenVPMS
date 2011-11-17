@@ -25,7 +25,9 @@ import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
-import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.*;
+import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.FailedToProcessStatement;
+import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidConfiguration;
+import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.NoContact;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -104,9 +106,7 @@ public class StatementEmailProcessor
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor error
      */
-    public StatementEmailProcessor(JavaMailSender sender,
-                                   String emailAddress, String emailName,
-                                   Party practice) {
+    public StatementEmailProcessor(JavaMailSender sender, String emailAddress, String emailName, Party practice) {
         super(practice);
         this.sender = sender;
         this.emailAddress = emailAddress;
@@ -181,10 +181,10 @@ public class StatementEmailProcessor
 
             helper.addAttachment(
                     doc.getName(), new InputStreamSource() {
-                public InputStream getInputStream() {
-                    return handler.getContent(doc);
-                }
-            });
+                        public InputStream getInputStream() {
+                            return handler.getContent(doc);
+                        }
+                    });
             sender.send(message);
             if (!statement.isPreview() && !statement.isPrinted()) {
                 setPrinted(statement);
