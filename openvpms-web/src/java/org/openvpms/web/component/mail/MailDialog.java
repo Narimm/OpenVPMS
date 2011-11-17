@@ -21,23 +21,25 @@ package org.openvpms.web.component.mail;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.List;
 
 
 /**
@@ -64,14 +66,29 @@ public class MailDialog extends PopupDialog {
     private static final String SEND_ID = "send";
 
     /**
+     * Don't send button identifier.
+     */
+    private static final String DONT_SEND_ID = "dontSend";
+
+    /**
+     * Edit button identifier.
+     */
+    private static String EDIT_ID = "edit";
+
+    /**
      * Attach button identifier.
      */
     private static final String ATTACH_ID = "attach";
 
     /**
-     * The button identifiers.
+     * The editor button identifiers.
      */
     private static final String[] SEND_ATTACH_CANCEL = {SEND_ID, ATTACH_ID, CANCEL_ID};
+
+    /**
+     * The cancel confirmation button identifiers.
+     */
+    private static final String[] EDIT_DONT_SEND = {EDIT_ID, DONT_SEND_ID};
 
 
     /**
@@ -81,7 +98,7 @@ public class MailDialog extends PopupDialog {
      * @param practice  the practice
      * @param addresses the available addresses to send to
      */
-    public MailDialog(String title, Party practice, String[] addresses) {
+    public MailDialog(String title, Party practice, List<Contact> addresses) {
         super(title, "MailDialog", SEND_ATTACH_CANCEL);
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);
@@ -93,15 +110,9 @@ public class MailDialog extends PopupDialog {
         if (email == null) {
             throw new IllegalStateException("Practice " + name + " has no email contacts");
         }
-        IMObjectBean bean = new IMObjectBean(email);
-        String from = bean.getString("emailAddress");
-        if (StringUtils.isEmpty(from)) {
-            throw new IllegalStateException("Practice " + name + " email contact address is empty");
-        }
-
         this.mailer = new DefaultMailer();
         editor = new MailEditor(addresses);
-        editor.setFrom(from);
+        editor.setFrom(email);
         getLayout().add(editor.getComponent());
         getFocusGroup().add(0, editor.getFocusGroup());
         setCancelListener(new VetoListener() {
@@ -179,9 +190,16 @@ public class MailDialog extends PopupDialog {
         try {
             if (editor.isValid()) {
                 mailer.setFrom(editor.getFrom());
-                mailer.setTo(editor.getAddress());
+                mailer.setFromName(editor.getFromName());
+                mailer.setTo(editor.getToAddress());
                 mailer.setSubject(editor.getSubject());
                 mailer.setBody(editor.getMessage());
+                for (IMObjectReference attachment : editor.getAttachments()) {
+                    Document document = (Document) IMObjectHelper.getObject(attachment);
+                    if (document != null) {
+                        mailer.addAttachment(document);
+                    }
+                }
                 mailer.send();
                 result = true;
             }
@@ -198,13 +216,14 @@ public class MailDialog extends PopupDialog {
      */
     private void onCancel(final Vetoable action) {
         final ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("mail.cancel.title"),
-                                                                 Messages.get("mail.cancel.message"));
+                                                                 Messages.get("mail.cancel.message"),
+                                                                 EDIT_DONT_SEND);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    action.veto(false);
-                } else {
+                if (EDIT_ID.equals(dialog.getAction())) {
                     action.veto(true);
+                } else {
+                    action.veto(false);
                 }
             }
         });

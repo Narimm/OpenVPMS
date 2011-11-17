@@ -36,18 +36,22 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.TableLayoutData;
+import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.table.DefaultTableModel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.doc.DocumentViewer;
+import org.openvpms.web.component.im.list.AllNoneListCellRenderer;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -71,6 +75,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -89,14 +94,24 @@ public class MailEditor extends AbstractModifiable {
     private Label fromAddress;
 
     /**
+     * The selected 'from' contact.
+     */
+    private Contact from;
+
+    /**
      * The email address if 0 or 1 address are provided.
      */
     private Label toAddress;
 
     /**
-     * The address selector, if multiple addresses are provided.
+     * The to-address selector, if multiple addresses are provided.
      */
-    private SelectField addressSelector;
+    private SelectField toAddressSelector;
+
+    /**
+     * The selected 'to' contact.
+     */
+    private Contact to;
 
     /**
      * The subject.
@@ -138,8 +153,6 @@ public class MailEditor extends AbstractModifiable {
      */
     private FocusGroup focus;
 
-    private static final Extent EXTENT = new Extent(100, Extent.PERCENT);
-
     /**
      * The split pane holding the grid and attachments.
      */
@@ -165,21 +178,26 @@ public class MailEditor extends AbstractModifiable {
      */
     private Column gridColumn;
 
+    /**
+     * Default extent - 100%.
+     */
+    private static final Extent EXTENT = new Extent(100, Extent.PERCENT);
+
 
     /**
      * Constructs a <tt>MailEditor</tt>.
      */
     public MailEditor() {
-        this((String) null);
+        this((Contact) null);
     }
 
     /**
      * Constructs a <tt>MailEditor</tt>.
      *
-     * @param address the address. May be <tt>null</tt>
+     * @param contact the email contact. May be <tt>null</tt>
      */
-    public MailEditor(String address) {
-        this(address != null ? new String[]{address} : null);
+    public MailEditor(Contact contact) {
+        this(contact != null ? Arrays.asList(contact) : null);
     }
 
     /**
@@ -188,20 +206,23 @@ public class MailEditor extends AbstractModifiable {
      * If no addresses are supplied, the address will be editable, otherwise it will be read-only.
      * If there are multiple addresses, they will be displayed in a dropdown, with the first no. as the default
      *
-     * @param addresses the available addresses. May be <tt>null</tt>
+     * @param contacts the available addresses. May be <tt>null</tt>
      */
-    public MailEditor(String[] addresses) {
+    public MailEditor(List<Contact> contacts) {
         fromAddress = LabelFactory.create();
-        int length = (addresses == null) ? 0 : addresses.length;
+        int length = (contacts == null) ? 0 : contacts.size();
         if (length <= 1) {
             toAddress = LabelFactory.create();
             if (length == 1) {
-                toAddress.setText(addresses[0]);
+                to = contacts.get(0);
+                toAddress.setText(getFormattedAddress(to));
             }
         } else {
-            addressSelector = createAddressSelector(addresses);
-            addressSelector.addActionListener(new ActionListener() {
+            toAddressSelector = createAddressSelector(contacts);
+            to = (Contact) toAddressSelector.getSelectedItem();
+            toAddressSelector.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
+                    to = (Contact) toAddressSelector.getSelectedItem();
                     onModified();
                 }
             });
@@ -227,7 +248,7 @@ public class MailEditor extends AbstractModifiable {
         if (toAddress != null) {
             focus.add(toAddress);
         } else {
-            focus.add(addressSelector);
+            focus.add(toAddressSelector);
         }
         focus.add(message);
         focus.setDefault(message);
@@ -249,8 +270,9 @@ public class MailEditor extends AbstractModifiable {
      *
      * @param from the from address
      */
-    public void setFrom(String from) {
-        fromAddress.setText(from);
+    public void setFrom(Contact from) {
+        this.from = from;
+        fromAddress.setText(getFormattedAddress(from));
     }
 
     /**
@@ -259,35 +281,29 @@ public class MailEditor extends AbstractModifiable {
      * @return the from address
      */
     public String getFrom() {
-        return fromAddress.getText();
+        return getEmailAddress(from);
     }
 
     /**
-     * Sets the address to send to.
+     * Returns the from name.
      *
-     * @param address the address
+     * @return the from name
      */
-    public void setAddress(String address) {
-        if (this.toAddress != null) {
-            this.toAddress.setText(address);
-        } else {
-            addressSelector.setSelectedItem(address);
+    public String getFromName() {
+        String name = null;
+        if (from != null && from.getParty() != null) {
+            name = from.getParty().getName();
         }
+        return name;
     }
 
     /**
-     * Returns the address.
+     * Returns the to address.
      *
-     * @return the address. May be <tt>null</tt>
+     * @return the to address. May be <tt>null</tt>
      */
-    public String getAddress() {
-        String result = null;
-        if (toAddress != null) {
-            result = toAddress.getText();
-        } else if (addressSelector.getSelectedItem() != null) {
-            result = addressSelector.getSelectedItem().toString();
-        }
-        return result;
+    public String getToAddress() {
+        return getEmailAddress(to);
     }
 
     /**
@@ -385,7 +401,7 @@ public class MailEditor extends AbstractModifiable {
      * @return the component
      */
     public Component getComponent() {
-        Component to = (toAddress != null) ? toAddress : addressSelector;
+        Component to = (toAddress != null) ? toAddress : toAddressSelector;
         GridLayoutData align = new GridLayoutData();
         align.setAlignment(Alignment.ALIGN_RIGHT);
         align.setInsets(new Insets(0, 0, 10, 0));
@@ -475,7 +491,7 @@ public class MailEditor extends AbstractModifiable {
      * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
     protected boolean doValidation(Validator validator) {
-        return !StringUtils.isEmpty(getFrom()) && !StringUtils.isEmpty(getAddress())
+        return !StringUtils.isEmpty(getFrom()) && !StringUtils.isEmpty(getToAddress())
                && !StringUtils.isEmpty(getSubject()) && !StringUtils.isEmpty(getMessage());
     }
 
@@ -485,8 +501,10 @@ public class MailEditor extends AbstractModifiable {
      * @param addresses the addresses
      * @return an address editor
      */
-    protected SelectField createAddressSelector(String[] addresses) {
-        return SelectFieldFactory.create(addresses);
+    protected SelectField createAddressSelector(List<Contact> addresses) {
+        SelectField result = SelectFieldFactory.create(addresses);
+        result.setCellRenderer(EmailCellRenderer.INSTANCE);
+        return result;
     }
 
     /**
@@ -639,6 +657,62 @@ public class MailEditor extends AbstractModifiable {
     private String getSize(long size, long divisor, String key) {
         BigDecimal result = new BigDecimal(size).divide(BigDecimal.valueOf(divisor), BigDecimal.ROUND_CEILING);
         return Messages.get(key, result);
+    }
+
+    /**
+     * Helper to return a formatted email address for an email contact.
+     *
+     * @param contact the email contact
+     * @return the formatted email address
+     */
+    private static String getFormattedAddress(Contact contact) {
+        return Messages.get("mail.contact", contact.getParty().getName(), getEmailAddress(contact));
+    }
+
+    /**
+     * Helper to return the email address for a contact.
+     *
+     * @param contact the contact. May be <tt>null</tt>
+     * @return the email address. May be <tt>null</tt>
+     */
+    private static String getEmailAddress(Contact contact) {
+        if (contact != null) {
+            IMObjectBean bean = new IMObjectBean(contact);
+            return bean.getString("emailAddress");
+        }
+        return null;
+    }
+
+    private static class EmailCellRenderer extends AllNoneListCellRenderer<Contact> {
+
+        /**
+         * The singleton instance.
+         */
+        public static ListCellRenderer INSTANCE = new EmailCellRenderer();
+
+        /**
+         * Constructs an <tt>EmailCellRenderer</tt>.
+         */
+        private EmailCellRenderer() {
+            super(Contact.class);
+        }
+
+        /**
+         * Renders an object.
+         *
+         * @param list   the list component
+         * @param object the object to render. May be <tt>null</tt>
+         * @param index  the object index
+         * @return the rendered object
+         */
+        protected Object getComponent(Component list, Contact object, int index) {
+            String result = null;
+            if (object != null) {
+                result = getFormattedAddress(object);
+            }
+            return result;
+        }
+
     }
 
     /**

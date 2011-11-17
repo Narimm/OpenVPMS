@@ -27,7 +27,6 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.FunctorException;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.AccountType;
@@ -121,6 +120,11 @@ public class CustomerSummary extends PartySummary {
         phone.setText(partyRules.getHomeTelephone(party));
         column.add(RowFactory.create("Inset.Small", phone));
 
+        final List<Contact> mailto = getEmailContacts(party);
+        if (!mailto.isEmpty()) {
+            column.add(RowFactory.create("Inset.Small", getEmail(mailto)));
+        }
+
         Label balanceTitle = create("customer.account.balance");
         BigDecimal balance = accountRules.getBalance(party);
         Label balanceValue = create(balance);
@@ -153,16 +157,6 @@ public class CustomerSummary extends PartySummary {
             column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
-        final String[] mailto = getEmailAddresses(party);
-        Button mail = null;
-        if (mailto.length != 0) {
-            mail = ButtonFactory.create("button.mail", new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    MailDialog dialog = new MailDialog(Messages.get("mail.write"), context.getPractice(), mailto);
-                    dialog.show();
-                }
-            });
-        }
         final String[] mobiles = getPhonesForSMS(party);
         Button sms = null;
         if (mobiles.length != 0) {
@@ -175,14 +169,9 @@ public class CustomerSummary extends PartySummary {
                 }
             });
         }
-        if (mail != null || sms != null) {
+        if (sms != null) {
             Row row = RowFactory.create("CellSpacing");
-            if (mail != null) {
-                row.add(mail);
-            }
-            if (sms != null) {
-                row.add(sms);
-            }
+            row.add(sms);
             result.add(RowFactory.create("Inset.Small", row));
         }
 
@@ -228,27 +217,59 @@ public class CustomerSummary extends PartySummary {
      * @return a list of phone numbers
      */
     private String[] getPhonesForSMS(Party party) {
-        return getContacts(party, new SMSPredicate(), "telephoneNumber");
+        List<Contact> contacts = getContacts(party, new SMSPredicate(), SMSPredicate.TELEPHONE_NUMBER);
+        List<String> result = new ArrayList<String>();
+        for (Contact contact : contacts) {
+            IMObjectBean bean = new IMObjectBean(contact);
+            result.add(bean.getString(SMSPredicate.TELEPHONE_NUMBER));
+        }
+        return result.toArray(new String[result.size()]);
     }
 
-    private String[] getEmailAddresses(Party party) {
+    /**
+     * Returns a button to launch an {@link MailDialog} for a list of email contacts.
+     *
+     * @param contacts the email contacts
+     * @return a new button to launch the dialog
+     */
+    private Component getEmail(final List<Contact> contacts) {
+        Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                MailDialog dialog = new MailDialog(Messages.get("mail.write"), context.getPractice(), contacts);
+                dialog.show();
+            }
+        });
+        IMObjectBean bean = new IMObjectBean(contacts.get(0));
+        mail.setText(bean.getString("emailAddress"));
+        return mail;
+    }
+
+    /**
+     * Returns email contacts for a party.
+     *
+     * @param party the party
+     * @return the email contacts
+     */
+    private List<Contact> getEmailContacts(Party party) {
         return getContacts(party, new EmailPredicate(), "emailAddress");
     }
 
-
-    private String[] getContacts(Party party, Predicate predicate, String node) {
-        List<Contact> matches = new ArrayList<Contact>();
-        CollectionUtils.select(party.getContacts(), predicate, matches);
-        if (matches.size() > 1) {
-            SortConstraint[] sort = {new NodeSortConstraint("preferred", true), new NodeSortConstraint(node, true)};
-            IMObjectSorter.sort(matches, sort);
+    /**
+     * Returns contacts for the specified party that match the predicate.
+     *
+     * @param party     the party
+     * @param predicate the predicate
+     * @param sortNode  the node to sort on
+     * @return the matching contacts
+     */
+    private List<Contact> getContacts(Party party, Predicate predicate, String sortNode) {
+        List<Contact> result = new ArrayList<Contact>();
+        CollectionUtils.select(party.getContacts(), predicate, result);
+        if (result.size() > 1) {
+            SortConstraint[] sort = {new NodeSortConstraint("preferred", true), new NodeSortConstraint(sortNode, true)};
+            IMObjectSorter.sort(result, sort);
         }
-        List<String> result = new ArrayList<String>();
-        for (Contact contact : matches) {
-            IMObjectBean bean = new IMObjectBean(contact);
-            result.add(bean.getString(node));
-        }
-        return result.toArray(new String[result.size()]);
+        return result;
     }
 
     /**
@@ -274,13 +295,15 @@ public class CustomerSummary extends PartySummary {
     private static class SMSPredicate implements Predicate {
 
         /**
+         * The telephone number node.
+         */
+        private static final String TELEPHONE_NUMBER = "telephoneNumber";
+
+        /**
          * Use the specified parameter to perform a test that returns true or false.
          *
          * @param object the object to evaluate, should not be changed
          * @return true or false
-         * @throws ClassCastException       (runtime) if the input is the wrong class
-         * @throws IllegalArgumentException (runtime) if the input is invalid
-         * @throws FunctorException         (runtime) if the predicate encounters a problem
          */
         public boolean evaluate(Object object) {
             boolean result = false;
@@ -288,7 +311,7 @@ public class CustomerSummary extends PartySummary {
             if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
                 IMObjectBean bean = new IMObjectBean(contact);
                 if (bean.getBoolean("sms")) {
-                    String phone = bean.getString("telephoneNumber");
+                    String phone = bean.getString(TELEPHONE_NUMBER);
                     if (!StringUtils.isEmpty(phone)) {
                         result = true;
                     }
@@ -301,20 +324,22 @@ public class CustomerSummary extends PartySummary {
     private static class EmailPredicate implements Predicate {
 
         /**
+         * The email address node.
+         */
+        private static final String EMAIL_ADDRESS = "emailAddress";
+
+        /**
          * Use the specified parameter to perform a test that returns true or false.
          *
          * @param object the object to evaluate, should not be changed
          * @return true or false
-         * @throws ClassCastException       (runtime) if the input is the wrong class
-         * @throws IllegalArgumentException (runtime) if the input is invalid
-         * @throws FunctorException         (runtime) if the predicate encounters a problem
          */
         public boolean evaluate(Object object) {
             boolean result = false;
             Contact contact = (Contact) object;
             if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
                 IMObjectBean bean = new IMObjectBean(contact);
-                if (!StringUtils.isEmpty(bean.getString("emailAddress"))) {
+                if (!StringUtils.isEmpty(bean.getString(EMAIL_ADDRESS))) {
                     result = true;
                 }
             }
