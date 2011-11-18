@@ -54,9 +54,19 @@ public class PrintDialog extends PopupDialog {
     private final boolean preview;
 
     /**
+     * Determines if the mail button should be added.
+     */
+    private final boolean mail;
+
+    /**
      * The preview button identifier.
      */
     private static final String PREVIEW_ID = "preview";
+
+    /**
+     * The mail button identifier.
+     */
+    private static final String MAIL_ID = "mail";
 
     /**
      * The no. of copies to print.
@@ -87,7 +97,7 @@ public class PrintDialog extends PopupDialog {
      * @param preview if <tt>true</tt> add a 'preview' button
      */
     public PrintDialog(String title, boolean preview) {
-        this(title, preview, false);
+        this(title, preview, true, false);
     }
 
     /**
@@ -95,10 +105,11 @@ public class PrintDialog extends PopupDialog {
      *
      * @param title   the window title
      * @param preview if <tt>true</tt> add a 'preview' button
+     * @param mail    if <tt>true</tt> add a 'mail' button
      * @param skip    if <tt>triue</tt> display a 'skip' button that simply
      *                closes the dialog
      */
-    public PrintDialog(String title, boolean preview, boolean skip) {
+    public PrintDialog(String title, boolean preview, boolean mail, boolean skip) {
         super(title, "PrintDialog", (skip) ? OK_SKIP_CANCEL : OK_CANCEL);
         setModal(true);
         copies = new SpinBox(1, 99);
@@ -106,6 +117,7 @@ public class PrintDialog extends PopupDialog {
                 PrintHelper.getPrinters());
         printers = SelectFieldFactory.create(model);
         this.preview = preview;
+        this.mail = mail;
     }
 
     /**
@@ -171,6 +183,13 @@ public class PrintDialog extends PopupDialog {
                 }
             });
         }
+        if (mail) {
+            addButton(MAIL_ID, new ActionListener() {
+                public void onAction(ActionEvent e) {
+                    onMail();
+                }
+            });
+        }
 
         FocusGroup parent = getFocusGroup();
         FocusGroup child = new FocusGroup("PrintDialog");
@@ -203,6 +222,13 @@ public class PrintDialog extends PopupDialog {
      * This implementation does nothing.
      */
     protected void onPreview() {
+    }
+
+    /**
+     * Invoked when the mail button is pressed.
+     * This implementation does nothing.
+     */
+    protected void onMail() {
     }
 
 }

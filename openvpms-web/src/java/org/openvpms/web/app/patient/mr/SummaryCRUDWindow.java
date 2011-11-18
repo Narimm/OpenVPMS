@@ -192,6 +192,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
                 String title = Messages.get("patient.record.summary.print");
                 InteractiveIMPrinter<Act> iPrinter
                         = new InteractiveIMPrinter<Act>(title, printer);
+                iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

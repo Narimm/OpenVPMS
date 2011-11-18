@@ -170,7 +170,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new GetClinicalEventTask(eventProps));
 
         // optionally select and print an act.patientDocumentForm
-        addTask(new PrintDocumentFormTask());
+        addTask(new PrintDocumentFormTask(initial));
 
         // edit the act.patientClinicalEvent
         addTask(new EditClinicalEventTask());

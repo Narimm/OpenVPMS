@@ -151,6 +151,7 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
                                         getArchetypes().getDisplayName());
             InteractiveIMPrinter<ObjectSet> iPrinter
                     = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

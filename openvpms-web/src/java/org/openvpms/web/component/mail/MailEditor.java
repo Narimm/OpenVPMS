@@ -75,7 +75,6 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -186,39 +185,23 @@ public class MailEditor extends AbstractModifiable {
 
     /**
      * Constructs a <tt>MailEditor</tt>.
-     */
-    public MailEditor() {
-        this((Contact) null);
-    }
-
-    /**
-     * Constructs a <tt>MailEditor</tt>.
-     *
-     * @param contact the email contact. May be <tt>null</tt>
-     */
-    public MailEditor(Contact contact) {
-        this(contact != null ? Arrays.asList(contact) : null);
-    }
-
-    /**
-     * Constructs a <tt>MailEditor</tt>.
      * <p/>
-     * If no addresses are supplied, the address will be editable, otherwise it will be read-only.
+     * If no 'to' addresses are supplied the address will be editable, otherwise it will be read-only.
      * If there are multiple addresses, they will be displayed in a dropdown, with the first no. as the default
      *
-     * @param contacts the available addresses. May be <tt>null</tt>
+     * @param fromAddresses the available 'from' addresses
+     * @param toAddresses   the available 'to' addresses
      */
-    public MailEditor(List<Contact> contacts) {
+    public MailEditor(List<Contact> fromAddresses, List<Contact> toAddresses) {
         fromAddress = LabelFactory.create();
-        int length = (contacts == null) ? 0 : contacts.size();
-        if (length <= 1) {
+        if (toAddresses.size() <= 1) {
             toAddress = LabelFactory.create();
-            if (length == 1) {
-                to = contacts.get(0);
+            if (toAddresses.size() == 1) {
+                to = toAddresses.get(0);
                 toAddress.setText(getFormattedAddress(to));
             }
         } else {
-            toAddressSelector = createAddressSelector(contacts);
+            toAddressSelector = createAddressSelector(toAddresses);
             to = (Contact) toAddressSelector.getSelectedItem();
             toAddressSelector.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
@@ -226,6 +209,9 @@ public class MailEditor extends AbstractModifiable {
                     onModified();
                 }
             });
+        }
+        if (fromAddresses.size() >= 1) {
+            setFrom(fromAddresses.get(0));
         }
 
         subject = TextComponentFactory.create(40);

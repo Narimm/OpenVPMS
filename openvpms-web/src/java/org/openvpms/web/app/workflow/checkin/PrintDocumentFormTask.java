@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.ContextException;
+import org.openvpms.web.component.app.Context;
 import static org.openvpms.web.component.app.ContextException.ErrorCode.NoObject;
 import static org.openvpms.web.component.app.ContextException.ErrorCode.NoPatient;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
@@ -35,6 +36,7 @@ import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
+import org.openvpms.web.app.customer.CustomerMailContext;
 
 /**
  * Task to optionally print an <em>act.patientDocumentForm</em> for a patient.
@@ -57,9 +59,10 @@ class PrintDocumentFormTask extends WorkflowImpl {
     /**
      * Constructs a new <code>PatientDocumentFormTask</code>.
      *
+     * @param context the context
      * @throws OpenVPMSException for any error
      */
-    public PrintDocumentFormTask() {
+    public PrintDocumentFormTask(Context context) {
         // create a query for all entity.documentTemplate instances with
         // archetype node='act.patientDocumentForm'.
         DocumentTemplateQuery query = new DocumentTemplateQuery();
@@ -91,7 +94,7 @@ class PrintDocumentFormTask extends WorkflowImpl {
 
         // task to print the act.patientDocumentForm. May be skipped if
         // printing interactively
-        PrintIMObjectTask printTask = new PrintIMObjectTask(DOCUMENT_FORM,
+        PrintIMObjectTask printTask = new PrintIMObjectTask(DOCUMENT_FORM, new CustomerMailContext(context),
                                                             false);
         printTask.setRequired(false);
 

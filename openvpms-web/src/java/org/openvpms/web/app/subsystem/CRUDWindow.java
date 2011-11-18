@@ -21,6 +21,7 @@ package org.openvpms.web.app.subsystem;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.mail.MailContext;
 
 
 /**
@@ -90,4 +91,14 @@ public interface CRUDWindow<T extends IMObject> {
      * Edits the current object.
      */
     void edit();
+
+    /**
+     * Sets the mail context.
+     * <p/>
+     * This is used to determine email addresses when mailing.
+     *
+     * @param context the mail context. May be <tt>null</tt>
+     */
+    void setMailContext(MailContext context);
+
 }

@@ -23,6 +23,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 
 
@@ -45,6 +46,11 @@ public class PrintIMObjectTask extends AbstractTask {
     private String shortName;
 
     /**
+     * The mail context. May be <tt>null</tt>
+     */
+    private final MailContext mailContext;
+
+    /**
      * Determines if objects should be printed interactively.
      * If <tt>false</tt>, indicates to try and print in the background unless
      * printing requires user intervention.
@@ -61,21 +67,23 @@ public class PrintIMObjectTask extends AbstractTask {
     /**
      * Creates a new <tt>PrintIMObjectTask</tt>.
      *
-     * @param object the object to print
+     * @param object  the object to print
+     * @param context the mail context. May be <tt>null</tt>
      */
-    public PrintIMObjectTask(IMObject object) {
-        this(object, true);
+    public PrintIMObjectTask(IMObject object, MailContext context) {
+        this(object, context, true);
     }
 
     /**
      * Creates a new <tt>PrintIMObjectTask</tt>.
      *
      * @param object      the object to print
-     * @param interactive if <tt>true</tt> print interactively, otherwise
-     *                    attempt to print in the background
+     * @param context     the mail context. May be <tt>null</tt>
+     * @param interactive if <tt>true</tt> print interactively, otherwise attempt to print in the background
      */
-    public PrintIMObjectTask(IMObject object, boolean interactive) {
+    public PrintIMObjectTask(IMObject object, MailContext context, boolean interactive) {
         this.object = object;
+        this.mailContext = context;
         this.interactive = interactive;
     }
 
@@ -83,20 +91,22 @@ public class PrintIMObjectTask extends AbstractTask {
      * Creates a new <tt>PrintIMObjectTask</tt>.
      *
      * @param shortName the short name of the object to print
+     * @param context   the mail context. May be <tt>null</tt>
      */
-    public PrintIMObjectTask(String shortName) {
-        this(shortName, true);
+    public PrintIMObjectTask(String shortName, MailContext context) {
+        this(shortName, context, true);
     }
 
     /**
      * Creates a new <tt>PrintIMObjectTask</tt>.
      *
      * @param shortName   the short name of the object to print
-     * @param interactive if <tt>true</tt> print interactively, otherwise
-     *                    attempt to print in the background
+     * @param context     the mail context. May be <tt>null</tt>
+     * @param interactive if <tt>true</tt> print interactively, otherwise attempt to print in the background
      */
-    public PrintIMObjectTask(String shortName, boolean interactive) {
+    public PrintIMObjectTask(String shortName, MailContext context, boolean interactive) {
         this.shortName = shortName;
+        this.mailContext = context;
         this.interactive = interactive;
     }
 
@@ -130,6 +140,7 @@ public class PrintIMObjectTask extends AbstractTask {
                 InteractiveIMPrinter<IMObject> iPrinter
                         = new InteractiveIMPrinter<IMObject>(printer, skip);
                 iPrinter.setInteractive(interactive);
+                iPrinter.setMailContext(mailContext);
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed(String printer) {

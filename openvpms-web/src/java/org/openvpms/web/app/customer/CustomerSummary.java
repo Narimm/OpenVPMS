@@ -26,21 +26,13 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
@@ -50,18 +42,18 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.IMObjectSorter;
+import org.openvpms.web.component.im.util.ContactHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.PartyMailContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -120,9 +112,9 @@ public class CustomerSummary extends PartySummary {
         phone.setText(partyRules.getHomeTelephone(party));
         column.add(RowFactory.create("Inset.Small", phone));
 
-        final List<Contact> mailto = getEmailContacts(party);
-        if (!mailto.isEmpty()) {
-            column.add(RowFactory.create("Inset.Small", getEmail(mailto)));
+        Contact email = ContactHelper.getPreferredEmail(party);
+        if (email != null) {
+            column.add(RowFactory.create("Inset.Small", getEmail(party, email)));
         }
 
         Label balanceTitle = create("customer.account.balance");
@@ -157,7 +149,7 @@ public class CustomerSummary extends PartySummary {
             column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
-        final String[] mobiles = getPhonesForSMS(party);
+        final String[] mobiles = ContactHelper.getPhonesForSMS(party);
         Button sms = null;
         if (mobiles.length != 0) {
             Context local = new LocalContext(context);
@@ -209,67 +201,22 @@ public class CustomerSummary extends PartySummary {
     }
 
     /**
-     * Returns phone numbers that are flagged for SMS messaging.
-     * <p/>
-     * The preferred no.s are at the head of the list
+     * Returns a button to launch an {@link MailDialog} for a customer.
      *
-     * @param party the party
-     * @return a list of phone numbers
-     */
-    private String[] getPhonesForSMS(Party party) {
-        List<Contact> contacts = getContacts(party, new SMSPredicate(), SMSPredicate.TELEPHONE_NUMBER);
-        List<String> result = new ArrayList<String>();
-        for (Contact contact : contacts) {
-            IMObjectBean bean = new IMObjectBean(contact);
-            result.add(bean.getString(SMSPredicate.TELEPHONE_NUMBER));
-        }
-        return result.toArray(new String[result.size()]);
-    }
-
-    /**
-     * Returns a button to launch an {@link MailDialog} for a list of email contacts.
-     *
-     * @param contacts the email contacts
+     * @param party the customer
+     * @param email the preferred email
      * @return a new button to launch the dialog
      */
-    private Component getEmail(final List<Contact> contacts) {
+    private Component getEmail(final Party party, Contact email) {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
-                MailDialog dialog = new MailDialog(Messages.get("mail.write"), context.getPractice(), contacts);
+                MailContext mailContext = new PartyMailContext(context.getPractice(), party);
+                MailDialog dialog = new MailDialog(mailContext);
                 dialog.show();
             }
         });
-        IMObjectBean bean = new IMObjectBean(contacts.get(0));
-        mail.setText(bean.getString("emailAddress"));
+        mail.setText(ContactHelper.getEmail(email));
         return mail;
-    }
-
-    /**
-     * Returns email contacts for a party.
-     *
-     * @param party the party
-     * @return the email contacts
-     */
-    private List<Contact> getEmailContacts(Party party) {
-        return getContacts(party, new EmailPredicate(), "emailAddress");
-    }
-
-    /**
-     * Returns contacts for the specified party that match the predicate.
-     *
-     * @param party     the party
-     * @param predicate the predicate
-     * @param sortNode  the node to sort on
-     * @return the matching contacts
-     */
-    private List<Contact> getContacts(Party party, Predicate predicate, String sortNode) {
-        List<Contact> result = new ArrayList<Contact>();
-        CollectionUtils.select(party.getContacts(), predicate, result);
-        if (result.size() > 1) {
-            SortConstraint[] sort = {new NodeSortConstraint("preferred", true), new NodeSortConstraint(sortNode, true)};
-            IMObjectSorter.sort(result, sort);
-        }
-        return result;
     }
 
     /**
@@ -292,60 +239,5 @@ public class CustomerSummary extends PartySummary {
         return LabelFactory.create(value, new GridLayoutData());
     }
 
-    private static class SMSPredicate implements Predicate {
-
-        /**
-         * The telephone number node.
-         */
-        private static final String TELEPHONE_NUMBER = "telephoneNumber";
-
-        /**
-         * Use the specified parameter to perform a test that returns true or false.
-         *
-         * @param object the object to evaluate, should not be changed
-         * @return true or false
-         */
-        public boolean evaluate(Object object) {
-            boolean result = false;
-            Contact contact = (Contact) object;
-            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-                IMObjectBean bean = new IMObjectBean(contact);
-                if (bean.getBoolean("sms")) {
-                    String phone = bean.getString(TELEPHONE_NUMBER);
-                    if (!StringUtils.isEmpty(phone)) {
-                        result = true;
-                    }
-                }
-            }
-            return result;
-        }
-    }
-
-    private static class EmailPredicate implements Predicate {
-
-        /**
-         * The email address node.
-         */
-        private static final String EMAIL_ADDRESS = "emailAddress";
-
-        /**
-         * Use the specified parameter to perform a test that returns true or false.
-         *
-         * @param object the object to evaluate, should not be changed
-         * @return true or false
-         */
-        public boolean evaluate(Object object) {
-            boolean result = false;
-            Contact contact = (Contact) object;
-            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-                IMObjectBean bean = new IMObjectBean(contact);
-                if (!StringUtils.isEmpty(bean.getString(EMAIL_ADDRESS))) {
-                    result = true;
-                }
-            }
-            return result;
-        }
-
-    }
 
 }

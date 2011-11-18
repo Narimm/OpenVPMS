@@ -113,7 +113,7 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                 }
             });
         }
-        PrintActTask print = new PrintActTask(shortName);
+        PrintActTask print = new PrintActTask(shortName, getMailContext());
         print.setRequired(false);
         print.setEnableSkip(false);
         tasks.addTask(print);

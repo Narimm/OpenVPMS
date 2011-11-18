@@ -47,6 +47,7 @@ import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -86,6 +87,11 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * The action button row.
      */
     private ButtonRow buttons;
+
+    /**
+     * Email context.
+     */
+    private MailContext context;
 
     /**
      * Edit button identifier.
@@ -250,6 +256,26 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
                 }
             });
         }
+    }
+
+    /**
+     * Sets the mail context.
+     * <p/>
+     * This is used to determine email addresses when mailing.
+     *
+     * @param context the mail context. May be <tt>null</tt>
+     */
+    public void setMailContext(MailContext context) {
+        this.context = context;
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context. May be <tt>null</tt>
+     */
+    public MailContext getMailContext() {
+        return context;
     }
 
     /**
@@ -509,7 +535,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      */
     protected IMPrinter<T> createPrinter(T object) {
         IMPrinter<T> printer = IMPrinterFactory.create(object);
-        return new InteractiveIMPrinter<T>(printer);
+        InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer);
+        interactive.setMailContext(context);
+        return interactive;
     }
 
     /**

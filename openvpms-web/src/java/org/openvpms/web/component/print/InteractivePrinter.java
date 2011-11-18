@@ -23,6 +23,8 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.resource.util.Messages;
@@ -70,6 +72,11 @@ public class InteractivePrinter implements Printer {
      * printing, requests to do non-interactive printing are ignored.
      */
     private boolean interactive;
+
+    /**
+     * The mail context. If non-null, documents may be mailed.
+     */
+    private MailContext context;
 
 
     /**
@@ -237,6 +244,15 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
+     * Sets a context to support mailing documents.
+     *
+     * @param context the mail context. If <tt>null</tt>, mailing won't be enabled
+     */
+    public void setMailContext(MailContext context) {
+        this.context = context;
+    }
+
+    /**
      * Returns the underlying printer.
      *
      * @return the printer
@@ -264,10 +280,16 @@ public class InteractivePrinter implements Printer {
         if (title == null) {
             title = Messages.get("printdialog.title");
         }
-        return new PrintDialog(title, true, skip) {
+        boolean mail = context != null;
+        return new PrintDialog(title, true, mail, skip) {
             @Override
             protected void onPreview() {
                 doPrintPreview();
+            }
+
+            @Override
+            protected void onMail() {
+                doMail();
             }
         };
     }
@@ -339,7 +361,21 @@ public class InteractivePrinter implements Printer {
             Document document = getDocument();
             DownloadServlet.startDownload(document);
         } catch (OpenVPMSException exception) {
-            failed(exception);
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Generates a document and pops up a mail document with it as an attachment.
+     */
+    protected void doMail() {
+        try {
+            Document document = getDocument();
+            MailDialog dialog = new MailDialog(context);
+            dialog.getMailEditor().addAttachment(document);
+            dialog.show();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
     }
 

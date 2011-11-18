@@ -18,10 +18,13 @@
 
 package org.openvpms.web.app.supplier;
 
+import org.openvpms.web.app.subsystem.AbstractCRUDWorkspace;
 import org.openvpms.web.app.supplier.charge.ChargeWorkspace;
 import org.openvpms.web.app.supplier.delivery.DeliveryWorkspace;
 import org.openvpms.web.app.supplier.document.SupplierDocumentWorkspace;
 import org.openvpms.web.app.supplier.order.OrderWorkspace;
+import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
@@ -38,12 +41,26 @@ public class SupplierSubsystem extends AbstractSubsystem {
      */
     public SupplierSubsystem() {
         super("supplier");
-        addWorkspace(new InformationWorkspace());
-        addWorkspace(new SupplierDocumentWorkspace());
-        addWorkspace(new OrderWorkspace());
-        addWorkspace(new DeliveryWorkspace());
-        addWorkspace(new ChargeWorkspace());
-        addWorkspace(new PaymentWorkspace());
-        addWorkspace(new AccountWorkspace());
+        MailContext context = new SupplierMailContext(GlobalContext.getInstance());
+
+        addWorkspace(new InformationWorkspace(), context);
+        addWorkspace(new SupplierDocumentWorkspace(), context);
+        addWorkspace(new OrderWorkspace(), context);
+        addWorkspace(new DeliveryWorkspace(), context);
+        addWorkspace(new ChargeWorkspace(), context);
+        addWorkspace(new PaymentWorkspace(), context);
+        addWorkspace(new AccountWorkspace(), context);
     }
+
+    /**
+     * Adds a workspace, associating it with the specified mail context.
+     *
+     * @param workspace the workspace to add
+     * @param context   the mail context
+     */
+    private void addWorkspace(AbstractCRUDWorkspace workspace, MailContext context) {
+        workspace.setMailContext(context);
+        addWorkspace(workspace);
+    }
+
 }
