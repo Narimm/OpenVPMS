@@ -23,8 +23,6 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
-import org.openvpms.web.component.app.DefaultContextSwitchListener;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.IMObjectViewer;
@@ -57,8 +55,7 @@ public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
             // disable printing from the viewer, as it is enabled by the CRUD window
             PatientInvestigationActLayoutStrategy print = new PatientInvestigationActLayoutStrategy();
             print.setEnableButton(false);
-            LayoutContext context = new DefaultLayoutContext();
-            context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+            LayoutContext context = createViewLayoutContext();
             return new IMObjectViewer(object, null, print, context);
         } else {
             return super.createViewer(object);

@@ -35,6 +35,7 @@ import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.util.SoftRefIMObjectCache;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
+import org.openvpms.web.component.mail.MailContext;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -92,6 +93,11 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * The deletion listener.
      */
     private IMObjectDeletionListener<IMObject> deletionListener = DEFAULT_DELETION_LISTENER;
+
+    /**
+     * The default mail context.
+     */
+    private MailContext mailContext;
 
     /**
      * The context switch listener.
@@ -162,6 +168,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         layoutFactory = context.getLayoutStrategyFactory();
         depth = context.getLayoutDepth() + 1;
         deletionListener = context.getDeletionListener();
+        mailContext = context.getMailContext();
         contextSwitchListener = context.getContextSwitchListener();
     }
 
@@ -363,6 +370,24 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      */
     public IMObjectDeletionListener<IMObject> getDeletionListener() {
         return deletionListener;
+    }
+
+    /**
+     * Registers a mail context.
+     *
+     * @param context the mail context. May be <tt>null</tt>
+     */
+    public void setMailContext(MailContext context) {
+        mailContext = context;
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context. May be <tt>null</tt>
+     */
+    public MailContext getMailContext() {
+        return mailContext;
     }
 
     /**

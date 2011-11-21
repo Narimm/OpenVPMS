@@ -23,8 +23,6 @@ import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.ActStatuses;
-import org.openvpms.web.component.im.query.DefaultActQuery;
 
 
 /**
@@ -37,28 +35,11 @@ public class CustomerDocumentWorkspace
         extends CustomerActWorkspace<DocumentAct> {
 
     /**
-     * Customer Document shortnames supported by the workspace.
-     */
-    private static final String[] SHORT_NAMES = {
-            "act.customerDocumentForm", "act.customerDocumentLetter",
-            "act.customerDocumentAttachment"};
-
-    /**
-     * The act statuses.
-     */
-    private static final ActStatuses STATUSES;
-
-    static {
-        STATUSES = new ActStatuses("act.customerDocumentLetter");
-        STATUSES.setDefault((String)null);
-    }
-    
-    /**
-     * Constructs a new <tt>CustomerDocumentWorkspace</tt>.
+     * Constructs a <tt>CustomerDocumentWorkspace</tt>.
      */
     public CustomerDocumentWorkspace() {
         super("customer", "document");
-        setChildArchetypes(DocumentAct.class, SHORT_NAMES);
+        setChildArchetypes(DocumentAct.class, CustomerDocumentQuery.SHORT_NAMES);
     }
 
     /**
@@ -76,9 +57,7 @@ public class CustomerDocumentWorkspace
      * @return a new query
      */
     protected ActQuery<DocumentAct> createQuery() {
-        return new DefaultActQuery<DocumentAct>(getObject(), "customer",
-                                                "participation.customer",
-                                                SHORT_NAMES, STATUSES);
+        return new CustomerDocumentQuery<DocumentAct>(getObject());
     }
 
 }

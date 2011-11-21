@@ -19,7 +19,9 @@
 package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.web.component.im.util.ContactHelper;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.mail.MailContext;
 
 import java.util.List;
@@ -49,12 +51,25 @@ public abstract class ContextMailContext implements MailContext {
     /**
      * Returns the available 'from' email addresses.
      * <p/>
-     * This implementation returns the email contacts from the current practice.
+     * This implementation returns the email contacts from the current practice location if any, or the practice.
      *
      * @return the 'from' email addresses
      */
     public List<Contact> getFromAddresses() {
-        return ContactHelper.getEmailContacts(context.getPractice());
+        List<Contact> result = ContactHelper.getEmailContacts(context.getLocation());
+        if (result.isEmpty()) {
+            result = ContactHelper.getEmailContacts(context.getPractice());
+        }
+        return result;
+    }
+
+    /**
+     * Returns a browser for documents that may be attached to mails.
+     *
+     * @return <tt>null</tt>
+     */
+    public Browser<Act> createAttachmentBrowser() {
+        return null;
     }
 
     /**

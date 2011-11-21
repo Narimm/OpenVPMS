@@ -101,4 +101,10 @@ public interface CRUDWindow<T extends IMObject> {
      */
     void setMailContext(MailContext context);
 
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context. May be <tt>null</tt>
+     */
+    MailContext getMailContext();
 }

@@ -16,7 +16,7 @@
  *  $Id: $
  */
 
-package org.openvpms.web.component.im.util;
+package org.openvpms.web.component.im.contact;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 
 import java.util.ArrayList;
 import java.util.Collections;

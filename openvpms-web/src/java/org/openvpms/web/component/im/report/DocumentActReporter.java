@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.report;
 
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -32,6 +33,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
+import org.openvpms.report.ParameterType;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.report.openoffice.Converter;
@@ -39,6 +41,8 @@ import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Set;
 
 
 /**
@@ -48,9 +52,10 @@ import org.openvpms.web.system.ServiceHelper;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DocumentActReporter extends TemplatedReporter<IMObject> {
+    private IMReport<IMObject> report;
 
     /**
-     * Creates a new <tt>DocumentActReporter</tt>.
+     * Constructs a <tt>DocumentActReporter</tt>.
      *
      * @param act the document act
      * @throws ArchetypeServiceException for any archetype service error
@@ -61,7 +66,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
     }
 
     /**
-     * Creates a new <tt>DocumentActReporter</tt>.
+     * Constructs a <tt>DocumentActReporter</tt>.
      *
      * @param act      the document act
      * @param template the document template
@@ -79,13 +84,25 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMReport<IMObject> getReport() {
-        Document doc = getTemplateDocument();
-        if (doc == null) {
-            throw new DocumentException(NotFound);
+        if (report == null) {
+            Document doc = getTemplateDocument();
+            if (doc == null) {
+                throw new DocumentException(NotFound);
+            }
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+            report = ReportFactory.createIMObjectReport(doc, service, handlers);
         }
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-        return ReportFactory.createIMObjectReport(doc, service, handlers);
+        return report;
+    }
+
+    /**
+     * Returns the set of parameter types that may be supplied to the report.
+     *
+     * @return the parameter types
+     */
+    public Set<ParameterType> getParameterTypes() {
+        return getReport().getParameterTypes();
     }
 
     /**
@@ -121,6 +138,19 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
     }
 
     /**
+     * Helper to determine if a document act has a template.
+     * <p/>
+     * Document acts must have a template to be able to be used in reporting.
+     *
+     * @param act the document act
+     * @return <tt>true</tt> if the act has a template, otherwise <tt>false</tt>
+     */
+    public static boolean hasTemplate(DocumentAct act) {
+        ActBean bean = new ActBean(act);
+        return bean.getParticipantRef(DocumentArchetypes.DOCUMENT_TEMPLATE_PARTICIPATION) != null;
+    }
+
+    /**
      * Helper to return the <em>entity.documentTemplate</em> associated with
      * a document act.
      *
@@ -131,7 +161,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
      */
     private static DocumentTemplate getTemplate(DocumentAct act) {
         ActBean bean = new ActBean(act);
-        Entity template = bean.getParticipant("participation.documentTemplate");
+        Entity template = bean.getParticipant(DocumentArchetypes.DOCUMENT_TEMPLATE_PARTICIPATION);
         if (template == null) {
             throw new DocumentException(NotFound);
         }

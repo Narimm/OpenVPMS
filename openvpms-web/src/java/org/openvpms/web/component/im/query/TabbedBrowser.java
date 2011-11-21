@@ -122,7 +122,9 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
                     int index = tab.getSelectedIndex();
                     if (index != selected) {
                         selected = index;
-                        listener.onBrowserChanged();
+                        if (listener != null) {
+                            listener.onBrowserChanged();
+                        }
                     }
                 }
             });

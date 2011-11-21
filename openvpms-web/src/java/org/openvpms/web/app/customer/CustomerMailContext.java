@@ -18,17 +18,22 @@
 
 package org.openvpms.web.app.customer;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
-import org.openvpms.web.component.im.util.ContactHelper;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.app.customer.document.CustomerPatientDocumentBrowser;
 
 import java.util.List;
 
 
 /**
- * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practice, and 'to' addresses from the current customer.
+ * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practic location or
+ * practice, and 'to' addresses from the current customer.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
@@ -53,4 +58,18 @@ public class CustomerMailContext extends ContextMailContext {
         return ContactHelper.getEmailContacts(getContext().getCustomer());
     }
 
+    /**
+     * Returns a browser for documents that may be attached to mails.
+     *
+     * @return a browser. May be <tt>null</tt>
+     */
+    public Browser<Act> createAttachmentBrowser() {
+        Browser<Act> result = null;
+        Party customer = getContext().getCustomer();
+        Party patient = getContext().getPatient();
+        if (customer != null || patient != null) {
+            result = new CustomerPatientDocumentBrowser(customer, patient);
+        }
+        return result;
+    }
 }

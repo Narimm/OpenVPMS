@@ -142,8 +142,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     private void refresh(final boolean print, boolean version) {
         final DocumentAct act = getObject();
-        DocumentGenerator generator
-                = new DocumentGenerator(act, version, new DocumentGenerator.Listener() {
+        DocumentGenerator generator = new DocumentGenerator(act, new DocumentGenerator.Listener() {
             public void generated(Document document) {
                 onSaved(act, false);
                 if (print) {
@@ -151,7 +150,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
                 }
             }
         });
-        generator.generate(true);
+        generator.generate(true, version);
     }
 
     /**

@@ -18,34 +18,79 @@
 
 package org.openvpms.web.component.mail;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.util.ContactHelper;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.contact.ContactHelper;
 
 import java.util.List;
 
 /**
- * Enter descroption.
+ * An {@link MailContext} that returns 'from' addresses from the practice location or practice, and 'to' addresses from
+ * the specified party.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
 public class PartyMailContext implements MailContext {
 
-    private final Party from;
+    /**
+     * The practice location.
+     */
+    private final Party location;
 
+    /**
+     * The practice.
+     */
+    private final Party practice;
+
+    /**
+     * The party to get the 'to' addresses.
+     */
     private final Party to;
 
-    public PartyMailContext(Party from, Party to) {
-        this.from = from;
+    /**
+     * Constructs a <tt>PartyMailContext</tt>.
+     *
+     * @param location the practice location. May be <tt>null</tt>
+     * @param practice the practice. May be <tt>null</tt>
+     * @param to       the party to
+     */
+    public PartyMailContext(Party location, Party practice, Party to) {
+        this.location = location;
+        this.practice = practice;
         this.to = to;
     }
 
+    /**
+     * Returns the available 'from' email addresses.
+     *
+     * @return the 'from' email addresses
+     */
     public List<Contact> getFromAddresses() {
-        return ContactHelper.getEmailContacts(from);
+        List<Contact> result = ContactHelper.getEmailContacts(location);
+        if (result.isEmpty()) {
+            result = ContactHelper.getEmailContacts(practice);
+        }
+        return result;
     }
 
+    /**
+     * Returns the available ''to' email addresses.
+     *
+     * @return the 'to' email addresses
+     */
     public List<Contact> getToAddresses() {
         return ContactHelper.getEmailContacts(to);
+    }
+
+    /**
+     * Returns a browser for documents that may be attached to mails.
+     *
+     * @return <tt>null</tt>
+     */
+    public Browser<Act> createAttachmentBrowser() {
+        return null;
     }
 }

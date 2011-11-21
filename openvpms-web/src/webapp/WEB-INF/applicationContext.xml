@@ -414,11 +414,11 @@
                 <value>archetypeService</value>
             </list>
         </property>
-        <!-- property name="interceptorNames">
+        <property name="interceptorNames">
             <list>
                 <value>auditServiceAdvisor</value>
             </list>
-        </property-->
+        </property>
     </bean>
 
     <!-- The audit service advisor -->

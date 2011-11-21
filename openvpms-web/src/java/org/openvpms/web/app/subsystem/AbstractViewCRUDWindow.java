@@ -21,13 +21,13 @@ package org.openvpms.web.app.subsystem;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.component.app.DefaultContextSwitchListener;
 
 
 /**
@@ -81,9 +81,20 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
      * @return a new viewer
      */
     protected IMObjectViewer createViewer(IMObject object) {
-        LayoutContext context = new DefaultLayoutContext();
-        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+        LayoutContext context = createViewLayoutContext();
         return new IMObjectViewer(object, null, context);
+    }
+
+    /**
+     * Creates a layout context for viewing objects.
+     *
+     * @return a new layout context
+     */
+    protected LayoutContext createViewLayoutContext() {
+        LayoutContext context = new DefaultLayoutContext();
+        context.setMailContext(getMailContext());
+        context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+        return context;
     }
 
     /**

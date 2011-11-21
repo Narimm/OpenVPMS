@@ -26,8 +26,8 @@ import java.util.List;
 
 
 /**
- * An {@link MailContext} that uses the practice's email addresses for the 'from' address.
- * The practice is sourced from the specified {@link Context}.
+ * An {@link MailContext} that uses the practice location and practice's email addresses for the 'from' address.
+ * The practice location and practice is sourced from the specified {@link Context}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $

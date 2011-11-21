@@ -36,13 +36,14 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
+import org.openvpms.web.app.customer.document.CustomerPatientDocumentBrowser;
 import org.openvpms.web.app.sms.SMSDialog;
 import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.ContactHelper;
+import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
@@ -210,8 +211,10 @@ public class CustomerSummary extends PartySummary {
     private Component getEmail(final Party party, Contact email) {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
-                MailContext mailContext = new PartyMailContext(context.getPractice(), party);
-                MailDialog dialog = new MailDialog(mailContext);
+                MailContext mailContext = new PartyMailContext(context.getLocation(), context.getPractice(), party);
+                CustomerPatientDocumentBrowser browser
+                        = new CustomerPatientDocumentBrowser(party, context.getPatient());
+                MailDialog dialog = new MailDialog(mailContext, browser);
                 dialog.show();
             }
         });

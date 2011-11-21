@@ -23,11 +23,15 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.query.Browser;
@@ -110,7 +114,38 @@ public class MailDialog extends PopupDialog {
      * @param context the mail context
      */
     public MailDialog(MailContext context) {
-        this(Messages.get("mail.write"), context, null);
+        this(context, (Contact) null);
+    }
+
+    /**
+     * Constructs a <tt>MailDialog</tt>.
+     *
+     * @param context   the mail context
+     * @param preferred the preferred contact. May be <tt>null</tt>
+     */
+    public MailDialog(MailContext context, Contact preferred) {
+        this(context, preferred, context.createAttachmentBrowser());
+    }
+
+    /**
+     * Constructs a <tt>MailDialog</tt>.
+     *
+     * @param context   the mail context
+     * @param documents the document browser. May be <tt>null</tt>
+     */
+    public MailDialog(MailContext context, Browser<Act> documents) {
+        this(context, null, documents);
+    }
+
+    /**
+     * Constructs a <tt>MailDialog</tt>.
+     *
+     * @param context   the mail context
+     * @param preferred the preferred contact. May be <tt>null</tt>
+     * @param documents the document browser. May be <tt>null</tt>
+     */
+    public MailDialog(MailContext context, Contact preferred, Browser<Act> documents) {
+        this(Messages.get("mail.write"), context, preferred, documents);
     }
 
     /**
@@ -118,15 +153,16 @@ public class MailDialog extends PopupDialog {
      *
      * @param title     the window title
      * @param context   the mail context
+     * @param preferred the preferred contact to display. May be <tt>null</tt>
      * @param documents the document browser. May be <tt>null</tt>
      */
-    public MailDialog(String title, MailContext context, Browser<Act> documents) {
+    public MailDialog(String title, MailContext context, Contact preferred, Browser<Act> documents) {
         super(title, "MailDialog", documents != null ? SEND_ATTACH_ALL_CANCEL : SEND_ATTACH_FILE_CANCEL);
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);
         this.mailer = new DefaultMailer();
         this.documents = documents;
-        editor = new MailEditor(context.getFromAddresses(), context.getToAddresses());
+        editor = new MailEditor(context.getFromAddresses(), context.getToAddresses(), preferred);
         getLayout().add(editor.getComponent());
         getFocusGroup().add(0, editor.getFocusGroup());
         setCancelListener(new VetoListener() {
@@ -196,12 +232,16 @@ public class MailDialog extends PopupDialog {
      * Attaches a document from the document browser.
      */
     private void attach() {
-        BrowserDialog<Act> dialog = new BrowserDialog<Act>(Messages.get(""), documents);
+        final FocusCommand focus = new FocusCommand();
+        final BrowserDialog<Act> dialog = new BrowserDialog<Act>(Messages.get("mail.attach.title"), documents);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
-                Act selected = documents.getSelected();
-                if (selected != null) {
-                    
+                focus.restore();
+                if (BrowserDialog.OK_ID.equals(dialog.getAction())) {
+                    DocumentAct selected = (DocumentAct) documents.getSelected();
+                    if (selected != null) {
+                        attachDocument(selected);
+                    }
                 }
             }
         });
@@ -213,8 +253,10 @@ public class MailDialog extends PopupDialog {
      * Attaches a file.
      */
     private void attachFile() {
+        final FocusCommand focus = new FocusCommand();
         UploadListener listener = new DocumentUploadListener() {
             protected void upload(Document document) {
+                focus.restore();
                 editor.addAttachment(document);
             }
         };
@@ -233,7 +275,7 @@ public class MailDialog extends PopupDialog {
             if (editor.isValid()) {
                 mailer.setFrom(editor.getFrom());
                 mailer.setFromName(editor.getFromName());
-                mailer.setTo(editor.getToAddress());
+                mailer.setTo(editor.getTo());
                 mailer.setSubject(editor.getSubject());
                 mailer.setBody(editor.getMessage());
                 for (IMObjectReference attachment : editor.getAttachments()) {
@@ -249,6 +291,20 @@ public class MailDialog extends PopupDialog {
             ErrorHelper.show(exception);
         }
         return result;
+    }
+
+    /**
+     * Attaches the document associated with a document act.
+     *
+     * @param act the document act
+     */
+    private void attachDocument(DocumentAct act) {
+        DocumentGenerator generator = new DocumentGenerator(act, new DocumentGenerator.Listener() {
+            public void generated(Document document) {
+                editor.addAttachment(document);
+            }
+        });
+        generator.generate();
     }
 
     /**

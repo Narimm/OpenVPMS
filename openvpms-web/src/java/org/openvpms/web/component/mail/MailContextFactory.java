@@ -18,39 +18,22 @@
 
 package org.openvpms.web.component.mail;
 
-import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.query.Browser;
-
-import java.util.List;
+import org.openvpms.web.component.app.Context;
 
 
 /**
- * Context information to pass to the mail editor.
+ * A factory for {@link MailContext} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public interface MailContext {
+public interface MailContextFactory {
 
     /**
-     * Returns the available 'from' email addresses.
+     * Creates a mail context for the supplied context.
      *
-     * @return the 'from' email addresses
+     * @param context the context
+     * @return a new mail context
      */
-    List<Contact> getFromAddresses();
-
-    /**
-     * Returns the available ''to' email addresses.
-     *
-     * @return the 'to' email addresses
-     */
-    List<Contact> getToAddresses();
-
-    /**
-     * Returns a browser for documents that may be attached to mails.
-     *
-     * @return a browser. May be <tt>null</tt>
-     */
-    Browser<Act> createAttachmentBrowser();
+    MailContext getMailContext(Context context);
 }

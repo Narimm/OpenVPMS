@@ -18,18 +18,24 @@
 
 package org.openvpms.web.app.supplier;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.supplier.document.SupplierDocumentQuery;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
-import org.openvpms.web.component.im.util.ContactHelper;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.mail.MailContext;
 
 import java.util.List;
 
 
 /**
- * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practice, and 'to'
- * addresses from the current supplier.
+ * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practice location and
+ * practice, and 'to' addresses from the current supplier.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
@@ -54,4 +60,18 @@ public class SupplierMailContext extends ContextMailContext {
         return ContactHelper.getEmailContacts(getContext().getSupplier());
     }
 
+    /**
+     * Returns a browser for documents that may be attached to mails.
+     *
+     * @return a browser. May be <tt>null</tt>
+     */
+    public Browser<Act> createAttachmentBrowser() {
+        Browser<Act> browser = null;
+        Party supplier = getContext().getSupplier();
+        if (supplier != null) {
+            Query<Act> query = new SupplierDocumentQuery<Act>(supplier);
+            browser = BrowserFactory.create(query);
+        }
+        return browser;
+    }
 }
