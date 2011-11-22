@@ -36,7 +36,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
-import org.openvpms.web.app.customer.document.CustomerPatientDocumentBrowser;
 import org.openvpms.web.app.sms.SMSDialog;
 import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.app.Context;
@@ -47,7 +46,6 @@ import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
-import org.openvpms.web.component.mail.PartyMailContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
@@ -115,7 +113,7 @@ public class CustomerSummary extends PartySummary {
 
         Contact email = ContactHelper.getPreferredEmail(party);
         if (email != null) {
-            column.add(RowFactory.create("Inset.Small", getEmail(party, email)));
+            column.add(RowFactory.create("Inset.Small", getEmail(email)));
         }
 
         Label balanceTitle = create("customer.account.balance");
@@ -204,17 +202,14 @@ public class CustomerSummary extends PartySummary {
     /**
      * Returns a button to launch an {@link MailDialog} for a customer.
      *
-     * @param party the customer
      * @param email the preferred email
      * @return a new button to launch the dialog
      */
-    private Component getEmail(final Party party, Contact email) {
+    private Component getEmail(Contact email) {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
-                MailContext mailContext = new PartyMailContext(context.getLocation(), context.getPractice(), party);
-                CustomerPatientDocumentBrowser browser
-                        = new CustomerPatientDocumentBrowser(party, context.getPatient());
-                MailDialog dialog = new MailDialog(mailContext, browser);
+                MailContext mailContext = new CustomerMailContext(context);
+                MailDialog dialog = new MailDialog(mailContext);
                 dialog.show();
             }
         });

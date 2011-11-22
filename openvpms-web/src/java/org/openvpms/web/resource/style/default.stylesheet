@@ -754,6 +754,7 @@
     <style name="Browser" type="nextapp.echo2.app.Column">
         <properties>
             <property name="cellSpacing" value="${padding.medium}"/>
+            <property name="insets" value="${padding.medium}"/>
         </properties>
     </style>
 
@@ -852,6 +853,12 @@
     <style name="InsetX" type="nextapp.echo2.app.Column">
         <properties>
             <property name="insets" value="${padding.medium} 0px"/>
+        </properties>
+    </style>
+
+    <style name="InsetY" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="insets" value="0px ${padding.medium}"/>
         </properties>
     </style>
 

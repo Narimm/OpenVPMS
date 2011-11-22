@@ -360,6 +360,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
             Browser<Child> browser = getBrowser();
             if (refresh && browser != null) {
                 browser.query();
+                setWorkspace(getWorkspace());   // ensure the workspace is added to the root component
             } else {
                 Query<Child> query = createQuery();
                 setQuery(query);

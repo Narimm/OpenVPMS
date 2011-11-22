@@ -19,9 +19,11 @@
 package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.app.customer.document.CustomerPatientDocumentBrowser;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
@@ -32,6 +34,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -105,7 +108,18 @@ public class CustomerMailContext extends ContextMailContext {
      * @return the 'to' email addresses
      */
     public List<Contact> getToAddresses() {
-        return ContactHelper.getEmailContacts(getContext().getCustomer());
+        List<Contact> result = new ArrayList<Contact>();
+        result.addAll(ContactHelper.getEmailContacts(getContext().getCustomer()));
+        Party patient = getContext().getPatient();
+        if (patient != null) {
+            EntityBean bean = new EntityBean(patient);
+            for (Entity referral : bean.getNodeTargetEntities("referrals")) {
+                if (referral instanceof Party) {
+                    result.addAll(ContactHelper.getEmailContacts((Party) referral));
+                }
+            }
+        }
+        return result;
     }
 
     /**

@@ -85,7 +85,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
      * Constructs a <tt>TabbedBrowser</tt>.
      */
     public TabbedBrowser() {
-        container = ColumnFactory.create();
+        container = ColumnFactory.create("InsetY");
         model = new TabPaneModel(container);
     }
 
