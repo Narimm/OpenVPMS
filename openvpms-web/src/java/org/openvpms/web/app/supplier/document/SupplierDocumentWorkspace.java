@@ -19,7 +19,7 @@
 package org.openvpms.web.app.supplier.document;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
 import org.openvpms.web.app.supplier.SupplierActWorkspace;
 import org.openvpms.web.component.im.query.ActQuery;

@@ -36,6 +36,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -63,6 +64,11 @@ class StatementGenerator extends AbstractStatementGenerator {
      */
     private StatementProcessor processor;
 
+    /**
+     * The mail context.
+     */
+    private MailContext mailContext;
+
 
     /**
      * Constructs a new <tt>StatementGenerator</tt> for a single customer.
@@ -84,19 +90,6 @@ class StatementGenerator extends AbstractStatementGenerator {
             customers.add(party);
         }
         init(customers, date, printOnly, context);
-    }
-
-    /**
-     * Determines if statements that have been printed should be reprinted.
-     * A statement is printed if the printed flag of its
-     * <em>act.customerAccountOpeningBalance</em> is <tt>true</tt>.
-     * Defaults to <tt>false</tt>.
-     *
-     * @param reprint if <tt>true</tt>, process statements that have been
-     *                printed.
-     */
-    public void setReprint(boolean reprint) {
-        processor.setReprint(reprint);
     }
 
     /**
@@ -127,6 +120,28 @@ class StatementGenerator extends AbstractStatementGenerator {
             }
         }
         init(customers, query.getDate(), false, context);
+    }
+
+    /**
+     * Determines if statements that have been printed should be reprinted.
+     * A statement is printed if the printed flag of its
+     * <em>act.customerAccountOpeningBalance</em> is <tt>true</tt>.
+     * Defaults to <tt>false</tt>.
+     *
+     * @param reprint if <tt>true</tt>, process statements that have been
+     *                printed.
+     */
+    public void setReprint(boolean reprint) {
+        processor.setReprint(reprint);
+    }
+
+    /**
+     * Sets the mail context, used for mailing from print dialogs.
+     *
+     * @param context the mail context. May be <tt>null</tt>
+     */
+    public void setMailContext(MailContext context) {
+        mailContext = context;
     }
 
     /**
@@ -177,10 +192,8 @@ class StatementGenerator extends AbstractStatementGenerator {
         progressBarProcessor = new StatementProgressBarProcessor(
                 processor, customers);
 
-        StatementPrintProcessor printer
-                = new StatementPrintProcessor(progressBarProcessor,
-                                              getCancelListener(),
-                                              practice);
+        StatementPrintProcessor printer = new StatementPrintProcessor(progressBarProcessor, getCancelListener(),
+                                                                      practice, mailContext);
         if (printOnly) {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);

@@ -16,14 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.subsystem;
+package org.openvpms.web.component.subsystem;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -56,11 +54,6 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      * The CRUD window.
      */
     private CRUDWindow<Child> window;
-
-    /**
-     * The email context.
-     */
-    private MailContext context;
 
 
     /**
@@ -124,15 +117,6 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Sets the mail context.
-     *
-     * @param context the mail context. May be <tt>null</tt>
-     */
-    public void setMailContext(MailContext context) {
-        this.context = context;
-    }
-
-    /**
      * Returns the CRUD window, creating it if it doesn't exist.
      *
      * @return the CRUD window
@@ -153,7 +137,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      */
     protected void setCRUDWindow(CRUDWindow<Child> newWindow) {
         if (newWindow != null) {
-            newWindow.setMailContext(context);
+            newWindow.setMailContext(getMailContext());
         }
         if (window != null) {
             Component current = window.getComponent();

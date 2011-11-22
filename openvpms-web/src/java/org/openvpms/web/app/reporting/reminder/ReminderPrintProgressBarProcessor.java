@@ -20,6 +20,7 @@ package org.openvpms.web.app.reporting.reminder;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.resource.util.Messages;
 
@@ -43,6 +44,11 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      * The events currently being printed
      */
     private List<ReminderEvent> events;
+
+    /**
+     * The mail context, used when printing interactively. May be <tt>null</tt>
+     */
+    private MailContext mailContext;
 
 
     /**
@@ -80,7 +86,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
             }
         };
 
-        processor = new ReminderPrintProcessor(groupTemplate, listener);
+        processor = new ReminderPrintProcessor(groupTemplate, listener, mailContext);
     }
 
     /**
@@ -91,6 +97,15 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      */
     public void setInteractiveAlways(boolean interactive) {
         processor.setInteractiveAlways(interactive);
+    }
+
+    /**
+     * Sets the mail context, used for mailing from print dialogs.
+     *
+     * @param context the mail context. May be <tt>null</tt>
+     */
+    public void setMailContext(MailContext context) {
+        mailContext = context;
     }
 
     /**

@@ -44,7 +44,7 @@ public class PracticeMailContext extends ContextMailContext {
     }
 
     /**
-     * Returns the available ''to' email addresses.
+     * Returns the available 'to' email addresses.
      *
      * @return an empty list
      */

@@ -104,12 +104,10 @@ public class IncompleteChargesWorkspace
      */
     private void onReport() {
         try {
-            IMObjectReportPrinter<Act> printer
-                    = new IMObjectReportPrinter<Act>(
-                    query, "WORK_IN_PROGRESS_CHARGES");
+            IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(query, "WORK_IN_PROGRESS_CHARGES");
             String title = Messages.get("reporting.wip.print");
-            InteractiveIMPrinter<Act> iPrinter
-                    = new InteractiveIMPrinter<Act>(title, printer);
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer);
+            iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

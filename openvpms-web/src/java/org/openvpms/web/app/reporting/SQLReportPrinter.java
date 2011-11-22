@@ -99,15 +99,6 @@ public class SQLReportPrinter extends AbstractPrinter {
     }
 
     /**
-     * Returns the report name.
-     *
-     * @return the report name
-     */
-    public String getName() {
-        return template.getName();
-    }
-
-    /**
      * Returns the report parameter types.
      *
      * @return the report parameter types
@@ -186,6 +177,15 @@ public class SQLReportPrinter extends AbstractPrinter {
         } finally {
             closeConnection(connection);
         }
+    }
+
+    /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    public String getDisplayName() {
+        return template.getName();
     }
 
     /**

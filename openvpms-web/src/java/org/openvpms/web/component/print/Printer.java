@@ -94,4 +94,12 @@ public interface Printer {
      * @return the no. of copies to print
      */
     int getCopies();
+
+    /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    String getDisplayName();
+
 }

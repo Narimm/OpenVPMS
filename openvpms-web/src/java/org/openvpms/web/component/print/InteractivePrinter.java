@@ -25,6 +25,7 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.resource.util.Messages;
@@ -80,7 +81,7 @@ public class InteractivePrinter implements Printer {
 
 
     /**
-     * Constructs a new <tt>InteractivePrinter</tt>.
+     * Constructs an <tt>InteractivePrinter</tt>.
      *
      * @param printer the printer to delegate to
      */
@@ -89,7 +90,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs a new <tt>InteractivePrinter</tt>.
+     * Constructs an <tt>InteractivePrinter</tt>.
      *
      * @param printer the printer to delegate to
      * @param skip    if <tt>true</tt> display a 'skip' button that simply
@@ -100,7 +101,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs a new <tt>InteractivePrinter</tt>.
+     * Constructs an <tt>InteractivePrinter</tt>.
      *
      * @param title   the dialog title. May be <tt>null</tt>
      * @param printer the printer to delegate to
@@ -110,7 +111,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs a new <tt>InteractivePrinter</tt>.
+     * Constructs an <tt>InteractivePrinter</tt>.
      *
      * @param title   the dialog title. May be <tt>null</tt>
      * @param printer the printer to delegate to
@@ -226,6 +227,15 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    public String getDisplayName() {
+        return printer.getDisplayName();
+    }
+
+    /**
      * Sets the listener for print events.
      *
      * @param listener the listener. May be <tt>null</tt>
@@ -250,6 +260,15 @@ public class InteractivePrinter implements Printer {
      */
     public void setMailContext(MailContext context) {
         this.context = context;
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context
+     */
+    public MailContext getMailContext() {
+        return context;
     }
 
     /**
@@ -372,7 +391,9 @@ public class InteractivePrinter implements Printer {
         try {
             Document document = getDocument();
             MailDialog dialog = new MailDialog(context);
-            dialog.getMailEditor().addAttachment(document);
+            MailEditor editor = dialog.getMailEditor();
+            editor.setSubject(getDisplayName());
+            editor.addAttachment(document);
             dialog.show();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

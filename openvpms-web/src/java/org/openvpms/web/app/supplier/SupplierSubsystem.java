@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.supplier;
 
-import org.openvpms.web.app.subsystem.AbstractCRUDWorkspace;
 import org.openvpms.web.app.supplier.charge.ChargeWorkspace;
 import org.openvpms.web.app.supplier.delivery.DeliveryWorkspace;
 import org.openvpms.web.app.supplier.document.SupplierDocumentWorkspace;
@@ -50,17 +49,6 @@ public class SupplierSubsystem extends AbstractSubsystem {
         addWorkspace(new ChargeWorkspace(), context);
         addWorkspace(new PaymentWorkspace(), context);
         addWorkspace(new AccountWorkspace(), context);
-    }
-
-    /**
-     * Adds a workspace, associating it with the specified mail context.
-     *
-     * @param workspace the workspace to add
-     * @param context   the mail context
-     */
-    private void addWorkspace(AbstractCRUDWorkspace workspace, MailContext context) {
-        workspace.setMailContext(context);
-        addWorkspace(workspace);
     }
 
 }

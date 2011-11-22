@@ -18,22 +18,23 @@
 
 package org.openvpms.web.component.mail;
 
-import org.openvpms.web.component.app.Context;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.im.query.Browser;
 
 
 /**
- * A factory for {@link MailContext} instances.
+ * A factory for attachment browser instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public interface MailContextFactory {
+public interface AttachmentBrowserFactory {
 
     /**
-     * Creates a mail context for the supplied context.
+     * Constructs an attachment browser.
      *
-     * @param context the context
-     * @return a new mail context
+     * @param context the mail context.
+     * @return a new attachment browser
      */
-    MailContext getMailContext(Context context);
+    Browser<Act> createBrowser(MailContext context);
 }

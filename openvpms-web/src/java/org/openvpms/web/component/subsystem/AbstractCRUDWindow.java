@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.subsystem;
+package org.openvpms.web.component.subsystem;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
@@ -536,7 +536,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     protected IMPrinter<T> createPrinter(T object) {
         IMPrinter<T> printer = IMPrinterFactory.create(object);
         InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer);
-        interactive.setMailContext(context);
+        interactive.setMailContext(getMailContext());
         return interactive;
     }
 

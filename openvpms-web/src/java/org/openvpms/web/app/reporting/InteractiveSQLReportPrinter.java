@@ -21,8 +21,10 @@ package org.openvpms.web.app.reporting;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
-import org.openvpms.web.component.print.PrintDialog;
+import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.print.InteractivePrinter;
+import org.openvpms.web.component.print.PrintDialog;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
@@ -65,15 +67,38 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
                 printer.setParameters(getValues());
                 doPrintPreview();
             }
+
+            @Override
+            protected void doMail() {
+                printer.setParameters(getValues());
+                try {
+                    Document document = getDocument();
+                    mail(document);
+                } catch (OpenVPMSException exception) {
+                    failed(exception);
+                }
+            }
+
             @Override
             protected void doExport() {
-            	printer.setParameters(getValues());
+                printer.setParameters(getValues());
                 try {
                     Document document = getDocument(DocFormats.CSV_TYPE);
                     DownloadServlet.startDownload(document);
                 } catch (OpenVPMSException exception) {
                     failed(exception);
-                }           	
+                }
+            }
+
+            @Override
+            protected void doExportMail() {
+                printer.setParameters(getValues());
+                try {
+                    Document document = getDocument(DocFormats.CSV_TYPE);
+                    mail(document);
+                } catch (OpenVPMSException exception) {
+                    failed(exception);
+                }
             }
         };
     }
@@ -94,7 +119,20 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
      */
     @Override
     protected String getTitle() {
-        return Messages.get("reporting.run.title", getPrinter().getName());
+        return Messages.get("reporting.run.title", getDisplayName());
+    }
+
+    /**
+     * Mails a document.
+     *
+     * @param document the document to mail
+     */
+    private void mail(Document document) {
+        MailDialog dialog = new MailDialog(getMailContext());
+        MailEditor editor = dialog.getMailEditor();
+        editor.addAttachment(document);
+        editor.setSubject(getDisplayName());
+        dialog.show();
     }
 
 }

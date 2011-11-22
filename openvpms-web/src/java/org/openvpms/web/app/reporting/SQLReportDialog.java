@@ -45,13 +45,18 @@ public class SQLReportDialog extends PrintDialog {
     private final ReportParameters parameters;
 
     /**
-     * The preview button identifier.
+     * The export button identifier.
      */
     private static final String EXPORT_ID = "export";
 
+    /**
+     * The export mail button identifier.
+     */
+    private static final String EXPORT_MAIL_ID = "exportMail";
+
 
     /**
-     * Constructs a new <tt>ReportDialog</tt>.
+     * Constructs an <tt>SQLReportDialog</tt>.
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
@@ -109,6 +114,23 @@ public class SQLReportDialog extends PrintDialog {
     }
 
     /**
+     * Invoked when the mail button is pressed. If the parameters are valid, invokes {@link #doMail}.
+     */
+    @Override
+    protected void onMail() {
+        if (parameters.validate()) {
+            doMail();
+        }
+    }
+
+    /**
+     * Invoked when the report should be mailed.
+     * This implementation does nothing.
+     */
+    protected void doMail() {
+    }
+
+    /**
      * Invoked when the export button is pressed. If the parameters are valid,
      * invokes {@link #doExport}.
      */
@@ -119,10 +141,26 @@ public class SQLReportDialog extends PrintDialog {
     }
 
     /**
+     * Invoked when the export mail button is pressed. If the parameters are valid, invokes {@link #doExportMail()}.
+     */
+    protected void onExportMail() {
+        if (parameters.validate()) {
+            doExportMail();
+        }
+    }
+
+    /**
      * Invoked when the report should be exported.
      * This implementation does nothing.
      */
     protected void doExport() {
+    }
+
+    /**
+     * Invoked when the report should be exported and mailed.
+     * This implementation does nothing.
+     */
+    protected void doExportMail() {
     }
 
     /**
@@ -138,6 +176,13 @@ public class SQLReportDialog extends PrintDialog {
                 onExport();
             }
         });
+
+        addButton(EXPORT_MAIL_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onExportMail();
+            }
+        });
+
 
         Component component = GroupBoxFactory.create("reporting.run.parameters",
                                                      parameters.getComponent());

@@ -23,7 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;

@@ -93,6 +93,9 @@ public class ShortcutButton extends ButtonEx {
             char ch = key.toUpperCase().toCharArray()[0];
             code = KeyStrokeHelper.getKeyCode(ch);
         } else {
+            if (text != null) {
+                text = text.replace("&&", "&");     // replace escaped ampersands
+            }
             super.setText(text);
         }
     }

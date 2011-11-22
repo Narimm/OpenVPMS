@@ -18,10 +18,9 @@
 
 package org.openvpms.web.component.mail;
 
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.app.AbstractMailContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 
 import java.util.List;
@@ -33,7 +32,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class PartyMailContext implements MailContext {
+public class PartyMailContext extends AbstractMailContext {
 
     /**
      * The practice location.
@@ -49,6 +48,7 @@ public class PartyMailContext implements MailContext {
      * The party to get the 'to' addresses.
      */
     private final Party to;
+
 
     /**
      * Constructs a <tt>PartyMailContext</tt>.
@@ -85,12 +85,4 @@ public class PartyMailContext implements MailContext {
         return ContactHelper.getEmailContacts(to);
     }
 
-    /**
-     * Returns a browser for documents that may be attached to mails.
-     *
-     * @return <tt>null</tt>
-     */
-    public Browser<Act> createAttachmentBrowser() {
-        return null;
-    }
 }

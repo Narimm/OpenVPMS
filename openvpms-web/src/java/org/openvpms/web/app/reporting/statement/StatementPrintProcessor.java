@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.resource.util.Messages;
@@ -65,6 +66,11 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     private boolean updatePrinted = true;
 
     /**
+     * The mail context.
+     */
+    private MailContext context;
+
+    /**
      * The logger.
      */
     private static final Log log
@@ -78,13 +84,14 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      *                       statement, when printing interactively.
      * @param cancelListener the listener to cancel processing
      * @param practice       the practice
+     * @param context        the mail context. May be <tt>null</tt>
      */
-    public StatementPrintProcessor(StatementProgressBarProcessor processor,
-                                   VetoListener cancelListener,
-                                   Party practice) {
+    public StatementPrintProcessor(StatementProgressBarProcessor processor, VetoListener cancelListener,
+                                   Party practice, MailContext context) {
         super(practice);
         this.processor = processor;
         this.cancelListener = cancelListener;
+        this.context = context;
     }
 
     /**
@@ -115,11 +122,12 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
             iPrinter.setInteractive(false);
         }
         iPrinter.setCancelListener(cancelListener);
+        iPrinter.setMailContext(context);
         iPrinter.setListener(new PrinterListener() {
             public void printed(String printer) {
                 try {
                     if (updatePrinted && !statement.isPreview()
-                            && !statement.isPrinted()) {
+                        && !statement.isPrinted()) {
                         setPrinted(statement);
                     }
                     printerName = printer;

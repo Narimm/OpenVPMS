@@ -182,18 +182,15 @@ public class MailDialog extends PopupDialog {
     }
 
     /**
-     * Processes a user request to close the window (via the close button).
-     * <p/>
-     * If there is an {@link #defaultCloseAction}, this will be invoked.
+     * Invoked just prior to the dialog closing.
      */
     @Override
-    public void userClose() {
+    protected void onClosing() {
         try {
             editor.dispose();
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
-        super.userClose();
     }
 
     /**

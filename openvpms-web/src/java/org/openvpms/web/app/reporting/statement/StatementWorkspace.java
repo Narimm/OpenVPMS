@@ -263,6 +263,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
                 ErrorHelper.show(exception);
             }
         });
+        generator.setMailContext(getMailContext());
         generator.process();
     }
 
@@ -312,6 +313,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             String title = Messages.get("imobject.print.title", type);
             InteractiveIMPrinter<ObjectSet> iPrinter
                     = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

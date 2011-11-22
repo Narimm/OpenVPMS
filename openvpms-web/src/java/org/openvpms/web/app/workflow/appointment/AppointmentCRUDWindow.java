@@ -40,8 +40,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
+import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -96,7 +96,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     protected EditDialog edit(IMObjectEditor editor) {
         Date startTime = browser.getSelectedTime();
         if (startTime != null && editor.getObject().isNew()
-                && editor instanceof AppointmentActEditor) {
+            && editor instanceof AppointmentActEditor) {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
         return super.edit(editor);
@@ -191,9 +191,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     protected boolean canCheckoutOrConsult(Act act) {
         String status = act.getStatus();
         return AppointmentStatus.CHECKED_IN.equals(status)
-                || AppointmentStatus.IN_PROGRESS.equals(status)
-                || AppointmentStatus.COMPLETED.equals(status)
-                || AppointmentStatus.BILLED.equals(status);
+               || AppointmentStatus.IN_PROGRESS.equals(status)
+               || AppointmentStatus.COMPLETED.equals(status)
+               || AppointmentStatus.BILLED.equals(status);
     }
 
     /**
@@ -228,11 +228,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 browser.setCut(selected);
             } else {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
-                        Messages.get("workflow.scheduling.appointment.cut.pending"));
+                                       Messages.get("workflow.scheduling.appointment.cut.pending"));
             }
         } else {
             InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
-                    Messages.get("workflow.scheduling.appointment.cut.select"));
+                                   Messages.get("workflow.scheduling.appointment.cut.select"));
         }
     }
 
@@ -249,24 +249,24 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     private void onPaste() {
         if (browser.getCut() == null) {
             InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                    Messages.get("workflow.scheduling.appointment.paste.select"));
+                                   Messages.get("workflow.scheduling.appointment.paste.select"));
         } else {
             Act appointment = browser.getAct(browser.getCut());
             Entity schedule = browser.getSelectedSchedule();
             Date startTime = browser.getSelectedTime();
             if (appointment == null) {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                        Messages.get("workflow.scheduling.appointment.paste.noexist"));
+                                       Messages.get("workflow.scheduling.appointment.paste.noexist"));
                 onRefresh(appointment); // force redraw
                 browser.setCut(null);
             } else if (!AppointmentStatus.PENDING.equals(appointment.getStatus())) {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                        Messages.get("workflow.scheduling.appointment.paste.pending"));
+                                       Messages.get("workflow.scheduling.appointment.paste.pending"));
                 onRefresh(appointment); // force redraw
                 browser.setCut(null);
             } else if (schedule == null || startTime == null) {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
-                        Messages.get("workflow.scheduling.appointment.paste.noslot"));
+                                       Messages.get("workflow.scheduling.appointment.paste.noslot"));
             } else {
                 AppointmentActEditor editor = new AppointmentActEditor(appointment, null, new DefaultLayoutContext());
                 editor.setSchedule(schedule);

@@ -78,15 +78,6 @@ public class InteractiveIMPrinter<T>
     }
 
     /**
-     * Returns a display name for the objects being printed.
-     *
-     * @return a display name for the objects being printed
-     */
-    public String getDisplayName() {
-        return getPrinter().getDisplayName();
-    }
-
-    /**
      * Returns the objects being printed.
      *
      * @return the objects being printed

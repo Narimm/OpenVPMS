@@ -19,9 +19,7 @@
 package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.contact.ContactHelper;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.mail.MailContext;
 
 import java.util.List;
@@ -32,12 +30,13 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public abstract class ContextMailContext implements MailContext {
+public abstract class ContextMailContext extends AbstractMailContext {
 
     /**
      * The context to use.
      */
     private final Context context;
+
 
     /**
      * Constructs a <tt>ContextMailContext</tt>.
@@ -61,15 +60,6 @@ public abstract class ContextMailContext implements MailContext {
             result = ContactHelper.getEmailContacts(context.getPractice());
         }
         return result;
-    }
-
-    /**
-     * Returns a browser for documents that may be attached to mails.
-     *
-     * @return <tt>null</tt>
-     */
-    public Browser<Act> createAttachmentBrowser() {
-        return null;
     }
 
     /**

@@ -33,6 +33,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.ViewResultSetDialog;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.resource.util.Messages;
 
 

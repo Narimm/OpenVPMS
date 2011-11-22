@@ -230,7 +230,7 @@ public class MailEditor extends AbstractModifiable {
 
         if (preferredTo != null) {
             setTo(preferredTo);
-        } else {
+        } else if (!toAddresses.isEmpty()){
             setTo(toAddresses.get(0));
         }
 

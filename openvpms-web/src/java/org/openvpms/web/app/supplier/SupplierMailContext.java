@@ -24,10 +24,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.supplier.document.SupplierDocumentQuery;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
+import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 
 import java.util.List;
@@ -49,6 +50,17 @@ public class SupplierMailContext extends ContextMailContext {
      */
     public SupplierMailContext(Context context) {
         super(context);
+        setAttachmentBrowserFactory(new AttachmentBrowserFactory() {
+            public Browser<Act> createBrowser(MailContext context) {
+                Browser<Act> browser = null;
+                Party supplier = getContext().getSupplier();
+                if (supplier != null) {
+                    Query<Act> query = new SupplierDocumentQuery<Act>(supplier);
+                    browser = BrowserFactory.create(query);
+                }
+                return browser;
+            }
+        });
     }
 
     /**
@@ -60,18 +72,4 @@ public class SupplierMailContext extends ContextMailContext {
         return ContactHelper.getEmailContacts(getContext().getSupplier());
     }
 
-    /**
-     * Returns a browser for documents that may be attached to mails.
-     *
-     * @return a browser. May be <tt>null</tt>
-     */
-    public Browser<Act> createAttachmentBrowser() {
-        Browser<Act> browser = null;
-        Party supplier = getContext().getSupplier();
-        if (supplier != null) {
-            Query<Act> query = new SupplierDocumentQuery<Act>(supplier);
-            browser = BrowserFactory.create(query);
-        }
-        return browser;
-    }
 }

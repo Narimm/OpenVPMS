@@ -16,48 +16,42 @@
  *  $Id: $
  */
 
-package org.openvpms.web.component.mail;
+package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.im.query.Browser;
-
-import java.util.List;
+import org.openvpms.web.component.mail.AttachmentBrowserFactory;
+import org.openvpms.web.component.mail.MailContext;
 
 
 /**
- * Context information to pass to the mail editor.
+ * Abstract implementation of the {@link MailContext} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public interface MailContext {
+public abstract class AbstractMailContext implements MailContext {
 
     /**
-     * Returns the available 'from' email addresses.
-     *
-     * @return the 'from' email addresses
+     * The attachment browser factory. May be <tt>null</tt>
      */
-    List<Contact> getFromAddresses();
-
-    /**
-     * Returns the available ''to' email addresses.
-     *
-     * @return the 'to' email addresses
-     */
-    List<Contact> getToAddresses();
+    private AttachmentBrowserFactory factory;
 
     /**
      * Registers a factory for attachment browsers.
      *
      * @param factory the factory. May be <tt>null</tt>
      */
-    void setAttachmentBrowserFactory(AttachmentBrowserFactory factory);
+    public void setAttachmentBrowserFactory(AttachmentBrowserFactory factory) {
+        this.factory = factory;
+    }
 
     /**
      * Returns a browser for documents that may be attached to mails.
      *
-     * @return a new browser. May be <tt>null</tt>
+     * @return a browser. May be <tt>null</tt>
      */
-    Browser<Act> createAttachmentBrowser();
+    public Browser<Act> createAttachmentBrowser() {
+        return (factory != null) ? factory.createBrowser(this) : null;
+    }
 }

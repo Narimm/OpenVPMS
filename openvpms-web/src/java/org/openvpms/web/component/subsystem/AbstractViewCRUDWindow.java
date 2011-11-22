@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.subsystem;
+package org.openvpms.web.component.subsystem;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;

@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.subsystem;
+package org.openvpms.web.component.subsystem;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 

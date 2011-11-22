@@ -20,7 +20,7 @@ package org.openvpms.web.app.customer.estimation;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;

@@ -19,7 +19,7 @@
 package org.openvpms.web.app.admin.lookup;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 

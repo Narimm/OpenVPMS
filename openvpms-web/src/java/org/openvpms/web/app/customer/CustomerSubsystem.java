@@ -25,7 +25,6 @@ import org.openvpms.web.app.customer.estimation.EstimationWorkspace;
 import org.openvpms.web.app.customer.info.InformationWorkspace;
 import org.openvpms.web.app.customer.note.NoteAlertWorkspace;
 import org.openvpms.web.app.customer.payment.PaymentWorkspace;
-import org.openvpms.web.app.subsystem.AbstractCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
@@ -54,17 +53,6 @@ public class CustomerSubsystem extends AbstractSubsystem {
         addWorkspace(new PaymentWorkspace(), context);
         addWorkspace(new AccountWorkspace(), context);
         addWorkspace(new NoteAlertWorkspace(), context);
-    }
-
-    /**
-     * Adds a workspace, associating it with the specified mail context.
-     *
-     * @param workspace the workspace to add
-     * @param context   the mail context
-     */
-    private void addWorkspace(AbstractCRUDWorkspace workspace, MailContext context) {
-        workspace.setMailContext(context);
-        addWorkspace(workspace);
     }
 
 }

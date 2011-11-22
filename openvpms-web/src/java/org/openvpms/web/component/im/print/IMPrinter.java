@@ -36,11 +36,4 @@ public interface IMPrinter<T> extends Printer {
      */
     Iterable<T> getObjects();
 
-    /**
-     * Returns a display name for the objects being printed.
-     *
-     * @return a display name for the objects being printed
-     */
-    String getDisplayName();
-
 }

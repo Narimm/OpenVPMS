@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
 import org.openvpms.web.app.patient.mr.SummaryCRUDWindow;
 import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.layout.LayoutContext;

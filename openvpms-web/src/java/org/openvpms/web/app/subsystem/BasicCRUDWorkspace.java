@@ -24,6 +24,8 @@ import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.subsystem.AbstractCRUDWorkspace;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.resource.util.Messages;
 
 

@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 
 import java.util.ArrayList;
@@ -63,16 +64,23 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      */
     private final PrinterListener listener;
 
+    /**
+     * The mail context, used when printing interactively. May be <tt>null</tt>
+     */
+    private final MailContext mailContext;
+
 
     /**
      * Constructs a <tt>ReminderPrintProcessor</tt>.
      *
      * @param groupTemplate the grouped reminder document template
      * @param listener      the listener for printer events
+     * @param context       the mail context, used when printing interactively. May be <tt>null</tt>
      */
-    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener) {
+    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener, MailContext context) {
         super(groupTemplate);
         this.listener = listener;
+        this.mailContext = context;
     }
 
     /**
@@ -135,6 +143,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
         }
         interactive = alwaysInteractive || printerName == null;
         iPrinter.setInteractive(interactive);
+        iPrinter.setMailContext(mailContext);
 
         if (interactive) {
             // register a listener to grab the selected printer, to avoid popping up a print dialog each time

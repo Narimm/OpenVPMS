@@ -22,7 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;

@@ -20,7 +20,7 @@ package org.openvpms.web.app.reporting;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.ComponentState;

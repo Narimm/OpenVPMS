@@ -20,6 +20,8 @@ package org.openvpms.web.app.product;
 
 import org.openvpms.web.app.product.stock.StockWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.app.PracticeMailContext;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -31,11 +33,18 @@ import org.openvpms.web.component.subsystem.AbstractSubsystem;
 public class ProductSubsystem extends AbstractSubsystem {
 
     /**
-     * Construct a new <tt>ProductSubsystem</tt>.
+     * Constructs a <tt>ProductSubsystem</tt>.
      */
     public ProductSubsystem() {
         super("product");
-        addWorkspace(new InformationWorkspace());
-        addWorkspace(new StockWorkspace());
+        PracticeMailContext context = new PracticeMailContext(GlobalContext.getInstance());
+
+        InformationWorkspace informationWorkspace = new InformationWorkspace();
+        informationWorkspace.setMailContext(context);
+        addWorkspace(informationWorkspace);
+
+        StockWorkspace stockWorkspace = new StockWorkspace();
+        stockWorkspace.setMailContext(context);
+        addWorkspace(stockWorkspace);
     }
 }
