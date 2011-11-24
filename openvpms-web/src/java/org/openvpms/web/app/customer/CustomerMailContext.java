@@ -35,7 +35,9 @@ import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -120,6 +122,32 @@ public class CustomerMailContext extends ContextMailContext {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns variables to be used in macro expansion.
+     * <p/>
+     * This implementation returns a map of:
+     * <ul>
+     * <li>customer -> the customer party
+     * <li>patient -> the patient party
+     * </ul>
+     *
+     * @return variables to use in macro expansion
+     */
+    @Override
+    public Map<String, Object> getVariables() {
+        Map<String, Object> variables = new HashMap<String, Object>();
+        Context context = getContext();
+        Party customer = context.getCustomer();
+        Party patient = context.getPatient();
+        if (customer != null) {
+            variables.put("customer", customer);
+        }
+        if (patient != null) {
+            variables.put("patient", patient);
+        }
+        return variables;
     }
 
     /**

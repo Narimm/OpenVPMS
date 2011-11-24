@@ -31,7 +31,9 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -71,5 +73,27 @@ public class SupplierMailContext extends ContextMailContext {
     public List<Contact> getToAddresses() {
         return ContactHelper.getEmailContacts(getContext().getSupplier());
     }
+
+    /**
+     * Returns variables to be used in macro expansion.
+     * <p/>
+     * This implementation returns a map of:
+     * <ul>
+     * <li>supplier -> the supplier party
+     * </ul>
+     *
+     * @return variables to use in macro expansion
+     */
+    @Override
+    public Map<String, Object> getVariables() {
+        Map<String, Object> variables = new HashMap<String, Object>();
+        Context context = getContext();
+        Party supplier = context.getSupplier();
+        if (supplier != null) {
+            variables.put("supplier", supplier);
+        }
+        return variables;
+    }
+
 
 }

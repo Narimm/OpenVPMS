@@ -18,7 +18,9 @@
 
 package org.openvpms.web.component.mail;
 
+import echopointng.KeyStrokes;
 import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +31,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
@@ -37,6 +40,7 @@ import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -44,6 +48,8 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Map;
 
 
 /**
@@ -165,11 +171,21 @@ public class MailDialog extends PopupDialog {
         this.mailer = new DefaultMailer();
         this.documents = documents;
         editor = new MailEditor(context.getFromAddresses(), context.getToAddresses(), preferred);
+        Map<String, Object> variables = context.getVariables();
+        if (variables != null) {
+            editor.declareVariables(variables);
+        }
+
         getLayout().add(editor.getComponent());
         getFocusGroup().add(0, editor.getFocusGroup());
         setCancelListener(new VetoListener() {
             public void onVeto(Vetoable action) {
                 onCancel(action);
+            }
+        });
+        getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onMacro();
             }
         });
     }
@@ -338,6 +354,14 @@ public class MailDialog extends PopupDialog {
         } else {
             action.veto(false);
         }
+    }
+
+    /**
+     * Displays the macros.
+     */
+    protected void onMacro() {
+        MacroDialog dialog = new MacroDialog();
+        dialog.show();
     }
 
 }

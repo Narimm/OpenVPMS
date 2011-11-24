@@ -85,6 +85,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -256,6 +257,17 @@ public class MailEditor extends AbstractModifiable {
     public void declareVariable(String name, Object value) {
         StringPropertyTransformer transformer = (StringPropertyTransformer) message.getTransformer();
         transformer.getMacroEvaluator().declareVariable(name, value);
+    }
+
+    /**
+     * Declares variables to be used in macro expansion.
+     *
+     * @param variables a map of variable name to variable value
+     */
+    public void declareVariables(Map<String, Object> variables) {
+        for (Map.Entry<String, Object> variable : variables.entrySet()) {
+            declareVariable(variable.getKey(), variable.getValue());
+        }
     }
 
     /**

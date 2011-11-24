@@ -23,6 +23,8 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 
+import java.util.Map;
+
 
 /**
  * Abstract implementation of the {@link MailContext} interface.
@@ -53,5 +55,14 @@ public abstract class AbstractMailContext implements MailContext {
      */
     public Browser<Act> createAttachmentBrowser() {
         return (factory != null) ? factory.createBrowser(this) : null;
+    }
+
+    /**
+     * Returns variables to be used in macro expansion.
+     *
+     * @return <tt>null</tt>
+     */
+    public Map<String, Object> getVariables() {
+        return null;
     }
 }

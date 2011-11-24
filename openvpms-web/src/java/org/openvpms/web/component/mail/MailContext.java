@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.im.query.Browser;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -60,4 +61,11 @@ public interface MailContext {
      * @return a new browser. May be <tt>null</tt>
      */
     Browser<Act> createAttachmentBrowser();
+
+    /**
+     * Returns variables to be used in macro expansion.
+     *
+     * @return variables to use in macro expansion. May be <tt>null</tt>
+     */
+    Map<String, Object> getVariables();
 }
