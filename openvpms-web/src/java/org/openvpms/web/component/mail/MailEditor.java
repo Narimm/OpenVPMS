@@ -687,10 +687,8 @@ public class MailEditor extends AbstractModifiable {
                     onModified();
                 }
             });
-            focus.add(toAddressSelector);
-        } else {
-            focus.add(toText);
         }
+        focus.add(toText);
 
         TextField subjectText = TextComponentFactory.create(subject, 40);
         subjectText.setWidth(EXTENT);

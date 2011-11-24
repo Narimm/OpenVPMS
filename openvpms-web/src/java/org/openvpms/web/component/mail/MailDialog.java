@@ -177,7 +177,7 @@ public class MailDialog extends PopupDialog {
         }
 
         getLayout().add(editor.getComponent());
-        getFocusGroup().add(0, editor.getFocusGroup());
+        getFocusGroup().add(editor.getFocusGroup());
         setCancelListener(new VetoListener() {
             public void onVeto(Vetoable action) {
                 onCancel(action);
@@ -188,6 +188,7 @@ public class MailDialog extends PopupDialog {
                 onMacro();
             }
         });
+        editor.getFocusGroup().setFocus();
     }
 
     /**

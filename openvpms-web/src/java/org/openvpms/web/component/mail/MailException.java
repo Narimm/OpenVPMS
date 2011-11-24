@@ -51,7 +51,7 @@ public class MailException extends OpenVPMSException {
      * The appropriate resource file is loaded cached into memory when this
      * class is loaded.
      */
-    private static Messages MESSAGES = Messages.getMessages("org.openvpms.web.component.im.mail."
+    private static Messages MESSAGES = Messages.getMessages("org.openvpms.web.component.mail."
                                                             + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
