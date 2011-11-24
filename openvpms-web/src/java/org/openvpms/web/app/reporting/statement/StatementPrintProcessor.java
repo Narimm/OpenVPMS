@@ -28,9 +28,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.VetoListener;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -111,8 +114,9 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void process(final Statement statement) {
-        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(
-                statement.getActs(), CustomerAccountArchetypes.OPENING_BALANCE);
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(CustomerAccountArchetypes.OPENING_BALANCE,
+                                                                             GlobalContext.getInstance());
+        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(statement.getActs(), locator);
         printer.setParameters(getParameters(statement));
 
         String title = Messages.get("reporting.statements.print.customer");

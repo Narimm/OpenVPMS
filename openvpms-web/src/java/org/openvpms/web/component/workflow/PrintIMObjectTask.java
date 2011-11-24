@@ -23,6 +23,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 
@@ -135,7 +136,8 @@ public class PrintIMObjectTask extends AbstractTask {
         }
         if (object != null) {
             try {
-                IMPrinter<IMObject> printer = IMPrinterFactory.create(object);
+                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+                IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator);
                 boolean skip = !isRequired() && enableSkip;
                 InteractiveIMPrinter<IMObject> iPrinter
                         = new InteractiveIMPrinter<IMObject>(printer, skip);

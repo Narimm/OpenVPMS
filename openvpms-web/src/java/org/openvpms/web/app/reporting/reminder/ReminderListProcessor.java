@@ -22,13 +22,16 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -132,8 +135,9 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
                 for (ReminderEvent event : reminders) {
                     acts.add(event.getReminder());
                 }
-                IMObjectReportPrinter<Act> printer
-                        = new IMObjectReportPrinter<Act>(acts, ReminderArchetypes.REMINDER);
+                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER,
+                                                                                     GlobalContext.getInstance());
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator);
                 final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(
                         Messages.get("reporting.reminder.list.print.title"),
                         printer, true);

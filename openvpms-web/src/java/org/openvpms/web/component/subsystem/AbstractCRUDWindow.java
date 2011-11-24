@@ -47,6 +47,7 @@ import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
@@ -534,7 +535,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * @throws OpenVPMSException for any error
      */
     protected IMPrinter<T> createPrinter(T object) {
-        IMPrinter<T> printer = IMPrinterFactory.create(object);
+        ContextDocumentTemplateLocator locator
+                = new ContextDocumentTemplateLocator(object, GlobalContext.getInstance());
+        IMPrinter<T> printer = IMPrinterFactory.create(object, locator);
         InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer);
         interactive.setMailContext(getMailContext());
         return interactive;

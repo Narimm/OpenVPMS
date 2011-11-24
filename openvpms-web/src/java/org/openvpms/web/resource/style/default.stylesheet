@@ -594,6 +594,13 @@
         </properties>
     </style>
 
+    <style name="MailEditor.message" type="nextapp.echo2.app.TextArea" base-name="default">
+        <properties>
+            <property name="width" value="100%"/>
+            <property name="height" value="${MailEditor.message.height}"/>
+        </properties>
+    </style>
+
     <style name="SMSConfigEmail" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="true"/>
@@ -1252,7 +1259,18 @@
     <!--  Download Buttons                                                   -->
     <!-- =================================================================== -->
 
-    <style name="download.avi" type="nextapp.echo2.app.Button">
+    <style name="download-base" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="font">
+                <font size="${font.size}">
+                    <typeface name="${font.typeface}"/>
+                </font>
+
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.avi" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon" type="nextapp.echo2.app.ResourceImageReference">
                 <resource-image-reference resource="/org/openvpms/web/resource/image/buttons/avi.gif"/>
@@ -1260,7 +1278,7 @@
         </properties>
     </style>
 
-    <style name="download.doc" type="nextapp.echo2.app.Button">
+    <style name="download.doc" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1270,7 +1288,7 @@
         </properties>
     </style>
 
-    <style name="download.rtf" type="nextapp.echo2.app.Button">
+    <style name="download.rtf" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon" type="nextapp.echo2.app.ResourceImageReference">
                 <resource-image-reference resource="/org/openvpms/web/resource/image/buttons/doc.gif"/>
@@ -1278,7 +1296,7 @@
         </properties>
     </style>
 
-    <style name="download.fla" type="nextapp.echo2.app.Button">
+    <style name="download.fla" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1288,7 +1306,7 @@
         </properties>
     </style>
 
-    <style name="download.gif" type="nextapp.echo2.app.Button">
+    <style name="download.gif" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1298,7 +1316,7 @@
         </properties>
     </style>
 
-    <style name="download.tif" type="nextapp.echo2.app.Button">
+    <style name="download.tif" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1308,7 +1326,7 @@
         </properties>
     </style>
 
-    <style name="download.htm" type="nextapp.echo2.app.Button">
+    <style name="download.htm" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1318,7 +1336,7 @@
         </properties>
     </style>
 
-    <style name="download.html" type="nextapp.echo2.app.Button">
+    <style name="download.html" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1328,7 +1346,7 @@
         </properties>
     </style>
 
-    <style name="download.jpg" type="nextapp.echo2.app.Button">
+    <style name="download.jpg" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1338,7 +1356,7 @@
         </properties>
     </style>
 
-    <style name="download.mp3" type="nextapp.echo2.app.Button">
+    <style name="download.mp3" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1348,7 +1366,7 @@
         </properties>
     </style>
 
-    <style name="download.pdf" type="nextapp.echo2.app.Button">
+    <style name="download.pdf" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1358,7 +1376,7 @@
         </properties>
     </style>
 
-    <style name="download.ppt" type="nextapp.echo2.app.Button">
+    <style name="download.ppt" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1368,7 +1386,7 @@
         </properties>
     </style>
 
-    <style name="download.swf" type="nextapp.echo2.app.Button">
+    <style name="download.swf" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1378,7 +1396,7 @@
         </properties>
     </style>
 
-    <style name="download.swt" type="nextapp.echo2.app.Button">
+    <style name="download.swt" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1388,7 +1406,7 @@
         </properties>
     </style>
 
-    <style name="download.txt" type="nextapp.echo2.app.Button">
+    <style name="download.txt" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1398,7 +1416,7 @@
         </properties>
     </style>
 
-    <style name="download.xls" type="nextapp.echo2.app.Button">
+    <style name="download.xls" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1408,7 +1426,7 @@
         </properties>
     </style>
 
-    <style name="download.zip" type="nextapp.echo2.app.Button">
+    <style name="download.zip" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1418,7 +1436,7 @@
         </properties>
     </style>
 
-    <style name="download.odt" type="nextapp.echo2.app.Button">
+    <style name="download.odt" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1428,7 +1446,7 @@
         </properties>
     </style>
 
-    <style name="download.odp" type="nextapp.echo2.app.Button">
+    <style name="download.odp" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1438,7 +1456,7 @@
         </properties>
     </style>
 
-    <style name="download.ods" type="nextapp.echo2.app.Button">
+    <style name="download.ods" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1448,7 +1466,7 @@
         </properties>
     </style>
 
-    <style name="download.jrxml" type="nextapp.echo2.app.Button">
+    <style name="download.jrxml" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1458,7 +1476,7 @@
         </properties>
     </style>
 
-    <style name="download.default" type="nextapp.echo2.app.Button">
+    <style name="download.default" base-name="download-base" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
                       type="nextapp.echo2.app.ResourceImageReference">

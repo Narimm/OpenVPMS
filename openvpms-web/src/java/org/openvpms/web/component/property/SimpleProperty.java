@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.util.TextHelper;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -446,6 +447,10 @@ public class SimpleProperty extends AbstractProperty {
             }
         }
         if (validationErrors != null) {
+            errors = validationErrors;
+        } else if (isRequired() && getValue() == null) {
+            validationErrors = new ArrayList<ValidatorError>();
+            validationErrors.add(new ValidatorError(this, Messages.get("property.error.required", getDisplayName())));
             errors = validationErrors;
         }
         if (errors != null) {

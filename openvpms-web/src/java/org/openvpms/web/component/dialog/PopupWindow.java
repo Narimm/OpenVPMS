@@ -130,7 +130,7 @@ public abstract class PopupWindow extends WindowPane {
      */
     private void restrictDimensions() {
         Dimension size = ContextApplicationInstance.getInstance().getResolution();
-        restrictSize(size.height, WindowPane.PROPERTY_HEIGHT, WindowPane.PROPERTY_POSITION_Y, 0.70);
+        restrictSize(size.height, WindowPane.PROPERTY_HEIGHT, WindowPane.PROPERTY_POSITION_Y, 0.80);
         restrictSize(size.width, WindowPane.PROPERTY_WIDTH, WindowPane.PROPERTY_POSITION_X, 0.90);
     }
 

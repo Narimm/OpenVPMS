@@ -80,6 +80,7 @@ public abstract class AbstractIMPrinter<T>
         report.print(getObjects().iterator(), getParameters(),
                      getProperties(printer));
     }
+
     /**
      * Sets parameters to pass to the report.
      *
@@ -112,12 +113,13 @@ public abstract class AbstractIMPrinter<T>
 
     /**
      * Returns a document corresponding to that which would be printed.
-     * @param format the document format to return
+     *
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    public Document getDocument(String format) {
-        return reporter.getDocument();
+    public Document getDocument(String mimeType) {
+        return reporter.getDocument(mimeType);
     }
 
     /**

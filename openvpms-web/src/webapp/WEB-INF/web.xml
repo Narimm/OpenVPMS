@@ -9,7 +9,7 @@
       -  to something unique -->
     <context-param>
         <param-name>webAppRootKey</param-name>
-        <param-value>openvpms</param-value>
+        <param-value>alpha</param-value>
     </context-param>
 
     <!-- Acegi/Spring config -->

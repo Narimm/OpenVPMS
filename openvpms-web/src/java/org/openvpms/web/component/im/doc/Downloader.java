@@ -23,14 +23,18 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.report.openoffice.Converter;
+import org.openvpms.report.openoffice.OOConnection;
+import org.openvpms.report.openoffice.OpenOfficeException;
+import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.servlet.DownloadServlet;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -46,6 +50,22 @@ public abstract class Downloader {
      */
     protected static final String DEFAULT_BUTTON_STYLE = "download.default";
 
+    /**
+     * The listener for events.
+     */
+    private DownloaderListener listener;
+
+
+    /**
+     * Registers a listener to be notified when the link is clicked.
+     * <p/>
+     * When registered, this overrides the default behaviour of downloading documents.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    public void setListener(DownloaderListener listener) {
+        this.listener = listener;
+    }
 
     /**
      * Returns a component representing the downloader.
@@ -56,42 +76,93 @@ public abstract class Downloader {
 
     /**
      * Initiates download of the document.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DocumentException         if the document can't be found
+     * @throws OpenOfficeException       if the document cannot be converted
      */
-    protected void onDownload() {
-        try {
-            Document document = getDocument();
-            DownloadServlet.startDownload(document);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+    public void download() {
+        download(null);
+    }
+
+    /**
+     * Initiates download of the document after converting it to the specified type.
+     *
+     * @param mimeType the mimetype. If <tt>null</tt>, indicates no conversion is required
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DocumentException         if the document can't be found
+     * @throws OpenOfficeException       if the document cannot be converted
+     */
+    public void download(String mimeType) {
+        Document document = getDocument(mimeType);
+        DownloadServlet.startDownload(document);
     }
 
     /**
      * Returns the document for download.
      *
+     * @param mimeType the expected mime type. If <tt>null</tt>, then no conversion is required.
      * @return the document for download
-     * @throws OpenVPMSException for any error
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DocumentException         if the document can't be found
+     * @throws OpenOfficeException       if the document cannot be converted
      */
-    protected abstract Document getDocument();
+    protected abstract Document getDocument(String mimeType);
 
     /**
-     * Returns a document, given its referemce.
+     * Invoked when the document is selected. If a listener is registered, this will be notified, otherwise
+     * {@link #download} will be called.
+     *
+     * @param mimeType the expected mimetype. If <tt>null</tt>, indicates no conversion is required
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DocumentException         if the document can't be found
+     * @throws OpenOfficeException       if the document cannot be converted
+     */
+    protected void selected(String mimeType) {
+        if (listener != null) {
+            listener.download(this, mimeType);
+        } else {
+            download();
+        }
+    }
+
+    /**
+     * Returns a document, given its reference.
      *
      * @param reference the document reference
+     * @param mimeType  the expected mime type. If <tt>null</tt>, then no conversion is required.
      * @return the document
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document can't be found
+     * @throws OpenOfficeException       if the document cannot be converted
      */
-    protected Document getDocument(IMObjectReference reference) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        Document doc = (Document) service.get(reference);
-        if (doc == null) {
+    protected Document getDocumentByRef(IMObjectReference reference, String mimeType) {
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        Document result = (Document) service.get(reference);
+        if (result == null) {
             throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
-        return doc;
+        if (mimeType != null && !mimeType.equals(result.getMimeType())) {
+            OOConnection connection = null;
+            try {
+                DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
+                connection = OpenOfficeHelper.getConnectionPool().getConnection();
+                Converter converter = new Converter(connection, handlers);
+                Document target = converter.convert(result, mimeType);
+                DownloadServlet.startDownload(target);
+            } finally {
+                OpenOfficeHelper.close(connection);
+            }
+        }
+        return result;
     }
 
+    /**
+     * Helper to set the button style.
+     *
+     * @param button the button
+     * @param name   the button name. Long names will be shortened
+     */
     protected void setButtonStyle(Button button, String name) {
         String tooltip = null;
         if (name.length() > 18) {

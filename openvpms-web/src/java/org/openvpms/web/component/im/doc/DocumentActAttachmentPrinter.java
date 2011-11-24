@@ -25,10 +25,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.PrintException;
 import org.openvpms.web.component.im.print.TemplatedIMPrinter;
-import org.openvpms.web.component.im.report.IMObjectReporter;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -44,15 +44,15 @@ import org.openvpms.web.component.app.GlobalContext;
 public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
-     * Constructs a new <tt>DocumentActPrinter</tt>.
-     * TODO - fix this so it is not dependendent on the global context
+     * Constructs a <tt>DocumentActAttachmentPrinter</tt>.
      *
-     * @param object the object to print
+     * @param object  the object to print
+     * @param locator the document template locator
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public DocumentActAttachmentPrinter(DocumentAct object) {
-        super(new IMObjectReporter<IMObject>(object,
-                                             new ContextDocumentTemplateLocator(object, GlobalContext.getInstance())));
+    @SuppressWarnings("unchecked")
+    public DocumentActAttachmentPrinter(DocumentAct object, DocumentTemplateLocator locator) {
+        super(ReporterFactory.<IMObject, TemplatedReporter<IMObject>>create(object, locator, TemplatedReporter.class));
     }
 
     /**
@@ -87,6 +87,18 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
      */
     @Override
     public Document getDocument() {
+        return getDocument(null);
+    }
+
+    /**
+     * Returns a document corresponding to that which would be printed.
+     *
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @return a document      `
+     * @throws OpenVPMSException for any error
+     */
+    @Override
+    public Document getDocument(String mimeType) {
         Document template = getReporter().getTemplateDocument();
         Document result = null;
         if (template == null) {
@@ -94,9 +106,8 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
             result = (Document) IMObjectHelper.getObject(act.getDocument());
         }
         if (result == null) {
-            result = super.getDocument();
+            result = super.getDocument(mimeType);
         }
         return result;
     }
-
 }

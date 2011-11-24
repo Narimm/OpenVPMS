@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -38,6 +39,8 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -104,7 +107,9 @@ public class IncompleteChargesWorkspace
      */
     private void onReport() {
         try {
-            IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(query, "WORK_IN_PROGRESS_CHARGES");
+            DocumentTemplateLocator locator = new ContextDocumentTemplateLocator("WORK_IN_PROGRESS_CHARGES",
+                                                                                 GlobalContext.getInstance());
+            IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(query, locator);
             String title = Messages.get("reporting.wip.print");
             InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer);
             iPrinter.setMailContext(getMailContext());

@@ -49,13 +49,14 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.bound.BoundTextArea;
-import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.echo.DropDown;
+import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
+import org.openvpms.web.component.im.doc.Downloader;
+import org.openvpms.web.component.im.doc.DownloaderListener;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.Modifiable;
@@ -68,6 +69,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
 import org.openvpms.web.component.table.DefaultTableCellRenderer;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.ListBoxFactory;
@@ -77,7 +79,6 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.util.TableFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.resource.util.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
@@ -195,6 +196,11 @@ public class MailEditor extends AbstractModifiable {
     private Column gridColumn;
 
     /**
+     * Monitors double clicks on attachments.
+     */
+    private DoubleClickMonitor monitor = new DoubleClickMonitor();
+
+    /**
      * Default extent - 100%.
      */
     private static final Extent EXTENT = new Extent(100, Extent.PERCENT);
@@ -214,12 +220,6 @@ public class MailEditor extends AbstractModifiable {
         this.fromAddresses = fromAddresses;
         this.toAddresses = toAddresses;
         from = createProperty("from", "mail.from");
-        from.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-//                fromAddressChanged();
-            }
-        });
-
         to = createProperty("to", "mail.to");
         toListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -230,7 +230,7 @@ public class MailEditor extends AbstractModifiable {
 
         if (preferredTo != null) {
             setTo(preferredTo);
-        } else if (!toAddresses.isEmpty()){
+        } else if (!toAddresses.isEmpty()) {
             setTo(toAddresses.get(0));
         }
 
@@ -367,10 +367,17 @@ public class MailEditor extends AbstractModifiable {
             ServiceHelper.getArchetypeService().save(document);
             delete = true;
         }
-        DocRef ref = new DocRef(document, delete);
+        final DocRef ref = new DocRef(document, delete);
         documents.add(ref);
-        Component viewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true).getComponent();
+        DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true);
+        documentViewer.setDownloadListener(new DownloaderListener() {
+            public void download(Downloader downloader, String mimeType) {
+                onDownload(downloader, mimeType, ref.getReference());
+            }
+        });
+        Component viewer = documentViewer.getComponent();
         if (viewer instanceof Button) {
+            // TODO - hardcoded style not ideal
             Button button = (Button) viewer;
             button.setBorder(new Border(Border.STYLE_NONE, Color.WHITE, 1));
             button.setRolloverBorder(new Border(Border.STYLE_NONE, Color.WHITE, 1));
@@ -500,9 +507,9 @@ public class MailEditor extends AbstractModifiable {
      * @param message the message property
      * @return a message editor
      */
-    protected BoundTextArea createMessageEditor(Property message) {
-        BoundTextArea result = new BoundTextArea(message, 132, 40);
-        result.setStyleName(Styles.DEFAULT);
+    protected TextArea createMessageEditor(Property message) {
+        TextArea result = TextComponentFactory.createTextArea(message);
+        result.setStyleName("MailEditor.message");
         return result;
     }
 
@@ -514,6 +521,9 @@ public class MailEditor extends AbstractModifiable {
         listeners.notifyListeners(this);
     }
 
+    /**
+     * Invoked when the 'to' address changes.
+     */
     private void toAddressChanged() {
         String text = (String) to.getValue();
         Contact result = null;
@@ -566,7 +576,7 @@ public class MailEditor extends AbstractModifiable {
         listener.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 int index = attachments.getSelectionModel().getMinSelectedIndex();
-                if (index != -1) {
+                if (index != -1 && index < documents.size()) {
                     deleteAttachment(index);
                 }
             }
@@ -688,7 +698,6 @@ public class MailEditor extends AbstractModifiable {
                                   createLabel(subject, align), subjectText);
         grid.setColumnWidth(0, new Extent(10, Extent.PERCENT));
         grid.setWidth(EXTENT);
-        messageArea.setWidth(EXTENT);
 
         gridColumn = ColumnFactory.create("Inset.Large", grid);
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "MailEditor", gridColumn,
@@ -733,6 +742,26 @@ public class MailEditor extends AbstractModifiable {
         IMObject object = service.get(reference);
         if (object != null) {
             service.remove(object);
+        }
+    }
+
+    /**
+     * Downloads an attachment, if it has been double clicked.
+     *
+     * @param downloader the downloader to use
+     * @param mimeType   the mime type. May be <tt>null</tt>
+     * @param reference  the document reference
+     */
+    private void onDownload(Downloader downloader, String mimeType, IMObjectReference reference) {
+        int hash = System.identityHashCode(downloader); // avoid holding onto the downloader reference
+        if (monitor.isDoubleClick(hash)) {
+            downloader.download(mimeType);
+        }
+        for (int i = 0; i < documents.size(); ++i) {
+            if (documents.get(i).getReference().equals(reference)) {
+                attachments.getSelectionModel().setSelectedIndex(i, true);
+                break;
+            }
         }
     }
 

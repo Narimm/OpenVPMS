@@ -18,12 +18,11 @@
 
 package org.openvpms.web.component.im.mail;
 
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.im.report.IMObjectReporter;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.report.TemplatedReporter;
 
 
 /**
@@ -37,17 +36,13 @@ public class IMObjectReportMailer<T extends IMObject>
 
     /**
      * Constructs an <tt>IMObjectReportMailer</tt>.
-     * <p/>
-     * TODO - this should not be dependent on the global context
      *
-     * @param object   the object to mail
-     * @param template the document template to use. May be <tt>null</tt>
+     * @param object  the object to mail
+     * @param locator the document template locator
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportMailer(T object, DocumentTemplate template) {
-        super(new IMObjectReporter<T>(object, new ContextDocumentTemplateLocator(template, object,
-                                                                                 GlobalContext.getInstance())));
+    public IMObjectReportMailer(T object, DocumentTemplateLocator locator) {
+        super(ReporterFactory.<T, TemplatedReporter<T>>create(object, locator, TemplatedReporter.class));
     }
-
 
 }

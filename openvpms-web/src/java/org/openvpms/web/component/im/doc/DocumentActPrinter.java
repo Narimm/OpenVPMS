@@ -18,14 +18,15 @@
 
 package org.openvpms.web.component.im.doc;
 
-import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.PrintException;
 import org.openvpms.web.component.im.print.TemplatedIMPrinter;
-import org.openvpms.web.component.im.report.DocumentActReporter;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
@@ -38,24 +39,20 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
-     * Constructs a new <tt>DocumentActPrinter</tt>.
+     * Constructs a <tt>DocumentActPrinter</tt>.
      *
-     * @param object the object to print
-     * @throws DocumentException if the object doesn't have any
-     *                           <em>participation.documentTemplate</em>
-     *                           participation
+     * @param object  the object to print
+     * @param locator the document template locator
      */
-    public DocumentActPrinter(DocumentAct object) {
-        super(new DocumentActReporter(object));
+    public DocumentActPrinter(DocumentAct object, DocumentTemplateLocator locator) {
+        super(ReporterFactory.<IMObject, TemplatedReporter<IMObject>>create(object, locator, TemplatedReporter.class));
     }
 
     /**
      * Prints the object.
      *
      * @param printer the printer name. May be <tt>null</tt>
-     * @throws PrintException    if <tt>printer</tt> is null and
-     *                           {@link #getDefaultPrinter()} also returns
-     *                           <tt>null</tt>
+     * @throws PrintException    if <tt>printer</tt> is null and {@link #getDefaultPrinter()} also returns <tt>null</tt>
      * @throws OpenVPMSException for any error
      */
     @Override

@@ -37,6 +37,8 @@ import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.util.VetoListener;
@@ -269,7 +271,8 @@ public class MailDialog extends PopupDialog {
     private boolean send() {
         boolean result = false;
         try {
-            if (editor.isValid()) {
+            Validator validator = new Validator();
+            if (editor.validate(validator)) {
                 mailer.setFrom(editor.getFrom());
                 mailer.setFromName(editor.getFromName());
                 mailer.setTo(editor.getTo());
@@ -283,6 +286,8 @@ public class MailDialog extends PopupDialog {
                 }
                 mailer.send();
                 result = true;
+            } else {
+                ValidationHelper.showError(Messages.get("mail.error.title"), validator, "mail.error.message", false);
             }
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
@@ -296,12 +301,17 @@ public class MailDialog extends PopupDialog {
      * @param act the document act
      */
     private void attachDocument(DocumentAct act) {
-        DocumentGenerator generator = new DocumentGenerator(act, new DocumentGenerator.Listener() {
-            public void generated(Document document) {
-                editor.addAttachment(document);
-            }
-        });
-        generator.generate();
+        Document document = (Document) IMObjectHelper.getObject(act.getDocument());
+        if (document != null) {
+            editor.addAttachment(document);
+        } else {
+            DocumentGenerator generator = new DocumentGenerator(act, new DocumentGenerator.Listener() {
+                public void generated(Document document) {
+                    editor.addAttachment(document);
+                }
+            });
+            generator.generate();
+        }
     }
 
     /**

@@ -160,20 +160,19 @@ public class SQLReportPrinter extends AbstractPrinter {
     }
 
     /**
-     * Returns a document for the object, corresponding to that which would be
-     * printed.
+     * Returns a document for the object, corresponding to that which would be printed.
      *
-     * @param format a document format to return
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    public Document getDocument(String format) {
+    public Document getDocument(String mimeType) {
         Map<String, Object> params = new HashMap<String, Object>(parameters);
         Connection connection = null;
         try {
             connection = getConnection();
             params.put(connectionName, connection);
-            return report.generate(params, format);
+            return report.generate(params, mimeType);
         } finally {
             closeConnection(connection);
         }

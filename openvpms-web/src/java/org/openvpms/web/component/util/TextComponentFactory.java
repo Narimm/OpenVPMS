@@ -144,15 +144,26 @@ public class TextComponentFactory extends ComponentFactory {
     }
 
     /**
+     * Creates a new bound text area.
+     *
+     * @param property the property to bind
+     * @return a new bound text field
+     */
+    public static TextArea createTextArea(Property property) {
+        TextArea text = new BoundTextArea(property);
+        setDefaultStyle(text);
+        return text;
+    }
+
+    /**
      * Create a new bound text area.
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
-     * @param rows     TODO
+     * @param rows     the no. of rows to display
      * @return a new bound text field
      */
-    public static TextArea createTextArea(Property property, int columns,
-                                          int rows) {
+    public static TextArea createTextArea(Property property, int columns, int rows) {
         TextArea text = new BoundTextArea(property, columns, rows);
         setDefaultStyle(text);
         return text;

@@ -31,15 +31,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
-import org.openvpms.report.openoffice.Converter;
-import org.openvpms.report.openoffice.OOConnection;
-import org.openvpms.report.openoffice.OpenOfficeHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Set;
@@ -52,6 +47,10 @@ import java.util.Set;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DocumentActReporter extends TemplatedReporter<IMObject> {
+
+    /**
+     * The report.
+     */
     private IMReport<IMObject> report;
 
     /**
@@ -62,7 +61,7 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
      * @throws DocumentException         if the template cannot be found
      */
     public DocumentActReporter(DocumentAct act) {
-        super(act, getTemplate(act));
+        this(act, getTemplate(act, true));
     }
 
     /**
@@ -77,11 +76,25 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
     }
 
     /**
+     * Constructs a <tt>DocumentActReporter</tt>.
+     *
+     * @param act     the document act
+     * @param locator the template locator, if a template isn't associated with the act
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws DocumentException         if the template cannot be found
+     */
+    public DocumentActReporter(DocumentAct act, DocumentTemplateLocator locator) {
+        super(act, locator);
+        setTemplate(getTemplate(act, false));
+    }
+
+    /**
      * Returns the report.
      *
      * @return the report
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws DocumentException         if the template cannot be found
      */
     public IMReport<IMObject> getReport() {
         if (report == null) {
@@ -106,38 +119,6 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
     }
 
     /**
-     * Creates the document, in the specified mime type.
-     *
-     * @param type the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
-     * @return the document
-     * @throws OpenVPMSException for any error
-     */
-    @Override
-    public Document getDocument(String type) {
-        DocumentAct object = (DocumentAct) getObject();
-        Document doc = (Document) IMObjectHelper.getObject(object.getDocument());
-        if (doc == null) {
-            doc = super.getDocument(type);
-        } else {
-            if (type == null) {
-                type = getMimeType();
-            }
-            if (type != null && !type.equals(doc.getMimeType())) {
-                // convert the document to the appropriate type
-                DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-                OOConnection connection = OpenOfficeHelper.getConnectionPool().getConnection();
-                try {
-                    Converter converter = new Converter(connection, handlers);
-                    doc = converter.convert(doc, type);
-                } finally {
-                    OpenOfficeHelper.close(connection);
-                }
-            }
-        }
-        return doc;
-    }
-
-    /**
      * Helper to determine if a document act has a template.
      * <p/>
      * Document acts must have a template to be able to be used in reporting.
@@ -151,21 +132,21 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
     }
 
     /**
-     * Helper to return the <em>entity.documentTemplate</em> associated with
-     * a document act.
+     * Helper to return the <em>entity.documentTemplate</em> associated with a document act.
      *
-     * @param act the document act
-     * @return the associated entity
+     * @param act      the document act
+     * @param required if <tt>true</tt> the template is required, <tt>false</tt> if it is optional
+     * @return the associated template, or <tt>null</tt> if it is not found
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws DocumentException         if the template cannot be found
+     * @throws DocumentException         if the template cannot be found, and the template is required
      */
-    private static DocumentTemplate getTemplate(DocumentAct act) {
+    private static DocumentTemplate getTemplate(DocumentAct act, boolean required) {
         ActBean bean = new ActBean(act);
         Entity template = bean.getParticipant(DocumentArchetypes.DOCUMENT_TEMPLATE_PARTICIPATION);
-        if (template == null) {
+        if (template == null && required) {
             throw new DocumentException(NotFound);
         }
-        return new DocumentTemplate(template, ServiceHelper.getArchetypeService());
+        return (template != null) ? new DocumentTemplate(template, ServiceHelper.getArchetypeService()) : null;
     }
 
 }

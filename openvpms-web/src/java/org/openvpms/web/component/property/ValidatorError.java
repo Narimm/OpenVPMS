@@ -117,6 +117,15 @@ public class ValidatorError {
     }
 
     /**
+     * Returns the message.
+     *
+     * @return the message
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
      * Returns a formatted message for this error.
      *
      * @return a formatted message
@@ -135,8 +144,8 @@ public class ValidatorError {
      * Formats a message for an archetype node.
      *
      * @param shortName the archetype short name
-     * @param node the archetype node
-     * @param message the error message
+     * @param node      the archetype node
+     * @param message   the error message
      * @return the formatted message
      */
     public static String format(String shortName, String node, String message) {
@@ -157,7 +166,7 @@ public class ValidatorError {
      * Formats a message for a property.
      *
      * @param property the property
-     * @param message the error message
+     * @param message  the error message
      * @return the formatted message
      */
     public static String format(String property, String message) {

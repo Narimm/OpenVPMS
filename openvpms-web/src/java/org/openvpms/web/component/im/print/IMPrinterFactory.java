@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
@@ -69,28 +70,32 @@ public final class IMPrinterFactory {
     /**
      * Construct a new {@link IMPrinter}.
      * <p/>
-     * IMPrinter implementations must provide a public constructor
-     * accepting the object to print
+     * IMPrinter implementations must provide a public constructor accepting the object to print, and optionally a
+     * document locator.
      *
-     * @param object the object to print
+     * @param object  the object to print
+     * @param locator the document template locator
      * @return a new printer
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> IMPrinter<T> create(T object) {
+    public static <T extends IMObject> IMPrinter<T> create(T object, DocumentTemplateLocator locator) {
         String[] shortNames = {object.getArchetypeId().getShortName()};
         shortNames = DescriptorHelper.getShortNames(shortNames);
-        ArchetypeHandler<IMPrinter> handler
-                = getPrinters().getHandler(shortNames);
+        ArchetypeHandler<IMPrinter> handler = getPrinters().getHandler(shortNames);
         IMPrinter<T> result = null;
         if (handler != null) {
             try {
-                result = handler.create(new Object[]{object});
-            } catch (Throwable throwable) {
-                log.error(throwable, throwable);
+                try {
+                    result = handler.create(new Object[]{object, locator});
+                } catch (NoSuchMethodException throwable) {
+                    result = handler.create(new Object[]{object});
+                }
+            } catch (Throwable exception) {
+                log.error(exception, exception);
             }
         }
         if (result == null) {
-            result = new IMObjectReportPrinter<T>(object);
+            result = new IMObjectReportPrinter<T>(object, locator);
         }
         return result;
     }
@@ -102,9 +107,7 @@ public final class IMPrinterFactory {
      */
     private static ArchetypeHandlers<IMPrinter> getPrinters() {
         if (printers == null) {
-            printers = new ArchetypeHandlers<IMPrinter>(
-                    "IMPrinterFactory.properties",
-                    IMPrinter.class);
+            printers = new ArchetypeHandlers<IMPrinter>("IMPrinterFactory.properties", IMPrinter.class);
         }
         return printers;
     }

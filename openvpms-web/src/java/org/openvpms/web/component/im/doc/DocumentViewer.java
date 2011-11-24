@@ -58,9 +58,19 @@ public class DocumentViewer {
      */
     private final boolean link;
 
+    /**
+     * The downloader.
+     */
+    private Downloader downloader;
 
     /**
-     * Constructs a new <tt>DocumentViewer</tt>.
+     * Listener for downloader events.
+     */
+    private DownloaderListener listener;
+
+
+    /**
+     * Constructs a <tt>DocumentViewer</tt>.
      *
      * @param act  the document act
      * @param link if <tt>true</tt> enable an hyperlink to the object
@@ -70,7 +80,7 @@ public class DocumentViewer {
     }
 
     /**
-     * Constructs a new <tt>DocumentViewer</tt>.
+     * Constructs a <tt>DocumentViewer</tt>.
      *
      * @param reference the reference to view
      * @param parent    the parent. May be <tt>null</tt>
@@ -81,7 +91,7 @@ public class DocumentViewer {
     }
 
     /**
-     * Constructs a new <tt>DocumentViewer</tt>.
+     * Constructs a <tt>DocumentViewer</tt>.
      *
      * @param reference the reference to view. May be <tt>null</tt>
      * @param parent    the parent. May be <tt>null</tt>
@@ -103,6 +113,20 @@ public class DocumentViewer {
         this.link = link;
     }
 
+    /**
+     * Registers a listener for download events.
+     * <p/>
+     * This enables download events to be intercepted. Only applicable if <tt>link</tt> was specified at construction.
+     *
+     * @param listener the listener. May be <tt>null</tt>
+     */
+    public void setDownloadListener(DownloaderListener listener) {
+        if (downloader != null) {
+            downloader.setListener(listener);
+        } else {
+            this.listener = listener;
+        }
+    }
 
     /**
      * Returns the component.
@@ -122,13 +146,12 @@ public class DocumentViewer {
         }
         if (hasDoc) {
             if (link) {
-                Downloader downloader;
                 if (parent instanceof DocumentAct) {
-                    DocumentAct act = (DocumentAct) parent;
-                    downloader = new DocumentActDownloader(act);
+                    downloader = new DocumentActDownloader((DocumentAct) parent);
                 } else {
                     downloader = new DocumentRefDownloader(reference, name);
                 }
+                downloader.setListener(listener);
                 result = downloader.getComponent();
             } else {
                 Label label = LabelFactory.create();

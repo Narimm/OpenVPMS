@@ -66,11 +66,11 @@ public interface Printer {
     /**
      * Returns a document corresponding to that which would be printed.
      *
-     * @param format the document format to return
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    Document getDocument(String format);
+    Document getDocument(String mimeType);
 
     /**
      * Determines if printing should occur interactively.

@@ -18,7 +18,9 @@
 
 package org.openvpms.web.component.im.print;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -27,8 +29,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentActAttachmentPrinter;
 import org.openvpms.web.component.im.doc.DocumentActPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -60,7 +65,6 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
     public void testCreateDefaultPrinter() {
         checkCreate("party.customerperson", IMObjectReportPrinter.class);
     }
-
 
     /**
      * Verifies that a {@link DocumentActPrinter} is returned for
@@ -130,7 +134,8 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
                                       documentTemplate);
             }
         }
-        IMPrinter printer = IMPrinterFactory.create(object);
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, new LocalContext());
+        IMPrinter printer = IMPrinterFactory.create(object, locator);
         assertNotNull(printer);
         assertEquals(type, printer.getClass());
     }

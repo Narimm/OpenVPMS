@@ -39,7 +39,19 @@ public class BoundTextArea extends TextArea {
 
 
     /**
-     * Constructs a new <tt>BoundTextArea</tt>.
+     * Constructs a <tt>BoundTextArea</tt>.
+     * If not already present, the property is associated with an {@link StringPropertyTransformer}
+     * that doesn't trim leading and trailing spaces or new lines.
+     *
+     * @param property the property to bind
+     */
+    public BoundTextArea(Property property) {
+        super(new TextDocument());
+        binder = new TextAreaComponentBinder(this, property);
+    }
+
+    /**
+     * Constructs a <tt>BoundTextArea</tt>.
      * If not already present, the property is associated with an {@link StringPropertyTransformer}
      * that doesn't trim leading and trailing spaces or new lines.
      *
