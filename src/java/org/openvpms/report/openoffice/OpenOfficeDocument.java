@@ -228,15 +228,32 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the fields cannot be accessed
      */
     public Map<String, ParameterType> getInputFields() {
-        Map<String, ParameterType> result
-                = new LinkedHashMap<String, ParameterType>();
+        Map<String, ParameterType> result = new LinkedHashMap<String, ParameterType>();
         for (Field field : inputFields.values()) {
-            ParameterType param = new ParameterType(field.getName(),
-                                                    String.class,
-                                                    field.getValue());
+            ParameterType param = new ParameterType(field.getName(), String.class, field.getValue());
             result.put(field.getName(), param);
         }
         return result;
+    }
+
+    /**
+     * Determines if an input field exists with the specified name.
+     *
+     * @param name the input field name
+     * @return <tt>true</tt> if the input field exists, otherwise <tt>false</tt>
+     */
+    public boolean hasInputField(String name) {
+        return inputFields.containsKey(name);
+    }
+
+    /**
+     * Determines if a user field exists with the specified name.
+     *
+     * @param name the user field name
+     * @return <tt>true</tt> if the user field exists, otherwise <tt>false</tt>
+     */
+    public boolean hasUserField(String name) {
+        return userFields.containsKey(name);
     }
 
     /**
@@ -256,8 +273,8 @@ public class OpenOfficeDocument {
     /**
      * Sets the value of an input field.
      *
-     * @param name the input field name
-     * @value the input field value. May be <tt>null</tt>
+     * @param name  the input field name
+     * @param value the input field value. May be <tt>null</tt>
      */
     public void setInputField(String name, String value) {
         Field field = inputFields.get(name);
@@ -273,8 +290,7 @@ public class OpenOfficeDocument {
      */
     public void refresh() {
         XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
-        XRefreshable refreshable = (XRefreshable) UnoRuntime.queryInterface(
-                XRefreshable.class, fields);
+        XRefreshable refreshable = UnoRuntime.queryInterface(XRefreshable.class, fields);
         refreshable.refresh();
     }
 
@@ -286,13 +302,10 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the document cannot be exported
      */
     public byte[] export(String mimeType) {
-        XTextDocument textDocument = (XTextDocument) UnoRuntime.queryInterface(
-                XTextDocument.class, document);
-        XOutputStreamToByteArrayAdapter stream
-                = new XOutputStreamToByteArrayAdapter();
+        XTextDocument textDocument = UnoRuntime.queryInterface(XTextDocument.class, document);
+        XOutputStreamToByteArrayAdapter stream = new XOutputStreamToByteArrayAdapter();
 
-        XStorable storable = (XStorable) UnoRuntime.queryInterface(
-                XStorable.class, textDocument);
+        XStorable storable = UnoRuntime.queryInterface(XStorable.class, textDocument);
 
         PropertyValue[] properties;
         PropertyValue outputStream = property("OutputStream", stream);
@@ -352,10 +365,8 @@ public class OpenOfficeDocument {
      */
     public void close() {
         try {
-            XModel model = (XModel) UnoRuntime.queryInterface(XModel.class,
-                                                              document);
-            XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(
-                    XCloseable.class, model);
+            XModel model = UnoRuntime.queryInterface(XModel.class, document);
+            XCloseable closeable = UnoRuntime.queryInterface(XCloseable.class, model);
             closeable.close(false);
         } catch (CloseVetoException exception) {
             log.error("Failed to close document", exception);
@@ -374,16 +385,11 @@ public class OpenOfficeDocument {
         for (String elementName : fields.getElementNames()) {
             try {
                 // need to do a case insensitive comparison for OVPMS-749
-                if (elementName.regionMatches(true, 0, USER_FIELD_PREFIX, 0,
-                                              USER_FIELD_PREFIX.length())) {
-                    String name = elementName.substring(
-                            USER_FIELD_PREFIX.length());
+                if (elementName.regionMatches(true, 0, USER_FIELD_PREFIX, 0, USER_FIELD_PREFIX.length())) {
+                    String name = elementName.substring(USER_FIELD_PREFIX.length());
                     Object fieldMaster = fields.getByName(elementName);
-                    XPropertySet propertySet
-                            = (XPropertySet) UnoRuntime.queryInterface(
-                            XPropertySet.class, fieldMaster);
-                    String value = (String) propertySet.getPropertyValue(
-                            "Content");
+                    XPropertySet propertySet = UnoRuntime.queryInterface(XPropertySet.class, fieldMaster);
+                    String value = (String) propertySet.getPropertyValue("Content");
                     Field field = new Field(name, value, propertySet);
                     result.put(name, field);
                 }
@@ -435,8 +441,7 @@ public class OpenOfficeDocument {
             field.getPropertySet().setPropertyValue("Content", value);
             field.setChanged(true);
         } catch (Exception exception) {
-            throw new OpenOfficeException(exception, FailedToSetField,
-                                          field.getName());
+            throw new OpenOfficeException(exception, FailedToSetField, field.getName());
         }
     }
 
@@ -464,8 +469,7 @@ public class OpenOfficeDocument {
      * @return the text field supplier interface
      */
     protected XTextFieldsSupplier getTextFieldSupplier() {
-        return (XTextFieldsSupplier) UnoRuntime.queryInterface(
-                XTextFieldsSupplier.class, document);
+        return UnoRuntime.queryInterface(XTextFieldsSupplier.class, document);
     }
 
     /**
@@ -484,12 +488,8 @@ public class OpenOfficeDocument {
      * @return <tt>true</tt> if the field is an input text field
      */
     protected boolean isInputField(Object field) {
-        XServiceInfo info = (XServiceInfo) UnoRuntime.queryInterface(
-                XServiceInfo.class, field);
-        if (info != null) {
-            return info.supportsService("com.sun.star.text.TextField.Input");
-        }
-        return false;
+        XServiceInfo info = UnoRuntime.queryInterface(XServiceInfo.class, field);
+        return info != null && info.supportsService("com.sun.star.text.TextField.Input");
     }
 
     /**
@@ -502,13 +502,8 @@ public class OpenOfficeDocument {
      * @return <tt>true</tt> if the field is an input text field
      */
     private boolean isInputUserField(Object field) {
-        XServiceInfo info = (XServiceInfo) UnoRuntime.queryInterface(
-                XServiceInfo.class, field);
-        if (info != null) {
-            return info.supportsService(
-                    "com.sun.star.text.TextField.InputUser");
-        }
-        return false;
+        XServiceInfo info = UnoRuntime.queryInterface(XServiceInfo.class, field);
+        return info != null && info.supportsService("com.sun.star.text.TextField.InputUser");
     }
 
     /**
@@ -542,11 +537,9 @@ public class OpenOfficeDocument {
      *         input field
      */
     private XPropertySet getInputFieldPropertySet(Object field) {
-        XTextField text = (XTextField) UnoRuntime.queryInterface(
-                XTextField.class, field);
+        XTextField text = UnoRuntime.queryInterface(XTextField.class, field);
         if (isInputField(text) || isInputUserField(text)) {
-            return (XPropertySet) UnoRuntime.queryInterface(
-                    XPropertySet.class, text);
+            return UnoRuntime.queryInterface(XPropertySet.class, text);
         }
         return null;
     }
