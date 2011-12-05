@@ -170,18 +170,20 @@ public class InteractivePrinter implements Printer {
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
-        return getDocument(DocFormats.PDF_TYPE);
+        return getDocument(DocFormats.PDF_TYPE, false);
     }
 
     /**
      * Returns a document for the object, corresponding to that which would be printed.
      *
      * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     *                 can perform custom formatting
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    public Document getDocument(String mimeType) {
-        return printer.getDocument(mimeType);
+    public Document getDocument(String mimeType, boolean email) {
+        return printer.getDocument(mimeType, email);
     }
 
     /**
@@ -387,7 +389,7 @@ public class InteractivePrinter implements Printer {
      */
     protected void doMail() {
         try {
-            Document document = getDocument();
+            Document document = getDocument(DocFormats.PDF_TYPE, true);
             MailDialog dialog = new MailDialog(context);
             MailEditor editor = dialog.getMailEditor();
             editor.setSubject(getDisplayName());

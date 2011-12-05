@@ -21,6 +21,7 @@ package org.openvpms.web.app.reporting.statement;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.statement.Statement;
@@ -35,12 +36,11 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
-import org.openvpms.report.IMReport;
-import org.openvpms.report.ReportFactory;
+import org.openvpms.web.component.im.report.Reporter;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -93,7 +93,7 @@ public class StatementEmailProcessor
     /**
      * The statement document template.
      */
-    private Document template;
+    private DocumentTemplate template;
 
 
     /**
@@ -113,30 +113,19 @@ public class StatementEmailProcessor
         this.emailName = emailName;
         handlers = ServiceHelper.getDocumentHandlers();
         TemplateHelper helper = new TemplateHelper();
-        Entity entity = helper.getTemplateForArchetype(
-                CustomerAccountArchetypes.OPENING_BALANCE);
+        Entity entity = helper.getTemplateForArchetype(CustomerAccountArchetypes.OPENING_BALANCE);
         if (entity == null) {
-            throw new StatementProcessorException(
-                    InvalidConfiguration, "No document template configured");
+            throw new StatementProcessorException(InvalidConfiguration, "No document template configured");
         }
-        template = helper.getDocumentFromTemplate(entity);
-        if (template == null) {
-            throw new StatementProcessorException(
-                    InvalidConfiguration,
-                    "No customer statement document template");
-        }
-
-        IMObjectBean bean = new IMObjectBean(entity);
-        String subject = bean.getString("emailSubject");
+        template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+        String subject = template.getEmailSubject();
         if (StringUtils.isEmpty(subject)) {
             subject = entity.getName();
         }
         emailSubject = subject;
-
-        emailText = bean.getString("emailText");
+        emailText = template.getEmailText();
         if (StringUtils.isEmpty(emailText)) {
-            throw new StatementProcessorException(
-                    InvalidConfiguration, "Template has no email text");
+            throw new StatementProcessorException(InvalidConfiguration, "Template has no email text");
         }
     }
 
@@ -166,13 +155,10 @@ public class StatementEmailProcessor
             helper.setTo(to);
             helper.setSubject(emailSubject);
             helper.setText(emailText);
-            IMReport<IMObject> report = ReportFactory.createIMObjectReport(
-                    template, ArchetypeServiceHelper.getArchetypeService(),
-                    handlers);
             Iterable<IMObject> objects = getActs(statement);
-            final Document doc = report.generate(objects.iterator(),
-                                                 getParameters(statement),
-                                                 DocFormats.PDF_TYPE);
+            Reporter reporter = ReporterFactory.create(objects, template, IMObject.class);
+            reporter.setParameters(getParameters(statement));
+            final Document doc = reporter.getDocument(DocFormats.PDF_TYPE, true);
 
             final DocumentHandler handler = handlers.get(
                     doc.getName(),

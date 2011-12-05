@@ -72,7 +72,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
             protected void doMail() {
                 printer.setParameters(getValues());
                 try {
-                    Document document = getDocument();
+                    Document document = getDocument(DocFormats.PDF_TYPE, true);
                     mail(document);
                 } catch (OpenVPMSException exception) {
                     failed(exception);
@@ -83,7 +83,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
             protected void doExport() {
                 printer.setParameters(getValues());
                 try {
-                    Document document = getDocument(DocFormats.CSV_TYPE);
+                    Document document = getDocument(DocFormats.CSV_TYPE, false);
                     DownloadServlet.startDownload(document);
                 } catch (OpenVPMSException exception) {
                     failed(exception);
@@ -94,7 +94,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
             protected void doExportMail() {
                 printer.setParameters(getValues());
                 try {
-                    Document document = getDocument(DocFormats.CSV_TYPE);
+                    Document document = getDocument(DocFormats.CSV_TYPE, true);
                     mail(document);
                 } catch (OpenVPMSException exception) {
                     failed(exception);

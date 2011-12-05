@@ -141,7 +141,7 @@ public class DocumentActDownloader extends Downloader {
                 if (mimeType == null) {
                     document = reporter.getDocument();
                 } else {
-                    document = reporter.getDocument(mimeType);
+                    document = reporter.getDocument(mimeType, true);
                 }
             }
         }

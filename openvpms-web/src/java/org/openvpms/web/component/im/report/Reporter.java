@@ -23,11 +23,16 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
+import org.openvpms.report.ParameterType;
+import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -43,6 +48,11 @@ public abstract class Reporter<T> {
      * The default document format.
      */
     public static final String DEFAULT_MIME_TYPE = DocFormats.PDF_TYPE;
+
+    /**
+     * Parameter to pass to reports to indicate that the report is being emailed.
+     */
+    public static final String IS_EMAIL = "IsEmail";
 
     /**
      * The objects to generate the document from.
@@ -67,8 +77,7 @@ public abstract class Reporter<T> {
 
 
     /**
-     * Constructs a new <tt>Reporter</tt> to generate documents from a single
-     * object.
+     * Constructs a <tt>Reporter</tt> to generate documents from a single object.
      *
      * @param object the object
      */
@@ -110,27 +119,43 @@ public abstract class Reporter<T> {
 
     /**
      * Creates the document.
+     * <p/>
+     * Documents are formatted according to the default mime type. If the document has an {@link #IS_EMAIL} parameter,
+     * then this will be set <tt>false</tt>.
      *
      * @return the document
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
-        return getDocument(mimeType);
+        return getDocument(mimeType, false);
     }
 
     /**
      * Creates the document, in the specified mime type.
      *
-     * @param type the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @param type  the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @param email if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     *              can perform custom formatting
      * @return the document
      * @throws OpenVPMSException for any error
      */
-    public Document getDocument(String type) {
+    public Document getDocument(String type, boolean email) {
         IMReport<T> report = getReport();
         if (type == null) {
             type = report.getDefaultMimeType();
         }
-        return report.generate(getObjects().iterator(), getParameters(), type);
+        Map<String, Object> map = new HashMap<String, Object>(getParameters(email));
+        return report.generate(getObjects().iterator(), map, type);
+    }
+
+    /**
+     * Prints the report.
+     *
+     * @param objects    the objects to print
+     * @param properties the print properties
+     */
+    public void print(Iterator<T> objects, PrintProperties properties) {
+        getReport().print(objects, getParameters(false), properties);
     }
 
     /**
@@ -173,6 +198,23 @@ public abstract class Reporter<T> {
     }
 
     /**
+     * Returns the set of parameter types that may be supplied to the report.
+     * <p/>
+     * This supresses return of the {@link #IS_EMAIL} parameter as this is dealt with automatically.
+     *
+     * @return the parameter types
+     */
+    public Set<ParameterType> getParameterTypes() {
+        Set<ParameterType> result = new LinkedHashSet<ParameterType>();
+        for (ParameterType type : getReport().getParameterTypes()) {
+            if (!IS_EMAIL.equals(type.getName())) {
+                result.add(type);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the report.
      *
      * @return the report
@@ -180,6 +222,27 @@ public abstract class Reporter<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public abstract IMReport<T> getReport();
+    protected abstract IMReport<T> getReport();
+
+    /**
+     * Returns the report parameters.
+     *
+     * @param email if the report has an {@link #IS_EMAIL} parameter, then this will be supplied with the value of
+     *              <tt>email</tt>. This enables reports to be customised for email vs printing.
+     * @return the report parameters
+     */
+    protected Map<String, Object> getParameters(boolean email) {
+        Map<String, Object> result;
+        if (getReport().hasParameter(IS_EMAIL)) {
+            result = new HashMap<String, Object>();
+            if (parameters != null) {
+                result.putAll(parameters);
+            }
+            result.put(IS_EMAIL, email);
+        } else {
+            result = parameters;
+        }
+        return result;
+    }
 
 }

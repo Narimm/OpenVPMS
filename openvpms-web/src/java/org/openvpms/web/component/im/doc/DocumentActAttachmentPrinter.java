@@ -87,18 +87,20 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
      */
     @Override
     public Document getDocument() {
-        return getDocument(null);
+        return getDocument(null, false);
     }
 
     /**
      * Returns a document corresponding to that which would be printed.
      *
      * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     *                 can perform custom formatting
      * @return a document      `
      * @throws OpenVPMSException for any error
      */
     @Override
-    public Document getDocument(String mimeType) {
+    public Document getDocument(String mimeType, boolean email) {
         Document template = getReporter().getTemplateDocument();
         Document result = null;
         if (template == null) {
@@ -106,7 +108,7 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
             result = (Document) IMObjectHelper.getObject(act.getDocument());
         }
         if (result == null) {
-            result = super.getDocument(mimeType);
+            result = super.getDocument(mimeType, email);
         }
         return result;
     }

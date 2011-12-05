@@ -32,12 +32,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.report.IMReport;
-import org.openvpms.report.ParameterType;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.web.system.ServiceHelper;
-
-import java.util.Set;
 
 
 /**
@@ -107,15 +104,6 @@ public class DocumentActReporter extends TemplatedReporter<IMObject> {
             report = ReportFactory.createIMObjectReport(doc, service, handlers);
         }
         return report;
-    }
-
-    /**
-     * Returns the set of parameter types that may be supplied to the report.
-     *
-     * @return the parameter types
-     */
-    public Set<ParameterType> getParameterTypes() {
-        return getReport().getParameterTypes();
     }
 
     /**
