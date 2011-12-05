@@ -29,6 +29,11 @@
 	<parameter name="endDate" isForPrompting="true" class="java.util.Date">
 		<defaultValueExpression ><![CDATA[new Date()]]></defaultValueExpression>
 	</parameter>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+
 	<queryString><![CDATA[select
   c.name as customer,
   c.description as description,

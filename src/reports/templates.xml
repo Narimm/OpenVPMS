@@ -4,7 +4,7 @@
 
     <template name="Invoice"
               archetype="act.customerAccountChargesInvoice"
-              path="invoice a5 letterhead.jrxml"
+              path="invoice a5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
@@ -16,7 +16,7 @@
 
     <template name="Credit"
               archetype="act.customerAccountChargesCredit"
-              path="credit a5 letterhead.jrxml"
+              path="credit a5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
@@ -28,7 +28,7 @@
 
     <template name="Counter Sale"
               archetype="act.customerAccountChargesCounter"
-              path="countersale a5 letterhead.jrxml"
+              path="countersale a5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
@@ -40,7 +40,7 @@
 
     <template name="Receipt"
               archetype="act.customerAccountPayment"
-              path="receipt a5 letterhead.jrxml"
+              path="receipt a5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
@@ -52,7 +52,7 @@
 
     <template name="Estimation"
               archetype="act.customerEstimation"
-              path="estimation a5 letterhead.jrxml"
+              path="estimation a5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
@@ -64,7 +64,7 @@
 
     <template name="Statement"
               archetype="act.customerAccountOpeningBalance"
-              path="statement a5 letterhead.jrxml"
+              path="statement a5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 

@@ -27,6 +27,11 @@
 	<parameter name="printDetail" isForPrompting="true" class="java.lang.Boolean">
 		<defaultValueExpression ><![CDATA[new Boolean("true")]]></defaultValueExpression>
 	</parameter>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+
 	<queryString><![CDATA[SELECT
      acts.activity_start_time as date,
      if(credit,-financial_acts.total,financial_acts.total)as total,

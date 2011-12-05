@@ -35,6 +35,11 @@
 	<parameter name="inactivePatients" isForPrompting="true" class="java.lang.Boolean">
 		<defaultValueExpression ><![CDATA[new Boolean("false")]]></defaultValueExpression>
 	</parameter>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+
 	<queryString><![CDATA[select distinct(e.entity_id) as id, e.name as customerName, e.description as contact, d.value as createdDate
 from entities e
 join entity_details d on d.entity_id = e.entity_id and d.name ="createdDate"

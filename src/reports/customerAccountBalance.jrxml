@@ -6,6 +6,11 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="dataSource" class="org.openvpms.report.jasper.ObjectSetDataSource" isForPrompting="false"/>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+
 	<field name="customer.name" class="java.lang.String"/>
 	<field name="balance" class="java.math.BigDecimal"/>
 	<field name="overdueBalance" class="java.math.BigDecimal"/>

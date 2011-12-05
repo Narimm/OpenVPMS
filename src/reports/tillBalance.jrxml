@@ -24,6 +24,10 @@
 	<import value="net.sf.jasperreports.engine.data.*" />
 
 	<parameter name="dataSource" isForPrompting="false" class="org.openvpms.report.jasper.ObjectSetDataSource"/>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
 
 	<field name="tillBalance.till.entity.name" class="java.lang.String"/>
 	<field name="tillBalance.till.entity.description" class="java.lang.String"/>
