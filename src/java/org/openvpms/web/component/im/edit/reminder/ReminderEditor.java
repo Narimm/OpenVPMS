@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.act.PatientActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
@@ -55,12 +56,6 @@ public class ReminderEditor extends PatientActEditor {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
-
-        getProperty("reminderType").addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onReminderTypeChanged();
-            }
-        });
     }
 
     /**
@@ -97,6 +92,24 @@ public class ReminderEditor extends PatientActEditor {
      */
     public Product getProduct() {
         return (Product) getParticipant("product");
+    }
+
+    /**
+     * Invoked when layout has completed. All editors have been created.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        Editor editor = getEditor("reminderType");
+
+        if (editor != null) {
+            // add a listener to update the due date when the reminder type is modified
+            ModifiableListener listener = new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onReminderTypeChanged();
+                }
+            };
+            editor.addModifiableListener(listener);
+        }
     }
 
     /**
