@@ -63,18 +63,16 @@ public class JasperTemplateLoader {
     /**
      * The sub-reports.
      */
-    private final List<JasperReport> subreports
-            = new ArrayList<JasperReport>();
+    private final List<JasperReport> subReports = new ArrayList<JasperReport>();
 
     /**
      * Report parameters.
      */
-    private final Map<String, Object> parameters
-            = new HashMap<String, Object>();
+    private final Map<String, Object> parameters = new HashMap<String, Object>();
 
 
     /**
-     * Constructs a new <code>JasperTemplateLoader</code>.
+     * Constructs a <tt>JasperTemplateLoader</tt>.
      *
      * @param template the document template
      * @param service  the archetype service
@@ -90,14 +88,11 @@ public class JasperTemplateLoader {
             JasperDesign report = JRXmlLoader.load(stream);
             init(template.getName(), report, service, handlers);
         } catch (DocumentException exception) {
-            throw new ReportException(exception, FailedToCreateReport,
-                                      exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToCreateReport,
-                                      exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
         } finally {
             IOUtils.closeQuietly(stream);
-
         }
     }
 
@@ -109,8 +104,7 @@ public class JasperTemplateLoader {
      * @param handlers the document handlers
      * @throws ReportException if the report cannot be created
      */
-    public JasperTemplateLoader(JasperDesign design, IArchetypeService service,
-                                DocumentHandlers handlers) {
+    public JasperTemplateLoader(JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
         init(design.getName(), design, service, handlers);
     }
 
@@ -128,8 +122,8 @@ public class JasperTemplateLoader {
      *
      * @return the sub-reports.
      */
-    public JasperReport[] getSubreports() {
-        return subreports.toArray(new JasperReport[subreports.size()]);
+    public JasperReport[] getSubReports() {
+        return subReports.toArray(new JasperReport[subReports.size()]);
     }
 
     /**
@@ -153,34 +147,9 @@ public class JasperTemplateLoader {
     protected void init(String name, JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
         try {
             for (JRBand band : design.getDetailSection().getBands()) {
-                for (JRElement element : band.getElements()) {
-                    if (element instanceof JRDesignSubreport) {
-                        JRDesignSubreport subreport = (JRDesignSubreport) element;
-                        String reportName = getReportName(subreport);
-                        JasperDesign report = JasperReportHelper.getReport(
-                                reportName, service, handlers);
-                        if (report == null) {
-                            throw new ReportException(FailedToFindSubReport, reportName, name);
-                        }
-
-                        // replace the original expression with a parameter
-                        JRDesignExpression expression = new JRDesignExpression();
-                        expression.setText("$P{" + reportName + "}");
-                        expression.setValueClass(JasperReport.class);
-                        subreport.setExpression(expression);
-
-                        JasperReport compiled
-                                = JasperCompileManager.compileReport(report);
-                        subreports.add(compiled);
-                        parameters.put(reportName, compiled);
-
-                        JRDesignParameter param = new JRDesignParameter();
-                        param.setName(reportName);
-                        param.setValueClass(JasperReport.class);
-                        design.addParameter(param);
-                    }
-                }
+                compileSubReports(band, design, name, service, handlers);
             }
+            compileSubReports(design.getSummary(), design, name, service, handlers);
             report = JasperCompileManager.compileReport(design);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
@@ -188,13 +157,52 @@ public class JasperTemplateLoader {
     }
 
     /**
-     * Returns the subreport name from a subreport.
+     * Compiles sub-reports referenced by the specified band.
      *
-     * @param subreport the subreport
-     * @return the subreport name. May be <tt>null</tt>
+     * @param band the band to locate sub-reports in
+     * @param design the parent report design
+     * @param name the template name, used for error reporting
+     * @param service the archetype service
+     * @param handlers the document handlers
+     * @throws JRException for any jasper reports error
      */
-    private String getReportName(JRDesignSubreport subreport) {
-        JRExpression expression = subreport.getExpression();
+    private void compileSubReports(JRBand band, JasperDesign design, String name, IArchetypeService service,
+                                   DocumentHandlers handlers) throws JRException {
+        for (JRElement element : band.getElements()) {
+            if (element instanceof JRDesignSubreport) {
+                JRDesignSubreport subReport = (JRDesignSubreport) element;
+                String reportName = getReportName(subReport);
+                JasperDesign report = JasperReportHelper.getReport(reportName, service, handlers);
+                if (report == null) {
+                    throw new ReportException(FailedToFindSubReport, reportName, name);
+                }
+
+                // replace the original expression with a parameter
+                JRDesignExpression expression = new JRDesignExpression();
+                expression.setText("$P{" + reportName + "}");
+                expression.setValueClass(JasperReport.class);
+                subReport.setExpression(expression);
+
+                JasperReport compiled = JasperCompileManager.compileReport(report);
+                subReports.add(compiled);
+                parameters.put(reportName, compiled);
+
+                JRDesignParameter param = new JRDesignParameter();
+                param.setName(reportName);
+                param.setValueClass(JasperReport.class);
+                design.addParameter(param);
+            }
+        }
+    }
+
+    /**
+     * Returns the name from a report.
+     *
+     * @param report the report
+     * @return the report name. May be <tt>null</tt>
+     */
+    private String getReportName(JRDesignSubreport report) {
+        JRExpression expression = report.getExpression();
         if (expression != null) {
             String name = expression.getText();
             name = StringUtils.strip(name, " \"");

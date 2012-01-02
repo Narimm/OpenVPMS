@@ -21,6 +21,7 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -29,8 +30,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.IMObjectExpressionEvaluator;
+
+import java.util.Iterator;
 
 
 /**
@@ -114,6 +118,32 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
         return new IMObjectCollectionDataSource(
                 object, descriptor, getArchetypeService(),
                 getDocumentHandlers(), sortNodes);
+    }
+
+    /**
+     * Returns a data source for the given jxpath expression.
+     *
+     * @param expression the expression. Must return an <tt>Iterable<tt> or <tt>Iterator</tt> returning
+     *                   <tt>IMObjects</tt>
+     * @return the data source
+     * @throws JRException for any error
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public JRDataSource getExpressionDataSource(String expression) throws JRException {
+        JXPathContext context = JXPathHelper.newContext(object);
+        Object value = context.getValue(expression);
+        Iterator<IMObject> iterator;
+        if (value instanceof Iterable) {
+            Iterable<IMObject> iterable = (Iterable<IMObject>) value;
+            iterator = iterable.iterator();
+        } else if (value instanceof Iterator) {
+            iterator = (Iterator<IMObject>) value;
+        } else {
+            throw new JRException("Unsupported value type=" + ((value != null) ? value.getClass() : null)
+                                  + " returned by expression=" + expression);
+        }
+        return new IMObjectCollectionDataSource(iterator, getArchetypeService(), getDocumentHandlers());
     }
 
     /**

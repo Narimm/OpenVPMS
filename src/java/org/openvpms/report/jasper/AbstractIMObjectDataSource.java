@@ -67,6 +67,16 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
     }
 
     /**
+     * Returns a data source for the given jxpath expression.
+     *
+     * @param expression the expression. Must return an <tt>Iterable<tt> or <tt>Iterator</tt> returning
+     *                   <tt>IMObjects</tt>
+     * @return the data source
+     * @throws JRException for any error
+     */
+    public abstract JRDataSource getExpressionDataSource(String expression) throws JRException;
+
+    /**
      * Returns a data source for a collection node.
      *
      * @param name      the collection node name
