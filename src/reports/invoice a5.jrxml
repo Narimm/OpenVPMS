@@ -224,7 +224,7 @@
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band height="121" splitType="Stretch">
+		<band height="144" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="12" y="88" width="333" height="20" isRemoveLineWhenBlank="true"/>
 				<box>
@@ -368,6 +368,11 @@
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_DISCOUNT}]]></textFieldExpression>
 			</textField>
+			<subreport isUsingCache="false">
+				<reportElement x="0" y="118" width="345" height="11"/>
+				<dataSourceExpression><![CDATA[$P{dataSource}.getExpressionDataSource("party:getReminders(., 1, 'YEARS')")]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA["invoiceRemindersA5.jrxml"]]></subreportExpression>
+			</subreport>
 		</band>
 	</summary>
 </jasperReport>
