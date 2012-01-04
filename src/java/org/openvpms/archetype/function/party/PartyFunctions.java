@@ -22,10 +22,13 @@ import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -38,8 +41,10 @@ import org.openvpms.component.business.service.lookup.LookupServiceException;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -66,6 +71,11 @@ public class PartyFunctions {
      * The party rules.
      */
     private PartyRules partyRules;
+
+    /**
+     * The customer rules.
+     */
+    private CustomerRules customerRules;
 
     /**
      * The patient rules.
@@ -511,7 +521,7 @@ public class PartyFunctions {
         }
         return "";
     }
-    
+
     /**
      * Returns a formatted fax number for a party.
      *
@@ -960,7 +970,6 @@ public class PartyFunctions {
      */
     public String getPracticeAddress() {
         return getPartyRules().getPracticeAddress();
-
     }
 
     /**
@@ -1007,7 +1016,7 @@ public class PartyFunctions {
      * Returns a Bpay Id for the Party.
      * Utilises the party uid and adds a check digit using a Luntz 10 algorithm.
      *
-     * @param party
+     * @param party the party
      * @return string bpay id
      */
     public String getBpayId(Party party) {
@@ -1032,6 +1041,68 @@ public class PartyFunctions {
             return (party != null) ? getBpayId(party) : null;
         }
         return null;
+    }
+
+    /**
+     * Returns reminders for a customer's patients for the customer associated with the supplied act.
+     *
+     * @param act  the act
+     * @param dueInterval the due interval, relative to the current date
+     * @param dueUnits    the due interval units
+     * @return the reminders for the customer's patients
+     */
+    public List<Act> getReminders(Act act, int dueInterval, String dueUnits) {
+        return getReminders(act, dueInterval, dueUnits, false);
+    }
+
+    /**
+     * Returns reminders for a customer's patients for the customer associated with the supplied act.
+     *
+     * @param act  the act
+     * @param dueInterval the due interval, relative to the current date
+     * @param dueUnits    the due interval units
+     * @param includeOverdue if <tt>true</tt>, include reminders that are overdue
+     * @return the reminders for the customer's patients
+     */
+    public List<Act> getReminders(Act act, int dueInterval, String dueUnits, boolean includeOverdue) {
+        List<Act> result;
+        ActBean bean = new ActBean(act, getArchetypeService());
+        Party customer = (Party) bean.getParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION);
+        if (customer != null) {
+            result = getReminders(customer, dueInterval, dueUnits, includeOverdue);
+        } else {
+            result = Collections.emptyList();
+        }
+        return result;
+    }
+
+    /**
+     * Returns reminders for the specified customer's patients.
+     *
+     * @param customer    the customer
+     * @param dueInterval the due interval, relative to the current date
+     * @param dueUnits    the due interval units
+     * @return the reminders for the customer's patients
+     */
+    public List<Act> getReminders(Party customer, int dueInterval, String dueUnits) {
+        return getReminders(customer, dueInterval, dueUnits, false);
+    }
+
+    /**
+     * Returns reminders for the specified customer's patients.
+     *
+     * @param customer       the customer
+     * @param dueInterval    the due interval, relative to the current date
+     * @param dueUnits       the due interval units
+     * @param includeOverdue if <tt>true</tt>, include reminders that are overdue
+     * @return the reminders for the customer's patients
+     */
+    public List<Act> getReminders(Party customer, int dueInterval, String dueUnits, boolean includeOverdue) {
+        if (customer != null) {
+            DateUnits units = DateUnits.valueOf(dueUnits);
+            return getCustomerRules().getReminders(customer, dueInterval, units, includeOverdue);
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -1073,6 +1144,19 @@ public class PartyFunctions {
             partyRules = new PartyRules(getArchetypeService());
         }
         return partyRules;
+    }
+
+    /**
+     * Returns the customer rules.
+     *
+     * @return the customer rules
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected synchronized CustomerRules getCustomerRules() {
+        if (customerRules == null) {
+            customerRules = new CustomerRules(getArchetypeService());
+        }
+        return customerRules;
     }
 
     /**

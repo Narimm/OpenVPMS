@@ -18,25 +18,26 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import java.util.Date;
-import java.util.Iterator;
-
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IdConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -68,16 +69,21 @@ public class ReminderQuery {
      */
     private Date to;
 
+    /**
+     * The customer
+     */
+    private Party customer;
+
 
     /**
-     * Constructs a new <tt>ReminderQuery</tt>.
+     * Constructs a <tt>ReminderQuery</tt>.
      */
     public ReminderQuery() {
         this(ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
-     * Constructs  a new <tt>ReminderQuery</tt>.
+     * Constructs a <tt>ReminderQuery</tt>.
      *
      * @param service the archetype service
      */
@@ -97,8 +103,11 @@ public class ReminderQuery {
 
     /**
      * Sets the 'from' date.
+     * <p/>
      * This excludes all reminders with a due date prior to the specified
      * date.
+     * <p/>
+     * Any time component is ignored.
      *
      * @param from the from date. If <tt>null</tt> don't set a lower bound for
      *             due dates
@@ -108,18 +117,11 @@ public class ReminderQuery {
     }
 
     /**
-     * Returns the 'from' date.
-     *
-     * @return the 'from' date. May be <tt>null</tt>
-     */
-    public Date getFrom() {
-        return from;
-    }
-
-    /**
      * Sets the 'to' date.
-     * This filters excludes reminders with a due date after the specified
-     * date.
+     * <p/>
+     * This filters excludes reminders with a due date after the specified date.
+     * <p/>
+     * Any time component is ignored.
      *
      * @param to the to date. If <tt>null</tt> don't set an upper bound for due
      *           dates
@@ -129,12 +131,12 @@ public class ReminderQuery {
     }
 
     /**
-     * Returns the 'to' date.
+     * Sets the customer.
      *
-     * @return the 'to' date. May be <tt>null</tt>
+     * @param customer the customer. May be <tt>null</tt>
      */
-    public Date getTo() {
-        return to;
+    public void setCustomer(Party customer) {
+        this.customer = customer;
     }
 
     /**
@@ -155,60 +157,66 @@ public class ReminderQuery {
     }
 
     /**
+     * Executes the query.
+     * 
+     * @return a list of the reminder acts matching the query criteria
+     */
+    public List<Act> execute() {
+        List<Act> result = new ArrayList<Act>();
+        for (Act act : query()) {
+            result.add(act);
+        }
+        return result;
+    }
+
+    /**
      * Returns a new {@link ArchetypeQuery} matching the constraints.
      *
      * @return a new query
      */
     public ArchetypeQuery createQuery() {
-        ShortNameConstraint act = new ShortNameConstraint("act", ReminderArchetypes.REMINDER, true);
+        ShortNameConstraint act = Constraints.shortName("act", ReminderArchetypes.REMINDER, true);
         ArchetypeQuery query = new ArchetypeQuery(act);
         query.setMaxResults(1000);
         query.setDistinct(true);
 
-        ShortNameConstraint participation = new ShortNameConstraint(
-                "participation", "participation.patient", true);
-        ShortNameConstraint owner = new ShortNameConstraint(
-                "owner", "entityRelationship.patientOwner", false);
-        ShortNameConstraint patient = new ShortNameConstraint(
-                "patient", "party.patientpet", true);
-        ShortNameConstraint customer = new ShortNameConstraint(
-                "customer", "party.customer*", true);
-        ShortNameConstraint reminder = new ShortNameConstraint(
-                "reminderType", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, true);
+        query.add(Constraints.eq("status", ReminderStatus.IN_PROGRESS));
 
-        query.add(new NodeConstraint("status", ReminderStatus.IN_PROGRESS));
-
-        query.add(new CollectionNodeConstraint("patient", participation));
+        query.add(Constraints.join("patient", Constraints.shortName("participation",
+                                                                    PatientArchetypes.PATIENT_PARTICIPATION, true)));
         query.add(new IdConstraint("act", "participation.act"));
-        query.add(owner);
-        query.add(patient);
-        query.add(customer);
+        query.add(Constraints.shortName("owner", PatientArchetypes.PATIENT_OWNER, false));
+        query.add(Constraints.shortName("patient", PatientArchetypes.PATIENT, true));
+        ShortNameConstraint cust = Constraints.shortName("customer", "party.customer*", true);
+        if (customer != null) {
+            cust.add(Constraints.eq("id", customer.getId()));
+        }
+        query.add(cust);
+
         query.add(new IdConstraint("participation.entity", "patient"));
         query.add(new IdConstraint("patient", "owner.target"));
         query.add(new IdConstraint("customer", "owner.source"));
-        query.add(new NodeSortConstraint("customer", "name"));
-        query.add(new NodeSortConstraint("patient", "name"));
-        query.add(new NodeSortConstraint("act", "endTime"));
+        query.add(Constraints.sort("customer", "name"));
+        query.add(Constraints.sort("patient", "name"));
+        query.add(Constraints.sort("act", "endTime"));
 
+        ShortNameConstraint reminder
+                = Constraints.shortName("reminderType", ReminderArchetypes.REMINDER_TYPE_PARTICIPATION, true);
         if (reminderType != null) {
-            ObjectRefNodeConstraint objRef
-                    = new ObjectRefNodeConstraint(
-                    "entity", reminderType.getObjectReference());
-            CollectionNodeConstraint constraint = new CollectionNodeConstraint(
-                    "reminderType", reminder);
-            constraint.add(objRef);
-            query.add(constraint);
+            ObjectRefNodeConstraint reminderTypeRef = Constraints.eq("entity", reminderType.getObjectReference());
+            query.add(Constraints.join("reminderType", reminder).add(reminderTypeRef));
         } else {
             query.add(reminder);
             query.add(new IdConstraint("reminderType.act", "act"));
         }
         if (from != null) {
-            query.add(new NodeConstraint("endTime", RelationalOp.GTE, DateRules.getDate(from)));
+            query.add(Constraints.gte("endTime", DateRules.getDate(from)));
         }
         if (to != null) {
-        	Date tempTo = DateRules.getDate(to); // truncat eto date to date only
-        	tempTo = DateRules.getDate(tempTo, 1, DateUnits.DAYS);  //Add one day 
-            query.add(new NodeConstraint("endTime", RelationalOp.LT, tempTo));
+            // remove any time component and add 1 day
+            Date tempTo = DateRules.getDate(to);
+            tempTo = DateRules.getDate(tempTo, 1, DateUnits.DAYS);
+            query.add(Constraints.lt("endTime", tempTo));
         }
         return query;
     }

@@ -18,12 +18,17 @@
 
 package org.openvpms.archetype.rules.party;
 
+import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -77,6 +82,29 @@ public class CustomerRules extends PartyRules {
     public void mergeCustomers(Party from, Party to) {
         CustomerMerger merger = new CustomerMerger(getArchetypeService());
         merger.merge(from, to);
+    }
+
+    /**
+     * Returns reminders for the specified customer's patients.
+     *
+     * @param customer       the customer
+     * @param dueInterval    the due interval, relative to the current date
+     * @param dueUnits       the due interval units
+     * @param includeOverdue if <tt>true</tt>, include reminders that are overdue (i.e. those with a due date prior to
+     *                       today's date)
+     * @return the reminders for the customer's patients
+     */
+    public List<Act> getReminders(Party customer, int dueInterval, DateUnits dueUnits, boolean includeOverdue) {
+        ReminderQuery query = new ReminderQuery(getArchetypeService());
+        query.setCustomer(customer);
+        Date from = new Date();
+        Date to = DateRules.getDate(from, dueInterval, dueUnits);
+        if (!includeOverdue) {
+            query.setFrom(from);
+        }
+        query.setTo(to);
+        query.setCustomer(customer);
+        return query.execute();
     }
 
 }

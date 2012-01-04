@@ -20,11 +20,12 @@ package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -33,6 +34,13 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
 /**
  * Tests the {@link PartyFunctions} class.
  *
@@ -40,7 +48,6 @@ import org.openvpms.component.system.common.jxpath.JXPathHelper;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PartyFunctionsTestCase extends ArchetypeServiceTest {
-
 
     /**
      * Tests the {@link PartyFunctions#getHomeTelephone(Party)} method.
@@ -156,6 +163,65 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         bean.addParticipation("participation.patient", patient);
 
         assertEquals("1234567", ctx.getValue("party:getPatientMicrochip(.)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getReminders} methods given a customer.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetRemindersByCustomer() {
+        Party customer = TestHelper.createCustomer();
+        checkGetReminders(customer, customer);
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getReminders} methods given an act with a customer participation.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testGetRemindersByAct() {
+        Act act = (Act) create("act.customerAccountChargesInvoice");
+        Party customer = createCustomer();
+        save(customer);
+        ActBean invoice = new ActBean(act);
+        invoice.addNodeParticipation("customer", customer);
+
+        checkGetReminders(act, customer);
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getReminders} methods.
+     *
+     * @param context  the jxpath context. Either a customer or an act with a customer participation
+     * @param customer the customer
+     */
+    @SuppressWarnings("unchecked")
+    private void checkGetReminders(Object context, Party customer) {
+        final int count = 10;
+        Entity reminderType = ReminderTestHelper.createReminderType();
+
+        Calendar calendar = new GregorianCalendar();
+
+        // backdate the calendar 5 days. When excluding overdue reminders, reminders dated prior to the current date
+        // will be ignored.
+        calendar.add(Calendar.DAY_OF_YEAR, -5);
+        for (int i = 0; i < count; ++i) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+            Date dueDate = calendar.getTime();
+            Party patient = TestHelper.createPatient(customer);
+            ReminderTestHelper.createReminderWithDueDate(patient, reminderType, dueDate);
+        }
+
+        JXPathContext ctx = JXPathHelper.newContext(context);
+
+        // get reminders excluding any reminders prior to the current date
+        List<Act> reminders1 = (List<Act>) ctx.getValue("party:getReminders(., 1, 'YEARS')");
+        assertEquals(6, reminders1.size());
+
+        // get all reminders (i.e., including overdue)
+        List<Act> reminders2 = (List<Act>) ctx.getValue("party:getReminders(., 12, 'MONTHS', 'true')");
+        assertEquals(count, reminders2.size());
     }
 
     /**
