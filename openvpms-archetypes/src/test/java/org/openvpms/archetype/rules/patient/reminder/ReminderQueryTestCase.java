@@ -153,6 +153,30 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         assertEquals(5, reminders.size());
     }
 
+
+    /**
+     * Verifies that IN_PROGRESS reminders can be queried for a customer.
+     */
+    @Test
+    public void testQueryByCustomer() {
+        final int count = 10;
+        Entity reminderType = ReminderTestHelper.createReminderType();
+
+        Calendar calendar = new GregorianCalendar();
+        Party customer = TestHelper.createCustomer();
+
+        for (int i = 0; i < count; ++i) {
+            calendar.set(Calendar.DAY_OF_MONTH, i + 1);
+            Date dueDate = calendar.getTime();
+            Party patient = TestHelper.createPatient(customer);
+            ReminderTestHelper.createReminderWithDueDate(patient, reminderType, dueDate);
+        }
+        ReminderQuery query = new ReminderQuery();
+        query.setCustomer(customer);
+        List<Act> reminders = getReminders(query);
+        assertEquals(count, reminders.size());
+    }
+
     /**
      * Returns all reminders matching a query.
      *
