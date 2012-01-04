@@ -116,6 +116,13 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-archetypes</artifactId>
+            <version>${pom.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
             <version>${pom.version}</version>
         </dependency>

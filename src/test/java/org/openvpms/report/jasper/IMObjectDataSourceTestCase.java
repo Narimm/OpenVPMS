@@ -19,20 +19,20 @@
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRField;
-import net.sf.jasperreports.engine.design.JRDesignField;
-import static org.junit.Assert.*;
 import org.junit.Test;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.report.ArchetypeServiceTest;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -41,14 +41,7 @@ import java.io.InputStream;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectDataSourceTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The document handlers.
-     */
-    @Autowired
-    private DocumentHandlers handlers;
-
+public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCase {
 
     /**
      * Tests basic data source functionality.
@@ -99,17 +92,16 @@ public class IMObjectDataSourceTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create a new field.
+     * Tests the {@link IMObjectDataSource#getExpressionDataSource(String)} method.
      *
-     * @param name       the field name
-     * @param valueClass the field value class
-     * @return a new field
+     * @throws Exception for any error
      */
-    private JRField createField(String name, Class valueClass) {
-        JRDesignField field = new JRDesignField();
-        field.setName(name);
-        field.setValueClass(valueClass);
-        return field;
+    @Test
+    public void testExpressionDataSource() throws Exception {
+        IMObject object = TestHelper.createCustomer(false);
+        IMObjectDataSource ds = createDataSource(object);
+
+        checkExpressionDataSource(ds);
     }
 
     /**
