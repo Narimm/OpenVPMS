@@ -222,7 +222,7 @@
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band height="215" splitType="Stretch">
+		<band height="203" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="36" y="105" width="475" height="36" isRemoveLineWhenBlank="true"/>
 				<box>
