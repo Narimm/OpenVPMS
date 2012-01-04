@@ -162,12 +162,13 @@ public class CheckInWorkflow extends WorkflowImpl {
         // optionally select a worklist and edit a customer task
         addTask(new CustomerTaskWorkflow(taskDescription));
 
-        // Get the act.patientClinicalEvent. Note that the event
-        // is selected prior to printing any forms in order for them to be
-        // printed on check out if not printed on check in.
+        // get the act.patientClinicalEvent.
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", reason);
         addTask(new GetClinicalEventTask(eventProps));
+
+        // prompt for a patient weight.
+        addTask(new PatientWeightTask());
 
         // optionally select and print an act.patientDocumentForm
         addTask(new PrintDocumentFormTask(initial));
@@ -177,9 +178,6 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         // Reload the task to refresh the context with any edits made
         addTask(new ReloadTask(GetClinicalEventTask.EVENT_SHORTNAME));
-
-        // prompt for a patient weight.
-        addTask(new PatientWeightTask());
 
         if (appointment != null) {
             // update the appointment status
