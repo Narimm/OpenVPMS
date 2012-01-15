@@ -19,9 +19,8 @@
 package org.openvpms.archetype.rules.patient;
 
 import org.openvpms.archetype.rules.party.MergeException;
-import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
-import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -46,12 +45,15 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ParticipationConstraint;
-import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 
 
 /**
@@ -341,12 +343,28 @@ public class PatientRules {
 
     /**
      * Returns the age of the patient.
+     * <p/>
+     * If the patient is deceased, the age of the patient when they died will be returned
      *
      * @param patient the patient
      * @return the age in string format
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getPatientAge(Party patient) {
+        return getPatientAge(patient, new Date());
+    }
+
+    /**
+     * Returns the age of the patient as of the specified date.
+     * <p/>
+     * If the patient is deceased, the age of the patient when they died will be returned
+     *
+     * @param patient the patient
+     * @param date    the date to base the age upon
+     * @return the age in string format
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getPatientAge(Party patient, Date date) {
         String result;
         IMObjectBean bean = factory.createBean(patient);
         Date birthDate = bean.getDate("dateOfBirth");
@@ -359,10 +377,12 @@ public class PatientRules {
             }
         }
         if (deceasedDate == null) {
-            result = formatter.format(birthDate);      	
-        }
-        else {
-            result = formatter.format(birthDate, deceasedDate);        	
+            result = formatter.format(birthDate, date);
+        } else {
+            if (DateRules.compareTo(deceasedDate, date) < 0) {
+                date = deceasedDate;
+            }
+            result = formatter.format(birthDate, date);
         }
         return result;
     }
