@@ -35,10 +35,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -55,6 +57,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -91,6 +94,11 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     private int selectedVisit;
 
     /**
+     * The patient rules.
+     */
+    private PatientRules patientRules;
+
+    /**
      * Column indicating the selected visit.
      */
     private static final int SELECTION_COLUMN = 0;
@@ -120,6 +128,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         model.addColumn(new TableColumn(SUMMARY_COLUMN));
         model.addColumn(new TableColumn(SPACER_COLUMN));
         setTableColumnModel(model);
+        patientRules = (PatientRules) ServiceHelper.getContext().getBean("patientRules");
     }
 
     /**
@@ -238,13 +247,14 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         clinician = IMObjectHelper.getName(clinicianRef);
         clinician = getValue(clinician, bean, "clinician");
 
+        Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"));
+        String age = (patient != null) ? patientRules.getPatientAge(patient, act.getActivityStartTime()) : "";
+
         String text;
         if (completed == null || ObjectUtils.equals(started, completed)) {
-            text = Messages.get("patient.record.summary.singleDate",
-                                started, reason, clinician, status);
+            text = Messages.get("patient.record.summary.singleDate", started, reason, clinician, status, age);
         } else {
-            text = Messages.get("patient.record.summary.dateRange",
-                                started, completed, reason, clinician, status);
+            text = Messages.get("patient.record.summary.dateRange", started, completed, reason, clinician, status, age);
         }
         Label summary = LabelFactory.create(null, "bold");
         summary.setText(text);
@@ -271,7 +281,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         type.setLayoutData(layout);
 
         if (TypeHelper.isA(act, "act.patientInvestigation*")
-            || TypeHelper.isA(act, "act.patientDocument*")) {
+                || TypeHelper.isA(act, "act.patientDocument*")) {
             detail = getDocumentDetail((DocumentAct) act);
         } else {
             detail = getDetail(act);
@@ -294,8 +304,8 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         if (row > 0) {
             Act prev = getObject(row - 1);
             if (!TypeHelper.isA(prev, PatientArchetypes.CLINICAL_EVENT)
-                && ObjectUtils.equals(DateRules.getDate(act.getActivityStartTime()),
-                                      DateRules.getDate(prev.getActivityStartTime()))) {
+                    && ObjectUtils.equals(DateRules.getDate(act.getActivityStartTime()),
+                    DateRules.getDate(prev.getActivityStartTime()))) {
                 // act belongs to the same parent act as the prior row,
                 // and has the same date, so don't display it again
                 showDate = false;
@@ -442,8 +452,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private String getValue(String value, ActBean bean, String node) {
         if (StringUtils.isEmpty(value)) {
-            return Messages.get("patient.record.summary.novalue",
-                                bean.getDisplayName(node));
+            return Messages.get("patient.record.summary.novalue", bean.getDisplayName(node));
         }
         return value;
     }
