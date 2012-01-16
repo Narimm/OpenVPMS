@@ -156,7 +156,7 @@ public class SelectionDialog extends PopupDialog {
     protected void onSelected() {
         index = list.getSelectionModel().getMinSelectedIndex();
         selected = (index != -1) ? list.getModel().get(index) : null;
-        close();
+        close(OK_ID);
     }
 
     /**
