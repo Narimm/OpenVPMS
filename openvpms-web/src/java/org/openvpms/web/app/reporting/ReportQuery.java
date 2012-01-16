@@ -21,6 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.IPage;
@@ -114,6 +115,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
                 onTypeChanged();
             }
         });
+        typeSelector.setSelected((Lookup)null);
 
         Label typeLabel = LabelFactory.create(TYPE_ID);
         container.add(typeLabel);
