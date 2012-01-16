@@ -38,6 +38,7 @@
     <data archetype="lookup.contactPurpose" code="CORRESPONDENCE" />
     <data archetype="lookup.contactPurpose" code="REMINDER" />
     <data archetype="lookup.contactPurpose" code="BILLING" />
+    <data archetype="lookup.contactPurpose" code="MOBILE" />
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" taxScheme="GST" taxCategory="S"/>
 	<data archetype="lookup.patientAlertType" code="ALLLERGY" priority="HIGH" colour="0xFF0000"/>
 	<data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
