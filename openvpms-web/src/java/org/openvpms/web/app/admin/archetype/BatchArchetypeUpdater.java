@@ -125,6 +125,7 @@ public class BatchArchetypeUpdater
      */
     private void closeDialog() {
         if (dialog != null) {
+            dialog.setDefaultCloseAction(PopupDialog.CLOSE_ID);
             dialog.close();
             dialog = null;
         }
@@ -146,8 +147,7 @@ public class BatchArchetypeUpdater
             super(Messages.get("archetype.updating.title"), CANCEL);
             setModal(true);
             label = LabelFactory.create();
-            Row row = RowFactory.create("CellSpacing", label,
-                                        processor.getComponent());
+            Row row = RowFactory.create("CellSpacing", label, processor.getComponent());
             Column column = ColumnFactory.create("Inset", row);
             getLayout().add(column);
         }
