@@ -323,9 +323,10 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * @param browser the browser
      */
     protected void onSelected(T object, Browser<T> browser) {
+        T current = getObject();
         setObject(object);
         getFocusGroup().setFocus(); // set the focus back to the component
-        if (listener != null) {
+        if (listener != null && !ObjectUtils.equals(current, object)) {
             listener.selected(object, browser);
         }
     }
