@@ -18,11 +18,11 @@
 
 package org.openvpms.web.app.customer;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.apache.commons.lang.StringUtils;
@@ -39,9 +39,12 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
-import org.openvpms.web.app.summary.PartySummary;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.app.sms.SMSDialog;
+import org.openvpms.web.app.sms.SMSHelper;
+import org.openvpms.web.app.summary.PartySummary;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -50,8 +53,6 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.LocalContext;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -145,17 +146,19 @@ public class CustomerSummary extends PartySummary {
             column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
-        final String[] mobiles = getPhonesForSMS(party);
-        if (mobiles.length != 0) {
-            Context local = new LocalContext(context);
-            local.setCustomer(party);
-            Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    SMSDialog dialog = new SMSDialog(mobiles, context);
-                    dialog.show();
-                }
-            });
-            result.add(RowFactory.create("Inset.Small", button));
+        if (SMSHelper.isSMSEnabled()) {
+            final String[] mobiles = getPhonesForSMS(party);
+            if (mobiles.length != 0) {
+                Context local = new LocalContext(context);
+                local.setCustomer(party);
+                Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
+                    public void onAction(ActionEvent event) {
+                        SMSDialog dialog = new SMSDialog(mobiles, context);
+                        dialog.show();
+                    }
+                });
+                result.add(RowFactory.create("Inset.Small", button));
+            }
         }
 
         return result;
