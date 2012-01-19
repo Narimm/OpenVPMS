@@ -1,0 +1,341 @@
+<archetype>
+	<!-- Common Authorities -->
+	<!-- Participation All Authorities -->
+	<data id="CPARTIC" archetype="security.archetypeAuthority" name="Participations Create" description="Authority to Create Participations"
+		serviceName="archetypeService" method="create" archetypeShortName="participation.*" />
+	<data id="SPARTIC" archetype="security.archetypeAuthority" name="Participations Save" description="Authority to Save Participations"
+		serviceName="archetypeService" method="save" archetypeShortName="participation.*" />
+	<data id="RPARTIC" archetype="security.archetypeAuthority" name="Participations Remove" description="Authority to Remove Participations"
+		serviceName="archetypeService" method="remove" archetypeShortName="participation.*" />
+	<!-- Entity Relationship All Authorities -->
+	<data id="CENTREL" archetype="security.archetypeAuthority" name="Entity Relationships Create" description="Authority to Create Entity Relationships"
+		serviceName="archetypeService" method="create" archetypeShortName="entityRelationship.*" />
+	<data id="SENTREL" archetype="security.archetypeAuthority" name="Entity Relationships Save" description="Authority to Save Entity Relationships"
+		serviceName="archetypeService" method="save" archetypeShortName="entityRelationship.*" />
+	<data id="RENTREL" archetype="security.archetypeAuthority" name="Entity Relationships Remove" description="Authority to Remove Entity Relationships"
+		serviceName="archetypeService" method="remove" archetypeShortName="entityRelationship.*" />
+	<!-- Act Relationship All Authorities -->
+	<data id="CACTREL" archetype="security.archetypeAuthority" name="Act Relationships Create" description="Authority to Create Act Relationships"
+		serviceName="archetypeService" method="create" archetypeShortName="actRelationship.*" />
+	<data id="SACTREL" archetype="security.archetypeAuthority" name="Act Relationships Save" description="Authority to Save Act Relationships"
+		serviceName="archetypeService" method="save" archetypeShortName="actRelationship.*" />
+	<data id="RACTREL" archetype="security.archetypeAuthority" name="Act Relationships Remove" description="Authority to Remove Act Relationships"
+		serviceName="archetypeService" method="remove" archetypeShortName="actRelationship.*" />
+	<!-- Entity Identity All Authorities -->
+	<data id="CENTIDE" archetype="security.archetypeAuthority" name="Identity Create" description="Authority to Create Identity"
+		serviceName="archetypeService" method="create" archetypeShortName="entityIdentity.*" />
+	<data id="SENTIDE" archetype="security.archetypeAuthority" name="Identity Save" description="Authority to Save Act Identity"
+		serviceName="archetypeService" method="save" archetypeShortName="entityIdentity.*" />
+	<data id="RENTIDE" archetype="security.archetypeAuthority" name="Identity Remove" description="Authority to Remove Identity"
+		serviceName="archetypeService" method="remove" archetypeShortName="entityIdentity.*" />
+	<!-- Document All Authorities -->
+	<data id="CDOCUME" archetype="security.archetypeAuthority" name="Document Create" description="Authority to Create Document"
+		serviceName="archetypeService" method="create" archetypeShortName="document.*" />
+	<data id="SDOCUME" archetype="security.archetypeAuthority" name="Document Save" description="Authority to Save Act Document"
+		serviceName="archetypeService" method="save" archetypeShortName="document.*" />
+	<data id="RDOCUME" archetype="security.archetypeAuthority" name="Document Remove" description="Authority to Remove Document"
+		serviceName="archetypeService" method="remove" archetypeShortName="document.*" />
+	<!-- Contact Authorities -->
+	<data id="CCONTAC" archetype="security.archetypeAuthority" name="Contacts Create" description="Authority to Create Contacts"
+		serviceName="archetypeService" method="create" archetypeShortName="contact.*" />
+	<data id="SCONTAC" archetype="security.archetypeAuthority" name="Contacts Save" description="Authority to Save Contacts"
+		serviceName="archetypeService" method="save" archetypeShortName="contacts.*" />
+	<data id="RCONTAC" archetype="security.archetypeAuthority" name="Contacts Remove" description="Authority to Remove Contacts"
+		serviceName="archetypeService" method="remove" archetypeShortName="contact.*" />
+
+	<!-- Administration Authorities -->
+	<!-- Organisation All Authorities -->
+	<data id="CORGALL" archetype="security.archetypeAuthority" name="Organisation Create" description="Authority to Create Organisation"
+		serviceName="archetypeService" method="create" archetypeShortName="party.organisation*" />
+	<data id="SORGALL" archetype="security.archetypeAuthority" name="Organisation Save" description="Authority to Save Organisation"
+		serviceName="archetypeService" method="save" archetypeShortName="party.organisation*" />
+	<data id="RORGALL" archetype="security.archetypeAuthority" name="Organisation Remove" description="Authority to Remove Organisation"
+		serviceName="archetypeService" method="remove" archetypeShortName="party.organisation*" />
+	<!-- Entity All Authorities -->
+	<data id="CENTITY" archetype="security.archetypeAuthority" name="Entities Create" description="Authority to Create Entities"
+		serviceName="archetypeService" method="create" archetypeShortName="entity.*" />
+	<data id="SENTITY" archetype="security.archetypeAuthority" name="Entities Save" description="Authority to Save Entities"
+		serviceName="archetypeService" method="save" archetypeShortName="entity.*" />
+	<data id="RENTITY" archetype="security.archetypeAuthority" name="Entities Remove" description="Authority to Remove Entities"
+		serviceName="archetypeService" method="remove" archetypeShortName="entity.*" />
+	<!-- Lookup Authorities -->
+	<data id="CLOOKUP" archetype="security.archetypeAuthority" name="Lookup Create" description="Authority to Create Lookup"
+		serviceName="archetypeService" method="create" archetypeShortName="lookup.*" />
+	<data id="SLOOKUP" archetype="security.archetypeAuthority" name="Lookup Save" description="Authority to Save Lookup"
+		serviceName="archetypeService" method="save" archetypeShortName="lookup.*" />
+	<data id="RLOOKUP" archetype="security.archetypeAuthority" name="Lookup Remove" description="Authority to Remove Lookup"
+		serviceName="archetypeService" method="remove" archetypeShortName="lookup.*" />
+	<!-- User Authorities -->
+	<data id="CUSER" archetype="security.archetypeAuthority" name="User Create" description="Authority to Create User"
+		serviceName="archetypeService" method="create" archetypeShortName="security.*" />
+	<data id="SUSER" archetype="security.archetypeAuthority" name="User Save" description="Authority to Save User"
+		serviceName="archetypeService" method="save" archetypeShortName="security.*" />
+	<data id="RUSER" archetype="security.archetypeAuthority" name="User Remove" description="Authority to Remove User"
+		serviceName="archetypeService" method="remove" archetypeShortName="security.*" />
+
+	<!-- Customer Authorities -->
+	<!-- Customer Party Authorities -->	
+	<data id="CCUSPAR" archetype="security.archetypeAuthority" name="Customers Create" description="Authority to Create Customers"
+		serviceName="archetypeService" method="create" archetypeShortName="party.customer*" />
+	<data id="SCUSPAR" archetype="security.archetypeAuthority" name="Customers Save" description="Authority to Save Customers"
+		serviceName="archetypeService" method="save" archetypeShortName="party.customer*" />
+	<data id="RCUSPAR" archetype="security.archetypeAuthority" name="Customers Remove" description="Authority to Remove Customers"
+		serviceName="archetypeService" method="remove" archetypeShortName="party.customer*" />
+	<!-- Customer All Acts Authorities -->
+	<data id="CCUSALL" archetype="security.archetypeAuthority" name="Customer All Acts Create" description="Authority to Create Customer Acts"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customer*" />
+	<data id="SCUSALL" archetype="security.archetypeAuthority" name="Customer All Acts Save" description="Authority to Save Customer Acts"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customer*" />
+	<data id="RCUSALL" archetype="security.archetypeAuthority" name="Customer All Acts Remove" description="Authority to Remove Customer Acts"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customer*" />
+	<!-- Customer Charges Authorities -->
+	<data id="CCUSCHA" archetype="security.archetypeAuthority" name="Customer Charges Create" description="Authority to Create Charges"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAccountCharges*" />
+	<data id="SCUSCHA" archetype="security.archetypeAuthority" name="Customer Charges Save" description="Authority to Save Charges"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAccountCharges*" />
+	<data id="RCUSCHA" archetype="security.archetypeAuthority" name="Customer Charges Remove" description="Authority to Remove Charges"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAccountCharges*" />
+	<!-- Customer Charges Items Authorities -->
+	<data id="CCUSCHI" archetype="security.archetypeAuthority" name="Customer Charge Items Create" description="Authority to Create Charge Items"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAccount*Item" />
+	<data id="SCUSCHI" archetype="security.archetypeAuthority" name="Customer Charge Items Save" description="Authority to Save Charge Items"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAccount*Item" />
+	<data id="RCUSCHI" archetype="security.archetypeAuthority" name="Customer Charge Items Remove" description="Authority to Remove Charge Items"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAccount*Item" />
+	<!-- Customer Payment Authorities -->
+	<data id="CCUSPAY" archetype="security.archetypeAuthority" name="Customer Payments Create" description="Authority to Create Payments"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAccountPayment*" />
+	<data id="SCUSPAY" archetype="security.archetypeAuthority" name="Customer Payments Save" description="Authority to Save Payments"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAccountPayment*" />
+	<data id="RCUSPAY" archetype="security.archetypeAuthority" name="Customer Payments Remove" description="Authority to Remove Payments"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAccountPayment*" />
+	<!-- Customer Refund Authorities -->
+	<data id="CCUSREF" archetype="security.archetypeAuthority" name="Customer Refund Create" description="Authority to Create Refund"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAccountRefund*" />
+	<data id="SCUSREF" archetype="security.archetypeAuthority" name="Customer Refund Save" description="Authority to Save Refund"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAccountRefund*" />
+	<data id="RCUSREF" archetype="security.archetypeAuthority" name="Customer Refund Remove" description="Authority to Remove Refund"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAccountRefund*" />
+	<!-- Customer Balance Authorities -->
+	<data id="CCUSBAL" archetype="security.archetypeAuthority" name="Customer Balance Create" description="Authority to Create Balance"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAccount*Balance" />
+	<data id="SCUSBAL" archetype="security.archetypeAuthority" name="Customer Balance Save" description="Authority to Save Balance"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAccount*Balance" />
+	<data id="RCUSBAL" archetype="security.archetypeAuthority" name="Customer Balance Remove" description="Authority to Remove Balance"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAccount*Balance" />
+	<!-- Customer Account Authorities -->
+	<data id="CCUSACC" archetype="security.archetypeAuthority" name="Customer Account Act Create" description="Authority to Create Account Act"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAccount*" />
+	<data id="SCUSACC" archetype="security.archetypeAuthority" name="Customer Account Act Save" description="Authority to Save Account Act"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAccount*" />
+	<data id="RCUSACC" archetype="security.archetypeAuthority" name="Customer Account Act Remove" description="Authority to Remove Account Act"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAccount*" />
+	<!-- Customer Adjustment Authorities -->
+	<data id="CCUSADJ" archetype="security.archetypeAuthority" name="Customer Adjustment Create" description="Authority to Create Adjustment"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAccount*Adjust" />
+	<data id="SCUSADJ" archetype="security.archetypeAuthority" name="Customer Adjustment Save" description="Authority to Save Adjustment"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAccount*Adjust" />
+	<data id="RCUSADJ" archetype="security.archetypeAuthority" name="Customer Adjustment Remove" description="Authority to Remove Adjustment"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAccount*Adjust" />
+	<!-- Customer Document Authorities -->
+	<data id="CCUSDOC" archetype="security.archetypeAuthority" name="Customer Document Create" description="Authority to Create Customer Document"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerDocument*" />
+	<data id="SCUSDOC" archetype="security.archetypeAuthority" name="Customer Document Save" description="Authority to Save Customer Document"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerDocument*" />
+	<data id="RCUSDOC" archetype="security.archetypeAuthority" name="Customer Document Remove" description="Authority to Remove Customer Document"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerDocument*" />
+	<!-- Customer Estimation Authorities -->
+	<data id="CCUSEST" archetype="security.archetypeAuthority" name="Customer Estimation Create" description="Authority to Create Customer Estimation"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerEstimation*" />
+	<data id="SCUSEST" archetype="security.archetypeAuthority" name="Customer Estimation Save" description="Authority to Save Customer Estimation"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerEstimation*" />
+	<data id="RCUSEST" archetype="security.archetypeAuthority" name="Customer Estimation Remove" description="Authority to Remove Customer Estimation"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerEstimation*" />
+	<!-- Customer Alert Authorities -->
+	<data id="CCUSALE" archetype="security.archetypeAuthority" name="Customer Alert Create" description="Authority to Create Customer Alert"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAlert" />
+	<data id="SCUSALE" archetype="security.archetypeAuthority" name="Customer Alert Save" description="Authority to Save Customer Alert"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAlert" />
+	<data id="RCUSALE" archetype="security.archetypeAuthority" name="Customer Alert Remove" description="Authority to Remove Customer Alert"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAlert" />
+	<!-- Customer Note Authorities -->
+	<data id="CCUSNOT" archetype="security.archetypeAuthority" name="Customer Note Create" description="Authority to Create Customer Note"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerNote" />
+	<data id="SCUSNOT" archetype="security.archetypeAuthority" name="Customer Note Save" description="Authority to Save Customer Note"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerNote" />
+	<data id="RCUSNOT" archetype="security.archetypeAuthority" name="Customer Note Remove" description="Authority to Remove Customer Note"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAlert" />
+
+	<!-- Patient Authorities  -->
+	<!-- Patient Party Authorities -->
+	<data id="CPATPAR" archetype="security.archetypeAuthority" name="Patients Create" description="Authority to Create Patients"
+		serviceName="archetypeService" method="create" archetypeShortName="party.patient*" />
+	<data id="SPATPAR" archetype="security.archetypeAuthority" name="Patients Save" description="Authority to Save Patients"
+		serviceName="archetypeService" method="save" archetypeShortName="party.patient*" />
+	<data id="RPATPAR" archetype="security.archetypeAuthority" name="Patients Remove" description="Authority to Remove Patients"
+		serviceName="archetypeService" method="remove" archetypeShortName="party.patient*" />	
+	<!-- Patient All Acts Authorities -->
+	<data id="CPATALL" archetype="security.archetypeAuthority" name="Patient All Acts Create" description="Authority to Create All"
+		serviceName="archetypeService" method="create" archetypeShortName="act.patient*" />
+	<data id="SPATALL" archetype="security.archetypeAuthority" name="Patient All Acts Save" description="Authority to Save All"
+		serviceName="archetypeService" method="save" archetypeShortName="act.patient*" />
+	<data id="RPATALL" archetype="security.archetypeAuthority" name="Patient All Acts Remove" description="Authority to Remove All"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.patient*" />
+	<!-- Patient Alert Authorities -->
+	<data id="CPATALE" archetype="security.archetypeAuthority" name="Patient Alert Create" description="Authority to Create Alert"
+		serviceName="archetypeService" method="create" archetypeShortName="act.patientAlert" />
+	<data id="SPATALE" archetype="security.archetypeAuthority" name="Patient Alert Save" description="Authority to Save Alert"
+		serviceName="archetypeService" method="save" archetypeShortName="act.patientAlert" />
+	<data id="RPATALE" archetype="security.archetypeAuthority" name="Patient Alert Remove" description="Authority to Remove Alert"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.patientAlert" />
+	<!-- Patient Clinical Authorities -->
+	<data id="CPATCLI" archetype="security.archetypeAuthority" name="Patient Clinical Act Create" description="Authority to Create Clinical"
+		serviceName="archetypeService" method="create" archetypeShortName="act.patientClinical*" />
+	<data id="SPATCLI" archetype="security.archetypeAuthority" name="Patient Clinical Act Save" description="Authority to Save Clinical"
+		serviceName="archetypeService" method="save" archetypeShortName="act.patientClinical*" />
+	<data id="RPATCLI" archetype="security.archetypeAuthority" name="Patient Clinical Act Remove" description="Authority to Remove Clinical"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.patientClinical*" />
+	<!-- Patient Investigation Authorities -->
+	<data id="CPATINV" archetype="security.archetypeAuthority" name="Patient Investigation Create" description="Authority to Create Investigation"
+		serviceName="archetypeService" method="create" archetypeShortName="act.patientInvestigation*" />
+	<data id="SPATINV" archetype="security.archetypeAuthority" name="Patient Investigation Save" description="Authority to Save Investigation"
+		serviceName="archetypeService" method="save" archetypeShortName="act.patientInvestigation*" />
+	<data id="RPATINV" archetype="security.archetypeAuthority" name="Patient Investigation Remove" description="Authority to Remove Investigation"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.patientInvestigation*" />
+	<!-- Patient Document Authorities -->
+	<data id="CPATDOC" archetype="security.archetypeAuthority" name="Patient Document Create" description="Authority to Create Document"
+		serviceName="archetypeService" method="create" archetypeShortName="act.patientDocument*" />
+	<data id="SPATDOC" archetype="security.archetypeAuthority" name="Patient Document Save" description="Authority to Save Document"
+		serviceName="archetypeService" method="save" archetypeShortName="act.patientDocument*" />
+	<data id="RPATDOC" archetype="security.archetypeAuthority" name="Patient Document Remove" description="Authority to Remove Document"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.patientDocument*" />
+	<!-- Patient Reminder Authorities -->
+	<data id="CPATREM" archetype="security.archetypeAuthority" name="Patient Reminder Create" description="Authority to Create Reminder"
+		serviceName="archetypeService" method="create" archetypeShortName="act.patientReminder" />
+	<data id="SPATREM" archetype="security.archetypeAuthority" name="Patient Reminder Save" description="Authority to Save Reminder"
+		serviceName="archetypeService" method="save" archetypeShortName="act.patientReminder" />
+	<data id="RPATREM" archetype="security.archetypeAuthority" name="Patient Reminder Remove" description="Authority to Remove Reminder"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.patientReminder*" />
+	<!-- Patient Medication Authorities -->
+	<data id="CPATMED" archetype="security.archetypeAuthority" name="Patient Medication Create" description="Authority to Create Medication"
+		serviceName="archetypeService" method="create" archetypeShortName="act.patientMedication" />
+	<data id="SPATMED" archetype="security.archetypeAuthority" name="Patient Medication Save" description="Authority to Save Medication"
+		serviceName="archetypeService" method="save" archetypeShortName="act.patientMedication" />
+	<data id="RPATMED" archetype="security.archetypeAuthority" name="Patient Medication Remove" description="Authority to Remove Medication"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.patientMedication" />
+
+
+	<!-- Supplier Authorities -->
+	<!-- Supplier Party Authorities -->
+	<data id="CSUPPAR" archetype="security.archetypeAuthority" name="Suppliers Create" description="Authority to Create Suppliers"
+		serviceName="archetypeService" method="create" archetypeShortName="party.supplier*" />
+	<data id="SSUPPAR" archetype="security.archetypeAuthority" name="Suppliers Save" description="Authority to Save Suppliers"
+		serviceName="archetypeService" method="save" archetypeShortName="party.supplier*" />
+	<data id="RSUPPAR" archetype="security.archetypeAuthority" name="Suppliers Remove" description="Authority to Remove Suppliers"
+		serviceName="archetypeService" method="remove" archetypeShortName="party.supplier*" />
+	<!-- Supplier All Acts Authorities -->
+	<data id="CSUPALL" archetype="security.archetypeAuthority" name="Supplier All Acts Create" description="Authority to Create Supplier Acts"
+		serviceName="archetypeService" method="create" archetypeShortName="act.supplier*" />
+	<data id="SSUPALL" archetype="security.archetypeAuthority" name="Supplier All Acts Save" description="Authority to Save Supplier Acts"
+		serviceName="archetypeService" method="save" archetypeShortName="act.supplier*" />
+	<data id="RSUPALL" archetype="security.archetypeAuthority" name="Supplier All Acts Remove" description="Authority to Remove Supplier Acts"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.supplier*" />
+	<!-- Supplier Account Acts Authorities -->
+	<data id="CSUPACC" archetype="security.archetypeAuthority" name="Supplier Account Acts Create" description="Authority to Create Supplier Account Acts"
+		serviceName="archetypeService" method="create" archetypeShortName="act.supplierAccount*" />
+	<data id="SSUPACC" archetype="security.archetypeAuthority" name="Supplier Account Acts Save" description="Authority to Save Supplier Account Acts"
+		serviceName="archetypeService" method="save" archetypeShortName="act.supplierAccount*" />
+	<data id="RSUPACC" archetype="security.archetypeAuthority" name="Supplier Account Acts Remove" description="Authority to Remove Supplier Account Acts"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.supplierAccount*" />
+	<!-- Supplier Delivery Acts Authorities -->
+	<data id="CSUPDEL" archetype="security.archetypeAuthority" name="Supplier Delivery Acts Create" description="Authority to Create Supplier Delivery Acts"
+		serviceName="archetypeService" method="create" archetypeShortName="act.supplierDelivery*" />
+	<data id="SSUPDEL" archetype="security.archetypeAuthority" name="Supplier Delivery Acts Save" description="Authority to Save Supplier Delivery Acts"
+		serviceName="archetypeService" method="save" archetypeShortName="act.supplierDelivery*" />
+	<data id="RSUPDEL" archetype="security.archetypeAuthority" name="Supplier Delivery Acts Remove" description="Authority to Remove Supplier Delivery Acts"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.supplierDelivery*" />
+	<!-- Supplier Document Acts Authorities -->
+	<data id="CSUPDOC" archetype="security.archetypeAuthority" name="Supplier Document Acts Create" description="Authority to Create Supplier Document Acts"
+		serviceName="archetypeService" method="create" archetypeShortName="act.supplierDocument*" />
+	<data id="SSUPDOC" archetype="security.archetypeAuthority" name="Supplier Document Acts Save" description="Authority to Save Supplier Document Acts"
+		serviceName="archetypeService" method="save" archetypeShortName="act.supplierDocument*" />
+	<data id="RSUPDOC" archetype="security.archetypeAuthority" name="Supplier Document Acts Remove" description="Authority to Remove Supplier Document Acts"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.supplierDocument*" />
+	<!-- Supplier Order Acts Authorities -->
+	<data id="CSUPORD" archetype="security.archetypeAuthority" name="Supplier Order Acts Create" description="Authority to Create Supplier Order Acts"
+		serviceName="archetypeService" method="create" archetypeShortName="act.supplierOrder*" />
+	<data id="SSUPORD" archetype="security.archetypeAuthority" name="Supplier Order Acts Save" description="Authority to Save Supplier Order Acts"
+		serviceName="archetypeService" method="save" archetypeShortName="act.supplierOrder*" />
+	<data id="RSUPORD" archetype="security.archetypeAuthority" name="Supplier Order Acts Remove" description="Authority to Remove Supplier Order Acts"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.supplierOrder*" />
+	<!-- Supplier Return Acts Authorities -->
+	<data id="CSUPRET" archetype="security.archetypeAuthority" name="Supplier Return Acts Create" description="Authority to Create Supplier Return Acts"
+		serviceName="archetypeService" method="create" archetypeShortName="act.supplierReturn*" />
+	<data id="SSUPRET" archetype="security.archetypeAuthority" name="Supplier Return Acts Save" description="Authority to Save Supplier Return Acts"
+		serviceName="archetypeService" method="save" archetypeShortName="act.supplierReturn*" />
+	<data id="RSUPRET" archetype="security.archetypeAuthority" name="Supplier Return Acts Remove" description="Authority to Remove Supplier Return Acts"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.supplierReturn*" />
+
+		
+	<!-- Product Authorities -->
+	<data id="CPROPRO" archetype="security.archetypeAuthority" name="Products Create" description="Authority to Create Products"
+		serviceName="archetypeService" method="create" archetypeShortName="product.*" />
+	<data id="SPROPRO" archetype="security.archetypeAuthority" name="Products Save" description="Authority to Save Products"
+		serviceName="archetypeService" method="save" archetypeShortName="product.*" />
+	<data id="RPROPRO" archetype="security.archetypeAuthority" name="Products Remove" description="Authority to Remove Products"
+		serviceName="archetypeService" method="remove" archetypeShortName="product.*" />
+	<!-- Product Price Authorities -->
+	<data id="CPROPRI" archetype="security.archetypeAuthority" name="Product Prices Create" description="Authority to Create Product Prices"
+		serviceName="archetypeService" method="create" archetypeShortName="productPrice.*" />
+	<data id="SPROPRI" archetype="security.archetypeAuthority" name="Product Prices Save" description="Authority to Save Product Prices"
+		serviceName="archetypeService" method="save" archetypeShortName="productPrice.*" />
+	<data id="RPROPRI" archetype="security.archetypeAuthority" name="Product Prices Remove" description="Authority to Remove Product Prices"
+		serviceName="archetypeService" method="remove" archetypeShortName="productPrice.*" />
+
+	<!-- Stock Authorities -->
+	<data id="CSTKALL" archetype="security.archetypeAuthority" name="Stock Transaction Create" description="Authority to Create Stock"
+		serviceName="archetypeService" method="create" archetypeShortName="act.stock*" />
+	<data id="SSTKALL" archetype="security.archetypeAuthority" name="Stock Transaction Save" description="Authority to Save Stock"
+		serviceName="archetypeService" method="save" archetypeShortName="act.stock*" />
+	<data id="RSTKALL" archetype="security.archetypeAuthority" name="Stock Transaction Remove" description="Authority to Remove Stock"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.stock*" />
+
+	<!-- Worflow Authorities -->
+	<!-- Appointment Authorities -->
+	<data id="CWRKAPP" archetype="security.archetypeAuthority" name="Appointment Create" description="Authority to Create Appointment"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerAppointment" />
+	<data id="SWRKAPP" archetype="security.archetypeAuthority" name="Appointment Save" description="Authority to Save Appointment"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerAppointment" />
+	<data id="RWRKAPP" archetype="security.archetypeAuthority" name="Appointment Remove" description="Authority to Remove Appointment"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerAppointment" />
+	<!-- Task Authorities -->
+	<data id="CWRKTAS" archetype="security.archetypeAuthority" name="Task Create" description="Authority to Create Task"
+		serviceName="archetypeService" method="create" archetypeShortName="act.customerTask" />
+	<data id="SWRKTAS" archetype="security.archetypeAuthority" name="Task Save" description="Authority to Save Task"
+		serviceName="archetypeService" method="save" archetypeShortName="act.customerTask" />
+	<data id="RWRKTAS" archetype="security.archetypeAuthority" name="Task Remove" description="Authority to Remove Task"
+		serviceName="archetypeService" method="remove" archetypeShortName="act.customerTask" />
+
+	<!-- ROLES -->
+	<!-- Base Role that contains all the authorities that relate to object collections and child objects -->
+	<data id="ROLE1" archetype="security.role" name="Base Role" >
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CPARTIC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SPARTIC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RPARTIC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CENTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SENTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RENTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CACTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SACTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RACTREL" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CENTIDE" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SENTIDE" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RENTIDE" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CDOCUME" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SDOCUME" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RDOCUME" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:CCONTAC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:SCONTAC" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:RCONTAC" />
+	</data>
+</archetype>
