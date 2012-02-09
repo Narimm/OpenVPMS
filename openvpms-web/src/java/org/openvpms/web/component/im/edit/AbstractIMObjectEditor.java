@@ -47,6 +47,7 @@ import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
+import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -75,8 +76,10 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -124,9 +127,9 @@ public abstract class AbstractIMObjectEditor
     private PropertySet properties;
 
     /**
-     * Lookup fields. These may beed to be refreshed.
+     * Lookup editors. These may need to be refreshed.
      */
-    private List<LookupField> lookups = new ArrayList<LookupField>();
+    private Map<PropertyEditor, ModifiableListener> lookups = new HashMap<PropertyEditor, ModifiableListener>();
 
     /**
      * The layout context.
@@ -163,7 +166,6 @@ public abstract class AbstractIMObjectEditor
      */
     private ModifiableListener derivedFieldRefresher;
 
-
     /**
      * Construct a new <code>AbstractIMObjectEditor</code>.
      *
@@ -171,8 +173,7 @@ public abstract class AbstractIMObjectEditor
      * @param parent        the parent object. May be <code>null</code>
      * @param layoutContext the layout context. May be <code>null</code>.
      */
-    public AbstractIMObjectEditor(IMObject object, IMObject parent,
-                                  LayoutContext layoutContext) {
+    public AbstractIMObjectEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
         this.object = object;
         this.parent = parent;
 
@@ -202,6 +203,27 @@ public abstract class AbstractIMObjectEditor
             }
         };
         editors.addModifiableListener(derivedFieldRefresher);
+    }
+
+
+    /**
+     * Disposes of the editor.
+     * <br/>
+     * Once disposed, the behaviour of invoking any method is undefined.
+     */
+    public void dispose() {
+        editors.removeModifiableListener(derivedFieldRefresher);
+        editors.dispose();
+        disposeLookups();
+        listeners.removeAll();
+
+        if (viewer != null && viewer.hasComponent()) {
+            Component component = viewer.getComponent();
+            Component parent = component.getParent();
+            if (parent != null) {
+                parent.remove(component);
+            }
+        }
     }
 
     /**
@@ -337,6 +359,16 @@ public abstract class AbstractIMObjectEditor
      */
     public void addModifiableListener(ModifiableListener listener) {
         editors.addModifiableListener(listener);
+    }
+
+    /**
+     * Adds a listener to be notified when this changes, specifying the order of the listener.
+     *
+     * @param listener the listener to add
+     * @param index    the index to add the listener at. The 0-index listener is notified first
+     */
+    public void addModifiableListener(ModifiableListener listener, int index) {
+        editors.addModifiableListener(listener, index);
     }
 
     /**
@@ -591,7 +623,7 @@ public abstract class AbstractIMObjectEditor
         view = new AbstractIMObjectView(object, properties, parent, layout) {
             @Override
             protected Component createComponent() {
-                lookups.clear();
+                disposeLookups();
                 return super.createComponent();
             }
 
@@ -613,6 +645,16 @@ public abstract class AbstractIMObjectEditor
             }
         }
         return view;
+    }
+
+    /**
+     * Removes listeners associated with lookup nodes.
+     */
+    private void disposeLookups() {
+        for (Map.Entry<PropertyEditor, ModifiableListener> entry : lookups.entrySet()) {
+            entry.getKey().removeModifiableListener(entry.getValue());
+        }
+        lookups.clear();
     }
 
     /**
@@ -640,7 +682,7 @@ public abstract class AbstractIMObjectEditor
      */
     protected void onLayout() {
         Component oldValue = getComponent();
-        editors.removeAll(); // editors will be recreated/re-registered as part of the layout
+        disposeOnChangeLayout();
         if (getView().getLayout() instanceof ExpandableLayoutStrategy) {
             ExpandableLayoutStrategy expandable = (ExpandableLayoutStrategy) getView().getLayout();
             expandable.setShowOptional(!expandable.isShowOptional());
@@ -665,8 +707,35 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Invoked when layout has completed. This can be used to perform
-     * processing that requires all editors to be created.
+     * Invoked by {@link #onLayout} to dispose of existing editors.
+     * <p/>
+     * This implementation disposes each editor for which {@link #disposeOnChangeLayout(Editor)} returns <tt>true</tt>.
+     */
+    protected void disposeOnChangeLayout() {
+        Set<Editor> set = editors.getEditors();
+        for (Editor editor : set.toArray(new Editor[set.size()])) {
+            if (disposeOnChangeLayout(editor)) {
+                editors.remove(editor);
+                editor.dispose();
+            }
+        }
+    }
+
+    /**
+     * Determines if an editor should be disposed on layout change.
+     * This implementation always returns true.
+     *
+     * @param editor the editor
+     * @return <tt>true</tt>
+     */
+    protected boolean disposeOnChangeLayout(Editor editor) {
+        return true;
+    }
+
+    /**
+     * Invoked when layout has completed.
+     * <p/>
+     * This can be used to perform processing that requires all editors to be created.
      */
     protected void onLayoutCompleted() {
     }
@@ -699,8 +768,14 @@ public abstract class AbstractIMObjectEditor
         }
     }
 
+    /**
+     * Refreshes lookups that may be linked to the specified source lookup.
+     *
+     * @param source the source lookup
+     */
     protected void refreshLookups(LookupField source) {
-        for (LookupField lookup : lookups) {
+        for (PropertyEditor editor : lookups.keySet()) {
+            LookupField lookup = (LookupField) editor.getComponent();
             if (source != lookup) {
                 lookup.refresh();
             }
@@ -812,12 +887,13 @@ public abstract class AbstractIMObjectEditor
                                             IMObject context) {
             Editor editor = super.createLookupEditor(property, context);
             final LookupField lookup = (LookupField) editor.getComponent();
-            property.addModifiableListener(new ModifiableListener() {
+            ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     refreshLookups(lookup);
                 }
-            });
-            lookups.add(lookup);
+            };
+            property.addModifiableListener(listener);
+            lookups.put((PropertyEditor) editor, listener);
             return editor;
         }
     }

@@ -44,10 +44,20 @@ public class ModifiableListeners {
      * @param listener the listener to add
      */
     public void addListener(ModifiableListener listener) {
+        addListener(listener, (listeners != null) ? listeners.size() : 0);
+    }
+
+    /**
+     * Add a listener.
+     *
+     * @param index    the index to add the listener at
+     * @param listener the listener to add
+     */
+    public void addListener(ModifiableListener listener, int index) {
         if (listeners == null) {
             listeners = new ArrayList<ModifiableListener>();
         }
-        listeners.add(listener);
+        listeners.add(index, listener);
     }
 
     /**
@@ -78,5 +88,12 @@ public class ModifiableListeners {
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Removes all listeners.
+     */
+    public void removeAll() {
+        listeners.clear();
     }
 }

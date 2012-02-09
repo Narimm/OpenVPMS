@@ -19,10 +19,6 @@
 package org.openvpms.web.app.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
@@ -51,6 +47,12 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Abstract base class for customer charge act editor tests.
@@ -263,7 +265,11 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         if (bean.hasNode("clinician")) {
-            assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+            if (clinician != null) {
+                assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+            } else {
+                assertNull(bean.getNodeParticipant("clinician"));
+            }
         }
         checkEquals(quantity, bean.getBigDecimal("quantity"));
         checkEquals(fixedCost, bean.getBigDecimal("fixedCost"));

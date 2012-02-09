@@ -45,4 +45,11 @@ public interface Editor extends Modifiable {
      *         rendered
      */
     FocusGroup getFocusGroup();
+
+    /**
+     * Disposes of the editor.
+     * <br/>
+     * Once disposed, the behaviour of invoking any method is undefined.
+     */
+    void dispose();
 }

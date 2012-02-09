@@ -48,6 +48,13 @@ public interface IMObjectView {
     Component getComponent();
 
     /**
+     * Determines if the view has been rendered.
+     *
+     * @return <tt>true</tt> if the view has been rendered, otherwise  <tt>false</tt>
+     */
+    boolean hasComponent();
+
+    /**
      * Returns the focus group.
      *
      * @return the focus group, or <code>null</code> if the component hasn't been
@@ -75,4 +82,5 @@ public interface IMObjectView {
      * @param listener the listener
      */
     void setLayoutListener(ActionListener listener);
+
 }

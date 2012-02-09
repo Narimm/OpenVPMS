@@ -27,11 +27,6 @@ import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
-import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -52,7 +47,7 @@ import org.openvpms.web.app.customer.PriceActItemEditor;
 import org.openvpms.web.app.patient.mr.PatientInvestigationActEditor;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.Editors;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
@@ -89,6 +84,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.SERVICE;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
 
 
 /**
@@ -137,6 +138,21 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Listener for changes to the medication quantity.
      */
     private final ModifiableListener medicationQuantityListener;
+
+    /**
+     * Listener for changes to the start time.
+     */
+    private final ModifiableListener startTimeListener;
+
+    /**
+     * Listener for changes to the fixed price, quantity and unit price, to update the discount.
+     */
+    private final ModifiableListener discountListener;
+
+    /**
+     * Listener for changes to the total, so the tax amount can be recalculated.
+     */
+    private final ModifiableListener totalListener;
 
     /**
      * Stock rules.
@@ -225,7 +241,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         setFilter(filter);
 
         // add a listener to update the tax amount when the total changes
-        ModifiableListener totalListener = new ModifiableListener() {
+        totalListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateTaxAmount();
             }
@@ -234,7 +250,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         // add a listener to update the discount amount when the quantity,
         // fixed or unit price changes.
-        ModifiableListener discountListener = new ModifiableListener() {
+        discountListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateDiscount();
             }
@@ -244,12 +260,35 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
         getProperty("unitPrice").addModifiableListener(discountListener);
         getProperty("quantity").addModifiableListener(quantityListener);
 
-        ModifiableListener startTimeListener = new ModifiableListener() {
+        startTimeListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updatePatientActsStartTime();
             }
         };
         getProperty("startTime").addModifiableListener(startTimeListener);
+    }
+
+    /**
+     * Disposes of the editor.
+     * <br/>
+     * Once disposed, the behaviour of invoking any method is undefined.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (dispensing != null) {
+            dispensing.removeModifiableListener(medicationQuantityListener);
+        }
+
+        getProperty("total").removeModifiableListener(totalListener);
+
+        // add a listener to update the discount amount when the quantity,
+        // fixed or unit price changes.
+        getProperty("fixedPrice").removeModifiableListener(discountListener);
+        getProperty("quantity").removeModifiableListener(discountListener);
+        getProperty("unitPrice").removeModifiableListener(discountListener);
+        getProperty("quantity").removeModifiableListener(quantityListener);
+        getProperty("startTime").removeModifiableListener(startTimeListener);
     }
 
     /**
@@ -305,6 +344,15 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Returns the dispensing node editor.
+     *
+     * @return the editor. May be <tt>null</tt>
+     */
+    protected ActRelationshipCollectionEditor getDispensingEditor() {
+        return dispensing;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -337,23 +385,22 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Determines if an editor should be disposed on layout change.
+     *
+     * @param editor the editor
+     * @return <tt>true</tt> if the editor isn't for dispensing, investigations, or reminders
+     */
+    @Override
+    protected boolean disposeOnChangeLayout(Editor editor) {
+        return editor != dispensing && editor != investigations && editor != reminders;
+    }
+
+    /**
      * Invoked when layout has completed.
      */
     @Override
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
-
-        // need to re-register editors as these are de-registered when the layout changes
-        Editors editors = getEditors();
-        if (dispensing != null) {
-            editors.add(dispensing);
-        }
-        if (investigations != null) {
-            editors.add(investigations);
-        }
-        if (reminders != null) {
-            editors.add(reminders);
-        }
 
         PatientParticipationEditor patient = getPatientEditor();
         if (patient != null) {
@@ -984,6 +1031,7 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
                     collection, act, getLayoutContext());
             editor.setExcludeDefaultValueObject(false);
+            getEditors().add(editor);
         }
         return editor;
     }

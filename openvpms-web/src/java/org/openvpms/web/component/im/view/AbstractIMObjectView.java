@@ -75,9 +75,10 @@ public abstract class AbstractIMObjectView implements IMObjectView {
     /**
      * Construct a new <code>AbstractIMObjectView</code>.
      *
-     * @param object the object to display
-     * @param parent the parent object. May be <code>null</code>
-     * @param layout the layout strategy. May be <code>null</code>
+     * @param object     the object to display
+     * @param properties the object's properties
+     * @param parent     the parent object. May be <code>null</code>
+     * @param layout     the layout strategy. May be <code>null</code>
      */
     public AbstractIMObjectView(IMObject object, PropertySet properties,
                                 IMObject parent,
@@ -110,6 +111,15 @@ public abstract class AbstractIMObjectView implements IMObjectView {
             }
         }
         return component;
+    }
+
+    /**
+     * Determines if the view has been rendered.
+     *
+     * @return <tt>true</tt> if the view has been rendered, otherwise  <tt>false</tt>
+     */
+    public boolean hasComponent() {
+        return component != null;
     }
 
     /**

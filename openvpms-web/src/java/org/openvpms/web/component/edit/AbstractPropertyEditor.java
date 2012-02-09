@@ -72,12 +72,22 @@ public abstract class AbstractPropertyEditor implements PropertyEditor {
     }
 
     /**
-     * Add a listener to be notified when a this changes.
+     * Add a listener to be notified when this changes.
      *
      * @param listener the listener to add
      */
     public void addModifiableListener(ModifiableListener listener) {
         getProperty().addModifiableListener(listener);
+    }
+
+    /**
+     * Adds a listener to be notified when this changes, specifying the order of the listener.
+     *
+     * @param listener the listener to add
+     * @param index    the index to add the listener at. The 0-index listener is notified first
+     */
+    public void addModifiableListener(ModifiableListener listener, int index) {
+        getProperty().addModifiableListener(listener, index);
     }
 
     /**
@@ -109,5 +119,13 @@ public abstract class AbstractPropertyEditor implements PropertyEditor {
      */
     public boolean validate(Validator validator) {
         return validator.validate(getProperty());
+    }
+
+    /**
+     * Disposes of the editor.
+     * <br/>
+     * Once disposed, the behaviour of invoking any method is undefined.
+     */
+    public void dispose() {
     }
 }

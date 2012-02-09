@@ -151,24 +151,23 @@ public class Editors implements Modifiable {
     }
 
     /**
-     * Removes all the editors.
+     * Returns the editors.
+     *
+     * @return the editors
      */
-    public void removeAll() {
-        for (Editor editor : editors.toArray(new Editor[editors.size()])) {
-            remove(editor);
-        }
+    public Set<Editor> getEditors() {
+        return editors;
     }
 
     /**
-     * Returns all saveable objects that have been modified.
+     * Returns all {@link Saveable} objects that have been modified.
      *
-     * @return a list of modified saveable objects.
+     * @return a list of modified save-able objects.
      */
     public List<Saveable> getModifiedSaveable() {
         List<Saveable> result = new ArrayList<Saveable>();
         for (Modifiable modifiable : editors) {
-            if ((modifiable instanceof Saveable)
-                && modifiable.isModified()) {
+            if ((modifiable instanceof Saveable) && modifiable.isModified()) {
                 result.add((Saveable) modifiable);
             }
         }
@@ -176,7 +175,7 @@ public class Editors implements Modifiable {
     }
 
     /**
-     * Returns all {@link Cancellable} editers.
+     * Returns all {@link Cancellable} editors.
      *
      * @return a list of all Cancellable editors.
      */
@@ -191,7 +190,7 @@ public class Editors implements Modifiable {
     }
 
     /**
-     * Returns all {@link Deletable} editers.
+     * Returns all {@link Deletable} editors.
      *
      * @return a list of all Deletable editors.
      */
@@ -244,6 +243,16 @@ public class Editors implements Modifiable {
     }
 
     /**
+     * Adds a listener to be notified when this changes, specifying the order of the listener.
+     *
+     * @param listener the listener to add
+     * @param index    the index to add the listener at. The 0-index listener is notified first
+     */
+    public void addModifiableListener(ModifiableListener listener, int index) {
+        listeners.addListener(listener, index);
+    }
+
+    /**
      * Removes a listener.
      *
      * @param listener the listener to remove
@@ -289,6 +298,15 @@ public class Editors implements Modifiable {
             }
         }
         return valid;
+    }
+
+    /**
+     * Disposes of the editors.
+     */
+    public void dispose() {
+        for (Editor editor : editors) {
+            editor.dispose();
+        }
     }
 
     /**
