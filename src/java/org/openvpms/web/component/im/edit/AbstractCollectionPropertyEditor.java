@@ -247,6 +247,16 @@ public abstract class AbstractCollectionPropertyEditor
     }
 
     /**
+     * Adds a listener to be notified when this changes, specifying the order of the listener.
+     *
+     * @param listener the listener to add
+     * @param index    the index to add the listener at. The 0-index listener is notified first
+     */
+    public void addModifiableListener(ModifiableListener listener, int index) {
+        property.addModifiableListener(listener, index);
+    }
+
+    /**
      * Removes a listener.
      *
      * @param listener the listener to remove
@@ -364,15 +374,6 @@ public abstract class AbstractCollectionPropertyEditor
      */
     protected void addEdited(IMObject object) {
         edited.add(object);
-    }
-
-    /**
-     * Returns the set of edited objects.
-     *
-     * @return the set of edited objects
-     */
-    protected Set<IMObject> getEdited() {
-        return edited;
     }
 
     /**

@@ -179,7 +179,7 @@ public abstract class Binder {
      * Registers the listener with the property, to receive notification when the property changes.
      */
     private void addModifiableListener() {
-        property.addModifiableListener(listener);
+        property.addModifiableListener(listener, 0);
         hasListener = true;
     }
 
