@@ -159,6 +159,16 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     }
 
     /**
+     * Disposes of the editor.
+     * <br/>
+     * Once disposed, the behaviour of invoking any method is undefined.
+     */
+    public void dispose() {
+        super.dispose();
+        removeModifiableListener(propertyListener);
+    }
+
+    /**
      * Sets the value of the reference to the supplied object.
      *
      * @param object the object. May  be <tt>null</tt>

@@ -19,12 +19,6 @@
 package org.openvpms.web.app.customer.charge;
 
 import nextapp.echo2.app.event.WindowPaneListener;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -34,6 +28,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -43,11 +38,11 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.ErrorHandler;
 import org.openvpms.web.system.ServiceHelper;
-import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.checkSavePopup;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -55,6 +50,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.checkSavePopup;
 
 /**
  * Tests the {@link CustomerChargeActItemEditor} class.
@@ -199,6 +202,68 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     }
 
     /**
+     * Verifies that the clinician can be cleared, as a test for OVPMS-1104/
+     */
+    @Test
+    public void testClearClinician() {
+        LayoutContext context = new DefaultLayoutContext();
+        Party patient = TestHelper.createPatient();
+        User author = TestHelper.createUser();
+        User clinician = TestHelper.createUser();
+
+        // create product1 with reminder and investigation type
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.valueOf(2);
+        BigDecimal total = new BigDecimal("22");
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new Money(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
+
+        // set up the context
+        context.getContext().setUser(author); // to propagate to acts
+
+        // create the editor
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, context);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        // populate quantity, patient, clinician.
+        editor.setQuantity(quantity);
+        editor.setPatient(patient);
+        editor.setClinician(clinician);
+
+        // set the product
+        editor.setProduct(product);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+        editor.setClinician(null);
+
+        checkSave(charge, editor);
+
+        charge = get(charge);
+        item = get(item);
+        assertNotNull(charge);
+        assertNotNull(item);
+
+        // verify the item matches that expected
+        checkItem(item, patient, product, author, null, quantity, unitCost, unitPrice, fixedCost,
+                  fixedPrice, discount, tax, total);
+
+        // verify no errors were logged
+        assertTrue(errors.isEmpty());
+    }
+
+    /**
      * Checks populating an invoice item with a product.
      *
      * @param productShortName the product archetype short name
@@ -284,7 +349,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.getContext().setClinician(clinician1);
 
         // create the editor
-        CustomerChargeActItemEditor editor = new CustomerChargeActItemEditor(item, charge, context);
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, context);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -339,7 +404,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             } else {
                 assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             }
-            
+
             assertEquals(1, itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).size());
             assertEquals(1, itemBean.getActs(ReminderArchetypes.REMINDER).size());
             assertEquals(1, itemBean.getActs("act.patientDocument*").size());
@@ -381,7 +446,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
                   fixedPrice2, discount2, tax2, total2);
         itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
-            && TypeHelper.isA(product2, ProductArchetypes.MEDICATION)) {
+                && TypeHelper.isA(product2, ProductArchetypes.MEDICATION)) {
             // verify there is a medication act. Note that it retains the original author
             checkMedication(item, patient2, product2, author1, clinician2);
         } else {
@@ -391,6 +456,19 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
         assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
         assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
+
+        // make sure that clinicians can be set to null, as a test for OVPMS-1104
+        if (itemBean.hasNode("clinician")) {
+            editor.setClinician(null);
+            assertTrue(editor.isValid());
+            checkSave(charge, editor);
+
+            item = get(item);
+            assertNotNull(item);
+
+            checkItem(item, patient2, product2, author2, null, quantity2, unitCost2, unitPrice2, fixedCost2,
+                      fixedPrice2, discount2, tax2, total2);
+        }
 
         editor.setProduct(null);       // make sure nulls are handled
         assertFalse(editor.isValid());
@@ -488,4 +566,23 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         });
     }
 
+    private static class TestCustomerChargeActItemEditor extends CustomerChargeActItemEditor {
+        /**
+         * Constructs a <code>CustomerChargeActItemEditor</tt>.
+         * <p/>
+         * This recalculates the tax amount.
+         *
+         * @param act     the act to edit
+         * @param parent  the parent act
+         * @param context the layout context
+         */
+        public TestCustomerChargeActItemEditor(Act act, Act parent, LayoutContext context) {
+            super(act, parent, context);    //To change body of overridden methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public ActRelationshipCollectionEditor getDispensingEditor() {
+            return super.getDispensingEditor();
+        }
+    }
 }

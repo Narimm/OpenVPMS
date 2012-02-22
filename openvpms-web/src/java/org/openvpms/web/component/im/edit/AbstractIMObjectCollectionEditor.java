@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
@@ -124,6 +125,19 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
             }
         };
         collection.addModifiableListener(broadcaster);
+    }
+
+    /**
+     * Disposes of the editor.
+     * <br/>
+     * Once disposed the behaviour of invoking any method is undefined.
+     */
+    public void dispose() {
+        collection.removeModifiableListener(broadcaster);
+        for (Editor editor : getCurrentEditors()) {
+            editor.removeModifiableListener(broadcaster);
+            editor.dispose();
+        }
     }
 
     /**
@@ -231,6 +245,16 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      */
     public void addModifiableListener(ModifiableListener listener) {
         listeners.addListener(listener);
+    }
+
+    /**
+     * Adds a listener to be notified when this changes, specifying the order of the listener.
+     *
+     * @param listener the listener to add
+     * @param index    the index to add the listener at. The 0-index listener is notified first
+     */
+    public void addModifiableListener(ModifiableListener listener, int index) {
+        listeners.addListener(listener, index);
     }
 
     /**
