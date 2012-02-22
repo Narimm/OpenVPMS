@@ -23,26 +23,31 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
 import org.openvpms.web.app.sms.SMSDialog;
+import org.openvpms.web.app.sms.SMSHelper;
 import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
@@ -53,6 +58,7 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -148,22 +154,19 @@ public class CustomerSummary extends PartySummary {
             column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
-        final String[] mobiles = ContactHelper.getPhonesForSMS(party);
-        Button sms = null;
-        if (mobiles.length != 0) {
-            Context local = new LocalContext(context);
-            local.setCustomer(party);
-            sms = ButtonFactory.create("button.sms.send", new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    SMSDialog dialog = new SMSDialog(mobiles, context);
-                    dialog.show();
-                }
-            });
-        }
-        if (sms != null) {
-            Row row = RowFactory.create("CellSpacing");
-            row.add(sms);
-            result.add(RowFactory.create("Inset.Small", row));
+        if (SMSHelper.isSMSEnabled()) {
+            final String[] mobiles = getPhonesForSMS(party);
+            if (mobiles.length != 0) {
+                Context local = new LocalContext(context);
+                local.setCustomer(party);
+                Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
+                    public void onAction(ActionEvent event) {
+                        SMSDialog dialog = new SMSDialog(mobiles, context);
+                        dialog.show();
+                    }
+                });
+                result.add(RowFactory.create("Inset.Small", button));
+            }
         }
 
         return result;
@@ -218,6 +221,43 @@ public class CustomerSummary extends PartySummary {
     }
 
     /**
+     * Returns phone numbers that are flagged for SMS messaging.
+     * <p/>
+     * The preferred no.s are at the head of the list
+     *
+     * @param party the party
+     * @return a list of phone numbers
+     */
+    private String[] getPhonesForSMS(Party party) {
+        List<String> phones = new ArrayList<String>();
+        List<Contact> contacts = new ArrayList<Contact>();
+        for (Contact contact : party.getContacts()) {
+            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
+                contacts.add(contact);
+            }
+        }
+        int length = contacts.size();
+        if (length > 1) {
+            IMObjectSorter.sort(contacts, "telephoneNumber", true);
+        }
+        for (Contact contact : contacts) {
+            IMObjectBean bean = new IMObjectBean(contact);
+            if (bean.getBoolean("sms")) {
+                String phone = bean.getString("telephoneNumber");
+                if (!StringUtils.isEmpty(phone)) {
+                    if (bean.getBoolean("preferred")) {
+                        phones.add(0, phone);
+                    } else {
+                        phones.add(phone);
+                    }
+                }
+            }
+
+        }
+        return phones.toArray(new String[phones.size()]);
+    }
+
+    /**
      * Helper to create a label for the given key.
      *
      * @param key the key
@@ -236,6 +276,5 @@ public class CustomerSummary extends PartySummary {
     private Label create(BigDecimal value) {
         return LabelFactory.create(value, new GridLayoutData());
     }
-
 
 }

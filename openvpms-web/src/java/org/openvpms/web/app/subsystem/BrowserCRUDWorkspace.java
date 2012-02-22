@@ -359,8 +359,10 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
         if (parent != null || isParentOptional()) {
             Browser<Child> browser = getBrowser();
             if (refresh && browser != null) {
+                // need to reregister as doLayout() has recreated the root component
+                setCRUDWindow(getCRUDWindow());
+                setWorkspace(getWorkspace());
                 browser.query();
-                setWorkspace(getWorkspace());   // ensure the workspace is added to the root component
             } else {
                 Query<Child> query = createQuery();
                 setQuery(query);

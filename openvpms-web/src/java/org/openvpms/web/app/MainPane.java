@@ -83,8 +83,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class MainPane extends SplitPane implements ContextChangeListener,
-                                                   ContextListener {
+public class MainPane extends SplitPane implements ContextChangeListener, ContextListener {
 
     /**
      * The subsystems.
@@ -226,7 +225,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
         menu = new ButtonRow(ButtonRow.STYLE, BUTTON_STYLE);
         SplitPaneLayoutData layout = new SplitPaneLayoutData();
         layout.setAlignment(new Alignment(Alignment.CENTER,
-                                          Alignment.DEFAULT));
+                Alignment.DEFAULT));
         menu.setLayoutData(layout);
         subMenu = new ButtonColumn(BUTTON_COLUMN_STYLE, BUTTON_STYLE);
         leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
@@ -340,11 +339,13 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      * @param value the context value. May be <tt>null</tt>
      */
     public void changed(String key, IMObject value) {
-        if ((value != null && currentWorkspace.canUpdate(value.getArchetypeId().getShortName()))
-            || currentWorkspace.canUpdate(key)) {
-            // the key may be a short name. Use in the instance that the value
-            // is null
-            currentWorkspace.update(value);
+        if (currentWorkspace != null) {
+            if ((value != null && currentWorkspace.canUpdate(value.getArchetypeId().getShortName()))
+                    || currentWorkspace.canUpdate(key)) {
+                // the key may be a short name. Use in the instance that the value
+                // is null
+                currentWorkspace.update(value);
+            }
         }
     }
 
@@ -384,9 +385,12 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      */
     protected void select(Subsystem subsystem, Workspace workspace) {
         if (currentWorkspace != null) {
-            currentWorkspace.removePropertyChangeListener(
-                    Workspace.SUMMARY_PROPERTY, summaryRefresher);
+            currentWorkspace.removePropertyChangeListener(Workspace.SUMMARY_PROPERTY, summaryRefresher);
             currentWorkspace.hide();
+
+            // set to null as workspace.getComponent() can trigger updates that invoke changed() which uses
+            // currentWorkspace
+            currentWorkspace = null;
         }
         subsystem.setWorkspace(workspace);
         currentSubsystem.removeAll();
@@ -394,8 +398,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
 
         currentWorkspace = workspace;
         refreshSummary();
-        currentWorkspace.addPropertyChangeListener(Workspace.SUMMARY_PROPERTY,
-                                                   summaryRefresher);
+        currentWorkspace.addPropertyChangeListener(Workspace.SUMMARY_PROPERTY, summaryRefresher);
         currentWorkspace.show();
         if (currentWorkspace instanceof Refreshable) {
             queueRefresh();
@@ -510,7 +513,7 @@ public class MainPane extends SplitPane implements ContextChangeListener,
      */
     private void refreshSummary() {
         leftMenu.remove(summary);
-        Component newSummary = currentWorkspace.getSummary();
+        Component newSummary = (currentWorkspace != null) ? currentWorkspace.getSummary() : null;
         if (newSummary != null) {
             summary = ColumnFactory.create("Inset", newSummary);
             leftMenu.add(summary);

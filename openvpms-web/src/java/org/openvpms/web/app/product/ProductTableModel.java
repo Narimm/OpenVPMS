@@ -26,15 +26,16 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.Date;
 
 
 /**
@@ -56,9 +57,13 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      */
     private int unitPriceIndex;
 
+    /**
+     * The product price rules.
+     */
+    private ProductPriceRules rules = new ProductPriceRules();
 
     /**
-     * Constructs a new <code>ProductTableModel</code>.
+     * Constructs a <tt>ProductTableModel</tt>.
      */
     public ProductTableModel() {
     }
@@ -108,23 +113,19 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      *
      * @param shortName the product price short name
      * @param product   the product
-     * @return a component for the product price corresponding to
-     *         <code>shortName</code> or <code>null</code> if none is found
+     * @return a component for the product price corresponding to <tt>shortName</tt> or <tt>null</tt> if none is found
      */
     private Component getPrice(String shortName, Product product) {
         Component result = null;
-        ProductPrice price = IMObjectHelper.getObject(
-                shortName, product.getProductPrices());
+        ProductPrice price = rules.getProductPrice(product, shortName, new Date());
         if (price != null) {
             BigDecimal value = price.getPrice();
             if (value != null) {
                 Label label = LabelFactory.create();
-                String text = NumberFormatter.format(
-                        value, NumberFormat.getCurrencyInstance());
+                String text = NumberFormatter.format(value, NumberFormat.getCurrencyInstance());
                 label.setText(text);
                 TableLayoutData layout = new TableLayoutDataEx();
-                Alignment right = new Alignment(Alignment.RIGHT,
-                                                Alignment.DEFAULT);
+                Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
                 layout.setAlignment(right);
                 label.setLayoutData(layout);
                 result = label;

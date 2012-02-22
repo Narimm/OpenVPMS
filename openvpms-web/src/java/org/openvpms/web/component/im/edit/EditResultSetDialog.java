@@ -84,6 +84,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
      */
     public EditResultSetDialog(String title, T first, ResultSet<T> set) {
         super(title, BUTTONS, true);
+        setDefaultCloseAction(CANCEL_ID);
         iter = new ResultSetIterator<T>(set, first);
         if (iter.hasNext()) {
             edit(iter.next());

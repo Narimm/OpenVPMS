@@ -129,8 +129,6 @@ public class NumberFormatter {
     public static String format(Number value, NumberFormat format) {
         String result;
         try {
-            // @todo - potential loss of precision here as NumberFormat converts
-            // BigDecimal to double before formatting
             result = format.format(value);
         } catch (IllegalArgumentException exception) {
             result = value.toString();

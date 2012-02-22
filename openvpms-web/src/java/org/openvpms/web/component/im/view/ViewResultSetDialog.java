@@ -96,6 +96,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     public ViewResultSetDialog(String title, T first, ResultSet<T> set, boolean edit) {
         super(title, "IMObjectViewerDialog", edit ? EDIT_BUTTONS : VIEW_BUTTONS);
         setDefaultButton(OK_ID);
+        setDefaultCloseAction(CANCEL_ID);
         iter = new ResultSetIterator<T>(set, first);
         listener = new ContextSwitchListener() {
             public void switchTo(IMObject object) {

@@ -263,6 +263,8 @@
         <property name="mask" value="Ctrl-Shift"/>
     </bean>
 
+    <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules"/>
+
     <!-- ================================================================== -->
     <!--                        REPORTING                                   -->
     <!-- ================================================================== -->

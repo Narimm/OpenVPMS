@@ -84,7 +84,7 @@ public class SelectUserDialog extends PopupDialog {
      */
     private void onSelected(IMObject object) {
         if (object != null) {
-            close();
+            close(OK_ID);
         }
     }
 

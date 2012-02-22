@@ -131,7 +131,7 @@ public class AppointmentEditDialog extends EditDialog {
                         public void onOK() {
                             if (save()) {
                                 if (close) {
-                                    close();
+                                    close(OK_ID);
                                 } else {
                                     getAppointmentTimes();
                                 }
