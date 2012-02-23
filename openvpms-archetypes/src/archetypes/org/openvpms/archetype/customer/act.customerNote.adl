@@ -37,6 +37,6 @@
               filter="participation.author"/>
         <node name="note" path="/details/note" type="java.lang.String" maxLength="2000"/>
         <node name="status" path="/status" type="java.lang.String"
-              minCardinality="1" defaultValue="'POSTED'" hidden="true"/>
+              minCardinality="1" defaultValue="'IN_PROGRESS'" hidden="true"/>
     </archetype>
 </archetypes>
