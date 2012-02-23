@@ -218,3 +218,9 @@ where l.lookup_id = t.lookup_id and t.name ="accountFee" and t.value = "PERCENTA
       and l.lookup_id = p.lookup_id and p.name = "accountFeeAmount" and p.value < 1
       and l.arch_short_name = "lookup.customerAccountType";
 
+#
+# Update act.customerNote for OVPMS-1108
+#
+update acts a
+set a.status = "IN_PROGRESS"
+where a.arch_short_name = "act.customerNote" and a.status = "POSTED";
