@@ -18,22 +18,25 @@
 
 package org.openvpms.archetype.rules.patient.reminder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -46,6 +49,14 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderType;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderWithDueDate;
+import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
 /**
@@ -287,8 +298,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
                 1, DateUnits.MONTHS, group);
         Date start = java.sql.Date.valueOf("2007-01-01");
         Date due = rules.calculateReminderDueDate(start, reminderType);
-        Act reminder = ReminderTestHelper.createReminderWithDueDate(patient, reminderType,
-                                                                    due);
+        Act reminder = createReminderWithDueDate(patient, reminderType,
+                                                 due);
 
         checkDue(reminder, null, null, true);
         checkDue(reminder, null, "2007-01-01", false);
@@ -351,7 +362,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderRules#getContact(Set<Contact>)} method.
+     * Tests the {@link ReminderRules#getContact(Set)} method.
      */
     @Test
     public void testGetContact() {
@@ -395,6 +406,148 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ReminderRules#getDocumentFormReminder} method, when the <em>act.patientDocumentForm</em> is
+     * linked to an invoice item.
+     */
+    @Test
+    public void testGetDocumentFormReminderForInvoiceItem() {
+        Party patient = TestHelper.createPatient();
+        DocumentAct form = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
+        ActBean formBean = new ActBean(form);
+        formBean.addNodeParticipation("patient", patient);
+        save(form);
+
+        // verify a form not associated with any invoice item nor product returns null
+        assertNull(rules.getDocumentFormReminder(form));
+
+        // create an invoice item and associate the form with it
+        Act item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE,
+                                                  patient, TestHelper.createProduct());
+        ActBean itemBean = new ActBean(item);
+        itemBean.addNodeRelationship("documents", form);
+        save(item, form);
+
+        // should return null as neither the invoice nor product associated with the form have reminders
+        assertNull(rules.getDocumentFormReminder(form));
+
+        // associate a single reminder with the invoice item, and verify it is returned by getDocumentFormReminder()
+        Entity reminderType1 = createReminderType();
+        Act reminder1 = createReminderWithDueDate(patient, reminderType1, getDate("2012-01-12"));
+        itemBean.addNodeRelationship("reminders", reminder1);
+        save(item, reminder1);
+        assertEquals(reminder1, rules.getDocumentFormReminder(form));
+
+        // associate another reminder with the invoice item, with a closer due date. This should be returned
+        Entity reminderType2 = createReminderType();
+        Act reminder2 = createReminderWithDueDate(patient, reminderType2, getDate("2012-01-11"));
+        itemBean.addNodeRelationship("reminders", reminder2);
+        save(item, reminder2);
+        assertEquals(reminder2, rules.getDocumentFormReminder(form));
+
+        // associate another reminder with the invoice item, with the same due date. The reminder with the lower id
+        // should be returned
+        Entity reminderType3 = createReminderType();
+        Act reminder3 = createReminderWithDueDate(patient, reminderType3, getDate("2012-01-11"));
+        itemBean.addNodeRelationship("reminders", reminder3);
+        save(item, reminder3);
+        assertEquals(reminder2, rules.getDocumentFormReminder(form));
+    }
+
+    /**
+     * Tests the {@link ReminderRules#getDocumentFormReminder} method, when the <em>act.patientDocumentForm</em> is
+     * linked to product with reminder types.
+     */
+    @Test
+    public void testGetDocumentFormReminderForProduct() {
+        Party patient = TestHelper.createPatient();
+        Product product = TestHelper.createProduct();
+        DocumentAct form = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
+        ActBean formBean = new ActBean(form);
+        formBean.addNodeParticipation("patient", patient);
+        formBean.addNodeParticipation("product", product);
+        save(form);
+
+        // verify a form not associated with a product with reminders returns null
+        assertNull(rules.getDocumentFormReminder(form));
+
+        EntityBean productBean = new EntityBean(product);
+        Entity reminderType1 = createReminderType();
+        EntityRelationship productReminder1 = productBean.addNodeRelationship("reminders", reminderType1);
+        IMObjectBean prodReminder1Bean = new IMObjectBean(productReminder1);
+        prodReminder1Bean.setValue("period", 2); // due date will fall 2 years from start time
+
+        save(product, reminderType1);
+
+        Act reminder1 = rules.getDocumentFormReminder(form);
+        assertNotNull(reminder1);
+        assertTrue(reminder1.isNew()); // reminders from products should not be persistent
+        Date dueDate1 = rules.calculateProductReminderDueDate(form.getActivityStartTime(), productReminder1);
+        checkReminder(reminder1, reminderType1, patient, product, form, dueDate1);
+
+        Entity reminderType2 = createReminderType();
+        EntityRelationship productReminder2 = productBean.addNodeRelationship("reminders", reminderType2);
+        save(product, reminderType2);
+
+        Date dueDate2 = rules.calculateProductReminderDueDate(form.getActivityStartTime(), productReminder2);
+        assertTrue(dueDate2.compareTo(dueDate1) < 0);
+
+        Act reminder2 = rules.getDocumentFormReminder(form);
+        assertNotNull(reminder2);
+        assertTrue(reminder2.isNew()); // reminders from products should not be persistent
+        checkReminder(reminder2, reminderType2, patient, product, form, dueDate2);
+    }
+
+    /**
+     * Tests the {@link ReminderRules#getDocumentFormReminder} method to verify that the reminder associated with an
+     * invoice item is returned in preference to one created from a product's reminder types.
+     */
+    @Test
+    public void testGetDocumentFormReminderForInvoiceAndProduct() {
+        Product product = TestHelper.createProduct();
+        EntityBean productBean = new EntityBean(product);
+        Entity reminderType1 = createReminderType();
+        EntityRelationship relationship = productBean.addNodeRelationship("reminders", reminderType1);
+        save(product, reminderType1);
+
+        Party patient = TestHelper.createPatient();
+        DocumentAct form = (DocumentAct) create(PatientArchetypes.DOCUMENT_FORM);
+        ActBean formBean = new ActBean(form);
+        formBean.addNodeParticipation("patient", patient);
+        formBean.addNodeParticipation("product", product);
+        save(form);
+
+        Date dueDate1 = rules.calculateProductReminderDueDate(form.getActivityStartTime(), relationship);
+        Act reminder1 = rules.getDocumentFormReminder(form);
+        assertNotNull(reminder1);
+        assertTrue(reminder1.isNew()); // reminders from products should not be persistent
+        checkReminder(reminder1, reminderType1, patient, product, form, dueDate1);
+
+        // create an invoice item and associate the form with it
+        Act item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE,
+                                                  patient, product);
+        ActBean itemBean = new ActBean(item);
+        itemBean.addNodeRelationship("documents", form);
+        save(item, form);
+
+        // associate a single reminder with the invoice item, and verify it is returned by getDocumentFormReminder()
+        Entity reminderType2 = createReminderType();
+        Act reminder2 = createReminderWithDueDate(patient, reminderType2, getDate("2012-01-12"));
+        itemBean.addNodeRelationship("reminders", reminder2);
+        save(item, reminder2);
+        assertEquals(reminder2, rules.getDocumentFormReminder(form));
+    }
+
+    private void checkReminder(Act reminder, Entity reminderType, Party patient, Product product, DocumentAct form,
+                               Date dueDate) {
+        ActBean bean = new ActBean(reminder);
+        assertEquals(patient, bean.getNodeParticipant("patient"));
+        assertEquals(reminderType, bean.getNodeParticipant("reminderType"));
+        assertEquals(product, bean.getNodeParticipant("product"));
+        assertEquals(form.getActivityStartTime(), reminder.getActivityStartTime());
+        assertEquals(dueDate, reminder.getActivityEndTime());
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -403,8 +556,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Adds a contact to a customer and verifies the expected contact is
-     * returned by {@link ReminderRules#getContact(Set<Contact>)}.
+     * Adds a contact to a customer and verifies the expected contact returned by {@link ReminderRules#getContact(Set)}.
      *
      * @param customer the customer
      * @param contact  the contact to add
@@ -437,7 +589,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
      * @return a new reminder
      */
     private Act createReminder(Party patient, Entity reminderType) {
-        return ReminderTestHelper.createReminderWithDueDate(patient, reminderType, new Date());
+        return createReminderWithDueDate(patient, reminderType, new Date());
     }
 
     /**
@@ -496,8 +648,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         IMObjectBean bean = new IMObjectBean(relationship);
         bean.setValue("period", period);
         bean.setValue("periodUom", units.toString());
-        Date start = java.sql.Date.valueOf(startDate);
-        Date expected = java.sql.Date.valueOf(expectedDate);
+        Date start = getDate(startDate);
+        Date expected = getDate(expectedDate);
         Date to = rules.calculateProductReminderDueDate(start, relationship);
         assertEquals(expected, to);
     }

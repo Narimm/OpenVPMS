@@ -141,6 +141,14 @@
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
         <constructor-arg ref="archetypeService"/>
     </bean>
+    
+    <bean id="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
+        <constructor-arg ref="defaultArchetypeService"/>
+    </bean>
+
+    <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
+        <constructor-arg ref="defaultArchetypeService"/>
+    </bean>
 
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
@@ -167,6 +175,13 @@
                                 <constructor-arg index="1" ref="archetypeService"/>
                             </bean>
                         </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="reminder">
+                    <bean class="org.openvpms.archetype.function.reminder.ReminderFunctions">
+                        <constructor-arg index="0" ref="archetypeService"/>
+                        <constructor-arg index="1" ref="reminderRules"/>
+                        <constructor-arg index="2" ref="customerRules"/>
                     </bean>
                 </entry>
             </map>
