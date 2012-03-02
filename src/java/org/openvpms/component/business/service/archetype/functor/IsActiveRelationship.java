@@ -19,15 +19,18 @@
 package org.openvpms.component.business.service.archetype.functor;
 
 import org.apache.commons.collections.Predicate;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 
 import java.util.Date;
 
 
 /**
- * Predicate to determine if an
- * {@link PeriodRelationship PeriodRelationship} is active or not.
- * A relationship is active as per {@link PeriodRelationship#isActive(Date)}.
+ * Predicate to determine if an {@link IMObjectRelationship} or {@link PeriodRelationship PeriodRelationship} is active
+ * or not.
+ * 
+ * If the relationship is an {@link PeriodRelationship}, it is active as per {@link PeriodRelationship#isActive(Date)},
+ * else it is active as per {@link IMObjectRelationship#isActive()}.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-09-04 06:34:35Z $
@@ -80,16 +83,20 @@ public class IsActiveRelationship implements Predicate {
     /**
      * Determines if a relationship is active.
      *
-     * @param object the object to evaluate. Must be a
-     *               <tt>PeriodRelationship</tt>
-     * @return <tt>true</tt> if the relationship is active, otherwise
-     *         <tt>false</tt>
+     * @param object the object to evaluate. Must be an <tt>IMObjectRelationship</tt> or <tt>PeriodRelationship</tt>
+     * @return <tt>true</tt> if the relationship is active, otherwise <tt>false</tt>
      * @throws ClassCastException if the input is the wrong class
      */
     public boolean evaluate(Object object) {
-        PeriodRelationship relationship = (PeriodRelationship) object;
-        return (time == -1) ? relationship.isActive()
-                : relationship.isActive(time);
+        boolean result;
+        if (object instanceof PeriodRelationship) {
+            PeriodRelationship relationship = (PeriodRelationship) object;
+            result =  (time == -1) ? relationship.isActive() : relationship.isActive(time);
+        } else {
+            IMObjectRelationship relationship = (IMObjectRelationship) object;
+            result = relationship.isActive();
+        }
+        return result;
     }
 
 }

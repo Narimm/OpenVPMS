@@ -19,19 +19,24 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.collections.Predicate;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.functor.IsA;
+import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Date;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -41,18 +46,12 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
-public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
+public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
 
     /**
-     * Owner entity relationship short name.
+     * Entity relationship short names.
      */
-    private final String OWNER = "entityRelationship.animalOwner";
-
-    /**
-     * Carer entity relationship short name.
-     */
-    private final String CARER = "entityRelationship.animalCarer";
-
+    private static final String[] SHORT_NAMES = new String[]{OWNER, LOCATION};
 
     /**
      * Tests the {@link EntityBean#addRelationship} and
@@ -78,26 +77,14 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
      */
     @Test
     public void testAddNodeRelationship() {
-        Party customer = (Party) create("party.customerperson");
-        EntityBean bean = new EntityBean(customer);
-        Party[] expected = new Party[3];
-        for (int i = 0; i < 3; ++i) {
-            Party pet = (Party) create("party.patientpet");
-            pet.setName("pet" + i);
-            pet.getDetails().put("species", "ASPECIES");
-            expected[i] = pet;
-            save(pet);
-
-            EntityRelationship r = bean.addNodeRelationship("patients", pet);
-            assertNotNull(r);
-            assertEquals(bean.getReference(), r.getSource());
-            assertEquals(pet.getObjectReference(), r.getTarget());
-        }
-        List<Entity> pets = bean.getNodeTargetEntities("patients");
-        assertEquals(expected.length, pets.size());
-        for (Entity exp : expected) {
-            assertTrue(pets.contains(exp));
-        }
+        EntityBean bean = createPerson();
+        Party pet1 = createPatient();
+        Party pet2 = createPatient();
+        Party pet3 = createPatient();
+        bean.addNodeRelationship("owns", pet1);
+        bean.addNodeRelationship("owns", pet2);
+        bean.addNodeRelationship("owns", pet3);
+        checkEquals(bean.getNodeTargetEntities("owns"), pet1, pet2, pet3);
 
         try {
             Party target = (Party) create("party.customerperson");
@@ -115,7 +102,7 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
     @Test
     public void testAddNodeRelationshipForMultipleMatchingRelationships() {
         EntityBean bean = createPerson();
-        Entity pet = createPet().getEntity();
+        Entity pet = createPatient();
         try {
             bean.addNodeRelationship("patients", pet);
             fail("Expected addNodeRelationship() to fail");
@@ -137,7 +124,7 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
 
         // add owner and carer relationships
         EntityRelationship r1 = personBean.addRelationship(OWNER, pet);
-        EntityRelationship r2 = personBean.addRelationship(CARER, pet);
+        EntityRelationship r2 = personBean.addRelationship(LOCATION, pet);
 
         // check that the getRelationships() method returns the correct values
         // for owners
@@ -146,7 +133,7 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         assertTrue(owners.contains(r1));
 
         // ... and carers
-        List<EntityRelationship> carers = personBean.getRelationships(CARER);
+        List<EntityRelationship> carers = personBean.getRelationships(LOCATION);
         assertEquals(1, carers.size());
         assertTrue(carers.contains(r2));
 
@@ -166,46 +153,66 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
 
         // remove the carer relationship and verify its removal
         personBean.removeRelationship(r2);
-        assertEquals(0, personBean.getRelationships(CARER).size());
+        assertEquals(0, personBean.getRelationships(LOCATION).size());
     }
 
     /**
-     * Tests the {@link EntityBean#getSourceEntity(String)}
-     * and {@link EntityBean#getTargetEntity(String)} methods.
+     * Tests the {@link EntityBean#getSourceEntity(String)},
+     * {@link EntityBean#getSourceEntity(String[])},
+     * {@link EntityBean#getSourceEntity(String[], boolean)},
+     * {@link EntityBean#getTargetEntity(String)},
+     * {@link EntityBean#getTargetEntity(String[])} and
+     * {@link EntityBean#getTargetEntity(String[], boolean)} methods.
      */
     @Test
     public void testGetEntity() {
-        EntityBean pet1Bean = createPet();
-        EntityBean pet2Bean = createPet();
-        EntityBean personBean = createPerson();
-        Entity pet1 = pet1Bean.getEntity();
-        Entity pet2 = pet2Bean.getEntity();
-        Entity person = personBean.getEntity();
+        Party customer = createCustomer();
+        Party pet1 = createPatient();
+        Party pet2 = createPatient();
 
-        // add a relationship to the person and pet
-        EntityRelationship r = personBean.addRelationship(OWNER, pet1);
+        EntityBean bean = new EntityBean(customer);
+        EntityBean pet1Bean = new EntityBean(pet1);
+
+        // add relationships between the customer and patient
+        EntityRelationship ownerRel = bean.addRelationship(OWNER, pet1);
+        EntityRelationship location = bean.addRelationship(LOCATION, pet1);
 
         // add an inactive owner relationship. Should never be returned.
-        EntityRelationship inactive = personBean.addRelationship(OWNER, pet2);
+        EntityRelationship inactive = bean.addRelationship(OWNER, pet2);
         deactivateRelationship(inactive);
 
         // verify the person is the source, and pet the target
-        assertEquals(person, personBean.getSourceEntity(OWNER));
-        assertEquals(pet1, personBean.getTargetEntity(OWNER));
+        assertEquals(customer, bean.getSourceEntity(OWNER));
+        assertEquals(pet1, bean.getTargetEntity(OWNER));
 
         // verify the pet is the target, and the person the source
         assertEquals(pet1, pet1Bean.getTargetEntity(OWNER));
-        assertEquals(person, pet1Bean.getSourceEntity(OWNER));
+        assertEquals(customer, pet1Bean.getSourceEntity(OWNER));
 
         // mark the relationship inactive.
-        deactivateRelationship(r);
-        assertNull(personBean.getSourceEntity(OWNER));
+        deactivateRelationship(ownerRel);
+        assertNull(bean.getSourceEntity(OWNER));
         assertNull(pet1Bean.getTargetEntity(OWNER));
+
+        assertEquals(customer, pet1Bean.getSourceEntity(SHORT_NAMES));
+        assertEquals(pet1, bean.getTargetEntity(SHORT_NAMES));
+        
+        // check inactive relationships
+        pet1Bean.removeRelationship(location);
+        bean.removeRelationship(location);
+        bean.removeRelationship(inactive);
+        assertNull(pet1Bean.getSourceEntity(SHORT_NAMES, true));
+        assertEquals(customer, pet1Bean.getSourceEntity(SHORT_NAMES, false));
+
+        assertNull(bean.getTargetEntity(SHORT_NAMES, true));
+        assertEquals(pet1, bean.getTargetEntity(SHORT_NAMES, false));
     }
 
     /**
-     * Tests the {@link EntityBean#getSourceEntity(String, Date)}
-     * and {@link EntityBean#getTargetEntity(String, Date)} methods.
+     * Tests the {@link EntityBean#getSourceEntity(String, Date)},
+     * {@link EntityBean#getSourceEntity(String[], Date)}, 
+     * {@link EntityBean#getTargetEntity(String, Date)} and
+     * {@link EntityBean#getTargetEntity(String[], Date)} methods.
      */
     @Test
     public void testGetEntityByTime() {
@@ -216,23 +223,23 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
 
         // add an inactive owner relationship. Should never be returned.
         EntityBean inactivePet = createPet();
-        EntityRelationship inactive
-                = personBean.addRelationship(OWNER, inactivePet.getEntity());
+        EntityRelationship inactive = personBean.addRelationship(OWNER, inactivePet.getEntity());
         deactivateRelationship(inactive);
 
         // add a relationship to the person and pet
         EntityRelationship r = personBean.addRelationship(OWNER, pet);
 
         // verify the pet is returned for a time > the default start time
-        Entity pet2 = personBean.getTargetEntity(OWNER, new Date());
-        assertEquals(pet, pet2);
+        assertEquals(pet, personBean.getTargetEntity(OWNER, new Date()));
+        assertEquals(pet, personBean.getTargetEntity(SHORT_NAMES, new Date()));
+        assertNull(personBean.getTargetEntity(new String[]{LOCATION}, new Date()));
 
         // ... same for person
-        Entity person2 = petBean.getSourceEntity(OWNER, new Date());
-        assertEquals(person, person2);
+        assertEquals(person, petBean.getSourceEntity(OWNER, new Date()));
+        assertEquals(person, petBean.getSourceEntity(SHORT_NAMES, new Date()));
+        assertNull(petBean.getSourceEntity(new String[]{LOCATION}, new Date()));
 
-        // verify the correct entity is returned if the relationship has no
-        // start time (i.e, unbounded)
+        // verify the correct entity is returned if the relationship has no start time (i.e, unbounded)
         r.setActiveStartTime(null);
         assertEquals(pet, personBean.getTargetEntity(OWNER, new Date()));
         assertEquals(person, petBean.getSourceEntity(OWNER, new Date()));
@@ -246,6 +253,8 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         r.setActiveEndTime(end);
         assertNull(personBean.getTargetEntity(OWNER, later));
         assertNull(petBean.getSourceEntity(OWNER, later));
+        assertNull(personBean.getTargetEntity(SHORT_NAMES, later));
+        assertNull(petBean.getSourceEntity(SHORT_NAMES, later));
     }
 
     /**
@@ -253,14 +262,24 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
      * {@link EntityBean#getSourceEntity(String, boolean)},
      * {@link EntityBean#getSourceEntity(String, Date)},
      * {@link EntityBean#getSourceEntity(String, Date, boolean)},
+     * {@link EntityBean#getSourceEntity(String[])},
+     * {@link EntityBean#getSourceEntity(String[], boolean)},
+     * {@link EntityBean#getSourceEntity(String[], Date)},
+     * {@link EntityBean#getSourceEntity(String[], Date, boolean)},
      * {@link EntityBean#getSourceEntityRef(String)},
      * {@link EntityBean#getSourceEntityRef(String, boolean)},
+     * {@link EntityBean#getSourceEntityRef(String[], boolean)},
      * {@link EntityBean#getTargetEntity(String)},
      * {@link EntityBean#getTargetEntity(String, boolean)},
      * {@link EntityBean#getTargetEntity(String, Date)}
      * {@link EntityBean#getTargetEntity(String, Date, boolean)},
-     * {@link EntityBean#getTargetEntityRef(String)} and
-     * {@link EntityBean#getTargetEntityRef(String, boolean)} methods
+     * {@link EntityBean#getTargetEntity(String[])},
+     * {@link EntityBean#getTargetEntity(String[], boolean)},
+     * {@link EntityBean#getTargetEntity(String[], Date)}
+     * {@link EntityBean#getTargetEntity(String[], Date, boolean)},
+     * {@link EntityBean#getTargetEntityRef(String)},
+     * {@link EntityBean#getTargetEntityRef(String, boolean)},
+     * {@link EntityBean#getTargetEntityRef(String[], boolean)} methods
      * for active/inactive relationships.
      */
     @Test
@@ -283,14 +302,20 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         // right entities
         assertEquals(pet1, personBean.getTargetEntity(OWNER));
         assertEquals(pet1, personBean.getTargetEntity(OWNER, rel1Active));
+        assertEquals(pet1, personBean.getTargetEntity(OWNER, false));
+        assertEquals(pet1, personBean.getTargetEntity(OWNER, rel1Active, false));
+        assertEquals(pet1, personBean.getTargetEntity(SHORT_NAMES));
+        assertEquals(pet1, personBean.getTargetEntity(SHORT_NAMES, rel1Active));
+        assertEquals(pet1, personBean.getTargetEntity(SHORT_NAMES, false));
+        assertEquals(pet1, personBean.getTargetEntity(SHORT_NAMES, rel1Active, false));
         assertEquals(person, pet1Bean.getSourceEntity(OWNER));
         assertEquals(person, pet1Bean.getSourceEntity(OWNER, rel1Active));
-        assertEquals(pet1, personBean.getTargetEntity(OWNER, false));
-        assertEquals(pet1,
-                     personBean.getTargetEntity(OWNER, rel1Active, false));
         assertEquals(person, pet1Bean.getSourceEntity(OWNER, false));
-        assertEquals(person,
-                     pet1Bean.getSourceEntity(OWNER, rel1Active, false));
+        assertEquals(person, pet1Bean.getSourceEntity(OWNER, rel1Active, false));
+        assertEquals(person, pet1Bean.getSourceEntity(SHORT_NAMES));
+        assertEquals(person, pet1Bean.getSourceEntity(SHORT_NAMES, false));
+        assertEquals(person, pet1Bean.getSourceEntity(SHORT_NAMES, rel1Active));
+        assertEquals(person, pet1Bean.getSourceEntity(SHORT_NAMES, rel1Active, false));
 
         assertEquals(pet1Ref, personBean.getTargetEntityRef(OWNER));
         assertEquals(pet1Ref, personBean.getTargetEntityRef(OWNER, false));
@@ -304,16 +329,28 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         // verify methods that require the relationship to be active return null
         assertNull(personBean.getTargetEntity(OWNER));
         assertNull(personBean.getTargetEntityRef(OWNER));
+        assertNull(personBean.getTargetEntity(SHORT_NAMES));
+        assertNull(personBean.getTargetEntityRef(SHORT_NAMES, true));
         assertNull(pet1Bean.getSourceEntity(OWNER));
         assertNull(pet1Bean.getSourceEntityRef(OWNER));
+        assertNull(pet1Bean.getSourceEntity(SHORT_NAMES));
+        assertNull(pet1Bean.getSourceEntityRef(SHORT_NAMES, true));
 
         // ... while those that don't get the right entities
         assertEquals(pet1, personBean.getTargetEntity(OWNER, false));
         assertEquals(pet1, personBean.getTargetEntity(OWNER, rel1Active));
         assertEquals(pet1Ref, personBean.getTargetEntityRef(OWNER, false));
+        assertEquals(pet1Ref, personBean.getTargetEntityRef(SHORT_NAMES, false));
+        assertEquals(pet1, personBean.getTargetEntity(SHORT_NAMES, rel1Active));
+        assertEquals(pet1, personBean.getTargetEntity(SHORT_NAMES, false));
+        assertEquals(pet1, personBean.getTargetEntity(SHORT_NAMES, rel1Active, false));
         assertEquals(person, pet1Bean.getSourceEntity(OWNER, false));
         assertEquals(person, pet1Bean.getSourceEntity(OWNER, rel1Active));
         assertEquals(personRef, pet1Bean.getSourceEntityRef(OWNER, false));
+        assertEquals(personRef, pet1Bean.getSourceEntityRef(SHORT_NAMES, false));
+        assertEquals(person, pet1Bean.getSourceEntity(SHORT_NAMES, false));
+        assertEquals(person, pet1Bean.getSourceEntity(SHORT_NAMES, rel1Active));
+        assertEquals(person, pet1Bean.getSourceEntity(SHORT_NAMES, rel1Active, false));
 
         // add a new active owner relationship for pet2. This should be returned
         // instead of pet1.
@@ -322,13 +359,19 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
 
         assertEquals(pet2, personBean.getTargetEntity(OWNER));
         assertEquals(pet2, personBean.getTargetEntity(OWNER, rel2Active));
+        assertEquals(pet2, personBean.getTargetEntity(OWNER, rel2Active, false));
+        assertEquals(pet2, personBean.getTargetEntity(SHORT_NAMES));
+        assertEquals(pet2, personBean.getTargetEntity(SHORT_NAMES, rel2Active));
+        assertEquals(pet2, personBean.getTargetEntity(SHORT_NAMES, rel2Active, false));
+
         assertEquals(person, pet2Bean.getSourceEntity(OWNER));
         assertEquals(person, pet2Bean.getSourceEntity(OWNER, rel2Active));
-        assertEquals(pet2,
-                     personBean.getTargetEntity(OWNER, rel2Active, false));
         assertEquals(person, pet2Bean.getSourceEntity(OWNER, false));
-        assertEquals(person,
-                     pet2Bean.getSourceEntity(OWNER, rel2Active, false));
+        assertEquals(person, pet2Bean.getSourceEntity(OWNER, rel2Active, false));
+        assertEquals(person, pet2Bean.getSourceEntity(SHORT_NAMES));
+        assertEquals(person, pet2Bean.getSourceEntity(SHORT_NAMES, false));
+        assertEquals(person, pet2Bean.getSourceEntity(SHORT_NAMES, rel2Active));
+        assertEquals(person, pet2Bean.getSourceEntity(SHORT_NAMES, rel2Active, false));
 
         assertEquals(pet2Ref, personBean.getTargetEntityRef(OWNER));
         assertEquals(pet2Ref, personBean.getTargetEntityRef(OWNER, false));
@@ -361,13 +404,13 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         assertEquals(pet1, personBean.getNodeTargetEntity("patients"));
 
         // verify the pet is the target, and the person the source
-        assertEquals(pet1, pet1Bean.getNodeTargetEntity("relationships"));
-        assertEquals(person, pet1Bean.getNodeSourceEntity("relationships"));
+        assertEquals(pet1, pet1Bean.getNodeTargetEntity("customers"));
+        assertEquals(person, pet1Bean.getNodeSourceEntity("customers"));
 
         // mark the relationship inactive.
         deactivateRelationship(r);
         assertNull(personBean.getNodeSourceEntity("patients"));
-        assertNull(pet1Bean.getNodeTargetEntity("relationships"));
+        assertNull(pet1Bean.getNodeTargetEntity("customers"));
     }
 
     /**
@@ -395,17 +438,14 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         assertEquals(pet, pet2);
 
         // ... same for person
-        Entity person2 = petBean.getNodeSourceEntity("relationships",
-                                                     new Date());
+        Entity person2 = petBean.getNodeSourceEntity("customers", new Date());
         assertEquals(person, person2);
 
         // verify the correct entity is returned if the relationship has no
         // start time (i.e, unbounded)
         r.setActiveStartTime(null);
-        assertEquals(pet,
-                     personBean.getNodeTargetEntity("patients", new Date()));
-        assertEquals(person,
-                     petBean.getNodeSourceEntity("relationships", new Date()));
+        assertEquals(pet, personBean.getNodeTargetEntity("patients", new Date()));
+        assertEquals(person, petBean.getNodeSourceEntity("customers", new Date()));
 
         // now set the start and end time and verify that there is no entities
         // for a later time (use time addition due to system clock granularity)
@@ -415,7 +455,7 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         r.setActiveStartTime(start);
         r.setActiveEndTime(end);
         assertNull(personBean.getNodeTargetEntity("patients", later));
-        assertNull(petBean.getNodeSourceEntity("relationships", later));
+        assertNull(petBean.getNodeSourceEntity("customers", later));
     }
 
     /**
@@ -423,16 +463,19 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
      * {@link EntityBean#getNodeSourceEntity(String, boolean)},
      * {@link EntityBean#getNodeSourceEntity(String, Date)},
      * {@link EntityBean#getNodeSourceEntity(String, Date, boolean)},
+     * {@link EntityBean#getNodeSourceEntity(String, Predicate)},
+     * {@link EntityBean#getNodeSourceEntity(String, Predicate, boolean)},
      * {@link EntityBean#getNodeTargetEntity(String)},
      * {@link EntityBean#getNodeTargetEntity(String, boolean)},
-     * {@link EntityBean#getNodeTargetEntity(String, Date)}
-     * and {@link EntityBean#getNodeTargetEntity(String, Date, boolean)} methods
-     * for active/inactive relationships and entities.
+     * {@link EntityBean#getNodeTargetEntity(String, Date)},
+     * {@link EntityBean#getNodeTargetEntity(String, Date, boolean)},
+     * {@link EntityBean#getNodeTargetEntity(String, Predicate)},
+     * {@link EntityBean#getNodeTargetEntity(String, Predicate, boolean)}, methods for active/inactive relationships and entities.
      */
     @Test
     public void testGetNodeEntityWithActive() {
-        final String pets = "patients"; // patients node name
-        final String owners = "relationships"; // owners node name
+        final String patients = "patients"; // patient node name
+        final String customers = "customers"; // customer node name
 
         EntityBean pet1Bean = createPet();
         EntityBean pet2Bean = createPet();
@@ -447,56 +490,69 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         // verify each of the getNodeTarget* and getNodeSource* methods get the
         // right entities
         Date rel1Active = new Date();
-        assertEquals(pet1, personBean.getNodeTargetEntity(pets));
-        assertEquals(pet1, personBean.getNodeTargetEntity(pets, rel1Active));
-        assertEquals(person, pet1Bean.getNodeSourceEntity(owners));
-        assertEquals(person, pet1Bean.getNodeSourceEntity(owners, rel1Active));
-        assertEquals(pet1, personBean.getNodeTargetEntity(pets, false));
-        assertEquals(pet1,
-                     personBean.getNodeTargetEntity(pets, rel1Active, false));
-        assertEquals(person, pet1Bean.getNodeSourceEntity(owners, false));
-        assertEquals(person,
-                     pet1Bean.getNodeSourceEntity(owners, rel1Active, false));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, rel1Active));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, false));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, rel1Active, false));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, new IsA(OWNER)));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, new IsA(OWNER), false));
+        assertNull(personBean.getNodeTargetEntity(patients, new IsA(LOCATION)));
+        assertNull(personBean.getNodeTargetEntity(patients, new IsA(LOCATION), false));
+
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers));
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers, rel1Active));
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers, false));
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers, rel1Active, false));
+        assertEquals(person, personBean.getNodeSourceEntity(patients, new IsA(OWNER)));
+        assertEquals(person, personBean.getNodeSourceEntity(patients, new IsA(OWNER), false));
+        assertNull(personBean.getNodeSourceEntity(patients, new IsA(LOCATION)));
+        assertNull(personBean.getNodeSourceEntity(patients, new IsA(LOCATION), false));
 
         // mark the relationship inactive
         deactivateRelationship(r);
 
-        // verify methods that require the relationship to be active now return
-        // null
-        assertNull(personBean.getNodeTargetEntity(pets));
-        assertNull(pet1Bean.getNodeSourceEntity(owners));
+        // verify methods that require the relationship to be active now return null
+        assertNull(personBean.getNodeTargetEntity(patients));
+        assertNull(personBean.getNodeTargetEntity(patients, new IsActiveRelationship()));
+        assertNull(pet1Bean.getNodeSourceEntity(customers));
+        assertNull(pet1Bean.getNodeSourceEntity(customers, new IsActiveRelationship()));
 
         // ... while those that don't get the right entities
-        assertEquals(pet1, personBean.getNodeTargetEntity(pets, rel1Active));
-        assertEquals(person, pet1Bean.getNodeSourceEntity(owners, rel1Active));
-        assertEquals(pet1, personBean.getNodeTargetEntity(pets, false));
-        assertEquals(pet1, personBean.getNodeTargetEntity(pets, rel1Active,
-                                                          false));
-        assertEquals(person, pet1Bean.getNodeSourceEntity(owners, false));
-        assertEquals(person, pet1Bean.getNodeSourceEntity(owners, rel1Active,
-                                                          false));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, rel1Active));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, false));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, rel1Active, false));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, new IsA(OWNER)));
+        assertEquals(pet1, personBean.getNodeTargetEntity(patients, new IsA(OWNER), false));
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers, rel1Active));
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers, false));
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers, rel1Active, false));
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers, new IsA(OWNER)));
+        assertEquals(person, pet1Bean.getNodeSourceEntity(customers, new IsA(OWNER), false));
 
         // add a new active owner relationship for pet2. This should be returned
         // instead of pet1.
         personBean.addRelationship(OWNER, pet2);
         Date rel2Active = new Date();
 
-        assertEquals(pet2, personBean.getNodeTargetEntity(pets));
-        assertEquals(pet2, personBean.getNodeTargetEntity(pets, rel2Active));
-        assertEquals(person, pet2Bean.getNodeSourceEntity(owners));
-        assertEquals(person, pet2Bean.getNodeSourceEntity(owners, rel2Active));
-        assertEquals(pet2,
-                     personBean.getNodeTargetEntity(pets, rel2Active, false));
-        assertEquals(person, pet2Bean.getNodeSourceEntity(owners, false));
-        assertEquals(person,
-                     pet2Bean.getNodeSourceEntity(owners, rel2Active, false));
+        assertEquals(pet2, personBean.getNodeTargetEntity(patients));
+        assertEquals(pet2, personBean.getNodeTargetEntity(patients, rel2Active));
+        assertEquals(pet2, personBean.getNodeTargetEntity(patients, true));
+        assertEquals(pet2, personBean.getNodeTargetEntity(patients, rel2Active, false));
+        assertEquals(pet2, personBean.getNodeTargetEntity(patients, new IsActiveRelationship(rel2Active), false));
+        assertEquals(person, pet2Bean.getNodeSourceEntity(customers));
+        assertEquals(person, pet2Bean.getNodeSourceEntity(customers, rel2Active));
+        assertEquals(person, pet2Bean.getNodeSourceEntity(customers, true));
+        assertEquals(person, pet2Bean.getNodeSourceEntity(customers, rel2Active, false));
+        assertEquals(person, pet2Bean.getNodeSourceEntity(customers, new IsActiveRelationship(rel2Active), false));
     }
 
     /**
-     * Tests the {@link EntityBean#getNodeSourceEntities},
+     * Tests the {@link EntityBean#getNodeSourceEntities(String)},
+     * {@link EntityBean#getNodeSourceEntities(String, Predicate)},
      * {@link EntityBean#getNodeSourceEntityRefs},
-     * {@link EntityBean#getNodeTargetEntities} and
-     * {@link EntityBean#getNodeTargetEntityRefs}  methods.
+     * {@link EntityBean#getNodeTargetEntities(String)},
+     * {@link EntityBean#getNodeTargetEntities(String, Predicate)},
+     * and {@link EntityBean#getNodeTargetEntityRefs}  methods.
      */
     @Test
     public void testGetNodeEntities() {
@@ -514,8 +570,7 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         assertTrue(pets.contains(pet1.getEntity()));
         assertTrue(pets.contains(pet2.getEntity()));
 
-        List<IMObjectReference> petRefs
-                = person.getNodeTargetEntityRefs("patients");
+        List<IMObjectReference> petRefs = person.getNodeTargetEntityRefs("patients");
         assertEquals(2, petRefs.size());
         assertTrue(petRefs.contains(pet1.getReference()));
         assertTrue(petRefs.contains(pet2.getReference()));
@@ -525,8 +580,7 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         assertEquals(1, customers.size());
         assertTrue(customers.contains(person.getEntity()));
 
-        List<IMObjectReference> custRefs
-                = pet2.getNodeSourceEntityRefs("customers");
+        List<IMObjectReference> custRefs = pet2.getNodeSourceEntityRefs("customers");
         assertEquals(1, custRefs.size());
         assertTrue(custRefs.contains(person.getReference()));
     }
@@ -548,26 +602,22 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         EntityRelationship r2 = person.addRelationship(OWNER, pet2.getEntity());
 
         // verify the pets are returned for a time > the default start time
-        List<Entity> pets = person.getNodeTargetEntities("patients",
-                                                         new Date());
+        List<Entity> pets = person.getNodeTargetEntities("patients", new Date());
         assertEquals(2, pets.size());
         assertTrue(pets.contains(pet1.getEntity()));
         assertTrue(pets.contains(pet2.getEntity()));
 
-        List<IMObjectReference> petRefs
-                = person.getNodeTargetEntityRefs("patients", new Date());
+        List<IMObjectReference> petRefs = person.getNodeTargetEntityRefs("patients", new Date());
         assertEquals(2, petRefs.size());
         assertTrue(petRefs.contains(pet1.getReference()));
         assertTrue(petRefs.contains(pet2.getReference()));
 
         // verify the person is returned for a time > the default start time
-        List<Entity> people = pet1.getNodeSourceEntities("relationships",
-                                                         new Date());
+        List<Entity> people = pet1.getNodeSourceEntities("customers", new Date());
         assertEquals(1, people.size());
         assertTrue(people.contains(person.getEntity()));
 
-        List<IMObjectReference> peopleRefs
-                = pet2.getNodeSourceEntityRefs("relationships", new Date());
+        List<IMObjectReference> peopleRefs = pet2.getNodeSourceEntityRefs("customers", new Date());
         assertEquals(1, peopleRefs.size());
         assertTrue(peopleRefs.contains(person.getReference()));
 
@@ -577,12 +627,12 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         r2.setActiveStartTime(null);
         pets = person.getNodeTargetEntities("patients", new Date());
         assertEquals(2, pets.size());
-        people = pet2.getNodeSourceEntities("relationships", new Date());
+        people = pet2.getNodeSourceEntities("customers", new Date());
         assertEquals(1, people.size());
 
         petRefs = person.getNodeTargetEntityRefs("patients", new Date());
         assertEquals(2, petRefs.size());
-        peopleRefs = pet2.getNodeSourceEntityRefs("relationships", new Date());
+        peopleRefs = pet2.getNodeSourceEntityRefs("customers", new Date());
         assertEquals(1, peopleRefs.size());
 
         // now set the start and end time and verify that there is no entities
@@ -596,12 +646,12 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         r2.setActiveEndTime(end);
         pets = person.getNodeTargetEntities("patients", later);
         assertEquals(0, pets.size());
-        people = pet2.getNodeSourceEntities("relationships", later);
+        people = pet2.getNodeSourceEntities("customers", later);
         assertEquals(0, people.size());
 
         petRefs = person.getNodeTargetEntityRefs("patients", later);
         assertEquals(0, petRefs.size());
-        peopleRefs = pet2.getNodeSourceEntityRefs("relationships", later);
+        peopleRefs = pet2.getNodeSourceEntityRefs("customers", later);
         assertEquals(0, peopleRefs.size());
     }
 
@@ -636,12 +686,9 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         List<IMObjectReference> relationshipRefs;
 
         patients = personBean.getNodeTargetEntities("patients", activeTime);
-        patientRefs = personBean.getNodeTargetEntityRefs("patients",
-                                                         activeTime);
-        relationships = pet1Bean.getNodeSourceEntities("relationships",
-                                                       activeTime);
-        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("relationships",
-                                                            activeTime);
+        patientRefs = personBean.getNodeTargetEntityRefs("patients", activeTime);
+        relationships = pet1Bean.getNodeSourceEntities("customers", activeTime);
+        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("customers", activeTime);
         assertEquals(2, patients.size());
         assertTrue(patients.contains(pet1));
         assertTrue(patients.contains(pet2));
@@ -661,14 +708,10 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         deactivateRelationship(r2);
 
         // relationships will be active relative to 'activeTime'
-        patients = personBean.getNodeTargetEntities("patients", activeTime,
-                                                    false);
-        patientRefs = personBean.getNodeTargetEntityRefs("patients",
-                                                         activeTime);
-        relationships = pet1Bean.getNodeSourceEntities("relationships",
-                                                       activeTime, false);
-        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("relationships",
-                                                            activeTime);
+        patients = personBean.getNodeTargetEntities("patients", activeTime, false);
+        patientRefs = personBean.getNodeTargetEntityRefs("patients", activeTime);
+        relationships = pet1Bean.getNodeSourceEntities("customers", activeTime, false);
+        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("customers", activeTime);
         assertEquals(2, patients.size());
         assertEquals(2, patientRefs.size());
         assertEquals(1, relationships.size());
@@ -678,9 +721,8 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         Date now = new Date();
         patients = personBean.getNodeTargetEntities("patients", now);
         patientRefs = personBean.getNodeTargetEntityRefs("patients", now);
-        relationships = pet1Bean.getNodeSourceEntities("relationships", now);
-        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("relationships",
-                                                            now);
+        relationships = pet1Bean.getNodeSourceEntities("customers", now);
+        relationshipRefs = pet1Bean.getNodeSourceEntityRefs("customers", now);
         assertTrue(patientRefs.isEmpty());
         assertTrue(patients.isEmpty());
         assertTrue(relationships.isEmpty());
@@ -706,30 +748,29 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         EntityRelationship r2 = personBean.addRelationship(OWNER, pet2);
 
         // test the getNodeRelationships(String) method
-        List<EntityRelationship> patients1
-                = personBean.getNodeRelationships("patients");
+        List<EntityRelationship> patients1 = personBean.getNodeRelationships("patients");
         assertEquals(2, patients1.size());
 
         // test the getNodeRelationships(String, Predicate) method
-        List<EntityRelationship> patients2
-                = personBean.getNodeRelationships("patients", new IsA(OWNER));
+        List<EntityRelationship> patients2 = personBean.getNodeRelationships("patients", new IsA(OWNER));
         assertEquals(2, patients2.size());
 
-        List<EntityRelationship> dummies
-                = personBean.getNodeRelationships("patients", new IsA("dummy"));
+        List<EntityRelationship> dummies = personBean.getNodeRelationships("patients", new IsA("dummy"));
         assertEquals(0, dummies.size());
 
         // test the getNodeRelationship(String, Predicate) method
-        assertEquals(r1, personBean.getNodeRelationship(
-                "patients", RefEquals.getTargetEquals(pet1)));
+        assertEquals(r1, personBean.getNodeRelationship("patients", RefEquals.getTargetEquals(pet1)));
 
-        assertEquals(r2, personBean.getNodeRelationship(
-                "patients", RefEquals.getTargetEquals(pet2)));
+        assertEquals(r2, personBean.getNodeRelationship("patients", RefEquals.getTargetEquals(pet2)));
     }
 
     /**
-     * Tests the {@link EntityBean#getNodeSourceEntities(String, Predicate)}
-     * and {@link EntityBean#getNodeTargetEntities(String, Predicate)} methods.
+     * Tests the {@link EntityBean#getNodeSourceEntities(String, Predicate)},
+     *
+     * @link EntityBean#getNodeSourceEntities(String, Predicate, boolean)}
+     * {@link EntityBean#getNodeTargetEntities(String, Predicate)} and
+     * {@link EntityBean#getNodeTargetEntities(String, Predicate, boolean)}
+     * methods.
      */
     @Test
     public void testGetNodeEntitiesByPredicate() {
@@ -741,48 +782,44 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
         Entity pet2 = pet2Bean.getEntity();
 
         // add a relationship to the person and pets
-        personBean.addRelationship(OWNER, pet1);
+        EntityRelationship rel = personBean.addRelationship(OWNER, pet1);
         personBean.addRelationship(OWNER, pet2);
 
         // check source entities
-        List<Entity> people
-                = personBean.getNodeSourceEntities("patients", new IsA(OWNER));
-        assertEquals(2, people.size());
-        for (Entity e : people) {
-            assertEquals(person, e);
-        }
+        checkEquals(personBean.getNodeSourceEntities("patients", new IsA(OWNER)), person, person);
+        checkEquals(personBean.getNodeSourceEntities("patients", new IsA(OWNER), true), person, person);
 
         // verify there are no references when the predicate evaluates false
-        List<Entity> dummies = personBean.getNodeSourceEntities(
-                "patients", new IsA("dummy"));
-        assertEquals(0, dummies.size());
+        assertEquals(0, personBean.getNodeSourceEntities("patients", new IsA("dummy")).size());
+        assertEquals(0, personBean.getNodeSourceEntities("patients", new IsA("dummy"), true).size());
 
         // check target entities
-        List<Entity> pets
-                = personBean.getNodeTargetEntities("patients", new IsA(OWNER));
-        assertEquals(2, pets.size());
-        assertTrue(pets.contains(pet1));
-        assertTrue(pets.contains(pet2));
+        checkEquals(personBean.getNodeTargetEntities("patients", new IsA(OWNER)), pet1, pet2);
+        checkEquals(personBean.getNodeTargetEntities("patients", new IsA(OWNER), true), pet1, pet2);
 
         // check source entity references
-        List<IMObjectReference> refs = personBean.getNodeSourceEntityRefs(
-                "patients", new IsA(OWNER));
+        List<IMObjectReference> refs = personBean.getNodeSourceEntityRefs("patients", new IsA(OWNER));
         assertEquals(2, refs.size());
         for (IMObjectReference r : refs) {
             assertEquals(person.getObjectReference(), r);
         }
 
         // verify there are no references when the predicate evaluates false
-        List<IMObjectReference> dummyRefs = personBean.getNodeSourceEntityRefs(
-                "patients", new IsA("dummy"));
+        List<IMObjectReference> dummyRefs = personBean.getNodeSourceEntityRefs("patients", new IsA("dummy"));
         assertTrue(dummyRefs.isEmpty());
 
         // check target entity references
-        List<IMObjectReference> petRefs = personBean.getNodeTargetEntityRefs(
-                "patients", new IsA(OWNER));
+        List<IMObjectReference> petRefs = personBean.getNodeTargetEntityRefs("patients", new IsA(OWNER));
         assertEquals(2, petRefs.size());
         assertTrue(petRefs.contains(pet1.getObjectReference()));
         assertTrue(petRefs.contains(pet2.getObjectReference()));
+
+        // deactivate the relationship
+        deactivateRelationship(rel);
+        checkEquals(personBean.getNodeSourceEntities("patients", new IsActiveRelationship()), person);
+        checkEquals(personBean.getNodeSourceEntities("patients", new IsA(OWNER), false), person, person);
+        checkEquals(personBean.getNodeTargetEntities("patients", new IsActiveRelationship()), pet2);
+        checkEquals(personBean.getNodeTargetEntities("patients", new IsA(OWNER), false), pet1, pet2);
     }
 
     /**
@@ -845,11 +882,7 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
      * @return a new pet
      */
     private EntityBean createPet() {
-        EntityBean pet = new EntityBean((Entity) create("party.animalpet"));
-        pet.setValue("name", "XAnimalPet");
-        pet.setValue("species", "CANINE");
-        pet.save();
-        return pet;
+        return new EntityBean(createPatient());
     }
 
     /**
@@ -858,13 +891,9 @@ public class EntityBeanTestCase extends AbstractArchetypeServiceTest {
      * @return a new person
      */
     private EntityBean createPerson() {
-        EntityBean person = new EntityBean((Entity) create("party.person"));
-        person.setValue("firstName", "J");
-        person.setValue("lastName", "Zoo");
-        person.save();
-        return person;
-    }
+        return new EntityBean(createCustomer());
 
+    }
     /**
      * Helper to deactivate a relationship and sleep for a second, so that
      * subsequent isActive() checks return false. The sleep in between

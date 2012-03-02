@@ -25,12 +25,13 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
-import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
+import org.openvpms.component.business.service.archetype.functor.IsA;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 
 
 /**
@@ -175,14 +176,7 @@ public class ActBean extends IMObjectBean {
      * @return a list of all relationships matching the short name
      */
     public List<ActRelationship> getRelationships(String shortName) {
-        List<ActRelationship> result = new ArrayList<ActRelationship>();
-        Set<ActRelationship> relationships = getAct().getActRelationships();
-        for (ActRelationship r : relationships) {
-            if (TypeHelper.isA(r, shortName)) {
-                result.add(r);
-            }
-        }
-        return result;
+        return select(getAct().getActRelationships(), new IsA(shortName));
     }
 
     /**
@@ -280,19 +274,95 @@ public class ActBean extends IMObjectBean {
     public <T extends Act> List<T> getNodeActs(String name, Class<T> type) {
         List<T> result = new ArrayList<T>();
         IMObjectReference ref = getReference();
-        for (ActRelationship relationship
-                : getValues(name, ActRelationship.class)) {
+        for (ActRelationship relationship : getValues(name, ActRelationship.class)) {
             Act child = getSourceOrTarget(relationship, ref);
             if (child != null) {
                 if (!type.isInstance(child)) {
-                    throw new IMObjectBeanException(
-                            InvalidClassCast, type.getName(),
-                            child.getClass().getName());
+                    throw new IMObjectBeanException(InvalidClassCast, type.getName(), child.getClass().getName());
                 }
                 result.add((T) child);
             }
         }
         return result;
+    }
+    /**
+     * Returns the first active act that matches the specified short name and links to this act.
+     *
+     * @param shortName the archetype short name to match on
+     * @return the source act, or <tt>null</tt> if none is found
+     */
+    public Act getSourceAct(String shortName) {
+        return getSourceAct(new String[]{shortName});
+    }
+
+    /**
+     * Returns the first active act that matches the specified short name and links to this act.
+     *
+     * @param shortNames the archetype short names to match on
+     * @return the source act, or <tt>null</tt> if none is found
+     */
+    public Act getSourceAct(String[] shortNames) {
+        return (Act) getSourceObject(getAct().getTargetActRelationships(), shortNames);
+    }
+
+    /**
+     * Returns the active acts that match the specified short name and link to this act.
+     *
+     * @param shortName the archetype short name to match on
+     * @return the source acts
+     */
+    public List<Act> getSourceActs(String shortName) {
+        return getSourceActs(new String[]{shortName});
+    }
+
+    /**
+     * Returns the active acts that match the specified short names and link to this act.
+     *
+     * @param shortNames the archetype short names to match on
+     * @return the source acts
+     */
+    public List<Act> getSourceActs(String[] shortNames) {
+        return getSourceObjects(getAct().getTargetActRelationships(), shortNames, Act.class);
+    }
+
+    /**
+     * Returns the first active act that matches the specified short name and this act links to.
+     *
+     * @param shortName the archetype short name to match on
+     * @return the target act, or <tt>null</tt> if none is found
+     */
+    public Act getTargetAct(String shortName) {
+        return getTargetAct(new String[]{shortName});
+    }
+
+    /**
+     * Returns the first active act that matches the specified short names and this act links to.
+     *
+     * @param shortNames the archetype short names to match on
+     * @return the target act, or <tt>null</tt> if none is found
+     */
+    public Act getTargetAct(String[] shortNames) {
+        return (Act) getTargetObject(getAct().getSourceActRelationships(), shortNames);
+    }
+
+    /**
+     * Returns the active acts that match the specified short name and this act links to.
+     *
+     * @param shortName the archetype short name to match on
+     * @return the target acts
+     */
+    public List<Act> getTargetActs(String shortName) {
+        return getTargetActs(new String[]{shortName});
+    }
+
+    /**
+     * Returns the active acts that match the specified short name and this act links to.
+     *
+     * @param shortNames the archetype short names to match on
+     * @return the target acts
+     */
+    public List<Act> getTargetActs(String[] shortNames) {
+        return getTargetObjects(getAct().getSourceActRelationships(), shortNames, Act.class);
     }
 
     /**
@@ -315,11 +385,9 @@ public class ActBean extends IMObjectBean {
      * @return the new participation
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Participation addParticipation(String shortName,
-                                          IMObjectReference entity) {
+    public Participation addParticipation(String shortName, IMObjectReference entity) {
         Act act = getAct();
-        Participation p = (Participation) getArchetypeService().create(
-                shortName);
+        Participation p = (Participation) getArchetypeService().create(shortName);
         if (p == null) {
             throw new IMObjectBeanException(ArchetypeNotFound, shortName);
         }
@@ -336,12 +404,7 @@ public class ActBean extends IMObjectBean {
      * @return the participation or <tt>null</tt> if none is found
      */
     public Participation getParticipation(String shortName) {
-        for (Participation p : getAct().getParticipations()) {
-            if (p.getArchetypeId().getShortName().equals(shortName)) {
-                return p;
-            }
-        }
-        return null;
+        return selectFirst(getAct().getParticipations(), new IsA(shortName));
     }
 
     /**
@@ -405,8 +468,7 @@ public class ActBean extends IMObjectBean {
      * @return the participation
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Participation setParticipant(String shortName,
-                                        IMObjectReference entity) {
+    public Participation setParticipant(String shortName, IMObjectReference entity) {
         Participation p = getParticipation(shortName);
         if (p == null) {
             p = addParticipation(shortName, entity);
@@ -482,8 +544,7 @@ public class ActBean extends IMObjectBean {
      * @param ref          the reference
      * @return the source or target, or <tt>null</tt>
      */
-    private Act getSourceOrTarget(ActRelationship relationship,
-                                  IMObjectReference ref) {
+    private Act getSourceOrTarget(ActRelationship relationship, IMObjectReference ref) {
         IMObjectReference target = relationship.getTarget();
         IMObjectReference child = null;
         if (target != null && !target.equals(ref)) {
