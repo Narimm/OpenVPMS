@@ -18,26 +18,40 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import static org.junit.Assert.*;
+import org.apache.commons.collections.Predicate;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
-import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
+import org.openvpms.component.business.service.archetype.functor.IsA;
+import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 
 
 /**
@@ -47,8 +61,7 @@ import java.util.Set;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
-public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
-
+public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     /**
      * Tests the {@link IMObjectBean#isA} method.
      */
@@ -284,6 +297,7 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the {@link IMObjectBean#getValues(String)},
+     * {@link IMObjectBean#getValues(String, Predicate)},
      * {@link IMObjectBean#addValue(String, IMObject)} and
      * {@link IMObjectBean#removeValue(String, IMObject)} methods.
      */
@@ -304,6 +318,8 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
         bean.addValue("contacts", location);
         bean.addValue("contacts", phone);
         checkEquals(bean.getValues("contacts"), location, phone);
+
+        assertEquals(phone, bean.getValue("contacts", new IsA("contact.phoneNumber")));
 
         bean.removeValue("contacts", location);
         checkEquals(bean.getValues("contacts"), phone);
@@ -412,23 +428,220 @@ public class IMObjectBeanTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that two lists of objects match.
-     *
-     * @param actual   the actual result
-     * @param expected the expected result
+     * Tests {@link IMObjectBean#getSourceObjects(Collection, String, Class)},
+     * {@link IMObjectBean#getSourceObjects(Collection, String[], Class)} and
+     * {@link IMObjectBean#getSourceObjects(Collection, String[], boolean, Class)} methods.
      */
-    private <T extends IMObject> void checkEquals(List<T> actual, T... expected) {
-        assertEquals(actual.size(), expected.length);
-        for (IMObject e : expected) {
-            boolean found = false;
-            for (IMObject a : actual) {
-                if (e.equals(a)) {
-                    found = true;
-                    break;
-                }
-            }
-            assertTrue("IMObject not found: " + e, found);
-        }
+    @Test
+    public void testGetSourceObjects() {
+        Party customer1 = createCustomer();
+        Party customer2 = createCustomer();
+        Party customer3 = createCustomer();
+        Party patient = createPatient();
+        addOwnerRelationship(customer1, patient);
+        EntityRelationship rel2 = addLocationRelationship(customer2, patient);
+        addOwnerRelationship(customer3, patient);
+        save(customer1, customer2, customer3, patient);
+        Date now = new Date();
+        Date start1 = new Date(now.getTime() - 60 * 1000);
+        Date end1 = new Date(now.getTime() - 50 * 1000);
+
+        IMObjectBean bean = new IMObjectBean(patient);
+        checkEquals(bean.getSourceObjects(patient.getEntityRelationships(), OWNER, Party.class), customer1, customer3);
+        checkEquals(bean.getSourceObjects(patient.getEntityRelationships(), new String[]{OWNER, LOCATION}, Party.class),
+                    customer1, customer2, customer3);
+
+
+        // disable customer3 and verify that its is excluded when active=true
+        customer3.setActive(false);
+        save(customer3);
+        checkEquals(bean.getSourceObjects(patient.getEntityRelationships(), new String[]{OWNER, LOCATION}, true,
+                                          Party.class),
+                    customer1, customer2);
+        checkEquals(bean.getSourceObjects(patient.getEntityRelationships(), new String[]{OWNER, LOCATION}, false,
+                                          Party.class),
+                    customer1, customer2, customer3);
+
+        // disable the rel2 relationship and verify that customer2 is excluded when active=true
+        rel2.setActiveStartTime(start1);
+        rel2.setActiveEndTime(end1);
+
+        checkEquals(bean.getSourceObjects(patient.getEntityRelationships(), new String[]{OWNER, LOCATION}, true,
+                                          Party.class),
+                    customer1);
+        checkEquals(bean.getSourceObjects(patient.getEntityRelationships(), new String[]{OWNER, LOCATION}, false,
+                                          Party.class),
+                    customer1, customer2, customer3);
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#getNodeSourceObjects(String),
+     * {@link IMObjectBean#getNodeSourceObjects(String, Class)},
+     * {@link IMObjectBean#getNodeSourceObjects(String, Date)},
+     * {@link IMObjectBean#getNodeSourceObjects(String, Date, Class)},
+     * {@link IMObjectBean#getNodeSourceObjects(String, Date, boolean)},
+     * {@link IMObjectBean#getNodeSourceObjects(String, Date, boolean, Class)},
+     * {@link IMObjectBean#getNodeSourceObjects(String, Predicate)},
+     * {@link IMObjectBean#getNodeSourceObjects(String, Predicate, boolean)},
+     * {@link IMObjectBean#getNodeSourceObjects(String, Predicate, boolean, Class)}
+     * {@link IMObjectBean#getNodeSourceObjects(String, Class, Class)} and
+     * {@link IMObjectBean#getNodeSourceObjects(String, Class, Class, boolean)} methods.
+     */
+    @Test
+    public void testGetNodeSourceObjects() {
+        Party customer1 = createCustomer();
+        Party customer2 = createCustomer();
+        Party customer3 = createCustomer();
+        Party patient = createPatient();
+        EntityRelationship rel1 = addOwnerRelationship(customer1, patient);
+        EntityRelationship rel2 = addOwnerRelationship(customer2, patient);
+        EntityRelationship rel3 = addOwnerRelationship(customer3, patient);
+        save(customer1, customer2, customer3, patient);
+        Date now = new Date();
+        Date start1 = new Date(now.getTime() - 60 * 1000);
+        Date end1 = new Date(now.getTime() - 50 * 1000);
+
+        IMObjectBean bean = new IMObjectBean(patient);
+        checkEquals(bean.getNodeSourceObjects("customers"), customer1, customer2, customer3);
+        checkEquals(bean.getNodeSourceObjects("customers", Party.class), customer1, customer2, customer3);
+
+        // set the relationship times to the past verify it is filtered out
+        rel1.setActiveStartTime(start1);
+        rel1.setActiveEndTime(end1);
+        checkEquals(bean.getNodeSourceObjects("customers", now), customer2, customer3);
+        checkEquals(bean.getNodeSourceObjects("customers", now, Party.class), customer2, customer3);
+
+        customer3.setActive(false);
+        save(customer3);
+        checkEquals(bean.getNodeSourceObjects("customers", now, true), customer2);
+        checkEquals(bean.getNodeSourceObjects("customers", now, false), customer2, customer3);
+
+        checkEquals(bean.getNodeSourceObjects("customers", now, true, Party.class), customer2);
+        checkEquals(bean.getNodeSourceObjects("customers", now, false, Party.class), customer2, customer3);
+
+        checkEquals(bean.getNodeSourceObjects("customers", new IsActiveRelationship(now)), customer2);
+        checkEquals(bean.getNodeSourceObjects("customers", new IsActiveRelationship(now), false), customer2, customer3);
+        checkEquals(bean.getNodeSourceObjects("customers", new IsActiveRelationship(now), false, Party.class),
+                    customer2, customer3);
+
+        Map<EntityRelationship, Entity> expected1 = new HashMap<EntityRelationship, Entity>();
+        expected1.put(rel2, customer2);
+        assertEquals(expected1, bean.getNodeSourceObjects("customers", Party.class, EntityRelationship.class));
+
+        Map<EntityRelationship, Entity> expected2 = new HashMap<EntityRelationship, Entity>();
+        expected2.put(rel1, customer1);
+        expected2.put(rel2, customer2);
+        expected2.put(rel3, customer3);
+        assertEquals(expected1, bean.getNodeSourceObjects("customers", Party.class, EntityRelationship.class, true));
+        assertEquals(expected2, bean.getNodeSourceObjects("customers", Party.class, EntityRelationship.class, false));
+    }
+
+    /**
+     * Tests {@link IMObjectBean#getTargetObjects(Collection, String, Class)},
+     * {@link IMObjectBean#getTargetObjects(Collection, String[], Class)} and
+     * {@link IMObjectBean#getTargetObjects(Collection, String[], boolean, Class)} methods.
+     */
+    @Test
+    public void testGetTargetObjects() {
+        Party patient1 = createPatient();
+        Party patient2 = createPatient();
+        Party patient3 = createPatient();
+        Party customer = createCustomer();
+        addOwnerRelationship(customer, patient1);
+        EntityRelationship rel2 = addLocationRelationship(customer, patient2);
+        addOwnerRelationship(customer, patient3);
+        save(patient1, patient2, patient3, customer);
+        Date now = new Date();
+        Date start1 = new Date(now.getTime() - 60 * 1000);
+        Date end1 = new Date(now.getTime() - 50 * 1000);
+
+        IMObjectBean bean = new IMObjectBean(customer);
+        checkEquals(bean.getTargetObjects(customer.getEntityRelationships(), OWNER, Party.class), patient1, patient3);
+        checkEquals(bean.getTargetObjects(customer.getEntityRelationships(), new String[]{OWNER, LOCATION}, Party.class),
+                    patient1, patient2, patient3);
+
+        // disable customer3 and verify that its is excluded when active=true
+        patient3.setActive(false);
+        save(patient3);
+        checkEquals(bean.getTargetObjects(customer.getEntityRelationships(), new String[]{OWNER, LOCATION}, true,
+                                          Party.class),
+                    patient1, patient2);
+        checkEquals(bean.getTargetObjects(customer.getEntityRelationships(), new String[]{OWNER, LOCATION}, false,
+                                          Party.class),
+                    patient1, patient2, patient3);
+
+        // disable the rel2 relationship and verify that customer2 is excluded when active=true
+        rel2.setActiveStartTime(start1);
+        rel2.setActiveEndTime(end1);
+
+        checkEquals(bean.getTargetObjects(customer.getEntityRelationships(), new String[]{OWNER, LOCATION}, true,
+                                          Party.class),
+                    patient1);
+        checkEquals(bean.getTargetObjects(customer.getEntityRelationships(), new String[]{OWNER, LOCATION}, false,
+                                          Party.class),
+                    patient1, patient2, patient3);
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#getNodeTargetObjects(String),
+     * {@link IMObjectBean#getNodeTargetObjects(String, Class)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Date)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Date, Class)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Date, boolean)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Date, boolean, Class)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Predicate)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Predicate, boolean)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Predicate, boolean, Class)}
+     * {@link IMObjectBean#getNodeTargetObjects(String, Class, Class)} and
+     * {@link IMObjectBean#getNodeTargetObjects(String, Class, Class, boolean)} methods.
+     */
+    @Test
+    public void testGetNodeTargetObjects() {
+        Party customer = createCustomer();
+        Party patient1 = createPatient();
+        Party patient2 = createPatient();
+        Party patient3 = createPatient();
+        EntityRelationship rel1 = addOwnerRelationship(customer, patient1);
+        EntityRelationship rel2 = addOwnerRelationship(customer, patient2);
+        EntityRelationship rel3 = addOwnerRelationship(customer, patient3);
+        save(customer, patient1, patient2, patient3);
+        Date now = new Date();
+        Date start1 = new Date(now.getTime() - 60 * 1000);
+        Date end1 = new Date(now.getTime() - 50 * 1000);
+
+        IMObjectBean bean = new IMObjectBean(customer);
+        checkEquals(bean.getNodeTargetObjects("patients"), patient1, patient2, patient3);
+        checkEquals(bean.getNodeTargetObjects("patients", Party.class), patient1, patient2, patient3);
+
+        // set the relationship times to the past verify it is filtered out
+        rel1.setActiveStartTime(start1);
+        rel1.setActiveEndTime(end1);
+        checkEquals(bean.getNodeTargetObjects("patients", now), patient2, patient3);
+        checkEquals(bean.getNodeTargetObjects("patients", now, Party.class), patient2, patient3);
+
+        patient3.setActive(false);
+        save(patient3);
+        checkEquals(bean.getNodeTargetObjects("patients", now, true), patient2);
+        checkEquals(bean.getNodeTargetObjects("patients", now, false), patient2, patient3);
+
+        checkEquals(bean.getNodeTargetObjects("patients", now, true, Party.class), patient2);
+        checkEquals(bean.getNodeTargetObjects("patients", now, false, Party.class), patient2, patient3);
+
+        checkEquals(bean.getNodeTargetObjects("patients", new IsActiveRelationship(now)), patient2);
+        checkEquals(bean.getNodeTargetObjects("patients", new IsActiveRelationship(now), false), patient2, patient3);
+        checkEquals(bean.getNodeTargetObjects("patients", new IsActiveRelationship(now), false, Party.class),
+                    patient2, patient3);
+
+        Map<EntityRelationship, Entity> expected1 = new HashMap<EntityRelationship, Entity>();
+        expected1.put(rel2, patient2);
+        assertEquals(expected1, bean.getNodeTargetObjects("patients", Party.class, EntityRelationship.class));
+
+        Map<EntityRelationship, Entity> expected2 = new HashMap<EntityRelationship, Entity>();
+        expected2.put(rel1, patient1);
+        expected2.put(rel2, patient2);
+        expected2.put(rel3, patient3);
+        assertEquals(expected1, bean.getNodeTargetObjects("patients", Party.class, EntityRelationship.class, true));
+        assertEquals(expected2, bean.getNodeTargetObjects("patients", Party.class, EntityRelationship.class, false));
     }
 
 }
