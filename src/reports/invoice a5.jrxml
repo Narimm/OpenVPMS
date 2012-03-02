@@ -370,7 +370,7 @@
 			</textField>
 			<subreport isUsingCache="false">
 				<reportElement x="0" y="118" width="345" height="11"/>
-				<dataSourceExpression><![CDATA[$P{dataSource}.getExpressionDataSource("party:getReminders(., 1, 'YEARS')")]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[$P{dataSource}.getExpressionDataSource("reminder:getReminders(., 1, 'YEARS')")]]></dataSourceExpression>
 				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA["invoiceRemindersA5.jrxml"]]></subreportExpression>
 			</subreport>
 		</band>
