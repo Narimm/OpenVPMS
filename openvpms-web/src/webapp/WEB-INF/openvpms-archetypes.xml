@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xmlns:ws="http://jax-ws.dev.java.net/spring/core"
-       xmlns:wss="http://jax-ws.dev.java.net/spring/servlet"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-          http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
-          http://jax-ws.dev.java.net/spring/core http://jax-ws.dev.java.net/spring/core.xsd
-          http://jax-ws.dev.java.net/spring/servlet http://jax-ws.dev.java.net/spring/servlet.xsd
-          http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <!-- ================================================================== -->
     <!--                    APPOINTMENT SERVICE                             -->
@@ -61,12 +53,20 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
     <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
         <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean name="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
+        <constructor-arg index="0" ref="archetypeRuleService"/>
     </bean>
 
     <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules">

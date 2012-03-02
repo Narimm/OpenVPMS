@@ -299,7 +299,6 @@
         <constructor-arg index="0" ref="archetypeRuleService"/>
     </bean>
 
-
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
@@ -314,6 +313,13 @@
                         <constructor-arg ref="archetypeRuleService"/>
                         <constructor-arg ref="lookupService"/>
                         <constructor-arg ref="patientRules"/>
+                    </bean>
+                </entry>
+                <entry key="reminder">
+                    <bean class="org.openvpms.archetype.function.reminder.ReminderFunctions">
+                        <constructor-arg index="0" ref="archetypeService"/>
+                        <constructor-arg index="1" ref="reminderRules"/>
+                        <constructor-arg index="2" ref="customerRules"/>
                     </bean>
                 </entry>
                 <entry key="date"

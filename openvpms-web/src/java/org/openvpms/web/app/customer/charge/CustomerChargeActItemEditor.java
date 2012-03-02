@@ -736,18 +736,11 @@ public class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return a the reminder type relationships
      */
     private Map<Entity, EntityRelationship> getReminderTypes(Product product) {
-        Map<Entity, EntityRelationship> result = Collections.emptyMap();
-        EntityBean productBean = new EntityBean(product);
-        if (productBean.hasNode(REMINDERS)) {
-            List<EntityRelationship> relationships = productBean.getNodeRelationships(REMINDERS);
-            result = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
-            for (EntityRelationship relationship : relationships) {
-                IMObjectBean bean = new IMObjectBean(relationship);
-                Entity reminderType = (Entity) bean.getObject("target");
-                if (reminderType != null && reminderType.isActive()) {
-                    result.put(reminderType, relationship);
-                }
-            }
+        Map<EntityRelationship, Entity> map = reminderRules.getReminderTypes(product);
+        Map<Entity, EntityRelationship> result
+                = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
+        for (Map.Entry<EntityRelationship, Entity> entry : map.entrySet()) {
+            result.put(entry.getValue(), entry.getKey());
         }
         return result;
     }
