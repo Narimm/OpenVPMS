@@ -18,25 +18,42 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.PredicateUtils;
+import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
-import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
+import org.openvpms.component.business.service.archetype.functor.IsA;
+import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
+import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.AbstractPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.ACTIVE_NOW;
+import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.SOURCE;
+import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.TARGET;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 
 
 /**
@@ -386,7 +403,7 @@ public class IMObjectBean {
      *
      * @param name the node name
      * @return the collection corresponding to the node
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public List<IMObject> getValues(String name) {
         NodeDescriptor node = getNode(name);
@@ -397,22 +414,1024 @@ public class IMObjectBean {
      * Returns the values of a collection node, converted to the supplied type.
      *
      * @param name the node name
-     * @param type the class type
+     * @param type the expected object type
      * @return the collection corresponding to the node
-     * @throws IMObjectBeanException if the node does't exist or an element
-     *                               is of the wrong type
+     * @throws IMObjectBeanException if the node doesn't exist or an element is of the wrong type
      */
     @SuppressWarnings("unchecked")
     public <T extends IMObject> List<T> getValues(String name, Class<T> type) {
         List<IMObject> values = getValues(name);
         for (IMObject value : values) {
             if (!type.isInstance(value)) {
-                throw new IMObjectBeanException(
-                        InvalidClassCast, type.getName(),
-                        value.getClass().getName());
+                throw new IMObjectBeanException(InvalidClassCast, type.getName(), value.getClass().getName());
             }
         }
         return (List<T>) values;
+    }
+
+    /**
+     * Returns the values of a collection node that match the supplied predicate.
+     *
+     * @param name      the node name
+     * @param predicate the predicate
+     * @return the objects matching the predicate
+     * @throws IMObjectBeanException if the node doesn't exist
+     */
+    public List<IMObject> getValues(String name, Predicate predicate) {
+        return select(getValues(name), predicate);
+    }
+
+    /**
+     * Returns the values of a collection node that match the supplied predicate.
+     *
+     * @param name      the node name
+     * @param predicate the predicate
+     * @param type      the expected object type
+     * @return the objects matching the predicate
+     * @throws IMObjectBeanException if the node doesn't exist
+     */
+    public <T extends IMObject> List<T> getValues(String name, Predicate predicate, Class<T> type) {
+        return select(getValues(name, type), predicate);
+    }
+
+    /**
+     * Returns the first value of a collection node that matches the supplied predicate.
+     *
+     * @param name      the node name
+     * @param predicate the predicate
+     * @return the first object matching the predicate, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException if the node doesn't exist
+     */
+    public IMObject getValue(String name, Predicate predicate) {
+        for (IMObject object : getValues(name)) {
+            if (predicate.evaluate(object)) {
+                return object;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the source object from the first active {@link IMObjectRelationship} with active source object, for the
+     * specified relationship node.
+     *
+     * @param node the relationship node name
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeSourceObject(String node) {
+        return getNodeSourceObject(node, true);
+    }
+
+    /**
+     * Returns the source object from the first {@link IMObjectRelationship} for the specified node.
+     *
+     * @param node   the relationship node name
+     * @param active determines if the relationship and source object must be active
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeSourceObject(String node, boolean active) {
+        return getNodeSourceObject(node, getDefaultPredicate(active), active);
+    }
+
+    /**
+     * Returns the source object from the first active {@link IMObjectRelationship} with active source object, matching
+     * the specified predicate.
+     *
+     * @param node      the relationship node name
+     * @param predicate the predicate
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeSourceObject(String node, Predicate predicate) {
+        return getNodeSourceObject(node, predicate, true);
+    }
+
+    /**
+     * Returns the source object from the first active {@link IMObjectRelationship} matching the specified predicate.
+     *
+     * @param node      the relationship node name
+     * @param predicate the predicate
+     * @param active    determines if the object must be active or not
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeSourceObject(String node, Predicate predicate, boolean active) {
+        return getRelatedObject(node, predicate, SOURCE, active);
+    }
+
+    /**
+     * Returns the target object from the first active {@link IMObjectRelationship} with active target object, for the
+     * specified node.
+     *
+     * @param node the relationship node name
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeTargetObject(String node) {
+        return getNodeTargetObject(node, true);
+    }
+
+    /**
+     * Returns the target object from the first {@link IMObjectRelationship} for the specified node.
+     *
+     * @param node   the relationship node
+     * @param active determines if the relationship and target object must be active
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeTargetObject(String node, boolean active) {
+        return getNodeTargetObject(node, getDefaultPredicate(active), active);
+    }
+
+    /**
+     * Returns the target object from the first active {@link IMObjectRelationship} with active target object, for the
+     * specified node.
+     *
+     * @param node      the relationship node name
+     * @param predicate the predicate
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeTargetObject(String node, Predicate predicate) {
+        return getNodeTargetObject(node, predicate, true);
+    }
+
+    /**
+     * Returns the target object from the first active {@link IMObjectRelationship} for the specified node.
+     *
+     * @param node      the relationship node name
+     * @param predicate the predicate
+     * @param active    determines if the object must be active or not
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeTargetObject(String node, Predicate predicate, boolean active) {
+        return getRelatedObject(node, predicate, TARGET, active);
+    }
+
+    /**
+     * Returns the target object from the first {@link PeriodRelationship} matching the specified short name. The
+     * relationship must be active at the specified time, and have an active target object.
+     *
+     * @param node the relationship node name
+     * @param time the time
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeSourceObject(String node, Date time) {
+        return getNodeSourceObject(node, time, true);
+    }
+
+    /**
+     * Returns the source object from the first {@link PeriodRelationship} that is active at the specified time, for the
+     * specified node.
+     *
+     * @param node   the relationship node
+     * @param time   the time
+     * @param active determines if the object must be active
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeSourceObject(String node, Date time, boolean active) {
+        return getNodeSourceObject(node, new IsActiveRelationship(time), active);
+    }
+
+    /**
+     * Returns the target object from the first {@link PeriodRelationship} with active target object that is active at
+     * the specified time, for the specified node.
+     *
+     * @param node the relationship node
+     * @param time the time
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeTargetObject(String node, Date time) {
+        return getNodeTargetObject(node, time, true);
+    }
+
+    /**
+     * Returns the target object from the first {@link PeriodRelationship} that is active at the specified time, for the
+     * specified node.
+     *
+     * @param node   the relationship node
+     * @param time   the time
+     * @param active determines if the object must be active
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObject getNodeTargetObject(String node, Date time, boolean active) {
+        return getNodeTargetObject(node, new IsActiveRelationship(time), active);
+    }
+
+    /**
+     * Returns the active source objects from each active {@link IMObjectRelationship} for the specified node.
+     * If a source reference cannot be resolved, it will be ignored.
+     *
+     * @param node the relationship node
+     * @return a list of active source objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeSourceObjects(String node) {
+        return getNodeSourceObjects(node, IMObject.class);
+    }
+
+    /**
+     * Returns the active source objects from each active {@link IMObjectRelationship} for the specified node.
+     * If a source reference cannot be resolved, it will be ignored.
+     *
+     * @param node the relationship node
+     * @param type the object type
+     * @return a list of active source objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeSourceObjects(String node, Class<T> type) {
+        return getRelatedObjects(node, ACTIVE_NOW, SOURCE, true, type);
+    }
+
+    /**
+     * Returns the active source objects from each {@link PeriodRelationship} for the specified node that is active at
+     * the specified time.
+     *
+     * @param node the relationship node
+     * @param time the time
+     * @return a list of active source objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeSourceObjects(String node, Date time) {
+        return getNodeSourceObjects(node, time, IMObject.class);
+    }
+
+    /**
+     * Returns the active source objects from each {@link PeriodRelationship} for the specified node that is active at
+     * the specified time.
+     *
+     * @param node the relationship node
+     * @param time the time
+     * @param type the object type
+     * @return a list of active source objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeSourceObjects(String node, Date time, Class<T> type) {
+        return getNodeSourceObjects(node, time, true, type);
+    }
+
+    /**
+     * Returns the source objects from each {@link PeriodRelationship} for the specified node that is active at the
+     * specified time.
+     *
+     * @param node   the relationship node
+     * @param time   the time
+     * @param active determines if the objects must be active
+     * @return a list of source objects. May contain inactive objects if <tt>active</tt> is <tt>false</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeSourceObjects(String node, Date time, boolean active) {
+        return getNodeSourceObjects(node, new IsActiveRelationship(time), active);
+    }
+
+    /**
+     * Returns the source objects from each {@link PeriodRelationship} for the specified node that is active at the
+     * specified time.
+     *
+     * @param node   the relationship node
+     * @param time   the time
+     * @param active determines if the objects must be active
+     * @param type   the object type
+     * @return a list of source objects. May contain inactive objects if <tt>active</tt> is <tt>false</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeSourceObjects(String node, Date time, boolean active, Class<T> type) {
+        return getNodeSourceObjects(node, new IsActiveRelationship(time), active, type);
+    }
+
+    /**
+     * Returns the active source objects from each {@link IMObjectRelationship} for the specified node that matches the
+     * specified predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @return a list of source objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeSourceObjects(String node, Predicate predicate) {
+        return getNodeSourceObjects(node, predicate, true);
+    }
+
+    /**
+     * Returns the source objects from each {@link IMObjectRelationship} for the specified node that matches the
+     * specified predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @param active    determines if the objects must be active
+     * @return a list of source objects. May contain inactive objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeSourceObjects(String node, Predicate predicate, boolean active) {
+        return getNodeSourceObjects(node, predicate, active, IMObject.class);
+    }
+
+    /**
+     * Returns the source objects from each {@link IMObjectRelationship} for the specified node that matches the
+     * specified predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @param active    determines if the objects must be active
+     * @param type      the object type
+     * @return a list of source objects. May contain inactive objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeSourceObjects(String node, Predicate predicate, boolean active,
+                                                             Class<T> type) {
+        return getRelatedObjects(node, predicate, SOURCE, active, type);
+    }
+
+    /**
+     * Returns the active source objects from each {@link IMObjectRelationship} for the specified node, keyed on their
+     * relationship.
+     *
+     * @param node             the relationship node
+     * @param type             the source object type
+     * @param relationshipType the relationship object type
+     * @return the source objects, keyed on their relationships
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> Map<R, T> getNodeSourceObjects(
+            String node, Class<T> type, Class<R> relationshipType) {
+        return getNodeSourceObjects(node, type, relationshipType, true);
+    }
+
+    /**
+     * Returns the active source objects from each {@link IMObjectRelationship} for the specified node, keyed
+     * on their relationship.
+     *
+     * @param node             the relationship node
+     * @param type             the source object type
+     * @param relationshipType the relationship object type
+     * @param active    determines if the objects must be active
+     * @return the source objects, keyed on their relationships
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> Map<R, T> getNodeSourceObjects(
+            String node, Class<T> type, Class<R> relationshipType, boolean active) {
+        List<R> relationships = getValues(node, relationshipType);
+        return getRelationshipObjects(relationships, getDefaultPredicate(active), SOURCE, active, type);
+    }
+
+    /**
+     * Returns the active target objects from each active {@link IMObjectRelationship} for the specified node. If a
+     * target reference cannot be resolved, it will be ignored.
+     *
+     * @param node the relationship node
+     * @return a list of active target objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeTargetObjects(String node) {
+        return getNodeTargetObjects(node, IMObject.class);
+    }
+
+    /**
+     * Returns the active target objects from each active {@link IMObjectRelationship} for the specified node. If a
+     * target reference cannot be resolved, it will be ignored.
+     *
+     * @param node the relationship node
+     * @param type the object type
+     * @return a list of active target objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeTargetObjects(String node, Class<T> type) {
+        return getNodeTargetObjects(node, ACTIVE_NOW, true, type);
+    }
+
+    /**
+     * Returns the active target objects from each {@link PeriodRelationship} for the specified node that is active at
+     * the specified time.
+     *
+     * @param node the relationship node
+     * @param time the time
+     * @return a list of active target objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeTargetObjects(String node, Date time) {
+        return getNodeTargetObjects(node, time, IMObject.class);
+    }
+
+    /**
+     * Returns the active target objects from each {@link PeriodRelationship} for the specified node that is active at
+     * the specified time.
+     *
+     * @param node the relationship node
+     * @param time the time
+     * @param type the object type
+     * @return a list of active target objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeTargetObjects(String node, Date time, Class<T> type) {
+        return getNodeTargetObjects(node, time, true, type);
+    }
+
+    /**
+     * Returns the target objects from each {@link PeriodRelationship} for the specified node that is active at the
+     * specified time.
+     *
+     * @param node   the relationship node
+     * @param time   the time
+     * @param active determines if the objects must be active
+     * @return a list of target objects. May contain inactive entities if <tt>active</tt> is <tt>false</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeTargetObjects(String node, Date time, boolean active) {
+        return getNodeTargetObjects(node, time, active, IMObject.class);
+    }
+
+    /**
+     * Returns the target objects from each {@link PeriodRelationship} for the specified node that is active at the
+     * specified time.
+     *
+     * @param node   the relationship node
+     * @param time   the time
+     * @param active determines if the objects must be active
+     * @param type      the expected object type
+     * @return a list of target objects. May contain inactive entities if <tt>active</tt> is <tt>false</tt>
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeTargetObjects(String node, Date time, boolean active, Class<T> type) {
+        return getNodeTargetObjects(node, new IsActiveRelationship(time), active, type);
+    }
+
+    /**
+     * Returns the active target objects from each {@link IMObjectRelationship} for the specified node that matches the
+     * specified predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @return a list of target objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeTargetObjects(String node, Predicate predicate) {
+        return getNodeTargetObjects(node, predicate, IMObject.class);
+    }
+
+    /**
+     * Returns the active target objects from each relationship for the specified node that matches the specified
+     * predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @param type      the object type
+     * @return a list of target objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeTargetObjects(String node, Predicate predicate, Class<T> type) {
+        return getNodeTargetObjects(node, predicate, true, type);
+    }
+
+    /**
+     * Returns the target objects from each {@link IMObjectRelationship} for the specified node that matches the
+     * specified predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @param active    determines if the objects must be active
+     * @return a list of target objects. May  contain inactive objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<IMObject> getNodeTargetObjects(String node, Predicate predicate, boolean active) {
+        return getRelatedObjects(node, predicate, TARGET, active, IMObject.class);
+    }
+
+    /**
+     * Returns the target objects from each {@link IMObjectRelationship} for the specified node that matches the
+     * specified predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @param active    determines if the objects must be active
+     * @param type      the object type
+     * @return a list of target objects. May  contain inactive objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject> List<T> getNodeTargetObjects(String node, Predicate predicate, boolean active,
+                                                             Class<T> type) {
+        return getRelatedObjects(node, predicate, TARGET, active, type);
+    }
+
+    /**
+     * Returns the active target objects from each {@link IMObjectRelationship} for the specified node, keyed on their
+     * relationship.
+     *
+     * @param node             the relationship node
+     * @param type             the target object type
+     * @param relationshipType the relationship object type
+     * @return the target objects, keyed on their relationships
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> Map<R, T> getNodeTargetObjects(
+            String node, Class<T> type, Class<R> relationshipType) {
+        return getNodeTargetObjects(node, type, relationshipType, true);
+    }
+
+    /**
+     * Returns the active target objects from each {@link IMObjectRelationship} for the specified node, keyed
+     * on their relationship.
+     *
+     * @param node             the relationship node
+     * @param type             the target object type
+     * @param relationshipType the relationship object type
+     * @param active    determines if the objects must be active
+     * @return the target objects, keyed on their relationships
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> Map<R, T> getNodeTargetObjects(
+            String node, Class<T> type, Class<R> relationshipType, boolean active) {
+        List<R> relationships = getValues(node, relationshipType);
+        return getRelationshipObjects(relationships, getDefaultPredicate(active), TARGET, active, type);
+    }
+
+    /**
+     * Returns the source object references from each active {@link IMObjectRelationship} for the specified node.
+     *
+     * @param node the relationship node
+     * @return a list of source object references. May contain references to both active and inactive objects
+     */
+    public List<IMObjectReference> getNodeSourceObjectRefs(String node) {
+        return getNodeSourceObjectRefs(node, ACTIVE_NOW);
+    }
+
+    /**
+     * Returns the source object references from each {@link PeriodRelationship} that is active at the specified time,
+     * for the specified node.
+     *
+     * @param node the relationship node
+     * @param time the time
+     * @return a list of source object references. May contain references to both active and inactive objects
+     */
+    public List<IMObjectReference> getNodeSourceObjectRefs(String node, Date time) {
+        return getNodeSourceObjectRefs(node, new IsActiveRelationship(time));
+    }
+
+    /**
+     * Returns the source object references from each {@link PeriodRelationship} for the specified node that matches the
+     * supplied predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @return a list of source object references. May contain references to both active and inactive objects
+     */
+    public List<IMObjectReference> getNodeSourceObjectRefs(String node, Predicate predicate) {
+        return getRelatedObjectRefs(node, predicate, SOURCE);
+    }
+
+    /**
+     * Returns the target object references from each active {@link PeriodRelationship} for the specified node.
+     *
+     * @param node the relationship node
+     * @return a list of target object references. May contain references to both active and inactive objects
+     */
+    public List<IMObjectReference> getNodeTargetObjectRefs(String node) {
+        return getNodeTargetObjectRefs(node, ACTIVE_NOW);
+    }
+
+    /**
+     * Returns the target object references from each {@link PeriodRelationship} that is active at the specified time,
+     * for the specified node.
+     *
+     * @param node the relationship node
+     * @param time the time
+     * @return a list of target object references. May contain references to both active and inactive objects
+     */
+    public List<IMObjectReference> getNodeTargetObjectRefs(String node, Date time) {
+        return getNodeTargetObjectRefs(node, new IsActiveRelationship(time));
+    }
+
+    /**
+     * Returns the target object references from each {@link IMObjectRelationship} for the specified node that matches
+     * the supplied predicate.
+     *
+     * @param node      the relationship node
+     * @param predicate the predicate
+     * @return a list of target object references. May contain references to both active and inactive objects
+     */
+    public List<IMObjectReference> getNodeTargetObjectRefs(String node, Predicate predicate) {
+        return getRelatedObjectRefs(node, predicate, TARGET);
+    }
+
+    /**
+     * Returns the active source objects from each relationship that matches the specified short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the short name
+     * @param type          the expected object type
+     * @return a list of source objects that match the given criteria
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getSourceObjects(Collection<R> relationships,
+                                                                                         String shortName,
+                                                                                         Class<T> type) {
+        return getSourceObjects(relationships, new String[]{shortName}, type);
+    }
+
+    /**
+     * Returns the active source objects from each relationship that matches the specified short names.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the short names
+     * @param type          the expected object type
+     * @return a list of source objects that match the given criteria
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getSourceObjects(Collection<R> relationships,
+                                                                                         String[] shortNames,
+                                                                                         Class<T> type) {
+        return getSourceObjects(relationships, shortNames, true, type);
+    }
+
+    /**
+     * Returns the source objects from each relationship that matches the specified short names.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the short names
+     * @param active        determines if the relationship and source object must be active
+     * @param type          the expected object type
+     * @return a list of source objects that match the given criteria
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getSourceObjects(Collection<R> relationships,
+                                                                                         String[] shortNames,
+                                                                                         boolean active,
+                                                                                         Class<T> type) {
+        return getRelatedObjects(relationships, getActiveIsA(active, shortNames), SOURCE, active, type);
+    }
+
+    /**
+     * Returns the active target objects from each relationship that matches the specified short names.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param type          the expected object type
+     * @return a list of target objects that match the given criteria
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getTargetObjects(Collection<R> relationships,
+                                                                                         String shortName,
+                                                                                         Class<T> type) {
+        return getTargetObjects(relationships, new String[]{shortName}, type);
+    }
+
+    /**
+     * Returns the active target objects from each relationship that matches the specified short names.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param type          the expected object type
+     * @return a list of target objects that match the given criteria
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getTargetObjects(Collection<R> relationships,
+                                                                                         String[] shortNames,
+                                                                                         Class<T> type) {
+        return getTargetObjects(relationships, shortNames, true, type);
+    }
+
+    /**
+     * Returns the active target objects from each relationship that matches the specified short names.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param active        determines if the relationship and target object must be active
+     * @param type          the expected object type
+     * @return a list of target objects that match the given criteria
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getTargetObjects(Collection<R> relationships,
+                                                                                         String[] shortNames,
+                                                                                         boolean active,
+                                                                                         Class<T> type) {
+        return getRelatedObjects(relationships, getActiveIsA(active, shortNames), TARGET, active, type);
+    }
+
+    /**
+     * Returns the source object from the first active relationship with active source object, for the specified
+     * relationship short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String shortName) {
+        return getSourceObject(relationships, new String[]{shortName});
+    }
+
+    /**
+     * Returns the source object from the first relationship for the specified relationship short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param active        determines if the relationship and object must be active
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String shortName,
+                                                                     boolean active) {
+        return getSourceObject(relationships, new String[]{shortName}, active);
+    }
+
+    /**
+     * Returns the source object from the first active relationship matching the specified relationship short names and
+     * having an active source object.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String[] shortNames) {
+        return getSourceObject(relationships, shortNames, true);
+    }
+
+    /**
+     * Returns the source object from the first relationship matching the specified relationship short names.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param active        determines if the relationship and source object must be active
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String[] shortNames,
+                                                                     boolean active) {
+        return getRelatedObject(relationships, getActiveIsA(active, shortNames), SOURCE, active);
+    }
+
+    /**
+     * Returns the target object from the first active relationship with active target object, for the specified
+     * relationship short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @return the active object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String shortName) {
+        return getTargetObject(relationships, new String[]{shortName});
+    }
+
+    /**
+     * Returns the target object from the first relationship for the specified relationship short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param active        determines if the relationship and object must be active
+     * @return the object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String shortName,
+                                                                     boolean active) {
+        return getTargetObject(relationships, new String[]{shortName}, active);
+    }
+
+    /**
+     * Returns the target object from the first active relationship matching the specified relationship short names and
+     * having an active target object.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String[] shortNames) {
+        return getTargetObject(relationships, shortNames, true);
+    }
+
+    /**
+     * Returns the target object from the first relationship matching the specified relationship short names.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param active        determines if the relationship and target object must be active
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String[] shortNames,
+                                                                     boolean active) {
+        return getRelatedObject(relationships, getActiveIsA(active, shortNames), TARGET, active);
+    }
+
+    /**
+     * Returns the source object from the first relationship matching the specified short name. The relationship must be
+     * active at the specified time, and have an active source object.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param time          the time
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends PeriodRelationship> IMObject getSourceObject(Collection<R> relationships, String shortName,
+                                                                   Date time) {
+        return getSourceObject(relationships, shortName, time, true);
+    }
+
+    /**
+     * Returns the source object from the first relationship matching the specified short name. The relationship must be
+     * active at the specified time.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param time          the time
+     * @param active        determines if the object must be active
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends PeriodRelationship> IMObject getSourceObject(Collection<R> relationships, String shortName,
+                                                                   Date time, boolean active) {
+        return getSourceObject(relationships, new String[]{shortName}, time, active);
+    }
+
+    /**
+     * Returns the source object from the first relationship matching the specified short names. The relationship must
+     * be active at the specified time, and have an active source object.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param time          the time
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends PeriodRelationship> IMObject getSourceObject(Collection<R> relationships, String[] shortNames,
+                                                                   Date time) {
+        return getSourceObject(relationships, shortNames, time, true);
+    }
+
+    /**
+     * Returns the source object from the first relationship matching the specified short names. The relationship must
+     * be active at the specified time.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param time          the time
+     * @param active        determines if the object must be active
+     * @return the source object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends PeriodRelationship> IMObject getSourceObject(Collection<R> relationships, String[] shortNames,
+                                                                   Date time, boolean active) {
+        return getRelatedObject(relationships, getIsActiveRelationship(time, shortNames), SOURCE, active);
+    }
+
+    /**
+     * Returns the source object from the first relationship matching the specified short name. The relationship must be
+     * active at the specified time, and have an active target object.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param time          the time
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends PeriodRelationship> IMObject getTargetObject(Collection<R> relationships, String shortName,
+                                                                   Date time) {
+        return getTargetObject(relationships, shortName, time, true);
+    }
+
+    /**
+     * Returns the target object from the first relationship
+     * matching the specified short name. The relationship must be active at
+     * the specified time.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param time          the time
+     * @param active        determines if the object must be active
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends PeriodRelationship> IMObject getTargetObject(Collection<R> relationships, String shortName,
+                                                                   Date time, boolean active) {
+        return getTargetObject(relationships, new String[]{shortName}, time, active);
+    }
+
+    /**
+     * Returns the target object from the first relationship
+     * matching the specified short names. The relationship must be active at
+     * the specified time, and have an active target object.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param time          the time
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends PeriodRelationship> IMObject getTargetObject(Collection<R> relationships, String[] shortNames,
+                                                                   Date time) {
+        return getTargetObject(relationships, shortNames, time, true);
+    }
+
+    /**
+     * Returns the target object from the first relationship matching the specified short names. The relationship must
+     * be active at the specified time.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param time          the time
+     * @param active        determines if the relationship must be active
+     * @return the target object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends PeriodRelationship> IMObject getTargetObject(Collection<R> relationships, String[] shortNames,
+                                                                   Date time, boolean active) {
+        return getRelatedObject(relationships, getIsActiveRelationship(time, shortNames), TARGET, active);
+    }
+
+    /**
+     * Returns the source object reference from the first active object relationship matching the specified short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @return the source reference, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObjectReference getSourceObjectRef(Collection<R> relationships,
+                                                                                 String shortName) {
+        return getSourceObjectRef(relationships, shortName, true);
+    }
+
+    /**
+     * Returns the source object reference from the first relationship matching the specified short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param active        determines if the relationship must be active
+     * @return the source reference, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObjectReference getSourceObjectRef(Collection<R> relationships,
+                                                                                 String shortName, boolean active) {
+        return getSourceObjectRef(relationships, new String[]{shortName}, active);
+    }
+
+    /**
+     * Returns the source object reference from the first relationship matching the specified short names.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param active        determines if the relationship must be active
+     * @return the source reference, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObjectReference getSourceObjectRef(Collection<R> relationships,
+                                                                                 String[] shortNames, boolean active) {
+        return getObjectRef(relationships, shortNames, active, SOURCE);
+    }
+
+    /**
+     * Returns the target object reference from the first active object relationship matching the specified short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @return the target reference, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObjectReference getTargetObjectRef(Collection<R> relationships,
+                                                                                 String shortName) {
+        return getTargetObjectRef(relationships, shortName, true);
+    }
+
+    /**
+     * Returns the target object reference from the first relationship matching the specified short name.
+     *
+     * @param relationships the relationships
+     * @param shortName     the relationship short name
+     * @param active        determines if the relationship must be active
+     * @return the target reference, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObjectReference getTargetObjectRef(Collection<R> relationships,
+                                                                                 String shortName, boolean active) {
+        return getTargetObjectRef(relationships, new String[]{shortName}, active);
+    }
+
+    /**
+     * Returns the target object reference from the first relationship matching the specified short name.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the relationship short names
+     * @param active        determines if the relationship must be active
+     * @return the target reference, or <tt>null</tt> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> IMObjectReference getTargetObjectRef(Collection<R> relationships,
+                                                                                 String[] shortNames, boolean active) {
+        return getObjectRef(relationships, shortNames, active, TARGET);
     }
 
     /**
@@ -463,11 +1482,35 @@ public class IMObjectBean {
     }
 
     /**
+     * Resolves a reference, verifying the object is of the expected type.
+     *
+     * @param ref    the reference to resolve
+     * @param type   the expected object type
+     * @param active determines if the object must be active
+     * @return the resolved object, or <tt>null</tt> if it cannot be found or doesn't match the active criteria
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if an object isn't of the expected type
+     */
+    @SuppressWarnings("unchecked")
+    protected <T extends IMObject> T resolve(IMObjectReference ref, Class<T> type, boolean active) {
+        T result = null;
+        IMObject object = resolve(ref);
+        if (object != null) {
+            if (!type.isInstance(object)) {
+                throw new IMObjectBeanException(InvalidClassCast, type.getName(), object.getClass().getName());
+            }
+            if (active && object.isActive() || !active) {
+                result = (T) object;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Helper to resolve a reference.
      *
      * @param ref the reference. May be <tt>null</tt>
-     * @return the object corresponding to the reference or <tt>null</tt> if
-     *         none is found
+     * @return the object corresponding to the reference or <tt>null</tt> if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected IMObject resolve(IMObjectReference ref) {
@@ -504,20 +1547,208 @@ public class IMObjectBean {
     }
 
     /**
-     * Returns a node descriptor.
+     * Returns all objects for the specified relationship node that match the specified criteria.
      *
-     * @param name the node name
-     * @return the descriptor corresponding to <tt>name</tt>
-     * @throws IMObjectBeanException if the descriptor does't exist
+     * @param node      the relationship node
+     * @param predicate the criteria to filter relationships
+     * @param accessor  the object accessor
+     * @param active    determines if the objects must be active
+     * @param type      the expected object type
+     * @return a list of objects
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    protected NodeDescriptor getNode(String name) {
-        NodeDescriptor node = getArchetype().getNodeDescriptor(name);
-        if (node == null) {
-            String shortName = object.getArchetypeId().getShortName();
-            throw new IMObjectBeanException(NodeDescriptorNotFound, name,
-                                            shortName);
+    @SuppressWarnings("unchecked")
+    protected <T extends IMObject> List<T> getRelatedObjects(String node, Predicate predicate, RelationshipRef accessor,
+                                                             boolean active, Class<T> type) {
+        List<IMObjectReference> refs = getRelatedObjectRefs(node, predicate, accessor);
+        return resolve(refs, type, active);
+    }
+
+    /**
+     * Returns all related references for the specified node that match the specified criteria.
+     *
+     * @param node      the relationship node
+     * @param predicate the criteria
+     * @param accessor  the object accessor
+     * @return the matching references
+     */
+    protected List<IMObjectReference> getRelatedObjectRefs(String node, Predicate predicate, RelationshipRef accessor) {
+        List<IMObjectRelationship> relationships = getValues(node, IMObjectRelationship.class);
+        return getRelatedRefs(relationships, predicate, accessor);
+    }
+
+    /**
+     * Returns all object references from the supplied relationships that match the specified criteria.
+     *
+     * @param relationships the relationships
+     * @param predicate     the criteria
+     * @param accessor      the object accessor
+     * @return the matching references
+     */
+    protected <R extends IMObjectRelationship> List<IMObjectReference> getRelatedRefs(
+            Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
+        List<IMObjectReference> result = new ArrayList<IMObjectReference>();
+        relationships = select(relationships, predicate);
+        for (R relationship : relationships) {
+            IMObjectReference ref = accessor.transform(relationship);
+            if (ref != null) {
+                result.add(ref);
+            }
         }
-        return node;
+        return result;
+    }
+
+    /**
+     * Returns all objects for the specified relationships that match the specified criteria.
+     *
+     * @param relationships the relationships to search
+     * @param predicate     the criteria to filter relationships
+     * @param accessor      the object accessor
+     * @param active        determines if the objects must be active
+     * @param type          the expected object type
+     * @return a list of objects
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if an object isn't of the expected type
+     */
+    protected <R extends IMObjectRelationship, T extends IMObject> Map<R, T> getRelationshipObjects(
+            Collection<R> relationships, Predicate predicate, RelationshipRef accessor, boolean active,
+            Class<T> type) {
+        Map<R, T> result;
+        Map<R, IMObjectReference> refs = getRelationshipRefs(relationships, predicate, accessor);
+        if (refs.isEmpty()) {
+            result = Collections.emptyMap();
+        } else {
+            result = new HashMap<R, T>();
+            for (Map.Entry<R, IMObjectReference> entry : refs.entrySet()) {
+                T object = resolve(entry.getValue(), type, active);
+                if (object != null) {
+                    result.put(entry.getKey(), object);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all object references from the supplied relationships that match the specified criteria, keyed
+     * on their relationship.
+     *
+     * @param relationships the relationships
+     * @param predicate     the criteria
+     * @param accessor      the object accessor
+     * @return the matching references
+     */
+    protected <R extends IMObjectRelationship> Map<R, IMObjectReference> getRelationshipRefs(
+            Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
+        Map<R, IMObjectReference> result = new HashMap<R, IMObjectReference>();
+        relationships = select(relationships, predicate);
+        for (R relationship : relationships) {
+            IMObjectReference ref = accessor.transform(relationship);
+            if (ref != null) {
+                result.put(relationship, ref);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the object from the first relationship for the specified node that matches the specified criteria.
+     *
+     * @param node      the relationship node
+     * @param predicate the criteria
+     * @param accessor  the object accessor
+     * @param active    determines if the object must be active
+     * @return the first object, or <tt>null</tt> if none is found
+     * @throws IMObjectBeanException     if the node is invalid
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObject getRelatedObject(String node, Predicate predicate, RelationshipRef accessor, boolean active) {
+        List<IMObjectRelationship> relationships = getValues(node, IMObjectRelationship.class);
+        return getRelatedObject(relationships, predicate, accessor, active);
+    }
+
+    /**
+     * Returns all objects for the specified relationships that match the specified criteria.
+     *
+     * @param relationships the relationships to search
+     * @param predicate     the criteria to filter relationships
+     * @param accessor      the object accessor
+     * @param active        determines if the objects must be active
+     * @param type          the expected object type
+     * @return a list of objects
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if an object isn't of the expected type
+     */
+    protected <R extends IMObjectRelationship, T extends IMObject> List<T> getRelatedObjects(
+            Collection<R> relationships, Predicate predicate, RelationshipRef accessor, boolean active,
+            Class<T> type) {
+        List<IMObjectReference> refs = getRelatedRefs(relationships, predicate, accessor);
+        return resolve(refs, type, active);
+    }
+
+    /**
+     * Resolves references.
+     * <p/>
+     * If an object cannot be resolved, or doesn't match the active criteria, it is ignored.
+     *
+     * @param refs   the references to resolve
+     * @param type   the expected object type
+     * @param active determines if the objects must be active
+     * @return a list of objects
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if an object isn't of the expected type
+     */
+    protected <T extends IMObject> List<T> resolve(List<IMObjectReference> refs, Class<T> type, boolean active) {
+        if (refs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<T> result = new ArrayList<T>();
+        for (IMObjectReference ref : refs) {
+            T object = resolve(ref, type, active);
+            if (object != null) {
+                result.add(object);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the source or target from the first relationship matching the specified criteria.
+     * <p/>
+     * If active is <tt>true</tt> the object must be active in order to be returned.
+     * <p/>
+     * If active is <tt>false</tt>, then an active object will be returned in preference to an inactive one.
+     *
+     * @param relationships the relationships
+     * @param predicate     the predicate
+     * @param accessor      the relationship reference accessor
+     * @param active        determines if the object must be active or not
+     * @return the first object matching the criteria or <tt>null</tt> if none
+     *         is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected <R extends IMObjectRelationship> IMObject getRelatedObject(Collection<R> relationships,
+                                                                         Predicate predicate, RelationshipRef accessor,
+                                                                         boolean active) {
+        IMObject inactive = null;
+        for (R relationship : relationships) {
+            if (predicate.evaluate(relationship)) {
+                IMObjectReference ref = accessor.transform(relationship);
+                IMObject object = resolve(ref);
+                if (object != null) {
+                    if (object.isActive()) {
+                        // found a match, so return it
+                        return object;
+                    } else if (!active) {
+                        // can return inactive, but keep looking for an active
+                        // match
+                        inactive = object;
+                    }
+                }
+            }
+        }
+        // no active match found
+        return (!active && inactive != null) ? inactive : null;
     }
 
     /**
@@ -567,6 +1798,143 @@ public class IMObjectBean {
                                             archetypeId.getShortName(), name);
         }
         return result;
+    }
+
+    /**
+     * Returns the first object reference from the supplied relationship that matches the specified criteria.
+     *
+     * @param relationships the relationships
+     * @param predicate     the criteria
+     * @param accessor      the relationship reference accessor
+     * @return the matching reference, or <tt>null</tt>
+     */
+    protected <R extends IMObjectRelationship> IMObjectReference getRelatedRef(
+            Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
+        for (R relationship : relationships) {
+            if (predicate.evaluate(relationship)) {
+                IMObjectReference reference = accessor.transform(relationship);
+                if (reference != null) {
+                    return reference;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the first object reference matching the specified criteria.
+     *
+     * @param relationships the relationships
+     * @param shortNames    the short names
+     * @param active        determines if the relationship must be active
+     * @param accessor      the object accessor
+     * @return the first matching reference,or <tt>null</tt>
+     */
+    protected <R extends IMObjectRelationship> IMObjectReference getObjectRef(Collection<R> relationships,
+                                                                              String[] shortNames, boolean active,
+                                                                              RelationshipRef accessor) {
+        IMObjectReference ref = getRelatedRef(relationships, getActiveIsA(shortNames), accessor);
+        if (ref == null && !active) {
+            ref = getRelatedRef(relationships, new IsA(shortNames), accessor);
+        }
+        return ref;
+    }
+
+    /**
+     * Selects all objects matching a predicate.
+     *
+     * @param objects   the objects to match
+     * @param predicate the predicate
+     * @return the objects matching the predicate
+     */
+    protected <T> List<T> select(Collection<T> objects, Predicate predicate) {
+        List<T> result = new ArrayList<T>();
+        for (T object : objects) {
+            if (predicate.evaluate(object)) {
+                result.add(object);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Selects the first objects matching a predicate.
+     *
+     * @param objects   the objects to match
+     * @param predicate the predicate
+     * @return the first object matching the predicate or <tt>null</tt> if none is found
+     */
+    protected <T> T selectFirst(Collection<T> objects, Predicate predicate) {
+        for (T object : objects) {
+            if (predicate.evaluate(object)) {
+                return object;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper to return a predicate that checks that a relationship is
+     * active at the specified time, and is one of a set of archetypes.
+     *
+     * @param time       the time
+     * @param shortNames the relationship short names to match
+     * @return a new predicate
+     */
+    protected Predicate getIsActiveRelationship(Date time, String... shortNames) {
+        return new AndPredicate(new IsActiveRelationship(time), new IsA(shortNames));
+    }
+
+    /**
+     * Helper to rerturn a predicate that checks that a relationship is
+     * active now, if <tt>active</tt> is <tt>true</tt>, and is one of a set
+     * of archetypes.
+     *
+     * @param active     determines if the relationship must be active
+     * @param shortNames the relationship short names to match
+     * @return a new predicate
+     */
+    protected Predicate getActiveIsA(boolean active, String... shortNames) {
+        IsA isA = new IsA(shortNames);
+        return (active) ? new AndPredicate(ACTIVE_NOW, isA) : isA;
+    }
+
+    /**
+     * Helper to return a predicate that checks that a relationship is
+     * active now, and is one of a set of archetypes.
+     *
+     * @param shortNames the relationship short names to match
+     * @return a new predicate
+     */
+    protected Predicate getActiveIsA(String... shortNames) {
+        return new AndPredicate(ACTIVE_NOW, new IsA(shortNames));
+    }
+
+    /**
+     * Helper to return the default predicate for evaluating relationships.
+     *
+     * @param active determines if the relationship must be active
+     * @return the default predicate
+     */
+    protected Predicate getDefaultPredicate(boolean active) {
+        return (active) ? ACTIVE_NOW : PredicateUtils.truePredicate();
+    }
+
+    /**
+     * Returns a node descriptor.
+     *
+     * @param name the node name
+     * @return the descriptor corresponding to <tt>name</tt>
+     * @throws IMObjectBeanException if the descriptor does't exist
+     */
+    protected NodeDescriptor getNode(String name) {
+        NodeDescriptor node = getArchetype().getNodeDescriptor(name);
+        if (node == null) {
+            String shortName = object.getArchetypeId().getShortName();
+            throw new IMObjectBeanException(NodeDescriptorNotFound, name,
+                                            shortName);
+        }
+        return node;
     }
 
     /**

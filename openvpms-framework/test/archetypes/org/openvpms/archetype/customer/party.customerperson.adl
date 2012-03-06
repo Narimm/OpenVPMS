@@ -34,6 +34,22 @@
                         <property name="shortName"
                                   value="entityRelationship.patientOwner"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.patientLocation"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="owns" path="/sourceEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.patientOwner">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="entityRelationship.patientOwner"/>
+                    </propertyMap>
                 </propertyList>
             </assertion>
         </node>
