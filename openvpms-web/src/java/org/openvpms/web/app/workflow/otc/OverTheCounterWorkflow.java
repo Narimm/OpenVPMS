@@ -23,15 +23,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.PracticeMailContext;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
@@ -41,8 +39,6 @@ import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
-import org.openvpms.web.component.workflow.DefaultTaskListener;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
 
@@ -172,15 +168,16 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         IMObject sale = initial.getObject(CHARGES_COUNTER);
         sale = IMObjectHelper.reload(sale);
         if (sale != null) {
-            try {
-                IMObjectEditor editor = IMObjectEditorFactory.create(
-                        sale, new DefaultLayoutContext(true));
-                editor.delete();
-            } catch (OpenVPMSException exception) {
-                String title = Messages.get(
-                        "imobject.delete.failed.title");
-                ErrorHelper.show(title, exception);
-            }
+            // Workaround for OVPMS-1109. Note that this could lead to incorrect balances in the OTC account,
+            // as the POSTED charge may have had other payments allocated against it.
+            SaveHelper.delete(sale, new DefaultIMObjectDeletionListener());
+//            try {
+//                IMObjectEditor editor = IMObjectEditorFactory.create(sale, new DefaultLayoutContext(true));
+//                editor.delete();
+//            } catch (OpenVPMSException exception) {
+//                String title = Messages.get("imobject.delete.failed.title");
+//                ErrorHelper.show(title, exception);
+//            }
         }
     }
 
