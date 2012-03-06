@@ -24,12 +24,14 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -46,9 +48,11 @@ import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -195,7 +199,7 @@ public class ReminderRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Date calculateReminderDueDate(Date startTime, Entity reminderType) {
-        ReminderType type = new ReminderType(reminderType);
+        ReminderType type = new ReminderType(reminderType, service);
         return type.getDueDate(startTime);
     }
 
@@ -443,6 +447,113 @@ public class ReminderRules {
     }
 
     /**
+     * Returns the reminder types associated with a product.
+     *
+     * @param product the product
+     * @return the associated reminder types, keyed on their <em>entityRelationship.productReminder</em>
+     */
+    public Map<EntityRelationship, Entity> getReminderTypes(Product product) {
+        Map<EntityRelationship, Entity> result;
+        IMObjectBean bean = new IMObjectBean(product, service);
+        if (bean.hasNode("reminders")) {
+            result = bean.getNodeTargetObjects("reminders", Entity.class, EntityRelationship.class);
+        } else {
+            result = Collections.emptyMap();
+        }
+        return result;
+    }
+
+    /**
+     * Returns a reminder associated with an <em>act.patientDocumentForm</em>.
+     * <p/>
+     * For forms linked to an invoice item (via <em>actRelationship.invoiceItemDocument)</em>, this
+     * uses the invoice item to get the reminder. If there are multiple reminders for the invoice item,
+     * the one with the nearest due date will be returned.
+     * <br/>
+     * If there are multiple reminders with the same due date, the reminder with the lesser id will be used.
+     * <p/>
+     * For forms not linked to an invoice item that have a product with reminders, a reminder with the nearest due date
+     * to that of the form's start time will be returned.
+     * <p/>
+     * For forms that don't meet the above, <tt>null</tt> is returned.
+     *
+     * @param form the form
+     * @return the reminder, or <tt>null</tt> if there are no associated reminders
+     */
+    public Act getDocumentFormReminder(DocumentAct form) {
+        Act result;
+        ActBean formBean = new ActBean(form, service);
+        Act invoiceItem = formBean.getSourceAct("actRelationship.invoiceItemDocument");
+        if (invoiceItem != null) {
+            result = getInvoiceReminder(invoiceItem);
+        } else {
+            result = getProductReminder(formBean);
+        }
+        return result;
+    }
+
+    /**
+     * Returns a reminder associated with an invoice item.
+     * <p/>
+     * If there are multiple reminders for the invoice item, the one with the nearest due date will be returned.
+     *
+     * @param invoiceItem the invoice item
+     * @return the reminder, or <tt>null</tt> if there are no associated reminders
+     */
+    private Act getInvoiceReminder(Act invoiceItem) {
+        Act result = null;
+        Date resultDueDate = null;
+        ActBean bean = new ActBean(invoiceItem, service);
+        List<Act> reminders = bean.getNodeActs("reminders");
+        for (Act reminder : reminders) {
+            Date dueDate = reminder.getActivityEndTime();
+            if (dueDate != null) {
+                boolean found = false;
+                if (result == null) {
+                    found = true;
+                } else {
+                    int compare = DateRules.compareTo(dueDate, resultDueDate);
+                    if (compare < 0 || (compare == 0 && reminder.getId() < result.getId())) {
+                        found = true;
+                    }
+                }
+                if (found) {
+                    result = reminder;
+                    resultDueDate = dueDate;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a product reminder with the nearest due date to that of the forms start time will be returned.
+     *
+     * @param formBean the <em>act.patientDocumentForm</em> bean
+     * @return the reminder, or <tt>null</tt> if there are no reminders associated with the product
+     */
+    private Act getProductReminder(ActBean formBean) {
+        Act result = null;
+        Date resultDueDate = null;
+        Product product = (Product) formBean.getNodeParticipant("product");
+        if (product != null) {
+            Party patient = (Party) formBean.getNodeParticipant("patient");
+            Date startTime = formBean.getDate("startTime");
+            Map<EntityRelationship, Entity> reminderTypes = getReminderTypes(product);
+            for (Map.Entry<EntityRelationship, Entity> entry : reminderTypes.entrySet()) {
+                EntityRelationship relationship = entry.getKey();
+                Entity reminderType = entry.getValue();
+                Date dueDate = calculateProductReminderDueDate(startTime, relationship);
+                if (resultDueDate == null || DateRules.compareTo(dueDate, resultDueDate) < 1) {
+                    result = createReminder(reminderType, startTime, dueDate, patient, product);
+                    resultDueDate = dueDate;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Determines if a reminder is associated with an <em>entity.reminderType</em> that is the same as that specified
      * or has one or more <em>lookup.reminderGroup</em> classifications the same as those specified.
      *
@@ -548,7 +659,7 @@ public class ReminderRules {
             }
         }
     }
-    
+
     /**
      * Helper to return a count from a named query.
      *
@@ -628,6 +739,30 @@ public class ReminderRules {
         } else {
             result = fallback;
         }
+        return result;
+    }
+
+    /**
+     * Creates a reminder.
+     *
+     * @param reminderType the reminder type
+     * @param startTime    the reminder start time
+     * @param dueDate      the reminder due date
+     * @param patient      the patient
+     * @param product      the product. May be <tt>null</tt>
+     * @return a new reminder
+     * @throws ArchetypeServiceException for any error
+     */
+    private Act createReminder(Entity reminderType, Date startTime, Date dueDate, Party patient, Product product) {
+        Act result = (Act) service.create("act.patientReminder");
+        ActBean bean = new ActBean(result, service);
+        bean.addNodeParticipation("reminderType", reminderType);
+        bean.addNodeParticipation("patient", patient);
+        if (product != null) {
+            bean.addNodeParticipation("product", product);
+        }
+        result.setActivityStartTime(startTime);
+        result.setActivityEndTime(dueDate);
         return result;
     }
 

@@ -84,6 +84,17 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Helper to save an array of objects.
+     *
+     * @param objects the objects to save
+     * @throws ArchetypeServiceException if the service cannot save the object
+     * @throws ValidationException       if the object cannot be validated
+     */
+    public static void save(IMObject ... objects) {
+        save(Arrays.asList(objects));
+    }
+
+    /**
      * Helper to save a collection of objects.
      *
      * @param objects the objects to save

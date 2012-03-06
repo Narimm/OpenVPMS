@@ -128,18 +128,17 @@ public class PartyRules {
         String name;
         if (TypeHelper.isA(party, "party.customerperson")) {
             IMObjectBean bean = new IMObjectBean(party, service);
-        	if (bean.hasNode("companyName") && (bean.getString("companyName") != null) ) {
-        		name = party.getName();
-        	}
-        	else {
-                name = getPersonName(party);        		
-        	}
+            if (bean.hasNode("companyName") && (bean.getString("companyName") != null)) {
+                name = party.getName();
+            } else {
+                name = getPersonName(party);
+            }
         } else {
             name = party.getName();
         }
         return (name != null) ? name : "";
     }
-    
+
     /**
      * Returns the formatted full name of a party.
      *
@@ -181,7 +180,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getPreferredContacts(Party party) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (Contact contact : party.getContacts()) {
             IMObjectBean bean = new IMObjectBean(contact, service);
             if (bean.hasNode("preferred")) {
@@ -206,7 +205,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getContactPurposes(Contact contact) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         IMObjectBean bean = new IMObjectBean(contact, service);
         if (bean.hasNode("purposes")) {
             List<IMObject> list = bean.getValues("purposes");
@@ -274,7 +273,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceNameAddress(Party party) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append(getFullName(party));
         result.append("\n");
         result.append(getAddress(party, "CORRESPONDENCE"));
@@ -398,7 +397,7 @@ public class PartyRules {
         }
         return (party != null) ? getMobileTelephone(party) : "";
     }
-    
+
     /**
      * Returns a formatted work telephone number for a party.
      *
@@ -478,7 +477,7 @@ public class PartyRules {
      * @return a formatted string of the party's identities
      */
     public String getIdentities(Party party) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (EntityIdentity identity : party.getIdentities()) {
             IMObjectBean bean = new IMObjectBean(identity, service);
             if (bean.hasNode("name")) {
@@ -507,7 +506,7 @@ public class PartyRules {
      */
     private String getPersonName(Party party) {
 
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         if (party != null) {
             IMObjectBean bean = new IMObjectBean(party, service);
             NodeDescriptor descriptor = bean.getDescriptor("title");
@@ -595,7 +594,7 @@ public class PartyRules {
      */
     private String formatAddress(Contact contact, boolean singleLine) {
         IMObjectBean bean = new IMObjectBean(contact, service);
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         if (singleLine) {
             result.append(bean.getString("address", "").replace('\n', ' '));
             result.append(" ");
@@ -603,9 +602,9 @@ public class PartyRules {
             result.append(bean.getString("address", ""));
             result.append("\n");
         }
-        result.append(ArchetypeServiceFunctions.lookup(contact, "suburb",""));
+        result.append(ArchetypeServiceFunctions.lookup(contact, "suburb", ""));
         result.append(" ");
-        result.append(ArchetypeServiceFunctions.lookup(contact, "state",""));
+        result.append(ArchetypeServiceFunctions.lookup(contact, "state", ""));
         result.append(" ");
         result.append(bean.getString("postcode", ""));
         return result.toString();
@@ -749,7 +748,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private String getValues(List<IMObject> objects, String node) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         for (IMObject object : objects) {
             IMObjectBean bean = new IMObjectBean(object, service);

@@ -20,7 +20,6 @@ package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -33,6 +32,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Tests the {@link PartyFunctions} class.
  *
@@ -40,7 +41,6 @@ import org.openvpms.component.system.common.jxpath.JXPathHelper;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PartyFunctionsTestCase extends ArchetypeServiceTest {
-
 
     /**
      * Tests the {@link PartyFunctions#getHomeTelephone(Party)} method.

@@ -72,6 +72,6 @@ class TaskQuery extends ScheduleEventQuery {
      * @return the short name of the schedule type
      */
     protected String getScheduleType() {
-        return "entity.taskType";
+        return ScheduleArchetypes.TASK_TYPE;
     }
 }

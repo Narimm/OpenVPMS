@@ -28,6 +28,17 @@ package org.openvpms.archetype.rules.workflow;
 public class ScheduleArchetypes {
 
     /**
+     * Organisation schedule archetype short name.
+     */
+    public static String ORGANISATION_SCHEDULE = "party.organisationSchedule";
+
+
+    /**
+     * Organisation work list archetype short name.
+     */
+    public static String ORGANISATION_WORKLIST = "party.organisationWorkList";
+
+    /**
      * The appointment archetype short name.
      */
     public static String APPOINTMENT = "act.customerAppointment";
@@ -36,4 +47,40 @@ public class ScheduleArchetypes {
      * The task archetype short name.
      */
     public static String TASK = "act.customerTask";
+
+    /**
+     * Appointment type archetype short name.
+     */
+    public static final String APPOINTMENT_TYPE = "entity.appointmentType";
+
+    /**
+     * Task type archetype short name.
+     */
+    public static final String TASK_TYPE = "entity.taskType";
+
+    /**
+     * Schedule-appointment type entity relationship archetype short name.
+     */
+    public static final String SCHEDULE_APPOINTMENT_TYPE_RELATIONSHIP = "entityRelationship.scheduleAppointmentType";
+
+    /**
+     * Worklist-task type entity relationship archetype short name.
+     */
+    public static final String WORKLIST_TASK_TYPE_RELATIONSHIP = "entityRelationship.worklistTaskType";
+
+    /**
+     * The appointment type participation archetype short name.
+     */
+    public static String APPOINTMENT_TYPE_PARTICIPATION = "participation.appointmentType";
+
+    /**
+     * Worklist participation archetype short name.
+     */
+    public static String WORKLIST_PARTICIPATION = "participation.worklist";
+
+    /**
+     * Task type participation archetype short name.
+     */
+    public static String TASK_TYPE_PARTICIPATION = "participation.taskType";
 }
+

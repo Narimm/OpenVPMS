@@ -74,7 +74,7 @@ class AppointmentQuery extends ScheduleEventQuery {
      * @return the short name of the schedule type
      */
     protected String getScheduleType() {
-        return "entity.appointmentType";
+        return ScheduleArchetypes.APPOINTMENT_TYPE;
     }
 
     /**
