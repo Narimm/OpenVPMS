@@ -347,8 +347,8 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                   + "where (act.archetypeId.shortName = :shortName0 and act.active = :active0 "
                   + "and act.status = :status0 and participation.archetypeId.shortName = :shortName1 "
                   + "and (customer.archetypeId.shortName like :shortName2 and customer.active = :active1 "
-                  + "and owner.archetypeId.shortName = :shortName3) "
-                  + "and (patient.archetypeId.shortName = :shortName4 and patient.active = :active2) "
+                  + "and (owner.archetypeId.shortName = :shortName3 or owner.archetypeId.shortName = :shortName4)) "
+                  + "and (patient.archetypeId.shortName = :shortName5 and patient.active = :active2) "
                   + "and participation.entity.id = patient.id and patient.id = owner.target.id "
                   + "and customer.id = owner.source.id) "
                   + "order by customer.name asc, patient.name asc";

@@ -44,6 +44,7 @@ public class LookupUtil extends Assert {
      *
      * @param shortName the lookup short name
      * @param code      the lookup code
+     * @return the lookup
      */
     public static Lookup createLookup(String shortName, String code) {
         ArchetypeId id = new ArchetypeId(shortName + ".1.0");
@@ -57,6 +58,7 @@ public class LookupUtil extends Assert {
      * @param shortName the lookup short name
      * @param code      the lookup code
      * @param name      the lookup name. May be <tt>null</tt>
+     * @return the lookup
      */
     public static Lookup createLookup(String shortName, String code,
                                       String name) {
@@ -102,15 +104,14 @@ public class LookupUtil extends Assert {
     }
 
     /**
-     * Retuurns the lookup with the specified code, creating and saving it if
-     * it doesn't exist.
+     * Returns the lookup with the specified code, creating and saving it if it doesn't exist.
      *
      * @param service   the archetype service
      * @param shortName the lookup short name
      * @param code      the lookup code
+     * @return the lookup
      */
-    public static Lookup getLookup(IArchetypeService service, String shortName,
-                                   String code) {
+    public static Lookup getLookup(IArchetypeService service, String shortName, String code) {
         Lookup lookup;
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, false);
         query.add(new NodeConstraint("code", code));
@@ -134,6 +135,7 @@ public class LookupUtil extends Assert {
      * @param code                  the lookup code
      * @param source                the source lookup
      * @param relationshipShortName the lookup relationship short name
+     * @return the lookup
      */
     public static Lookup getLookup(IArchetypeService service, String shortName,
                                    String code, Lookup source,
