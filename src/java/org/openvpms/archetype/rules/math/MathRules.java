@@ -33,9 +33,19 @@ import java.math.RoundingMode;
 public class MathRules {
 
     /**
-     * Helper to avoid temporary variables.
+     * One hundred.
      */
     public static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
+
+    /**
+     * One thousand.
+     */
+    public static final BigDecimal ONE_THOUSAND = BigDecimal.valueOf(1000);
+
+    /**
+     * One pound, in kilograms.
+     */
+    public static final BigDecimal ONE_POUND_IN_KILOS = new BigDecimal("0.45359237");
 
 
     /**

@@ -50,6 +50,11 @@
                     <property name="act.supplierAccountChargesInvoice" value="Supplier Invoice"/>
                     <property name="act.supplierAccountChargesCredit" value="Supplier Credit"/>
                     <property name="act.supplierAccountPayment" value="Supplier Remittance"/>
+                    <property name="act.stockAdjust" value="Stock Adjustment"/>
+                    <property name="act.stockTransfer" value="Stock Transfer"/>
+                    <property name="act.customerAppointment" value="Appointment"/>
+                    <property name="act.customerTask" value="Task"/>
+                    <property name="act.userMessage" value="Message"/>
                     <property name="CUSTOMER_BALANCE" value="Customer Account Balance"/>
                     <property name="WORK_IN_PROGRESS_CHARGES" value="Work in Progress Charges"/>
                     <property name="GROUPED_REMINDERS" value="Grouped Reminders"/>

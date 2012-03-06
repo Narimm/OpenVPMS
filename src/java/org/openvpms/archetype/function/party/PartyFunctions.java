@@ -481,7 +481,7 @@ public class PartyFunctions {
     }
 
     /**
-     * Retuurns a formatted mobile telephone number for a customer.
+     * Returns a formatted mobile telephone number for a customer.
      *
      * @param party the customer
      * @return a formatted telephone number for the party. May be empty if
@@ -511,7 +511,7 @@ public class PartyFunctions {
         }
         return "";
     }
-    
+
     /**
      * Returns a formatted fax number for a party.
      *
@@ -960,7 +960,6 @@ public class PartyFunctions {
      */
     public String getPracticeAddress() {
         return getPartyRules().getPracticeAddress();
-
     }
 
     /**
@@ -1007,7 +1006,7 @@ public class PartyFunctions {
      * Returns a Bpay Id for the Party.
      * Utilises the party uid and adds a check digit using a Luntz 10 algorithm.
      *
-     * @param party
+     * @param party the party
      * @return string bpay id
      */
     public String getBpayId(Party party) {
