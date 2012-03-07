@@ -29,6 +29,11 @@
 	<parameter name="classification" isForPrompting="true" class="java.lang.String">
 		<defaultValueExpression ><![CDATA["%"]]></defaultValueExpression>
 	</parameter>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+
 	<queryString><![CDATA[select distinctrow e.name customerName, e.description as contact, l.name as classification
 from entities e
 left join entity_classifications ec on ec.entity_id = e.entity_id
