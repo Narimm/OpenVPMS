@@ -25,6 +25,11 @@
 
 	<parameter name="startDate" isForPrompting="true" class="java.util.Date"/>
 	<parameter name="endDate" isForPrompting="true" class="java.util.Date"/>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+
 	<queryString><![CDATA[SELECT location_name, clinician_name, count(customer_id) as customers, sum(total) as total, sum(invoices) as invoices
 FROM
 (SELECT

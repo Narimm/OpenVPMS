@@ -40,6 +40,11 @@
 	</parameter>
 	<parameter name="lowMarkup" isForPrompting="true" class="java.lang.Float"/>
 	<parameter name="highMarkup" isForPrompting="true" class="java.lang.Float"/>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+
 	<queryString><![CDATA[select e.entity_id as pid, e.name as product, e.arch_short_name as archetype, 
 p1.arch_short_name as priceType, p1.name as priceName, p1.price as price,
 round(p1.price,2) as Price, p1.start_time as startDate, p1.end_time as endDate, 

@@ -35,6 +35,11 @@
 	<parameter name="includeMerchandise" isForPrompting="true" class="java.lang.Boolean">
 		<defaultValueExpression ><![CDATA[new Boolean("true")]]></defaultValueExpression>
 	</parameter>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+
 	<queryString><![CDATA[select e.name as product, e.arch_short_name as archetype, if(p1.price,p1.price,0.00) as fixedPrice, if(p2.price,p2.price,0.00) as unitPrice, d1.value as uom
 from
 entities e inner join products p on e.entity_id = p.product_id

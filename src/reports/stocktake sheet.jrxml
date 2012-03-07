@@ -35,6 +35,11 @@
 	<parameter name="productType" isForPrompting="true" class="java.lang.String">
 		<defaultValueExpression ><![CDATA["%"]]></defaultValueExpression>
 	</parameter>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+   
 	<queryString><![CDATA[select e.entity_id as pid, e.name as product, l.name as uom, sl.name as stockLocation, if(d2.value,d2.value,"0") as currentStock
 from
 entities e inner join products p on e.entity_id = p.product_id
