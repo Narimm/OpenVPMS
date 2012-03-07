@@ -73,8 +73,7 @@ public class ParameterType {
      * @param description  the parameter description. May be <tt>null</tt>
      * @param defaultValue the default parameter value. May be <tt>null</tt>
      */
-    public ParameterType(String name, Class type, String description,
-                         Object defaultValue) {
+    public ParameterType(String name, Class type, String description, Object defaultValue) {
         this(name, type, description, false, defaultValue);
     }
 
@@ -87,8 +86,7 @@ public class ParameterType {
      * @param system       if <tt>true</tt> denotes a system supplied parameter
      * @param defaultValue the default parameter value. May be <tt>null</tt>
      */
-    public ParameterType(String name, Class type, String description,
-                         boolean system, Object defaultValue) {
+    public ParameterType(String name, Class type, String description, boolean system, Object defaultValue) {
         this.name = name;
         this.type = type;
         this.description = description;

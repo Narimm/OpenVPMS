@@ -76,7 +76,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
                                         NodeDescriptor descriptor,
                                         IArchetypeService service,
                                         DocumentHandlers handlers,
-                                        String ... sortNodes) {
+                                        String... sortNodes) {
         super(service, handlers);
         List<IMObject> values = descriptor.getChildren(parent);
         for (String sortNode : sortNodes) {
@@ -128,6 +128,19 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     }
 
     /**
+     * Returns a data source for the given jxpath expression.
+     *
+     * @param expression the expression. Must return an <tt>Iterable<tt> or <tt>Iterator</tt> returning
+     *                   <tt>IMObjects</tt>
+     * @return the data source
+     * @throws JRException for any error
+     */
+    @Override
+    public JRDataSource getExpressionDataSource(String expression) throws JRException {
+        return current.getExpressionDataSource(expression);
+    }
+
+    /**
      * Gets the field value for the current position.
      *
      * @return an object containing the field value. The object type must be the
@@ -153,6 +166,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @param objects  the objects to sort
      * @param sortNode the node to sort on
      */
+    @SuppressWarnings("unchecked")
     private void sort(List<IMObject> objects, String sortNode) {
         Comparator comparator = ComparatorUtils.naturalComparator();
         comparator = ComparatorUtils.nullLowComparator(comparator);

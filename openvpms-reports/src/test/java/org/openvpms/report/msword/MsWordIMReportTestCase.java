@@ -56,12 +56,9 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
      */
     @Test
     public void testReport() throws IOException {
-        Document doc = getDocument(
-                "src/test/reports/act.customerEstimation.doc",
-                DocFormats.DOC_TYPE);
+        Document doc = getDocument("src/test/reports/act.customerEstimation.doc", DocFormats.DOC_TYPE);
 
-        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc,
-                                                                 getHandlers());
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getHandlers());
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setValue("startTime", java.sql.Date.valueOf("2006-08-04"));
@@ -83,22 +80,19 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
      */
     @Test
     public void testParameters() {
-        Document doc = getDocument(
-                "src/test/reports/act.customerEstimation.doc",
-                DocFormats.DOC_TYPE);
+        Document doc = getDocument("src/test/reports/act.customerEstimation.doc", DocFormats.DOC_TYPE);
 
-        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc,
-                                                                 getHandlers());
+        IMReport<IMObject> report = new MsWordIMReport<IMObject>(doc, getHandlers());
 
         Set<ParameterType> parameterTypes = report.getParameterTypes();
         Map<String, ParameterType> types = new HashMap<String, ParameterType>();
         for (ParameterType type : parameterTypes) {
             types.put(type.getName(), type);
         }
-        assertTrue(types.containsKey("inputField1"));
+        assertTrue(types.containsKey("Enter Field 1"));
 
         Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("inputField1", "the input value");
+        parameters.put("Enter Field 1", "the input value");
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -110,7 +104,7 @@ public class MsWordIMReportTestCase extends AbstractOpenOfficeDocumentTest {
                                           DocFormats.ODT_TYPE);
 
         Map<String, String> inputFields = getInputFields(result);
-        assertEquals("the input value", inputFields.get("inputField1"));
+        assertEquals("the input value", inputFields.get("Enter Field 1"));
     }
 
     /**
