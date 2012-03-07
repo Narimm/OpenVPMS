@@ -19,8 +19,9 @@
 package org.openvpms.report.msword;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
@@ -29,8 +30,9 @@ import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeDocument;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -55,27 +57,32 @@ public class MsWordDocumentTestCase extends AbstractOpenOfficeDocumentTest {
     @Test
     public void testUserFields() {
         OpenOfficeDocument doc = getDocument();
-        Map<String, String> fields = new LinkedHashMap<String, String>();
+        Set<String> fields = new HashSet<String>();
         for (String name : doc.getUserFieldNames()) {
-            fields.put(name, doc.getUserField(name));
+            fields.add(doc.getUserField(name));
         }
-        assertEquals("customer.entity.firstName", fields.get("userField1"));
-        assertEquals("customer.entity.lastName", fields.get("userField2"));
-        assertEquals("lowTotal", fields.get("userField3"));
-        assertEquals("startTime", fields.get("userField4"));
-        assertEquals("[1 + 1]", fields.get("userField5"));
-        assertEquals(
-                "[party:getBillingAddress(openvpms:get(., 'customer.entity'))]",
-                fields.get("userField6"));
-        assertEquals("invalid", fields.get("userField7"));
+        String firstName = "customer.entity.firstName";
+        String lastName = "customer.entity.lastName";
+        String lowTotal = "lowTotal";
+        String startTime = "startTime";
+        String sum = "[1 + 1]";
+        String billing = "[party:getBillingAddress(openvpms:get(., 'customer.entity'))]";
+        String invalid = "invalid";
+        assertTrue(fields.contains(firstName));
+        assertTrue(fields.contains(lastName));
+        assertTrue(fields.contains(lowTotal));
+        assertTrue(fields.contains(startTime));
+        assertTrue(fields.contains(sum));
+        assertTrue(fields.contains(billing));
+        assertTrue(fields.contains(invalid));
 
-        checkUpdateUserField(doc, "userField1", "Foo");
-        checkUpdateUserField(doc, "userField2", "Bar");
-        checkUpdateUserField(doc, "userField3", "1.0");
-        checkUpdateUserField(doc, "userField4", "1/1/2008");
-        checkUpdateUserField(doc, "userField5", "2");
-        checkUpdateUserField(doc, "userField6", "1000 Settlement Road Cowes");
-        checkUpdateUserField(doc, "userField7", "Still invalid");
+        checkUpdateUserField(doc, firstName, "Foo");
+        checkUpdateUserField(doc, lastName, "Bar");
+        checkUpdateUserField(doc, lowTotal, "1.0");
+        checkUpdateUserField(doc, startTime, "1/1/2008");
+        checkUpdateUserField(doc, sum, "2");
+        checkUpdateUserField(doc, billing, "1000 Settlement Road Cowes");
+        checkUpdateUserField(doc, invalid, "Still invalid");
     }
 
     /**

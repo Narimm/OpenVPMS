@@ -37,6 +37,7 @@ import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.JRXlsExporterParameter;
 import net.sf.jasperreports.engine.export.JRXmlExporter;
 import net.sf.jasperreports.engine.fill.JREvaluator;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentException;
@@ -49,7 +50,10 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
-import static org.openvpms.report.ReportException.ErrorCode.*;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToGetParameters;
+import static org.openvpms.report.ReportException.ErrorCode.NoPagesToPrint;
+import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.HashPrintServiceAttributeSet;
@@ -149,6 +153,21 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             }
         }
         return types;
+    }
+
+    /**
+     * Determines if the report accepts the named parameter.
+     *
+     * @param name the parameter name
+     * @return <tt>true</tt> if the report accepts the parameter, otherwise <tt>false</tt>
+     */
+    public boolean hasParameter(String name) {
+        for (JRParameter p : getReport().getParameters()) {
+            if (ObjectUtils.equals(p.getName(), name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

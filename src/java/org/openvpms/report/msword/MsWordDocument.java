@@ -23,6 +23,7 @@ import com.sun.star.container.XEnumeration;
 import com.sun.star.container.XEnumerationAccess;
 import com.sun.star.lang.XServiceInfo;
 import com.sun.star.uno.UnoRuntime;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.report.openoffice.OOConnection;
@@ -44,13 +45,7 @@ import java.util.Map;
 public class MsWordDocument extends OpenOfficeDocument {
 
     /**
-     * Prefix for Merge code fields.
-     */
-    private static final String FIELD_CODE_PREFIX = "MERGEFIELD";
-
-
-    /**
-     * Constructs a new <tt>MsWordDocument</tt>.
+     * Constructs an <tt>MsWordDocument</tt>.
      *
      * @param document   the source document
      * @param connection the connection to the OpenOffice service
@@ -96,20 +91,23 @@ public class MsWordDocument extends OpenOfficeDocument {
         XEnumerationAccess fields = getTextFieldSupplier().getTextFields();
         XEnumeration en = fields.createEnumeration();
         int seed = 0;
-        while (en.hasMoreElements()) {
-            Object field;
-            try {
-                field = en.nextElement();
-            } catch (Exception exception) {
-                throw new OpenOfficeException(exception, FailedToGetUserFields);
+        try {
+            while (en.hasMoreElements()) {
+                Object field = en.nextElement();
+                if (isDatabaseField(field)) {
+                    XPropertySet set = UnoRuntime.queryInterface(XPropertySet.class, field);
+                    String name = "userField" + (++seed);
+                    String fieldCode = getFieldCode(name, set);
+                    if (!StringUtils.isEmpty(fieldCode) && !result.containsKey(fieldCode)) {
+                        // if the field code is non empty, and is unique, use it as the name, otherwise use the
+                        // generated name
+                        name = fieldCode;
+                    }
+                    result.put(name, new Field(name, fieldCode, set));
+                }
             }
-            if (isDatabaseField(field)) {
-                XPropertySet set = (XPropertySet) UnoRuntime.queryInterface(
-                        XPropertySet.class, field);
-                String name = "userField" + (++seed);
-                String value = getFieldCode(name, set);
-                result.put(name, new Field(name, value, set));
-            }
+        } catch (Exception exception) {
+            throw new OpenOfficeException(exception, FailedToGetUserFields);
         }
         return result;
     }
@@ -130,13 +128,19 @@ public class MsWordDocument extends OpenOfficeDocument {
             while (en.hasMoreElements()) {
                 Object field = en.nextElement();
                 if (isInputField(field)) {
-                    XPropertySet set = (XPropertySet) UnoRuntime.queryInterface(
-                            XPropertySet.class, field);
-                    String name = "inputField" + (++seed);
-                    String value = (String) set.getPropertyValue("Hint");
+                    XPropertySet set = UnoRuntime.queryInterface(XPropertySet.class, field);
+                    String hint = (String) set.getPropertyValue("Hint");
+                    String name = hint;
+                    String value = hint;
+                    if (StringUtils.isEmpty(hint)) {
+                        name = "inputField" + (++seed);
+                        value = (String) set.getPropertyValue("Content");
+                    }
                     result.put(name, new Field(name, value, set));
                 }
             }
+        } catch (OpenOfficeException exception) {
+            throw exception;
         } catch (Exception exception) {
             throw new OpenOfficeException(exception, FailedToGetUserFields);
         }
@@ -153,7 +157,7 @@ public class MsWordDocument extends OpenOfficeDocument {
     protected String getFieldCode(String name, XPropertySet set) {
         try {
             String value = (String) set.getPropertyValue("FieldCode");
-            value = value.trim().substring(FIELD_CODE_PREFIX.length()).trim();
+            value = value.replaceAll("(MERGEFIELD|MERGEFORMAT|\\*|\\\\)", "").trim();
             return value;
         } catch (Exception exception) {
             throw new OpenOfficeException(exception, FailedToGetField, name);
@@ -167,12 +171,8 @@ public class MsWordDocument extends OpenOfficeDocument {
      * @return <tt>true</tt> if the field is a database field
      */
     private boolean isDatabaseField(Object field) {
-        XServiceInfo info = (XServiceInfo) UnoRuntime.queryInterface(
-                XServiceInfo.class, field);
-        if (info != null) {
-            return info.supportsService("com.sun.star.text.TextField.Database");
-        }
-        return false;
+        XServiceInfo info = UnoRuntime.queryInterface(XServiceInfo.class, field);
+        return info != null && info.supportsService("com.sun.star.text.TextField.Database");
     }
 
 }

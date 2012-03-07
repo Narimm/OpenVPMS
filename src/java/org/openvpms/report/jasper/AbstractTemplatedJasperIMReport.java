@@ -116,7 +116,7 @@ public abstract class AbstractTemplatedJasperIMReport<T>
      * @return the sub-reports
      */
     public JasperReport[] getSubreports() {
-        return template.getSubreports();
+        return template.getSubReports();
     }
 
     /**

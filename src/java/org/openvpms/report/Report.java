@@ -44,6 +44,14 @@ public interface Report {
     Set<ParameterType> getParameterTypes();
 
     /**
+     * Determines if the report accepts the named parameter.
+     *
+     * @param name the parameter name
+     * @return <tt>true</tt> if the report accepts the parameter, otherwise <tt>false</tt>
+     */
+    boolean hasParameter(String name);
+
+    /**
      * Returns the default mime type for report documents.
      *
      * @return the default mime type

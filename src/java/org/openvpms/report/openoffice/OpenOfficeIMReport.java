@@ -34,7 +34,9 @@ import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
-import static org.openvpms.report.ReportException.ErrorCode.*;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToPrintReport;
+import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -58,6 +60,11 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     private final Document template;
 
     /**
+     * Cache of parameters.
+     */
+    private Map<String, ParameterType> parameters;
+
+    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
@@ -66,6 +73,13 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * The logger.
      */
     private static final Log log = LogFactory.getLog(OpenOfficeIMReport.class);
+
+    /**
+     * Report parameter enabling a boolean flag to be supplied to indicate if the report is being emailed.
+     * This enables different formatting to be used when emailing as opposed to printing. e.g. if letterhead is
+     * used when printing, this can be included when emailing.
+     */
+    private static final String IS_EMAIL = "IsEmail";
 
 
     /**
@@ -85,19 +99,18 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @return the parameter types
      */
     public Set<ParameterType> getParameterTypes() {
-        Set<ParameterType> result;
-        OpenOfficeDocument doc = null;
-        OOConnection connection = null;
-        try {
-            OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
-            connection = pool.getConnection();
-            doc = createDocument(template, connection, handlers);
-            Map<String, ParameterType> fields = doc.getInputFields();
-            result = new LinkedHashSet<ParameterType>(fields.values());
-        } finally {
-            close(doc, connection);
-        }
-        return result;
+        Map<String, ParameterType> params = getParameters();
+        return new LinkedHashSet<ParameterType>(params.values());
+    }
+
+    /**
+     * Determines if the report accepts the named parameter.
+     *
+     * @param name the parameter name
+     * @return <tt>true</tt> if the report accepts the parameter, otherwise <tt>false</tt>
+     */
+    public boolean hasParameter(String name) {
+        return getParameters().containsKey(name);
     }
 
     /**
@@ -283,9 +296,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws UnsupportedOperationException if this operation is not supported
      */
     @Deprecated
-    public Document generate(Iterator<T> objects,
-                             Map<String, Object> parameters,
-                             String[] mimeTypes) {
+    public Document generate(Iterator<T> objects, Map<String, Object> parameters, String[] mimeTypes) {
         return generate(objects, mimeTypes);
     }
 
@@ -312,8 +323,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public void print(Iterator<T> objects, Map<String, Object> parameters,
-                      PrintProperties properties) {
+    public void print(Iterator<T> objects, Map<String, Object> parameters, PrintProperties properties) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
         try {
@@ -322,9 +332,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             doc = create(objects, parameters, connection);
             service.print(doc, properties.getPrinterName(), properties.getCopies(), true);
         } catch (OpenOfficeException exception) {
-            throw new ReportException(exception,
-                                      FailedToPrintReport,
-                                      exception.getMessage());
+            throw new ReportException(exception, FailedToPrintReport, exception.getMessage());
         } finally {
             close(doc, connection);
         }
@@ -341,18 +349,14 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected OpenOfficeDocument create(Iterator<T> objects,
-                                        Map<String, Object> parameters,
-                                        OOConnection connection) {
+    protected OpenOfficeDocument create(Iterator<T> objects, Map<String, Object> parameters, OOConnection connection) {
         OpenOfficeDocument doc = null;
         T object = null;
         if (objects.hasNext()) {
             object = objects.next();
         }
         if (object == null || objects.hasNext()) {
-            throw new ReportException(
-                    FailedToGenerateReport,
-                    "Can only report on single objects");
+            throw new ReportException(FailedToGenerateReport, "Can only report on single objects");
         }
 
         try {
@@ -360,7 +364,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
             if (parameters != null) {
                 populateInputFields(doc, parameters);
             }
-            populateUserFields(doc, object);
+            populateUserFields(doc, object, parameters);
 
             // refresh the text fields
             doc.refresh();
@@ -409,29 +413,84 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
                                        Map<String, Object> parameters) {
         for (Map.Entry<String, Object> p : parameters.entrySet()) {
             String name = p.getKey();
-            String value = (p.getValue() != null)
-                           ? p.getValue().toString() : null;
-            document.setInputField(name, value);
+            if (document.hasInputField(name)) {
+                String value = (p.getValue() != null) ? p.getValue().toString() : null;
+                document.setInputField(name, value);
+            }
         }
     }
 
     /**
      * Populates user fields in a document.
+     * <p/>
+     * If a field exists with the same name as a parameter, then this will be populated with the parameter value.
      *
-     * @param document the document
-     * @param object   the object to evaluate expressions with
+     * @param document   the document
+     * @param object     the object to evaluate expressions with
+     * @param parameters the parameters. May be <tt>null</tt>
      */
-    protected void populateUserFields(OpenOfficeDocument document, T object) {
+    protected void populateUserFields(OpenOfficeDocument document, T object, Map<String, Object> parameters) {
         ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(
                 object, ArchetypeServiceHelper.getArchetypeService());
         List<String> userFields = document.getUserFieldNames();
         for (String name : userFields) {
-            String value = document.getUserField(name);
+            String value = getParameter(name, parameters);
+            if (value == null) {
+                value = document.getUserField(name);
+                if (value != null) {
+                    value = eval.getFormattedValue(value);
+                }
+            }
             if (value != null) {
-                value = eval.getFormattedValue(value);
                 document.setUserField(name, value);
             }
         }
+    }
+
+    /**
+     * Helper to return the string value of a parameter, if it exists.
+     *
+     * @param name       the parameter name
+     * @param parameters the parameters. May be <tt>null</tt>
+     * @return the parameter value, or <tt>null</tt> if it is not found
+     */
+    private String getParameter(String name, Map<String, Object> parameters) {
+        String result = null;
+        if (parameters != null) {
+            Object value = parameters.get(name);
+            if (value != null) {
+                result = value.toString();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the document parameters.
+     * NOTE: this is an expensive operation as the document needs to be loaded then subsequently discarded. TODO
+     *
+     * @return the document parameters
+     */
+    private Map<String, ParameterType> getParameters() {
+        if (parameters == null) {
+            OpenOfficeDocument doc = null;
+            OOConnection connection = null;
+            try {
+                OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
+                connection = pool.getConnection();
+                doc = createDocument(template, connection, handlers);
+                parameters = doc.getInputFields();
+                if (doc.hasUserField(IS_EMAIL)) {
+                    // enable the IsEmail user field to be specified as a parameter
+                    // Note: MS-Word documents can specify IsEmail, but can't do anything with them as OpenOffice
+                    // won't process MS-Word field expressions.
+                    parameters.put(IS_EMAIL, new ParameterType(IS_EMAIL, boolean.class, IS_EMAIL, true, false));
+                }
+            } finally {
+                close(doc, connection);
+            }
+        }
+        return parameters;
     }
 
     /**

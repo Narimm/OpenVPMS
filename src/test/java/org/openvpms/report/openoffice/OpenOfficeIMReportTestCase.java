@@ -55,12 +55,9 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
      */
     @Test
     public void testReport() throws IOException {
-        Document doc = getDocument(
-                "src/test/reports/act.customerEstimation.odt",
-                DocFormats.ODT_TYPE);
+        Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(
-                doc, getHandlers());
+        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getHandlers());
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
@@ -70,8 +67,7 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(),
-                                          DocFormats.ODT_TYPE);
+        Document result = report.generate(objects.iterator(), DocFormats.ODT_TYPE);
         Map<String, String> fields = getUserFields(result);
         String expectedStartTime = DateFormat.getDateInstance(DateFormat.MEDIUM).format(startTime);
         assertEquals(expectedStartTime, fields.get("startTime"));
@@ -90,12 +86,9 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
      */
     @Test
     public void testParameters() {
-        Document doc = getDocument(
-                "src/test/reports/act.customerEstimation.odt",
-                DocFormats.ODT_TYPE);
+        Document doc = getDocument("src/test/reports/act.customerEstimation.odt", DocFormats.ODT_TYPE);
 
-        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(
-                doc, getHandlers());
+        IMReport<IMObject> report = new OpenOfficeIMReport<IMObject>(doc, getHandlers());
 
         Set<ParameterType> parameterTypes = report.getParameterTypes();
         Map<String, ParameterType> types = new HashMap<String, ParameterType>();
@@ -103,21 +96,26 @@ public class OpenOfficeIMReportTestCase extends AbstractOpenOfficeDocumentTest {
             types.put(type.getName(), type);
         }
         assertTrue(types.containsKey("inputField1"));
+        assertTrue(types.containsKey("IsEmail"));
+        assertTrue(report.hasParameter("inputField1"));
+        assertTrue(report.hasParameter("IsEmail"));
 
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("inputField1", "the input value");
+        parameters.put("IsEmail", "true");
 
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setParticipant("participation.customer", party);
 
         List<IMObject> objects = Arrays.asList((IMObject) act.getAct());
-        Document result = report.generate(objects.iterator(),
-                                          parameters,
-                                          DocFormats.ODT_TYPE);
+        Document result = report.generate(objects.iterator(), parameters, DocFormats.ODT_TYPE);
 
         Map<String, String> inputFields = getInputFields(result);
         assertEquals("the input value", inputFields.get("inputField1"));
+
+        Map<String, String> userFields = getUserFields(result);
+        assertEquals("true", userFields.get("IsEmail"));
     }
 
 }
