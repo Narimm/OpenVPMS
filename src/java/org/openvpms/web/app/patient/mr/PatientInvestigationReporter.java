@@ -21,54 +21,54 @@ package org.openvpms.web.app.patient.mr;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.Reporter;
+import org.openvpms.web.component.im.report.StaticDocumentTemplateLocator;
 import org.openvpms.web.system.ServiceHelper;
 
+
 /**
- * A printer for <em>act.patientInvestigation</em> acts.
+ * A {@link Reporter} for <em>act.patientInvestigation</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class PatientInvestigationPrinter extends IMObjectReportPrinter<Act> {
+public class PatientInvestigationReporter extends DocumentActReporter {
 
     /**
-     * Constructs a <tt>PatientInvestigationPrinter</tt>.
+     * Constructs a <tt>PatientInvestigationReporter</tt>.
      *
-     * @param investigation the investigation to print
-     * @throws OpenVPMSException for any error
+     * @param act     the act
+     * @param locator the document template locator if the act doesn't have a template
      */
-    public PatientInvestigationPrinter(Act investigation) {
-        super(investigation, getTemplateLocator(investigation));
+    public PatientInvestigationReporter(DocumentAct act, DocumentTemplateLocator locator) {
+        super(act, getTemplateLocator(act, locator));
     }
 
     /**
      * Returns a document template locator.
-     * <p/>
-     * TODO - this should not be dependent on the global context
      *
      * @param investigation the investigation
-     * @return a new document template locator
+     * @param locator       the document template locator if the act doesn't have a template
+     * @return the document template locator
      */
-    private static DocumentTemplateLocator getTemplateLocator(Act investigation) {
-        DocumentTemplate template = null;
+    private static DocumentTemplateLocator getTemplateLocator(Act investigation, DocumentTemplateLocator locator) {
+        DocumentTemplateLocator result = locator;
         ActBean act = new ActBean(investigation);
         Entity investigationType = act.getParticipant(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION);
         if (investigationType != null) {
             EntityBean bean = new EntityBean(investigationType);
             Entity entity = bean.getNodeTargetEntity("template");
             if (entity != null) {
-                template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+                DocumentTemplate template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+                result = new StaticDocumentTemplateLocator(template);
             }
         }
-        return new ContextDocumentTemplateLocator(template, investigation, GlobalContext.getInstance());
+        return result;
     }
-
 }

@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;

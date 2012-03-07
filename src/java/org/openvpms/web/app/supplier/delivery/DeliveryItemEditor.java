@@ -31,6 +31,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.util.Messages;
+import org.apache.commons.lang.ObjectUtils;
 
 
 /**
@@ -47,9 +48,14 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      */
     private ActRelationshipCollectionEditor orderEditor;
 
+    /**
+     * The parent act status.
+     */
+    private String parentStatus;
+
 
     /**
-     * Construct a new <tt>DeliveryItemEditor</tt>.
+     * Constructs a <tt>DeliveryItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act.
@@ -59,9 +65,9 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
                               LayoutContext context) {
         super(act, parent, context);
         CollectionProperty order = (CollectionProperty) getProperty("order");
-        orderEditor = new ActRelationshipCollectionEditor(order, act,
-                                                          getLayoutContext());
+        orderEditor = new ActRelationshipCollectionEditor(order, act, getLayoutContext());
         getEditors().add(orderEditor);
+        parentStatus = (parent != null) ? parent.getStatus() : null;
     }
 
     /**
@@ -76,15 +82,34 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
     /**
      * Validates the object.
      * <p/>
+     * This implementation caches the result of the validation. If valid, subsequent invocations will return this
+     * result, otherwise {@link #doValidation(Validator)} will be invoked.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        String currentStatus = ((Act) getParent()).getStatus();
+        if (!ObjectUtils.equals(parentStatus, currentStatus)) {
+            parentStatus = currentStatus;
+            resetValid(false); // triggers doValidation()
+        }
+        return super.validate(validator);
+    }
+
+    /**
+     * Validates the object.
+     * <p/>
      * This extends validation by ensuring that the product, packageSize and packageUnits are set when the parent is
      * POSTED.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
     @Override
-    public boolean validate(Validator validator) {
-        boolean result = super.validate(validator);
+    protected boolean doValidation(Validator validator) {
+        boolean result = super.doValidation(validator);
         if (result) {
             Act parent = (Act) getParent();
             if (parent != null && ActStatus.POSTED.equals(parent.getStatus())) {

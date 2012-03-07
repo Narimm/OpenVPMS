@@ -16,13 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.subsystem;
+package org.openvpms.web.component.subsystem;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -58,7 +57,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
 
 
     /**
-     * Creates a new <tt>AbstractCRUDWorkspace</tt>.
+     * Constructs an <tt>AbstractCRUDWorkspace</tt>.
      * <p/>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
      * be invoked to set archetypes that the workspace supports, before
@@ -74,8 +73,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Creates a new <tt>AbstractCRUDWorkspace</tt>, with a selector for
-     * the parent object.
+     * Constructs an <tt>AbstractCRUDWorkspace</tt>, with a selector for the parent object.
      *
      * @param subsystemId     the subsystem localisation identifier
      * @param workspaceId     the workspace localisation identfifier
@@ -95,7 +93,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Creates a new <tt>AbstractCRUDWorkspace</tt>.
+     * Constructs an <tt>AbstractCRUDWorkspace</tt>.
      *
      * @param subsystemId     the subsystem localisation identifier
      * @param workspaceId     the workspace localisation identfifier
@@ -125,7 +123,8 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      */
     protected CRUDWindow<Child> getCRUDWindow() {
         if (window == null) {
-            setCRUDWindow(createCRUDWindow());
+            CRUDWindow<Child> window = createCRUDWindow();
+            setCRUDWindow(window);
         }
         return window;
     }
@@ -137,6 +136,9 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      *                  existing window
      */
     protected void setCRUDWindow(CRUDWindow<Child> newWindow) {
+        if (newWindow != null) {
+            newWindow.setMailContext(getMailContext());
+        }
         if (window != null) {
             Component current = window.getComponent();
             Component parent = current.getParent();
@@ -205,7 +207,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      * @param type       the type that the short names represent
      * @param shortNames the archetype short names
      */
-    protected void setChildArchetypes(Class<Child> type, String...shortNames) {
+    protected void setChildArchetypes(Class<Child> type, String... shortNames) {
         String key = getSubsystemId() + "." + getWorkspaceId() + ".createtype";
         Archetypes<Child> archetypes = Archetypes.create(shortNames, type,
                                                          Messages.get(key));

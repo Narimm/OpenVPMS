@@ -113,6 +113,32 @@ public class EstimationItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Returns the quantity.
+     * <p/>
+     * This implememntation returns the high quantity.
+     *
+     * @return the quantity
+     */
+    @Override
+    public BigDecimal getQuantity() {
+        BigDecimal value = (BigDecimal) getProperty("highQty").getValue();
+        return (value != null) ? value : BigDecimal.ZERO;
+    }
+    
+    /**
+     * Returns the unit price.
+     * <p/>
+     * This implememntation returns the high unit price.
+     *
+     * @return the unit price
+     */
+    @Override
+    public BigDecimal getUnitPrice() {
+        BigDecimal value = (BigDecimal) getProperty("highUnitPrice").getValue();
+        return (value != null) ? value : BigDecimal.ZERO;
+    }
+
+    /**
      * Invoked when the product is changed, to update prices.
      *
      * @param product the product. May be <tt>null</tt>
@@ -164,32 +190,6 @@ public class EstimationItemEditor extends PriceActItemEditor {
             }
             updateSellingUnits(product);
         }
-    }
-
-    /**
-     * Returns the unit price.
-     * <p/>
-     * This implememntation returns the high unit price.
-     *
-     * @return the unit price
-     */
-    @Override
-    protected BigDecimal getUnitPrice() {
-        BigDecimal value = (BigDecimal) getProperty("highUnitPrice").getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
-    }
-
-    /**
-     * Returns the quantity.
-     * <p/>
-     * This implememntation returns the high quantity.
-     *
-     * @return the quantity
-     */
-    @Override
-    protected BigDecimal getQuantity() {
-        BigDecimal value = (BigDecimal) getProperty("highQty").getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
     }
 
     /**

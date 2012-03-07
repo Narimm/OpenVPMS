@@ -24,6 +24,7 @@ import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.print.BatchPrinter;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.app.LocalContext;
 
 import java.util.List;
 
@@ -170,7 +171,11 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * @param close     if <tt>true</tt>, close the edit dialog on completion
      */
     private void printDocuments(List<Act> documents, final boolean close) {
-        BatchPrinter printer = new BatchPrinter<Act>(documents) {
+        LocalContext context = new LocalContext();
+        CustomerChargeActEditor editor = (CustomerChargeActEditor) getEditor();
+        context.setCustomer(editor.getCustomer());
+        context.setLocation(editor.getLocation());
+        BatchPrinter printer = new BatchPrinter<Act>(documents, context) {
 
             public void failed(Throwable cause) {
                 ErrorHelper.show(cause, new WindowPaneListener() {

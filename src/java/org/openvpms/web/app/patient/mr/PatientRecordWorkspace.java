@@ -24,7 +24,6 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
@@ -32,7 +31,7 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -58,16 +57,6 @@ import java.util.List;
  */
 public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
-    /**
-     * Patient Document shortnames supported by the workspace.
-     */
-    private static final String[] DOCUMENT_SHORT_NAMES = {
-            "act.patientDocumentForm",
-            "act.patientDocumentLetter",
-            "act.patientDocumentAttachment",
-            "act.patientDocumentImage",
-            "act.patientInvestigation"
-    };
 
     /**
      * Patient charges shortnames supported by teh workspace
@@ -99,16 +88,6 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     private static final ActStatuses STATUSES
             = new ActStatuses(ReminderArchetypes.REMINDER);
 
-    /**
-     * The document statuses to query
-     */
-    private static final ActStatuses DOC_STATUSES;
-
-    static {
-        DOC_STATUSES = new ActStatuses("act.patientDocumentLetter");
-        DOC_STATUSES.setDefault((Lookup) null);
-    }
-
 
     /**
      * Constructs a new <tt>PatientRecordWorkspace</tt>.
@@ -118,9 +97,8 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         setArchetypes(Party.class, "party.patient*");
         setChildArchetypes(Act.class, "act.patientClinicalEvent");
 
-        docArchetypes = Archetypes.create(
-                DOCUMENT_SHORT_NAMES, DocumentAct.class,
-                Messages.get("patient.document.createtype"));
+        docArchetypes = Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
+                                          Messages.get("patient.document.createtype"));
     }
 
     /**
@@ -227,7 +205,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         RecordBrowser browser = new RecordBrowser((PatientSummaryQuery) query,
                                                   createProblemsQuery(),
                                                   createReminderAlertQuery(),
-                                                  createDocumentQuery(),
+                                                  new PatientDocumentQuery(getObject()),
                                                   createChargesQuery());
         browser.setListener(new TabbedBrowserListener() {
             public void onBrowserChanged() {
@@ -333,6 +311,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     /**
      * Changes the CRUD window depending on the current browser view.
      */
+    @SuppressWarnings("unchecked")
     private void changeCRUDWindow() {
         RecordBrowser browser = (RecordBrowser) getBrowser();
         CRUDWindow<Act> window;
@@ -388,19 +367,6 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 getObject(), "patient", "participation.patient", shortNames,
                 STATUSES);
-        query.setDefaultSortConstraint(DEFAULT_SORT);
-        return query;
-    }
-
-    /**
-     * Creates a new query, for the document view.
-     *
-     * @return a new query
-     */
-    private Query<Act> createDocumentQuery() {
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(
-                getObject(), "patient", "participation.patient",
-                DOCUMENT_SHORT_NAMES, DOC_STATUSES);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
     }

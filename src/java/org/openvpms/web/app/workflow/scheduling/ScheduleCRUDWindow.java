@@ -22,17 +22,21 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.app.customer.CustomerMailContext;
+import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
 import org.openvpms.web.app.workflow.otc.OverTheCounterWorkflow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -99,6 +103,23 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context. May be <tt>null</tt>
+     */
+    @Override
+    public MailContext getMailContext() {
+        MailContext context = null;
+        if (getObject() != null) {
+            context = CustomerMailContext.create(getObject(), GlobalContext.getInstance());
+        }
+        if (context == null) {
+            context = super.getMailContext();
+        }
+        return context;
     }
 
     /**

@@ -18,12 +18,14 @@
 
 package org.openvpms.web.app.workflow.checkout;
 
+import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -33,17 +35,25 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.Reporter;
+import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.print.BatchPrintDialog;
 import org.openvpms.web.component.print.BatchPrinter;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.app.customer.CustomerMailContext;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -81,6 +91,8 @@ class PrintDocumentsTask extends AbstractTask {
     private static final String[] DOCUMENTS
             = {"act.patientDocumentLetter", "act.patientDocumentForm"};
 
+    private static final String MAIL_ID = "mail";
+
 
     /**
      * Constructs a <tt>PrintDocumentsTask</tt>.
@@ -109,6 +121,11 @@ class PrintDocumentsTask extends AbstractTask {
             String title = Messages.get("workflow.checkout.print.title");
             String[] buttons = isRequired() ? PopupDialog.OK_CANCEL : PopupDialog.OK_SKIP_CANCEL;
             dialog = new BatchPrintDialog(title, buttons, unprinted);
+            dialog.getButtons().add(MAIL_ID, new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onMail(context);
+                }
+            });
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     try {
@@ -213,6 +230,22 @@ class PrintDocumentsTask extends AbstractTask {
         return result;
     }
 
+    private void onMail(TaskContext context) {
+        List<IMObject> list = dialog.getSelected();
+        if (!list.isEmpty()) {
+            MailContext mailContext = new CustomerMailContext(context);
+            MailDialog dialog = new MailDialog(mailContext);
+            MailEditor editor = dialog.getMailEditor();
+            for (IMObject object : list) {
+                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+                Reporter<IMObject> reporter = ReporterFactory.create(object, locator, Reporter.class);
+                Document document = reporter.getDocument();
+                editor.addAttachment(document);
+            }
+            dialog.show();
+        }
+    }
+
     /**
      * Returns the print mode of the supplied act.
      *
@@ -238,34 +271,27 @@ class PrintDocumentsTask extends AbstractTask {
     class Printer extends BatchPrinter<IMObject> {
 
         /**
-         * The task context.
-         */
-        private final TaskContext context;
-
-
-        /**
          * Constructs a <tt>Printer</tt>.
          *
          * @param objects the objects to print
          * @param context the task context
          */
         public Printer(List<IMObject> objects, TaskContext context) {
-            super(objects);
-            this.context = context;
+            super(objects, context);
         }
 
         /**
          * Invoked when a print is cancelled. This restarts the task.
          */
         public void cancelled() {
-            start(context);
+            start(getContext());
         }
 
         /**
          * Notifies that the print was skipped. This restarts the task.
          */
         public void skipped() {
-            start(context);
+            start(getContext());
         }
 
         /**
@@ -276,7 +302,7 @@ class PrintDocumentsTask extends AbstractTask {
         public void failed(Throwable cause) {
             ErrorHelper.show(cause, new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
-                    start(context);
+                    start(getContext());
                 }
             });
         }
@@ -303,6 +329,16 @@ class PrintDocumentsTask extends AbstractTask {
             InteractiveIMPrinter<IMObject> result = super.createInteractivePrinter(printer);
             result.setInteractive(false);
             return result;
+        }
+
+        /**
+         * Returns the context.
+         *
+         * @return the context
+         */
+        @Override
+        protected TaskContext getContext() {
+            return (TaskContext) super.getContext();
         }
     }
 }

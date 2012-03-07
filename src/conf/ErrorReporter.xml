@@ -31,4 +31,7 @@
     <exclude-exception>
         <className>org.openvpms.esci.adapter.util.ESCIAdapterException</className>
     </exclude-exception>
+    <exclude-exception>
+        <className>org.openvpms.web.component.mail.MailException</className>
+    </exclude-exception>
 </error-reporter-config>

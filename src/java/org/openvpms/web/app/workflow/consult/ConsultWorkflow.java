@@ -19,15 +19,15 @@
 package org.openvpms.web.app.workflow.consult;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.app.workflow.EditClinicalEventTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
-import org.openvpms.web.app.workflow.EditClinicalEventTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
@@ -60,8 +60,8 @@ public class ConsultWorkflow extends WorkflowImpl {
      * Constructs a new <code>ConsultWorkflow</code> from an
      * <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
-     * @param act the act
-     * @param external   the external context to access and update
+     * @param act      the act
+     * @param external the external context to access and update
      */
     public ConsultWorkflow(Act act, final Context external) {
         // update the act status

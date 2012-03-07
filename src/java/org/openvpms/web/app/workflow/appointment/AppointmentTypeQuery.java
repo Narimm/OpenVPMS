@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.appointment;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.app.workflow.ScheduleTypeQuery;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 
 
 /**
@@ -38,7 +39,7 @@ public class AppointmentTypeQuery extends ScheduleTypeQuery {
      * @param schedule the schedule. May be <tt>null</tt>
      */
     public AppointmentTypeQuery(Entity schedule) {
-        super(new String[]{"entity.appointmentType"}, schedule, "appointmentTypes");
+        super(new String[]{ScheduleArchetypes.APPOINTMENT_TYPE}, schedule, "appointmentTypes");
     }
 
 }

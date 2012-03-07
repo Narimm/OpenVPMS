@@ -46,7 +46,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     /**
      * Constructs a <tt>TemplatedReporter</tt> for a single object.
      *
-     * @param object  the object
+     * @param object   the object
      * @param template the document template to use
      */
     public TemplatedReporter(T object, DocumentTemplate template) {
@@ -68,7 +68,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     /**
      * Constructs a <tt>TemplatedReporter</tt> to print a collection of objects.
      *
-     * @param objects the objects to print
+     * @param objects  the objects to print
      * @param template the document template to use
      */
     public TemplatedReporter(Iterable<T> objects, DocumentTemplate template) {
@@ -120,4 +120,12 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
         return (template != null) ? template.getDocument() : null;
     }
 
+    /**
+     * Registers the document template.
+     *
+     * @param template the template to use. May be <tt>null</tt>
+     */
+    protected void setTemplate(DocumentTemplate template) {
+        this.template = template;
+    }
 }

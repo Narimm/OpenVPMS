@@ -100,7 +100,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Party> createObjectReferenceEditor(Property property) {
+    protected IMObjectReferenceEditor<Party> createEntityEditor(Property property) {
         return new AbstractIMObjectReferenceEditor<Party>(property, getParent(), getLayoutContext(), true) {
 
             @Override

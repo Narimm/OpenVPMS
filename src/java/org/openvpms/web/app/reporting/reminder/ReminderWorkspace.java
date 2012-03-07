@@ -29,6 +29,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.app.GlobalContext;
@@ -134,22 +135,29 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
             Act reminder = browser.getSelected();
             if (reminder != null) {
                 ReminderProcessor processor = new ReminderProcessor(reminder.getActivityStartTime(),
-                        reminder.getActivityEndTime(), reminder.getActivityStartTime(),
-                        ServiceHelper.getArchetypeService());
+                                                                    reminder.getActivityEndTime(),
+                                                                    reminder.getActivityStartTime(),
+                                                                    ServiceHelper.getArchetypeService());
                 IMObjectBean bean = new IMObjectBean(reminder);
                 int reminderCount = bean.getInt("reminderCount");
                 ReminderEvent event = processor.process(reminder, reminderCount);
                 if (event.getDocumentTemplate() != null) {
-                    DocumentTemplate template = new DocumentTemplate(event.getDocumentTemplate(),
-                            ServiceHelper.getArchetypeService());
-                    DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, reminder,
-                            GlobalContext.getInstance());
-                    InteractivePrinter printer = new InteractivePrinter(
-                            new IMObjectReportPrinter<Act>(reminder, locator));
-                    printer.print();
+                    GlobalContext context = GlobalContext.getInstance();
+                    CustomerMailContext mailContext = CustomerMailContext.create(reminder, context);
+                    if (mailContext != null) {
+
+                        DocumentTemplate template = new DocumentTemplate(event.getDocumentTemplate(),
+                                                                         ServiceHelper.getArchetypeService());
+                        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, reminder,
+                                                                                             context);
+                        InteractivePrinter printer = new InteractivePrinter(
+                                new IMObjectReportPrinter<Act>(reminder, locator));
+                        printer.setMailContext(mailContext);
+                        printer.print();
+                    }
                 } else {
                     ErrorHelper.show(Messages.get("reporting.reminder.print.notemplate",
-                            event.getReminderType().getName(), reminderCount));
+                                                  event.getReminderType().getName(), reminderCount));
                 }
             }
         } catch (OpenVPMSException exception) {
@@ -184,7 +192,9 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(objects, ReminderArchetypes.REMINDER);
         String title = Messages.get("reporting.reminder.print.title");
         try {
-            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer);
+            InteractiveIMPrinter<Act> iPrinter
+                    = new InteractiveIMPrinter<Act>(title, printer);
+            iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -197,9 +207,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
     private void generateReminders() {
         try {
             GlobalContext context = GlobalContext.getInstance();
-            ReminderGenerator generator
-                    = new ReminderGenerator(query.createReminderQuery(),
-                    context);
+            ReminderGenerator generator = new ReminderGenerator(query.createReminderQuery(), context, getMailContext());
             generateReminders(generator);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

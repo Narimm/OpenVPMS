@@ -25,10 +25,10 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
 import org.openvpms.web.app.patient.mr.SummaryCRUDWindow;
 import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -37,7 +37,9 @@ import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
@@ -193,6 +195,7 @@ public class EditClinicalEventTask extends AbstractTask {
             super(title, BUTTONS, browser);
             setCloseOnSelection(false);
             window = new CRUDWindow(context);
+            window.setMailContext(new CustomerMailContext(context));
             window.setQuery((PatientSummaryQuery) browser.getQuery());
             window.setListener(new CRUDWindowListener<Act>() {
                 public void saved(Act object, boolean isNew) {
@@ -293,8 +296,12 @@ public class EditClinicalEventTask extends AbstractTask {
             Act act = getSelected();
             if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
                 try {
-                    IMPrinter<Act> printer = IMPrinterFactory.create(act);
-                    new InteractiveIMPrinter<Act>(printer).print();
+                    ContextDocumentTemplateLocator locator
+                            = new ContextDocumentTemplateLocator(act, window.getContext());
+                    IMPrinter<Act> printer = IMPrinterFactory.create(act, locator);
+                    InteractiveIMPrinter<Act> interactive = new InteractiveIMPrinter<Act>(printer);
+                    interactive.setMailContext(window.getMailContext());
+                    interactive.print();
                 } catch (Throwable exception) {
                     ErrorHelper.show(exception);
                 }
@@ -375,6 +382,15 @@ public class EditClinicalEventTask extends AbstractTask {
          */
         public CRUDWindow(TaskContext context) {
             taskContext = context;
+        }
+
+        /**
+         * Returns the task context.
+         *
+         * @return the task context
+         */
+        public TaskContext getContext() {
+            return taskContext;
         }
 
         /**

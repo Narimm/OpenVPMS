@@ -95,6 +95,24 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Returns the customer associated with the charge.
+     *
+     * @return the customer. May be <tt>null</tt>
+     */
+    public Party getCustomer() {
+        return (Party) getParticipant("customer");
+    }
+
+    /**
+     * Returns the location associated with the charge.
+     *
+     * @return the location. May be <tt>null</tt>
+     */
+    public Party getLocation() {
+        return (Party) getParticipant("location");
+    }
+
+    /**
      * Updates the status.
      *
      * @param status the new status
@@ -173,7 +191,7 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     public void setClinician(User clinician) {
         setParticipant("clinician", clinician);
     }
-    
+
     /**
      * Save any edits.
      * <p/>

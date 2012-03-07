@@ -406,4 +406,11 @@ public abstract class DelegatingProperty implements CollectionProperty {
     public boolean validate(Validator validator) {
         return property.validate(validator);
     }
+
+    /**
+     * Resets the cached validity state of the object, to force revalidation to of the object and its descendents.
+     */
+    public void resetValid() {
+        property.resetValid();
+    }
 }

@@ -20,6 +20,7 @@ package org.openvpms.web.component.util;
 import org.apache.commons.lang.ObjectUtils;
 
 import java.util.Date;
+import java.lang.ref.SoftReference;
 
 
 /**
@@ -37,7 +38,7 @@ public class DoubleClickMonitor {
     /**
      * The last clicked on object.
      */
-    private Object last;
+    private SoftReference<Object> last;
 
     /**
      * The time of the last click.
@@ -82,12 +83,13 @@ public class DoubleClickMonitor {
         boolean result;
         Date now = new Date();
         result = (lastClick != null && (interval == 0 || (lastClick.getTime() + interval) >= now.getTime()));
-        result = result && ObjectUtils.equals(last, object);
+        Object old = (last != null) ? last.get() : null;
+        result = result && ObjectUtils.equals(old, object);
         if (result) {
             reset();
         } else {
             lastClick = now;
-            last = object;
+            last = new SoftReference<Object>(object);
         }
         return result;
     }

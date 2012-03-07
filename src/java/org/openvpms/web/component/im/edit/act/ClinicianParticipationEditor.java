@@ -78,7 +78,7 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
     * @return a new object reference editor
     */
     @Override
-    protected IMObjectReferenceEditor<User> createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<User> createEntityEditor(
             Property property) {
         return new AbstractIMObjectReferenceEditor<User>(
                 property, getParent(), getLayoutContext()) {

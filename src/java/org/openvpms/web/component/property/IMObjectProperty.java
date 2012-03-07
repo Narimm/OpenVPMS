@@ -182,7 +182,7 @@ public class IMObjectProperty extends AbstractProperty
      * @return the description. May be <tt>null</tt>
      */
     public String getDescription() {
-        return null;
+        return descriptor.getDescription();
     }
 
     /**
@@ -286,6 +286,8 @@ public class IMObjectProperty extends AbstractProperty
 
     /**
      * Returns the archetype short names that this collection may support.
+     * <p/>
+     * Wildcards are expanded.
      *
      * @return the archetype short names
      * @throws ArchetypeServiceException for any error
@@ -435,13 +437,21 @@ public class IMObjectProperty extends AbstractProperty
     }
 
     /**
+     * Returns the object that the property belongs to.
+     *
+     * @return the object
+     */
+    public IMObject getObject() {
+        return object;
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
-    public boolean validate(Validator validator) {
+    protected boolean doValidation(Validator validator) {
         List<ValidatorError> errors = null;
         if (validationErrors == null) {
             // determine if this is valid
@@ -489,15 +499,6 @@ public class IMObjectProperty extends AbstractProperty
             validator.add(this, errors);
         }
         return (errors == null);
-    }
-
-    /**
-     * Returns the object that the property belongs to.
-     *
-     * @return the object
-     */
-    public IMObject getObject() {
-        return object;
     }
 
     /**
@@ -580,6 +581,7 @@ public class IMObjectProperty extends AbstractProperty
      * @param error the validation error
      */
     private void addError(ValidatorError error) {
+        resetValid();
         if (validationErrors == null) {
             validationErrors = new ArrayList<ValidatorError>();
         }

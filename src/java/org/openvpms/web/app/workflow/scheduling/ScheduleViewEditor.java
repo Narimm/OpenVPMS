@@ -22,13 +22,13 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.PropertyEditor;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -47,7 +47,7 @@ import java.util.List;
 
 
 /**
- * Add description here.
+ * Editor for <em>entity.organisationScheduleView</em> and <em>entity.organisationWorkListView</em> objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -148,29 +148,6 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
         }
 
         /**
-         * Validates the object.
-         *
-         * @param validator the validator
-         * @return <tt>true</tt> if the object and its descendents are valid
-         *         otherwise <tt>false</tt>
-         */
-        @Override
-        public boolean validate(Validator validator) {
-            boolean valid = super.validate(validator);
-            if (valid) {
-                try {
-                    editor.evaluate();
-                } catch (Throwable exception) {
-                    valid = false;
-                    ValidatorError error = new ValidatorError(
-                            getProperty(), exception.getMessage());
-                    validator.add(getProperty(), error);
-                }
-            }
-            return valid;
-        }
-
-        /**
          * Returns the edit component.
          *
          * @return the edit component
@@ -190,13 +167,32 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
         }
 
         /**
+         * Validates the object.
+         *
+         * @param validator the validator
+         * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+         */
+        @Override
+        protected boolean doValidation(Validator validator) {
+            boolean valid = super.doValidation(validator);
+            if (valid) {
+                try {
+                    editor.evaluate();
+                } catch (Throwable exception) {
+                    valid = false;
+                    ValidatorError error = new ValidatorError(getProperty(), exception.getMessage());
+                    validator.add(getProperty(), error);
+                }
+            }
+            return valid;
+        }
+
+        /**
          * Pops up a dialog to test the expression.
          */
         private void onTest() {
-            String title = Messages.get("editor.edit.title",
-                                        editor.getDisplayName());
-            ScheduleViewExpressionDialog dialog
-                    = new ScheduleViewExpressionDialog(title, editor);
+            String title = Messages.get("editor.edit.title", editor.getDisplayName());
+            ScheduleViewExpressionDialog dialog = new ScheduleViewExpressionDialog(title, editor);
             dialog.show();
         }
 

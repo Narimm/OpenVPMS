@@ -68,16 +68,43 @@ public class UserEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Sets the user's login name.
+     *
+     * @param name the user's login name
+     */
+    public void setUsername(String name) {
+        getProperty("username").setValue(name);
+    }
+
+    /**
+     * Sets the user's password.
+     *
+     * @param password the user's password
+     */
+    public void setPassword(String password) {
+        getProperty("password").setValue(password);
+        confirm.setValue(password);
+    }
+
+    /**
+     * Sets the user's name.
+     *
+     * @param name the user's name
+     */
+    public void setName(String name) {
+        getProperty("name").setValue(name);
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
     @Override
-    public boolean validate(Validator validator) {
+    protected boolean doValidation(Validator validator) {
         boolean valid = false;
-        if (super.validate(validator)) {
+        if (super.doValidation(validator)) {
             Property password = getPassword();
             if (ObjectUtils.equals(password.getValue(), confirm.getValue())) {
                 valid = true;

@@ -27,16 +27,18 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.button.ButtonSet;
 
 import java.util.List;
 
@@ -84,12 +86,12 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      */
     @Override
     protected void doLayout(final IMObject object, PropertySet properties, IMObject parent, Component container,
-                            LayoutContext context) {
+                            final LayoutContext context) {
         if (enableButton) {
             button = ButtonFactory.create(buttonId);
             button.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    onPrint(object);
+                    onPrint(object, context.getContext());
                 }
             });
         }
@@ -131,11 +133,13 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Invoked when the print button is pressed.
      *
-     * @param object the object to print
+     * @param object  the object to print
+     * @param context the context
      */
-    protected void onPrint(IMObject object) {
+    protected void onPrint(IMObject object, Context context) {
         try {
-            IMPrinter<IMObject> printer = new IMObjectReportPrinter<IMObject>(object);
+            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator);
             InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer);
             iPrinter.print();
         } catch (OpenVPMSException exception) {

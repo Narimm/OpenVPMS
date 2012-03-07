@@ -218,6 +218,16 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Returns the product quantity.
+     *
+     * @return the product quantity
+     */
+    public BigDecimal getQuantity() {
+        BigDecimal value = (BigDecimal) getProperty("quantity").getValue();
+        return (value != null) ? value : BigDecimal.ZERO;
+    }
+
+    /**
      * Sets the fixed price.
      *
      * @param fixedPrice the fixed price
@@ -233,6 +243,16 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     public void setUnitPrice(BigDecimal unitPrice) {
         getProperty("unitPrice").setValue(unitPrice);
+    }
+
+    /**
+     * Returns the unit price.
+     *
+     * @return the unit price
+     */
+    public BigDecimal getUnitPrice() {
+        BigDecimal value = (BigDecimal) getProperty("unitPrice").getValue();
+        return (value != null) ? value : BigDecimal.ZERO;
     }
 
     /**

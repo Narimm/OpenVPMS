@@ -69,7 +69,7 @@ public class StockLocationParticipationEditor
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Party> createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Party> createEntityEditor(
             Property property) {
         return new LocationReferenceEditor(property);
     }
@@ -93,7 +93,6 @@ public class StockLocationParticipationEditor
          * practice location, if any.
          *
          * @param name a name to filter on. May be <tt>null</tt>
-         * @param name the name to filter on. May be <tt>null</tt>
          * @return a new query
          * @throws ArchetypeQueryException if the short names don't match any
          *                                 archetypes

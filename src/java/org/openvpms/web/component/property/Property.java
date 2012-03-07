@@ -148,6 +148,8 @@ public interface Property extends Modifiable {
 
     /**
      * Returns the archetype short names that this property may support.
+     * <p/>
+     * Wildcards are expanded.
      *
      * @return the archetype short names
      * @throws ArchetypeServiceException for any error

@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 
 
 /**
@@ -46,30 +47,28 @@ public class AppointmentTypeParticipationEditor
 
 
     /**
-     * Construct a new <code>PatientParticipationEditor</code>.
+     * Constructs an <tt>AppointmentTypeParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent act
-     * @param context       the layout context. May be <code>null</code>
+     * @param context       the layout context. May be <tt>null</tt>
      */
-    public AppointmentTypeParticipationEditor(Participation participation,
-                                              Act parent,
-                                              LayoutContext context) {
+    public AppointmentTypeParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!TypeHelper.isA(participation, "participation.appointmentType")) {
-            throw new IllegalArgumentException(
-                    "Invalid participation type:"
-                            + participation.getArchetypeId().getShortName());
+        if (!TypeHelper.isA(participation, ScheduleArchetypes.APPOINTMENT_TYPE_PARTICIPATION)) {
+            throw new IllegalArgumentException("Invalid participation type:" 
+                                               + participation.getArchetypeId().getShortName());
         }
     }
 
     /**
      * Sets the schedule, used to constrain appointment types.
      *
-     * @param schedule the schedule. May be <code>null</code>
+     * @param schedule the schedule. May be <tt>null</tt>
      */
     public void setSchedule(Entity schedule) {
         this.schedule = schedule;
+        getEntityEditor().resetValid();
     }
 
     /**
@@ -79,11 +78,8 @@ public class AppointmentTypeParticipationEditor
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Entity> createObjectReferenceEditor(
-            Property property) {
-        return new AbstractIMObjectReferenceEditor<Entity>(property,
-                                                           getParent(),
-                                                           getLayoutContext()) {
+    protected IMObjectReferenceEditor<Entity> createEntityEditor(Property property) {
+        return new AbstractIMObjectReferenceEditor<Entity>(property, getParent(), getLayoutContext()) {
 
             @Override
             protected Query<Entity> createQuery(String name) {

@@ -223,6 +223,7 @@ public abstract class PopupDialog extends PopupWindow {
         if (action == null && defaultCloseAction != null) {
             onButton(defaultCloseAction);
         } else {
+            onClosing();
             super.userClose();
         }
     }
@@ -360,6 +361,14 @@ public abstract class PopupDialog extends PopupWindow {
     protected void close(String action) {
         setAction(action);
         close();
+    }
+
+    /**
+     * Invoked just prior to the dialog closing.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    protected void onClosing() {
     }
 
     /**

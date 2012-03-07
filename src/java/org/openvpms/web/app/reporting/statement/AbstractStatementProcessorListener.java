@@ -73,8 +73,7 @@ public abstract class AbstractStatementProcessorListener
     protected Map<String, Object> getParameters(Statement statement) {
         Map<String, Object> result = new HashMap<String, Object>();
         Date date = statement.getStatementDate();
-        BigDecimal overdueBalance
-                = account.getOverdueBalance(statement.getCustomer(), date);
+        BigDecimal overdueBalance = account.getOverdueBalance(statement.getCustomer(), date);
         result.put("statementDate", date);
         result.put("overdueBalance", overdueBalance);
         result.put("preview", statement.isPreview());

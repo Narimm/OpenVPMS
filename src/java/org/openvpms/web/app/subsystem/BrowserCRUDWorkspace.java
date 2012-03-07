@@ -32,6 +32,8 @@ import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.component.subsystem.AbstractCRUDWorkspace;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 import java.util.List;
 

@@ -160,14 +160,15 @@ public class CustomerPaymentEditor extends PaymentEditor {
 
     /**
      * Validates the object.
+     * <p/>
+     * This extends validation by ensuring that the payment amount matches the expected amount, if present.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
     @Override
-    public boolean validate(Validator validator) {
-        boolean valid = super.validate(validator);
+    protected boolean doValidation(Validator validator) {
+        boolean valid = super.doValidation(validator);
         if (valid && expectedAmount != null) {
             Property property = getProperty("amount");
             BigDecimal amount = (BigDecimal) property.getValue();

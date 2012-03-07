@@ -18,8 +18,11 @@
 
 package org.openvpms.web.app.patient;
 
+import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.patient.info.InformationWorkspace;
 import org.openvpms.web.app.patient.mr.PatientRecordWorkspace;
+import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 import org.openvpms.web.component.subsystem.Workspace;
 
@@ -33,12 +36,13 @@ import org.openvpms.web.component.subsystem.Workspace;
 public class PatientSubsystem extends AbstractSubsystem {
 
     /**
-     * Construct a new <code>PatientSubsystem</code>.
+     * Constructs a <tt>PatientSubsystem</tt>.
      */
     public PatientSubsystem() {
         super("patient");
-        addWorkspace(new InformationWorkspace());
-        addWorkspace(new PatientRecordWorkspace());
+        MailContext context = new CustomerMailContext(GlobalContext.getInstance());
+        addWorkspace(new InformationWorkspace(), context);
+        addWorkspace(new PatientRecordWorkspace(), context);
     }
 
     /**
@@ -64,4 +68,5 @@ public class PatientSubsystem extends AbstractSubsystem {
         }
         return fallback;
     }
+
 }

@@ -27,13 +27,16 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.app.customer.CustomerMailContext;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -81,6 +84,23 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
     @Override
     public void create() {
         onCreate(MESSAGES);
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context. May be <tt>null</tt>
+     */
+    @Override
+    public MailContext getMailContext() {
+        MailContext context = null;
+        if (getObject() != null) {
+            context = CustomerMailContext.create(getObject(), GlobalContext.getInstance());
+        }
+        if (context == null) {
+            context = super.getMailContext();
+        }
+        return context;
     }
 
     /**

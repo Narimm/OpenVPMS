@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -53,19 +54,18 @@ public class TaskTypeParticipationEditor
 
 
     /**
-     * Construct a new <tt>TaskTypeParticipationEditor</tt>.
+     * Constructs a <tt>TaskTypeParticipationEditor</tt>.
      *
      * @param participation the object to edit
      * @param parent        the parent act
-     * @param context       the layout context. May be <code>null</code>
+     * @param context       the layout context. May be <tt>null</tt>
      */
     public TaskTypeParticipationEditor(Participation participation,
                                        Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!TypeHelper.isA(participation, "participation.taskType")) {
-            throw new IllegalArgumentException(
-                    "Invalid participation type:"
-                    + participation.getArchetypeId().getShortName());
+        if (!TypeHelper.isA(participation, ScheduleArchetypes.TASK_TYPE_PARTICIPATION)) {
+            throw new IllegalArgumentException("Invalid participation type:"
+                                               + participation.getArchetypeId().getShortName());
         }
     }
 
@@ -74,7 +74,7 @@ public class TaskTypeParticipationEditor
      * If the current task type is null or not supported by the work list's
      * task types, sets it to a task type associated with the work list.
      * This is the default task type associated with the work list, if present.
-     * If not, the first available task task.
+     * If not, the first available task type.
      *
      * @param workList the work list. May be <tt>null</tt>
      */
@@ -86,6 +86,8 @@ public class TaskTypeParticipationEditor
                 Entity taskType = getDefaultTaskType(workList);
                 setEntity(taskType);
             }
+        } else {
+            setEntity(null);
         }
     }
 
@@ -96,10 +98,8 @@ public class TaskTypeParticipationEditor
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Entity> createObjectReferenceEditor(
-            Property property) {
-        return new AbstractIMObjectReferenceEditor<Entity>(
-                property, getParent(), getLayoutContext()) {
+    protected IMObjectReferenceEditor<Entity> createEntityEditor(Property property) {
+        return new AbstractIMObjectReferenceEditor<Entity>(property, getParent(), getLayoutContext()) {
 
             @Override
             protected Query<Entity> createQuery(String name) {

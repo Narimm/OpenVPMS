@@ -27,6 +27,7 @@ package org.openvpms.web.component.im.edit;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ValidationHelper;
@@ -50,7 +51,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractCollectionPropertyEditor
+public abstract class AbstractCollectionPropertyEditor extends AbstractModifiable
         implements CollectionPropertyEditor {
 
     /**
@@ -67,9 +68,7 @@ public abstract class AbstractCollectionPropertyEditor
      * The editors. Where present, these will be responsible for saving/removing
      * the associated object.
      */
-    private Map<IMObject, IMObjectEditor> editors
-            = new HashMap<IMObject, IMObjectEditor>();
-
+    private Map<IMObject, IMObjectEditor> editors = new HashMap<IMObject, IMObjectEditor>();
 
     /**
      * Indicates if any object has been saved.
@@ -78,7 +77,7 @@ public abstract class AbstractCollectionPropertyEditor
 
 
     /**
-     * Construct a new <tt>AbstractCollectionPropertyEditor</tt>.
+     * Constructs an <tt>AbstractCollectionPropertyEditor</tt>.
      *
      * @param property the collection property
      */
@@ -114,6 +113,7 @@ public abstract class AbstractCollectionPropertyEditor
     public boolean add(IMObject object) {
         boolean added = false;
         if (!property.getValues().contains(object)) {
+            resetValid();
             property.add(object);
             added = true;
         }
@@ -129,6 +129,7 @@ public abstract class AbstractCollectionPropertyEditor
      * @param editor the editor. Use <tt>null</tt> to remove an association
      */
     public void setEditor(IMObject object, IMObjectEditor editor) {
+        resetValid();
         if (editor == null) {
             editors.remove(object);
         } else {
@@ -166,10 +167,13 @@ public abstract class AbstractCollectionPropertyEditor
      * @return <tt>true</tt> if the object was removed
      */
     public boolean remove(IMObject object) {
-        boolean removed = property.getValues().contains(object);
-        removed |= removeEdited(object);
-        property.remove(object); // will notify listeners, so invoke last
-        return removed;
+        boolean result = property.getValues().contains(object);
+        result |= removeEdited(object);
+        if (result) {
+            resetValid();
+            property.remove(object); // will notify listeners, so invoke last
+        }
+        return result;
     }
 
     /**
@@ -198,43 +202,6 @@ public abstract class AbstractCollectionPropertyEditor
         for (IMObjectEditor editor : editors.values()) {
             editor.clearModified();
         }
-    }
-
-    /**
-     * Determines if the collection is valid.
-     *
-     * @return <tt>true</tt> if the collection is valid; otherwise
-     *         <tt>false</tt>
-     */
-    public boolean isValid() {
-        Validator validator = new Validator();
-        return validator.validate(property);
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator thhe validator
-     */
-    public boolean validate(Validator validator) {
-        boolean valid = validator.validate(property);
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        for (IMObject object : getObjects()) {
-            IMObjectEditor editor = getEditor(object);
-            if (editor != null) {
-                if (!validator.validate(editor)) {
-                    valid = false;
-                }
-            } else {
-                List<ValidatorError> errors
-                        = ValidationHelper.validate(object, service);
-                if (errors != null) {
-                    validator.add(property, errors);
-                    valid = false;
-                }
-            }
-        }
-        return valid;
     }
 
     /**
@@ -324,6 +291,47 @@ public abstract class AbstractCollectionPropertyEditor
     }
 
     /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     */
+    protected boolean doValidation(Validator validator) {
+        boolean result = validator.validate(property);
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        for (IMObject object : getObjects()) {
+            IMObjectEditor editor = getEditor(object);
+            if (editor != null) {
+                if (!validator.validate(editor)) {
+                    result = false;
+                }
+            } else {
+                List<ValidatorError> errors = ValidationHelper.validate(object, service);
+                if (errors != null) {
+                    validator.add(property, errors);
+                    result = false;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Resets the cached validity state of the object.
+     *
+     * @param descendants if <tt>true</tt> reset the validity state of any descendants as well.
+     */
+    @Override
+    protected void resetValid(boolean descendants) {
+        super.resetValid(descendants);
+        if (descendants) {
+            for (IMObjectEditor editor : editors.values()) {
+                editor.resetValid();
+            }
+        }
+    }
+
+    /**
      * Saves the collection.
      *
      * @return <tt>true</tt> if the save was successful
@@ -373,7 +381,9 @@ public abstract class AbstractCollectionPropertyEditor
      * @param object the edited object
      */
     protected void addEdited(IMObject object) {
-        edited.add(object);
+        if (edited.add(object)) {
+            resetValid(false);
+        }
     }
 
     /**
@@ -384,7 +394,11 @@ public abstract class AbstractCollectionPropertyEditor
      * @return <tt>true</tt> if the the object was being edited
      */
     protected boolean removeEdited(IMObject object) {
-        editors.remove(object);
-        return edited.remove(object);
+        boolean result = editors.remove(object) != null;
+        result |= edited.remove(object);
+        if (result) {
+            resetValid(false);
+        }
+        return result;
     }
 }

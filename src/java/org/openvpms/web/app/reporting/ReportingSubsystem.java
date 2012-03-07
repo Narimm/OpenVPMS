@@ -23,6 +23,9 @@ import org.openvpms.web.app.reporting.reminder.ReminderWorkspace;
 import org.openvpms.web.app.reporting.statement.StatementWorkspace;
 import org.openvpms.web.app.reporting.till.TillWorkspace;
 import org.openvpms.web.app.reporting.wip.IncompleteChargesWorkspace;
+import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.PracticeMailContext;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
@@ -35,16 +38,19 @@ import org.openvpms.web.component.subsystem.AbstractSubsystem;
 public class ReportingSubsystem extends AbstractSubsystem {
 
     /**
-     * Constructs a new <tt>ReportingSubsystem</tt>.
+     * Constructs a <tt>ReportingSubsystem</tt>.
      */
     public ReportingSubsystem() {
         super("reporting");
-        addWorkspace(new TillWorkspace());
-        addWorkspace(new DepositWorkspace());
-        addWorkspace(new StatementWorkspace());
-        addWorkspace(new IncompleteChargesWorkspace());
-        addWorkspace(new ReminderWorkspace());
-        addWorkspace(new ReportingWorkspace());
+
+        MailContext context = new PracticeMailContext(GlobalContext.getInstance());
+
+        addWorkspace(new TillWorkspace(), context);
+        addWorkspace(new DepositWorkspace(), context);
+        addWorkspace(new StatementWorkspace(), context);
+        addWorkspace(new IncompleteChargesWorkspace(), context);
+        addWorkspace(new ReminderWorkspace(), context);
+        addWorkspace(new ReportingWorkspace(), context);
     }
 
 }

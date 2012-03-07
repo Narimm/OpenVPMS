@@ -56,7 +56,7 @@ public class DocumentTemplateParticipationEditor extends ParticipationEditor<Ent
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Entity> createObjectReferenceEditor(Property property) {
+    protected IMObjectReferenceEditor<Entity> createEntityEditor(Property property) {
         return new AbstractIMObjectReferenceEditor<Entity>(property, getObject(), getLayoutContext()) {
 
             @Override

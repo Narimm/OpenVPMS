@@ -19,10 +19,7 @@
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
-import org.openvpms.archetype.rules.doc.DocumentHandler;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,7 +29,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -43,10 +39,6 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
-
-import java.io.InputStream;
 
 
 /**
@@ -259,42 +251,22 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     }
 
     private void onSelect() {
-        final IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        UploadListener listener = new UploadListener() {
-            public void fileUpload(UploadEvent event) {
-                try {
-                    String fileName = event.getFileName();
-                    InputStream stream = event.getInputStream();
-                    String contentType = event.getContentType();
-                    Integer size = event.getSize();
-                    DocumentHandlers handlers
-                            = ServiceHelper.getDocumentHandlers();
-                    DocumentHandler handler = handlers.get(fileName,
-                                                           contentType);
-                    Document doc = handler.create(fileName, stream, contentType,
-                                                  size);
-                    service.save(doc);
-                    act.setFileName(doc.getName());
-                    service.deriveValue(act, "name");
-                    act.setMimeType(doc.getMimeType());
-                    if (getParent() == null) {
-                        act.setDescription(doc.getDescription());
-                    } else {
-                        act.setDescription(getParent().getName());
-                    }
-                    replaceDocReference(doc);
-                    selector.setObject(act);
-                    docModified = true;
-                } catch (Exception exception) {
-                    ErrorHelper.show(exception);
-                }
-            }
+        final IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
 
-            public void invalidFileUpload(UploadEvent event) {
-                String message = Messages.get("file.upload.failed",
-                                              event.getFileName());
-                ErrorDialog.show(message);
+        UploadListener listener = new DocumentUploadListener() {
+            protected void upload(Document doc) {
+                service.save(doc);
+                act.setFileName(doc.getName());
+                service.deriveValue(act, "name");
+                act.setMimeType(doc.getMimeType());
+                if (getParent() == null) {
+                    act.setDescription(doc.getDescription());
+                } else {
+                    act.setDescription(getParent().getName());
+                }
+                replaceDocReference(doc);
+                selector.setObject(act);
+                docModified = true;
             }
         };
         UploadDialog dialog = new UploadDialog(listener);

@@ -22,15 +22,18 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.Retryer;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Arrays;
@@ -187,11 +190,13 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
         if (query != null) {
             try {
                 Iterable<Act> summary = new ActHierarchyIterator<Act>(query, query.getActItemShortNames());
-                IMObjectReportPrinter<Act> printer
-                        = new IMObjectReportPrinter<Act>(summary, PatientArchetypes.CLINICAL_EVENT);
+                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
+                                                                                     GlobalContext.getInstance());
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator);
                 String title = Messages.get("patient.record.summary.print");
                 InteractiveIMPrinter<Act> iPrinter
                         = new InteractiveIMPrinter<Act>(title, printer);
+                iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

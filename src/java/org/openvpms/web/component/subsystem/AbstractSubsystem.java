@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.subsystem;
 
+import org.openvpms.web.component.mail.MailContext;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,6 +128,17 @@ public abstract class AbstractSubsystem implements Subsystem {
             }
         }
         return null;
+    }
+
+    /**
+     * Helper to add a workspace, associating it with the specified mail context.
+     *
+     * @param workspace the workspace to add
+     * @param context   the mail context
+     */
+    protected void addWorkspace(AbstractWorkspace workspace, MailContext context) {
+        workspace.setMailContext(context);
+        addWorkspace(workspace);
     }
 
 }

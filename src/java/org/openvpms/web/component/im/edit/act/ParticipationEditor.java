@@ -62,7 +62,7 @@ public abstract class ParticipationEditor<T extends Entity>
             throw new IllegalArgumentException("Argument 'parent' is null");
         }
         Property entity = getProperty("entity");
-        editor = createObjectReferenceEditor(entity);
+        editor = createEntityEditor(entity);
         getEditors().add(editor, entity);
         Property act = getProperty("act");
         if (act.getValue() == null) {
@@ -153,15 +153,22 @@ public abstract class ParticipationEditor<T extends Entity>
     }
 
     /**
-     * Creates a new object reference editor.
+     * Creates a new object reference editor for the participation entity.
      *
      * @param property the reference property
      * @return a new object reference editor
      */
-    protected IMObjectReferenceEditor<T> createObjectReferenceEditor(
-            Property property) {
-        return IMObjectReferenceEditorFactory.create(property, getObject(),
-                                                     getLayoutContext());
+    protected IMObjectReferenceEditor<T> createEntityEditor(Property property) {
+        return IMObjectReferenceEditorFactory.create(property, getObject(), getLayoutContext());
+    }
+
+    /**
+     * Returns the participation entity editor.
+     *
+     * @return the participation entity editor
+     */
+    protected IMObjectReferenceEditor<T> getEntityEditor() {
+        return editor;
     }
 
     /**

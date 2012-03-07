@@ -19,7 +19,7 @@
 package org.openvpms.web.app.product;
 
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.QueryBrowser;

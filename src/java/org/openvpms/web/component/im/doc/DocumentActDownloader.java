@@ -18,13 +18,10 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -32,18 +29,14 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
-import org.openvpms.report.openoffice.OOConnection;
-import org.openvpms.report.openoffice.OpenOfficeHelper;
+import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.servlet.DownloadServlet;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -70,7 +63,7 @@ public class DocumentActDownloader extends Downloader {
      */
     private static final String PDF_STYLE_NAME = "download.pdf";
 
-    
+
     /**
      * Constructs a <tt>DocumentActDownloader</tt>.
      *
@@ -89,7 +82,7 @@ public class DocumentActDownloader extends Downloader {
         Component component;
         Button button = ButtonFactory.create(new ActionListener() {
             public void onAction(ActionEvent event) {
-                onDownload();
+                selected(null);
             }
         });
         boolean generated = false;
@@ -101,30 +94,21 @@ public class DocumentActDownloader extends Downloader {
                 generated = true;
             }
         }
-        String styleName;
         if (generated) {
             // if the document is generated, then its going to be a PDF, at least for the forseeable future.
             // Fairly expensive to determine the mime type otherwise. TODO
-            styleName = PDF_STYLE_NAME;
+            button.setStyleName(PDF_STYLE_NAME);
             button.setText(name);
         } else if (name != null) {
-            // name may be a file name.
-            String ext = FilenameUtils.getExtension(name).toLowerCase();
-            styleName = "download." + ext;
-            button.setText(name);
+            setButtonStyle(button, name);
         } else {
-            styleName = DEFAULT_BUTTON_STYLE;
+            button.setStyleName(DEFAULT_BUTTON_STYLE);
         }
-        ApplicationInstance active = ApplicationInstance.getActive();
-        if (active.getStyle(Button.class, styleName) == null) {
-            styleName = DEFAULT_BUTTON_STYLE;
-        }
-        button.setStyleName(styleName);
 
         if (!generated && Converter.canConvert(name, act.getMimeType(), DocFormats.PDF_TYPE)) {
             Button asPDF = ButtonFactory.create(new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    onDownloadAsPDF();
+                    selected(DocFormats.PDF_TYPE);
                 }
             });
             asPDF.setStyleName(PDF_STYLE_NAME);
@@ -139,49 +123,32 @@ public class DocumentActDownloader extends Downloader {
     /**
      * Returns the document for download.
      *
+     * @param mimeType the expected mime type. If <tt>null</tt>, then no conversion is required.
      * @return the document for download
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document can't be found
+     * @throws OpenOfficeException       if the document cannot be converted
      */
-    protected Document getDocument() {
+    protected Document getDocument(String mimeType) {
         IMObjectReference ref = act.getDocument();
         Document document = null;
         if (ref != null) {
-            document = getDocument(ref);
+            document = getDocumentByRef(ref, mimeType);
         } else {
             DocumentTemplate template = getTemplate();
             if (template != null) {
                 DocumentActReporter reporter = new DocumentActReporter(act, template);
-                document = reporter.getDocument();
+                if (mimeType == null) {
+                    document = reporter.getDocument();
+                } else {
+                    document = reporter.getDocument(mimeType, true);
+                }
             }
         }
         if (document == null) {
             throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
         return document;
-    }
-
-    /**
-     * Initiates download of the document as a PDF file.
-     */
-    protected void onDownloadAsPDF() {
-        OOConnection connection = null;
-        try {
-            Document source = getDocument();
-            if (DocFormats.PDF_TYPE.equals(source.getMimeType())) {
-                DownloadServlet.startDownload(source);
-            } else {
-                DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-                connection = OpenOfficeHelper.getConnectionPool().getConnection();
-                Converter converter = new Converter(connection, handlers);
-                Document target = converter.convert(source, DocFormats.PDF_TYPE);
-                DownloadServlet.startDownload(target);
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        } finally {
-            OpenOfficeHelper.close(connection);
-        }
     }
 
     /**

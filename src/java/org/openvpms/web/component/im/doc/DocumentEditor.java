@@ -20,11 +20,7 @@ package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
-import org.openvpms.archetype.rules.doc.DocumentHandler;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -36,19 +32,16 @@ import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.select.BasicSelector;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
-import java.io.InputStream;
 import java.util.Iterator;
 
 
@@ -141,7 +134,7 @@ public class DocumentEditor extends AbstractPropertyEditor
      * Sets the document.
      *
      * @param document the new document
-     * @param keepOld if <tt>true</tt> any existing document won't be deleted at commit
+     * @param keepOld  if <tt>true</tt> any existing document won't be deleted at commit
      * @throws ArchetypeServiceException for any error
      */
     protected void setDocument(Document document, boolean keepOld) {
@@ -254,43 +247,13 @@ public class DocumentEditor extends AbstractPropertyEditor
      * Invoked when the select button is pressed.
      */
     private void onSelect() {
-        UploadListener listener = new UploadListener() {
-            public void fileUpload(UploadEvent event) {
-                String fileName = event.getFileName();
-                InputStream stream = event.getInputStream();
-                String contentType = event.getContentType();
-                int size = event.getSize();
-                upload(fileName, stream, contentType, size);
-            }
-
-            public void invalidFileUpload(UploadEvent event) {
-                String message = Messages.get("file.upload.failed",
-                                              event.getFileName());
-                ErrorDialog.show(message);
+        UploadListener listener = new DocumentUploadListener() {
+            protected void upload(Document document) {
+                setDocument(document);
             }
         };
         UploadDialog dialog = new UploadDialog(listener);
         dialog.show();
-    }
-
-    /**
-     * Uploads a file.
-     *
-     * @param fileName    the filename
-     * @param stream      the file stream
-     * @param contentType the mime type
-     * @param size        the content length
-     */
-    private void upload(String fileName, InputStream stream, String contentType,
-                        int size) {
-        DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-        try {
-            DocumentHandler handler = handlers.get(fileName, contentType);
-            Document doc = handler.create(fileName, stream, contentType, size);
-            setDocument(doc);
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
     }
 
     /**

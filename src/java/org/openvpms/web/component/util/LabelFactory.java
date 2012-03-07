@@ -70,24 +70,18 @@ public final class LabelFactory extends ComponentFactory {
      */
     public static Label create(boolean multiline, boolean wrap) {
         Label result;
-        if (multiline || wrap) {
+        if (multiline) {
             LabelEx label = new LabelEx() {
                 @Override
                 public void setText(String newValue) {
                     if (TextHelper.hasControlChars(newValue)) {
                         // replace any control chars with spaces.
-                        newValue = TextHelper.replaceControlChars(newValue,
-                                                                  " ");
+                        newValue = TextHelper.replaceControlChars(newValue, " ");
                     }
                     super.setText(newValue);
                 }
             };
-            if (multiline) {
-                label.setIntepretNewlines(true);
-            }
-            if (wrap) {
-                label.setLineWrap(true);
-            }
+            label.setIntepretNewlines(true);
             result = label;
         } else {
             result = new Label() {
@@ -95,13 +89,13 @@ public final class LabelFactory extends ComponentFactory {
                 public void setText(String newValue) {
                     if (TextHelper.hasControlChars(newValue)) {
                         // replace any control chars with spaces.
-                        newValue = TextHelper.replaceControlChars(newValue,
-                                                                  " ");
+                        newValue = TextHelper.replaceControlChars(newValue, " ");
                     }
                     super.setText(newValue);
                 }
             };
         }
+        result.setLineWrap(wrap);
         setDefaultStyle(result);
         return result;
     }

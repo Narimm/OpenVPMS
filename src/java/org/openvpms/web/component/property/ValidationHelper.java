@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -74,12 +75,11 @@ public class ValidationHelper {
     /**
      * Validates an object.
      *
-     * @param object the object to validate
-     * @return a list of validation errors, or <tt>null</tt> if the object
-     *         is valid
+     * @param object  the object to validate
+     * @param service the archetype service
+     * @return a list of validation errors, or <tt>null</tt> if the object is valid
      */
-    public static List<ValidatorError> validate(IMObject object,
-                                                IArchetypeService service) {
+    public static List<ValidatorError> validate(IMObject object, IArchetypeService service) {
         List<ValidatorError> result = null;
         try {
             service.validateObject(object);
@@ -103,18 +103,36 @@ public class ValidationHelper {
     }
 
     /**
-     * Display the first error from a validator.
+     * Displays the first error from a validator.
+     * <p/>
+     * The error will be formatted.
      *
      * @param validator the validator
      */
     public static void showError(Validator validator) {
+        showError(null, validator, null, true);
+    }
+
+    /**
+     * Display the first error from a validator.
+     *
+     * @param title     the dialog title. May  be <tt>null</tt>
+     * @param validator the validator
+     * @param key       resource bundle key, if the error should be included in text. May be <tt>null</tt>
+     * @param formatted if <tt>true</tt> format the message, otherwise display as is
+     */
+    public static void showError(String title, Validator validator, String key, boolean formatted) {
         Collection<Modifiable> invalid = validator.getInvalid();
         if (!invalid.isEmpty()) {
             Modifiable modifiable = invalid.iterator().next();
             List<ValidatorError> errors = validator.getErrors(modifiable);
             if (!errors.isEmpty()) {
                 ValidatorError error = errors.get(0);
-                ErrorHelper.show(error.toString());
+                String message = (formatted) ? error.toString() : error.getMessage();
+                if (key != null) {
+                    message = Messages.get(key, message);
+                }
+                ErrorHelper.show(title, message);
             }
         }
     }

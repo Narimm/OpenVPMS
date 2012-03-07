@@ -25,6 +25,8 @@ import org.openvpms.report.IMReport;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.IMObjectReporter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.app.GlobalContext;
 
 
@@ -39,13 +41,12 @@ public class IMObjectReportPrinter<T extends IMObject> extends TemplatedIMPrinte
     /**
      * Constructs an <tt>IMObjectReportPrinter</tt>.
      *
-     * TODO - should be removed as it is dependendent on the global context
-     *
      * @param object   the object to print
+     * @param locator the document template locator
      * @throws OpenVPMSException for any error
      */
-    public IMObjectReportPrinter(T object) {
-        super(new IMObjectReporter<T>(object, new ContextDocumentTemplateLocator(object, GlobalContext.getInstance())));
+    public IMObjectReportPrinter(T object, DocumentTemplateLocator locator) {
+        super(ReporterFactory.<T, TemplatedReporter<T>>create(object, locator, TemplatedReporter.class));
     }
 
     /**
@@ -56,18 +57,7 @@ public class IMObjectReportPrinter<T extends IMObject> extends TemplatedIMPrinte
      * @throws OpenVPMSException for any error
      */
     public IMObjectReportPrinter(T object, DocumentTemplate template) {
-        super(new IMObjectReporter<T>(object, template));
-    }
-
-    /**
-     * Constructs an <tt>IMObjectReportPrinter</tt>.
-     *
-     * @param object  the object to print
-     * @param locator the document template locator
-     * @throws OpenVPMSException for any error
-     */
-    public IMObjectReportPrinter(T object, DocumentTemplateLocator locator) {
-        super(new IMObjectReporter<T>(object, locator));
+        super(ReporterFactory.<T, TemplatedReporter<T>>create(object, template, TemplatedReporter.class));
     }
 
     /**
@@ -78,7 +68,7 @@ public class IMObjectReportPrinter<T extends IMObject> extends TemplatedIMPrinte
      * @throws OpenVPMSException for any error
      */
     public IMObjectReportPrinter(Iterable<T> objects, DocumentTemplate template) {
-        super(new IMObjectReporter<T>(objects, template));
+        super(ReporterFactory.<T, TemplatedReporter<T>>create(objects, template, TemplatedReporter.class));
     }
 
     /**
@@ -89,7 +79,7 @@ public class IMObjectReportPrinter<T extends IMObject> extends TemplatedIMPrinte
      * @throws OpenVPMSException for any error
      */
     public IMObjectReportPrinter(Iterable<T> objects, DocumentTemplateLocator locator) {
-        super(new IMObjectReporter<T>(objects, locator));
+        super(ReporterFactory.<T, TemplatedReporter<T>>create(objects, locator, TemplatedReporter.class));
     }
 
     /**

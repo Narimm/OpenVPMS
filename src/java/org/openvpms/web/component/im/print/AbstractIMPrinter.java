@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.print;
 
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.report.IMReport;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
 
@@ -76,10 +75,9 @@ public abstract class AbstractIMPrinter<T>
         if (printer == null) {
             throw new PrintException(PrintException.ErrorCode.NoPrinter);
         }
-        IMReport<T> report = reporter.getReport();
-        report.print(getObjects().iterator(), getParameters(),
-                     getProperties(printer));
+        reporter.print(getObjects().iterator(), getProperties(printer));
     }
+
     /**
      * Sets parameters to pass to the report.
      *
@@ -112,12 +110,15 @@ public abstract class AbstractIMPrinter<T>
 
     /**
      * Returns a document corresponding to that which would be printed.
-     * @param format the document format to return
+     *
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     *                 can perform custom formatting
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    public Document getDocument(String format) {
-        return reporter.getDocument();
+    public Document getDocument(String mimeType, boolean email) {
+        return reporter.getDocument(mimeType, email);
     }
 
     /**

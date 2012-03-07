@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.PracticeMailContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -127,7 +128,7 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         addTask(postPayment);
 
         // optionally select and print the act.customerAccountChargesCounter
-        PrintIMObjectTask printSale = new PrintIMObjectTask(CHARGES_COUNTER);
+        PrintIMObjectTask printSale = new PrintIMObjectTask(CHARGES_COUNTER, new PracticeMailContext(global));
         printSale.setRequired(false);
 
         // task to save the act.customerAccountChargesCounter, setting its

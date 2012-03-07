@@ -117,15 +117,25 @@ public class ValidatorError {
     }
 
     /**
+     * Returns the message.
+     *
+     * @return the message
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
      * Returns a formatted message for this error.
      *
      * @return a formatted message
      */
     public String toString() {
         if (archetype != null) {
-            return formatNode();
+            return format(archetype, property, message);
         } else if (property != null) {
-            return formatProperty();
+            String name = (displayName != null) ? displayName : property;
+            return format(name, message);
         }
         return formatMessage();
     }
@@ -133,18 +143,20 @@ public class ValidatorError {
     /**
      * Formats a message for an archetype node.
      *
+     * @param shortName the archetype short name
+     * @param node      the archetype node
+     * @param message   the error message
      * @return the formatted message
      */
-    private String formatNode() {
+    public static String format(String shortName, String node, String message) {
         String archetypeName = null;
         String nodeName = null;
-        ArchetypeDescriptor descriptor
-                = DescriptorHelper.getArchetypeDescriptor(archetype);
-        if (descriptor != null) {
-            archetypeName = descriptor.getDisplayName();
-            NodeDescriptor node = descriptor.getNodeDescriptor(property);
-            if (node != null) {
-                nodeName = node.getDisplayName();
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(shortName);
+        if (archetype != null) {
+            archetypeName = archetype.getDisplayName();
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+            if (descriptor != null) {
+                nodeName = descriptor.getDisplayName();
             }
         }
         return Messages.get(NODE_KEY, archetypeName, nodeName, message);
@@ -153,11 +165,12 @@ public class ValidatorError {
     /**
      * Formats a message for a property.
      *
+     * @param property the property
+     * @param message  the error message
      * @return the formatted message
      */
-    private String formatProperty() {
-        String name = (displayName != null) ? displayName : property;
-        return Messages.get(PROP_KEY, name, message);
+    public static String format(String property, String message) {
+        return Messages.get(PROP_KEY, property, message);
     }
 
     /**

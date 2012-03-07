@@ -86,27 +86,27 @@ public abstract class TemplatedVersionedDocumentActEditorTest extends VersionedD
 
         editor.setTemplate(template1);
         IMObjectReference docRef1 = act.getDocument();
-        org.junit.Assert.assertNotNull(docRef1);
-        org.junit.Assert.assertTrue(save(editor));
+        assertNotNull(docRef1);
+        assertTrue(save(editor));
 
         editor.setTemplate(template2);
         IMObjectReference docRef2 = act.getDocument();
-        org.junit.Assert.assertNotNull(docRef2);
-        org.junit.Assert.assertTrue(save(editor));
+        assertNotNull(docRef2);
+        assertTrue(save(editor));
 
         ActBean bean = new ActBean(act);
         List<DocumentAct> versions = bean.getNodeActs("versions", DocumentAct.class);
-        org.junit.Assert.assertEquals(1, versions.size());
+        assertEquals(1, versions.size());
         DocumentAct version1 = versions.get(0);
-        org.junit.Assert.assertEquals(docRef1, version1.getDocument());
+        assertEquals(docRef1, version1.getDocument());
 
         // now delete the act and verify both it and the document were deleted
         boolean result = delete(editor);
-        org.junit.Assert.assertTrue(result);
-        org.junit.Assert.assertNull(get(act));
-        org.junit.Assert.assertNull(get(version1));
-        org.junit.Assert.assertNull(get(docRef1));
-        org.junit.Assert.assertNull(get(docRef2));
+        assertTrue(result);
+        assertNull(get(act));
+        assertNull(get(version1));
+        assertNull(get(docRef1));
+        assertNull(get(docRef2));
     }
 
 }

@@ -235,9 +235,9 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
-    public boolean validate(Validator validator) {
+    protected boolean doValidation(Validator validator) {
         boolean result = false;
         if (!selector.inSelect()) {
             // only raise validation errors if a dialog is not displayed
@@ -245,7 +245,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                 String message = Messages.get("imobject.invalidreference", selector.getText());
                 validator.add(this, new ValidatorError(getProperty(), message));
             } else {
-                result = super.validate(validator) && isValidReference(validator);
+                result = super.doValidation(validator) && isValidReference(validator);
             }
         }
         return result;
@@ -357,6 +357,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * {@link #onUpdated}.
      */
     private void onUpdate() {
+        resetValid();
         T object = updateSelector();
         onUpdated(object);
     }
@@ -407,6 +408,9 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                 modified = property.setValue(object.getObjectReference());
             } else {
                 modified = property.setValue(null);
+            }
+            if (modified) {
+                resetValid();
             }
         } finally {
             addModifiableListener(propertyListener);

@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
-import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
 
@@ -92,6 +91,97 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
     }
 
     /**
+     * Sets the reorder code.
+     *
+     * @param reorderCode the reorder code. May be <tt>null</tt>
+     */
+    public void setReorderCode(String reorderCode) {
+        getProperty("reorderCode").setValue(reorderCode);
+    }
+
+    /**
+     * Returns the package units.
+     *
+     * @return the package units. May be <tt>null</tt>
+     */
+    public String getPackageUnits() {
+        return (String) getProperty("packageUnits").getValue();
+    }
+
+    /**
+     * Returns the reorder code.
+     *
+     * @return the reorder code. May be <tt>null</tt>
+     */
+    public String getReorderCode() {
+        return (String) getProperty("reorderCode").getValue();
+    }
+
+    /**
+     * Sets the reorder description.
+     *
+     * @param description the description. May be <tt>null</tt>
+     */
+    public void setReorderDescription(String description) {
+        getProperty("reorderDescription").setValue(description);
+    }
+
+    /**
+     * Returns the reorder description.
+     *
+     * @return the reorder description. May be <tt>null</tt>
+     */
+    public String getReorderDescription() {
+        return (String) getProperty("reorderDescription").getValue();
+    }
+
+    /**
+     * Sets the package size.
+     *
+     * @param packageSize the package size
+     */
+    public void setPackageSize(int packageSize) {
+        getProperty("packageSize").setValue(packageSize);
+    }
+
+    /**
+     * Returns the package size.
+     *
+     * @return the package size
+     */
+    public int getPackageSize() {
+        Integer value = (Integer) getProperty("packageSize").getValue();
+        return (value != null) ? value : 0;
+    }
+
+    /**
+     * Sets the package units.
+     *
+     * @param packageUnits the package units. May be <tt>null</tt>
+     */
+    public void setPackageUnits(String packageUnits) {
+        getProperty("packageUnits").setValue(packageUnits);
+    }
+
+    /**
+     * Sets the list price.
+     *
+     * @param price the list price
+     */
+    public void setListPrice(BigDecimal price) {
+        getProperty("listPrice").setValue(price);
+    }
+
+    /**
+     * Returns the list price.
+     *
+     * @return the list price
+     */
+    public BigDecimal getListPrice() {
+        return (BigDecimal) getProperty("listPrice").getValue();
+    }
+
+    /**
      * Invoked when layout has completed.
      */
     @Override
@@ -121,14 +211,12 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
             ProductParticipationEditor editor = getProductEditor();
             ProductSupplier ps = editor.getProductSupplier();
             if (ps != null) {
-                Property reorderCode = getProperty("reorderCode");
-                reorderCode.setValue(ps.getReorderCode());
-                getProperty("reorderDescription").setValue(
-                        ps.getReorderDescription());
-                getProperty("packageSize").setValue(ps.getPackageSize());
-                getProperty("packageUnits").setValue(ps.getPackageUnits());
-                getProperty("listPrice").setValue(ps.getListPrice());
-                getProperty("unitPrice").setValue(ps.getNettPrice());
+                setReorderCode(ps.getReorderCode());
+                setReorderDescription(ps.getReorderDescription());
+                setPackageSize(ps.getPackageSize());
+                setPackageUnits(ps.getPackageUnits());
+                setListPrice(ps.getListPrice());
+                setUnitPrice(ps.getNettPrice());
             }
         }
     }
@@ -222,61 +310,6 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
     private ProductSupplier getProductSupplier() {
         ProductParticipationEditor editor = getProductEditor();
         return (editor != null) ? editor.getProductSupplier() : null;
-    }
-
-    /**
-     * Returns the package size.
-     *
-     * @return the package size
-     */
-    private int getPackageSize() {
-        Integer value = (Integer) getProperty("packageSize").getValue();
-        return (value != null) ? value : 0;
-    }
-
-    /**
-     * Returns the package units.
-     *
-     * @return the package units
-     */
-    private String getPackageUnits() {
-        return (String) getProperty("packageUnits").getValue();
-    }
-
-    /**
-     * Returns the reorder code.
-     *
-     * @return the reorder code
-     */
-    private String getReorderCode() {
-        return (String) getProperty("reorderCode").getValue();
-    }
-
-    /**
-     * Returns the reorder description.
-     *
-     * @return the reorder description
-     */
-    private String getReorderDescription() {
-        return (String) getProperty("reorderDescription").getValue();
-    }
-
-    /**
-     * Returns the list price.
-     *
-     * @return the list price
-     */
-    private BigDecimal getListPrice() {
-        return (BigDecimal) getProperty("listPrice").getValue();
-    }
-
-    /**
-     * Returns the unit price (also know as the nett price).
-     *
-     * @return the unit price
-     */
-    private BigDecimal getUnitPrice() {
-        return (BigDecimal) getProperty("unitPrice").getValue();
     }
 
     /**

@@ -34,6 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.reporting.reminder.ReminderGenerator;
+import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -197,7 +198,10 @@ class ResendReminderDialog extends PopupDialog {
                     event = new ReminderEvent(action, event.getReminder(), event.getReminderType(), event.getPatient(),
                                               event.getCustomer(), contact, event.getDocumentTemplate());
                 }
-                final ReminderGenerator generator = new ReminderGenerator(event, GlobalContext.getInstance());
+                GlobalContext context = GlobalContext.getInstance();
+                CustomerMailContext mailContext = CustomerMailContext.create(event.getCustomer(), event.getPatient(),
+                                                                             context);
+                final ReminderGenerator generator = new ReminderGenerator(event, context, mailContext);
                 generator.setUpdateOnCompletion(false);
                 generator.setListener(new BatchProcessorListener() {
                     public void completed() {

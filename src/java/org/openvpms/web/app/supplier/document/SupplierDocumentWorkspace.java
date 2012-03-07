@@ -19,12 +19,10 @@
 package org.openvpms.web.app.supplier.document;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
 import org.openvpms.web.app.supplier.SupplierActWorkspace;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.ActStatuses;
-import org.openvpms.web.component.im.query.DefaultActQuery;
 
 
 /**
@@ -37,25 +35,11 @@ public class SupplierDocumentWorkspace
         extends SupplierActWorkspace<DocumentAct> {
 
     /**
-     * Supplier Document shortnames supported by the workspace.
-     */
-    private static final String[] SHORT_NAMES = {
-            "act.supplierDocumentForm", "act.supplierDocumentLetter",
-            "act.supplierDocumentAttachment"};
-
-    /**
-     * The act statuses.
-     */
-    private static final ActStatuses STATUSES = new ActStatuses(
-            "act.supplierDocumentLetter");
-
-
-    /**
-     * Constructs a new <tt>SupplierDocumentWorkspace</tt>.
+     * Constructs a <tt>SupplierDocumentWorkspace</tt>.
      */
     public SupplierDocumentWorkspace() {
         super("supplier", "document");
-        setChildArchetypes(DocumentAct.class, SHORT_NAMES);
+        setChildArchetypes(DocumentAct.class, SupplierDocumentQuery.SHORT_NAMES);
     }
 
     /**
@@ -73,9 +57,7 @@ public class SupplierDocumentWorkspace
      * @return a new query
      */
     protected ActQuery<DocumentAct> createQuery() {
-        return new DefaultActQuery<DocumentAct>(getObject(), "supplier",
-                                                "participation.supplier",
-                                                SHORT_NAMES, STATUSES);
+        return new SupplierDocumentQuery<DocumentAct>(getObject());
     }
 
     /**

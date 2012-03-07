@@ -31,6 +31,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.AbstractModifiable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -43,7 +44,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractIMObjectCollectionEditor
+public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiable
         implements IMObjectCollectionEditor {
 
     /**
@@ -93,7 +94,7 @@ public abstract class AbstractIMObjectCollectionEditor
 
 
     /**
-     * Construct a new <tt>AbstractIMObjectCollectionEditor</tt>.
+     * Constructs an <tt>AbstractIMObjectCollectionEditor</tt>.
      *
      * @param editor  the collection property
      * @param object  the object being edited
@@ -106,7 +107,7 @@ public abstract class AbstractIMObjectCollectionEditor
     }
 
     /**
-     * Construct a new <tt>AbstractIMObjectCollectionEditor</tt>.
+     * Constructs an <tt>AbstractIMObjectCollectionEditor</tt>.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
@@ -294,34 +295,22 @@ public abstract class AbstractIMObjectCollectionEditor
     }
 
     /**
-     * Determines if the object is valid.
-     *
-     * @return <tt>true</tt> if the object is valid; otherwise
-     *         <tt>false</tt>
-     */
-    public boolean isValid() {
-        Validator validator = new Validator();
-        return validator.validate(this);
-    }
-
-    /**
      * Validates the object.
-     * This validates the current object being edited, and if valid, the
-     * collection.
+     * <p/>
+     * This validates the current object being edited, and if valid, the collection.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
-    public boolean validate(Validator validator) {
-        boolean valid = true;
+    protected boolean doValidation(Validator validator) {
+        boolean result = true;
         if (editor != null) {
-            valid = addCurrentEdits(validator);
+            result = addCurrentEdits(validator); // can invoke resetValid()
         }
-        if (valid) {
-            valid = collection.validate(validator);
+        if (result) {
+                result = collection.validate(validator);
         }
-        return valid;
+        return result;
     }
 
     /**
@@ -501,11 +490,13 @@ public abstract class AbstractIMObjectCollectionEditor
     }
 
     /**
-     * Invoked when the collection or an editor changes. Notifies registered listeners.
+     * Invoked when the collection or an editor changes. Resets the cached valid status and notifies registered
+     * listeners.
      *
      * @param modifiable the modifiable to pass to the listeners
      */
     protected void onModified(Modifiable modifiable) {
+        resetValid(false);
         listeners.notifyListeners(modifiable);
     }
 
