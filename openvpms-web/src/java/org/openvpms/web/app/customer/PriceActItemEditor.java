@@ -143,26 +143,6 @@ public class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
-     * Returns the unit price.
-     *
-     * @return the unit price
-     */
-    protected BigDecimal getUnitPrice() {
-        BigDecimal value = (BigDecimal) getProperty("unitPrice").getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
-    }
-
-    /**
-     * Returns the quantity.
-     *
-     * @return the quantity
-     */
-    protected BigDecimal getQuantity() {
-        BigDecimal value = (BigDecimal) getProperty("quantity").getValue();
-        return (value != null) ? value : BigDecimal.ZERO;
-    }
-
-    /**
      * Calculates the discount amount, updating the 'discount' node.
      */
     protected void updateDiscount() {

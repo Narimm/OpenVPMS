@@ -25,8 +25,8 @@ import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -36,6 +36,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -63,6 +64,11 @@ class StatementGenerator extends AbstractStatementGenerator {
      */
     private StatementProcessor processor;
 
+    /**
+     * The mail context.
+     */
+    private MailContext mailContext;
+
 
     /**
      * Constructs a new <tt>StatementGenerator</tt> for a single customer.
@@ -84,19 +90,6 @@ class StatementGenerator extends AbstractStatementGenerator {
             customers.add(party);
         }
         init(customers, date, printOnly, context);
-    }
-
-    /**
-     * Determines if statements that have been printed should be reprinted.
-     * A statement is printed if the printed flag of its
-     * <em>act.customerAccountOpeningBalance</em> is <tt>true</tt>.
-     * Defaults to <tt>false</tt>.
-     *
-     * @param reprint if <tt>true</tt>, process statements that have been
-     *                printed.
-     */
-    public void setReprint(boolean reprint) {
-        processor.setReprint(reprint);
     }
 
     /**
@@ -127,6 +120,28 @@ class StatementGenerator extends AbstractStatementGenerator {
             }
         }
         init(customers, query.getDate(), false, context);
+    }
+
+    /**
+     * Determines if statements that have been printed should be reprinted.
+     * A statement is printed if the printed flag of its
+     * <em>act.customerAccountOpeningBalance</em> is <tt>true</tt>.
+     * Defaults to <tt>false</tt>.
+     *
+     * @param reprint if <tt>true</tt>, process statements that have been
+     *                printed.
+     */
+    public void setReprint(boolean reprint) {
+        processor.setReprint(reprint);
+    }
+
+    /**
+     * Sets the mail context, used for mailing from print dialogs.
+     *
+     * @param context the mail context. May be <tt>null</tt>
+     */
+    public void setMailContext(MailContext context) {
+        mailContext = context;
     }
 
     /**
@@ -161,7 +176,7 @@ class StatementGenerator extends AbstractStatementGenerator {
             throw new StatementProcessorException(
                     StatementProcessorException.ErrorCode.InvalidConfiguration,
                     "Practice " + practice.getName()
-                            + " has no email contact for statements");
+                    + " has no email contact for statements");
         }
         IMObjectBean bean = new IMObjectBean(email);
         String address = bean.getString("emailAddress");
@@ -170,17 +185,15 @@ class StatementGenerator extends AbstractStatementGenerator {
             throw new StatementProcessorException(
                     StatementProcessorException.ErrorCode.InvalidConfiguration,
                     "Practice " + practice.getName()
-                            + " email contact address is empty");
+                    + " email contact address is empty");
         }
 
         processor = new StatementProcessor(date, practice);
         progressBarProcessor = new StatementProgressBarProcessor(
                 processor, customers);
 
-        StatementPrintProcessor printer
-                = new StatementPrintProcessor(progressBarProcessor,
-                                              getCancelListener(),
-                                              practice);
+        StatementPrintProcessor printer = new StatementPrintProcessor(progressBarProcessor, getCancelListener(),
+                                                                      practice, mailContext);
         if (printOnly) {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);
@@ -199,28 +212,7 @@ class StatementGenerator extends AbstractStatementGenerator {
      * @return an email contact, or <tt>null</tt> if none is configured
      */
     private Contact getEmail(Party practice) {
-        Contact preferred = null;
-        Contact fallback = null;
-        for (Contact contact : practice.getContacts()) {
-            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-                IMObjectBean bean = new IMObjectBean(contact);
-                List<Lookup> purposes = bean.getValues("purposes",
-                                                       Lookup.class);
-                for (Lookup purpose : purposes) {
-                    if ("BILLING".equals(purpose.getCode())) {
-                        return contact;
-                    }
-                }
-                if (preferred == null && bean.hasNode("preferred")
-                        && bean.getBoolean("preferred")) {
-                    preferred = contact;
-                } else if (fallback == null) {
-                    fallback = contact;
-                }
-            }
-        }
-        return (preferred != null) ?
-                preferred : (fallback != null) ? fallback : null;
+        return new PartyRules().getContact(practice, ContactArchetypes.EMAIL, "BILLING");
     }
 
     private class StatementDelegator implements ProcessorListener<Statement> {

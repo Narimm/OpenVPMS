@@ -212,6 +212,13 @@ public abstract class DelegatingCollectionEditor
     }
 
     /**
+     * Resets the cached validity state of the object, to force revalidation to of the object and its descendants.
+     */
+    public void resetValid() {
+        editor.resetValid();
+    }
+
+    /**
      * Save any edits.
      *
      * @return <tt>true</tt> if the save was successful

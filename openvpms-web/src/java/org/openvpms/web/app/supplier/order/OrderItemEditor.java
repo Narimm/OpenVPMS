@@ -52,6 +52,21 @@ public class OrderItemEditor extends SupplierStockItemEditor {
      */
     private final boolean postedOrAccepted;
 
+    /**
+     * Quantity node name.
+     */
+    private static final String QUANTITY = "quantity";
+
+    /**
+     * Received quantity node name.
+     */
+    private static final String RECEIVED_QUANTITY = "receivedQuantity";
+
+    /**
+     * Cancelled quantity node name.
+     */
+    private static final String CANCELLED_QUANTITY = "cancelledQuantity";
+
 
     /**
      * Constructs an <tt>OrderItemEditor</tt>.
@@ -76,15 +91,50 @@ public class OrderItemEditor extends SupplierStockItemEditor {
     }
 
     /**
+     * Returns the received quantity.
+     *
+     * @return the received quantity
+     */
+    public BigDecimal getReceivedQuantity() {
+        return (BigDecimal) getProperty(RECEIVED_QUANTITY).getValue();
+    }
+
+    /**
+     * Sets the received quantity.
+     *
+     * @param quantity the received quantity
+     */
+    public void setReceivedQuantity(BigDecimal quantity) {
+        getProperty(RECEIVED_QUANTITY).setValue(quantity);
+    }
+
+    /**
+     * Returns the cancelled quantity.
+     *
+     * @return the cancelled quantity
+     */
+    public BigDecimal getCancelledQuantity() {
+        return (BigDecimal) getProperty(CANCELLED_QUANTITY).getValue();
+    }
+
+    /**
+     * Sets the cancelled quantity.
+     *
+     * @param quantity the cancelled quantity
+     */
+    public void setCancelledQuantity(BigDecimal quantity) {
+        getProperty(CANCELLED_QUANTITY).setValue(quantity);
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
     @Override
-    public boolean validate(Validator validator) {
-        boolean valid = super.validate(validator);
+    protected boolean doValidation(Validator validator) {
+        boolean valid = super.doValidation(validator);
         if (valid) {
             BigDecimal quantity = getQuantity();
             BigDecimal received = getReceivedQuantity();
@@ -92,9 +142,8 @@ public class OrderItemEditor extends SupplierStockItemEditor {
             BigDecimal sum = received.add(cancelled);
             if (sum.compareTo(quantity) > 0) {
                 valid = false;
-                Property property = getProperty("quantity");
-                String message = Messages.get("supplier.order.invalidQuantity",
-                                              quantity, sum);
+                Property property = getProperty(QUANTITY);
+                String message = Messages.get("supplier.order.invalidQuantity", quantity, sum);
                 ValidatorError error = new ValidatorError(property, message);
                 validator.add(property, error);
             }
@@ -125,7 +174,7 @@ public class OrderItemEditor extends SupplierStockItemEditor {
                                                      LayoutContext context) {
                 if (postedOrAccepted) {
                     String name = property.getName();
-                    if (!name.equals("status") && !name.equals("cancelledQuantity")) {
+                    if (!name.equals("status") && !name.equals(CANCELLED_QUANTITY)) {
                         property = new DelegatingProperty(property) {
                             @Override
                             public boolean isReadOnly() {
@@ -137,33 +186,6 @@ public class OrderItemEditor extends SupplierStockItemEditor {
                 return super.createComponent(property, parent, context);
             }
         };
-    }
-
-    /**
-     * Returns the quantity.
-     *
-     * @return the quantity
-     */
-    private BigDecimal getQuantity() {
-        return (BigDecimal) getProperty("quantity").getValue();
-    }
-
-    /**
-     * Returns the received quantity.
-     *
-     * @return the received quantity
-     */
-    private BigDecimal getReceivedQuantity() {
-        return (BigDecimal) getProperty("receivedQuantity").getValue();
-    }
-
-    /**
-     * Returns the cancelled quantity.
-     *
-     * @return the cancelled quantity
-     */
-    private BigDecimal getCancelledQuantity() {
-        return (BigDecimal) getProperty("cancelledQuantity").getValue();
     }
 
 }

@@ -24,9 +24,10 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectCache;
+import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.mail.MailContext;
 
 
 /**
@@ -183,6 +184,20 @@ public interface LayoutContext {
      * @return the listener, or a default listener if none is registered
      */
     IMObjectDeletionListener<IMObject> getDeletionListener();
+
+    /**
+     * Registers a mail context.
+     *
+     * @param context the mail context. May be <tt>null</tt>
+     */
+    void setMailContext(MailContext context);
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context. May be <tt>null</tt>
+     */
+    MailContext getMailContext();
 
     /**
      * Registers a listener for context switch events.

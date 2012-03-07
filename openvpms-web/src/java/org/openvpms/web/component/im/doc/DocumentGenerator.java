@@ -18,29 +18,27 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.report.DocumentActReporter;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 
 /**
- * Generates a document from a template and updates the associated
- * {@link DocumentAct DocumentAct}.
+ * Generates a document from a document act.
+ * <p/>
+ * For document acts that have an existing document and no document template, the existing document will be returned.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -66,16 +64,6 @@ public class DocumentGenerator {
     private final DocumentAct act;
 
     /**
-     * If <tt>true</tt> version any old document if the act supports it.
-     */
-    private final boolean version;
-
-    /**
-     * Reference to the document template.
-     */
-    private final IMObjectReference template;
-
-    /**
      * The generated document.
      */
     private Document document;
@@ -87,74 +75,71 @@ public class DocumentGenerator {
 
 
     /**
-     * Creates a new <tt>DocumentGenerator</tt>.
+     * Constructs a <tt>DocumentGenerator</tt>.
      *
      * @param act      the document act
-     * @param version  if <tt>true</tt> version any old document if the act supports it
      * @param listener the listener to notify when generation completes
      */
-    public DocumentGenerator(DocumentAct act, boolean version, Listener listener) {
+    public DocumentGenerator(DocumentAct act, Listener listener) {
         this.act = act;
-        this.version = version;
-        this.listener = listener;
-        ActBean bean = new ActBean(act);
-        template = bean.getNodeParticipantRef("documentTemplate");
-    }
-
-    /**
-     * Creates a new <tt>DocumentGenerator</tt>.
-     *
-     * @param act      the document act
-     * @param template the document template reference
-     * @param version  if <tt>true</tt> version any old document if the act supports it
-     * @param listener the listener to notify when generation completes
-     */
-    public DocumentGenerator(DocumentAct act, IMObjectReference template, boolean version, Listener listener) {
-        this.act = act;
-        this.version = version;
-        this.template = template;
         this.listener = listener;
     }
 
     /**
      * Returns the generated document.
      *
-     * @return the generated document, or <tt>null</tt> if generation hasn't
-     *         been performed
+     * @return the generated document, or <tt>null</tt> if generation hasn't been performed
      */
     public Document getDocument() {
         return document;
     }
 
     /**
+     * Generates the document.
+     * <p/>
+     * The document will not be saved.
+     */
+    public void generate() {
+        generate(false, false);
+    }
+
+    /**
      * Generates the document, notifying the listener on completion.
      *
-     * @param save if <tt>true</tt> save the act and generated document
+     * @param save    if <tt>true</tt> save the act and generated document
+     * @param version if <tt>true</tt>  and saving the document, version any old document if the act supports it
      */
-    public void generate(boolean save) {
-        ReportGenerator gen = new ReportGenerator(template);
-        IMReport<IMObject> report = gen.createReport();
-        Set<ParameterType> parameters = report.getParameterTypes();
-        boolean isLetter = TypeHelper.isA(act, "act.*Letter");
-        if (parameters.isEmpty() || !isLetter) {
-            generate(report, Collections.<String, Object>emptyMap(), save);
+    public void generate(boolean save, boolean version) {
+        if (DocumentActReporter.hasTemplate(act)) {
+            DocumentActReporter reporter = new DocumentActReporter(act);
+            Set<ParameterType> parameters = reporter.getParameterTypes();
+            boolean isLetter = TypeHelper.isA(act, "act.*Letter");
+            if (parameters.isEmpty() || !isLetter) {
+                generate(reporter, save, version);
+            } else {
+                // only support parameter prompting for letters
+                promptParameters(reporter, save, version);
+            }
+        } else if (act.getDocument() != null) {
+            Document existing = (Document) IMObjectHelper.getObject(act.getDocument());
+            if (existing == null) {
+                throw new DocumentException(DocumentException.ErrorCode.NotFound);
+            }
+            listener.generated(existing);
         } else {
-            // only support parameter prompting for letters
-            promptParameters(report, save);
+            throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
     }
 
     /**
      * Generates a document from a report.
      *
-     * @param report     the report
-     * @param parameters the report parameters
-     * @param save       if <tt>true</tt>, save the document
+     * @param reporter the reporter
+     * @param save     if <tt>true</tt>, save the document
+     * @param version  if <tt>true</tt>  and saving the document, version any old document if the act supports it
      */
-    private void generate(IMReport<IMObject> report,
-                          Map<String, Object> parameters, boolean save) {
-        List<IMObject> objects = Arrays.asList((IMObject) act);
-        document = report.generate(objects.iterator(), parameters);
+    private void generate(DocumentActReporter reporter, boolean save, boolean version) {
+        document = reporter.getDocument();
 
         if (save) {
             DocumentRules rules = new DocumentRules();
@@ -170,18 +155,19 @@ public class DocumentGenerator {
     /**
      * Pops up a dialog to prompt for report parameters.
      *
-     * @param report the report
-     * @param save   if <tt>true</tt>, save the document
+     * @param reporter the report er
+     * @param save     if <tt>true</tt>, save the document
+     * @param version  if <tt>true</tt>  and saving the document, version any old document if the act supports it
      */
-    private void promptParameters(final IMReport<IMObject> report,
-                                  final boolean save) {
-        Set<ParameterType> parameters = report.getParameterTypes();
+    private void promptParameters(final DocumentActReporter reporter, final boolean save, final boolean version) {
+        Set<ParameterType> parameters = reporter.getParameterTypes();
         String title = Messages.get("document.input.parameters");
         final ParameterDialog dialog = new ParameterDialog(title, parameters, act);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                generate(report, dialog.getValues(), save);
+                reporter.setParameters(dialog.getValues());
+                generate(reporter, save, version);
             }
         });
         dialog.show();

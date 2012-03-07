@@ -34,16 +34,15 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
+import org.openvpms.web.component.im.doc.AbstractUploadListener;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -143,16 +142,10 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
      * Invoked when the import button is pressed.
      */
     private void onImport() {
-        UploadListener listener = new UploadListener() {
+        UploadListener listener = new AbstractUploadListener() {
             public void fileUpload(UploadEvent event) {
                 InputStream stream = event.getInputStream();
                 upload(stream, event.getFileName());
-            }
-
-            public void invalidFileUpload(UploadEvent event) {
-                String message = Messages.get("file.upload.failed",
-                                              event.getFileName());
-                ErrorDialog.show(message);
             }
         };
         UploadDialog dialog = new UploadDialog(listener);

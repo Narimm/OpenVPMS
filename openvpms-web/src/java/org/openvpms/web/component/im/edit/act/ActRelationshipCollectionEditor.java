@@ -200,28 +200,6 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
-     * Validates the object.
-     * This validates the current object being edited, and if valid, the
-     * collection.
-     *
-     * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
-     */
-    @Override
-    public boolean validate(Validator validator) {
-        boolean valid;
-        if (!excludeObjectWithDefaultValues()) {
-            // validate both the current editor and the collection
-            valid = super.validate(validator);
-        } else {
-            // validate just the collection
-            valid = getCollectionPropertyEditor().validate(validator);
-        }
-        return valid;
-    }
-
-    /**
      * Determines if an act has been modified.
      *
      * @param act the act
@@ -243,10 +221,30 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
+     * Validates the object.
+     * <p/>
+     * This validates the current object being edited, and if valid, the collection.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid;
+        if (!excludeObjectWithDefaultValues()) {
+            // validate both the current editor and the collection
+            valid = super.doValidation(validator);
+        } else {
+            // validate just the collection
+            valid = getCollectionPropertyEditor().validate(validator);
+        }
+        return valid;
+    }
+
+    /**
      * Saves any current edits.
      *
-     * @return <tt>true</tt> if edits were saved successfully, otherwise
-     *         <tt>false</tt>
+     * @return <tt>true</tt> if edits were saved successfully, otherwise <tt>false</tt>
      */
     @Override
     protected boolean doSave() {

@@ -91,12 +91,9 @@ public abstract class PopupWindow extends WindowPane {
             focusGroup.add(focus);
         }
 
-        row = new ButtonRow(focusGroup, "DialogButtonRow",
-                            ButtonRow.BUTTON_STYLE);
+        row = new ButtonRow(focusGroup, "DialogButtonRow", ButtonRow.BUTTON_STYLE);
 
-        layout = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "PopupWindow.Layout");
+        layout = createSplitPane();
         layout.add(row);
         add(layout);
     }
@@ -119,12 +116,21 @@ public abstract class PopupWindow extends WindowPane {
     }
 
     /**
+     * Creates the layout split pane.
+     *
+     * @return a new split pane
+     */
+    protected SplitPane createSplitPane() {
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "PopupWindow.Layout");
+    }
+
+    /**
      * Restrict dialog dimensions to 70% of screen height and 90% of screen width to try and prevent dialogs from
      * exceeding screen bounds. See OVPMS-883
      */
     private void restrictDimensions() {
         Dimension size = ContextApplicationInstance.getInstance().getResolution();
-        restrictSize(size.height, WindowPane.PROPERTY_HEIGHT, WindowPane.PROPERTY_POSITION_Y, 0.70);
+        restrictSize(size.height, WindowPane.PROPERTY_HEIGHT, WindowPane.PROPERTY_POSITION_Y, 0.80);
         restrictSize(size.width, WindowPane.PROPERTY_WIDTH, WindowPane.PROPERTY_POSITION_X, 0.90);
     }
 

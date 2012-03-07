@@ -30,14 +30,14 @@ import org.openvpms.web.component.im.report.TemplatedReporter;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class TemplatedIMMailer<T> extends AbstractIMMailer<T> {
+public abstract class TemplatedReportMailer<T> extends ReportMailer<T> {
 
     /**
      * Constructs a <tt>TemplatedIMMailer</tt>.
      *
      * @param reporter the reporter
      */
-    public TemplatedIMMailer(TemplatedReporter<T> reporter) {
+    public TemplatedReportMailer(TemplatedReporter<T> reporter) {
         super(reporter);
         DocumentTemplate template = getTemplate();
         if (template != null) {

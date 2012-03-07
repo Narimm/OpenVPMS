@@ -29,7 +29,7 @@ import org.openvpms.web.component.echo.SMSTextArea;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
@@ -50,7 +50,7 @@ import org.openvpms.web.system.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class SMSEditor implements Modifiable {
+public class SMSEditor extends AbstractModifiable {
 
     /**
      * The phone number, if 0 or 1 no. are provided.
@@ -275,21 +275,12 @@ public class SMSEditor implements Modifiable {
     }
 
     /**
-     * Determines if the object is valid.
-     *
-     * @return <tt>true</tt> if the object is valid; otherwise <tt>false</tt>
-     */
-    public boolean isValid() {
-        return new Validator().validate(this);
-    }
-
-    /**
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
-    public boolean validate(Validator validator) {
+    protected boolean doValidation(Validator validator) {
         return !StringUtils.isEmpty(getPhone()) && !StringUtils.isEmpty(getMessage());
     }
 

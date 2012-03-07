@@ -232,6 +232,9 @@ public class ShortNamePairArchetypeHandlers<T>
                             = new ArchetypeHandler<T>(shortName, type);
                     handlers.setHandler(handler);
                 }
+            } else {
+                log.warn("Invalid archetype for handler=" + type + ", short name=" + shortName + " from "
+                         + path + ": ignoring");
             }
         }
 

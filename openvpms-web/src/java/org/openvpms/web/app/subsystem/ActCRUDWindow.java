@@ -36,9 +36,13 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
@@ -235,8 +239,10 @@ public abstract class ActCRUDWindow<T extends Act>
      */
     protected void onPreview() {
         try {
-            final IMPrinter<T> printer
-                    = IMPrinterFactory.create(getObject());
+            T object = getObject();
+            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object,
+                                                                                        GlobalContext.getInstance());
+            IMPrinter<T> printer = IMPrinterFactory.create(object, locator);
             Document document = printer.getDocument();
             DownloadServlet.startDownload(document);
         } catch (OpenVPMSException exception) {

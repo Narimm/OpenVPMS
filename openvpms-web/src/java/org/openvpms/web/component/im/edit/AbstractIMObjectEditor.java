@@ -62,6 +62,7 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
+import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -88,7 +89,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractIMObjectEditor
+public abstract class AbstractIMObjectEditor extends AbstractModifiable
         implements IMObjectEditor {
 
     /**
@@ -97,7 +98,7 @@ public abstract class AbstractIMObjectEditor
     private final IMObject object;
 
     /**
-     * The parent object. May be <code>null</code>.
+     * The parent object. May be <tt>null</tt>.
      */
     private final IMObject parent;
 
@@ -161,17 +162,13 @@ public abstract class AbstractIMObjectEditor
      */
     private PropertyChangeSupport propertyChangeNotifier;
 
-    /**
-     * Listener to update derived fields.
-     */
-    private ModifiableListener derivedFieldRefresher;
 
     /**
-     * Construct a new <code>AbstractIMObjectEditor</code>.
+     * Constructs an <tt>AbstractIMObjectEditor</tt>.
      *
      * @param object        the object to edit
-     * @param parent        the parent object. May be <code>null</code>
-     * @param layoutContext the layout context. May be <code>null</code>.
+     * @param parent        the parent object. May be <tt>null</tt>
+     * @param layoutContext the layout context. May be <tt>null</tt>.
      */
     public AbstractIMObjectEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
         this.object = object;
@@ -197,12 +194,11 @@ public abstract class AbstractIMObjectEditor
         IMObjectComponentFactory factory = new ComponentFactory(context);
         context.setComponentFactory(factory);
 
-        derivedFieldRefresher = new ModifiableListener() {
+        editors.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onModified(modifiable);
             }
-        };
-        editors.addModifiableListener(derivedFieldRefresher);
+        });
     }
 
 
@@ -212,7 +208,6 @@ public abstract class AbstractIMObjectEditor
      * Once disposed, the behaviour of invoking any method is undefined.
      */
     public void dispose() {
-        editors.removeModifiableListener(derivedFieldRefresher);
         editors.dispose();
         disposeLookups();
         listeners.removeAll();
@@ -262,7 +257,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Returns the parent object.
      *
-     * @return the parent object. May be <code>null</code>
+     * @return the parent object. May be <tt>null</tt>
      */
     public IMObject getParent() {
         return parent;
@@ -280,7 +275,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Save any edits.
      *
-     * @return <code>true</code> if the save was successful
+     * @return <tt>true</tt> if the save was successful
      */
     public boolean save() {
         if (cancelled) {
@@ -307,7 +302,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Determines if any edits have been saved.
      *
-     * @return <code>true</code> if edits have been saved.
+     * @return <tt>true</tt> if edits have been saved.
      */
     public boolean isSaved() {
         return saved;
@@ -330,7 +325,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Determines if the object has been deleted.
      *
-     * @return <code>true</code> if the object has been deleted
+     * @return <tt>true</tt> if the object has been deleted
      */
     public boolean isDeleted() {
         return deleted;
@@ -339,7 +334,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Determines if the object has been changed.
      *
-     * @return <code>true</code> if the object has been changed
+     * @return <tt>true</tt> if the object has been changed
      */
     public boolean isModified() {
         return object.isNew() || editors.isModified();
@@ -381,40 +376,7 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Determines if the object is valid.
-     *
-     * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
-     */
-    public boolean isValid() {
-        return new Validator().validate(this);
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
-     */
-    public boolean validate(Validator validator) {
-        boolean valid = validator.validate(editors);
-        if (valid) {
-            // run it by the archetype service to pick up validation issues
-            // not detected by the app e.g expression assertions
-            List<ValidatorError> errors = ValidationHelper.validate(
-                    object, ServiceHelper.getArchetypeService());
-            if (errors != null) {
-                validator.add(this, errors);
-                valid = false;
-            }
-        }
-        return valid;
-    }
-
-    /**
-     * Cancel any edits. Once complete, query methods may be invoked, but the
-     * behaviour of other methods is undefined.
+     * Cancel any edits. Once complete, query methods may be invoked, but the behaviour of other methods is undefined.
      */
     public void cancel() {
         try {
@@ -430,7 +392,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Determines if editing was cancelled.
      *
-     * @return <code>true</code> if editing was cancelled
+     * @return <tt>true</tt> if editing was cancelled
      */
     public boolean isCancelled() {
         return cancelled;
@@ -448,7 +410,7 @@ public abstract class AbstractIMObjectEditor
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <code>null</code> if the editor hasn't been
+     * @return the focus group, or <tt>null</tt> if the editor hasn't been
      *         rendered
      */
     public FocusGroup getFocusGroup() {
@@ -492,6 +454,39 @@ public abstract class AbstractIMObjectEditor
      */
     public Property getProperty(String name) {
         return properties.get(name);
+    }
+
+    /**
+     * Resets the cached validity state of the object.
+     *
+     * @param elements if <tt>true</tt> reset the validity state of the elements as well
+     */
+    protected void resetValid(boolean elements) {
+        super.resetValid(elements);
+        if (elements) {
+            editors.resetValid();
+        }
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     */
+    protected boolean doValidation(Validator validator) {
+        boolean result;
+        result = validator.validate(editors);
+        if (result) {
+            // run it by the archetype service to pick up validation issues
+            // not detected by the app e.g expression assertions
+            List<ValidatorError> errors = ValidationHelper.validate(object, ServiceHelper.getArchetypeService());
+            if (errors != null) {
+                validator.add(this, errors);
+                result = false;
+            }
+        }
+        return result;
     }
 
     /**
@@ -741,31 +736,14 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Invoked when an object is modified.
+     * Invoked when any of the child editors or properties update.
      * <p/>
-     * This implementation updates derived fields
+     * This resets the cached valid state
      *
-     * @param modifiable the modified object
+     * @param modifiable the updated object
      */
     protected void onModified(Modifiable modifiable) {
-        updateDerivedFields(modifiable);
-    }
-
-    /**
-     * Invoked to update derived fields.
-     *
-     * @param modified the modified object.
-     */
-    protected void updateDerivedFields(Modifiable modified) {
-        if (modified instanceof Property) {
-            editors.removeModifiableListener(derivedFieldRefresher);
-            try {
-                properties.updateDerivedProperties();
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-            editors.addModifiableListener(derivedFieldRefresher);
-        }
+        resetValid(false);
     }
 
     /**
@@ -802,7 +780,7 @@ public abstract class AbstractIMObjectEditor
      * Helper to return a node descriptor from the archetype, given its name.
      *
      * @param name the node descriptor's name
-     * @return the corresponding node descriptor, or <code>null</code> if it
+     * @return the corresponding node descriptor, or <tt>null</tt> if it
      *         doesn't exist
      */
     protected NodeDescriptor getDescriptor(String name) {
@@ -867,7 +845,7 @@ public abstract class AbstractIMObjectEditor
     private class ComponentFactory extends NodeEditorFactory {
 
         /**
-         * Construct a new <code>ComponentFactory</code>.
+         * Construct a new <tt>ComponentFactory</tt>.
          *
          * @param context the layout context
          */

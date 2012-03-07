@@ -168,7 +168,7 @@ public class ProductParticipationEditor extends ParticipationEditor<Product> {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Product> createObjectReferenceEditor(
+    protected IMObjectReferenceEditor<Product> createEntityEditor(
             Property property) {
         return new ProductReferenceEditor(this, property, getLayoutContext());
     }

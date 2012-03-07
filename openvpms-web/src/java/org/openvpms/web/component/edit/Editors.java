@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.edit;
 
+import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -39,7 +40,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2007-05-04 07:03:38Z $
  */
-public class Editors implements Modifiable {
+public class Editors extends AbstractModifiable {
 
     /**
      * Caches the modified status.
@@ -123,8 +124,8 @@ public class Editors implements Modifiable {
      * Returns a property editor, given its name.
      *
      * @param name the property name
-     * @return the property editor associated with <code>name</code>, or
-     *         <code>null</code> if none exists
+     * @return the property editor associated with <tt>name</tt>, or
+     *         <tt>null</tt> if none exists
      */
     public Editor getEditor(String name) {
         return propertyEditors.get(name);
@@ -136,6 +137,7 @@ public class Editors implements Modifiable {
      * @param editor the editor to remove
      */
     public void remove(Editor editor) {
+        resetValid(false);
         editor.removeModifiableListener(listener);
         if (editor instanceof PropertyEditor) {
             PropertyEditor p = (PropertyEditor) editor;
@@ -207,7 +209,7 @@ public class Editors implements Modifiable {
     /**
      * Determines if the object has been modified.
      *
-     * @return <code>true</code> if the object has been modified
+     * @return <tt>true</tt> if the object has been modified
      */
     public boolean isModified() {
         if (!modified) {
@@ -262,45 +264,6 @@ public class Editors implements Modifiable {
     }
 
     /**
-     * Determines if the object is valid.
-     *
-     * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
-     */
-    public boolean isValid() {
-        Validator validator = new Validator();
-        return validate(validator);
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator thhe validator
-     */
-    public boolean validate(Validator validator) {
-        boolean valid = true;
-        for (Modifiable modifiable : editors) {
-            if (!validator.validate(modifiable)) {
-                valid = false;
-                break;
-            }
-        }
-        if (valid) {
-            // validate each property not associated with an editor
-            for (Property property : properties.getProperties()) {
-                String name = property.getName();
-                if (getEditor(name) == null) {
-                    if (!validator.validate(property)) {
-                        valid = false;
-                        break;
-                    }
-                }
-            }
-        }
-        return valid;
-    }
-
-    /**
      * Disposes of the editors.
      */
     public void dispose() {
@@ -308,14 +271,67 @@ public class Editors implements Modifiable {
             editor.dispose();
         }
     }
+    
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     */
+    protected boolean doValidation(Validator validator) {
+        boolean result = true;
+        for (Modifiable modifiable : editors) {
+            if (!validator.validate(modifiable)) {
+                result = false;
+                break;
+            }
+        }
+        if (result) {
+            // validate each property not associated with an editor
+            for (Property property : properties.getProperties()) {
+                String name = property.getName();
+                if (getEditor(name) == null) {
+                    if (!validator.validate(property)) {
+                        result = false;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
     /**
-     * Invoked when a {@link Modifiable} changes. Forwards the event to any
+     * Resets the cached validity state of the object.
+     *
+     * @param descendants if <tt>true</tt> reset the validity state of any descendants as well.
+     */
+    @Override
+    protected void resetValid(boolean descendants) {
+        super.resetValid(descendants);
+        if (descendants) {
+            for (Modifiable modifiable : editors) {
+                modifiable.resetValid();
+            }
+
+            // reset state of properties not associated with an editor
+            for (Property property : properties.getProperties()) {
+                String name = property.getName();
+                if (getEditor(name) == null) {
+                    property.resetValid();
+                }
+            }
+        }
+    }
+
+    /**
+     * Invoked when a {@link Modifiable} changes. Resets the cached valid status and forwards the event to any
      * registered listener.
      *
      * @param modified the changed instance
      */
     protected void onModified(Modifiable modified) {
+        resetValid(false);
         listeners.notifyListeners(modified);
     }
 
@@ -325,6 +341,7 @@ public class Editors implements Modifiable {
      * @param editor the editor to add
      */
     private void addEditor(Editor editor) {
+        resetValid(false);
         if (editor instanceof PropertyEditor) {
             PropertyEditor p = (PropertyEditor) editor;
             String name = p.getProperty().getName();

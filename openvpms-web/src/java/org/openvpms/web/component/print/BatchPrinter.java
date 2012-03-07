@@ -20,11 +20,12 @@ package org.openvpms.web.component.print;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,19 +49,20 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
     private T object;
 
     /**
-     * Constructs a <tt>BatchPrinter</tt>.
+     * The context, used to locate document templates
      */
-    public BatchPrinter() {
-        this(Collections.<T>emptyList());
-    }
+    private final Context context;
+
 
     /**
      * Constructs a <tt>BatchPrinter</tt>.
      *
      * @param objects the objects to print
+     * @param context the context, used to locate document templates
      */
-    public BatchPrinter(List<T> objects) {
+    public BatchPrinter(List<T> objects, Context context) {
         setObjects(objects);
+        this.context = context;
     }
 
     /**
@@ -79,7 +81,8 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
         if (iterator.hasNext()) {
             object = iterator.next();
             try {
-                IMPrinter<T> printer = IMPrinterFactory.create(object);
+                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+                IMPrinter<T> printer = IMPrinterFactory.create(object, locator);
                 InteractiveIMPrinter<T> iPrinter = createInteractivePrinter(printer);
                 iPrinter.print();
             } catch (OpenVPMSException exception) {
@@ -97,7 +100,6 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
      * objects may be skipped.
      * <p/>
      * 'This' is registered as a listener.
-     *
      *
      * @param printer the printer to delegate to
      * @return a new interactive printer
@@ -159,4 +161,12 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
     protected void completed() {
     }
 
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
+    }
 }

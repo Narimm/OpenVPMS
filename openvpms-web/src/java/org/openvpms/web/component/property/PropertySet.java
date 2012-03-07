@@ -186,12 +186,23 @@ public class PropertySet {
         if (object != null && !derived.isEmpty()) {
             ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
-                    updateDerivedProperties();
+                    updateDerivedProperties(modifiable);
                 }
             };
             for (Property property : properties) {
                 property.addModifiableListener(listener);
             }
+        }
+    }
+
+    /**
+     * Updates derived properties, if the source of the update isn't a derived property itself.
+     *
+     * @param source the property that triggered the update
+     */
+    private void updateDerivedProperties(Modifiable source) {
+        if (source instanceof Property && !((Property) source).isDerived()) {
+            updateDerivedProperties();
         }
     }
 

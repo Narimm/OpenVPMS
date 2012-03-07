@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.mail.MailContext;
 
 
 /**
@@ -37,18 +38,20 @@ public class PrintActTask extends PrintIMObjectTask {
      * Creates a new <tt>PrintActTask</tt>.
      *
      * @param act the act to print
+     * @param context the mail context. May be <tt>null</tt>
      */
-    public PrintActTask(Act act) {
-        super(act);
+    public PrintActTask(Act act, MailContext context) {
+        super(act, context);
     }
 
     /**
      * Creates a new <tt>PrintActTask</tt>.
      *
      * @param shortName the short name of the act to print
+     * @param context the mail context. May be <tt>null</tt>
      */
-    public PrintActTask(String shortName) {
-        super(shortName);
+    public PrintActTask(String shortName, MailContext context) {
+        super(shortName, context);
     }
 
     /**

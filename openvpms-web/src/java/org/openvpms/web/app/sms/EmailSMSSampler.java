@@ -43,6 +43,7 @@ import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -67,7 +68,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-class EmailSMSSampler implements Modifiable {
+class EmailSMSSampler extends AbstractModifiable {
 
     /**
      * The configuration.
@@ -230,45 +231,6 @@ class EmailSMSSampler implements Modifiable {
     }
 
     /**
-     * Determines if the object is valid.
-     *
-     * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
-     */
-    public boolean isValid() {
-        return new Validator().validate(this);
-    }
-
-    /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
-     */
-    public boolean validate(Validator validator) {
-        boolean result = false;
-        List<ValidatorError> errors = validateConfig();
-        if (errors != null) {
-            validator.add(this, errors);
-        } else if (validator.validate(sms)) {
-            MailTemplate template = templateFactory.getTemplate(config);
-            MailMessageFactory factory = new TemplatedMailMessageFactory(template);
-            try {
-                String phone = sms.getPhone();
-                String message = sms.getMessage();
-                MailMessage mail = factory.createMessage(phone, message);
-                if (!StringUtils.isEmpty(mail.getFrom()) && !StringUtils.isEmpty(mail.getTo())
-                    && !StringUtils.isEmpty(mail.getText())) {
-                    result = true;
-                }
-            } catch (Throwable exception) {
-                // do nothing
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the component.
      *
      * @return the component
@@ -373,6 +335,35 @@ class EmailSMSSampler implements Modifiable {
         } else {
             status.setText(Messages.get("sms.email.status.incomplete"));
         }
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     */
+    protected boolean doValidation(Validator validator) {
+        boolean result = false;
+        List<ValidatorError> errors = validateConfig();
+        if (errors != null) {
+            validator.add(this, errors);
+        } else if (validator.validate(sms)) {
+            MailTemplate template = templateFactory.getTemplate(config);
+            MailMessageFactory factory = new TemplatedMailMessageFactory(template);
+            try {
+                String phone = sms.getPhone();
+                String message = sms.getMessage();
+                MailMessage mail = factory.createMessage(phone, message);
+                if (!StringUtils.isEmpty(mail.getFrom()) && !StringUtils.isEmpty(mail.getTo())
+                        && !StringUtils.isEmpty(mail.getText())) {
+                    result = true;
+                }
+            } catch (Throwable exception) {
+                // do nothing
+            }
+        }
+        return result;
     }
 
     /**

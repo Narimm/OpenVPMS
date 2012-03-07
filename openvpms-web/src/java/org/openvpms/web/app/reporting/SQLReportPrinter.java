@@ -31,6 +31,7 @@ import org.openvpms.report.Report;
 import org.openvpms.report.ReportFactory;
 import static org.openvpms.web.app.reporting.SQLReportException.ErrorCode.ConnectionError;
 import static org.openvpms.web.app.reporting.SQLReportException.ErrorCode.NoQuery;
+import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -85,9 +86,8 @@ public class SQLReportPrinter extends AbstractPrinter {
         if (document == null) {
             throw new DocumentException(NotFound);
         }
-        report = ReportFactory.createReport(
-                document, ArchetypeServiceHelper.getArchetypeService(),
-                ServiceHelper.getDocumentHandlers());
+        report = ReportFactory.createReport(document, ArchetypeServiceHelper.getArchetypeService(),
+                                            ServiceHelper.getDocumentHandlers());
         this.template = template;
         ParameterType connectionParam = getConnectionParameter();
         if (connectionParam == null) {
@@ -96,15 +96,6 @@ public class SQLReportPrinter extends AbstractPrinter {
         connectionName = connectionParam.getName();
 
         setInteractive(getInteractive(template, getDefaultPrinter()));
-    }
-
-    /**
-     * Returns the report name.
-     *
-     * @return the report name
-     */
-    public String getName() {
-        return template.getName();
     }
 
     /**
@@ -136,7 +127,7 @@ public class SQLReportPrinter extends AbstractPrinter {
      */
     public void print(String printer) {
         Connection connection = null;
-        Map<String, Object> params = new HashMap<String, Object>(parameters);
+        Map<String, Object> params = getParameters(false);
         try {
             connection = getConnection();
             params.put(connectionName, connection);
@@ -158,34 +149,43 @@ public class SQLReportPrinter extends AbstractPrinter {
     }
 
     /**
-     * Returns a document for the object, corresponding to that which would be
-     * printed.
+     * Returns a document for the object, corresponding to that which would be printed.
      *
      * @return a document
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
-        return getDocument(DocFormats.PDF_TYPE);
+        return getDocument(DocFormats.PDF_TYPE, true);
     }
 
     /**
-     * Returns a document for the object, corresponding to that which would be
-     * printed.
+     * Returns a document for the object, corresponding to that which would be printed.
      *
-     * @param format a document format to return
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     *                 can perform custom formatting
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    public Document getDocument(String format) {
-        Map<String, Object> params = new HashMap<String, Object>(parameters);
+    public Document getDocument(String mimeType, boolean email) {
+        Map<String, Object> params = getParameters(email);
         Connection connection = null;
         try {
             connection = getConnection();
             params.put(connectionName, connection);
-            return report.generate(params, format);
+            return report.generate(params, mimeType);
         } finally {
             closeConnection(connection);
         }
+    }
+
+    /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    public String getDisplayName() {
+        return template.getName();
     }
 
     /**
@@ -230,5 +230,21 @@ public class SQLReportPrinter extends AbstractPrinter {
         } catch (SQLException ignore) {
             // do nothing
         }
+    }
+
+    /**
+     * Returns the report parameters.
+     *
+     * @param email if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     *              can perform custom formatting
+     * @return the report parameters
+     */
+    private Map<String, Object> getParameters(boolean email) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        if (parameters != null) {
+            result.putAll(parameters);
+        }
+        result.put(Reporter.IS_EMAIL, email);
+        return result;
     }
 }

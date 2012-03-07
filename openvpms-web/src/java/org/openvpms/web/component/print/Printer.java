@@ -66,11 +66,13 @@ public interface Printer {
     /**
      * Returns a document corresponding to that which would be printed.
      *
-     * @param format the document format to return
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     *                 can perform custom formatting
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    Document getDocument(String format);
+    Document getDocument(String mimeType, boolean email);
 
     /**
      * Determines if printing should occur interactively.
@@ -94,4 +96,12 @@ public interface Printer {
      * @return the no. of copies to print
      */
     int getCopies();
+
+    /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    String getDisplayName();
+
 }

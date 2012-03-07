@@ -30,7 +30,7 @@ public interface Modifiable {
     /**
      * Determines if the object has been modified.
      *
-     * @return <code>true</code> if the object has been modified
+     * @return <tt>true</tt> if the object has been modified
      */
     boolean isModified();
 
@@ -66,8 +66,7 @@ public interface Modifiable {
     /**
      * Determines if the object is valid.
      *
-     * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
+     * @return <tt>true</tt> if the object is valid; otherwise <tt>false</tt>
      */
     boolean isValid();
 
@@ -75,9 +74,13 @@ public interface Modifiable {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
     boolean validate(Validator validator);
+
+    /**
+     * Resets the cached validity state of the object, to force revalidation of the object and its descendants.
+     */
+    void resetValid();
 
 }

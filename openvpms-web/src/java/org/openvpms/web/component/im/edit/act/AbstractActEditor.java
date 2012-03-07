@@ -154,11 +154,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * This extends validation by ensuring that the start time is less than the end time, if non-null.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
     @Override
-    public boolean validate(Validator validator) {
-        boolean result = super.validate(validator);
+    protected boolean doValidation(Validator validator) {
+        boolean result = super.doValidation(validator);
         if (result) {
             result = validateStartEndTimes(validator);
         }

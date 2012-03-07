@@ -258,7 +258,7 @@ public class DocumentActEditor extends AbstractActEditor {
     protected DocumentTemplateParticipationEditor getDocumentTemplateEditor() {
         ParticipationEditor editor = getParticipationEditor(DOC_TEMPLATE, true);
         return (editor instanceof DocumentTemplateParticipationEditor) ?
-                (DocumentTemplateParticipationEditor) editor : null;
+               (DocumentTemplateParticipationEditor) editor : null;
     }
 
     /**
@@ -280,10 +280,10 @@ public class DocumentActEditor extends AbstractActEditor {
     private void onTemplateUpdate() {
         IMObjectReference template = getTemplateRef();
         if ((template != null && lastTemplate != null && !template.equals(lastTemplate))
-                || (template != null && lastTemplate == null)) {
+            || (template != null && lastTemplate == null)) {
             lastTemplate = template;
             if (docEditor != null) {
-                generateDoc(template);
+                generateDoc();
             }
         }
     }
@@ -292,18 +292,15 @@ public class DocumentActEditor extends AbstractActEditor {
      * Generates the document.
      * <p/>
      * If the act supports versioning, any existing saved document will be copied to new version act.
-     *
-     * @param template the document template
      */
-    private void generateDoc(IMObjectReference template) {
+    private void generateDoc() {
         DocumentAct act = (DocumentAct) getObject();
-        final DocumentGenerator generator = new DocumentGenerator(
-                act, template, false, new DocumentGenerator.Listener() {
-                    public void generated(Document document) {
-                        docEditor.setDocument(document);
-                    }
-                });
-        generator.generate(false);
+        final DocumentGenerator generator = new DocumentGenerator(act, new DocumentGenerator.Listener() {
+            public void generated(Document document) {
+                docEditor.setDocument(document);
+            }
+        });
+        generator.generate();
     }
 
     /**

@@ -98,15 +98,15 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // select the work list and verify a task has been created.
         workflow.selectWorkList(workList, customer, patient);
 
+        // add the patient weight
+        workflow.addWeight(patient, BigDecimal.valueOf(10));
+
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
         BrowserDialog eventDialog = workflow.editClinicalEvent();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
-
-        // add the patient weight
-        workflow.addWeight(patient, BigDecimal.valueOf(10));
 
         // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
@@ -126,14 +126,14 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
         workflow.selectWorkList(workList, customer, patient);
 
+        workflow.addWeight(patient, BigDecimal.valueOf(20));
+
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
         BrowserDialog eventDialog = workflow.editClinicalEvent();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
-
-        workflow.addWeight(patient, BigDecimal.valueOf(20));
         workflow.checkComplete(true, customer, patient, context);
     }
 
@@ -159,13 +159,14 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
         workflow.selectWorkList(workList, customer, newPatient);
 
+        workflow.addWeight(newPatient, BigDecimal.ONE);
+
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         BrowserDialog eventDialog = workflow.editClinicalEvent();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(newPatient, clinician, ActStatus.COMPLETED);
 
-        workflow.addWeight(newPatient, BigDecimal.ONE);
         workflow.checkComplete(true, customer, newPatient, context);
     }
 
@@ -236,16 +237,16 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         fireDialogButton(browser, PopupDialog.SKIP_ID);
         assertNull(workflow.getContext().getObject(ScheduleArchetypes.TASK));
 
-        // run the rest of the workflow
+        // add the patient weight
+        workflow.addWeight(patient, BigDecimal.valueOf(10));
+
+        // skip form printing
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
         BrowserDialog eventDialog = workflow.editClinicalEvent();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
-
-        // add the patient weight
-        workflow.addWeight(patient, BigDecimal.valueOf(10));
 
         // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
@@ -311,18 +312,18 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
         workflow.selectWorkList(workList, customer, patient);
 
+        // skip the weight entry and verify that the context has a weight act that is unsaved
+        fireDialogButton(workflow.getEditDialog(), PopupDialog.SKIP_ID);
+        IMObject weight = workflow.getContext().getObject(PatientArchetypes.PATIENT_WEIGHT);
+        assertNotNull(weight);
+        assertTrue(weight.isNew());
+
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
         BrowserDialog eventDialog = workflow.editClinicalEvent();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
-
-        // skip the weight entry and verify that the context has a weight act that is unsaved
-        fireDialogButton(workflow.getEditDialog(), PopupDialog.SKIP_ID);
-        IMObject weight = workflow.getContext().getObject(PatientArchetypes.PATIENT_WEIGHT);
-        assertNotNull(weight);
-        assertTrue(weight.isNew());
 
         workflow.checkComplete(true, customer, patient, context);
     }
@@ -408,6 +409,8 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
         workflow.selectWorkList(workList, customer, patient);
 
+        workflow.addWeight(patient, BigDecimal.ONE);
+
         BrowserDialog<Act> dialog = workflow.getSelectionDialog();
         WorkflowTestHelper.cancelDialog(dialog, userClose);
 
@@ -426,6 +429,8 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.start();
 
         workflow.selectWorkList(workList, customer, patient);
+
+        workflow.addWeight(patient, BigDecimal.ONE);
 
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
@@ -450,13 +455,6 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.start();
 
         workflow.selectWorkList(workList, customer, patient);
-
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
-
-        // edit the clinical event
-        BrowserDialog eventDialog = workflow.editClinicalEvent();
-        fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
 
         EditDialog editor = workflow.getWeightEditor();
         WorkflowTestHelper.cancelDialog(editor, userClose);

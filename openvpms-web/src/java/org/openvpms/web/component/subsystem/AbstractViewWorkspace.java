@@ -50,8 +50,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractViewWorkspace<T extends IMObject>
-        extends AbstractWorkspace<T> {
+public abstract class AbstractViewWorkspace<T extends IMObject> extends AbstractWorkspace<T> {
 
     /**
      * The archetypes that this may process.
@@ -150,15 +149,6 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
     public void show() {
         super.show();
         updateSelector();
-    }
-
-    private void updateSelector() {
-        if (selector != null && !selector.isShowSelectAgain()) {
-            BrowserStates states = BrowserStates.getInstance();
-            if (states.exists(getArchetypes().getType(), getArchetypes().getShortNames())) {
-                selector.setShowSelectAgain(true);
-            }
-        }
     }
 
     /**
@@ -349,6 +339,18 @@ public abstract class AbstractViewWorkspace<T extends IMObject>
             }
         });
         return selector;
+    }
+
+    /**
+     * Updates the selector.
+     */
+    private void updateSelector() {
+        if (selector != null && !selector.isShowSelectAgain()) {
+            BrowserStates states = BrowserStates.getInstance();
+            if (states.exists(getArchetypes().getType(), getArchetypes().getShortNames())) {
+                selector.setShowSelectAgain(true);
+            }
+        }
     }
 
     /**

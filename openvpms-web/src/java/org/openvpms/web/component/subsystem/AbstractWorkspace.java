@@ -21,6 +21,7 @@ package org.openvpms.web.component.subsystem;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.mail.MailContext;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -59,6 +60,10 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Property change listener notifier.
      */
     private PropertyChangeSupport propertyChangeNotifier;
+    /**
+     * The email context.
+     */
+    private MailContext context;
 
 
     /**
@@ -178,6 +183,24 @@ public abstract class AbstractWorkspace<T extends IMObject>
      */
     public void update(IMObject object) {
        setIMObject(object);
+    }
+
+    /**
+     * Sets the mail context.
+     *
+     * @param context the mail context. May be <tt>null</tt>
+     */
+    public void setMailContext(MailContext context) {
+        this.context = context;
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context. May be <tt>null</tt>
+     */
+    public MailContext getMailContext() {
+        return context;
     }
 
     /**

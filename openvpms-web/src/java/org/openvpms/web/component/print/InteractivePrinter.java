@@ -23,6 +23,9 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.resource.util.Messages;
@@ -71,9 +74,14 @@ public class InteractivePrinter implements Printer {
      */
     private boolean interactive;
 
+    /**
+     * The mail context. If non-null, documents may be mailed.
+     */
+    private MailContext context;
+
 
     /**
-     * Constructs a new <tt>InteractivePrinter</tt>.
+     * Constructs an <tt>InteractivePrinter</tt>.
      *
      * @param printer the printer to delegate to
      */
@@ -82,7 +90,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs a new <tt>InteractivePrinter</tt>.
+     * Constructs an <tt>InteractivePrinter</tt>.
      *
      * @param printer the printer to delegate to
      * @param skip    if <tt>true</tt> display a 'skip' button that simply
@@ -93,7 +101,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs a new <tt>InteractivePrinter</tt>.
+     * Constructs an <tt>InteractivePrinter</tt>.
      *
      * @param title   the dialog title. May be <tt>null</tt>
      * @param printer the printer to delegate to
@@ -103,7 +111,7 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Constructs a new <tt>InteractivePrinter</tt>.
+     * Constructs an <tt>InteractivePrinter</tt>.
      *
      * @param title   the dialog title. May be <tt>null</tt>
      * @param printer the printer to delegate to
@@ -156,26 +164,26 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
-     * Returns a document for the object, corresponding to that which would be
-     * printed.
+     * Returns a document for the object, corresponding to that which would be printed.
      *
      * @return a document
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
-        return getDocument(DocFormats.PDF_TYPE);
+        return getDocument(DocFormats.PDF_TYPE, false);
     }
 
     /**
-     * Returns a document for the object, corresponding to that which would be
-     * printed.
+     * Returns a document for the object, corresponding to that which would be printed.
      *
-     * @param format the document format to return
+     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
+     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     *                 can perform custom formatting
      * @return a document
      * @throws OpenVPMSException for any error
      */
-    public Document getDocument(String format) {
-        return printer.getDocument(format);
+    public Document getDocument(String mimeType, boolean email) {
+        return printer.getDocument(mimeType, email);
     }
 
     /**
@@ -219,6 +227,15 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
+     * Returns a display name for the objects being printed.
+     *
+     * @return a display name for the objects being printed
+     */
+    public String getDisplayName() {
+        return printer.getDisplayName();
+    }
+
+    /**
      * Sets the listener for print events.
      *
      * @param listener the listener. May be <tt>null</tt>
@@ -234,6 +251,24 @@ public class InteractivePrinter implements Printer {
      */
     public void setCancelListener(VetoListener listener) {
         cancelListener = listener;
+    }
+
+    /**
+     * Sets a context to support mailing documents.
+     *
+     * @param context the mail context. If <tt>null</tt>, mailing won't be enabled
+     */
+    public void setMailContext(MailContext context) {
+        this.context = context;
+    }
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context
+     */
+    public MailContext getMailContext() {
+        return context;
     }
 
     /**
@@ -264,10 +299,16 @@ public class InteractivePrinter implements Printer {
         if (title == null) {
             title = Messages.get("printdialog.title");
         }
-        return new PrintDialog(title, true, skip) {
+        boolean mail = context != null;
+        return new PrintDialog(title, true, mail, skip) {
             @Override
             protected void onPreview() {
                 doPrintPreview();
+            }
+
+            @Override
+            protected void onMail() {
+                doMail();
             }
         };
     }
@@ -339,7 +380,23 @@ public class InteractivePrinter implements Printer {
             Document document = getDocument();
             DownloadServlet.startDownload(document);
         } catch (OpenVPMSException exception) {
-            failed(exception);
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Generates a document and pops up a mail document with it as an attachment.
+     */
+    protected void doMail() {
+        try {
+            Document document = getDocument(DocFormats.PDF_TYPE, true);
+            MailDialog dialog = new MailDialog(context);
+            MailEditor editor = dialog.getMailEditor();
+            editor.setSubject(getDisplayName());
+            editor.addAttachment(document);
+            dialog.show();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
     }
 

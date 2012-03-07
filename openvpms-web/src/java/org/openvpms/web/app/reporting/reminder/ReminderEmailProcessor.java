@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.DocFormats;
-import org.openvpms.report.IMReport;
 import org.openvpms.web.app.reporting.ReportingException;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
 import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
@@ -180,16 +179,14 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
         if (events.size() > 1) {
             List<ObjectSet> sets = createObjectSets(events);
             ObjectSetReporter reporter = new ObjectSetReporter(sets, documentTemplate);
-            IMReport<ObjectSet> report = reporter.getReport();
-            result = report.generate(sets.iterator(), DocFormats.PDF_TYPE);
+            result = reporter.getDocument(DocFormats.PDF_TYPE, true);
         } else {
             List<Act> acts = new ArrayList<Act>();
             for (ReminderEvent event : events) {
                 acts.add(event.getReminder());
             }
             IMObjectReporter<Act> reporter = new IMObjectReporter<Act>(acts, documentTemplate);
-            IMReport<Act> report = reporter.getReport();
-            result = report.generate(acts.iterator(), DocFormats.PDF_TYPE);
+            result = reporter.getDocument(DocFormats.PDF_TYPE, true);
         }
         return result;
     }

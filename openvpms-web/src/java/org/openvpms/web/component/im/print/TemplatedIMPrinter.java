@@ -46,7 +46,7 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
 
 
     /**
-     * Creates a new <tt>TemplatedIMReportPrinter</tt>.
+     * Constructs a <tt>TemplatedIMReportPrinter</tt>.
      *
      * @param reporter the reporter
      * @throws ArchetypeServiceException for any archetype service error

@@ -21,6 +21,7 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.table.TableModel;
 import org.openvpms.web.component.table.KeyTable;
+import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -38,9 +39,20 @@ public final class TableFactory extends ComponentFactory {
      * @return a new table
      */
     public static Table create(TableModel model) {
+        return create(model, Styles.DEFAULT);
+    }
+
+    /**
+     * Create a new table.
+     *
+     * @param model the table model
+     * @param styleName the table style name
+     * @return a new table
+     */
+    public static Table create(TableModel model, String styleName) {
         Table table = new KeyTable();
         table.setModel(model);
-        setDefaultStyle(table);
+        table.setStyleName(styleName);
         return table;
     }
 

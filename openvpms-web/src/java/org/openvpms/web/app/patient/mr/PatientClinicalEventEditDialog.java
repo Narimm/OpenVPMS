@@ -20,12 +20,15 @@ package org.openvpms.web.app.patient.mr;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
@@ -84,8 +87,9 @@ public class PatientClinicalEventEditDialog extends EditDialog {
                 List<Act> objects = new ArrayList<Act>();
                 objects.add((Act) getEditor().getObject());
                 Iterable<Act> acts = new ActHierarchyIterator<Act>(objects);
-                IMObjectReportPrinter<Act> printer
-                        = new IMObjectReportPrinter<Act>(acts, PatientArchetypes.CLINICAL_EVENT);
+                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
+                                                                                     GlobalContext.getInstance());
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator);
                 IMPrinter<Act> interactive = new InteractiveIMPrinter<Act>(printer);
                 interactive.print();
             } catch (OpenVPMSException exception) {

@@ -23,8 +23,10 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.util.TextHelper;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -345,12 +347,14 @@ public class SimpleProperty extends AbstractProperty {
     }
 
     /**
-     * Sets the archetype short names that this property may support
+     * Sets the archetype short names that this property may support.
+     * <p/>
+     * Wildcards are expanded.
      *
      * @param shortNames the archetype short names
      */
     public void setArchetypeRange(String[] shortNames) {
-        this.shortNames = shortNames;
+        this.shortNames = DescriptorHelper.getShortNames(shortNames);
     }
 
     /**
@@ -430,10 +434,9 @@ public class SimpleProperty extends AbstractProperty {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <code>true</code> if the object and its descendents are valid
-     *         otherwise <code>false</code>
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
      */
-    public boolean validate(Validator validator) {
+    protected boolean doValidation(Validator validator) {
         List<ValidatorError> errors = null;
         if (validationErrors == null) {
             PropertyTransformer transformer = getTransformer();
@@ -444,6 +447,10 @@ public class SimpleProperty extends AbstractProperty {
             }
         }
         if (validationErrors != null) {
+            errors = validationErrors;
+        } else if (isRequired() && getValue() == null) {
+            validationErrors = new ArrayList<ValidatorError>();
+            validationErrors.add(new ValidatorError(this, Messages.get("property.error.required", getDisplayName())));
             errors = validationErrors;
         }
         if (errors != null) {
@@ -463,6 +470,7 @@ public class SimpleProperty extends AbstractProperty {
             cause = exception;
         }
         validationErrors.add(new ValidatorError(this, cause.getMessage()));
+        resetValid();
     }
 
     /**

@@ -165,8 +165,8 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
             try {
                 DocumentTemplate template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
                 SQLReportPrinter printer = new SQLReportPrinter(template);
-                InteractiveSQLReportPrinter iPrinter
-                        = new InteractiveSQLReportPrinter(printer);
+                InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(printer);
+                iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (Throwable exception) {
                 ErrorHelper.show(exception);

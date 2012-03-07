@@ -18,15 +18,16 @@
 
 package org.openvpms.web.component.im.doc;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.report.openoffice.OpenOfficeException;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.ButtonFactory;
 
 
@@ -42,15 +43,31 @@ public class DocumentRefDownloader extends Downloader {
     /**
      * The document reference.
      */
-    private final IMObjectReference _reference;
+    private final IMObjectReference reference;
 
     /**
-     * Constructs a new <code>DocumentRefDownloader</code>.
+     * The document name. May be <tt>null</tt>
+     */
+    private final String name;
+
+    /**
+     * Constructs a <tt>DocumentRefDownloader</tt>.
      *
      * @param reference the document reference
      */
     public DocumentRefDownloader(IMObjectReference reference) {
-        _reference = reference;
+        this(reference, null);
+    }
+
+    /**
+     * Constructs a <tt>DocumentRefDownloader</tt>.
+     *
+     * @param reference the document reference
+     * @param name      the document name. May be <tt>null</tt>
+     */
+    public DocumentRefDownloader(IMObjectReference reference, String name) {
+        this.reference = reference;
+        this.name = name;
     }
 
     /**
@@ -61,24 +78,25 @@ public class DocumentRefDownloader extends Downloader {
     public Component getComponent() {
         Button button = ButtonFactory.create(new ActionListener() {
             public void onAction(ActionEvent event) {
-                onDownload();
+                selected(null);
             }
         });
-        button.setStyleName(DEFAULT_BUTTON_STYLE);
-        String text = DescriptorHelper.getDisplayName(
-                _reference.getArchetypeId().getShortName());
-        button.setText(text);
+        setButtonStyle(button, name);
+        button.setAlignment(Alignment.ALIGN_LEFT);
+        button.setTextAlignment(Alignment.ALIGN_LEFT);
         return button;
     }
 
     /**
      * Returns the document for download.
      *
+     * @param mimeType the expected mime type. If <tt>null</tt>, then no conversion is required.
      * @return the document for download
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document can't be found
+     * @throws OpenOfficeException       if the document cannot be converted
      */
-    protected Document getDocument() {
-        return getDocument(_reference);
+    protected Document getDocument(String mimeType) {
+        return getDocumentByRef(reference, mimeType);
     }
 }

@@ -19,7 +19,7 @@
 package org.openvpms.web.app.customer.note;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.im.util.Archetypes;
 
 

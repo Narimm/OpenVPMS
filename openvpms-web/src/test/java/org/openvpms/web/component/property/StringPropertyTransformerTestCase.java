@@ -18,21 +18,21 @@
 
 package org.openvpms.web.component.property;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import org.junit.Test;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.archetype.test.TestHelper;
 
 
 /**
@@ -49,7 +49,7 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
     @Test
     public void testApply() {
         Party person = TestHelper.createCustomer();
-        NodeDescriptor descriptor = getDescriptor(person, "name");
+        NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(person, "name");
         Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
                 = new StringPropertyTransformer(property);
@@ -69,7 +69,7 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
     public void testExceptionForControlChars() {
         String bad = "abcd\u000012345";
         Party person = TestHelper.createCustomer();
-        NodeDescriptor descriptor = getDescriptor(person, "name");
+        NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(person, "name");
         Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
                 = new StringPropertyTransformer(property);
@@ -87,7 +87,7 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
     @Test
     public void testMacroExpansion() {
         Party person = TestHelper.createCustomer();
-        NodeDescriptor descriptor = getDescriptor(person, "lastName");
+        NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(person, "lastName");
         Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
                 = new StringPropertyTransformer(property);
@@ -111,22 +111,6 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
         // verifies that non-existent macros don't expand
         Object text6 = handler.apply("non existent");
         assertEquals("non existent", text6);
-    }
-
-    /**
-     * Helper to return a node descriptor.
-     *
-     * @param object the object
-     * @param node   the node name
-     * @return the node descriptor
-     */
-    protected NodeDescriptor getDescriptor(IMObject object, String node) {
-        ArchetypeDescriptor type
-                = DescriptorHelper.getArchetypeDescriptor(object);
-        assertNotNull(type);
-        NodeDescriptor result = type.getNodeDescriptor(node);
-        assertNotNull(result);
-        return result;
     }
 
     /**

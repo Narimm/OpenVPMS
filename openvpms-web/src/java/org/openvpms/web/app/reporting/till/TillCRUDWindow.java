@@ -238,8 +238,8 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                     set.getResults(), TILL_BALANCE);
             String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
             String title = Messages.get("imobject.print.title", displayName);
-            InteractiveIMPrinter<ObjectSet> iPrinter
-                    = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

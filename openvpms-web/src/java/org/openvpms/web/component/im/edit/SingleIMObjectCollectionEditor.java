@@ -70,19 +70,6 @@ public abstract class SingleIMObjectCollectionEditor
     }
 
     /**
-     * Validates the object.
-     *
-     * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
-     */
-    @Override
-    public boolean validate(Validator validator) {
-        mapObject();
-        return isEmpty() || super.validate(validator);
-    }
-
-    /**
      * Refreshes the collection display.
      */
     public void refresh() {
@@ -107,6 +94,20 @@ public abstract class SingleIMObjectCollectionEditor
      */
     protected Component doLayout(LayoutContext context) {
         return createComponent();
+    }
+
+    /**
+     * Validates the object.
+     * <p/>
+     * This validates the current object being edited, and if valid, the collection.
+     *
+     * @param validator the validator
+     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        mapObject();
+        return isEmpty() || super.doValidation(validator);
     }
 
     /**

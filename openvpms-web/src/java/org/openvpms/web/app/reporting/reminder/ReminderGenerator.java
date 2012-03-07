@@ -43,6 +43,7 @@ import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -97,10 +98,11 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * Constructs a new <tt>ReminderGenerator</tt> to process a single reminder.
      *
-     * @param event   the reminder event
-     * @param context the context
+     * @param event       the reminder event
+     * @param context     the context
+     * @param mailContext the mail context, used when printing reminders interactively. May be <tt>null</tt>
      */
-    public ReminderGenerator(ReminderEvent event, Context context) {
+    public ReminderGenerator(ReminderEvent event, Context context, MailContext mailContext) {
         this(context);
         List<List<ReminderEvent>> reminders = new ArrayList<List<ReminderEvent>>();
         List<ReminderEvent> group = new ArrayList<ReminderEvent>();
@@ -112,7 +114,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
                 processors.add(createEmailProcessor(reminders));
                 break;
             case PRINT:
-                processors.add(createPrintProcessor(reminders, true));
+                processors.add(createPrintProcessor(reminders, true, mailContext));
                 break;
             case LIST:
             case PHONE:
@@ -128,13 +130,14 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * Constructs a new <tt>ReminderGenerator</tt> for reminders returned by a
      * query.
      *
-     * @param query   the query
-     * @param context the context
+     * @param query       the query
+     * @param context     the context
+     * @param mailContext the mail context, used when printing reminders interactively. May be <tt>null</tt>
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator(DueReminderQuery query, Context context) {
-        this(getReminders(query), query.getFrom(), query.getTo(), context);
+    public ReminderGenerator(DueReminderQuery query, Context context, MailContext mailContext) {
+        this(getReminders(query), query.getFrom(), query.getTo(), context, mailContext);
         // TODO: all of the reminders are cached in memory, as the reminder
         // processing affects the paging of the reminder query. A better
         // approach to reduce memory requirements would be
@@ -144,15 +147,16 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * Creates a new <tt>ReminderGenerator</tt>.
      *
-     * @param reminders the reminders to process
-     * @param from      only process reminder if its next due date &gt;= from
-     * @param to        only process reminder if its next due date &lt;= to
-     * @param context   the context
+     * @param reminders   the reminders to process
+     * @param from        only process reminder if its next due date &gt;= from
+     * @param to          only process reminder if its next due date &lt;= to
+     * @param context     the context
+     * @param mailContext the mail context, used when printing reminders interactively. May be <tt>null</tt>
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReportingException         for any configuration error
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator(Iterator<Act> reminders, Date from, Date to, Context context) {
+    public ReminderGenerator(Iterator<Act> reminders, Date from, Date to, Context context, MailContext mailContext) {
         this(context);
 
         ReminderProcessor processor = new ReminderProcessor(from, to);
@@ -187,7 +191,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         }
 
         if (!printReminders.isEmpty()) {
-            processors.add(createPrintProcessor(printReminders, false));
+            processors.add(createPrintProcessor(printReminders, false, mailContext));
         }
         if (!emailReminders.isEmpty()) {
             processors.add(createEmailProcessor(emailReminders));
@@ -311,12 +315,15 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @param reminders   the print reminders
      * @param interactive if <tt>true</tt>, reminders should always be printed interactively. If <tt>false</tt>,
      *                    reminders will only be printed interactively if a printer needs to be selected
+     * @param mailContext the mail context. May be <tt>null</tt>
      * @return a new processor
      */
-    private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders, boolean interactive) {
+    private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders, boolean interactive,
+                                                        MailContext mailContext) {
         ReminderPrintProgressBarProcessor result
                 = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics);
         result.setInteractiveAlways(interactive);
+        result.setMailContext(mailContext);
         return result;
     }
 
