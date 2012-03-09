@@ -113,15 +113,6 @@ public class CustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
-     * Updates the status.
-     *
-     * @param status the new status
-     */
-    public void setStatus(String status) {
-        getProperty("status").setValue(status);
-    }
-
-    /**
      * Returns any unprinted documents that are flagged for immediate printing.
      *
      * @return the list of unprinted documents

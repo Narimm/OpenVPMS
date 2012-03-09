@@ -37,7 +37,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -431,13 +430,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
          */
         @Override
         protected Component getDefaultFocus(List<ComponentState> components) {
-            for (ComponentState state : components) {
-                Property property = state.getProperty();
-                if (property != null && "customer".equals(property.getName())) {
-                    return state.getFocusable();
-                }
-            }
-            return null;
+            return getFocusable(components, "customer");
         }
     }
 }

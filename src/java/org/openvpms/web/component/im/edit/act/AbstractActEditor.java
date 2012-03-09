@@ -149,6 +149,15 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Updates the status.
+     *
+     * @param status the new status
+     */
+    public void setStatus(String status) {
+        getProperty("status").setValue(status);
+    }
+
+    /**
      * Validates the object.
      * <p/>
      * This extends validation by ensuring that the start time is less than the end time, if non-null.

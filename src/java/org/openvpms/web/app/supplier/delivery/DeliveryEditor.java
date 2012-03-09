@@ -46,15 +46,6 @@ public class DeliveryEditor extends FinancialActEditor {
     }
 
     /**
-     * Sets the delivery status.
-     *
-     * @param status the status
-     */
-    public void setStatus(String status) {
-        getProperty("status").setValue(status);
-    }
-
-    /**
      * Adds a delivery item, associated with an order item.
      *
      * @param delivery the delivery item

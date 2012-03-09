@@ -128,8 +128,11 @@ public abstract class ActEditor extends AbstractActEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         if (editor != null) {
             return new ActLayoutStrategy(editor);
+        } else if (getProperty("items")  != null) {
+            return new ActLayoutStrategy(false);
+        } else {
+            return super.createLayoutStrategy();
         }
-        return new ActLayoutStrategy(false);
     }
 
     /**
