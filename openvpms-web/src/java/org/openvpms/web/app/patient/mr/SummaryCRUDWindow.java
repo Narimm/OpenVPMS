@@ -18,22 +18,32 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.Retryer;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Arrays;
@@ -111,6 +121,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createAddNoteButton());
     }
 
     /**
@@ -151,6 +162,9 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
     @Override
     protected void onSaved(final Act act, final boolean isNew) {
         if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
+            if (getEvent() == null) {
+                createEvent();
+            }
             // link the item to its parent event, if required. As there might be multiple user's accessing the event,
             // use a Retryer to retry if the linking fails initially
             PatientMedicalRecordLinker recordAction = new PatientMedicalRecordLinker(getEvent(), act);
@@ -202,6 +216,47 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
                 ErrorHelper.show(exception);
             }
         }
+    }
+
+    /**
+     * Creates and a new event, making it the current event.
+     */
+    private void createEvent() {
+        Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);
+        if (event == null) {
+            throw new IllegalStateException("Failed to create " + PatientArchetypes.CLINICAL_EVENT);
+        }
+        LayoutContext layoutContext = createLayoutContext();
+        IMObjectEditor editor = IMObjectEditorFactory.create(event, layoutContext);
+        editor.getComponent();
+        if (editor instanceof AbstractActEditor) {
+            ((AbstractActEditor) editor).setStatus(ActStatus.COMPLETED);
+        }
+        editor.save();
+        setEvent(event);
+    }
+
+
+    /**
+     * Creates a button to add a new <em>act.patientClinicalNote</em>.
+     *
+     * @return a new button
+     */
+    private Button createAddNoteButton() {
+        return ButtonFactory.create("addNote", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onAddNote();
+            }
+        });
+    }
+
+    /**
+     * Adds a new <em>act.patientClinicalNote</em>.
+     */
+    private void onAddNote() {
+        setEvent(null);     // event will be created in onSaved()
+        Archetypes<Act> archetypes = new Archetypes<Act>(PatientArchetypes.CLINICAL_NOTE, Act.class);
+        onCreate(archetypes);
     }
 
     /**

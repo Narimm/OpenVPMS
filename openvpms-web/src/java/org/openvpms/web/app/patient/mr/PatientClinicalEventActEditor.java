@@ -54,6 +54,7 @@ public class PatientClinicalEventActEditor extends ActEditor {
         initParticipant("patient", context.getContext().getPatient());
         initParticipant("worklist", context.getContext().getWorkList());
         initParticipant("location", context.getContext().getLocation());
+        initParticipant("clinician", context.getContext().getClinician());
 
         addStartEndTimeListeners();
 

@@ -555,13 +555,13 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected Grid createGrid(List<NodeDescriptor> descriptors) {
         return (descriptors.size() <= 4) ? GridFactory.create(2)
-                                         : GridFactory.create(4);
+                : GridFactory.create(4);
     }
 
     /**
      * Returns the default focus component.
      * <p/>
-     * Delegates to {@link #getDefaultFocus(List <ComponentState>)}.
+     * Delegates to {@link #getDefaultFocus(List)}.
      *
      * @return the default focus component, or <tt>null</tt> if none is found
      */
@@ -604,6 +604,23 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the focusable component associated with the property with the specified name.
+     *
+     * @param components the components
+     * @param name       the property name
+     * @return the corresponding component, or <tt>null</tt> if none is found
+     */
+    protected Component getFocusable(List<ComponentState> components, String name) {
+        for (ComponentState state : components) {
+            Property property = state.getProperty();
+            if (property != null && name.equals(property.getName())) {
+                return state.getFocusable();
+            }
+        }
+        return null;
     }
 
     /**
