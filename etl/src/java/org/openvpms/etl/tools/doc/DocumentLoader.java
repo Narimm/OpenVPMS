@@ -158,6 +158,7 @@ public class DocumentLoader {
             LoaderListener listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log, target)
                                                                      : new DefaultLoaderListener(target);
 
+            String type = config.getString("type");
             if (byId) {
                 boolean recurse = config.getBoolean("recurse");
                 boolean overwrite = config.getBoolean("overwrite");
@@ -166,9 +167,8 @@ public class DocumentLoader {
                 if (transactionManager == null) {
                     transactionManager = (PlatformTransactionManager) getContext().getBean("txnManager");
                 }
-                loader = new IdLoader(source, service, factory, transactionManager, recurse, overwrite, pattern);
+                loader = new IdLoader(source, type, service, factory, transactionManager, recurse, overwrite, pattern);
             } else {
-                String type = config.getString("type");
                 loader = new NameLoader(source, type, service, factory);
             }
             loader.setListener(listener);
@@ -332,8 +332,8 @@ public class DocumentLoader {
                     .setHelp("The directory to move files to on successful load."));
             parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
                     .setLongFlag("type")
-                    .setHelp("The archetype short name. May contain wildcards. "
-                             + "If not specified, defaults to all document acts"));
+                    .setDefault("act.*DocumentAttachment")
+                    .setHelp("The archetype short name. May contain wildcards."));
             parser.registerParameter(new FlaggedOption("failOnError")
                     .setShortFlag('e')
                     .setLongFlag("failOnError")

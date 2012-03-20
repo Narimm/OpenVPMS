@@ -19,10 +19,10 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -31,6 +31,10 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -294,6 +298,54 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
     }
 
     /**
+     * Verifies that documents are only loaded if they are of the correct type.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testLoadByType() throws Exception {
+        File source = new File("target/sdocs" + System.currentTimeMillis());
+        File target = new File("target/tdocs" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        DocumentAct act1 = createPatientDocAct("file1.gif");
+        DocumentAct act2 = createPatientDocAct("file2.pdf");
+        DocumentAct act3 = createPatientDocAct("file3.html");
+
+        // create some document image acts. These should not be overwritten by the loader
+        DocumentAct act4 = createPatientDocAct(PatientArchetypes.DOCUMENT_IMAGE, "file4.png");
+        DocumentAct act5 = createPatientDocAct(PatientArchetypes.DOCUMENT_IMAGE, "file5.gif");
+
+        File act1File = createFile(act1, source, null, null, ".gif");
+        File act2File = createFile(act2, source, "V", null, ".pdf");
+        File act3File = createFile(act3, source, null, "-12345", null, ".html");
+        File act4File = createFile(act4, source, null, null, ".png");
+        File act5File = createFile(act5, source,  null, null, ".gif");
+
+        // load files that have corresponding document attachment acts. The document image acts should not be uppdated
+        LoaderListener listener = load(source, PatientArchetypes.DOCUMENT_ATTACHMENT, target, false);
+        assertEquals(3, listener.getLoaded());
+        assertEquals(2, listener.getErrors());
+        assertEquals(5, listener.getProcessed());
+        assertEquals(2, listener.getMissingAct());
+        assertEquals(0, listener.getAlreadyLoaded());
+
+        Set<File> files = getFiles(source);
+        assertEquals(2, files.size());
+        checkFiles(source, act4File, act5File);
+
+        checkFiles(target, act1File, act2File, act3File);
+
+        // verify the acts have associated documents
+        checkAct(act1, act1File.getName());
+        checkAct(act2, act2File.getName());
+        checkAct(act3, act3File.getName());
+        checkNoDocument(act4);
+        checkNoDocument(act5);
+    }
+
+    /**
      * Returns the document act version with the matching file name.
      *
      * @param versions the document act versions
@@ -318,7 +370,20 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      * @return the loader listener
      */
     private LoaderListener load(File source, File target, boolean overwrite) {
-        Loader loader = new IdLoader(source, service, new DefaultDocumentFactory(), transactionManager,
+        return load(source, null, target, overwrite);
+    }
+
+    /**
+     * Helper to load files.
+     *
+     * @param source    the source directory to load from
+     * @param shortName the document archetype(s) that may be loaded to. May be <tt>null</tt>, or contain wildcards
+     * @param target    the target directory to move processed files to
+     * @param overwrite if <tt>true</tt> overwrite existing documents
+     * @return the loader listener
+     */
+    private LoaderListener load(File source, String shortName, File target, boolean overwrite) {
+        Loader loader = new IdLoader(source, shortName, service, new DefaultDocumentFactory(), transactionManager,
                                      true, overwrite);
         LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
         load(loader, listener);

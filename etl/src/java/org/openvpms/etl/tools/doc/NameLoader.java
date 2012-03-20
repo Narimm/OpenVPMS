@@ -136,7 +136,7 @@ class NameLoader extends AbstractLoader {
         }
         ArchetypeQuery query = new ArchetypeQuery(shortNames);
         if (log.isInfoEnabled()) {
-            StringBuffer buff = new StringBuffer();
+            StringBuilder buff = new StringBuilder();
             for (String s : shortNames.getShortNames()) {
                 if (buff.length() != 0) {
                     buff.append(", ");

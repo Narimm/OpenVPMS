@@ -19,9 +19,9 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -118,21 +119,25 @@ class IdLoader extends AbstractLoader {
      * Constructs a new <tt>IdLoader</tt>.
      *
      * @param dir                the source directory
+     * @param shortName          the document archetype(s) that may be loaded to. May be <tt>null</tt>, or contain
+     *                           wildcards
      * @param service            the archetype service
      * @param factory            the document factory
      * @param transactionManager the transaction manager
      * @param recurse            if <tt>true</tt> recursively scan the source dir
      * @param overwrite          if <tt>true</tt> overwrite existing documents
      */
-    public IdLoader(File dir, IArchetypeService service, DocumentFactory factory,
+    public IdLoader(File dir, String shortName, IArchetypeService service, DocumentFactory factory,
                     PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite) {
-        this(dir, service, factory, transactionManager, recurse, overwrite, DEFAULT_PATTERN);
+        this(dir, shortName, service, factory, transactionManager, recurse, overwrite, DEFAULT_PATTERN);
     }
 
     /**
      * Constructs a new <tt>IdLoader</tt>.
      *
      * @param dir                the source directory
+     * @param shortName          the document archetype(s) that may be loaded to. May be <tt>null</tt>, or contain
+     *                           wildcards
      * @param service            the archetype service
      * @param factory            the document factory
      * @param recurse            if <tt>true</tt> recursively scan the source dir
@@ -140,12 +145,12 @@ class IdLoader extends AbstractLoader {
      * @param overwrite          if <tt>true</tt> overwrite existing documents
      * @param pattern            the pattern to extract act ids from file names
      */
-    public IdLoader(File dir, IArchetypeService service, DocumentFactory factory,
+    public IdLoader(File dir, String shortName, IArchetypeService service, DocumentFactory factory,
                     PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite,
                     Pattern pattern) {
         super(service, factory);
         this.transactionManager = transactionManager;
-        shortNames = getDocumentActShortNames();
+        shortNames = getDocumentActShortNames(shortName);
         this.overwrite = overwrite;
         if (log.isDebugEnabled()) {
             log.debug("dir=" + dir);
@@ -253,12 +258,11 @@ class IdLoader extends AbstractLoader {
                 // identical content and file name
                 notifyAlreadyLoaded(file);
             } else {
-            	if (TypeHelper.isA(act,InvestigationArchetypes.PATIENT_INVESTIGATION)) {
-            		act.setStatus(InvestigationActStatus.RECEIVED);
-            	}
-            	else {
-                    act.setStatus(ActStatus.COMPLETED);            		
-            	}
+                if (TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
+                    act.setStatus(InvestigationActStatus.RECEIVED);
+                } else {
+                    act.setStatus(ActStatus.COMPLETED);
+                }
                 boolean version = (duplicate != act);
                 addDocument(act, doc, version);
                 notifyLoaded(file);
@@ -352,16 +356,23 @@ class IdLoader extends AbstractLoader {
     /**
      * Returns all document act archetype short names.
      *
+     * @param shortName the short name. May be <tt>null</tt> or contain wildcards
      * @return the document act  archetype short names
      */
-    private String[] getDocumentActShortNames() {
+    private String[] getDocumentActShortNames(String shortName) {
         List<String> result = new ArrayList<String>();
-        List<ArchetypeDescriptor> descriptors = getService().getArchetypeDescriptors();
+        List<ArchetypeDescriptor> descriptors;
+        if (StringUtils.isEmpty(shortName)) {
+            descriptors = getService().getArchetypeDescriptors();
+        } else {
+            descriptors = DescriptorHelper.getArchetypeDescriptors(shortName, getService());
+        }
         for (ArchetypeDescriptor descriptor : descriptors) {
             if (DocumentAct.class.isAssignableFrom(descriptor.getClazz())) {
                 result.add(descriptor.getType().getShortName());
             }
         }
+
         return result.toArray(new String[result.size()]);
     }
 

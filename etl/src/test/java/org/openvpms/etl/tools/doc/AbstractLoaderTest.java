@@ -18,11 +18,10 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.*;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -39,6 +38,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Base class for {@link Loader} test cases.
@@ -142,7 +147,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      */
     protected File createFile(DocumentAct act, File dir, String prefix, String suffix, String content, String extension)
             throws IOException {
-        StringBuffer buff = new StringBuffer();
+        StringBuilder buff = new StringBuilder();
         if (prefix != null) {
             buff.append(prefix);
         }
@@ -217,26 +222,6 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
     }
 
     /**
-     * Creates a new customer document act.
-     *
-     * @param shortName the document act short name
-     * @return a new document act
-     */
-    protected DocumentAct createCustomerDocAct(String shortName) {
-        Party customer = (Party) service.create("party.customerperson");
-        IMObjectBean bean = new IMObjectBean(customer);
-        bean.setValue("firstName", "Foo");
-        bean.setValue("lastName", "ZBar");
-        bean.save();
-        DocumentAct act = (DocumentAct) service.create(shortName);
-        assertNotNull(act);
-        ActBean actBean = new ActBean(act);
-        actBean.addParticipation("participation.customer", customer);
-        actBean.save();
-        return act;
-    }
-
-    /**
      * Loads documents.
      *
      * @param loader   the loader
@@ -278,6 +263,17 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
     }
 
     /**
+     * Verifies a document act has no document.
+     *
+     * @param act the act to check
+     */
+    protected void checkNoDocument(DocumentAct act) {
+        act = (DocumentAct) service.get(act.getObjectReference());
+        assertNotNull(act);
+        assertNull(act.getDocument());
+    }
+
+    /**
      * Verifies that the mime type matches that expected.
      *
      * @param act the act to check
@@ -307,11 +303,11 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
             assertEquals("application/pdf", mimeType);
         } else if (fileName.endsWith(".html") || fileName.endsWith(".htm")) {
             assertEquals("text/html", mimeType);
-        } else if (fileName.endsWith(".txt")){
+        } else if (fileName.endsWith(".txt")) {
             assertEquals("text/plain", mimeType);
-        } else if (fileName.endsWith(".doc")){
+        } else if (fileName.endsWith(".doc")) {
             assertEquals("application/msword", mimeType);
-        } else if (fileName.endsWith(".odt")){
+        } else if (fileName.endsWith(".odt")) {
             assertEquals("application/vnd.oasis.opendocument.text", mimeType);
         } else {
             fail("Cannot determine if valid mime type for fileName: " + fileName);
