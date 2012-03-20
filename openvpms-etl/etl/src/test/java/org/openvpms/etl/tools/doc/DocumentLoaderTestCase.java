@@ -182,6 +182,45 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
     }
 
     /**
+     * Tests the behaviour of using --byid with --type.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testByIdAndType() throws Exception {
+        File source = new File(parent, "sdocs3" + System.currentTimeMillis());
+        File target = new File(parent, "tdocs3" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        DocumentAct act1 = createPatientDocAct();
+        DocumentAct act2 = createPatientDocAct();
+        DocumentAct act3 = createPatientDocAct();
+        DocumentAct act4 = createPatientDocAct();
+
+        File file1 = createFile(act1, source);
+        File file2 = createFile(act2, source);
+        File file3 = createFile(act3, source);
+        File file4 = createFile(act4, source);
+
+        String[] args = {"--byid", "--type", "act.customerDocumentAttachment", "-s", source.getPath(), "-d",
+                         target.getPath()};
+        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
+        loader.load();
+
+        checkFiles(source, file1, file2, file3, file4);
+        checkFiles(target);
+
+        String[] args2 = {"--byid", "--type", "act.patientDocumentAttachment", "-s", source.getPath(), "-d",
+                         target.getPath()};
+        DocumentLoader loader2 = new DocumentLoader(args2, service, transactionManager);
+        loader2.load();
+
+        checkFiles(source);
+        checkFiles(target, file1, file2, file3, file4);
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
