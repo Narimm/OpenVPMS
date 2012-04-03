@@ -65,13 +65,12 @@ public class OrderItemEditorTestCase extends AbstractAppTest {
         editor.setProduct(product);
         assertTrue(editor.isValid());
 
-        // verify that cancelled + received must be <= quantity
+        // verify that cancelled must be <= quantity
         editor.setQuantity(BigDecimal.ONE);
-        editor.setCancelledQuantity(BigDecimal.ONE);
-        editor.setReceivedQuantity(BigDecimal.ONE);
+        editor.setCancelledQuantity(new BigDecimal(2));
         assertFalse(editor.isValid());
 
-        editor.setCancelledQuantity(BigDecimal.ZERO);
+        editor.setCancelledQuantity(BigDecimal.ONE);
         assertTrue(editor.isValid());
     }
 }
