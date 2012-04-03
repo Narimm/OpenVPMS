@@ -137,13 +137,11 @@ public class OrderItemEditor extends SupplierStockItemEditor {
         boolean valid = super.doValidation(validator);
         if (valid) {
             BigDecimal quantity = getQuantity();
-            BigDecimal received = getReceivedQuantity();
             BigDecimal cancelled = getCancelledQuantity();
-            BigDecimal sum = received.add(cancelled);
-            if (sum.compareTo(quantity) > 0) {
+            if (cancelled.compareTo(quantity) > 0) {
                 valid = false;
                 Property property = getProperty(QUANTITY);
-                String message = Messages.get("supplier.order.invalidQuantity", quantity, sum);
+                String message = Messages.get("supplier.order.invalidCancelledQuantity", quantity, cancelled);
                 ValidatorError error = new ValidatorError(property, message);
                 validator.add(property, error);
             }
