@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -31,6 +30,12 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -315,6 +320,29 @@ public class DescriptorHelperTestCase extends AbstractArchetypeServiceTest {
         List<String> list = Arrays.asList(nodeShortNames);
         assertTrue(list.contains("party.person"));
         assertTrue(list.contains("organization.organization"));
+    }
+
+    /**
+     * Tests the {@link DescriptorHelper#getCommonNodeNames(String[], IArchetypeService)} method.
+     */
+    @Test
+    public void testGetCommonNodeNames() {
+        String[] shortNames = {"party.customerperson", "party.patientpet"};
+        String[] names = DescriptorHelper.getCommonNodeNames(shortNames, getArchetypeService());
+        assertEquals(4, names.length);
+        assertArrayEquals(new String[]{"id", "name", "description", "identities"}, names);
+    }
+
+    /**
+     * Tests the {@link DescriptorHelper#getCommonNodeNames(String[], String[], IArchetypeService)} method.
+     */
+    @Test
+    public void testGetCommonNodeNamesForNodes() {
+        String[] shortNames = {"party.customerperson", "party.patientpet"};
+        String[] nodes = {"id", "name", "species"};
+        String[] names = DescriptorHelper.getCommonNodeNames(shortNames, nodes, getArchetypeService());
+        assertEquals(2, names.length);
+        assertArrayEquals(new String[]{"id", "name",}, names);
     }
 
     /**
