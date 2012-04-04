@@ -417,7 +417,7 @@ public final class DescriptorHelper {
      * Returns archetype short names from a node for the matching archetype where
      * the node is present. This expands any wildcards.
      * <p/>
-     * If the {@link NodeDescriptor#getFilter} is non-null, matching shortnames
+     * If the {@link NodeDescriptor#getFilter} is non-null, matching short names
      * are returned, otherwise matching short names from
      * {@link NodeDescriptor#getArchetypeRange()} are returned.
      *
@@ -588,8 +588,7 @@ public final class DescriptorHelper {
      * @throws ArchetypeServiceException for any error
      */
     public static String getDisplayName(String shortName, String node) {
-        return getDisplayName(shortName, node,
-                              ArchetypeServiceHelper.getArchetypeService());
+        return getDisplayName(shortName, node, ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
@@ -615,4 +614,73 @@ public final class DescriptorHelper {
         return result;
     }
 
+    /**
+     * Returns node names common to a set of archetypes.
+     *
+     * @param shortNames the archetype short names. May contain wildcards.
+     * @param service    the archetype service
+     * @return node names common to the archetypes
+     */
+    public static String[] getCommonNodeNames(String shortNames, IArchetypeService service) {
+        return getCommonNodeNames(shortNames, null, service);
+    }
+
+    /**
+     * Returns node names common to a set of archetypes.
+     *
+     * @param shortNames the archetype short names. May contain wildcards.
+     * @param service    the archetype service
+     * @return node names common to the archetypes
+     */
+    public static String[] getCommonNodeNames(String[] shortNames, IArchetypeService service) {
+        return getCommonNodeNames(shortNames, null, service);
+    }
+
+    /**
+     * Returns node names common to a set of archetypes.
+     *
+     * @param shortNames the archetype short names. May contain wildcards.
+     * @param nodes      node names to check. If <tt>null</tt>, all nodes common to the archetypes will be returned.
+     * @param service    the archetype service
+     * @return node names common to the archetypes
+     */
+    public static String[] getCommonNodeNames(String shortNames, String[] nodes, IArchetypeService service) {
+        return getCommonNodeNames(new String[]{shortNames}, nodes, service);
+    }
+
+    /**
+     * Returns node names common to a set of archetypes.
+     *
+     * @param shortNames the archetype short names. May contain wildcards.
+     * @param nodes      node names to check. If <tt>null</tt>, all nodes common to the archetypes will be returned.
+     * @param service    the archetype service
+     * @return node names common to the archetypes
+     */
+    public static String[] getCommonNodeNames(String[] shortNames, String[] nodes, IArchetypeService service) {
+        Set<String> result = new LinkedHashSet<String>();
+
+        boolean init = false;
+        if (nodes != null && nodes.length != 0) {
+            result.addAll(Arrays.asList(nodes));
+        } else {
+            init = true;
+        }
+        for (ArchetypeDescriptor descriptor : getArchetypeDescriptors(shortNames, service)) {
+            if (init) {
+                for (NodeDescriptor node : descriptor.getAllNodeDescriptors()) {
+                    result.add(node.getName());
+                }
+                init = false;
+            } else {
+                for (String node : new ArrayList<String>(result)) {
+                    if (descriptor.getNodeDescriptor(node) == null) {
+                        result.remove(node);
+                    }
+                }
+            }
+        }
+        return result.toArray(new String[result.size()]);
+    }
+
 }
+
