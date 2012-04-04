@@ -26,6 +26,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListCellRenderer;
+import nextapp.echo2.app.list.ListModel;
 import nextapp.echo2.app.list.ListSelectionModel;
 import org.apache.commons.collections.ListUtils;
 import org.openvpms.web.component.event.ActionListener;
@@ -34,6 +35,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.ListBoxFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -46,37 +48,37 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Palette extends Row {
+public class Palette<T> extends Row {
 
     /**
      * The set of unselected items.
      */
-    private final List _unselected;
+    private final List<T> unselected;
 
     /**
      * The set of selected items.
      */
-    private final List _selected;
+    private final List<T> selected;
 
     /**
      * The unselected item list box.
      */
-    private ListBox _unselectedList;
+    private ListBox unselectedList;
 
     /**
      * The selected item list box.
      */
-    private ListBox _selectedList;
+    private ListBox selectedList;
 
     /**
      * The add button.
      */
-    private Button _add;
+    private Button add;
 
     /**
      * The remove button.
      */
-    private Button _remove;
+    private Button remove;
 
 
     /**
@@ -85,10 +87,13 @@ public class Palette extends Row {
      * @param items    all items that may be selected
      * @param selected the selected items
      */
-    public Palette(List items, List selected) {
+    @SuppressWarnings("unchecked")
+    public Palette(List<T> items, List<T> selected) {
         setStyleName("Palette");
-        _selected = selected;
-        _unselected = ListUtils.subtract(items, selected);
+        this.selected = selected;
+        sort(selected);
+        unselected = (List<T>) ListUtils.subtract(items, selected);
+        sort(unselected);
 
         doLayout();
     }
@@ -99,8 +104,8 @@ public class Palette extends Row {
      * @param renderer the cell renderer
      */
     public void setCellRenderer(ListCellRenderer renderer) {
-        _unselectedList.setCellRenderer(renderer);
-        _selectedList.setCellRenderer(renderer);
+        unselectedList.setCellRenderer(renderer);
+        selectedList.setCellRenderer(renderer);
     }
 
     /**
@@ -111,10 +116,10 @@ public class Palette extends Row {
      */
     @Override
     public void setFocusTraversalIndex(int newValue) {
-        _unselectedList.setFocusTraversalIndex(newValue);
-        _selectedList.setFocusTraversalIndex(newValue);
-        _add.setFocusTraversalIndex(newValue);
-        _remove.setFocusTraversalIndex(newValue);
+        unselectedList.setFocusTraversalIndex(newValue);
+        selectedList.setFocusTraversalIndex(newValue);
+        add.setFocusTraversalIndex(newValue);
+        remove.setFocusTraversalIndex(newValue);
     }
 
     /**
@@ -122,18 +127,23 @@ public class Palette extends Row {
      */
     protected void doLayout() {
         final int mode = ListSelectionModel.MULTIPLE_SELECTION;
-        _unselectedList = ListBoxFactory.create(_unselected);
-        _unselectedList.setSelectionMode(mode);
+        unselectedList = ListBoxFactory.create(unselected);
+        unselectedList.setSelectionMode(mode);
 
-        _selectedList = ListBoxFactory.create(_selected);
-        _selectedList.setSelectionMode(mode);
+        selectedList = ListBoxFactory.create(selected);
+        selectedList.setSelectionMode(mode);
 
-        _add = ButtonFactory.create("right_add", new ActionListener() {
+        if (!unselected.isEmpty()) {
+            // make sure there is only one selected list to start off with
+            selectedList.getSelectionModel().clearSelection();
+        }
+
+        add = ButtonFactory.create("right_add", new ActionListener() {
             public void onAction(ActionEvent e) {
                 onAdd();
             }
         });
-        _remove = ButtonFactory.create("left_remove", new ActionListener() {
+        remove = ButtonFactory.create("left_remove", new ActionListener() {
             public void onAction(ActionEvent e) {
                 onRemove();
             }
@@ -141,10 +151,10 @@ public class Palette extends Row {
         Label available = LabelFactory.create("available", "Palette.ListLabel");
         Label selected = LabelFactory.create("selected", "Palette.ListLabel");
         Column left = ColumnFactory.create("Palette.ListColumn", available,
-                                           _unselectedList);
-        Column middle = ColumnFactory.create("ControlColumn", _add, _remove);
+                                           unselectedList);
+        Column middle = ColumnFactory.create("ControlColumn", add, remove);
         Column right = ColumnFactory.create("Palette.ListColumn", selected,
-                                            _selectedList);
+                                            selectedList);
         add(left);
         add(middle);
         add(right);
@@ -154,8 +164,8 @@ public class Palette extends Row {
      * Invoked when the add button is pressed.
      */
     protected void onAdd() {
-        Object[] values = _unselectedList.getSelectedValues();
-        move(_unselectedList, _selectedList);
+        Object[] values = unselectedList.getSelectedValues();
+        move(unselectedList, selectedList);
         add(values);
     }
 
@@ -163,8 +173,8 @@ public class Palette extends Row {
      * Invoked when the remove button is pressed.
      */
     protected void onRemove() {
-        Object[] values = _selectedList.getSelectedValues();
-        move(_selectedList, _unselectedList);
+        Object[] values = selectedList.getSelectedValues();
+        move(selectedList, unselectedList);
         remove(values);
     }
 
@@ -190,19 +200,51 @@ public class Palette extends Row {
      * @param from the source list box
      * @param to   the target list box
      */
+    @SuppressWarnings("unchecked")
     protected void move(ListBox from, ListBox to) {
         Object[] values = from.getSelectedValues();
-        DefaultListModel toModel = (DefaultListModel) to.getModel();
         DefaultListModel fromModel = (DefaultListModel) from.getModel();
+        List<T> toValues = getValues(to.getModel());
 
         for (int index : from.getSelectedIndices()) {
             // @todo workaround for OVPMS-303
             from.setSelectedIndex(index, false);
         }
         for (Object value : values) {
-            toModel.add(value);
+            T object = (T) value;
             fromModel.remove(value);
+            toValues.add(object);
         }
+        sort(toValues);
+        DefaultListModel toModel = new DefaultListModel(toValues.toArray());
+        to.setModel(toModel);
+
+        int[] selected = new int[values.length];
+        for (int i = 0; i < values.length; ++i) {
+            selected[i] = toModel.indexOf(values[i]);
+        }
+        to.setSelectedIndices(selected);
+    }
+
+    /**
+     * Sorts a list.
+     * <p/>
+     * This implementation is a no-op
+     *
+     * @param values the list to sort
+     */
+    @SuppressWarnings("unused")
+    protected void sort(List<T> values) {
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<T> getValues(ListModel model) {
+        List<T> result = new ArrayList<T>();
+        for (int i = 0; i < model.size(); ++i) {
+            result.add((T) model.get(i));
+        }
+        return result;
     }
 
 }

@@ -75,6 +75,20 @@ public class IMObjectSorter {
      * Sorts a collection of objects.
      *
      * @param objects the objects to sort.
+     * @param nodes   the nodes to sort on
+     */
+    public static <T extends IMObject> void sort(List<T> objects, String... nodes) {
+        SortConstraint[] constraints = new SortConstraint[nodes.length];
+        for (int i = 0; i < nodes.length; ++i) {
+            constraints[i] = new NodeSortConstraint(nodes[i]);
+        }
+        sort(objects, constraints);
+    }
+
+    /**
+     * Sorts a collection of objects.
+     *
+     * @param objects the objects to sort.
      * @param sort    the sort criteria
      */
     @SuppressWarnings("unchecked")
