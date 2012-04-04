@@ -27,12 +27,12 @@ import java.util.List;
 
 
 /**
- * Binds a {@link Property} to a <code>Palette</code>.
+ * Binds a {@link Property} to a <tt>Palette</tt>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class BoundPalette extends Palette {
+public class BoundPalette<T> extends Palette<T> {
 
     /**
      * The bound property.
@@ -47,8 +47,8 @@ public class BoundPalette extends Palette {
      * @param property the property to bind
      */
     @SuppressWarnings("unchecked")
-    public BoundPalette(List items, CollectionProperty property) {
-        super(items, new ArrayList(property.getValues()));
+    public BoundPalette(List<T> items, CollectionProperty property) {
+        super(items, new ArrayList<T>(property.getValues()));
         this.property = property;
     }
 

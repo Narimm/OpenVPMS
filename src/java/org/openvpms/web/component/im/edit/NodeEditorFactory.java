@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.bound.BoundPalette;
 import org.openvpms.web.component.edit.Editor;
@@ -35,6 +36,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
@@ -65,6 +67,11 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Component factory for read-only/derived properties.
      */
     private IMObjectComponentFactory readOnly;
+
+    /**
+     * Nodes to sort candidate objects on.
+     */
+    private final String[] IDENTIFIER_SORT_NODES = new String[]{"name", "id"};
 
 
     /**
@@ -214,7 +221,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         Editor editor = null;
         if (property.isParentChild()) {
             if (property.getMinCardinality() == 1
-                && property.getMaxCardinality() == 1) {
+                    && property.getMaxCardinality() == 1) {
                 // handle the special case of a collection of one element.
                 // This can be edited inline
                 String[] range = property.getArchetypeRange();
@@ -241,11 +248,17 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 editors.add(editor);
             }
         } else {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            List<IMObject> identifiers = ArchetypeQueryHelper.getCandidates(
-                    service, property.getDescriptor());
-            Palette palette = new BoundPalette(identifiers, property);
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            List<IMObject> identifiers = ArchetypeQueryHelper.getCandidates(service, property.getDescriptor());
+            final String[] nodes = DescriptorHelper.getCommonNodeNames(
+                    property.getDescriptor().getArchetypeRange(), IDENTIFIER_SORT_NODES, service);
+
+            Palette<IMObject> palette = new BoundPalette<IMObject>(identifiers, property) {
+                @Override
+                protected void sort(List<IMObject> values) {
+                    IMObjectSorter.sort(values, nodes);
+                }
+            };
             palette.setCellRenderer(IMObjectListCellRenderer.NAME);
             editor = createPropertyEditor(property, palette);
         }
