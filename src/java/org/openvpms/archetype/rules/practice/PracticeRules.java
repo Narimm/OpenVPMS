@@ -69,10 +69,8 @@ public class PracticeRules {
      */
     public boolean isActivePractice(Party practice) {
         if (practice.isActive()) {
-            ArchetypeQuery query = new ArchetypeQuery(
-                    PracticeArchetypes.PRACTICE, true, true);
-            IMObjectQueryIterator<Party> iter
-                    = new IMObjectQueryIterator<Party>(service, query);
+            ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
+            IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<Party>(service, query);
             IMObjectReference practiceRef = practice.getObjectReference();
             while (iter.hasNext()) {
                 Party party = iter.next();
@@ -92,11 +90,9 @@ public class PracticeRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getPractice() {
-        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE,
-                                                  true, true);
+        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
         query.setMaxResults(1);
-        IMObjectQueryIterator<Party> iter
-                = new IMObjectQueryIterator<Party>(service, query);
+        IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<Party>(service, query);
         return (iter.hasNext()) ? iter.next() : null;
     }
 
@@ -123,8 +119,7 @@ public class PracticeRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getDefaultLocation(Party practice) {
-        return (Party) EntityRelationshipHelper.getDefaultTarget(practice,
-                                                                 "locations",
-                                                                 service);
+        return (Party) EntityRelationshipHelper.getDefaultTarget(practice, "locations", service);
     }
+
 }
