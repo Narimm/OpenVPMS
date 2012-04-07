@@ -33,6 +33,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.DocumentListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -42,7 +43,6 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -319,7 +319,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Invoked when an object is selected via a browser.
      *
-     * @param object the selected object
+     * @param object  the selected object
      * @param browser the browser
      */
     protected void onSelected(T object, Browser<T> browser) {
@@ -386,9 +386,10 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Creates the select button.
      *
+     * @param buttonId the button identifier. Ignored for this implementation
      * @return the select button
      */
-    protected Button createSelectButton() {
+    protected Button createSelectButton(String buttonId) {
         return ButtonFactory.create(null, "select");
     }
 
