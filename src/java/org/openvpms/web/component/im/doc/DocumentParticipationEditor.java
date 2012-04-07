@@ -18,27 +18,12 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.filetransfer.UploadListener;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.select.BasicSelector;
-import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
@@ -47,253 +32,27 @@ import org.openvpms.web.component.util.ErrorHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentParticipationEditor extends AbstractIMObjectEditor {
+public class DocumentParticipationEditor extends AbstractDocumentParticipationEditor {
 
     /**
-     * The upload selector.
-     */
-    private BasicSelector<DocumentAct> selector;
-
-    /**
-     * The document act.
-     */
-    private DocumentAct act;
-
-    /**
-     * Determines if the document has changed.
-     */
-    private boolean docModified = false;
-
-    /**
-     * Manages old document references to avoid orphaned documents.
-     */
-    private final DocReferenceMgr refMgr;
-
-    /**
-     * Determines if the act should be deleted on delete().
-     */
-    private boolean deleteAct = false;
-
-    /**
-     * Construct a new <code>DocumentParticipationEditor</code>.
+     * Constructs a <tt>DocumentParticipationEditor</tt>.
      *
      * @param participation the participation to edit
      * @param parent        the parent entity
-     * @param context       the layout context. May be <code>null</code>.
+     * @param context       the layout context. May be <tt>null</tt>.
      */
-    public DocumentParticipationEditor(Participation participation,
-                                       Entity parent,
-                                       LayoutContext context) {
+    public DocumentParticipationEditor(Participation participation, Entity parent, LayoutContext context) {
         super(participation, parent, context);
-        Property entity = getProperty("entity");
-        if (entity.getValue() == null) {
-            entity.setValue(parent.getObjectReference());
-        }
-        act = getDocumentAct();
-        selector = new BasicSelector<DocumentAct>();
-        selector.getSelect().addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onSelect();
-            }
-        });
-        selector.setObject(act);
-        refMgr = new DocReferenceMgr(act.getDocument());
     }
 
     /**
-     * Determines if the associated act should be deleted when
-     * {@link #delete()} is invoked.
-     * Defaults to <tt>false</tt>.
+     * Creates a new document act.
      *
-     * @param delete if <tt>true</tt> delete the act
-     */
-    public void setDeleteAct(boolean delete) {
-        this.deleteAct = delete;
-    }
-
-    /**
-     * Determines if the object has been changed.
-     *
-     * @return <code>true</code> if the object has been changed
+     * @return a new document act
      */
     @Override
-    public boolean isModified() {
-        return super.isModified() || docModified;
+    protected DocumentAct createDocumentAct() {
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        return (DocumentAct) service.create("act.documentTemplate");
     }
-
-    /**
-     * Clears the modified status of the object.
-     */
-    @Override
-    public void clearModified() {
-        super.clearModified();
-        docModified = false;
-    }
-
-    /**
-     * Cancel any edits. Once complete, query methods may be invoked, but the
-     * behaviour of other methods is undefined.
-     */
-    @Override
-    public void cancel() {
-        super.cancel();
-        try {
-            refMgr.rollback();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Save any modified child Saveable instances.
-     *
-     * @return <code>true</code> if the save was successful
-     */
-    @Override
-    protected boolean saveChildren() {
-        boolean saved = super.saveChildren();
-        if (saved && (docModified || act.isNew())) {
-            if (!act.isNew()) {
-                // need to reload the act as the participation has already
-                // been saved by the parent Entity. Failing to do so will
-                // result in hibernate StaleObjectExceptions
-                IMObjectReference ref = act.getDocument();
-                String fileName = act.getFileName();
-                String mimeType = act.getMimeType();
-                String description = act.getDescription();
-                act = getDocumentAct();
-                act.setDocument(ref);
-                act.setFileName(fileName);
-                act.setMimeType(mimeType);
-                act.setDescription(description);
-            }
-            saved = SaveHelper.save(act);
-            if (saved) {
-                refMgr.commit();
-            }
-        }
-        return saved;
-    }
-
-    /**
-     * Deletes the object.
-     *
-     * @return <tt>true</tt> if the delete was successful
-     */
-    @Override
-    protected boolean doDelete() {
-        boolean result;
-        if (deleteAct) {
-            result = super.deleteChildren();
-            if (result) {
-                result = SaveHelper.delete(act);
-            }
-        } else {
-            result = super.doDelete();
-        }
-        return result;
-    }
-
-    /**
-     * Deletes any child Deletable instances.
-     *
-     * @return <tt>true</tt> if the delete was successful
-     */
-    @Override
-    protected boolean deleteChildren() {
-        boolean result = super.deleteChildren();
-        if (result) {
-            try {
-                refMgr.delete();
-                result = true;
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the document act.
-     *
-     * @return the document act
-     */
-    protected DocumentAct getDocumentAct() {
-        DocumentAct docAct;
-        Property act = getProperty("act");
-        IMObjectReference ref = (IMObjectReference) act.getValue();
-        docAct = (DocumentAct) getObject(ref);
-        if (docAct == null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            docAct = (DocumentAct) service.create("act.documentTemplate");
-            Participation participation = (Participation) getObject();
-            participation.setAct(docAct.getObjectReference());
-            docAct.addParticipation(participation);
-        }
-        return docAct;
-    }
-
-    /**
-     * Creates the layout strategy.
-     *
-     * @return a new layout strategy
-     */
-    @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new IMObjectLayoutStrategy() {
-            public ComponentState apply(IMObject object, PropertySet properties,
-                                        IMObject parent,
-                                        LayoutContext context) {
-                return new ComponentState(selector.getComponent());
-            }
-        };
-    }
-
-    private void onSelect() {
-        final IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-
-        UploadListener listener = new DocumentUploadListener() {
-            protected void upload(Document doc) {
-                service.save(doc);
-                act.setFileName(doc.getName());
-                service.deriveValue(act, "name");
-                act.setMimeType(doc.getMimeType());
-                if (getParent() == null) {
-                    act.setDescription(doc.getDescription());
-                } else {
-                    act.setDescription(getParent().getName());
-                }
-                replaceDocReference(doc);
-                selector.setObject(act);
-                docModified = true;
-            }
-        };
-        UploadDialog dialog = new UploadDialog(listener);
-        dialog.show();
-    }
-
-    /**
-     * Sets the description of the document act.
-     *
-     * @param description the description of the document act.
-     *                    May be <code>null</code>
-     */
-    public void setDescription(String description) {
-        act.setDescription(description);
-        selector.setObject(act);
-    }
-
-    /**
-     * Replaces the existing document reference with that of a new document.
-     * The existing document is queued for deletion.
-     *
-     * @param document the new document
-     */
-    private void replaceDocReference(Document document) {
-        IMObjectReference ref = document.getObjectReference();
-        act.setDocument(ref);
-        refMgr.add(ref);
-    }
-
 }

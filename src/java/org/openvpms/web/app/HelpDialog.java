@@ -63,8 +63,7 @@ public class HelpDialog extends PopupDialog {
         logo.setLayoutData(centre);
 
         Label label = LabelFactory.create(null, "small");
-        label.setText(Messages.get("label.version", Version.VERSION,
-                                   Version.REVISION));
+        label.setText(Messages.get("helpdialog.version", Version.VERSION, Version.REVISION));
 
         Row labelRow = RowFactory.create("InsetX", label);
         RowLayoutData right = new RowLayoutData();

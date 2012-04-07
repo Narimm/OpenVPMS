@@ -61,6 +61,11 @@ public abstract class Selector<T extends IMObject> {
     }
 
     /**
+     * The button identifier.
+     */
+    private final String buttonId;
+
+    /**
      * The 'select' button.
      */
     private Button select;
@@ -126,16 +131,40 @@ public abstract class Selector<T extends IMObject> {
     }
 
     /**
-     * Construct a new <code>Selector</code>.
+     * Constructs a <tt>Selector</tt>.
+     * <p/>
+     * Displays button(s) to the left of the object display.
+     *
+     * @param buttonId the button identifier
+     */
+    public Selector(String buttonId) {
+        this(buttonId, ButtonStyle.LEFT, false);
+    }
+
+    /**
+     * Constructs a <tt>Selector</tt>.
      *
      * @param style    determines the layout of the button(s)
      * @param editable determines if the selector is editable
      */
     public Selector(ButtonStyle style, boolean editable) {
+        this("button.select", style, editable);
+    }
+
+    /**
+     * Construct a new <tt>Selector</tt>.
+     *
+     * @param buttonId the button identifier
+     * @param style    determines the layout of the button(s)
+     * @param editable determines if the selector is editable
+     */
+    public Selector(String buttonId, ButtonStyle style, boolean editable) {
+        this.buttonId = buttonId;
         buttonStyle = style;
         this.editable = editable;
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
     }
+
 
     /**
      * Returns the selector component.
@@ -165,7 +194,7 @@ public abstract class Selector<T extends IMObject> {
      */
     public Button getSelect() {
         if (select == null) {
-            select = createSelectButton();
+            select = createSelectButton(buttonId);
         }
         return select;
     }
@@ -329,10 +358,11 @@ public abstract class Selector<T extends IMObject> {
     /**
      * Creates the select button.
      *
+     * @param buttonId the button identifier
      * @return the select button
      */
-    protected Button createSelectButton() {
-        return ButtonFactory.create("select");
+    protected Button createSelectButton(String buttonId) {
+        return ButtonFactory.create(buttonId);
     }
 
 }

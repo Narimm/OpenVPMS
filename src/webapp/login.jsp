@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="org.openvpms.web.component.button.ShortcutHelper" %>
 <%@ page import="org.openvpms.web.resource.util.Messages" %>
+<%@ page import="org.openvpms.web.system.Version" %>
+<%@ page import="org.openvpms.web.app.admin.organisation.SubscriptionHelper" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
@@ -73,7 +75,7 @@
             clear: both;
         }
 
-        .footer {
+        .buttons {
             position: absolute;
             background: url(images/buttonrowfill.png) repeat-x;
             left: 8px;
@@ -116,6 +118,18 @@
             padding-left: 32px;
             padding-top: 4px;
             min-height: 24px;
+        }
+
+        .footer {
+            text-align: center;
+            position: absolute;
+            bottom:20px;
+            width:100%;
+        }
+
+        .version {
+            font-size:smaller;
+            padding-top: 10px;
         }
 
     </style>
@@ -184,7 +198,7 @@
                                             %>
                                         </div>
                                     </div>
-                                    <div class="footer">
+                                    <div class="buttons">
                                         <div style="padding: 4px 10px;">
                                             <input tabindex="3" class="button" type="submit"
                                                    value="<%=ShortcutHelper.getText(Messages.get("button.ok"))%>"/>
@@ -199,6 +213,10 @@
         </div>
     </div>
 </form>
+<div class="footer" >
+    <div><%=SubscriptionHelper.formatSubscription()%></div>
+    <div class="version"><%=Messages.get("openvpms.version", Version.VERSION, Version.REVISION)%></div>
+</div>
 
 </body>
 </html>

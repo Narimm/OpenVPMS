@@ -39,6 +39,14 @@ public class RepeatSelector<T extends IMObject> extends Selector<T> {
      */
     private Button selectAgain;
 
+
+    /**
+     * Constructs a <tt>RepeatSelector</tt>
+     */
+    public RepeatSelector() {
+        super("button.find");
+    }
+
     /**
      * Returns the "SelectAgain" button.
      * <p/>
@@ -74,17 +82,6 @@ public class RepeatSelector<T extends IMObject> extends Selector<T> {
     public boolean isShowSelectAgain() {
         return getSelectAgain().isVisible();
     }
-
-    /**
-     * Creates the select button.
-     *
-     * @return the select button
-     */
-    @Override
-    protected Button createSelectButton() {
-        return ButtonFactory.create("find");
-    }
-
 
     /**
      * Returns the button component.
