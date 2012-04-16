@@ -88,4 +88,6 @@
     <data archetype="lookup.currency" code="USD" name="US Dollar" roundingMode="HALF_UP" minDenomination="0.00"/>
     <data archetype="lookup.demographicUpdate" code="PATIENT_DESEXED" name="Patient Desexed" expression="party:setPatientDesexed(.)" nodeName="patient.entity"/>
     <data archetype="lookup.demographicUpdate" code="PATIENT_DECEASED" name="Patient Deceased" expression="party:setPatientDeceased(.)" nodeName="patient.entity"/>
+    <data archetype="lookup.demographicUpdate" code="PATIENT_INACTIVE" name="Patient Inactive" expression="party:setPatientInactive(.)" nodeName="patient.entity"/>
+
 </archetype>
