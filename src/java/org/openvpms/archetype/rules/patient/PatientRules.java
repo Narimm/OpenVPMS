@@ -253,6 +253,20 @@ public class PatientRules {
     }
 
     /**
+     * Marks a patient as being inactive.
+     *
+     * @param patient the patient
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void setInactive(Party patient) {
+        IMObjectBean bean = factory.createBean(patient);
+        if (bean.getBoolean("active")) {
+            bean.setValue("active", false);
+            bean.save();
+        }
+    }
+
+    /**
      * Marks a patient as being deceased.
      *
      * @param patient the patient
