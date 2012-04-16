@@ -254,6 +254,15 @@ public class PartyFunctions {
     }
 
     /**
+     * Marks a patient as being inactive.
+     *
+     * @param patient the patient
+     */
+    public void setPatientInactive(Party patient) {
+        getPatientRules().setInactive(patient);
+    }
+
+    /**
      * Marks a patient as being deceased.
      *
      * @param patient the patient

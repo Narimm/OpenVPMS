@@ -18,15 +18,11 @@
 
 package org.openvpms.archetype.rules.patient;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -40,6 +36,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -175,6 +176,19 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Date date2 = getDate("2007-02-25");
         createWeight(date2, patient, new BigDecimal("13"), "POUNDS");
         assertEquals("13 Pounds", rules.getPatientWeight(patient));
+    }
+
+    /**
+     * Tests the {@link PatientRules#setInactive(Party)} method.
+     */
+    @Test
+    public void testSetInactive() {
+        Party patient = TestHelper.createPatient(false);
+        assertTrue(patient.isActive());
+
+        rules.setInactive(patient);
+        patient = get(patient);
+        assertFalse(patient.isActive());
     }
 
     /**
