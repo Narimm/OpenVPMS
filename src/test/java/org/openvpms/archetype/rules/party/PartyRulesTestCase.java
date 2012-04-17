@@ -18,9 +18,6 @@
 
 package org.openvpms.archetype.rules.party;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -36,6 +33,10 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Collection;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link PartyRules} class.
@@ -299,6 +300,25 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyRules#getFaxNumber(Party)} method.
+     */
+    @Test
+    public void testGetFaxNumber() {
+        Party party = TestHelper.createCustomer(false);
+
+        assertEquals("", rules.getFaxNumber(party));
+
+        Contact fax1 = createFax("03", "12345");
+        party.addContact(fax1);
+        assertEquals("(03) 12345", rules.getFaxNumber(party));
+
+        party.removeContact(fax1);
+        Contact fax2 = createFax(null, "12345");
+        party.addContact(fax2);
+        assertEquals("12345", rules.getFaxNumber(party));
+    }
+
+    /**
      * Tests the {@link PartyRules#getIdentities(Party)} method.
      */
     @Test
@@ -423,6 +443,21 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
                                 String purpose) {
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
         populatePhone(contact, number, preferred, purpose);
+        return contact;
+    }
+
+    /**
+     * Creates a new <em>contact.faxNumber</em>.
+     *
+     * @param areaCode the area code. May be <tt>null</tt>
+     * @param number   the fax number
+     * @return a new fax contact
+     */
+    private Contact createFax(String areaCode, String number) {
+        Contact contact = (Contact) create(ContactArchetypes.FAX);
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("areaCode", areaCode);
+        bean.setValue("faxNumber", number);
         return contact;
     }
 
