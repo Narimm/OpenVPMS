@@ -447,7 +447,7 @@ public class PartyRules {
             if (areaCode == null || areaCode.equals("")) {
                 return faxNumber;
             } else {
-                return "(" + areaCode + ")" + faxNumber;
+                return "(" + areaCode + ") " + faxNumber;
             }
         }
         return "";
