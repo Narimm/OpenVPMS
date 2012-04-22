@@ -31,6 +31,7 @@
                     <property name="EUR" value="EUR"/>
                     <property name="CAD" value="CAD"/>
                     <property name="GBP" value="GBP"/>
+                    <property name="DKK" value="DKK"/>
                 </propertyList>
                 <errorMessage>Invalid ISO Code</errorMessage>
             </assertion>
