@@ -71,7 +71,7 @@
 		<variableExpression><![CDATA[($V{IS_EFT}.booleanValue())? "" : null]]></variableExpression>
 	</variable>
 	<variable name="TOTAL_CASH" class="java.math.BigDecimal" calculation="Sum">
-		<variableExpression><![CDATA[($V{IS_CASH}.booleanValue())? $F{item.roundedAmount} : new BigDecimal("0.00")]]></variableExpression>
+		<variableExpression><![CDATA[$V{IS_CASH}.booleanValue()?($F{act.credit}.booleanValue()?$F{item.roundedAmount} : $F{item.roundedAmount}.negate()): new BigDecimal("0.00")]]></variableExpression>
 	</variable>
 	<group name="depositType" isStartNewPage="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$V{SHORTNAME}]]></groupExpression>
@@ -130,7 +130,7 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="17" splitType="Stretch">
+			<band height="11" splitType="Stretch">
 				<printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
 				<line>
 					<reportElement key="line-3" x="14" y="6" width="495" height="1"/>
