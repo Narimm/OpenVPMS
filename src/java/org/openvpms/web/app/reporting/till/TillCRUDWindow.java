@@ -42,6 +42,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.reporting.FinancialActCRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.dialog.SelectionDialog;
@@ -207,11 +208,12 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         try {
             ActBean actBean = new ActBean(act);
             Party till = (Party) actBean.getParticipant("participation.till");
-            if (till != null) {
+            Party location = GlobalContext.getInstance().getLocation();
+            if (till != null && location != null) {
                 IMObjectBean bean = new IMObjectBean(till);
                 BigDecimal lastFloat = bean.getBigDecimal("tillFloat",
                                                           BigDecimal.ZERO);
-                final ClearTillDialog dialog = new ClearTillDialog();
+                final ClearTillDialog dialog = new ClearTillDialog(location);
                 dialog.setAmount(lastFloat);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override

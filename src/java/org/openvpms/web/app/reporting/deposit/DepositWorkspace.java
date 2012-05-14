@@ -22,10 +22,12 @@ import org.openvpms.archetype.rules.finance.deposit.DepositStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
@@ -63,6 +65,18 @@ public class DepositWorkspace
     }
 
     /**
+     * Creates a new query to select a deposit account.
+     * <p/>
+     * This constrains accounts to those associated with the current location.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<Party> createSelectQuery() {
+        return new DepositQuery(GlobalContext.getInstance().getLocation());
+    }
+
+    /**
      * Creates a new query.
      *
      * @return a new query
@@ -73,6 +87,16 @@ public class DepositWorkspace
                 "act.bankDeposit", STATUSES);
         query.setStatus(DepositStatus.UNDEPOSITED);
         return query;
+    }
+
+    /**
+     * Returns the latest version of the current deposit context object.
+     *
+     * @return the latest version of the deposit context object, or {@link #getObject()} if they are the same
+     */
+    @Override
+    protected Party getLatest() {
+        return getLatest(GlobalContext.getInstance().getDeposit());
     }
 
 }
