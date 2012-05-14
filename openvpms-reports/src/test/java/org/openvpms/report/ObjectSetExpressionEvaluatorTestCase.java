@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.util.Date;
 
 
@@ -96,12 +97,10 @@ public class ObjectSetExpressionEvaluatorTestCase extends ArchetypeServiceTest {
                 = new ObjectSetExpressionEvaluator(set, service);
         assertEquals("10", eval.getFormattedValue("int"));
         assertEquals("astring", eval.getFormattedValue("string"));
-        assertEquals("$100.00",
-                     eval.getFormattedValue("money"));  // todo localise
-        assertEquals("11/01/2007",
-                     eval.getFormattedValue("date"));
-        assertEquals(customer.getName(),
-                     eval.getFormattedValue("act.customer"));
+        assertEquals("$100.00", eval.getFormattedValue("money"));  // todo localise
+        String expectedDate = DateFormat.getDateInstance(DateFormat.MEDIUM).format(date);
+        assertEquals(expectedDate, eval.getFormattedValue("date"));
+        assertEquals(customer.getName(), eval.getFormattedValue("act.customer"));
         assertEquals("Foo", eval.getFormattedValue("act.customer.firstName"));
         assertEquals("Bar", eval.getFormattedValue("act.customer.lastName"));
 
