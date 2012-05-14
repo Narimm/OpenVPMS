@@ -61,6 +61,11 @@ import java.util.Map;
 public class MailDialog extends PopupDialog {
 
     /**
+     * Send button identifier.
+     */
+    public static final String SEND_ID = "send";
+
+    /**
      * The mailer.
      */
     private final Mailer mailer;
@@ -74,11 +79,6 @@ public class MailDialog extends PopupDialog {
      * The document browser. May be <tt>null</tt>
      */
     private final Browser<Act> documents;
-
-    /**
-     * Send button identifier.
-     */
-    private static final String SEND_ID = "send";
 
     /**
      * Don't send button identifier.
@@ -237,7 +237,7 @@ public class MailDialog extends PopupDialog {
             attachFile();
         } else if (SEND_ID.equals(button)) {
             if (send()) {
-                onClose();
+                close(SEND_ID);
             }
         } else {
             super.onButton(button);

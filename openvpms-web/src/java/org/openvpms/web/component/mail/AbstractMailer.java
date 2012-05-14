@@ -234,7 +234,9 @@ public abstract class AbstractMailer implements Mailer {
         helper.setFrom(getFrom(), getFromName());
         helper.setTo(address);
         helper.setSubject(getSubject());
-        helper.setText(getBody());
+        if (body != null) {
+            helper.setText(body);
+        }
         for (Document attachment : attachments) {
             addAttachment(helper, attachment);
         }

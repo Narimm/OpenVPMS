@@ -244,6 +244,7 @@ public class MailEditor extends AbstractModifiable {
         subject.addModifiableListener(listener);
 
         message = createProperty("message", "mail.message");
+        message.setRequired(false);
         message.setTransformer(new StringPropertyTransformer(message, new Object(), false));
         message.addModifiableListener(listener);
     }
