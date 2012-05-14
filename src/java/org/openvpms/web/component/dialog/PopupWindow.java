@@ -24,15 +24,12 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.KeyStrokeHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
-
-import java.awt.Dimension;
 
 
 /**
@@ -105,7 +102,6 @@ public abstract class PopupWindow extends WindowPane {
         if (getParent() == null) {
             doLayout();
             DialogManager.show(this);
-            restrictDimensions();
         }
         if (defaultButton != null) {
             Button button = getButtons().getButton(defaultButton);
@@ -122,45 +118,6 @@ public abstract class PopupWindow extends WindowPane {
      */
     protected SplitPane createSplitPane() {
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "PopupWindow.Layout");
-    }
-
-    /**
-     * Restrict dialog dimensions to 70% of screen height and 90% of screen width to try and prevent dialogs from
-     * exceeding screen bounds. See OVPMS-883
-     */
-    private void restrictDimensions() {
-        Dimension size = ContextApplicationInstance.getInstance().getResolution();
-        restrictSize(size.height, WindowPane.PROPERTY_HEIGHT, WindowPane.PROPERTY_POSITION_Y, 0.80);
-        restrictSize(size.width, WindowPane.PROPERTY_WIDTH, WindowPane.PROPERTY_POSITION_X, 0.90);
-    }
-
-    /**
-     * Restricts the size and offset of a dialog based on a factor and screen size.
-     *
-     * @param screenSize       the screen size, in pixels, or <tt>0</tt> if unknown
-     * @param sizeProperty     the name of the size property
-     * @param positionProperty the name of the position property
-     * @param factor           the factor to restrict by
-     */
-    private void restrictSize(int screenSize, String sizeProperty, String positionProperty, double factor) {
-        int size = getPixelSize(sizeProperty);
-        int offset = getPixelSize(positionProperty);
-        if (screenSize > 0 && size > 0) {
-            int limitSize = (int) (screenSize * factor);
-            if (size + offset > limitSize) {
-                if (offset != 0) {
-                    offset = (limitSize - size) / 2;
-                    if (offset <= 0) {
-                        offset = 5;
-                    }
-                    setProperty(positionProperty, new Extent(offset));
-                }
-                if (size > limitSize - offset) {
-                    size = limitSize - offset;
-                    setProperty(sizeProperty, new Extent(size));
-                }
-            }
-        }
     }
 
     /**
