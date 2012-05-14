@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
@@ -32,6 +31,7 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
@@ -67,6 +67,18 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
     public void setObject(Party object) {
         super.setObject(object);
         GlobalContext.getInstance().setTill(object);
+    }
+
+    /**
+     * Creates a new query to select a till.
+     * <p/>
+     * This constrains tills to those associated with the current location.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<Party> createSelectQuery() {
+        return new TillQuery(GlobalContext.getInstance().getLocation());
     }
 
     /**
