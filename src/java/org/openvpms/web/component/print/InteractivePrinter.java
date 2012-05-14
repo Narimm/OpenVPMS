@@ -308,7 +308,7 @@ public class InteractivePrinter implements Printer {
 
             @Override
             protected void onMail() {
-                doMail();
+                doMail(this);
             }
         };
     }
@@ -386,15 +386,28 @@ public class InteractivePrinter implements Printer {
 
     /**
      * Generates a document and pops up a mail document with it as an attachment.
+     * <p/>
+     * If emailed, then the print dialog is closed.
+     *
+     * @param parent the parent print dialog
      */
-    protected void doMail() {
+    protected void doMail(final PrintDialog parent) {
         try {
             Document document = getDocument(DocFormats.PDF_TYPE, true);
-            MailDialog dialog = new MailDialog(context);
+            final MailDialog dialog = new MailDialog(context);
             MailEditor editor = dialog.getMailEditor();
             editor.setSubject(getDisplayName());
             editor.addAttachment(document);
             dialog.show();
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                @Override
+                public void onClose(WindowPaneEvent event) {
+                    if (MailDialog.SEND_ID.equals(dialog.getAction())) {
+                        parent.close();
+                        printed(null); // TODO - need a mail notification?
+                    }
+                }
+            });
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
