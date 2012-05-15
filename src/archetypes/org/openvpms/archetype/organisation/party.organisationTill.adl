@@ -29,7 +29,7 @@
         <node name="lastCleared" path="/details/lastCleared" type="java.util.Date"/>
         <node name="lastBalance" path="/details/lastBalance" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
-        <node name="locations" path="/entityRelationships"
+        <node name="locations" path="/targetEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.locationTill">
             <assertion name="archetypeRange">
