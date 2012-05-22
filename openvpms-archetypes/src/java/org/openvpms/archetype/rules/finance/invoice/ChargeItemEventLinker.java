@@ -23,8 +23,8 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -40,7 +40,7 @@ import java.util.Set;
 
 
 /**
- * Helper to links charge item dispensing, investigation and document acts to patient clinical evemts.
+ * Helper to links charge item dispensing, investigation and document acts to patient clinical events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
@@ -71,9 +71,9 @@ public class ChargeItemEventLinker {
     /**
      * Constructs a <tt>ChargeItemEventLinker</tt>.
      *
-     * @param author  the author for new clinical events. May be <tt>null</tt>
+     * @param author   the author for new clinical events. May be <tt>null</tt>
      * @param location the location for new clinical events. May be <tt>null</tt>
-     * @param service the archetype service
+     * @param service  the archetype service
      */
     public ChargeItemEventLinker(User author, Party location, IArchetypeService service) {
         this.author = author;
@@ -98,13 +98,15 @@ public class ChargeItemEventLinker {
      * @param items the charge items
      */
     public void link(List<FinancialAct> items) {
-        Map<IMObjectReference, List<Act>> events         // cache of patient clinical events keyed on patient reference
-                = new HashMap<IMObjectReference, List<Act>>();
+        //  cache of patient clinical events keyed on patient reference
+        Map<IMObjectReference, List<Act>> events = new HashMap<IMObjectReference, List<Act>>();
+
         Set<Act> toSave = new HashSet<Act>();            // the acts to save
 
         for (FinancialAct item : items) {
             List<Act> acts = new ArrayList<Act>();
             ActBean bean = new ActBean(item, service);
+            acts.add(item);
             acts.addAll(bean.getNodeActs("dispensing"));
             acts.addAll(bean.getNodeActs("investigations"));
             acts.addAll(bean.getNodeActs("documents"));
@@ -151,10 +153,9 @@ public class ChargeItemEventLinker {
         }
 
         /**
-         * Adds a list of <em>act.patientMedication</em>,
-         * <em>act.patientInvestigation*</em> and <em>act.patientDocument*</em> acts
-         * to an <em>act.patientClinicalEvent</em> associated with each act's
-         * patient.
+         * Adds a list of <em>act.patientMedication</em>, <em>act.patientInvestigation*</em>,
+         * <em>act.patientDocument*</em>, and <em>act.customerAccountInvoiceItem</em> acts to an
+         * <em>act.patientClinicalEvent</em> associated with each act's patient.
          *
          * @param acts      the acts to add
          * @param startTime the startTime used to select the event

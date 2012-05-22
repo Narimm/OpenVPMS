@@ -54,10 +54,15 @@ public class PatientArchetypes {
     public static final String CLINICAL_EVENT = "act.patientClinicalEvent";
 
     /**
-     * Clinicial event item act relationship archetype short name.
+     * Clinical event item act relationship archetype short name.
      */
     public static final String CLINICAL_EVENT_ITEM
             = "actRelationship.patientClinicalEventItem";
+
+    /**
+     * Clinical event charge item relationship archetype short name.
+     */
+    public static final String CLINICAL_EVENT_CHARGE_ITEM = "actRelationship.patientClinicalEventChargeItem";
 
     /**
      * Patient clinical note act short name.
@@ -113,4 +118,9 @@ public class PatientArchetypes {
      * Patient document letter version act short name.
      */
     public static final String DOCUMENT_LETTER_VERSION = "act.patientDocumentLetterVersion";
+
+    /**
+     * Patient alert act short name.
+     */
+    public static final String ALERT = "act.patientAlert";
 }
