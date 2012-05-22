@@ -51,6 +51,7 @@ public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
      */
     public VisitChargeItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        initParticipant("patient", context.getContext().getPatient());
     }
 
     /**

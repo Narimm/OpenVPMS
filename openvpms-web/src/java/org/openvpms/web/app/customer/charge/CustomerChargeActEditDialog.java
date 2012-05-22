@@ -70,12 +70,16 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         CustomerChargeDocuments docs = new CustomerChargeDocuments((CustomerChargeActEditor) getEditor());
         List<Act> existing = docs.getUnprinted();
         if (save()) {
-            docs.printNew(existing, new ActionListener() {
+            ActionListener printListener = new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
                     close(OK_ID);
                 }
-            });
+            };
+            if (!docs.printNew(existing, printListener)) {
+                // nothing to print, so close now
+                close(OK_ID);
+            }
         }
     }
 

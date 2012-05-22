@@ -19,7 +19,6 @@ package org.openvpms.web.app.patient.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -33,20 +32,13 @@ import org.openvpms.web.component.property.CollectionProperty;
 public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
 
     /**
-     * The patient.
-     */
-    private final Party patient;
-
-
-    /**
      * Constructs a {@code VisitChargeActEditor}.
      *
      * @param act     the act to edit
      * @param context the layout context
      */
-    public VisitChargeEditor(Party patient, FinancialAct act, LayoutContext context) {
+    public VisitChargeEditor(FinancialAct act, LayoutContext context) {
         super(act, null, context);
-        this.patient = patient;
     }
 
     /**
@@ -58,6 +50,6 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     @Override
     protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
-        return new VisitChargeItemRelationshipCollectionEditor(patient, items, act, getLayoutContext());
+        return new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
     }
 }

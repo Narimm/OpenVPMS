@@ -17,9 +17,12 @@
  */
 package org.openvpms.web.app.patient.charge;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
@@ -30,6 +33,7 @@ import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,22 +44,14 @@ import java.util.List;
 public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelationshipCollectionEditor {
 
     /**
-     * The patient to filter items on.
-     */
-    private final Party patient;
-
-    /**
      * Constructs a {@code VisitChargeItemRelationshipCollectionEditor}.
      *
-     * @param patient  the patient
      * @param property the collection property
      * @param act      the parent act
      * @param context  the layout context
      */
-    public VisitChargeItemRelationshipCollectionEditor(Party patient, CollectionProperty property, Act act,
-                                                       LayoutContext context) {
+    public VisitChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
-        this.patient = patient;
     }
 
     /**
@@ -67,7 +63,18 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
     protected ResultSet<IMObject> createResultSet() {
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
         List<IMObject> objects = editor.getObjects();
-        ResultSet<IMObject> set = new IMObjectListResultSet<IMObject>(objects, ROWS);
+        List<IMObject> acts = new ArrayList<IMObject>();
+        Party patient = getPatient();
+        if (patient != null) {
+            IMObjectReference patientRef = patient.getObjectReference();
+            for (IMObject object : objects) {
+                ActBean bean = new ActBean((Act) object);
+                if (ObjectUtils.equals(patientRef, bean.getNodeParticipantRef("patient"))) {
+                    acts.add(object);
+                }
+            }
+        }
+        ResultSet<IMObject> set = new IMObjectListResultSet<IMObject>(acts, ROWS);
         set.sort(new SortConstraint[]{new NodeSortConstraint("startTime", false)});
         return set;
     }
@@ -84,5 +91,9 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
         IMObjectEditor editor = new VisitChargeItemEditor((Act) object, (Act) getObject(), context);
         initialiseEditor(editor);
         return editor;
+    }
+
+    private Party getPatient() {
+        return getContext().getContext().getPatient();
     }
 }
