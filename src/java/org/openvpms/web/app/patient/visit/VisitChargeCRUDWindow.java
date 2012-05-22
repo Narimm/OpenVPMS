@@ -22,11 +22,16 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
+import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.DefaultActOperations;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
 
 
@@ -95,7 +100,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
                 viewer = new IMObjectViewer(object, null);
                 editor = null;
             } else {
-                editor = new VisitChargeEditor(patient, object, createLayoutContext());
+                editor = new VisitChargeEditor(object, createLayoutContext());
                 viewer = null;
             }
         } else {
@@ -152,11 +157,13 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     public boolean save() {
         boolean result;
         if (editor != null && !posted) {
-            if (editor.isValid()) {
+            Validator validator = new Validator();
+            if (editor.validate(validator)) {
                 result = SaveHelper.save(editor);
                 posted = ActStatus.POSTED.equals(getObject().getStatus());
             } else {
                 result = false;
+                ValidationHelper.showError(validator);
             }
         } else {
             result = true;
@@ -206,5 +213,17 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
         return result;
     }
 
-
+    /**
+     * Creates a layout context for editing an object.
+     *
+     * @return a new layout context.
+     */
+    @Override
+    protected LayoutContext createLayoutContext() {
+        LayoutContext layoutContext = super.createLayoutContext();
+        LocalContext context = new LocalContext(GlobalContext.getInstance());
+        context.setPatient(patient);
+        layoutContext.setContext(context);
+        return layoutContext;
+    }
 }

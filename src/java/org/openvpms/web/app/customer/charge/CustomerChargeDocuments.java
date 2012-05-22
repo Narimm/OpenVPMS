@@ -72,12 +72,15 @@ public class CustomerChargeDocuments {
      *
      * @param existing the existing documents
      * @param listener the listener to notify on completion. May be <tt>null</tt>
+     * @return {@code true} if there were documents to print
      */
-    public void printNew(List<Act> existing, final ActionListener listener) {
+    public boolean printNew(List<Act> existing, final ActionListener listener) {
         List<Act> documents = getUnprinted(existing);
         if (!documents.isEmpty()) {
             print(documents, listener);
+            return true;
         }
+        return false;
     }
 
     /**
