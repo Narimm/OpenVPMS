@@ -43,8 +43,9 @@ public class ActBeanTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Tests the {@link ActBean#addRelationship},
-     * {@link ActBean#getRelationship)} {@link ActBean#getRelationships}
-     * and {@link ActBean#hasRelationship} methods.
+     * {@link ActBean#getRelationship)}, {@link ActBean#getRelationship(String)},
+     * {@link ActBean#hasRelationship(String)}, {@link ActBean#getRelationships} and {@link ActBean#hasRelationship}
+     * methods.
      */
     @Test
     public void testRelationships() {
@@ -57,6 +58,11 @@ public class ActBeanTestCase extends AbstractArchetypeServiceTest {
 
         ActRelationship r = bean.addRelationship(relName, target);
         assertTrue(target.getActRelationships().contains(r));
+
+        assertEquals(r, bean.getRelationship(relName));
+        assertNull(bean.getRelationship("foo"));
+        assertTrue(bean.hasRelationship(relName));
+        assertFalse(bean.hasRelationship("foo"));
         assertTrue(bean.hasRelationship(relName, target));
         assertFalse(bean.hasRelationship("foo", target));
 
@@ -68,6 +74,8 @@ public class ActBeanTestCase extends AbstractArchetypeServiceTest {
 
         bean.removeRelationship(r);
         assertNull(bean.getRelationship(target));
+        assertNull(bean.getRelationship(relName));
+        assertFalse(bean.hasRelationship(relName));
         assertFalse(bean.hasRelationship(relName, target));
         assertEquals(0, bean.getRelationships(relName).size());
     }

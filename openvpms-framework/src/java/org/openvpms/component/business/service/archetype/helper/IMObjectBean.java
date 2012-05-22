@@ -774,7 +774,7 @@ public class IMObjectBean {
      * @param node             the relationship node
      * @param type             the source object type
      * @param relationshipType the relationship object type
-     * @param active    determines if the objects must be active
+     * @param active           determines if the objects must be active
      * @return the source objects, keyed on their relationships
      */
     public <T extends IMObject, R extends IMObjectRelationship> Map<R, T> getNodeSourceObjects(
@@ -856,7 +856,7 @@ public class IMObjectBean {
      * @param node   the relationship node
      * @param time   the time
      * @param active determines if the objects must be active
-     * @param type      the expected object type
+     * @param type   the expected object type
      * @return a list of target objects. May contain inactive entities if <tt>active</tt> is <tt>false</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -942,7 +942,7 @@ public class IMObjectBean {
      * @param node             the relationship node
      * @param type             the target object type
      * @param relationshipType the relationship object type
-     * @param active    determines if the objects must be active
+     * @param active           determines if the objects must be active
      * @return the target objects, keyed on their relationships
      */
     public <T extends IMObject, R extends IMObjectRelationship> Map<R, T> getNodeTargetObjects(
@@ -1432,6 +1432,31 @@ public class IMObjectBean {
     public <R extends IMObjectRelationship> IMObjectReference getTargetObjectRef(Collection<R> relationships,
                                                                                  String[] shortNames, boolean active) {
         return getObjectRef(relationships, shortNames, active, TARGET);
+    }
+
+    /**
+     * Determines if there is an active {@link PeriodRelationship} with {@code object} as its target, for the node
+     * {@code node}.
+     *
+     * @param node   the relationship node
+     * @param object the target object
+     * @return <tt>true</tt> if there is an active relationship to {@code object}
+     */
+    public boolean hasNodeTarget(String node, IMObject object) {
+        return getNodeTargetObjectRefs(node).contains(object.getObjectReference());
+    }
+
+    /**
+     * Determines if there is a {@link PeriodRelationship} with {@code object} as its target, that is active at
+     * {@code time} for the node {@code node}.
+     *
+     * @param node   the relationship node
+     * @param object the target object
+     * @param time   the time
+     * @return <tt>true</tt> if there is an relationship to {@code object}, active at {@code time}
+     */
+    public boolean hasNodeTarget(String node, IMObject object, Date time) {
+        return getNodeTargetObjectRefs(node, time).contains(object.getObjectReference());
     }
 
     /**

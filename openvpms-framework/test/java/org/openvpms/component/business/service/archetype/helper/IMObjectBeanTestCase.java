@@ -592,8 +592,10 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
      * {@link IMObjectBean#getNodeTargetObjects(String, Predicate)},
      * {@link IMObjectBean#getNodeTargetObjects(String, Predicate, boolean)},
      * {@link IMObjectBean#getNodeTargetObjects(String, Predicate, boolean, Class)}
-     * {@link IMObjectBean#getNodeTargetObjects(String, Class, Class)} and
-     * {@link IMObjectBean#getNodeTargetObjects(String, Class, Class, boolean)} methods.
+     * {@link IMObjectBean#getNodeTargetObjects(String, Class, Class)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Class, Class, boolean)}
+     * {@link IMObjectBean#hasNodeTarget(String, IMObject)}}, and
+     * {@link IMObjectBean#hasNodeTarget(String, IMObject, Date)} methods.
      */
     @Test
     public void testGetNodeTargetObjects() {
@@ -613,16 +615,30 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         checkEquals(bean.getNodeTargetObjects("patients"), patient1, patient2, patient3);
         checkEquals(bean.getNodeTargetObjects("patients", Party.class), patient1, patient2, patient3);
 
+        assertTrue(bean.hasNodeTarget("patients", patient1));
+        assertTrue(bean.hasNodeTarget("patients", patient2));
+        assertTrue(bean.hasNodeTarget("patients", patient3));
+        assertTrue(bean.hasNodeTarget("patients", patient1, now));
+        assertTrue(bean.hasNodeTarget("patients", patient2, now));
+        assertTrue(bean.hasNodeTarget("patients", patient3, now));
+
         // set the relationship times to the past verify it is filtered out
         rel1.setActiveStartTime(start1);
         rel1.setActiveEndTime(end1);
         checkEquals(bean.getNodeTargetObjects("patients", now), patient2, patient3);
         checkEquals(bean.getNodeTargetObjects("patients", now, Party.class), patient2, patient3);
 
+        assertFalse(bean.hasNodeTarget("patients", patient1));
+        assertFalse(bean.hasNodeTarget("patients", patient1, now));
+        assertTrue(bean.hasNodeTarget("patients", patient1, start1));
+        assertTrue(bean.hasNodeTarget("patients", patient2));
+        assertTrue(bean.hasNodeTarget("patients", patient3));
+
         patient3.setActive(false);
         save(patient3);
         checkEquals(bean.getNodeTargetObjects("patients", now, true), patient2);
         checkEquals(bean.getNodeTargetObjects("patients", now, false), patient2, patient3);
+        assertTrue(bean.hasNodeTarget("patients", patient3)); // don't care if the target is inactive
 
         checkEquals(bean.getNodeTargetObjects("patients", now, true, Party.class), patient2);
         checkEquals(bean.getNodeTargetObjects("patients", now, false, Party.class), patient2, patient3);
