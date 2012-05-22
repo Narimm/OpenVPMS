@@ -115,7 +115,7 @@ public class ActBean extends IMObjectBean {
      *
      * @param target the target act
      * @return the first act relationship with <tt>target</tt> as its target
-     *         or <tt>null</tt> if none is found
+     *         or {@code null}if none is found
      */
     public ActRelationship getRelationship(Act target) {
         Act act = getAct();
@@ -167,6 +167,26 @@ public class ActBean extends IMObjectBean {
     public void removeRelationship(ActRelationship relationship) {
         Act act = getAct();
         act.removeActRelationship(relationship);
+    }
+
+    /**
+     * Returns the first relationship of the specified type.
+     *
+     * @param shortName the relationship short name
+     * @return the relationship or {@code null} if none is found
+     */
+    public ActRelationship getRelationship(String shortName) {
+        return selectFirst(getAct().getActRelationships(), new IsA(shortName));
+    }
+
+    /**
+     * Determines if a relationship exists.
+     *
+     * @param shortName the relationship short name
+     * @return the {@code true} if a relationship exists, otherwise {@code false}
+     */
+    public boolean hasRelationship(String shortName) {
+        return getRelationship(shortName) != null;
     }
 
     /**
@@ -285,11 +305,12 @@ public class ActBean extends IMObjectBean {
         }
         return result;
     }
+
     /**
      * Returns the first active act that matches the specified short name and links to this act.
      *
      * @param shortName the archetype short name to match on
-     * @return the source act, or <tt>null</tt> if none is found
+     * @return the source act, or {@code null}if none is found
      */
     public Act getSourceAct(String shortName) {
         return getSourceAct(new String[]{shortName});
@@ -299,7 +320,7 @@ public class ActBean extends IMObjectBean {
      * Returns the first active act that matches the specified short name and links to this act.
      *
      * @param shortNames the archetype short names to match on
-     * @return the source act, or <tt>null</tt> if none is found
+     * @return the source act, or {@code null}if none is found
      */
     public Act getSourceAct(String[] shortNames) {
         return (Act) getSourceObject(getAct().getTargetActRelationships(), shortNames);
@@ -329,7 +350,7 @@ public class ActBean extends IMObjectBean {
      * Returns the first active act that matches the specified short name and this act links to.
      *
      * @param shortName the archetype short name to match on
-     * @return the target act, or <tt>null</tt> if none is found
+     * @return the target act, or {@code null}if none is found
      */
     public Act getTargetAct(String shortName) {
         return getTargetAct(new String[]{shortName});
@@ -339,7 +360,7 @@ public class ActBean extends IMObjectBean {
      * Returns the first active act that matches the specified short names and this act links to.
      *
      * @param shortNames the archetype short names to match on
-     * @return the target act, or <tt>null</tt> if none is found
+     * @return the target act, or {@code null}if none is found
      */
     public Act getTargetAct(String[] shortNames) {
         return (Act) getTargetObject(getAct().getSourceActRelationships(), shortNames);
@@ -401,7 +422,7 @@ public class ActBean extends IMObjectBean {
      * Returns the first participation of the specified type.
      *
      * @param shortName the participation short name
-     * @return the participation or <tt>null</tt> if none is found
+     * @return the participation or {@code null}if none is found
      */
     public Participation getParticipation(String shortName) {
         return selectFirst(getAct().getParticipations(), new IsA(shortName));
@@ -411,7 +432,7 @@ public class ActBean extends IMObjectBean {
      * Removes the first participation matching the specified short name.
      *
      * @param shortName the participation short name
-     * @return the removed participation, or <tt>null</tt> if none is found
+     * @return the removed participation, or {@code null}if none is found
      */
     public Participation removeParticipation(String shortName) {
         Participation p = getParticipation(shortName);
@@ -426,7 +447,7 @@ public class ActBean extends IMObjectBean {
      * matching the specified type.
      *
      * @param shortName the participation short name
-     * @return the entity reference, or <tt>null</tt> if none is found
+     * @return the entity reference, or {@code null}if none is found
      */
     public IMObjectReference getParticipantRef(String shortName) {
         Participation p = getParticipation(shortName);
@@ -438,7 +459,7 @@ public class ActBean extends IMObjectBean {
      * type.
      *
      * @param shortName the participation short name
-     * @return the entity, or <tt>null</tt> if none is found
+     * @return the entity, or {@code null}if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getParticipant(String shortName) {
@@ -483,7 +504,7 @@ public class ActBean extends IMObjectBean {
      * for the specified node.
      *
      * @param name the node name
-     * @return the entity reference, or <tt>null</tt> if none is found
+     * @return the entity reference, or {@code null}if none is found
      */
     public IMObjectReference getNodeParticipantRef(String name) {
         for (Participation p : getValues(name, Participation.class)) {
@@ -499,7 +520,7 @@ public class ActBean extends IMObjectBean {
      * node.
      *
      * @param name the participation short name
-     * @return the entity, or <tt>null</tt> if none is found
+     * @return the entity, or {@code null}if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeParticipant(String name) {
