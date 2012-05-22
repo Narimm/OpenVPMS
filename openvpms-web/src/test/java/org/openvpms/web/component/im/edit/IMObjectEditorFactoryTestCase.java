@@ -36,7 +36,7 @@ import org.openvpms.web.app.customer.CustomerEditor;
 import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
-import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.app.customer.charge.DefaultCustomerChargeActItemEditor;
 import org.openvpms.web.app.customer.estimation.EstimationEditor;
 import org.openvpms.web.app.customer.estimation.EstimationItemEditor;
 import org.openvpms.web.app.patient.PatientEditor;
@@ -192,7 +192,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verfies that a {@link CustomerChargeActItemEditor} is created for
+     * Verfies that a {@link org.openvpms.web.app.customer.charge.DefaultCustomerChargeActItemEditor} is created for
      * <em>act.customerAccountInvoiceItem, act.customerAccountCreditItem and
      * act.customerAccountCounterItem</em>
      */
@@ -200,13 +200,13 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     public void testCreateCustomerIvoiceItemEditor() {
         checkCreate("act.customerAccountInvoiceItem",
                     "act.customerAccountChargesInvoice",
-                    CustomerChargeActItemEditor.class);
+                    DefaultCustomerChargeActItemEditor.class);
         checkCreate("act.customerAccountCreditItem",
                     "act.customerAccountChargesCredit",
-                    CustomerChargeActItemEditor.class);
+                    DefaultCustomerChargeActItemEditor.class);
         checkCreate("act.customerAccountCounterItem",
                     "act.customerAccountChargesCounter",
-                    CustomerChargeActItemEditor.class);
+                    DefaultCustomerChargeActItemEditor.class);
     }
 
     /**

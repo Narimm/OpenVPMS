@@ -24,6 +24,7 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -71,5 +72,17 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
         return set;
     }
 
-
+    /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
+     * @param context the layout context
+     * @return an editor to edit <tt>object</tt>
+     */
+    @Override
+    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
+        IMObjectEditor editor = new VisitChargeItemEditor((Act) object, (Act) getObject(), context);
+        initialiseEditor(editor);
+        return editor;
+    }
 }

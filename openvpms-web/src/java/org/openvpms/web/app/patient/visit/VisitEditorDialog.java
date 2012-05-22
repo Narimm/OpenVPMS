@@ -102,9 +102,9 @@ public class VisitEditorDialog extends PopupDialog {
     private void onInvoiceSelected() {
         ButtonSet buttons = getButtons();
         buttons.removeAll();
-        buttons.add(APPLY_ID);
-        buttons.add(OK_ID);
-        buttons.add(CANCEL_ID);
+        addButton(APPLY_ID);
+        addButton(OK_ID);
+        addButton(CANCEL_ID);
         buttons.add(VisitChargeCRUDWindow.POSTED_ID, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {

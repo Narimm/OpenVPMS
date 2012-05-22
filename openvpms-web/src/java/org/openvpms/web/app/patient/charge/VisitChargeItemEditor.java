@@ -18,8 +18,14 @@
 package org.openvpms.web.app.patient.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActItemEditor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.FixedPriceEditor;
 
 
 /**
@@ -27,7 +33,12 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  *
  * @author Tim Anderson
  */
-public class VisitChargeItemEditor extends AbstractCustomerChargeActItemEditor {
+public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
+
+    /**
+     * Filters patient node.
+     */
+    private static final NodeFilter patientFilter = new NamedNodeFilter("patient");
 
     /**
      * Constructs a {@code VisitChargeActItemEditor}.
@@ -40,5 +51,21 @@ public class VisitChargeItemEditor extends AbstractCustomerChargeActItemEditor {
      */
     public VisitChargeItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @param fixedPrice the fixed price editor
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
+        return new CustomerChargeItemLayoutStrategy(fixedPrice) {
+            @Override
+            protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
+                return FilterHelper.chain(patientFilter, context.getDefaultNodeFilter(), getFilter());
+            }
+        };
     }
 }

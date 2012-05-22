@@ -36,7 +36,7 @@ import java.util.Date;
 /**
  * Editor for <em>actRelationship.customerAccountInvoiceItem</em> and
  * <em>actRelationship.customerAccountCreditItem</em> act relationships.
- * Sets an {@link PopupEditorManager} on {@link AbstractCustomerChargeActItemEditor} instances.
+ * Sets an {@link PopupEditorManager} on {@link CustomerChargeActItemEditor} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -85,8 +85,18 @@ public class ChargeItemRelationshipCollectionEditor
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         final IMObjectEditor editor = super.createEditor(object, context);
-        if (editor instanceof AbstractCustomerChargeActItemEditor) {
-            ((AbstractCustomerChargeActItemEditor) editor).setPopupEditorManager(popupEditorMgr);
+        initialiseEditor(editor);
+        return editor;
+    }
+
+    /**
+     * Initialises an editor.
+     *
+     * @param editor the editor
+     */
+    protected void initialiseEditor(final IMObjectEditor editor) {
+        if (editor instanceof CustomerChargeActItemEditor) {
+            ((CustomerChargeActItemEditor) editor).setPopupEditorManager(popupEditorMgr);
         }
 
         // Set startTime to to last used value
@@ -101,8 +111,6 @@ public class ChargeItemRelationshipCollectionEditor
             }
         };
         editor.getProperty("startTime").addModifiableListener(startTimeListener);
-
-        return editor;
     }
 
     /**
