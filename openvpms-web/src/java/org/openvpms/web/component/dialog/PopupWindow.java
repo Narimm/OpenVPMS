@@ -20,7 +20,6 @@ package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
@@ -231,14 +230,4 @@ public abstract class PopupWindow extends WindowPane {
         FocusHelper.setFocus(component);
     }
 
-    /**
-     * Returns the size in pixels for the specified property.
-     *
-     * @param propertyName the property name
-     * @return the size in pixels, or <tt>0</tt> if its not known
-     */
-    private int getPixelSize(String propertyName) {
-        Extent result = (Extent) getRenderProperty(propertyName);
-        return (result == null || result.getUnits() != Extent.PX) ? 0 : result.getValue();
-    }
 }

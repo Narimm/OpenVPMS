@@ -164,7 +164,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow.start();
 
-        BrowserDialog event = workflow.editClinicalEvent();
+        PopupDialog event = workflow.editVisit();
         fireDialogButton(event, PopupDialog.OK_ID);
 
         workflow.addInvoice(patient, clinician, false);
@@ -185,7 +185,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.start();
 
         // first task is to edit the clinical event 
-        BrowserDialog event = workflow.editClinicalEvent();
+        PopupDialog event = workflow.editVisit();
         fireDialogButton(event, PopupDialog.OK_ID);
 
         // next is to edit the invoice
@@ -221,7 +221,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow.start();
 
-        BrowserDialog event = workflow.editClinicalEvent();
+        PopupDialog event = workflow.editVisit();
         fireDialogButton(event, PopupDialog.OK_ID);
 
         workflow.addInvoice(patient, clinician, ActStatus.COMPLETED);

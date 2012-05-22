@@ -32,6 +32,16 @@ import org.openvpms.web.component.property.PropertySet;
 public interface IMObjectLayoutStrategy {
 
     /**
+     * Pre-registers a component for inclusion in the layout.
+     * <p/>
+     * The component must be associated with a property.
+     *
+     * @param state the component state
+     * @throws IllegalStateException if the component isn't associated with a property
+     */
+    void addComponent(ComponentState state);
+
+    /**
      * Apply the layout strategy.
      * <p/>
      * This renders an object in a <tt>Component</tt>, using a factory to

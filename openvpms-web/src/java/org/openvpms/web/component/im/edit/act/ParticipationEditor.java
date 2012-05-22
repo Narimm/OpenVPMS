@@ -179,6 +179,10 @@ public abstract class ParticipationEditor<T extends Entity>
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
+            public void addComponent(ComponentState state) {
+
+            }
+
             public ComponentState apply(IMObject object,
                                         PropertySet properties, IMObject parent,
                                         LayoutContext context) {

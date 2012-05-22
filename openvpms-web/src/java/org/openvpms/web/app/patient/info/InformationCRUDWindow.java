@@ -30,6 +30,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.TaskEvent;
@@ -62,7 +63,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * @param archetypes the archetypes that this may create
      */
     public InformationCRUDWindow(Archetypes<Party> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultIMObjectOperations.<Party>getInstance());
     }
 
     /**

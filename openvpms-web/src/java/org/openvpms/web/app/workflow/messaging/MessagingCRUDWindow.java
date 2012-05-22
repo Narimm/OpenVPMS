@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerMailContext;
+import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
@@ -73,7 +74,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * @param archetypes the archetypes that this may create
      */
     public MessagingCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultIMObjectOperations.<Act>getInstance());
     }
 
     /**

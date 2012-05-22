@@ -104,7 +104,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
-        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
 
@@ -131,7 +131,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
-        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
         workflow.checkComplete(true, customer, patient, context);
@@ -163,7 +163,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
-        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(newPatient, clinician, ActStatus.COMPLETED);
 
@@ -244,7 +244,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
-        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
 
@@ -321,7 +321,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
-        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
         workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
 
@@ -435,7 +435,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.printDocumentForm(PopupDialog.SKIP_ID);
 
         // edit the clinical event
-        BrowserDialog eventDialog = workflow.editClinicalEvent();
+        PopupDialog eventDialog = workflow.editVisit();
         WorkflowTestHelper.cancelDialog(eventDialog, userClose);
 
         // event is saved regardless of cancel

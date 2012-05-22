@@ -374,6 +374,16 @@ public abstract class PopupDialog extends PopupWindow {
     /**
      * Adds a new button.
      *
+     * @param id the button identifier
+     * @return the new button
+     */
+    protected Button addButton(final String id) {
+        return addButton(id, false);
+    }
+
+    /**
+     * Adds a new button.
+     *
      * @param id              the button identifier
      * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
      * @return the new button

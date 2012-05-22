@@ -243,6 +243,10 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
+            public void addComponent(ComponentState state) {
+                // do nothing
+            }
+
             public ComponentState apply(IMObject object, PropertySet properties,
                                         IMObject parent,
                                         LayoutContext context) {

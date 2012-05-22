@@ -24,9 +24,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentRules;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -64,7 +62,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * @param archetypes the archetypes that this may create
      */
     public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes) {
-        super(archetypes);
+        super(archetypes, new DocumentActOperations());
     }
 
     /**
@@ -160,15 +158,8 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      *         <tt>false</tt>
      */
     private boolean canRefresh() {
-        boolean refresh = false;
-        Act act = getObject();
-        if (!ActStatus.POSTED.equals(act.getStatus())) {
-            ActBean bean = new ActBean(getObject());
-            if (bean.hasNode("documentTemplate") && bean.hasNode("document")) {
-                refresh = true;
-            }
-        }
-        return refresh;
+        DocumentAct act = getObject();
+        return (act != null && ((DocumentActOperations) getOperations()).canRefresh(act));
     }
 
     private class RefreshDialog extends ConfirmationDialog {

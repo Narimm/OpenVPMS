@@ -20,33 +20,30 @@ package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import static org.openvpms.archetype.rules.act.ActStatus.CANCELLED;
-import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.ActOperations;
+import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.subsystem.CRUDWindowListener;
-import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
-import java.util.Date;
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 
 
 /**
@@ -55,8 +52,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class ActCRUDWindow<T extends Act>
-        extends AbstractViewCRUDWindow<T> {
+public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindow<T> {
 
     /**
      * Post button identifier.
@@ -78,9 +74,10 @@ public abstract class ActCRUDWindow<T extends Act>
      * Constructs an <tt>ActCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param operations determines the operations that may be performed on the selected object
      */
-    public ActCRUDWindow(Archetypes<T> archetypes) {
-        super(archetypes);
+    public ActCRUDWindow(Archetypes<T> archetypes, ActOperations<T> operations) {
+        super(archetypes, operations);
     }
 
     /**
@@ -95,24 +92,13 @@ public abstract class ActCRUDWindow<T extends Act>
     }
 
     /**
-     * Determines if the current object can be edited.
-     *
-     * @return <tt>true</tt> if the current object can be edited
-     */
-    @Override
-    public boolean canEdit() {
-        Act act = getObject();
-        return (act != null && canEdit(act));
-    }
-
-    /**
-     * Invoked when the edit button is pressed. This popups up an {@link org.openvpms.web.component.im.edit.EditDialog}.
+     * Invoked when the edit button is pressed. This popups up an {@link EditDialog}.
      */
     @Override
     public void edit() {
-        Act act = getObject();
+        T act = getObject();
         if (act != null) {
-            if (canEdit(act)) {
+            if (getOperations().canEdit(act)) {
                 super.edit();
             } else {
                 showStatusError(act, "act.noedit.title", "act.noedit.message");
@@ -125,49 +111,24 @@ public abstract class ActCRUDWindow<T extends Act>
      */
     @Override
     public void delete() {
-        Act act = getObject();
-        if (canDelete(act)) {
-            super.delete();
-        } else {
-            showStatusError(act, "act.nodelete.title", "act.nodelete.message");
+        T act = getObject();
+        if (act != null) {
+            if (getOperations().canDelete(act)) {
+                super.delete();
+            } else {
+                showStatusError(act, "act.nodelete.title", "act.nodelete.message");
+            }
         }
     }
 
     /**
-     * Determines if an act can be edited.
+     * Returns the operations that may be performed on the selected object.
      *
-     * @param act the act
-     * @return <tt>true</tt> if the act can be edited, otherwise
-     *         <tt>false</tt>
+     * @return the operations
      */
-    protected boolean canEdit(Act act) {
-        String status = act.getStatus();
-        return !POSTED.equals(status);
-    }
-
-    /**
-     * Determines if an act can be deleted.
-     *
-     * @param act the act
-     * @return <tt>true</tt> if the act can be deleted, otherwise
-     *         <tt>false</tt>
-     */
-    protected boolean canDelete(Act act) {
-        String status = act.getStatus();
-        return !POSTED.equals(status);
-    }
-
-    /**
-     * Determines if an act can be posted (i.e finalised).
-     * <p/>
-     * This implementation returns <tt>true</tt> if that act isn't <tt>POSTED</tt> or <tt>CANCELLED</tt>.
-     *
-     * @param act the act
-     * @return <tt>true</tt> if the act can be posted
-     */
-    protected boolean canPost(Act act) {
-        String status = act.getStatus();
-        return !POSTED.equals(status) && !CANCELLED.equals(status);
+    @Override
+    protected ActOperations<T> getOperations() {
+        return (ActOperations<T>) super.getOperations();
     }
 
     /**
@@ -175,13 +136,12 @@ public abstract class ActCRUDWindow<T extends Act>
      */
     protected void onPost() {
         final T act = getObject();
-        if (canPost(act)) {
+        if (act != null && getOperations().canPost(act)) {
             try {
                 String displayName = getArchetypes().getDisplayName();
                 String title = Messages.get("act.post.title", displayName);
                 String message = Messages.get("act.post.message", displayName);
-                final ConfirmationDialog dialog = new ConfirmationDialog(
-                        title, message);
+                final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -259,11 +219,10 @@ public abstract class ActCRUDWindow<T extends Act>
      */
     @Override
     protected IMPrinter<T> createPrinter(final T object) {
-        InteractiveIMPrinter<T> printer
-                = (InteractiveIMPrinter<T>) super.createPrinter(object);
+        InteractiveIMPrinter<T> printer = (InteractiveIMPrinter<T>) super.createPrinter(object);
         printer.setListener(new PrinterListener() {
             public void printed(String printer) {
-                if (ActCRUDWindow.this.printed(object)) {
+                if (getOperations().printed(object)) {
                     saved(object);
                 }
             }
@@ -279,43 +238,6 @@ public abstract class ActCRUDWindow<T extends Act>
             }
         });
         return printer;
-    }
-
-    /**
-     * Invoked when an act has been successfully printed. Updates the
-     * act's printed flag if necessary, and saves the act.
-     *
-     * @param object the object
-     * @return <tt>true</tt> if the act was saved
-     */
-    protected boolean printed(T object) {
-        boolean saved = false;
-        try {
-            if (setPrintStatus(object, true)) {
-                saved = SaveHelper.save(object);
-            }
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
-        return saved;
-    }
-
-    /**
-     * Sets the print status.
-     *
-     * @param act     the act
-     * @param printed the print status
-     * @return <tt>true</tt> if the print status was changed,
-     *         <tt>false</tt> if the act doesn't have a 'printed' node or
-     *         its value is the same as that supplied
-     */
-    protected boolean setPrintStatus(Act act, boolean printed) {
-        ActBean bean = new ActBean(act);
-        if (bean.hasNode("printed") && bean.getBoolean("printed") != printed) {
-            bean.setValue("printed", printed);
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -361,21 +283,14 @@ public abstract class ActCRUDWindow<T extends Act>
     }
 
     /**
-     * Posts an act. This changes the act's status to POSTED, and saves it.
+     * Posts the act. This changes the act's status to POSTED, and saves it.
      *
      * @param act the act to post
      * @return <tt>true</tt> if the act was saved
      */
-    protected boolean post(Act act) {
-        if (canPost(act)) {
-            act.setStatus(POSTED);
-            // todo - workaround for OVPMS-734
-            if (TypeHelper.isA(act, "act.customerAccount*")) {
-                act.setActivityStartTime(new Date());
-            }
-            return SaveHelper.save(act);
-        }
-        return false;
+    protected boolean post(T act) {
+        ActOperations<T> operations = getOperations();
+        return operations.canPost(act) && operations.post(act);
     }
 
     /**

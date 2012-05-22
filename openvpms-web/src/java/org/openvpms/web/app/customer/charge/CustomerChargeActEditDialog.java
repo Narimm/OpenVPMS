@@ -17,14 +17,11 @@
  */
 package org.openvpms.web.app.customer.charge;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
-import org.openvpms.web.component.print.BatchPrinter;
-import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.app.LocalContext;
 
 import java.util.List;
 
@@ -70,14 +67,15 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     @Override
     protected void onOK() {
-        List<Act> existing = getUnprintedDocuments();
+        CustomerChargeDocuments docs = new CustomerChargeDocuments((CustomerChargeActEditor) getEditor());
+        List<Act> existing = docs.getUnprinted();
         if (save()) {
-            List<Act> docs = getUnprintedDocuments(existing);
-            if (!docs.isEmpty()) {
-                printDocuments(docs, true);
-            } else {
-                close(OK_ID);
-            }
+            docs.printNew(existing, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    close(OK_ID);
+                }
+            });
         }
     }
 
@@ -88,12 +86,10 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     @Override
     protected void onApply() {
-        List<Act> existing = getUnprintedDocuments();
+        CustomerChargeDocuments docs = new CustomerChargeDocuments((CustomerChargeActEditor) getEditor());
+        List<Act> existing = docs.getUnprinted();
         if (save()) {
-            List<Act> docs = getUnprintedDocuments(existing);  // only select documents added during save
-            if (!docs.isEmpty()) {
-                printDocuments(docs, false);
-            }
+            docs.printNew(existing, null);
         }
     }
 
@@ -141,61 +137,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
             editor.setStatus(ActStatus.COMPLETED);
             onOK();
         }
-    }
-
-    /**
-     * Returns any unprinted documents flagged for IMMEDIATE printing.
-     *
-     * @return a list of unprinted documents
-     */
-    private List<Act> getUnprintedDocuments() {
-        CustomerChargeActEditor editor = (CustomerChargeActEditor) getEditor();
-        return editor.getUnprintedDocuments();
-    }
-
-    /**
-     * Returns any unprinted documents flagged for IMMEDIATE printing.
-     *
-     * @param exclude acts to ignore when determining the unprinted documents
-     * @return a list of unprinted documents
-     */
-    private List<Act> getUnprintedDocuments(List<Act> exclude) {
-        CustomerChargeActEditor editor = (CustomerChargeActEditor) getEditor();
-        return editor.getUnprintedDocuments(exclude);
-    }
-
-    /**
-     * Prints any unprinted documents flagged as <em>interactive</em>, associated with the charge.
-     *
-     * @param documents the documents to print
-     * @param close     if <tt>true</tt>, close the edit dialog on completion
-     */
-    private void printDocuments(List<Act> documents, final boolean close) {
-        LocalContext context = new LocalContext();
-        CustomerChargeActEditor editor = (CustomerChargeActEditor) getEditor();
-        context.setCustomer(editor.getCustomer());
-        context.setLocation(editor.getLocation());
-        BatchPrinter printer = new BatchPrinter<Act>(documents, context) {
-
-            public void failed(Throwable cause) {
-                ErrorHelper.show(cause, new WindowPaneListener() {
-                    public void onClose(WindowPaneEvent event) {
-                        print(); // print the next document
-                    }
-                });
-            }
-
-            /**
-             * Invoked when printing completes. Closes the edit dialog if required.
-             */
-            @Override
-            protected void completed() {
-                if (close) {
-                    close(OK_ID);
-                }
-            }
-        };
-        printer.print();
     }
 
 }

@@ -21,22 +21,19 @@ package org.openvpms.web.app.supplier.order;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
-import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.dialog.InformationDialog;
+import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -66,7 +63,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      * @param archetypes the archetypes that this may create
      */
     public OrderCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes);
+        super(archetypes, OrderOperations.INSTANCE);
     }
 
     /**
@@ -100,10 +97,10 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         boolean deletePostEnabled = false;
         if (enable) {
             FinancialAct object = getObject();
-            editEnabled = canEdit(object);
+            editEnabled = getOperations().canEdit(object);
             String status = object.getStatus();
             deletePostEnabled = !OrderStatus.POSTED.equals(status) && !OrderStatus.ACCEPTED.equals(status)
-                                && !OrderStatus.CANCELLED.equals(status);
+                    && !OrderStatus.CANCELLED.equals(status);
         }
         buttons.setEnabled(EDIT_ID, editEnabled);
         buttons.setEnabled(DELETE_ID, deletePostEnabled);
@@ -158,19 +155,6 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
     }
 
     /**
-     * Determines if an act can be edited.
-     *
-     * @param act the act
-     * @return <tt>true</tt> if the act can be edited, otherwise
-     *         <tt>false</tt>
-     */
-    @Override
-    protected boolean canEdit(Act act) {
-        IMObjectBean bean = new IMObjectBean(act);
-        return !DeliveryStatus.FULL.toString().equals(bean.getString("deliveryStatus"));
-    }
-
-    /**
      * Invoked when posting of an act is complete, either by saving the act
      * with <em>POSTED</em> status, or invoking {@link #onPost()}.
      * <p/>
@@ -187,7 +171,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
                 OrderServiceAdapter service = ServiceHelper.getOrderService();
                 service.submitOrder(act);
                 scheduleCheckInbox(true); // poll in 30 secs to see if there any responses
-                InformationDialog.show(Messages.get("supplier.order.sent.title"), 
+                InformationDialog.show(Messages.get("supplier.order.sent.title"),
                                        Messages.get("supplier.order.sent.message"));
             } catch (Throwable exception) {
                 // failed to submit the order, so revert to IN_PROGRESS

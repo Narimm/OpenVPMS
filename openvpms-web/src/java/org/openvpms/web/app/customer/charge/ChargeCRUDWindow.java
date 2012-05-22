@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.edit.DefaultActOperations;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -57,7 +58,8 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes) {
         super(Archetypes.create(archetypes.getShortNames(), archetypes.getType(),
-                                CustomerAccountArchetypes.INVOICE, archetypes.getDisplayName()));
+                                CustomerAccountArchetypes.INVOICE, archetypes.getDisplayName()),
+              DefaultActOperations.<FinancialAct>getInstance());
     }
 
     /**

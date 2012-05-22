@@ -25,6 +25,7 @@ import org.openvpms.esci.adapter.dispatcher.DefaultESCIDispatcher;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.edit.ActOperations;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
@@ -51,9 +52,10 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
      * Creates a new <tt>ESCISupplierCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param operations determines the operations that may be performed on the selected object
      */
-    public ESCISupplierCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes);
+    public ESCISupplierCRUDWindow(Archetypes<FinancialAct> archetypes, ActOperations<FinancialAct> operations) {
+        super(archetypes, operations);
     }
 
     /**

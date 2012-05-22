@@ -41,11 +41,6 @@ import java.util.Date;
 public class GetClinicalEventTask extends SynchronousTask {
 
     /**
-     * The event short name.
-     */
-    public static final String EVENT_SHORTNAME = "act.patientClinicalEvent";
-
-    /**
      * Properties to populate the created object with. May be <tt>null</tt>
      */
     private final TaskProperties properties;

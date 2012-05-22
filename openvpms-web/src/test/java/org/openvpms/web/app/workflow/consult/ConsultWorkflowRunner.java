@@ -98,7 +98,6 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
          *
          * @return a new task
          */
-        @Override
         protected EditIMObjectTask createEditInvoiceTask() {
             return new EditInvoiceTask();
         }

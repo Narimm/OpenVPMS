@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.edit.DefaultActOperations;
 
 
 /**
@@ -38,7 +39,7 @@ public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * @param archetypes the archetypes that this may create
      */
     public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultActOperations.<FinancialAct>getInstance());
     }
 
     /**

@@ -20,19 +20,19 @@ package org.openvpms.web.app.workflow.consult;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.app.workflow.EditClinicalEventTask;
+import org.openvpms.web.app.workflow.EditVisitTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
 import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
@@ -82,17 +82,16 @@ public class ConsultWorkflow extends WorkflowImpl {
         initial.setPractice(external.getPractice());
         initial.setLocation(external.getLocation());
 
-        // get the latest clinical event and edit it.
-        addTask(new GetClinicalEventTask());
-        addTask(new EditClinicalEventTask());
-
-        // Reload the task to refresh the context with any edits made
-        addTask(new ReloadTask(GetClinicalEventTask.EVENT_SHORTNAME));
-
-        // get the latest invoice, or create one if none is available, and edit it
+        // get the latest invoice, or create one if none is available
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
-        addTask(createEditInvoiceTask());
+
+        // get the latest clinical event and edit it.
+        addTask(new GetClinicalEventTask());
+        addTask(new EditVisitTask());
+
+        // Reload the task to refresh the context with any edits made
+        addTask(new ReloadTask(PatientArchetypes.CLINICAL_EVENT));
 
         // update the task/appointment status to BILLED if the invoice
         // is COMPLETED
@@ -122,13 +121,5 @@ public class ConsultWorkflow extends WorkflowImpl {
         super.start(initial);
     }
 
-    /**
-     * Creates a new task to edit the invoice.
-     *
-     * @return a new task
-     */
-    protected EditIMObjectTask createEditInvoiceTask() {
-        return new EditIMObjectTask(CustomerAccountArchetypes.INVOICE);
-    }
 
 }

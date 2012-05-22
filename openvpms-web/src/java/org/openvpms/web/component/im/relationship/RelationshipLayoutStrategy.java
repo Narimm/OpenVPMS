@@ -61,6 +61,17 @@ public class RelationshipLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
+     * Pre-registers a component for inclusion in the layout.
+     * <p/>
+     * This implementation is a no-op.
+     *
+     * @param state the component state
+     */
+    public void addComponent(ComponentState state) {
+        // do nothing
+    }
+
+    /**
      * Creates a new <tt>RelationshipLayoutStrategy</tt>.
      *
      * @param displayInline if <tt>true</tt>, displays the "non-current" object

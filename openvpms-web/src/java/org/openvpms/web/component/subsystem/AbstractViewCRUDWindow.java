@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
+import org.openvpms.web.component.im.edit.IMObjectOperations;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -55,9 +56,11 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
      *
      * @param archetypes the archetypes that this may create. If <tt>null</tt>
      *                   the subclass must override {@link #getArchetypes}
+     * @param operations determines the operations that may be performed on the selected object
      */
-    public AbstractViewCRUDWindow(Archetypes<T> archetypes) {
-        super(archetypes);
+    public AbstractViewCRUDWindow(Archetypes<T> archetypes, IMObjectOperations<T> operations) {
+        super(archetypes, operations);
+        objectContainer = ColumnFactory.create();
     }
 
     /**
@@ -97,15 +100,24 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
         return context;
     }
 
+
+    /**
+     * Returns the view container.
+     *
+     * @return the container
+     */
+    protected Component getContainer() {
+        return objectContainer;
+    }
+
     /**
      * Lays out the component.
      */
     @Override
     protected Component doLayout() {
         super.doLayout();
-        objectContainer = ColumnFactory.create();
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                STYLE, getButtons().getContainer(), objectContainer);
+                STYLE, getButtons().getContainer(), getContainer());
     }
 }
