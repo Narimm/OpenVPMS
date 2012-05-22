@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.patient;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -121,8 +122,9 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Adds an <em>act.patientMedication</em>/<em>act.patientInvestigation*</em>
-     * to an <em>act.patientClinicalEvent</em> associated with the act's patient.
+     * Adds an <em>act.patientMedication</em>, <em>act.patientInvestigation*</em> or
+     * <em>act.customerAccountInvoiceItem</em> to an <em>act.patientClinicalEvent</em> associated with the act's
+     * patient.
      * <p/>
      * The <em>act.patientClinicalEvent</em> is selected using {@link #getEventForAddition}.
      *
@@ -135,7 +137,7 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Links a patient medical record to an <em>act.patientClinicalEvent</em>.
+     * Links a patient medical record or charge item to an <em>act.patientClinicalEvent</em>.
      * If the item is an <em>act.patientClinicalProblem</em>, all of its items will be also be linked to the event.
      *
      * @param event the event
@@ -161,7 +163,7 @@ public class MedicalRecordRules {
      *
      * @param event   the <em>act.patientClinicalEvent</em>
      * @param problem the <em>act.patientClinicalProblem</em>. May be <tt>null</tt>
-     * @param item    the patient medical record. May be <tt>null</tt>
+     * @param item    the patient medical record or charge item. May be <tt>null</tt>
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void linkMedicalRecords(Act event, Act problem, Act item) {
@@ -190,7 +192,12 @@ public class MedicalRecordRules {
 
         if (item != null) {
             // link the event and item
-            if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, item)) {
+            if (TypeHelper.isA(item, PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM)) {
+                if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, item)) {
+                    bean.addNodeRelationship("chargeItems", item);
+                    service.save(Arrays.asList(event, item));
+                }
+            } else if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, item)) {
                 bean.addNodeRelationship("items", item);
                 service.save(Arrays.asList(event, item));
             }
@@ -223,10 +230,9 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Adds a list of <em>act.patientMedication</em>,
-     * <em>act.patientInvestigation*</em> and <em>act.patientDocument*</em> acts
-     * to an <em>act.patientClinicalEvent</em> associated with each act's
-     * patient.
+     * Adds a list of <em>act.patientMedication</em>, <em>act.patientInvestigation*</em>,
+     * <em>act.patientDocument*</em> and <em>act.customerAccountInvoiceItem</em> acts to an
+     * <em>act.patientClinicalEvent</em> associated with each act's patient.
      * <p/>
      * The <em>act.patientClinicalEvent</em> is selected using {@link #getEventForAddition}.
      *
@@ -467,8 +473,8 @@ public class MedicalRecordRules {
 
     /**
      * Returns a map of acts keyed on their associated patient reference.
-     * If an act has an <em>actRelationship.patientClinicalEventItem</em>
-     * it will be ignored.
+     * If an act has an <em>actRelationship.patientClinicalEventItem</em> or
+     * <em>actRelationship.patientClinicalEventChargeItem</em> it will be ignored.
      *
      * @param acts the acts
      * @return the acts keyed on patient reference
@@ -477,8 +483,7 @@ public class MedicalRecordRules {
         Map<IMObjectReference, List<Act>> result = new HashMap<IMObjectReference, List<Act>>();
         for (Act act : acts) {
             ActBean bean = new ActBean(act, service);
-            List<ActRelationship> relationships = bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_ITEM);
-            if (relationships.isEmpty()) {
+            if (!hasClinicalEventRelationship(bean)) {
                 IMObjectReference patient = bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
                 if (patient != null) {
                     List<Act> list = result.get(patient);
@@ -494,33 +499,38 @@ public class MedicalRecordRules {
     }
 
     /**
-      * Adds a list of <em>act.patientMedication</em>,
-      * <em>act.patientInvestigation*</em> and <em>act.patientDocument*</em> acts
-      * to an <em>act.patientClinicalEvent</em> associated with each act's
-      * patient.
-      *
-      * @param acts      the acts to add
-      * @param startTime the startTime used to select the event
-      * @param events    the cache of events keyed on patient reference
-      * @return the changed acts
-      */
-     protected Set<Act> addToEvents(List<Act> acts, Date startTime, Map<IMObjectReference, List<Act>> events) {
-         Map<IMObjectReference, List<Act>> map = getByPatient(acts);
-         Set<Act> changed = new HashSet<Act>();
-         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
-             IMObjectReference patient = entry.getKey();
-             Act event = getEventForAddition(events, patient, startTime, getClinician(entry.getValue()));
-             ActBean bean = new ActBean(event, service);
-             for (Act act : entry.getValue()) {
-                 if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act)) {
-                     bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act);
-                     changed.add(event);
-                     changed.add(act);
-                 }
-             }
-         }
-         return changed;
-     }
+     * Adds a list of <em>act.patientMedication</em>, <em>act.patientInvestigation*</em>, <em>act.patientDocument*</em>,
+     * and <em>act.customerAccountInvoiceItem</em> acts to an <em>act.patientClinicalEvent</em> associated with each
+     * act's patient.
+     *
+     * @param acts      the acts to add
+     * @param startTime the startTime used to select the event
+     * @param events    the cache of events keyed on patient reference
+     * @return the changed acts
+     */
+    protected Set<Act> addToEvents(List<Act> acts, Date startTime, Map<IMObjectReference, List<Act>> events) {
+        Map<IMObjectReference, List<Act>> map = getByPatient(acts);
+        Set<Act> changed = new HashSet<Act>();
+        for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
+            IMObjectReference patient = entry.getKey();
+            Act event = getEventForAddition(events, patient, startTime, getClinician(entry.getValue()));
+            ActBean bean = new ActBean(event, service);
+            for (Act act : entry.getValue()) {
+                if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
+                    if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, act)) {
+                        bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, act);
+                        changed.add(event);
+                        changed.add(act);
+                    }
+                } else if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act)) {
+                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act);
+                    changed.add(event);
+                    changed.add(act);
+                }
+            }
+        }
+        return changed;
+    }
 
     /**
      * Returns an <em>act.patientClinicalEvent</em> that may have acts added.
@@ -670,6 +680,19 @@ public class MedicalRecordRules {
             }
         }
         return null;
+    }
+
+    /**
+     * Determines if an act has a relationship to a clinical event.
+     *
+     * @param bean the act bean
+     * @return {@code true} if the act has a relationship, otherwise {@code false}
+     */
+    private boolean hasClinicalEventRelationship(ActBean bean) {
+        if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
+            return bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
+        }
+        return bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM);
     }
 
     /**

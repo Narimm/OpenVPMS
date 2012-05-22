@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2005-2012 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $$Id$$
 -->
@@ -41,11 +41,11 @@
 					<property name="IN_PROGRESS" value="In Progress" />
 					<property name="COMPLETED" value="Completed" />
 				</propertyList>
-				<errorMessage>Invalid Payment Status</errorMessage>
+				<errorMessage>Invalid Visit Status</errorMessage>
 			</assertion>
 		</node>
 		<node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
-			minCardinality="0" maxCardinality="*">
+			minCardinality="0" maxCardinality="*"  filter="actRelationship.patientClinicalEventItem">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -55,5 +55,15 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-	</archetype>
+        <node displayName="Charges" name="chargeItems" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
+              minCardinality="0" maxCardinality="*" hidden="true" filter="actRelationship.patientClinicalEventChargeItem">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.patientClinicalEventChargeItem" />
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>
