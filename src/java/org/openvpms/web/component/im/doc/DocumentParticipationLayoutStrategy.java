@@ -43,6 +43,17 @@ public class DocumentParticipationLayoutStrategy
         implements IMObjectLayoutStrategy {
 
     /**
+     * Pre-registers a component for inclusion in the layout.
+     * <p/>
+     * This implementation is a no-op.
+     *
+     * @param state the component state
+     */
+    public void addComponent(ComponentState state) {
+        // do nothing
+    }
+
+    /**
      * Apply the layout strategy.
      * <p/>
      * This renders an object in a <tt>Component</tt>, using a factory to

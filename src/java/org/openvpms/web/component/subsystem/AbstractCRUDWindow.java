@@ -35,11 +35,13 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.edit.IMObjectOperations;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletor;
@@ -47,7 +49,6 @@ import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
@@ -61,13 +62,17 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractCRUDWindow<T extends IMObject>
-        implements CRUDWindow<T> {
+public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
 
     /**
      * The object.
      */
     private T object;
+
+    /**
+     * Determines the operations that may be performed on the selected object.
+     */
+    private final IMObjectOperations<T> operations;
 
     /**
      * The archetypes that this may create.
@@ -85,9 +90,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     private Component component;
 
     /**
-     * The action button row.
+     * The buttons.
      */
-    private ButtonRow buttons;
+    private ButtonSet buttons;
 
     /**
      * Email context.
@@ -119,9 +124,11 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * Constructs a new <tt>AbstractCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param operations determines the operations that may be performed on the selected object
      */
-    public AbstractCRUDWindow(Archetypes<T> archetypes) {
+    public AbstractCRUDWindow(Archetypes<T> archetypes, IMObjectOperations<T> operations) {
         this.archetypes = archetypes;
+        this.operations = operations;
     }
 
     /**
@@ -163,10 +170,13 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
         this.object = object;
         GlobalContext.getInstance().setCurrent(object);
         getComponent();
-        if (object != null) {
-            enableButtons(buttons.getButtons(), true);
-        } else {
-            enableButtons(buttons.getButtons(), false);
+        ButtonSet buttons = getButtons();
+        if (buttons != null) {
+            if (object != null) {
+                enableButtons(buttons, true);
+            } else {
+                enableButtons(buttons, false);
+            }
         }
     }
 
@@ -208,7 +218,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      */
     public boolean canEdit() {
         boolean edit = false;
-        if (getObject() != null) {
+        if (operations.canEdit(object)) {
             Button button = getButtons().getButton(EDIT_ID);
             if (button != null && button.isEnabled()) {
                 edit = true;
@@ -279,6 +289,12 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
         return context;
     }
 
+    public void setButtons(ButtonSet buttons) {
+        this.buttons = buttons;
+        layoutButtons(buttons);
+        enableButtons(buttons, getObject() != null);
+    }
+
     /**
      * Returns the archetypes that this may create.
      *
@@ -289,17 +305,37 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
     }
 
     /**
+     * Determines the operations that may be performed on the selected object.
+     *
+     * @return the operations
+     */
+    protected IMObjectOperations<T> getOperations() {
+        return operations;
+    }
+
+    /**
      * Lays out the component.
      *
      * @return the component
      */
     protected Component doLayout() {
-        buttons = new ButtonRow("ControlRow");
-        ButtonSet set = buttons.getButtons();
-        set.setHideDisabled(true);
-        layoutButtons(set);
-        enableButtons(set, false);
-        return buttons;
+        return layoutButtons();
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @return the button container
+     */
+    protected Component layoutButtons() {
+        if (buttons == null) {
+            ButtonRow row = new ButtonRow("ControlRow");
+            buttons = row.getButtons();
+        }
+        buttons.setHideDisabled(true);
+        layoutButtons(buttons);
+        enableButtons(buttons, false);
+        return buttons.getContainer();
     }
 
     /**
@@ -374,7 +410,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject>
      * @return the button set
      */
     protected ButtonSet getButtons() {
-        return buttons.getButtons();
+        return buttons;
     }
 
     /**

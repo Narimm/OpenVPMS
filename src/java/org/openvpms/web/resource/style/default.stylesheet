@@ -1080,6 +1080,71 @@
 
 
     <!-- =================================================================== -->
+    <!--  TabbedPane  TODO not useed at present                              -->
+    <!-- =================================================================== -->
+
+    <!--style name="default" type="org.openvpms.web.component.echo.TabbedPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${splitpane-buttonrow.separatorPosition}"/>
+            <property name="separatorHeight" value="1px"/>
+            <property name="separatorColor" value="#000000"/>
+        </properties>
+    </style>
+
+    <style name="TabbedPane.buttons" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="cellSpacing" value="0px"/>
+        </properties>
+    </style>
+
+    <style name="TabButton.default" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="insets" value="${padding.large} ${padding.smaller}"/>
+            <property name="foreground" value="#000000"/>
+            <property name="background" value="#339933"/>
+            <property name="pressedEnabled" value="true"/>
+            <property name="pressedForeground" value="#000000"/>
+            <property name="rolloverEnabled" value="true"/>
+            <property name="rolloverForeground" value="#000000"/>
+            <property name="rolloverBackground" value="#99cc66"/>
+            <property name="font">
+                <font size="${font.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+            <property name="border">
+                <border style="solid" size="1px"/>
+            </property>
+            <property name="rolloverBorder">
+                <border style="solid" size="1px"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="TabButton.selected" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="insets" value="${padding.large} ${padding.smaller}"/>
+            <property name="foreground" value="#000000"/>
+            <property name="background" value="#ffffff"/>
+            <property name="pressedEnabled" value="true"/>
+            <property name="pressedForeground" value="#000000"/>
+            <property name="rolloverEnabled" value="false"/>
+            <property name="font">
+                <font size="${font.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+            <property name="border">
+                <border style="solid" size="1px"/>
+            </property>
+            <property name="rolloverBorder">
+                <border style="solid" size="1px"/>
+            </property>
+        </properties>
+    </style-->
+
+    <!-- =================================================================== -->
     <!--  SpinBox                                                            -->
     <!-- =================================================================== -->
     <style name="SpinBox.button" type="nextapp.echo2.app.button.AbstractButton">

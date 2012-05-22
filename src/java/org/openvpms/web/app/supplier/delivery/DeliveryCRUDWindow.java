@@ -37,10 +37,12 @@ import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.im.edit.ActOperations;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -76,30 +78,8 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      * @param archetypes the archetypes that this may create
      */
     public DeliveryCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes);
+        super(archetypes, DeliveryOperations.INSTANCE);
         rules = new OrderRules();
-    }
-
-    /**
-     * Determines if an act can be edited.
-     *
-     * @param act the act
-     * @return <tt>true</tt> if the act status is <em>IN_PROGRESS</em>
-     */
-    @Override
-    protected boolean canEdit(Act act) {
-        return ActStatus.IN_PROGRESS.equals(act.getStatus());
-    }
-
-    /**
-     * Determines if an act can be deleted.
-     *
-     * @param act the act
-     * @return <tt>true</tt> if the act status is <em>IN_PROGRESS</em>
-     */
-    @Override
-    protected boolean canDelete(Act act) {
-        return ActStatus.IN_PROGRESS.equals(act.getStatus());
     }
 
     /**
@@ -181,11 +161,12 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         boolean postEnabled = false;
         boolean invoiceReverseEnabled = false;
         if (enable) {
-            Act object = getObject();
-            editEnabled = canEdit(object);
-            deleteEnabled = canDelete(object);
-            postEnabled = !ActStatus.POSTED.equals(object.getStatus());
-            invoiceReverseEnabled = !postEnabled;  // can't invoice or reverse a posted act
+            FinancialAct object = getObject();
+            ActOperations<FinancialAct> operations = getOperations();
+            editEnabled = operations.canEdit(object);
+            deleteEnabled = operations.canDelete(object);
+            postEnabled = operations.canPost(object);
+            invoiceReverseEnabled = !postEnabled;  // can't invoice or reverse a non-posted act
         }
         buttons.setEnabled(EDIT_ID, editEnabled);
         buttons.setEnabled(DELETE_ID, deleteEnabled);
@@ -206,16 +187,15 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     }
 
     /**
-     * Posts an act. This changes the act's status to POSTED, and saves it.
+     * Posts the act. This changes the act's status to POSTED, and saves it.
      *
-     * @param act the act to post
      * @return <tt>true</tt> if the act was saved
      */
     @Override
-    protected boolean post(Act act) {
+    protected boolean post(FinancialAct act) {
         boolean result = false;
         // use the editor to ensure that the validation rules are invoked
-        DeliveryEditor editor = new DeliveryEditor((FinancialAct) act, null, createLayoutContext());
+        DeliveryEditor editor = new DeliveryEditor(getObject(), null, createLayoutContext());
         editor.setStatus(ActStatus.POSTED);
         Validator validator = new Validator();
         if (!editor.validate(validator)) {
@@ -223,7 +203,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
             edit(editor);
             ValidationHelper.showError(validator);
         } else {
-            result = editor.save();
+            result = SaveHelper.save(editor);
         }
         return result;
     }

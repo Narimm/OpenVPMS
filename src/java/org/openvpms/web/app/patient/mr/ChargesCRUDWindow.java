@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.edit.DefaultActOperations;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -41,8 +42,8 @@ public class ChargesCRUDWindow extends ActCRUDWindow<Act> {
      * Create a new <tt>ChargesCRUDWindow</tt>.
      */
     public ChargesCRUDWindow() {
-        super(Archetypes.create(SHORT_NAMES, Act.class,
-                                Messages.get("patient.charges.createtype")));
+        super(Archetypes.create(SHORT_NAMES, Act.class, Messages.get("patient.charges.createtype")),
+              DefaultActOperations.getInstance());
     }
 
     /**

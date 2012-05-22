@@ -23,22 +23,19 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.im.edit.DefaultActOperations;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -48,6 +45,11 @@ import org.openvpms.web.system.ServiceHelper;
  * @version $LastChangedDate$
  */
 public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
+
+    /**
+     * The patient.
+     */
+    private final Party patient;
 
     /**
      * Reminder and alert shortnames supported by the workspace.
@@ -62,10 +64,13 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
      * Constructs a <tt>ReminderCRUDWindow</tt>.
+     *
+     * @param patient the patient
      */
-    public ReminderCRUDWindow() {
-        super(Archetypes.create(SHORT_NAMES, Act.class,
-                                Messages.get("patient.reminder.createtype")));
+    public ReminderCRUDWindow(Party patient) {
+        super(Archetypes.create(SHORT_NAMES, Act.class, Messages.get("patient.reminder.createtype")),
+              DefaultActOperations.getInstance());
+        this.patient = patient;
     }
 
     /**
@@ -107,20 +112,11 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      */
     @Override
     protected void onCreated(Act act) {
-        Party patient = GlobalContext.getInstance().getPatient();
-        if (patient != null) {
-            try {
-                IArchetypeService service
-                        = ServiceHelper.getArchetypeService();
-                Participation participation
-                        = (Participation) service.create(
-                        "participation.patient");
-                participation.setEntity(new IMObjectReference(patient));
-                participation.setAct(new IMObjectReference(act));
-                act.addParticipation(participation);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+        try {
+            ActBean bean = new ActBean(act);
+            bean.addNodeParticipation("patient", patient);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
         super.onCreated(act);
     }

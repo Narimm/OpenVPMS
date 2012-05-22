@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 
 
 /**
@@ -49,7 +50,7 @@ public class FinancialActCRUDWindow
      *                   {@link #getArchetypes}
      */
     public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultIMObjectOperations.<FinancialAct>getInstance());
     }
 
     /**

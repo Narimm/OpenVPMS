@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.query.DateRangeActQuery;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $
  */
-public class PatientDocumentQuery extends DateRangeActQuery<Act> {
+public class PatientDocumentQuery<T extends Act> extends DateRangeActQuery<T> {
 
     /**
      * Patient document shortnames.

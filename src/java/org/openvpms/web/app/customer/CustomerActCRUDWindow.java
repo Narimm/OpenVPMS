@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.edit.ActOperations;
 import org.openvpms.web.component.util.ErrorHelper;
 
 
@@ -41,12 +42,13 @@ public abstract class CustomerActCRUDWindow<T extends Act>
         extends ActCRUDWindow<T> {
 
     /**
-     * Create a new <tt>CustomerActCRUDWindow</tt>.
+     * Constructs a <tt>CustomerActCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param object     the CRUD object
      */
-    public CustomerActCRUDWindow(Archetypes<T> archetypes) {
-        super(archetypes);
+    public CustomerActCRUDWindow(Archetypes<T> archetypes, ActOperations<T> object) {
+        super(archetypes, object);
     }
 
     /**

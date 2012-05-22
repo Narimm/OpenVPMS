@@ -26,6 +26,7 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.edit.DefaultActOperations;
 
 
 /**
@@ -42,7 +43,7 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
      * @param archetypes the archetypes that this may create
      */
     public StockCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultActOperations.getInstance());
     }
 
     /**
@@ -69,7 +70,7 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
         boolean enableDeletePost = false;
         if (enable) {
             Act object = getObject();
-            enableEdit = canEdit(object);
+            enableEdit = getOperations().canEdit(object);
             String status = object.getStatus();
             enableDeletePost = !ActStatus.POSTED.equals(status);
         }

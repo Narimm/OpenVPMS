@@ -39,7 +39,7 @@ import java.beans.PropertyChangeListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class PatientRecordSummaryTab {
+public class PatientRecordSummaryTab {
 
     /**
      * A listener for tab events.
@@ -71,12 +71,24 @@ class PatientRecordSummaryTab {
      * @param shortcut if <tt>true</tt>, add a shortcut to the tab
      */
     public void addTab(Party patient, final TabbedPane pane, boolean shortcut) {
+        String title = Messages.get("button.summary");
+        addTab(patient, pane, title, shortcut);
+    }
+
+    /**
+     * Adds a medical record summary tab for the specified patient.
+     *
+     * @param patient  the patient
+     * @param pane     the pane to add the tab to
+     * @param title    the tab title
+     * @param shortcut if <tt>true</tt>, add a shortcut to the tab
+     */
+    public void addTab(Party patient, final TabbedPane pane, String title, boolean shortcut) {
         if (listener != null) {
             throw new IllegalStateException("This component can only by used once");
         }
         PatientSummaryQuery query = new PatientSummaryQuery(patient);
         final Browser browser = new SummaryTableBrowser(query);
-        String title = Messages.get("button.summary");
         Component inset = ColumnFactory.create("Inset", browser.getComponent());
         DefaultTabModel model = (DefaultTabModel) pane.getModel();
         final int index = model.size();
@@ -89,9 +101,7 @@ class PatientRecordSummaryTab {
         listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (pane.getSelectedIndex() == index) {
-                    if (browser != null) {
-                        browser.query();
-                    }
+                    browser.query();
                     // don't need the listener any longer
                     pane.removePropertyChangeListener(listener);
                 }

@@ -205,7 +205,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         RecordBrowser browser = new RecordBrowser((PatientSummaryQuery) query,
                                                   createProblemsQuery(),
                                                   createReminderAlertQuery(),
-                                                  new PatientDocumentQuery(getObject()),
+                                                  new PatientDocumentQuery<Act>(getObject()),
                                                   createChargesQuery());
         browser.setListener(new TabbedBrowserListener() {
             public void onBrowserChanged() {
@@ -331,7 +331,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
             CRUDWindow w = new PatientDocumentCRUDWindow(docArchetypes);
             window = (CRUDWindow<Act>) w;  // todo
         } else if (view == RecordBrowser.View.REMINDER_ALERT) {
-            window = new ReminderCRUDWindow();
+            window = new ReminderCRUDWindow(getObject());
         } else {
             window = new ChargesCRUDWindow();
         }
@@ -395,20 +395,11 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private Act getEvent(Act act) {
         RecordBrowser browser = ((RecordBrowser) getBrowser());
-        Browser<Act> summary = browser.getBrowser(
-                RecordBrowser.View.SUMMARY);
+        SummaryTableBrowser summary = (SummaryTableBrowser) browser.getBrowser(RecordBrowser.View.SUMMARY);
         if (act == null) {
             act = summary.getSelected();
         }
-        boolean found = false;
-        if (act != null) {
-            List<Act> acts = summary.getObjects();
-            int index = acts.indexOf(act);
-            while (!(found = TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) && index > 0) {
-                act = acts.get(--index);
-            }
-        }
-        return (found) ? act : null;
+        return summary.getEvent(act);
     }
 
 }

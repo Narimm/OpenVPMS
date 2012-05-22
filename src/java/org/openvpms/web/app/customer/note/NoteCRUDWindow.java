@@ -19,8 +19,9 @@
 package org.openvpms.web.app.customer.note;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 
 
 /**
@@ -37,7 +38,7 @@ public class NoteCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * @param archetypes the archetypes that this may create.
      */
     public NoteCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultIMObjectOperations.<Act>getInstance());
     }
 
 }

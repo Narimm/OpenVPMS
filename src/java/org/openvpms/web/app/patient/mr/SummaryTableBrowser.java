@@ -31,6 +31,8 @@ import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 
+import java.util.List;
+
 
 /**
  * Patient medical record browser.
@@ -79,6 +81,33 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
     public void setSelected(Act object) {
         super.setSelected(object);
         onSelected();
+    }
+
+    /**
+     * Returns the <em>act.patientClinicalEvent</em> associated with the selected act.
+     *
+     * @return the event, or {@code null} if none is found
+     */
+    public Act getEvent() {
+        return getEvent(getSelected());
+    }
+
+    /**
+     * Returns the <em>act.patientClinicalEvent</em> associated with the supplied act.
+     *
+     * @param act the act. May be {@code null}
+     * @return the event, or {@code null} if none is found
+     */
+    public Act getEvent(Act act) {
+        boolean found = false;
+        if (act != null) {
+            List<Act> acts = getObjects();
+            int index = acts.indexOf(act);
+            while (!(found = TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) && index > 0) {
+                act = acts.get(--index);
+            }
+        }
+        return (found) ? act : null;
     }
 
     /**

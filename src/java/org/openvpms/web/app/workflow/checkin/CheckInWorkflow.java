@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.checkin;
 
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
@@ -27,9 +28,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.app.workflow.EditClinicalEventTask;
+import org.openvpms.web.app.workflow.EditVisitTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
+import org.openvpms.web.app.workflow.GetInvoiceTask;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -173,11 +176,15 @@ public class CheckInWorkflow extends WorkflowImpl {
         // optionally select and print an act.patientDocumentForm
         addTask(new PrintDocumentFormTask(initial));
 
+        // get the latest invoice, or create one if none is available
+        addTask(new GetInvoiceTask());
+        addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
+
         // edit the act.patientClinicalEvent
-        addTask(new EditClinicalEventTask());
+        addTask(new EditVisitTask());
 
         // Reload the task to refresh the context with any edits made
-        addTask(new ReloadTask(GetClinicalEventTask.EVENT_SHORTNAME));
+        addTask(new ReloadTask(PatientArchetypes.CLINICAL_EVENT));
 
         if (appointment != null) {
             // update the appointment status

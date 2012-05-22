@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -98,7 +97,7 @@ public class PriceActItemEditor extends ActItemEditor {
     protected boolean doSave() {
         if (TypeHelper.isA(getProductRef(), ProductArchetypes.TEMPLATE)) {
             Product product = getProduct();
-            String name  = product != null ? product.getName() : null;
+            String name = product != null ? product.getName() : null;
             throw new IllegalStateException("Cannot save with product template: " + name);
         }
         boolean saved = saveObject();
@@ -129,7 +128,17 @@ public class PriceActItemEditor extends ActItemEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new PriceItemLayoutStrategy();
+        return createLayoutStrategy(fixedEditor);
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @param fixedPrice the fixed price editor
+     * @return a new layout strategy
+     */
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
+        return new PriceItemLayoutStrategy(fixedPrice);
     }
 
     /**
@@ -172,7 +181,7 @@ public class PriceActItemEditor extends ActItemEditor {
         Product product = getProduct();
 
         if (customer != null && product != null
-            && !TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+                && !TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
             BigDecimal fixedPrice = getFixedPrice();
             BigDecimal unitPrice = getUnitPrice();
             BigDecimal quantity = getQuantity();
@@ -294,23 +303,11 @@ public class PriceActItemEditor extends ActItemEditor {
      */
     protected class PriceItemLayoutStrategy extends LayoutStrategy {
 
-        /**
-         * Creates a component for a property.
-         *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display <tt>property</tt>
-         */
-        @Override
-        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            if ("fixedPrice".equals(property.getName())) {
-                // need to register the editor
-                getEditors().add(fixedEditor, property);
-                return new ComponentState(fixedEditor.getComponent(), fixedEditor.getProperty(),
-                                          fixedEditor.getFocusGroup());
-            }
-            return super.createComponent(property, parent, context);
+        public PriceItemLayoutStrategy(FixedPriceEditor editor) {
+            addComponent(new ComponentState(fixedEditor.getComponent(), fixedEditor.getProperty(),
+                                            fixedEditor.getFocusGroup()));
+            // need to register the editor
+            getEditors().add(editor);
         }
     }
 }

@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.customer.CustomerMailContext;
+import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
@@ -39,8 +40,6 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Workflow;
-import org.openvpms.web.component.workflow.DefaultTaskListener;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -74,7 +73,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      * @param archetypes the archetypes that this may create
      */
     public ScheduleCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultIMObjectOperations.<Act>getInstance());
     }
 
     /**

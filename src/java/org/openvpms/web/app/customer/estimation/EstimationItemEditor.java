@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
@@ -124,7 +125,7 @@ public class EstimationItemEditor extends PriceActItemEditor {
         BigDecimal value = (BigDecimal) getProperty("highQty").getValue();
         return (value != null) ? value : BigDecimal.ZERO;
     }
-    
+
     /**
      * Returns the unit price.
      * <p/>
@@ -195,11 +196,12 @@ public class EstimationItemEditor extends PriceActItemEditor {
     /**
      * Creates the layout strategy.
      *
+     * @param fixedPrice the fixed price editor
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new PriceItemLayoutStrategy() {
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
+        return new PriceItemLayoutStrategy(fixedPrice) {
             @Override
             protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
                 ComponentState state = super.createComponent(property, parent, context);

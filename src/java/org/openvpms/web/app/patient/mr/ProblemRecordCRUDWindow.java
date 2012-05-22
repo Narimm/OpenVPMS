@@ -26,6 +26,7 @@ import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.edit.ActOperations;
 import org.openvpms.web.component.util.Retryer;
 import org.openvpms.web.resource.util.Messages;
 
@@ -50,7 +51,7 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
      */
     public ProblemRecordCRUDWindow() {
         super(Archetypes.create(PatientArchetypes.CLINICAL_PROBLEM, Act.class,
-                                Messages.get("patient.record.createtype")));
+                                Messages.get("patient.record.createtype")), ProblemOperations.INSTANCE);
     }
 
     /**
@@ -118,19 +119,6 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
     }
 
     /**
-     * Determines if an act can be edited.
-     *
-     * @param act the act
-     * @return <code>true</code> if the act can be edited, otherwise
-     *         <code>false</code>
-     */
-    @Override
-    protected boolean canEdit(Act act) {
-        // @todo fix when statuses are sorted out
-        return true;
-    }
-
-    /**
      * Returns the event associated with an act.
      * <p/>
      * If the act has an associated event, this will be returned, otherwise the {@link #getEvent current event} will
@@ -148,4 +136,20 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
         return getEvent();
     }
 
+    private static class ProblemOperations extends ActOperations<Act> {
+
+        public static final ProblemOperations INSTANCE = new ProblemOperations();
+
+        /**
+         * Determines if an act can be edited.
+         *
+         * @param act the act to check
+         * @return {@code true}
+         */
+        @Override
+        public boolean canEdit(Act act) {
+            // @todo fix when statuses are sorted out
+            return true;
+        }
+    }
 }

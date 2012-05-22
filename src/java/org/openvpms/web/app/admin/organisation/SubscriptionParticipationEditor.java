@@ -49,6 +49,9 @@ public class SubscriptionParticipationEditor extends AbstractDocumentParticipati
             viewer = new SubscriptionViewer(getLayoutContext());
         }
         return new IMObjectLayoutStrategy() {
+            public void addComponent(ComponentState state) {
+            }
+
             public ComponentState apply(IMObject object, PropertySet properties, IMObject parent,
                                         LayoutContext context) {
                 viewer.setSubscription(getDocumentAct());

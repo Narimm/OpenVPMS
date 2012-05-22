@@ -19,6 +19,7 @@
 package org.openvpms.web.component.subsystem;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 import org.openvpms.web.component.im.util.Archetypes;
 
 
@@ -37,6 +38,6 @@ public class DefaultCRUDWindow<T extends IMObject>
      * @param archetypes the archetypes that this may create.
      */
     public DefaultCRUDWindow(Archetypes<T> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultIMObjectOperations.<T>getInstance());
     }
 }

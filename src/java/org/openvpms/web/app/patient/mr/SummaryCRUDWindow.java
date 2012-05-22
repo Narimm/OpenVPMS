@@ -29,6 +29,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
+import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -55,8 +56,7 @@ import java.util.Arrays;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
-        implements PatientRecordCRUDWindow {
+public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> implements PatientRecordCRUDWindow {
 
     /**
      * The current act.patientClinicalEvent.
@@ -82,7 +82,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act>
      * @param archetypes the archetypes
      */
     public SummaryCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultIMObjectOperations.<Act>getInstance());
     }
 
     /**

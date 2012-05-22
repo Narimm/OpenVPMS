@@ -20,9 +20,6 @@ package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
-import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -33,12 +30,16 @@ import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.edit.DefaultActOperations;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
 import java.util.List;
+
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 
 
 /**
@@ -71,7 +72,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * @param archetypes the archetypes that this may create
      */
     public AccountCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes);
+        super(archetypes, DefaultActOperations.<FinancialAct>getInstance());
     }
 
     /**
@@ -120,15 +121,13 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
-        final Act act = getObject();
+        final FinancialAct act = getObject();
         String status = act.getStatus();
         if (POSTED.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();
             String title = Messages.get("supplier.account.reverse.title", name);
-            String message = Messages.get("supplier.account.reverse.message",
-                                          name);
-            final ConfirmationDialog dialog
-                    = new ConfirmationDialog(title, message);
+            String message = Messages.get("supplier.account.reverse.message", name);
+            final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -137,8 +136,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
             });
             dialog.show();
         } else {
-            showStatusError(act, "supplier.account.noreverse.title",
-                            "supplier.account.noreverse.message");
+            showStatusError(act, "supplier.account.noreverse.title", "supplier.account.noreverse.message");
         }
     }
 
@@ -159,15 +157,14 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      *
      * @param act the act to reverse
      */
-    private void reverse(Act act) {
+    private void reverse(FinancialAct act) {
         try {
-            IMObjectCopier copier
-                    = new IMObjectCopier(new SupplierActReversalHandler(act));
+            IMObjectCopier copier = new IMObjectCopier(new SupplierActReversalHandler(act));
             List<IMObject> objects = copier.apply(act);
-            Act reversal = (Act) objects.get(0);
+            FinancialAct reversal = (FinancialAct) objects.get(0);
             reversal.setStatus(IN_PROGRESS);
             reversal.setActivityStartTime(new Date());
-            setPrintStatus(reversal, false);
+            getOperations().setPrinted(reversal, false);
             SaveHelper.save(objects);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("supplier.account.reverse.failed");
