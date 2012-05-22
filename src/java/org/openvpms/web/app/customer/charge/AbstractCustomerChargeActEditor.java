@@ -287,8 +287,8 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         ActRelationshipCollectionEditor items = getEditor();
         List<Act> reminders = new ArrayList<Act>();
         for (IMObjectEditor editor : items.getCurrentEditors()) {
-            if (editor instanceof CustomerChargeActItemEditor) {
-                CustomerChargeActItemEditor charge = (CustomerChargeActItemEditor) editor;
+            if (editor instanceof DefaultCustomerChargeActItemEditor) {
+                DefaultCustomerChargeActItemEditor charge = (DefaultCustomerChargeActItemEditor) editor;
                 for (Act reminder : charge.getReminders()) {
                     if (reminder.isNew()) {
                         reminders.add(reminder);

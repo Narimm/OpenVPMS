@@ -37,6 +37,10 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 
 import java.math.BigDecimal;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Helper routines for customer charge tests.
  *
@@ -58,8 +62,8 @@ public class CustomerChargeTestHelper {
                                                       BigDecimal quantity, ChargePopupEditorManager mgr) {
         CustomerChargeActItemEditor itemEditor = editor.addItem();
         itemEditor.getComponent();
-        org.junit.Assert.assertTrue(editor.isValid());
-        org.junit.Assert.assertFalse(itemEditor.isValid());
+        assertTrue(editor.isValid());
+        assertFalse(itemEditor.isValid());
 
         setItem(editor, itemEditor, patient, product, quantity, mgr);
         return itemEditor;
@@ -85,7 +89,7 @@ public class CustomerChargeTestHelper {
         if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
             if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
                 // invoice items have a dispensing node
-                org.junit.Assert.assertFalse(itemEditor.isValid());  // not valid while popup is displayed
+                assertFalse(itemEditor.isValid());  // not valid while popup is displayed
                 checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
                 // save the popup editor - should be a medication
             }
@@ -93,16 +97,16 @@ public class CustomerChargeTestHelper {
             if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
                 EntityBean bean = new EntityBean(product);
                 for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
-                    org.junit.Assert.assertFalse(editor.isValid()); // not valid while popup is displayed
+                    assertFalse(editor.isValid()); // not valid while popup is displayed
                     checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
                 }
                 for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
-                    org.junit.Assert.assertFalse(editor.isValid()); // not valid while popup is displayed
+                    assertFalse(editor.isValid()); // not valid while popup is displayed
                     checkSavePopup(mgr, ReminderArchetypes.REMINDER);
                 }
             }
         }
-        org.junit.Assert.assertTrue(itemEditor.isValid());
+        assertTrue(itemEditor.isValid());
     }
 
     /**
@@ -113,10 +117,10 @@ public class CustomerChargeTestHelper {
      */
     public static void checkSavePopup(ChargePopupEditorManager mgr, String shortName) {
         EditDialog dialog = mgr.getCurrent();
-        org.junit.Assert.assertNotNull(dialog);
+        assertNotNull(dialog);
         IMObjectEditor editor = dialog.getEditor();
-        org.junit.Assert.assertTrue(TypeHelper.isA(editor.getObject(), shortName));
-        org.junit.Assert.assertTrue(editor.isValid());
+        assertTrue(TypeHelper.isA(editor.getObject(), shortName));
+        assertTrue(editor.isValid());
         org.openvpms.web.test.EchoTestHelper.fireDialogButton(dialog, PopupDialog.OK_ID);
     }
 

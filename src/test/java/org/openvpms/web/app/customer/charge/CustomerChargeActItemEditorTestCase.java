@@ -503,7 +503,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         context.getContext().setUser(author); // to propagate to acts
         context.getContext().setClinician(clinician);
 
-        CustomerChargeActItemEditor editor = new CustomerChargeActItemEditor(item, charge, context);
+        CustomerChargeActItemEditor editor = new DefaultCustomerChargeActItemEditor(item, charge, context);
         editor.getComponent();
         assertFalse(editor.isValid());
 
