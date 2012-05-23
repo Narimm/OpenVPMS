@@ -34,11 +34,13 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
@@ -283,6 +285,10 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         if (TypeHelper.isA(act, "act.patientInvestigation*")
                 || TypeHelper.isA(act, "act.patientDocument*")) {
             detail = getDocumentDetail((DocumentAct) act);
+        } else if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION)) {
+            detail = getMedicationDetail(act);
+        } else if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            detail = getInvoiceItemDetail((FinancialAct) act);
         } else {
             detail = getDetail(act);
         }
@@ -305,7 +311,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
             Act prev = getObject(row - 1);
             if (!TypeHelper.isA(prev, PatientArchetypes.CLINICAL_EVENT)
                     && ObjectUtils.equals(DateRules.getDate(act.getActivityStartTime()),
-                    DateRules.getDate(prev.getActivityStartTime()))) {
+                                          DateRules.getDate(prev.getActivityStartTime()))) {
                 // act belongs to the same parent act as the prior row,
                 // and has the same date, so don't display it again
                 showDate = false;
@@ -369,15 +375,71 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
     }
 
     /**
+     * Returns a component for the detail of an act.patientMedication.
+     * <p/>
+     * This includes the invoice item amount, if one is available.
+     *
+     * @param act the act
+     * @return a new component
+     */
+    private Component getInvoiceItemDetail(FinancialAct act) {
+        ActBean bean = new ActBean(act);
+        IMObjectReference product = bean.getNodeParticipantRef("product");
+        String name = IMObjectHelper.getName(product);
+        String text = Messages.get("patient.record.summary.invoiceitem", name, act.getQuantity(), act.getTotal());
+        return getDetail(text);
+    }
+
+    /**
+     * Returns a component for the detail of an act.patientMedication.
+     *
+     * @param act the act
+     * @return a new component
+     */
+    private Component getMedicationDetail(Act act) {
+        String text = getText(act);
+        ActBean bean = new ActBean(act);
+        FinancialAct item = (FinancialAct) bean.getNodeSourceObject("invoiceItem");
+        if (item != null) {
+            text = Messages.get("patient.record.summary.medication", text, item.getTotal());
+        }
+        return getDetail(text);
+    }
+
+    /**
      * Returns a label to represent the act detail.
-     * If a jxpath expression is registered, this will be evaluated, otherwise
-     * the act description will be used.
+     * If a jxpath expression is registered, this will be evaluated, otherwise the act description will be used.
      *
      * @param act the act
      * @return a new component
      */
     private Label getDetail(Act act) {
+        String text = getText(act);
+        return getDetail(text);
+    }
+
+    private Label getDetail(String text) {
         Label result;
+        if (text != null) {
+            LabelEx label = new LabelEx(text);
+            label.setIntepretNewlines(true);
+            label.setLineWrap(true);
+            ComponentFactory.setDefaultStyle(label);
+            result = label;
+        } else {
+            result = new Label();
+        }
+        return result;
+    }
+
+    /**
+     * Returns the act detail as a string.
+     * If a jxpath expression is registered, this will be evaluated, otherwise the act description will be used.
+     *
+     * @param act the act
+     * @return the text. May be {@code null}
+     */
+    private String getText(Act act) {
         String text = null;
         String shortName = act.getArchetypeId().getShortName();
         String expr = getExpression(shortName);
@@ -395,16 +457,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         } else {
             text = act.getDescription();
         }
-        if (text != null) {
-            LabelEx label = new LabelEx(text);
-            label.setIntepretNewlines(true);
-            label.setLineWrap(true);
-            ComponentFactory.setDefaultStyle(label);
-            result = label;
-        } else {
-            result = new Label();
-        }
-        return result;
+        return text;
     }
 
     /**
