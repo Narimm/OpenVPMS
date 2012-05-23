@@ -35,5 +35,15 @@
               filter="participation.clinician"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="invoiceItem" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
+              minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.invoiceItemDispensing">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.invoiceItemDispensing" />
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>
