@@ -66,7 +66,7 @@ public class ReminderBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      * @return a new query
      */
     private Query<Act> createReminderAlertQuery(Party patient) {
-        String[] shortNames = {ReminderArchetypes.REMINDER, "act.patientAlert"};
+        String[] shortNames = {ReminderArchetypes.REMINDER, PatientArchetypes.ALERT};
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
                 patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, shortNames, STATUSES);
         query.setDefaultSortConstraint(DEFAULT_SORT);

@@ -62,7 +62,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * @param archetypes the archetypes that this may create
      */
     public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes) {
-        super(archetypes, new DocumentActOperations());
+        super(archetypes, new DocumentActActions());
     }
 
     /**
@@ -159,7 +159,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     private boolean canRefresh() {
         DocumentAct act = getObject();
-        return (act != null && ((DocumentActOperations) getOperations()).canRefresh(act));
+        return (act != null && ((DocumentActActions) getActions()).canRefresh(act));
     }
 
     private class RefreshDialog extends ConfirmationDialog {

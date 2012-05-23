@@ -30,7 +30,7 @@ import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActOperations;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -72,7 +72,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * @param archetypes the archetypes that this may create
      */
     public AccountCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultActOperations.<FinancialAct>getInstance());
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance());
     }
 
     /**
@@ -164,7 +164,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
             FinancialAct reversal = (FinancialAct) objects.get(0);
             reversal.setStatus(IN_PROGRESS);
             reversal.setActivityStartTime(new Date());
-            getOperations().setPrinted(reversal, false);
+            getActions().setPrinted(reversal, false);
             SaveHelper.save(objects);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("supplier.account.reverse.failed");

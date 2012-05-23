@@ -28,11 +28,11 @@ import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 
 
 /**
- * Implementation of {@link IMObjectOperations} for acts.
+ * Implementation of {@link IMObjectActions} for acts.
  *
  * @author Tim Anderson
  */
-public abstract class ActOperations<T extends Act> extends AbstractIMObjectOperations<T> {
+public abstract class ActActions<T extends Act> extends AbstractIMObjectActions<T> {
 
     /**
      * Determines if an act can be edited.

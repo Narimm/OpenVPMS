@@ -21,6 +21,7 @@ package org.openvpms.web.app.patient.history;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -31,7 +32,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
-import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
+import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -84,7 +85,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
      * @param archetypes the archetypes
      */
     public PatientHistoryCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, DefaultIMObjectOperations.<Act>getInstance());
+        super(archetypes, DefaultIMObjectActions.<Act>getInstance());
     }
 
     /**
@@ -134,7 +135,12 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        super.enableButtons(buttons, enable);
+        if (enable && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+            buttons.setEnabled(EDIT_ID, false);
+            buttons.setEnabled(DELETE_ID, false);
+        } else {
+            super.enableButtons(buttons, enable);
+        }
         buttons.setEnabled(PRINT_ID, enable);
     }
 

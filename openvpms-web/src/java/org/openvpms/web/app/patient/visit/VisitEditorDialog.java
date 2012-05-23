@@ -48,8 +48,8 @@ public class VisitEditorDialog extends PopupDialog {
         getLayout().add(visitEditor.getComponent());
 
         visitEditor.setListener(new VisitEditorListener() {
-            public void summarySelected() {
-                onSummarySelected();
+            public void historySelected() {
+                onHistorySelected();
             }
 
             public void invoiceSelected() {
@@ -64,7 +64,7 @@ public class VisitEditorDialog extends PopupDialog {
                 onDocumentsSelected();
             }
         });
-        setSummaryButtons();
+        setHistoryButtons();
     }
 
     /**
@@ -86,12 +86,12 @@ public class VisitEditorDialog extends PopupDialog {
     }
 
     /**
-     * Invoked when the summary tab is selected.
+     * Invoked when the patient history tab is selected.
      * <p/>
      * Updates the dialog buttons
      */
-    private void onSummarySelected() {
-        setSummaryButtons();
+    private void onHistorySelected() {
+        setHistoryButtons();
     }
 
     /**
@@ -172,9 +172,9 @@ public class VisitEditorDialog extends PopupDialog {
     }
 
     /**
-     * Sets the dialog buttons to that of the patient medical record summary.
+     * Sets the dialog buttons to that of the patient history summary.
      */
-    private void setSummaryButtons() {
+    private void setHistoryButtons() {
         ButtonSet buttons = getButtons();
         buttons.removeAll();
         addButton(OK_ID);

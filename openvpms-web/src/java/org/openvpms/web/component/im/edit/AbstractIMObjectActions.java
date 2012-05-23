@@ -19,11 +19,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Determines the operations that may be performed on {@link IMObject} instances.
+ * Abstract implementation of {@link IMObjectActions}.
  *
  * @author Tim Anderson
  */
-public interface IMObjectOperations<T extends IMObject> {
+public abstract class AbstractIMObjectActions<T extends IMObject> implements IMObjectActions<T> {
 
     /**
      * Determines if an object can be edited.
@@ -31,7 +31,9 @@ public interface IMObjectOperations<T extends IMObject> {
      * @param object the object to check
      * @return {@code true} if the object can be edited
      */
-    boolean canEdit(T object);
+    public boolean canEdit(T object) {
+        return object != null;
+    }
 
     /**
      * Determines if an object can be deleted.
@@ -39,6 +41,7 @@ public interface IMObjectOperations<T extends IMObject> {
      * @param object the object to check
      * @return {@code true} if the object can be deleted
      */
-    boolean canDelete(T object);
-
+    public boolean canDelete(T object) {
+        return object != null;
+    }
 }

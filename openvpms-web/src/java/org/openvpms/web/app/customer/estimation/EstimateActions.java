@@ -16,7 +16,7 @@
 package org.openvpms.web.app.customer.estimation;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.edit.ActOperations;
+import org.openvpms.web.component.im.edit.ActActions;
 
 import static org.openvpms.archetype.rules.act.ActStatus.CANCELLED;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
@@ -29,7 +29,7 @@ import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
  *
  * @author Tim Anderson
  */
-public class EstimateOperations extends ActOperations<Act> {
+public class EstimateActions extends ActActions<Act> {
 
     /**
      * Determines if an estimate can be edited.

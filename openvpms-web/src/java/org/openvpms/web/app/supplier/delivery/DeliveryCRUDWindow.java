@@ -42,7 +42,7 @@ import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.im.edit.ActOperations;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -78,7 +78,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      * @param archetypes the archetypes that this may create
      */
     public DeliveryCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DeliveryOperations.INSTANCE);
+        super(archetypes, DeliveryActions.INSTANCE);
         rules = new OrderRules();
     }
 
@@ -162,7 +162,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         boolean invoiceReverseEnabled = false;
         if (enable) {
             FinancialAct object = getObject();
-            ActOperations<FinancialAct> operations = getOperations();
+            ActActions<FinancialAct> operations = getActions();
             editEnabled = operations.canEdit(object);
             deleteEnabled = operations.canDelete(object);
             postEnabled = operations.canPost(object);

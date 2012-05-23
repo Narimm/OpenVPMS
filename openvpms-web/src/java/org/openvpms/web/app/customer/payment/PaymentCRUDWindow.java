@@ -26,7 +26,7 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActOperations;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 
 
 /**
@@ -43,7 +43,7 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * @param archetypes the archetypes that this may create
      */
     public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultActOperations.<FinancialAct>getInstance());
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance());
     }
 
     /**

@@ -76,18 +76,18 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * @param archetypes the archetypes that this may create
      */
     public EstimationCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, new EstimateOperations());
+        super(archetypes, new EstimateActions());
         rules = new EstimationRules();
     }
 
     /**
      * Returns the operations that may be performed on the selected object.
      *
-     * @return the operations
+     * @return the actions
      */
     @Override
-    protected EstimateOperations getOperations() {
-        return (EstimateOperations) super.getOperations();
+    protected EstimateActions getActions() {
+        return (EstimateActions) super.getActions();
     }
 
     /**
@@ -123,21 +123,15 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        boolean enableEdit = false;
-        boolean enableDelete = false;
         boolean enablePost = false;
         boolean enableInvoice = false;
 
         if (enable) {
             Act act = getObject();
-            EstimateOperations ops = getOperations();
-            enableEdit = ops.canEdit(act);
-            enableDelete = ops.canDelete(act);
+            EstimateActions ops = getActions();
             enablePost = ops.canPost(act);
             enableInvoice = ops.canInvoice(act);
         }
-        buttons.setEnabled(EDIT_ID, enableEdit);
-        buttons.setEnabled(DELETE_ID, enableDelete);
         buttons.setEnabled(POST_ID, enablePost);
         buttons.setEnabled(PREVIEW_ID, enable);
         buttons.setEnabled(COPY_ID, enable);

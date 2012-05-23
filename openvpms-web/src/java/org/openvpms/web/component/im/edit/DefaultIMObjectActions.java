@@ -19,29 +19,31 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Abstract implementation of {@link IMObjectOperations}.
+ * Default implementation of {@link IMObjectActions}.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractIMObjectOperations<T extends IMObject> implements IMObjectOperations<T> {
+public class DefaultIMObjectActions<T extends IMObject> extends AbstractIMObjectActions<T> {
 
     /**
-     * Determines if an object can be edited.
-     *
-     * @param object the object to check
-     * @return {@code true} if the object can be edited
+     * The singleton instance.
      */
-    public boolean canEdit(T object) {
-        return object != null;
+    private static final DefaultIMObjectActions INSTANCE = new DefaultIMObjectActions();
+
+    /**
+     * Default constructor.
+     */
+    private DefaultIMObjectActions() {
+
     }
 
     /**
-     * Determines if an object can be deleted.
+     * Returns the singleton instance.
      *
-     * @param object the object to check
-     * @return {@code true} if the object can be deleted
+     * @return the singleton instance
      */
-    public boolean canDelete(T object) {
-        return object != null;
+    @SuppressWarnings("unchecked")
+    public static <T extends IMObject> DefaultIMObjectActions<T> getInstance() {
+        return INSTANCE;
     }
 }

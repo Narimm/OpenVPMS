@@ -63,7 +63,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      * @param archetypes the archetypes that this may create
      */
     public OrderCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, OrderOperations.INSTANCE);
+        super(archetypes, OrderActions.INSTANCE);
     }
 
     /**
@@ -97,7 +97,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         boolean deletePostEnabled = false;
         if (enable) {
             FinancialAct object = getObject();
-            editEnabled = getOperations().canEdit(object);
+            editEnabled = getActions().canEdit(object);
             String status = object.getStatus();
             deletePostEnabled = !OrderStatus.POSTED.equals(status) && !OrderStatus.ACCEPTED.equals(status)
                     && !OrderStatus.CANCELLED.equals(status);

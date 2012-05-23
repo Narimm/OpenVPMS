@@ -31,7 +31,7 @@ import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
-import org.openvpms.web.component.im.edit.DefaultActOperations;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -69,7 +69,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      */
     public ReminderCRUDWindow(Party patient) {
         super(Archetypes.create(SHORT_NAMES, Act.class, Messages.get("patient.reminder.createtype")),
-              DefaultActOperations.getInstance());
+              DefaultActActions.getInstance());
         this.patient = patient;
     }
 

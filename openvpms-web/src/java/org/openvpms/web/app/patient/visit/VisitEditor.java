@@ -40,7 +40,7 @@ public class VisitEditor {
     private final VisitBrowserCRUDWindow visitWindow;
 
     /**
-     * The patient medical record summary query.
+     * The patient history query.
      */
     private final PatientHistoryQuery query;
 
@@ -86,9 +86,9 @@ public class VisitEditor {
 
 
     /**
-     * The index of the summary tab.
+     * The index of the patient history tab.
      */
-    private static final int SUMMARY_INDEX = 0;
+    private static final int HISTORY_INDEX = 0;
 
     /**
      * The index of the invoice tab.
@@ -142,7 +142,7 @@ public class VisitEditor {
      */
     public void setButtons(ButtonSet buttons) {
         switch (tab.getSelectedIndex()) {
-            case SUMMARY_INDEX:
+            case HISTORY_INDEX:
                 visitWindow.setButtons(buttons);
                 break;
             case INVOICE_INDEX:
@@ -158,9 +158,9 @@ public class VisitEditor {
     }
 
     /**
-     * Returns the medical record summary query.
+     * Returns the patient history query.
      *
-     * @return the medical record summary query
+     * @return the patient history query
      */
     public PatientHistoryQuery getQuery() {
         return query;
@@ -184,7 +184,7 @@ public class VisitEditor {
         if (container == null) {
             container = ColumnFactory.create("InsetY");
             TabPaneModel model = new TabPaneModel(container);
-            addSummaryTab(model);
+            addPatientHistoryTab(model);
             addInvoiceTab(model);
             addRemindersAlertsTab(model);
             addDocumentsTab(model);
@@ -213,16 +213,16 @@ public class VisitEditor {
     }
 
     /**
-     * Adds a tab to display/edit the patient medical records
+     * Adds a tab to display/edit the patient history.
      *
      * @param model the tab pane model to add to
      */
-    private void addSummaryTab(TabPaneModel model) {
+    private void addPatientHistoryTab(TabPaneModel model) {
         addTab(1, "button.summary", model, visitWindow.getComponent());
     }
 
     /**
-     * Adds a tab to display/edit the invoice
+     * Adds a tab to display/edit the invoice.
      *
      * @param model the tab pane model to add to
      */
@@ -270,8 +270,8 @@ public class VisitEditor {
     private void onTabSelected() {
         if (listener != null) {
             switch (tab.getSelectedIndex()) {
-                case SUMMARY_INDEX:
-                    listener.summarySelected();
+                case HISTORY_INDEX:
+                    listener.historySelected();
                     break;
                 case INVOICE_INDEX:
                     listener.invoiceSelected();
