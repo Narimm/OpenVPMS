@@ -55,25 +55,37 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
     }
 
     /**
+     * Returns the acts for the current patient.
+     *
+     * @return the patient's acts
+     */
+    public List<Act> getPatientActs() {
+        CollectionPropertyEditor editor = getCollectionPropertyEditor();
+        List<IMObject> objects = editor.getObjects();
+        List<Act> acts = new ArrayList<Act>();
+        Party patient = getPatient();
+        if (patient != null) {
+            IMObjectReference patientRef = patient.getObjectReference();
+            for (IMObject object : objects) {
+                Act act = (Act) object;
+                ActBean bean = new ActBean(act);
+                if (ObjectUtils.equals(patientRef, bean.getNodeParticipantRef("patient"))) {
+                    acts.add(act);
+                }
+            }
+        }
+        return acts;
+    }
+
+    /**
      * Creates a new result set for display.
      *
      * @return a new result set
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected ResultSet<IMObject> createResultSet() {
-        CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        List<IMObject> objects = editor.getObjects();
-        List<IMObject> acts = new ArrayList<IMObject>();
-        Party patient = getPatient();
-        if (patient != null) {
-            IMObjectReference patientRef = patient.getObjectReference();
-            for (IMObject object : objects) {
-                ActBean bean = new ActBean((Act) object);
-                if (ObjectUtils.equals(patientRef, bean.getNodeParticipantRef("patient"))) {
-                    acts.add(object);
-                }
-            }
-        }
+        List acts = getPatientActs();
         ResultSet<IMObject> set = new IMObjectListResultSet<IMObject>(acts, ROWS);
         set.sort(new SortConstraint[]{new NodeSortConstraint("startTime", false)});
         return set;
@@ -84,7 +96,7 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
      *
      * @param object  the object to edit
      * @param context the layout context
-     * @return an editor to edit <tt>object</tt>
+     * @return an editor to edit {@code object}
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
@@ -93,6 +105,11 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
         return editor;
     }
 
+    /**
+     * Returns the current patient.
+     *
+     * @return the current patient. May be {@code null}
+     */
     private Party getPatient() {
         return getContext().getContext().getPatient();
     }

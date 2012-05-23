@@ -19,17 +19,53 @@ package org.openvpms.web.app.patient.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.ComponentSet;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.resource.util.Messages;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Visit charge editor.
+ * <p/>
+ * This displays the total amount and tax amount for the current patient.
  *
  * @author Tim Anderson
  */
 public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
+
+    /**
+     * The total charge for the patient for the visit.
+     */
+    private final SimpleProperty visitTotal;
+
+    /**
+     * The total tax for the patient for the visit.
+     */
+    private final SimpleProperty visitTax;
+
+    /**
+     * Filters the amount, tax, and printed nodes.
+     */
+    private static final NodeFilter filter = new NamedNodeFilter("amount", "tax", "printed");
+
 
     /**
      * Constructs a {@code VisitChargeActEditor}.
@@ -39,6 +75,20 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     public VisitChargeEditor(FinancialAct act, LayoutContext context) {
         super(act, null, context);
+        visitTotal = new SimpleProperty("visitTotal", BigDecimal.ZERO, Money.class);
+        visitTotal.setReadOnly(true);
+        visitTax = new SimpleProperty("visitTax", BigDecimal.ZERO, Money.class);
+        visitTax.setReadOnly(true);
+        calculateVisitTotals();
+    }
+
+    /**
+     * Updates the amount and tax when an act item changes.
+     */
+    @Override
+    protected void onItemsChanged() {
+        super.onItemsChanged();
+        calculateVisitTotals();
     }
 
     /**
@@ -52,4 +102,50 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
         return new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
     }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new ActLayoutStrategy(getEditor()) {
+            @Override
+            protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
+                return FilterHelper.chain(filter, context.getDefaultNodeFilter());
+            }
+
+            @Override
+            protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors,
+                                                      PropertySet properties, LayoutContext context) {
+                ComponentSet result = super.createComponentSet(object, descriptors, properties, context);
+                IMObjectComponentFactory factory = context.getComponentFactory();
+
+                ComponentState total = factory.create(visitTotal, object);
+                ComponentState tax = factory.create(visitTax, object);
+
+                total.setDisplayName(Messages.get("patient.record.charge.total"));
+                tax.setDisplayName(Messages.get("patient.record.charge.tax"));
+
+                result.add(1, total);
+                result.add(2, tax);
+                return result;
+            }
+        };
+    }
+
+    /**
+     * Calculates the total amount and tax for the patient.
+     */
+    private void calculateVisitTotals() {
+        VisitChargeItemRelationshipCollectionEditor items = (VisitChargeItemRelationshipCollectionEditor) getEditor();
+        List<Act> acts = items.getPatientActs();
+        BigDecimal total = ActHelper.sum((Act) getObject(), acts, "total");
+        visitTotal.setValue(total);
+
+        BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
+        visitTax.setValue(tax);
+    }
+
 }

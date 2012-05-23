@@ -11,9 +11,10 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.patient.charge.VisitChargeEditor;
+import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.app.patient.mr.PatientDocumentCRUDWindow;
 import org.openvpms.web.app.patient.mr.PatientDocumentQuery;
-import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ChangeListener;
@@ -47,7 +48,7 @@ public class VisitEditor {
     /**
      * The invoice CRUD window.
      */
-    private final VisitChargeCRUDWindow invoiceWindow;
+    private final VisitChargeCRUDWindow chargeWindow;
 
     /**
      * The reminders/alerts CRUD window.
@@ -122,17 +123,30 @@ public class VisitEditor {
 
         visitWindow = new VisitBrowserCRUDWindow(query, context);
 
-        invoiceWindow = new VisitChargeCRUDWindow(patient);
-        invoiceWindow.setObject(invoice);
+        chargeWindow = new VisitChargeCRUDWindow(patient);
+        chargeWindow.setObject(invoice);
 
         reminderWindow = new ReminderBrowserCRUDWindow(patient);
 
         documentWindow = new VisitDocumentCRUDWindow();
     }
 
-    public VisitChargeCRUDWindow getInvoice() {
-        return invoiceWindow;
+    /**
+     * Returns the charge window.
+     *
+     * @return the charge window
+     */
+    public VisitChargeCRUDWindow getCharge() {
+        return chargeWindow;
+    }
 
+    /**
+     * Returns the charge editor.
+     *
+     * @return the charge editor. May be {@code null}
+     */
+    public VisitChargeEditor getChargeEditor() {
+        return chargeWindow.getEditor();
     }
 
     /**
@@ -146,7 +160,7 @@ public class VisitEditor {
                 visitWindow.setButtons(buttons);
                 break;
             case INVOICE_INDEX:
-                invoiceWindow.setButtons(buttons);
+                chargeWindow.setButtons(buttons);
                 break;
             case REMINDERS_INDEX:
                 reminderWindow.setButtons(buttons);
@@ -209,7 +223,7 @@ public class VisitEditor {
      * @return {@code true} if the invoice was saved
      */
     public boolean save() {
-        return invoiceWindow.save();
+        return chargeWindow.save();
     }
 
     /**
@@ -227,7 +241,7 @@ public class VisitEditor {
      * @param model the tab pane model to add to
      */
     private void addInvoiceTab(TabPaneModel model) {
-        addTab(2, "button.invoice", model, invoiceWindow.getComponent());
+        addTab(2, "button.invoice", model, chargeWindow.getComponent());
     }
 
     /**

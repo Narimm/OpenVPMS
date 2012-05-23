@@ -111,6 +111,15 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     }
 
     /**
+     * Returns the charge editor.
+     *
+     * @return the charge editor. May be {@code null}
+     */
+    public VisitChargeEditor getEditor() {
+        return editor;
+    }
+
+    /**
      * Lays out the component.
      *
      * @return the component
