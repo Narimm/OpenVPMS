@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
@@ -30,7 +31,6 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
-import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
@@ -56,7 +56,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * @param archetypes the archetypes that this may create
      */
     public InformationCRUDWindow(Archetypes<Party> archetypes) {
-        super(archetypes, DefaultIMObjectOperations.<Party>getInstance());
+        super(archetypes, DefaultIMObjectActions.<Party>getInstance());
     }
 
     /**

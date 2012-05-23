@@ -25,7 +25,7 @@ import org.openvpms.web.app.patient.charge.VisitChargeEditor;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.im.edit.DefaultActOperations;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -83,7 +83,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
      */
     public VisitChargeCRUDWindow(Party patient) {
         super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
-              DefaultActOperations.<FinancialAct>getInstance());
+              DefaultActActions.<FinancialAct>getInstance());
         this.patient = patient;
     }
 

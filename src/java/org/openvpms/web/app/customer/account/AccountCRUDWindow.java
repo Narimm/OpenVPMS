@@ -36,10 +36,10 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
-import org.openvpms.web.component.im.edit.DefaultActOperations;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -91,7 +91,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * @param archetypes the archetypes that this may create
      */
     public AccountCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultActOperations.<FinancialAct>getInstance());
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance());
     }
 
     /**

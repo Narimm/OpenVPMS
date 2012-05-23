@@ -20,6 +20,7 @@ package org.openvpms.web.app.reporting;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -29,7 +30,6 @@ import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
 
 
 /**
@@ -50,7 +50,7 @@ public class FinancialActCRUDWindow
      *                   {@link #getArchetypes}
      */
     public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultIMObjectOperations.<FinancialAct>getInstance());
+        super(archetypes, DefaultIMObjectActions.<FinancialAct>getInstance());
     }
 
     /**

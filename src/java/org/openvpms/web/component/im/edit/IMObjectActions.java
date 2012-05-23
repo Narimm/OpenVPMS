@@ -15,34 +15,30 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+
 
 /**
- * Default implementation of {@link IMObjectOperations} for acts.
+ * Determines the operations that may be performed on {@link IMObject} instances.
  *
  * @author Tim Anderson
  */
-public class DefaultActOperations<T extends Act> extends ActOperations<T> {
+public interface IMObjectActions<T extends IMObject> {
 
     /**
-     * The singleton instance.
-     */
-    private static final DefaultActOperations INSTANCE = new DefaultActOperations();
-
-    /**
-     * Default constructor.
-     */
-    private DefaultActOperations() {
-    }
-
-    /**
-     * Returns the singleton instance.
+     * Determines if an object can be edited.
      *
-     * @return the singleton instance
+     * @param object the object to check
+     * @return {@code true} if the object can be edited
      */
-    @SuppressWarnings("unchecked")
-    public static <T extends Act> DefaultActOperations<T> getInstance() {
-        return INSTANCE;
-    }
+    boolean canEdit(T object);
+
+    /**
+     * Determines if an object can be deleted.
+     *
+     * @param object the object to check
+     * @return {@code true} if the object can be deleted
+     */
+    boolean canDelete(T object);
 
 }

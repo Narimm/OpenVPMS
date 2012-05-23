@@ -36,8 +36,14 @@ import org.openvpms.web.component.util.SplitPaneFactory;
  */
 public class BrowserCRUDWindow<T extends IMObject> {
 
+    /**
+     * The browser.
+     */
     private Browser<T> browser;
 
+    /**
+     * The CRUD window.
+     */
     private AbstractCRUDWindow<T> window;
 
     /**
@@ -46,19 +52,38 @@ public class BrowserCRUDWindow<T extends IMObject> {
     private DoubleClickMonitor click = new DoubleClickMonitor();
 
 
-    public BrowserCRUDWindow() {
+    /**
+     * Constructs a {@code BrowserCRUDWindow}.
+     */
+    protected BrowserCRUDWindow() {
 
     }
 
+    /**
+     * Constructs a {@code BrowserCRUDWindow}.
+     *
+     * @param browser the browser
+     * @param window  the window
+     */
     public BrowserCRUDWindow(Browser<T> browser, AbstractCRUDWindow<T> window) {
         setBrowser(browser);
         setWindow(window);
     }
 
+    /**
+     * Sets the buttons.
+     *
+     * @param buttons the buttons
+     */
     public void setButtons(ButtonSet buttons) {
         window.setButtons(buttons);
     }
 
+    /**
+     * Returns the component.
+     *
+     * @return the component
+     */
     public Component getComponent() {
         Component result;
         if (window instanceof AbstractViewCRUDWindow) {
@@ -72,6 +97,29 @@ public class BrowserCRUDWindow<T extends IMObject> {
         return result;
     }
 
+    /**
+     * Returns the browser.
+     *
+     * @return the browser
+     */
+    public Browser<T> getBrowser() {
+        return browser;
+    }
+
+    /**
+     * Returns the CRUD window.
+     *
+     * @return the window
+     */
+    public CRUDWindow<T> getWindow() {
+        return window;
+    }
+
+    /**
+     * Registers the browser.
+     *
+     * @param browser the browser
+     */
     protected void setBrowser(Browser<T> browser) {
         this.browser = browser;
         browser.addBrowserListener(new AbstractBrowserListener<T>() {
@@ -84,6 +132,11 @@ public class BrowserCRUDWindow<T extends IMObject> {
         }
     }
 
+    /**
+     * Registers the window.
+     *
+     * @param window the window
+     */
     protected void setWindow(AbstractCRUDWindow<T> window) {
         this.window = window;
         window.setListener(new CRUDWindowListener<T>() {
@@ -107,24 +160,6 @@ public class BrowserCRUDWindow<T extends IMObject> {
         if (browser != null) {
             window.setObject(browser.getSelected());
         }
-    }
-
-    /**
-     * Returns the browser.
-     *
-     * @return the browser
-     */
-    public Browser<T> getBrowser() {
-        return browser;
-    }
-
-    /**
-     * Returns the CRUD window.
-     *
-     * @return the window
-     */
-    public CRUDWindow<T> getWindow() {
-        return window;
     }
 
     /**

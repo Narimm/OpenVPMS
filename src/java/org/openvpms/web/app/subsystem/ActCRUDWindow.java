@@ -28,7 +28,7 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.edit.ActOperations;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
@@ -74,10 +74,10 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      * Constructs an <tt>ActCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
-     * @param operations determines the operations that may be performed on the selected object
+     * @param actions    determines the operations that may be performed on the selected object
      */
-    public ActCRUDWindow(Archetypes<T> archetypes, ActOperations<T> operations) {
-        super(archetypes, operations);
+    public ActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions) {
+        super(archetypes, actions);
     }
 
     /**
@@ -98,7 +98,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     public void edit() {
         T act = getObject();
         if (act != null) {
-            if (getOperations().canEdit(act)) {
+            if (getActions().canEdit(act)) {
                 super.edit();
             } else {
                 showStatusError(act, "act.noedit.title", "act.noedit.message");
@@ -113,7 +113,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     public void delete() {
         T act = getObject();
         if (act != null) {
-            if (getOperations().canDelete(act)) {
+            if (getActions().canDelete(act)) {
                 super.delete();
             } else {
                 showStatusError(act, "act.nodelete.title", "act.nodelete.message");
@@ -122,13 +122,13 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     }
 
     /**
-     * Returns the operations that may be performed on the selected object.
+     * Returns the actions that may be performed on the selected object.
      *
-     * @return the operations
+     * @return the actions
      */
     @Override
-    protected ActOperations<T> getOperations() {
-        return (ActOperations<T>) super.getOperations();
+    protected ActActions<T> getActions() {
+        return (ActActions<T>) super.getActions();
     }
 
     /**
@@ -136,7 +136,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      */
     protected void onPost() {
         final T act = getObject();
-        if (act != null && getOperations().canPost(act)) {
+        if (act != null && getActions().canPost(act)) {
             try {
                 String displayName = getArchetypes().getDisplayName();
                 String title = Messages.get("act.post.title", displayName);
@@ -222,7 +222,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
         InteractiveIMPrinter<T> printer = (InteractiveIMPrinter<T>) super.createPrinter(object);
         printer.setListener(new PrinterListener() {
             public void printed(String printer) {
-                if (getOperations().printed(object)) {
+                if (getActions().printed(object)) {
                     saved(object);
                 }
             }
@@ -289,7 +289,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      * @return <tt>true</tt> if the act was saved
      */
     protected boolean post(T act) {
-        ActOperations<T> operations = getOperations();
+        ActActions<T> operations = getActions();
         return operations.canPost(act) && operations.post(act);
     }
 

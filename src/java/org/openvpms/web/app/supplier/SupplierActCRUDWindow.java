@@ -24,8 +24,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.edit.ActOperations;
 import org.openvpms.web.component.util.ErrorHelper;
 
 
@@ -41,10 +41,10 @@ public abstract class SupplierActCRUDWindow<T extends Act> extends ActCRUDWindow
      * Create a new <tt>SupplierActCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
-     * @param operations determines the operations that may be performed on the selected object
+     * @param actions    determines the operations that may be performed on the selected object
      */
-    public SupplierActCRUDWindow(Archetypes<T> archetypes, ActOperations<T> operations) {
-        super(archetypes, operations);
+    public SupplierActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions) {
+        super(archetypes, actions);
     }
 
     /**

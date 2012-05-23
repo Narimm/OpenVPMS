@@ -26,9 +26,9 @@ import org.openvpms.web.app.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.edit.ActOperations;
 import org.openvpms.web.component.util.Retryer;
 import org.openvpms.web.resource.util.Messages;
 
@@ -53,7 +53,7 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
      */
     public ProblemRecordCRUDWindow() {
         super(Archetypes.create(PatientArchetypes.CLINICAL_PROBLEM, Act.class,
-                                Messages.get("patient.record.createtype")), ProblemOperations.INSTANCE);
+                                Messages.get("patient.record.createtype")), ProblemActions.INSTANCE);
     }
 
     /**
@@ -138,9 +138,9 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
         return getEvent();
     }
 
-    private static class ProblemOperations extends ActOperations<Act> {
+    private static class ProblemActions extends ActActions<Act> {
 
-        public static final ProblemOperations INSTANCE = new ProblemOperations();
+        public static final ProblemActions INSTANCE = new ProblemActions();
 
         /**
          * Determines if an act can be edited.

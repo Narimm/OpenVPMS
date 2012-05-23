@@ -26,7 +26,7 @@ import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusCommand;
-import org.openvpms.web.component.im.edit.DefaultIMObjectOperations;
+import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.Query;
@@ -70,7 +70,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      * @param set        the result set. May be <tt>null</tt>
      */
     public ResultSetCRUDWindow(Archetypes<T> archetypes, Query<T> query, ResultSet<T> set) {
-        super(archetypes, DefaultIMObjectOperations.<T>getInstance());
+        super(archetypes, DefaultIMObjectActions.<T>getInstance());
         setResultSet(set);
         setQuery(query);
     }

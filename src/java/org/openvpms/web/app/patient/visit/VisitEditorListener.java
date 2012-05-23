@@ -23,9 +23,9 @@ package org.openvpms.web.app.patient.visit;
 public interface VisitEditorListener {
 
     /**
-     * Invoked when the patient medical record tab is selected.
+     * Invoked when the patient history tab is selected.
      */
-    void summarySelected();
+    void historySelected();
 
     /**
      * Invoked when the invoice tab is selected.

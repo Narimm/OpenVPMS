@@ -18,7 +18,7 @@ package org.openvpms.web.app.subsystem;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.edit.ActOperations;
+import org.openvpms.web.component.im.edit.ActActions;
 
 
 /**
@@ -26,7 +26,7 @@ import org.openvpms.web.component.im.edit.ActOperations;
  *
  * @author Tim Anderson
  */
-public class DocumentActOperations extends ActOperations<DocumentAct> {
+public class DocumentActActions extends ActActions<DocumentAct> {
 
     /**
      * Determines if a document act can be refreshed.

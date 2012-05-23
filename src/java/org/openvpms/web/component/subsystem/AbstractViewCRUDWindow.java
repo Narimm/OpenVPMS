@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
-import org.openvpms.web.component.im.edit.IMObjectOperations;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -56,10 +56,10 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
      *
      * @param archetypes the archetypes that this may create. If <tt>null</tt>
      *                   the subclass must override {@link #getArchetypes}
-     * @param operations determines the operations that may be performed on the selected object
+     * @param actions determines the operations that may be performed on the selected object
      */
-    public AbstractViewCRUDWindow(Archetypes<T> archetypes, IMObjectOperations<T> operations) {
-        super(archetypes, operations);
+    public AbstractViewCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions) {
+        super(archetypes, actions);
         objectContainer = ColumnFactory.create();
     }
 

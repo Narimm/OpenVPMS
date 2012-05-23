@@ -13,32 +13,30 @@
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.app.supplier.order;
+package org.openvpms.web.app.supplier.delivery;
 
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.im.edit.ActOperations;
+import org.openvpms.web.component.im.edit.ActActions;
 
 
 /**
- * Determines the operations that may be performed on <em>act.supplierOrder</em> acts.
+ * Determines the operations that may be performed on <em>act.supplierDelivery</em> acts.
  *
  * @author Tim Anderson
  */
-public class OrderOperations extends ActOperations<FinancialAct> {
+public class DeliveryActions extends ActActions<FinancialAct> {
 
     /**
      * The singleton instance.
      */
-    public static final OrderOperations INSTANCE = new OrderOperations();
+    public static final DeliveryActions INSTANCE = new DeliveryActions();
 
 
     /**
      * Default constructor.
      */
-    private OrderOperations() {
+    private DeliveryActions() {
     }
 
     /**
@@ -49,8 +47,7 @@ public class OrderOperations extends ActOperations<FinancialAct> {
      */
     @Override
     public boolean canEdit(FinancialAct act) {
-        IMObjectBean bean = new IMObjectBean(act);
-        return !DeliveryStatus.FULL.toString().equals(bean.getString("deliveryStatus"));
+        return ActStatus.IN_PROGRESS.equals(act.getStatus());
     }
 
     /**

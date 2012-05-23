@@ -15,26 +15,24 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-
+import org.openvpms.component.business.domain.im.act.Act;
 
 /**
- * Default implementation of {@link IMObjectOperations}.
+ * Default implementation of {@link IMObjectActions} for acts.
  *
  * @author Tim Anderson
  */
-public class DefaultIMObjectOperations<T extends IMObject> extends AbstractIMObjectOperations<T> {
+public class DefaultActActions<T extends Act> extends ActActions<T> {
 
     /**
      * The singleton instance.
      */
-    private static final DefaultIMObjectOperations INSTANCE = new DefaultIMObjectOperations();
+    private static final DefaultActActions INSTANCE = new DefaultActActions();
 
     /**
      * Default constructor.
      */
-    private DefaultIMObjectOperations() {
-
+    private DefaultActActions() {
     }
 
     /**
@@ -43,7 +41,8 @@ public class DefaultIMObjectOperations<T extends IMObject> extends AbstractIMObj
      * @return the singleton instance
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> DefaultIMObjectOperations<T> getInstance() {
+    public static <T extends Act> DefaultActActions<T> getInstance() {
         return INSTANCE;
     }
+
 }

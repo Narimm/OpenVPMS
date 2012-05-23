@@ -33,9 +33,9 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
+import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
-import org.openvpms.web.component.im.edit.IMObjectOperations;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -72,7 +72,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Determines the operations that may be performed on the selected object.
      */
-    private final IMObjectOperations<T> operations;
+    private final IMObjectActions<T> actions;
 
     /**
      * The archetypes that this may create.
@@ -124,11 +124,11 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Constructs a new <tt>AbstractCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
-     * @param operations determines the operations that may be performed on the selected object
+     * @param actions    determines the operations that may be performed on the selected object
      */
-    public AbstractCRUDWindow(Archetypes<T> archetypes, IMObjectOperations<T> operations) {
+    public AbstractCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions) {
         this.archetypes = archetypes;
-        this.operations = operations;
+        this.actions = actions;
     }
 
     /**
@@ -218,7 +218,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     public boolean canEdit() {
         boolean edit = false;
-        if (operations.canEdit(object)) {
+        if (actions.canEdit(object)) {
             Button button = getButtons().getButton(EDIT_ID);
             if (button != null && button.isEnabled()) {
                 edit = true;
@@ -289,6 +289,11 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         return context;
     }
 
+    /**
+     * Sets the buttons.
+     *
+     * @param buttons the buttons
+     */
     public void setButtons(ButtonSet buttons) {
         this.buttons = buttons;
         layoutButtons(buttons);
@@ -305,12 +310,12 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
-     * Determines the operations that may be performed on the selected object.
+     * Determines the actions that may be performed on the selected object.
      *
-     * @return the operations
+     * @return the actions
      */
-    protected IMObjectOperations<T> getOperations() {
-        return operations;
+    protected IMObjectActions<T> getActions() {
+        return actions;
     }
 
     /**
@@ -420,8 +425,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param enable  determines if buttons should be enabled
      */
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        buttons.setEnabled(EDIT_ID, enable);
-        buttons.setEnabled(DELETE_ID, enable);
+        T object = getObject();
+        buttons.setEnabled(EDIT_ID, enable && actions.canEdit(object));
+        buttons.setEnabled(DELETE_ID, enable && actions.canDelete(object));
     }
 
     /**
