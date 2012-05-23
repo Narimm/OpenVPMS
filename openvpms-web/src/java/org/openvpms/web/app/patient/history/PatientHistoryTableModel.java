@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.app.patient.history;
 
 import echopointng.LabelEx;
 import nextapp.echo2.app.Alignment;
@@ -75,7 +75,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
+public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
 
     /**
      * A map of jxpath expressions, keyed on archetype short name,
@@ -86,7 +86,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(SummaryTableModel.class);
+    private static final Log log = LogFactory.getLog(PatientHistoryTableModel.class);
 
     /**
      * The selected visit row.
@@ -122,7 +122,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     /**
      * Constructs a <tt>SummaryTableModel</tt>.
      */
-    public SummaryTableModel() {
+    public PatientHistoryTableModel() {
         TableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(new TableColumn(SELECTION_COLUMN, new Extent(16))); // 16px for the icon
         model.addColumn(new TableColumn(SUMMARY_COLUMN));

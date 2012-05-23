@@ -13,7 +13,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.mr.PatientDocumentCRUDWindow;
 import org.openvpms.web.app.patient.mr.PatientDocumentQuery;
-import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
+import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ChangeListener;
@@ -42,7 +42,7 @@ public class VisitEditor {
     /**
      * The patient medical record summary query.
      */
-    private final PatientSummaryQuery query;
+    private final PatientHistoryQuery query;
 
     /**
      * The invoice CRUD window.
@@ -115,7 +115,7 @@ public class VisitEditor {
     public VisitEditor(Party patient, Act event, FinancialAct invoice, Context context) {
         this.patient = patient;
 
-        query = new PatientSummaryQuery(patient);
+        query = new PatientHistoryQuery(patient);
         query.setAllDates(true);
         query.setFrom(event.getActivityStartTime());
         query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
@@ -162,7 +162,7 @@ public class VisitEditor {
      *
      * @return the medical record summary query
      */
-    public PatientSummaryQuery getQuery() {
+    public PatientHistoryQuery getQuery() {
         return query;
     }
 

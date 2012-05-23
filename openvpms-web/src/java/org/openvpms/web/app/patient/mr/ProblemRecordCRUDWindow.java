@@ -22,6 +22,8 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.app.patient.PatientMedicalRecordLinker;
+import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.util.Archetypes;

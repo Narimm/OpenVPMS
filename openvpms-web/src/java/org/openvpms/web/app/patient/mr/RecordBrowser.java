@@ -23,6 +23,8 @@ import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
+import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -122,16 +124,16 @@ public class RecordBrowser implements Browser<Act> {
      * Construct a new <code>RecordBrowser</code> that queries IMObjects using
      * the specified queries.
      *
-     * @param summary       query for summary
+     * @param history       query for summary
      * @param problems      query for problems
      * @param reminderAlert query for reminders/alerts
      * @param document      query for documents
      * @param charges       query for charges
      */
-    public RecordBrowser(PatientSummaryQuery summary, Query<Act> problems,
+    public RecordBrowser(PatientHistoryQuery history, Query<Act> problems,
                          Query<Act> reminderAlert, Query<Act> document,
                          Query<Act> charges) {
-        this.summary = new SummaryTableBrowser(summary);
+        this.summary = new PatientHistoryBrowser(history);
         this.problems = BrowserFactory.create(problems);
 
         // todo - should be able to register ReminderActTableModel in

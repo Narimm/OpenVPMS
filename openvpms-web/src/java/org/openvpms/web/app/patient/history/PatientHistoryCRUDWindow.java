@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.app.patient.history;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
@@ -25,6 +25,8 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.patient.PatientMedicalRecordLinker;
+import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
@@ -51,12 +53,12 @@ import java.util.Arrays;
 
 
 /**
- * CRUD Window for patient summary.
+ * CRUD Window for patient history.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> implements PatientRecordCRUDWindow {
+public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements PatientRecordCRUDWindow {
 
     /**
      * The current act.patientClinicalEvent.
@@ -66,13 +68,13 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> implements Patien
     /**
      * The current query.
      */
-    private PatientSummaryQuery query;
+    private PatientHistoryQuery query;
 
 
     /**
      * Constructs a <tt>SummaryCRUDWindow</tt>.
      */
-    public SummaryCRUDWindow() {
+    public PatientHistoryCRUDWindow() {
         this(Archetypes.create(PatientArchetypes.CLINICAL_EVENT, Act.class, Messages.get("patient.record.createtype")));
     }
 
@@ -81,7 +83,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> implements Patien
      *
      * @param archetypes the archetypes
      */
-    public SummaryCRUDWindow(Archetypes<Act> archetypes) {
+    public PatientHistoryCRUDWindow(Archetypes<Act> archetypes) {
         super(archetypes, DefaultIMObjectOperations.<Act>getInstance());
     }
 
@@ -108,7 +110,7 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> implements Patien
      *
      * @param query the query
      */
-    public void setQuery(PatientSummaryQuery query) {
+    public void setQuery(PatientHistoryQuery query) {
         this.query = query;
     }
 
@@ -170,14 +172,14 @@ public class SummaryCRUDWindow extends AbstractCRUDWindow<Act> implements Patien
             PatientMedicalRecordLinker recordAction = new PatientMedicalRecordLinker(getEvent(), act);
             Runnable done = new Runnable() {
                 public void run() {
-                    SummaryCRUDWindow.super.onSaved(act, isNew);
+                    PatientHistoryCRUDWindow.super.onSaved(act, isNew);
                 }
             };
             Retryer retryer = new Retryer(recordAction, done, done);
             retryer.start();
         } else {
             setEvent(act);
-            SummaryCRUDWindow.super.onSaved(act, isNew);
+            PatientHistoryCRUDWindow.super.onSaved(act, isNew);
         }
     }
 

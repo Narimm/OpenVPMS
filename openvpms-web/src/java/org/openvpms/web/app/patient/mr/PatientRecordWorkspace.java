@@ -30,6 +30,10 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
+import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
+import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
+import org.openvpms.web.app.patient.history.PatientHistoryCRUDWindow;
+import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.ContextHelper;
@@ -160,7 +164,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     protected Component createWorkspace() {
         Component result;
         CRUDWindow window = getCRUDWindow();
-        if (window instanceof SummaryCRUDWindow) {
+        if (window instanceof PatientHistoryCRUDWindow) {
             result = SplitPaneFactory.create(
                     SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                     "PatientRecordWorkspace.SummaryLayout",
@@ -180,8 +184,8 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        SummaryCRUDWindow window = new SummaryCRUDWindow(getChildArchetypes());
-        window.setQuery((PatientSummaryQuery) getQuery());
+        PatientHistoryCRUDWindow window = new PatientHistoryCRUDWindow(getChildArchetypes());
+        window.setQuery((PatientHistoryQuery) getQuery());
         return window;
     }
 
@@ -191,7 +195,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        return new PatientSummaryQuery(getObject());
+        return new PatientHistoryQuery(getObject());
     }
 
     /**
@@ -202,7 +206,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     @Override
     protected Browser<Act> createBrowser(Query<Act> query) {
-        RecordBrowser browser = new RecordBrowser((PatientSummaryQuery) query,
+        RecordBrowser browser = new RecordBrowser((PatientHistoryQuery) query,
                                                   createProblemsQuery(),
                                                   createReminderAlertQuery(),
                                                   new PatientDocumentQuery<Act>(getObject()),
@@ -230,7 +234,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         if (window instanceof PatientRecordCRUDWindow) {
             Act event = getEvent(act);
             ((PatientRecordCRUDWindow) window).setEvent(event);
-            if (window instanceof SummaryCRUDWindow) {
+            if (window instanceof PatientHistoryCRUDWindow) {
                 long id = (act != null) ? act.getId() : 0;
                 if (click.isDoubleClick(id)) { // avoid holding onto the act
                     window.edit();
@@ -251,7 +255,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     @Override
     protected void onDeleted(Act object) {
         CRUDWindow<Act> window = getCRUDWindow();
-        if (window instanceof SummaryCRUDWindow) {
+        if (window instanceof PatientHistoryCRUDWindow) {
             List<Act> list = getBrowser().getObjects();
             int index = list.indexOf(object);
             if (index != -1 && list.size() > 1) {
@@ -285,7 +289,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
                 }
                 if (index != -1) {
                     Act select = list.get(index);
-                    ((SummaryCRUDWindow) window).setEvent(getEvent(select));
+                    ((PatientHistoryCRUDWindow) window).setEvent(getEvent(select));
                     getBrowser().setSelected(select);
                 }
             }
@@ -395,7 +399,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private Act getEvent(Act act) {
         RecordBrowser browser = ((RecordBrowser) getBrowser());
-        SummaryTableBrowser summary = (SummaryTableBrowser) browser.getBrowser(RecordBrowser.View.SUMMARY);
+        PatientHistoryBrowser summary = (PatientHistoryBrowser) browser.getBrowser(RecordBrowser.View.SUMMARY);
         if (act == null) {
             act = summary.getSelected();
         }

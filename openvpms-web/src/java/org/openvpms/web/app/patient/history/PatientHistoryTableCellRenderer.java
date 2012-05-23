@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.app.patient.history;
 
 import nextapp.echo2.app.Table;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -25,12 +25,12 @@ import org.openvpms.web.component.table.AbstractTableCellRenderer;
 
 
 /**
- * Patient medical record summary table cell renderer.
+ * Patient history record summary table cell renderer.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryTableCellRenderer extends AbstractTableCellRenderer {
+public class PatientHistoryTableCellRenderer extends AbstractTableCellRenderer {
 
     /**
      * The default row style.

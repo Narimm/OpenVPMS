@@ -17,8 +17,8 @@ package org.openvpms.web.app.patient.visit;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.customer.CustomerMailContext;
-import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
-import org.openvpms.web.app.patient.mr.SummaryTableBrowser;
+import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
+import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.app.Context;
 
 /**
@@ -34,8 +34,8 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      * @param query the patient medical record query
      * @param context the context
      */
-    public VisitBrowserCRUDWindow(PatientSummaryQuery query, Context context) {
-        SummaryTableBrowser browser = new SummaryTableBrowser(query);
+    public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context) {
+        PatientHistoryBrowser browser = new PatientHistoryBrowser(query);
         setBrowser(browser);
         VisitCRUDWindow window = new VisitCRUDWindow(context);
         window.setMailContext(new CustomerMailContext(context));
@@ -51,7 +51,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      */
     @Override
     protected void onSelected(Act object) {
-        SummaryTableBrowser browser = (SummaryTableBrowser) getBrowser();
+        PatientHistoryBrowser browser = (PatientHistoryBrowser) getBrowser();
         VisitCRUDWindow window = (VisitCRUDWindow) getWindow();
         window.setEvent(browser.getEvent(object));
         super.onSelected(object);

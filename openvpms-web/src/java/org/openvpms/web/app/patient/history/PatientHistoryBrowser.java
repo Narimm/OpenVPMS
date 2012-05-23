@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.app.patient.history;
 
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -35,12 +35,12 @@ import java.util.List;
 
 
 /**
- * Patient medical record browser.
+ * Patient history record browser.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
+public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
 
     /**
      * The table model that wraps the underlying model, to filter acts.
@@ -54,7 +54,7 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
      *
      * @param query the query
      */
-    public SummaryTableBrowser(PatientSummaryQuery query) {
+    public PatientHistoryBrowser(PatientHistoryQuery query) {
         super(query, newTableModel());
     }
 
@@ -66,7 +66,7 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
         if (pagedModel != null) {
             // ensure the table model has the selected child act short names
             // prior to performing the query
-            PatientSummaryQuery query = (PatientSummaryQuery) getQuery();
+            PatientHistoryQuery query = (PatientHistoryQuery) getQuery();
             pagedModel.setShortNames(query.getActItemShortNames());
         }
         super.query();
@@ -118,10 +118,8 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
      */
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
-        PatientSummaryQuery query = (PatientSummaryQuery) getQuery();
-        // maxDepth = 2 - display the events, and their immediate children 
-        pagedModel = new PagedActHierarchyTableModel<Act>(
-                (IMObjectTableModel<Act>) model, 2, query.getActItemShortNames());
+        PatientHistoryQuery query = (PatientHistoryQuery) getQuery();
+        pagedModel = new PagedPatientHistoryTableModel((IMObjectTableModel<Act>) model, query.getActItemShortNames());
         PagedIMTable<Act> result = super.createTable(pagedModel);
         IMTable<Act> table = result.getTable();
         table.addActionListener(new ActionListener() {
@@ -129,7 +127,7 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
                 onSelected();
             }
         });
-        table.setDefaultRenderer(Object.class, new SummaryTableCellRenderer());
+        table.setDefaultRenderer(Object.class, new PatientHistoryTableCellRenderer());
         table.setHeaderVisible(false);
         table.setStyleName("MedicalRecordSummary");
         // table.setRolloverEnabled(false); // TODO - ideally set this in style, but it gets overridden by the model
@@ -142,7 +140,7 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
      * @return a new table model
      */
     private static IMObjectTableModel<Act> newTableModel() {
-        return IMObjectTableModelFactory.create(SummaryTableModel.class, null);
+        return IMObjectTableModelFactory.create(PatientHistoryTableModel.class, null);
     }
 
     /**
@@ -159,7 +157,7 @@ public class SummaryTableBrowser extends IMObjectTableBrowser<Act> {
                 --index;
             }
         }
-        SummaryTableModel model = (SummaryTableModel) pagedModel.getModel();
+        PatientHistoryTableModel model = (PatientHistoryTableModel) pagedModel.getModel();
         model.setSelectedVisit(index);
     }
 }

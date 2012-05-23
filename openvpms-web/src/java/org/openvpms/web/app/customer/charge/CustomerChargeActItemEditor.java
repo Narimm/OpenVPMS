@@ -40,7 +40,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.PriceActItemEditor;
-import org.openvpms.web.app.patient.mr.PatientInvestigationActEditor;
+import org.openvpms.web.app.patient.history.PatientInvestigationActEditor;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Editor;

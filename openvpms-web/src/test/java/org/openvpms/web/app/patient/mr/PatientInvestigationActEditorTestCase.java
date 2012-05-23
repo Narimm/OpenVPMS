@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.app.patient.history.PatientInvestigationActEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.doc.VersionedDocumentActEditorTest;
@@ -31,7 +32,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 
 
 /**
- * Tests the {@link PatientInvestigationActEditor} class.
+ * Tests the {@link org.openvpms.web.app.patient.history.PatientInvestigationActEditor} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: $

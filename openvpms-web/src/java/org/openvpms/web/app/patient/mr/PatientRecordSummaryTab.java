@@ -24,6 +24,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
+import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -87,8 +89,8 @@ public class PatientRecordSummaryTab {
         if (listener != null) {
             throw new IllegalStateException("This component can only by used once");
         }
-        PatientSummaryQuery query = new PatientSummaryQuery(patient);
-        final Browser browser = new SummaryTableBrowser(query);
+        PatientHistoryQuery query = new PatientHistoryQuery(patient);
+        final Browser browser = new PatientHistoryBrowser(query);
         Component inset = ColumnFactory.create("Inset", browser.getComponent());
         DefaultTabModel model = (DefaultTabModel) pane.getModel();
         final int index = model.size();

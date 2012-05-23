@@ -16,7 +16,7 @@
  *  $Id: PatientRecordCRUDWindow.java 942 2006-05-30 07:52:45Z tanderson $
  */
 
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.app.patient;
 
 import org.openvpms.component.business.domain.im.act.Act;
 
