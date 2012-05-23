@@ -15,9 +15,8 @@
  *
  *  $Id$
  */
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.app.patient;
 
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -27,9 +26,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.test.AbstractAppTest;
 
+import static org.junit.Assert.assertTrue;
+
 
 /**
- * Tests the {@link PatientMedicalRecordLinker} class.
+ * Tests the {@link org.openvpms.web.app.patient.PatientMedicalRecordLinker} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

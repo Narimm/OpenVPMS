@@ -19,10 +19,7 @@
 package org.openvpms.web.component.im.act;
 
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.NotPredicate;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.functor.IsA;
-import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -104,7 +101,7 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      * @param maxDepth   the maximum depth to iterate to, or <tt>-1</tt> to have unlimited depth
      */
     public ActHierarchyIterator(Iterable<T> acts, String[] shortNames, boolean include, int maxDepth) {
-        this(acts, createIsA(shortNames, include), maxDepth);
+        this(acts, new ActHierarchyFilter<T>(shortNames, include), maxDepth);
     }
 
     /**
@@ -115,19 +112,20 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      * @param maxDepth  the maximum depth to iterate to, or <tt>-1</tt> to have unlimited depth
      */
     public ActHierarchyIterator(Iterable<T> acts, Predicate predicate, int maxDepth) {
-        this(acts, new ActHierarchyFilter<T>(predicate));
-        this.maxDepth = maxDepth;
+        this(acts, new ActHierarchyFilter<T>(predicate), maxDepth);
     }
 
     /**
      * Constructs an <tt>ActHeirarchyFlattener</tt>.
      *
-     * @param acts   the collection of acts
-     * @param filter the hierarchy flattener
+     * @param acts     the collection of acts
+     * @param filter   the hierarchy flattener
+     * @param maxDepth the maximum depth to iterate to, or <tt>-1</tt> to have unlimited depth
      */
-    public ActHierarchyIterator(Iterable<T> acts, ActHierarchyFilter<T> filter) {
+    public ActHierarchyIterator(Iterable<T> acts, ActHierarchyFilter<T> filter, int maxDepth) {
         this.acts = acts;
         this.filter = filter;
+        this.maxDepth = maxDepth;
     }
 
     /**
@@ -137,21 +135,6 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      */
     public Iterator<T> iterator() {
         return new ActIterator(maxDepth);
-    }
-
-    /**
-     * Helper to return a predicate that includes/excludes acts based on their
-     * short name.
-     *
-     * @param shortNames the act short names
-     * @param include    if <tt>true</tt> include the acts, otherwise exclude
-     *                   them
-     * @return a new predicate
-     */
-    private static Predicate createIsA(final String[] shortNames,
-                                       boolean include) {
-        Predicate result = new IsA(RelationshipRef.TARGET, shortNames);
-        return (include) ? result : new NotPredicate(result);
     }
 
     private class ActIterator implements Iterator<T> {

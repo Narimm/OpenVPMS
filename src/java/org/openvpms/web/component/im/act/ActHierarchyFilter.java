@@ -21,17 +21,20 @@ package org.openvpms.web.component.im.act;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections.functors.NotPredicate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.service.archetype.functor.IsA;
+import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -56,11 +59,14 @@ public class ActHierarchyFilter<T extends Act> {
         this(null);
     }
 
+    public ActHierarchyFilter(String[] shortNames, boolean include) {
+        this(createIsA(shortNames, include));
+    }
+
     /**
      * Creates a new <tt>ActHierarchyFilter</tt>.
      *
-     * @param predicate a predicate to filter relationships. May be
-     *                  <tt>null</tt>
+     * @param predicate a predicate to filter relationships. May be {@code null}
      */
     public ActHierarchyFilter(Predicate predicate) {
         this.predicate = predicate;
@@ -76,19 +82,48 @@ public class ActHierarchyFilter<T extends Act> {
         List<T> result = new ArrayList<T>();
         if (include(act)) {
             List<T> items = new ArrayList<T>();
-            Set<ActRelationship> relationships
-                    = act.getSourceActRelationships();
+            Collection<ActRelationship> relationships = getRelationships(act);
             for (ActRelationship relationship : relationships) {
-                if (include(relationship)) {
-                    T item = getTarget(relationship);
-                    if (item != null && include(item, act)) {
-                        items.add(item);
-                    }
+                T item = getTarget(relationship);
+                if (item != null && include(item, act)) {
+                    items.add(item);
                 }
             }
+            items = filter(act, items);
             if (include(act, items)) {
                 sortItems(items);
                 result.addAll(items);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Filters relationships.
+     *
+     * @param act the act
+     * @return the filtered relationships
+     */
+    protected Collection<ActRelationship> getRelationships(T act) {
+        if (predicate == null) {
+            return act.getSourceActRelationships();
+        }
+        return getRelationships(act.getSourceActRelationships(), predicate);
+    }
+
+    /**
+     * Filters relationships using a predicate.
+     *
+     * @param relationships the relationships to filter
+     * @param predicate     the predicate to use
+     * @return the filtered relationships
+     */
+    protected Collection<ActRelationship> getRelationships(Collection<ActRelationship> relationships,
+                                                           Predicate predicate) {
+        Collection<ActRelationship> result = new ArrayList<ActRelationship>();
+        for (ActRelationship relationship : relationships) {
+            if (predicate.evaluate(relationship)) {
+                result.add(relationship);
             }
         }
         return result;
@@ -107,13 +142,16 @@ public class ActHierarchyFilter<T extends Act> {
     }
 
     /**
-     * Determines if a relationship should be included for evaluation.
+     * Filters child acts.
+     * <p/>
+     * This implementation returns {@code children} unmodified.
      *
-     * @param relationship the relationship
-     * @return <tt>true</tt> if relationship act should be included
+     * @param parent   the top level act
+     * @param children the child acts
+     * @return the filtered acts
      */
-    protected boolean include(ActRelationship relationship) {
-        return predicate == null || predicate.evaluate(relationship);
+    protected List<T> filter(T parent, List<T> children) {
+        return children;
     }
 
     /**
@@ -149,7 +187,7 @@ public class ActHierarchyFilter<T extends Act> {
      * @param acts the items to sort
      */
     @SuppressWarnings("unchecked")
-    private void sortItems(List<T> acts) {
+    protected void sortItems(List<T> acts) {
         Transformer transformer = new Transformer() {
             public Object transform(Object input) {
                 Date date = ((Act) input).getActivityStartTime();
@@ -163,6 +201,18 @@ public class ActHierarchyFilter<T extends Act> {
         Comparator comparator = ComparatorUtils.transformedComparator(
                 ComparatorUtils.nullHighComparator(null), transformer);
         Collections.sort(acts, comparator);
+    }
+
+    /**
+     * Helper to return a predicate that includes/excludes acts based on their short name.
+     *
+     * @param shortNames the act short names
+     * @param include    if {@code true} include the acts, otherwise exclude them
+     * @return a new predicate
+     */
+    protected static Predicate createIsA(final String[] shortNames, boolean include) {
+        Predicate result = new IsA(RelationshipRef.TARGET, shortNames);
+        return (include) ? result : new NotPredicate(result);
     }
 
     /**

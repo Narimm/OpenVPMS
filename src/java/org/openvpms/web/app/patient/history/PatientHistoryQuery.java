@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.app.patient.history;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -27,22 +27,28 @@ import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
 
 /**
- * Patient medical record summary query. Enables child acts to be filtered.
+ * Patient medical record history query.
+ * <p/>
+ * This returns <em>act.patientClinicalEvent</em> acts within a date range.
+ * <br/>
+ * It provides a selector to filter acts items; filtering must be performed by the caller.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientSummaryQuery extends DateRangeActQuery<Act> {
+public class PatientHistoryQuery extends DateRangeActQuery<Act> {
 
     /**
      * The act item short names that can be filtered on.
@@ -74,10 +80,11 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
      *
      * @param patient the patient to query
      */
-    public PatientSummaryQuery(Party patient) {
+    public PatientHistoryQuery(Party patient) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION,
               new String[]{PatientArchetypes.CLINICAL_EVENT}, Act.class);
-        actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
+        actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM,
+                                                                   PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
         allShortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
         selectedShortNames = allShortNames;
         setAuto(true);
@@ -132,6 +139,17 @@ public class PatientSummaryQuery extends DateRangeActQuery<Act> {
         container.add(shortNameSelector);
         getFocusGroup().add(shortNameSelector);
         super.doLayout(container);
+    }
+
+    /**
+     * Creates a new result set.
+     *
+     * @param sort the sort constraint. May be <code>null</code>
+     * @return a new result set
+     */
+    @Override
+    protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
+        return super.createResultSet(sort);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     private String[] getSelectedShortNames(String shortName) {

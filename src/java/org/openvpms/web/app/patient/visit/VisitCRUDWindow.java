@@ -19,7 +19,7 @@ package org.openvpms.web.app.patient.visit;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
-import org.openvpms.web.app.patient.mr.SummaryCRUDWindow;
+import org.openvpms.web.app.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -27,7 +27,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 /**
  * The CRUD window for editing events and their items.
  */
-public class VisitCRUDWindow extends SummaryCRUDWindow {
+public class VisitCRUDWindow extends PatientHistoryCRUDWindow {
 
     /**
      * The context.

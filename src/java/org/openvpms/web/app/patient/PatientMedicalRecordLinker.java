@@ -15,7 +15,7 @@
  *
  *  $Id$
  */
-package org.openvpms.web.app.patient.mr;
+package org.openvpms.web.app.patient;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +35,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class PatientMedicalRecordLinker implements Runnable {
+public class PatientMedicalRecordLinker implements Runnable {
 
     /**
      * The patient clinical event.
@@ -116,7 +116,7 @@ class PatientMedicalRecordLinker implements Runnable {
      */
     private void logMissing(Act source, Act target, Act missing) {
         log.warn("Cannot link " + getId(source) + " with " + getId(target) + ": " + getId(missing)
-                 + " no longer exists");
+                         + " no longer exists");
     }
 
     /**

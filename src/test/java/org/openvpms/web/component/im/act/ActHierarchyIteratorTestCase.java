@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.patient.mr.PatientSummaryQuery;
+import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.sql.Timestamp;
@@ -54,7 +54,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
         createEvent(patient, Timestamp.valueOf("2007-01-10 11:45:00"));
 
         // query the events
-        PatientSummaryQuery query = new PatientSummaryQuery(patient);
+        PatientHistoryQuery query = new PatientHistoryQuery(patient);
         query.getComponent();
 
         // check iteration to unlimited depth
@@ -87,7 +87,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
      * @param expected   the expected no. of acts
      * @param shortNames the child act short names
      */
-    private void checkIterator(PatientSummaryQuery query, int maxDepth, int expected, String... shortNames) {
+    private void checkIterator(PatientHistoryQuery query, int maxDepth, int expected, String... shortNames) {
         Iterable<Act> summary = new ActHierarchyIterator<Act>(query, shortNames, maxDepth);
         int acts = 0;
         Act event = null;

@@ -99,7 +99,7 @@ public class PagedActHierarchyTableModel<T extends Act>
      *
      * @param objects    the acts
      * @param shortNames the child archetype short names
-     * @return an iterator to flatten the act heirarchy
+     * @return an iterator to flatten the act hierarchy
      */
     protected ActHierarchyIterator<T> createFlattener(List<T> objects, String[] shortNames) {
         return new ActHierarchyIterator<T>(objects, shortNames, maxDepth);
