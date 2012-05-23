@@ -17,10 +17,16 @@
  */
 package org.openvpms.web.app.patient.visit;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.web.app.patient.charge.VisitChargeEditor;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
 /**
  * Browser that displays clinical events and their child acts and supports editing them.
@@ -46,6 +52,19 @@ public class VisitEditorDialog extends PopupDialog {
         this.editor = visitEditor;
         setModal(true);
         getLayout().add(visitEditor.getComponent());
+
+        VisitChargeEditor chargeEditor = editor.getChargeEditor();
+        if (chargeEditor != null) {
+            final Property status = chargeEditor.getProperty("status");
+            if (status != null) {
+                onStatusChanged(status);
+                status.addModifiableListener(new ModifiableListener() {
+                    public void modified(Modifiable modifiable) {
+                        onStatusChanged(status);
+                    }
+                });
+            }
+        }
 
         visitEditor.setListener(new VisitEditorListener() {
             public void historySelected() {
@@ -82,6 +101,23 @@ public class VisitEditorDialog extends PopupDialog {
     protected void onOK() {
         if (editor.save()) {
             super.onOK();
+        }
+    }
+
+    /**
+     * Disables the apply button if the charge act status is <em>POSTED</em>, otherwise enables it.
+     *
+     * @param status the act status property
+     */
+    private void onStatusChanged(Property status) {
+        String value = (String) status.getValue();
+        Button apply = getButtons().getButton(APPLY_ID);
+        if (apply != null) {
+            if (ActStatus.POSTED.equals(value)) {
+                apply.setEnabled(false);
+            } else {
+                apply.setEnabled(true);
+            }
         }
     }
 
@@ -130,7 +166,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Marks the invoice POSTED closes the dialog if the operation is successful.
      */
     private void onPost() {
-        if (editor.getInvoice().post()) {
+        if (editor.getCharge().post()) {
             onOK();
         }
     }
@@ -139,7 +175,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Marks the invoice COMPLETED and closes the dialog if the operation is successful.
      */
     private void onComplete() {
-        if (editor.getInvoice().complete()) {
+        if (editor.getCharge().complete()) {
             onOK();
         }
     }
@@ -148,7 +184,7 @@ public class VisitEditorDialog extends PopupDialog {
      * Marks the invoice IN_PROGRESS, and closes the dialog if the operation is successful.
      */
     private void onInProgress() {
-        if (editor.getInvoice().inProgress()) {
+        if (editor.getCharge().inProgress()) {
             onOK();
         }
     }

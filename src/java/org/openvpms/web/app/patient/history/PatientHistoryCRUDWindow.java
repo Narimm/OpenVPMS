@@ -21,7 +21,6 @@ package org.openvpms.web.app.patient.history;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -32,7 +31,6 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
-import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -85,7 +83,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
      * @param archetypes the archetypes
      */
     public PatientHistoryCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, DefaultIMObjectActions.<Act>getInstance());
+        super(archetypes, PatientHistoryActions.INSTANCE);
     }
 
     /**
@@ -135,12 +133,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
-        if (enable && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
-            buttons.setEnabled(EDIT_ID, false);
-            buttons.setEnabled(DELETE_ID, false);
-        } else {
-            super.enableButtons(buttons, enable);
-        }
+        super.enableButtons(buttons, enable);
         buttons.setEnabled(PRINT_ID, enable);
     }
 
@@ -216,8 +209,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
                                                                                      GlobalContext.getInstance());
                 IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator);
                 String title = Messages.get("patient.record.summary.print");
-                InteractiveIMPrinter<Act> iPrinter
-                        = new InteractiveIMPrinter<Act>(title, printer);
+                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer);
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (OpenVPMSException exception) {

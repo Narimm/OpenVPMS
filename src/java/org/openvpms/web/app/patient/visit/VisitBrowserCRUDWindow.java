@@ -21,6 +21,8 @@ import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.app.Context;
 
+import java.util.List;
+
 /**
  * A patient medical record browser that CRUD operations.
  *
@@ -36,6 +38,13 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      */
     public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context) {
         PatientHistoryBrowser browser = new PatientHistoryBrowser(query);
+        if (browser.getSelected() == null) {
+            browser.query();
+            List<Act> objects = browser.getObjects();
+            if (!objects.isEmpty()) {
+                browser.setSelected(objects.get(0));
+            }
+        }
         setBrowser(browser);
         VisitCRUDWindow window = new VisitCRUDWindow(context);
         window.setMailContext(new CustomerMailContext(context));
