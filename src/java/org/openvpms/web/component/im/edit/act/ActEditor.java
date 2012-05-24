@@ -88,7 +88,7 @@ public abstract class ActEditor extends AbstractActEditor {
      *
      * @return the items collection editor. May be <tt>null</tt>
      */
-    protected ActRelationshipCollectionEditor getEditor() {
+    protected ActRelationshipCollectionEditor getItems() {
         if (editor == null && editItems) {
             CollectionProperty items = (CollectionProperty) getProperty("items");
             if (items != null && !items.isHidden()) {

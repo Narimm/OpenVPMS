@@ -123,7 +123,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
 
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
-        getEditor().setCreationListener(new IMObjectCreationListener() {
+        getItems().setCreationListener(new IMObjectCreationListener() {
             public void created(IMObject object) {
                 onCreated((FinancialAct) object);
             }
@@ -189,7 +189,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy(getEditor());
+        return new LayoutStrategy(getItems());
     }
 
     /**
@@ -220,7 +220,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
                     act.setTotal(new Money(balance));
                 }
             }
-            getEditor().setModified(act, true);
+            getItems().setModified(act, true);
         }
     }
 

@@ -51,7 +51,7 @@ public class ActHelper {
      */
     public static BigDecimal getSupplierAccountBalance(Party supplier) {
         String[] shortNames = {"act.supplierAccountCharges*",
-                               "act.supplierAccountPayment"};
+                "act.supplierAccountPayment"};
         return getAccountBalance(supplier.getObjectReference(), "supplier",
                                  "participation.supplier", shortNames,
                                  "act.supplierAccountOpeningBalance",
@@ -132,8 +132,7 @@ public class ActHelper {
      * @param node the node to sum
      * @return the summed total
      */
-    public static BigDecimal sum(Act act, Collection<Act> acts,
-                                 String node) {
+    public static <T extends Act> BigDecimal sum(Act act, Collection<T> acts, String node) {
         ActCalculator calc = new ActCalculator(
                 ArchetypeServiceHelper.getArchetypeService());
         return calc.sum(act, acts, node);

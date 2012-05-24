@@ -57,7 +57,7 @@ public abstract class PaymentEditor extends AccountActEditor {
      * @return the payment item editor, or <tt>null</tt> if an item couldn't be created
      */
     public PaymentItemEditor addItem() {
-        ActRelationshipCollectionEditor items = getEditor();
+        ActRelationshipCollectionEditor items = getItems();
         PaymentItemEditor result = (PaymentItemEditor) items.add();
         if (result != null && items.getCurrentEditor() == result) {
             // set the default focus to that of the item editor
@@ -71,9 +71,7 @@ public abstract class PaymentEditor extends AccountActEditor {
      */
     protected void onItemsChanged() {
         Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum((Act) getObject(),
-                                         getEditor().getCurrentActs(),
-                                         "amount");
+        BigDecimal value = ActHelper.sum((Act) getObject(), getItems().getCurrentActs(), "amount");
         amount.setValue(value);
     }
 

@@ -126,7 +126,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     public List<Act> getUnprintedDocuments(List<Act> exclude) {
         List<Act> result = new ArrayList<Act>();
-        ActRelationshipCollectionEditor items = getEditor();
+        ActRelationshipCollectionEditor items = getItems();
         Set<IMObjectReference> excludeRefs = new HashSet<IMObjectReference>();
         for (Act excluded : exclude) {
             excludeRefs.add(excluded.getObjectReference());
@@ -162,7 +162,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      * @return the charge item editor, or <tt>null</tt> if an item couldn't be created
      */
     public CustomerChargeActItemEditor addItem() {
-        ActRelationshipCollectionEditor items = getEditor();
+        ActRelationshipCollectionEditor items = getItems();
         CustomerChargeActItemEditor result = (CustomerChargeActItemEditor) items.add();
         if (result != null && items.getCurrentEditor() == result) {
             // set the default focus to that of the item editor
@@ -194,14 +194,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         boolean saved = super.doSave();
         if (saved && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
             // link the items to their corresponding clinical events
-            Party location = getLayoutContext().getContext().getLocation();
-            ChargeItemEventLinker linker = new ChargeItemEventLinker(getAuthor(), location,
-                                                                     ServiceHelper.getArchetypeService());
-            List<FinancialAct> items = new ArrayList<FinancialAct>();
-            for (Act act : getEditor().getActs()) {
-                items.add((FinancialAct) act);
-            }
-            linker.link(items);
+            linkToEvents();
 
             // mark reminders that match the new reminders completed
             if (!reminders.isEmpty()) {
@@ -210,6 +203,20 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
             }
         }
         return super.doSave();
+    }
+
+    /**
+     * Links the charge items to their corresponding clinical events.
+     */
+    protected void linkToEvents() {
+        Party location = getLayoutContext().getContext().getLocation();
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getAuthor(), location,
+                                                                 ServiceHelper.getArchetypeService());
+        List<FinancialAct> items = new ArrayList<FinancialAct>();
+        for (Act act : getItems().getActs()) {
+            items.add((FinancialAct) act);
+        }
+        linker.link(items);
     }
 
     /**
@@ -237,7 +244,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     private void initItems() {
         if (addDefaultItem) {
-            ActRelationshipCollectionEditor items = getEditor();
+            ActRelationshipCollectionEditor items = getItems();
             CollectionProperty property = items.getCollection();
             if (property.getValues().size() == 0) {
                 // no invoice items, so add one
@@ -251,14 +258,12 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      */
     private void calculateCosts() {
         Property fixedCost = getProperty("fixedCost");
-        BigDecimal fixed = ActHelper.sum((Act) getObject(),
-                                         getEditor().getCurrentActs(),
-                                         "fixedCost");
+        BigDecimal fixed = ActHelper.sum((Act) getObject(), getItems().getCurrentActs(), "fixedCost");
         fixedCost.setValue(fixed);
 
         Property unitCost = getProperty("unitCost");
         BigDecimal cost = BigDecimal.ZERO;
-        for (Act act : getEditor().getCurrentActs()) {
+        for (Act act : getItems().getCurrentActs()) {
             cost = cost.add(calcTotalUnitCost(act));
         }
         unitCost.setValue(cost);
@@ -284,7 +289,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      * @return a list of new reminders
      */
     private List<Act> getNewReminders() {
-        ActRelationshipCollectionEditor items = getEditor();
+        ActRelationshipCollectionEditor items = getItems();
         List<Act> reminders = new ArrayList<Act>();
         for (IMObjectEditor editor : items.getCurrentEditors()) {
             if (editor instanceof DefaultCustomerChargeActItemEditor) {
