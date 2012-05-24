@@ -92,6 +92,27 @@ public class ChargeItemEventLinker {
     }
 
     /**
+     * Links items to an event.
+     * <p/>
+     * The items must be linked to the same patient as the event.
+     *
+     * @param event the event to link to
+     * @param items the charge iems
+     */
+    public void link(Act event, List<FinancialAct> items) {
+        Set<Act> toSave = new HashSet<Act>();            // the acts to save
+
+        for (FinancialAct item : items) {
+            List<Act> acts = getActs(item);
+            Set<Act> changed = rules.addToEvent(event, acts);
+            toSave.addAll(changed);
+        }
+        if (!toSave.isEmpty()) {
+            service.save(toSave);
+        }
+    }
+
+    /**
      * Links multiple charge item's dispensing, investigation and document acts to the associated patient's clinical
      * events.
      *
@@ -104,13 +125,7 @@ public class ChargeItemEventLinker {
         Set<Act> toSave = new HashSet<Act>();            // the acts to save
 
         for (FinancialAct item : items) {
-            List<Act> acts = new ArrayList<Act>();
-            ActBean bean = new ActBean(item, service);
-            acts.add(item);
-            acts.addAll(bean.getNodeActs("dispensing"));
-            acts.addAll(bean.getNodeActs("investigations"));
-            acts.addAll(bean.getNodeActs("documents"));
-
+            List<Act> acts = getActs(item);
             Date startTime = item.getActivityStartTime();
             if (startTime == null) {
                 startTime = new Date();
@@ -136,6 +151,22 @@ public class ChargeItemEventLinker {
             }
             service.save(toSave);
         }
+    }
+
+    /**
+     * Returns the dispensing, investigations, and documents acts linked to a charge item.
+     *
+     * @param item the charge item
+     * @return the acts
+     */
+    private List<Act> getActs(FinancialAct item) {
+        List<Act> acts = new ArrayList<Act>();
+        ActBean bean = new ActBean(item, service);
+        acts.add(item);
+        acts.addAll(bean.getNodeActs("dispensing"));
+        acts.addAll(bean.getNodeActs("investigations"));
+        acts.addAll(bean.getNodeActs("documents"));
+        return acts;
     }
 
     /**
@@ -165,6 +196,18 @@ public class ChargeItemEventLinker {
         @Override
         public Set<Act> addToEvents(List<Act> acts, Date startTime, Map<IMObjectReference, List<Act>> events) {
             return super.addToEvents(acts, startTime, events);
+        }
+
+        /**
+         * Adds acts to an event, where no relationship exists.
+         *
+         * @param event the event
+         * @param acts  the acts to add
+         * @return the changed acts
+         */
+        @Override
+        public Set<Act> addToEvent(Act event, List<Act> acts) {
+            return super.addToEvent(event, acts);
         }
     }
 }
