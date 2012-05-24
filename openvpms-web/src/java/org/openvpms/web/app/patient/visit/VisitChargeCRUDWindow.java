@@ -19,6 +19,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
@@ -46,6 +47,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
      * The patient.
      */
     private final Party patient;
+
+    /**
+     * The event.
+     */
+    private final Act event;
 
     /**
      * The charge editor.
@@ -80,11 +86,15 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
 
     /**
      * Constructs a {@code VisitChargeCRUDWindow}.
+     *
+     * @param patient the patient
+     * @param event   the event
      */
-    public VisitChargeCRUDWindow(Party patient) {
+    public VisitChargeCRUDWindow(Party patient, Act event) {
         super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
               DefaultActActions.<FinancialAct>getInstance());
         this.patient = patient;
+        this.event = event;
     }
 
     /**
@@ -100,7 +110,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
                 viewer = new IMObjectViewer(object, null);
                 editor = null;
             } else {
-                editor = new VisitChargeEditor(object, createLayoutContext());
+                editor = new VisitChargeEditor(object, event, createLayoutContext());
                 viewer = null;
             }
         } else {

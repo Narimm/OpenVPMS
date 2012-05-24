@@ -1035,7 +1035,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
          * @param item the item to delete
          */
         public void delete(Act item) {
-            getEditor().remove(item);
+            getItems().remove(item);
         }
 
         /**
@@ -1044,7 +1044,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
          * @return the current editor. May be <tt>null</tt>
          */
         public CustomerChargeActItemEditor getCurrentEditor() {
-            return (CustomerChargeActItemEditor) getEditor().getCurrentEditor();
+            return (CustomerChargeActItemEditor) getItems().getCurrentEditor();
         }
 
     }

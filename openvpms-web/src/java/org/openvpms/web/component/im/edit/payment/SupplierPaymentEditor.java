@@ -51,7 +51,7 @@ public class SupplierPaymentEditor extends PaymentEditor {
                                  LayoutContext context) {
         super(act, parent, context);
         initParticipant("supplier", context.getContext().getSupplier());
-        getEditor().setCreationListener(new IMObjectCreationListener() {
+        getItems().setCreationListener(new IMObjectCreationListener() {
             public void created(IMObject object) {
                 onCreated((FinancialAct) object);
             }
@@ -74,7 +74,7 @@ public class SupplierPaymentEditor extends PaymentEditor {
                 BigDecimal current = ActHelper.getSupplierAccountBalance(supplier);
                 BigDecimal balance = current.subtract(diff);
                 act.setTotal(new Money(balance));
-                getEditor().setModified(act, true);
+                getItems().setModified(act, true);
             }
         }
     }

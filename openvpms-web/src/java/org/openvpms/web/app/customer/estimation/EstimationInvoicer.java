@@ -126,7 +126,7 @@ class EstimationInvoicer {
          */
         public CustomerChargeActItemEditor add() {
             CustomerChargeActItemEditor result;
-            ActRelationshipCollectionEditor items = getEditor();
+            ActRelationshipCollectionEditor items = getItems();
             Act item = (Act) items.create();
             if (item == null) {
                 throw new IllegalStateException("Failed to create invoice item");
@@ -145,7 +145,7 @@ class EstimationInvoicer {
          * Refreshes the collection display.
          */
         public void refresh() {
-            getEditor().refresh();
+            getItems().refresh();
         }
 
         /**
@@ -154,8 +154,8 @@ class EstimationInvoicer {
          * @return the items collection editor. May be <tt>null</tt>
          */
         @Override
-        public ActRelationshipCollectionEditor getEditor() {
-            return super.getEditor();
+        public ActRelationshipCollectionEditor getItems() {
+            return super.getItems();
         }
     }
 

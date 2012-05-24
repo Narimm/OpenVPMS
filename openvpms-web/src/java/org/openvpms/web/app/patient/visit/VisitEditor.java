@@ -5,6 +5,8 @@ import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.event.ChangeEvent;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -19,6 +21,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ChangeListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
@@ -39,6 +42,11 @@ public class VisitEditor {
      * The CRUD window for editing events and their items.
      */
     private final VisitBrowserCRUDWindow visitWindow;
+
+    /**
+     * The event.
+     */
+    private final Act event;
 
     /**
      * The patient history query.
@@ -115,6 +123,7 @@ public class VisitEditor {
      */
     public VisitEditor(Party patient, Act event, FinancialAct invoice, Context context) {
         this.patient = patient;
+        this.event = event;
 
         query = new PatientHistoryQuery(patient);
         query.setAllDates(true);
@@ -123,7 +132,7 @@ public class VisitEditor {
 
         visitWindow = new VisitBrowserCRUDWindow(query, context);
 
-        chargeWindow = new VisitChargeCRUDWindow(patient);
+        chargeWindow = new VisitChargeCRUDWindow(patient, event);
         chargeWindow.setObject(invoice);
 
         reminderWindow = new ReminderBrowserCRUDWindow(patient);
@@ -223,7 +232,21 @@ public class VisitEditor {
      * @return {@code true} if the invoice was saved
      */
     public boolean save() {
-        return chargeWindow.save();
+        boolean saved = chargeWindow.save();
+        if (saved) {
+            String status = chargeWindow.getObject().getStatus();
+            String newStatus = null;
+            if (FinancialActStatus.ON_HOLD.equals(status) || ActStatus.IN_PROGRESS.equals(status)) {
+                newStatus = ActStatus.IN_PROGRESS;
+            } else if (ActStatus.POSTED.equals(status) || ActStatus.COMPLETED.equals(status)) {
+                newStatus = ActStatus.COMPLETED;
+            }
+            if (newStatus != null && !status.equals(event.getStatus())) {
+                event.setStatus(newStatus);
+                saved = SaveHelper.save(event);
+            }
+        }
+        return saved;
     }
 
     /**

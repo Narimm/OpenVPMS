@@ -77,9 +77,8 @@ public class StockTransferEditor extends ActEditor {
      * @param location the location. May be <tt>null</tt>
      */
     private void transferFromChanged(Party location) {
-        for (IMObjectEditor itemEditor : getEditor().getCurrentEditors()) {
-            StockTransferItemEditor editor
-                    = (StockTransferItemEditor) itemEditor;
+        for (IMObjectEditor itemEditor : getItems().getCurrentEditors()) {
+            StockTransferItemEditor editor = (StockTransferItemEditor) itemEditor;
             editor.setTransferFrom(location);
         }
     }
@@ -90,9 +89,8 @@ public class StockTransferEditor extends ActEditor {
      * @param location the location. May be <tt>null</tt>
      */
     private void transferToChanged(Party location) {
-        for (IMObjectEditor itemEditor : getEditor().getCurrentEditors()) {
-            StockTransferItemEditor editor
-                    = (StockTransferItemEditor) itemEditor;
+        for (IMObjectEditor itemEditor : getItems().getCurrentEditors()) {
+            StockTransferItemEditor editor = (StockTransferItemEditor) itemEditor;
             editor.setTransferTo(location);
         }
     }

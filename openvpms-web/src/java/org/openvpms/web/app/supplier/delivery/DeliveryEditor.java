@@ -52,9 +52,9 @@ public class DeliveryEditor extends FinancialActEditor {
      * @param order    the order item
      */
     public void addItem(FinancialAct delivery, FinancialAct order) {
-        ActRelationshipCollectionEditor items = getEditor();
+        ActRelationshipCollectionEditor items = getItems();
         items.add(delivery);
-        DeliveryItemEditor itemEditor = (DeliveryItemEditor) getEditor().getEditor(delivery);
+        DeliveryItemEditor itemEditor = (DeliveryItemEditor) getItems().getEditor(delivery);
         itemEditor.setOrderItem(order);
     }
 
@@ -84,7 +84,7 @@ public class DeliveryEditor extends FinancialActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new DeliveryLayoutStrategy(getEditor());
+        return new DeliveryLayoutStrategy(getItems());
     }
 
 }

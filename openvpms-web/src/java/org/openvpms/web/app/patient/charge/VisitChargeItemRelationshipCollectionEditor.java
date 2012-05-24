@@ -19,6 +19,7 @@ package org.openvpms.web.app.patient.charge;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -59,15 +60,15 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
      *
      * @return the patient's acts
      */
-    public List<Act> getPatientActs() {
+    public List<FinancialAct> getPatientActs() {
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
         List<IMObject> objects = editor.getObjects();
-        List<Act> acts = new ArrayList<Act>();
+        List<FinancialAct> acts = new ArrayList<FinancialAct>();
         Party patient = getPatient();
         if (patient != null) {
             IMObjectReference patientRef = patient.getObjectReference();
             for (IMObject object : objects) {
-                Act act = (Act) object;
+                FinancialAct act = (FinancialAct) object;
                 ActBean bean = new ActBean(act);
                 if (ObjectUtils.equals(patientRef, bean.getNodeParticipantRef("patient"))) {
                     acts.add(act);

@@ -17,6 +17,7 @@
  */
 package org.openvpms.web.app.patient.charge;
 
+import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -38,6 +39,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -52,6 +54,11 @@ import java.util.List;
 public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
 
     /**
+     * The event to link charge items to.
+     */
+    private final Act event;
+
+    /**
      * The total charge for the patient for the visit.
      */
     private final SimpleProperty visitTotal;
@@ -62,19 +69,21 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     private final SimpleProperty visitTax;
 
     /**
-     * Filters the amount, tax, and printed nodes.
+     * Filters the amount, tax, reference and printed nodes.
      */
-    private static final NodeFilter filter = new NamedNodeFilter("amount", "tax", "printed");
+    private static final NodeFilter filter = new NamedNodeFilter("amount", "tax", "reference", "printed");
 
 
     /**
      * Constructs a {@code VisitChargeActEditor}.
      *
      * @param act     the act to edit
+     * @param event   the event to link charge items to
      * @param context the layout context
      */
-    public VisitChargeEditor(FinancialAct act, LayoutContext context) {
+    public VisitChargeEditor(FinancialAct act, Act event, LayoutContext context) {
         super(act, null, context);
+        this.event = event;
         visitTotal = new SimpleProperty("visitTotal", BigDecimal.ZERO, Money.class);
         visitTotal.setReadOnly(true);
         visitTax = new SimpleProperty("visitTax", BigDecimal.ZERO, Money.class);
@@ -110,7 +119,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new ActLayoutStrategy(getEditor()) {
+        return new ActLayoutStrategy(getItems()) {
             @Override
             protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
                 return FilterHelper.chain(filter, context.getDefaultNodeFilter());
@@ -136,11 +145,33 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     }
 
     /**
+     * Links the charge items to their corresponding clinical events.
+     */
+    @Override
+    protected void linkToEvents() {
+        List<FinancialAct> items = getItems().getPatientActs();
+        if (!items.isEmpty()) {
+            ChargeItemEventLinker linker = new ChargeItemEventLinker(null, null, ServiceHelper.getArchetypeService());
+            linker.link(event, items);
+        }
+    }
+
+    /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be {@code null}
+     */
+    @Override
+    protected VisitChargeItemRelationshipCollectionEditor getItems() {
+        return (VisitChargeItemRelationshipCollectionEditor) super.getItems();
+    }
+
+    /**
      * Calculates the total amount and tax for the patient.
      */
     private void calculateVisitTotals() {
-        VisitChargeItemRelationshipCollectionEditor items = (VisitChargeItemRelationshipCollectionEditor) getEditor();
-        List<Act> acts = items.getPatientActs();
+        VisitChargeItemRelationshipCollectionEditor items = getItems();
+        List<FinancialAct> acts = items.getPatientActs();
         BigDecimal total = ActHelper.sum((Act) getObject(), acts, "total");
         visitTotal.setValue(total);
 
