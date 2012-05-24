@@ -514,22 +514,46 @@ public class MedicalRecordRules {
         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
             IMObjectReference patient = entry.getKey();
             Act event = getEventForAddition(events, patient, startTime, getClinician(entry.getValue()));
-            ActBean bean = new ActBean(event, service);
-            for (Act act : entry.getValue()) {
-                if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
-                    if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, act)) {
-                        bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, act);
-                        changed.add(event);
-                        changed.add(act);
-                    }
-                } else if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act)) {
-                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act);
+            addToEvent(event, entry.getValue(), changed);
+        }
+        return changed;
+    }
+
+    /**
+     * Adds acts to an event, where no relationship exists.
+     *
+     * @param event the event
+     * @param acts  the acts to add
+     * @return the changed acts
+     */
+    protected Set<Act> addToEvent(Act event, List<Act> acts) {
+        Set<Act> changed = new HashSet<Act>();
+        addToEvent(event, acts, changed);
+        return changed;
+    }
+
+    /**
+     * Adds acts to an event, where no relationship exists.
+     *
+     * @param event   the event
+     * @param acts    the acts to add
+     * @param changed the changed acts
+     */
+    private void addToEvent(Act event, List<Act> acts, Set<Act> changed) {
+        ActBean bean = new ActBean(event, service);
+        for (Act act : acts) {
+            if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
+                if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, act)) {
+                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, act);
                     changed.add(event);
                     changed.add(act);
                 }
+            } else if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act)) {
+                bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act);
+                changed.add(event);
+                changed.add(act);
             }
         }
-        return changed;
     }
 
     /**

@@ -98,7 +98,7 @@ public class ActCalculator {
      * @return the summed total
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal sum(Act act, Collection<Act> acts, String node) {
+    public <T extends Act> BigDecimal sum(Act act, Collection<T> acts, String node) {
         BigDecimal result = sum(acts, node);
         if (isCredit(act)) {
             result = result.negate();
@@ -114,7 +114,7 @@ public class ActCalculator {
      * @return the summed total
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal sum(Iterator<Act> acts, String node) {
+    public <T extends Act> BigDecimal sum(Iterator<T> acts, String node) {
         BigDecimal result = BigDecimal.ZERO;
         while (acts.hasNext()) {
             Act act = acts.next();
@@ -197,7 +197,7 @@ public class ActCalculator {
      * @return the summed total
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private BigDecimal sum(Collection<Act> acts, String node) {
+    private <T extends Act> BigDecimal sum(Collection<T> acts, String node) {
         return sum(acts.iterator(), node);
     }
 
@@ -210,10 +210,7 @@ public class ActCalculator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     private boolean isCredit(IMObjectBean bean) {
-        if (bean.hasNode("credit")) {
-            return bean.getBoolean("credit");
-        }
-        return false;
+        return bean.hasNode("credit") && bean.getBoolean("credit");
     }
 
     /**
