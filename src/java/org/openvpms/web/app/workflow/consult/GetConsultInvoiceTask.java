@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -39,8 +40,7 @@ class GetConsultInvoiceTask extends GetInvoiceTask {
     /**
      * Executes the task.
      *
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
-     *          for any error
+     * @throws OpenVPMSException for any error
      */
     @Override
     public void execute(TaskContext context) {
