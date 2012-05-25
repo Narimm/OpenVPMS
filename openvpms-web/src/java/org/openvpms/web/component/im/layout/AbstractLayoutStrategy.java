@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -661,5 +662,20 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         return "&" + shortcut + " " + name;
     }
 
+    /**
+     * Creates a read-only version of the supplied property.
+     *
+     * @param property the property
+     * @return a read-only version of the property
+     */
+    protected Property createReadOnly(Property property) {
+        property = new DelegatingProperty(property) {
+            @Override
+            public boolean isReadOnly() {
+                return true;
+            }
+        };
+        return property;
+    }
 }
 
