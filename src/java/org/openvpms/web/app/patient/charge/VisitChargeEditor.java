@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.util.Messages;
@@ -125,6 +126,25 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
                 return FilterHelper.chain(filter, context.getDefaultNodeFilter());
             }
 
+            /**
+             * Creates a component for a property.
+             * <p/>
+             * This makes the status node read-only.
+             *
+             * @param property the property
+             * @param parent   the parent object
+             * @param context  the layout context
+             * @return a component to display <tt>property</tt>
+             */
+            @Override
+            protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+                if ("status".equals(property.getName())) {
+                    // status is not editable
+                    return super.createComponent(createReadOnly(property), parent, context);
+                }
+                return super.createComponent(property, parent, context);
+            }
+
             @Override
             protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors,
                                                       PropertySet properties, LayoutContext context) {
@@ -139,6 +159,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
 
                 result.add(1, total);
                 result.add(2, tax);
+
                 return result;
             }
         };

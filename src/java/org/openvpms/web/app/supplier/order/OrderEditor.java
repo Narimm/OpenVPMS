@@ -39,7 +39,6 @@ import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
-import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
 
 import java.util.List;
@@ -189,15 +188,6 @@ public class OrderEditor extends FinancialActEditor {
             return state;
         }
 
-        private Property createReadOnly(Property property) {
-            property = new DelegatingProperty(property) {
-                @Override
-                public boolean isReadOnly() {
-                    return true;
-                }
-            };
-            return property;
-        }
     }
 
 }

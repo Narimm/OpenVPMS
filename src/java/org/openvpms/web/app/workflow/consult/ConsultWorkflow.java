@@ -28,7 +28,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.workflow.EditVisitTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
-import org.openvpms.web.app.workflow.GetInvoiceTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
@@ -82,12 +81,13 @@ public class ConsultWorkflow extends WorkflowImpl {
         initial.setPractice(external.getPractice());
         initial.setLocation(external.getLocation());
 
-        // get the latest invoice, or create one if none is available
-        addTask(new GetInvoiceTask());
+        addTask(new GetClinicalEventTask());
+
+        // get the latest invoice, possibly associated with the event. If none exists, creates a new one
+        addTask(new GetConsultInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
 
         // get the latest clinical event and edit it.
-        addTask(new GetClinicalEventTask());
         addTask(new EditVisitTask());
 
         // Reload the task to refresh the context with any edits made
