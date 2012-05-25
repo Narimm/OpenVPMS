@@ -69,11 +69,6 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     private boolean posted;
 
     /**
-     * Post button identifier.
-     */
-    public static final String POSTED_ID = "button.post";
-
-    /**
      * Completed button identifier.
      */
     public static final String COMPLETED_ID = "button.completed";
@@ -162,7 +157,6 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
             if (enable) {
                 enable = !posted;
             }
-            buttons.setEnabled(POSTED_ID, enable);
             buttons.setEnabled(IN_PROGRESS_ID, enable);
             buttons.setEnabled(COMPLETED_ID, enable);
         }
@@ -186,20 +180,6 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
             }
         } else {
             result = true;
-        }
-        return result;
-    }
-
-    /**
-     * Marks the charge POSTED and saves it.
-     *
-     * @return {@code true} if the charge was updated
-     */
-    public boolean post() {
-        boolean result = false;
-        if (editor != null && !posted) {
-            editor.setStatus(ActStatus.POSTED);
-            result = save();
         }
         return result;
     }

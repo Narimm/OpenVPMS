@@ -141,12 +141,6 @@ public class VisitEditorDialog extends PopupDialog {
         addButton(APPLY_ID);
         addButton(OK_ID);
         addButton(CANCEL_ID);
-        buttons.add(VisitChargeCRUDWindow.POSTED_ID, new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                onPost();
-            }
-        });
         buttons.add(VisitChargeCRUDWindow.COMPLETED_ID, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -160,15 +154,6 @@ public class VisitEditorDialog extends PopupDialog {
             }
         });
         editor.setButtons(buttons);
-    }
-
-    /**
-     * Marks the invoice POSTED closes the dialog if the operation is successful.
-     */
-    private void onPost() {
-        if (editor.getCharge().post()) {
-            onOK();
-        }
     }
 
     /**
