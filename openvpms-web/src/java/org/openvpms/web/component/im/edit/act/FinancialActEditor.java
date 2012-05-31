@@ -18,24 +18,24 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.act.ActHelper;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -56,7 +56,7 @@ public class FinancialActEditor extends ActEditor {
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(FinancialAct.class);
+    private static final Log log = LogFactory.getLog(FinancialActEditor.class);
 
     /**
      * Constructs a <tt>FinancialActEditor</tt>.
@@ -65,8 +65,7 @@ public class FinancialActEditor extends ActEditor {
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context. May be <tt>null</tt>
      */
-    protected FinancialActEditor(FinancialAct act, IMObject parent,
-                                 LayoutContext context) {
+    protected FinancialActEditor(FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         recalculateTax();
     }

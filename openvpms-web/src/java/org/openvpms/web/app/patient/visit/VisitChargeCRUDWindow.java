@@ -21,10 +21,8 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -44,14 +42,14 @@ import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
 public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
 
     /**
-     * The patient.
-     */
-    private final Party patient;
-
-    /**
      * The event.
      */
     private final Act event;
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The charge editor.
@@ -82,14 +80,14 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     /**
      * Constructs a {@code VisitChargeCRUDWindow}.
      *
-     * @param patient the patient
      * @param event   the event
+     * @param context the context
      */
-    public VisitChargeCRUDWindow(Party patient, Act event) {
+    public VisitChargeCRUDWindow(Act event, Context context) {
         super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
               DefaultActActions.<FinancialAct>getInstance());
-        this.patient = patient;
         this.event = event;
+        this.context = context;
     }
 
     /**
@@ -105,7 +103,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
                 viewer = new IMObjectViewer(object, null);
                 editor = null;
             } else {
-                editor = new VisitChargeEditor(object, event, createLayoutContext());
+                editor = createVisitChargeEditor(object, event, createLayoutContext());
                 viewer = null;
             }
         } else {
@@ -133,6 +131,18 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     protected Component doLayout() {
         enableButtons(getButtons(), getObject() != null);
         return editor != null ? editor.getComponent() : viewer != null ? viewer.getComponent() : new Column();
+    }
+
+    /**
+     * Creates a new visit charge editor.
+     *
+     * @param charge  the charge
+     * @param event   the clinical event
+     * @param context the layout context
+     * @return a new visit charge editor
+     */
+    protected VisitChargeEditor createVisitChargeEditor(FinancialAct charge, Act event, LayoutContext context) {
+        return new VisitChargeEditor(charge, event, context);
     }
 
     /**
@@ -220,8 +230,6 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     @Override
     protected LayoutContext createLayoutContext() {
         LayoutContext layoutContext = super.createLayoutContext();
-        LocalContext context = new LocalContext(GlobalContext.getInstance());
-        context.setPatient(patient);
         layoutContext.setContext(context);
         return layoutContext;
     }

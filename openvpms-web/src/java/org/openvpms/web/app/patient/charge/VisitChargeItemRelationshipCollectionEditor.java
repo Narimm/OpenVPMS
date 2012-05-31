@@ -35,7 +35,9 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A relationship collection editor for visit charges.
@@ -76,6 +78,20 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
             }
         }
         return acts;
+    }
+
+    /**
+     * Returns the set of acts being edited, including that of the {@link #getCurrentEditor()}.
+     *
+     * @return the set of acts being edited
+     */
+    public List<FinancialAct> getCurrentPatientActs() {
+        Set<FinancialAct> result = new LinkedHashSet<FinancialAct>(getPatientActs());
+        IMObjectEditor current = getCurrentEditor();
+        if (current != null) {
+            result.add((FinancialAct) current.getObject());
+        }
+        return new ArrayList<FinancialAct>(result);
     }
 
     /**

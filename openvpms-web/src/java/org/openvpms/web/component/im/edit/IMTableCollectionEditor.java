@@ -641,6 +641,10 @@ public abstract class IMTableCollectionEditor<T>
      * Invoked when the current editor is modified.
      */
     protected void onCurrentEditorModified() {
+        // flag this as invalid. This is required for collections when incomplete objects can be mapped in and out
+        // of the collection
+        resetValid(false);
+
         editorModified = true;
         enableNavigation(getCurrentEditor().isValid());
         getListeners().notifyListeners(this);

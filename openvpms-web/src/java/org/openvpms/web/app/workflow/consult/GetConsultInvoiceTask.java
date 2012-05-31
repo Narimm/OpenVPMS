@@ -15,6 +15,7 @@
  */
 package org.openvpms.web.app.workflow.consult;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -27,9 +28,8 @@ import org.openvpms.web.component.workflow.TaskContext;
 
 
 /**
- * Task to query the most recent <em>act.customerAccountChargesInvoice</em>.
- * for the context customer. If the context has an <em>act.patientClinicalEvent</em> then the invoice associated with
- * this will be returned.
+ * Task to query the most recent <em>act.customerAccountChargesInvoice</em>, for the context customer.
+ * If the context has an <em>act.patientClinicalEvent</em> then the invoice associated with this will be returned.
  * <p/>
  * The invoice will be added to the context.
  *
@@ -44,6 +44,23 @@ class GetConsultInvoiceTask extends GetInvoiceTask {
      */
     @Override
     public void execute(TaskContext context) {
+        Act invoice = getInvoiceForEvent(context);
+        if (invoice != null) {
+            context.addObject(invoice);
+        } else {
+            super.execute(context);
+        }
+    }
+
+    /**
+     * Returns an invoice associated with the current event.
+     * <p/>
+     * This will select non-POSTED invoices in preference to POSTED ones, if available.
+     *
+     * @param context the context
+     * @return an invoice linked to the event, or {@code null} if none is found.
+     */
+    protected Act getInvoiceForEvent(TaskContext context) {
         Act event = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
         Act invoice = null;
         if (event != null) {
@@ -53,16 +70,13 @@ class GetConsultInvoiceTask extends GetInvoiceTask {
                 if (item != null) {
                     ActBean itemBean = new ActBean(item);
                     invoice = itemBean.getSourceAct(CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP);
-                    if (invoice != null) {
+                    if (invoice != null && !ActStatus.POSTED.equals(invoice.getStatus())) {
+                        // now if there are multiple non-POSTED invoices, which one to select? TODO
                         break;
                     }
                 }
             }
         }
-        if (invoice != null) {
-            context.addObject(invoice);
-        } else {
-            super.execute(context);
-        }
+        return invoice;
     }
 }

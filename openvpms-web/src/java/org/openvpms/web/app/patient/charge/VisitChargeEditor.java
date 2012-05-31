@@ -83,7 +83,19 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      * @param context the layout context
      */
     public VisitChargeEditor(FinancialAct act, Act event, LayoutContext context) {
-        super(act, null, context);
+        this(act, event, context, true);
+    }
+
+    /**
+     * Constructs a {@code VistitChargeEditor}.
+     *
+     * @param act            the act to edit
+     * @param event          the event to link charge items to
+     * @param context        the layout context
+     * @param addDefaultItem if{@code true} add a default item if the act has none
+     */
+    public VisitChargeEditor(FinancialAct act, Act event, LayoutContext context, boolean addDefaultItem) {
+        super(act, null, context, addDefaultItem);
         this.event = event;
         visitTotal = new SimpleProperty("visitTotal", BigDecimal.ZERO, Money.class);
         visitTotal.setReadOnly(true);
@@ -192,7 +204,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     private void calculateVisitTotals() {
         VisitChargeItemRelationshipCollectionEditor items = getItems();
-        List<FinancialAct> acts = items.getPatientActs();
+        List<FinancialAct> acts = items.getCurrentPatientActs();
         BigDecimal total = ActHelper.sum((Act) getObject(), acts, "total");
         visitTotal.setValue(total);
 

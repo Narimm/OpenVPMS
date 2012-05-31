@@ -18,8 +18,6 @@
 
 package org.openvpms.web.app.workflow.consult;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -30,17 +28,19 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
-import static org.openvpms.web.app.workflow.WorkflowTestHelper.cancelDialog;
-import static org.openvpms.web.app.workflow.WorkflowTestHelper.createAppointment;
-import static org.openvpms.web.app.workflow.WorkflowTestHelper.createTask;
+import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.cancelDialog;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.createAppointment;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.createTask;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
@@ -165,9 +165,8 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.start();
 
         PopupDialog event = workflow.editVisit();
+        workflow.addVisitInvoiceItem(patient, clinician);
         fireDialogButton(event, PopupDialog.OK_ID);
-
-        workflow.addInvoice(patient, clinician, false);
 
         workflow.checkComplete(ActStatus.IN_PROGRESS);
         workflow.checkContext(context, customer, patient, clinician);
@@ -185,16 +184,16 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.start();
 
         // first task is to edit the clinical event 
-        PopupDialog event = workflow.editVisit();
-        fireDialogButton(event, PopupDialog.OK_ID);
+        VisitEditorDialog dialog = workflow.editVisit();
+        BigDecimal amount = BigDecimal.valueOf(20);
+        workflow.addVisitInvoiceItem(patient, amount, clinician);
 
         // next is to edit the invoice
-        BigDecimal amount = BigDecimal.valueOf(20);
-        EditDialog dialog = workflow.addInvoiceItem(patient, amount, clinician);
         if (save) {
+            dialog.getEditor().selectCharges();
             fireDialogButton(dialog, PopupDialog.APPLY_ID);          // save the invoice
         }
-        workflow.addInvoiceItem(patient, amount, clinician);         // add another item. Won't be saved
+        workflow.addVisitInvoiceItem(patient, amount, clinician);    // add another item. Won't be saved
 
         // close the dialog
         cancelDialog(dialog, userClose);
@@ -221,10 +220,10 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow.start();
 
-        PopupDialog event = workflow.editVisit();
-        fireDialogButton(event, PopupDialog.OK_ID);
-
-        workflow.addInvoice(patient, clinician, ActStatus.COMPLETED);
+        VisitEditorDialog dialog = workflow.editVisit();
+        workflow.addVisitInvoiceItem(patient, clinician);
+        dialog.getEditor().getChargeEditor().setStatus(ActStatus.COMPLETED);
+        fireDialogButton(dialog, PopupDialog.OK_ID);
 
         workflow.checkComplete(WorkflowStatus.BILLED);
         workflow.checkContext(context, customer, patient, clinician);
