@@ -3,7 +3,6 @@ package org.openvpms.web.app.patient.visit;
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.event.ChangeEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
@@ -183,7 +182,7 @@ public class VisitEditor {
                 break;
             case DOCUMENT_INDEX:
                 documentWindow.setButtons(buttons);
-
+                break;
         }
     }
 
@@ -219,7 +218,7 @@ public class VisitEditor {
             addRemindersAlertsTab(model);
             addDocumentsTab(model);
             tab = TabbedPaneFactory.create(model);
-            tab.setHeight(new Extent(800, Extent.PX)); // TODO - need to calculate this in stylesheet
+            tab.setStyleName("VisitEditor.TabbedPane");
             tab.getSelectionModel().addChangeListener(new ChangeListener() {
                 @Override
                 public void onChange(ChangeEvent event) {
@@ -320,25 +319,58 @@ public class VisitEditor {
     }
 
     /**
-     * Invoked when a tab is selected. Notifies the listener if registered.
+     * Invoked when a tab is selected.
      */
     private void onTabSelected() {
-        if (listener != null) {
-            switch (tab.getSelectedIndex()) {
-                case HISTORY_INDEX:
-                    listener.historySelected();
-                    break;
-                case INVOICE_INDEX:
-                    listener.invoiceSelected();
-                    break;
-                case REMINDERS_INDEX:
-                    listener.remindersSelected();
-                    break;
-                case DOCUMENT_INDEX:
-                    listener.documentsSelected();
-                    break;
-            }
+        switch (tab.getSelectedIndex()) {
+            case HISTORY_INDEX:
+                onHistorySelected();
+                break;
+            case INVOICE_INDEX:
+                onInvoiceSelected();
+                break;
+            case REMINDERS_INDEX:
+                onRemindersSelected();
+                break;
+            case DOCUMENT_INDEX:
+                onDocumentsSelected();
+                break;
         }
     }
 
+    /**
+     * Invoked when the patient history tab is selected.
+     */
+    private void onHistorySelected() {
+        if (listener != null) {
+            listener.historySelected();
+        }
+    }
+
+    /**
+     * Invoked when the invoice tab is selected.
+     */
+    private void onInvoiceSelected() {
+        if (listener != null) {
+            listener.invoiceSelected();
+        }
+    }
+
+    /**
+     * Invoked when the reminders tab is selected.
+     */
+    private void onRemindersSelected() {
+        if (listener != null) {
+            listener.remindersSelected();
+        }
+    }
+
+    /**
+     * Invoked when the documents tab is selected.
+     */
+    private void onDocumentsSelected() {
+        if (listener != null) {
+            listener.documentsSelected();
+        }
+    }
 }

@@ -53,6 +53,11 @@ public class StylePropertyEvaluator {
     private static final String FONT_SIZE = "font.size";
 
     /**
+     * The H4 font size property.
+     */
+    private static final String FONT_H4_SIZE = "font.h4.size";
+
+    /**
      * Large padding property.
      */
     private static final String PADDING_LARGE = "padding.large";
@@ -138,6 +143,7 @@ public class StylePropertyEvaluator {
         variables.declareVariable("width", width);
         variables.declareVariable("height", height);
         evaluateAndDeclare(FONT_SIZE, result, context);
+        evaluateAndDeclare(FONT_H4_SIZE, result, context);
         evaluateAndDeclare(PADDING_LARGE, result, context);
         evaluateAndDeclare(PADDING_MEDIUM, result, context);
         evaluateAndDeclare(PADDING_SMALL, result, context);
