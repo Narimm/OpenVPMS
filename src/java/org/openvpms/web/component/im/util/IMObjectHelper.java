@@ -22,8 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -203,7 +201,7 @@ public class IMObjectHelper {
      *
      * @param reference  the object reference. May be <tt>null</tt>
      * @param shortNames the archetype range
-     * @param context
+     * @param context    the context
      * @return the object matching <tt>reference</tt>, or <tt>shortNames</tt>,
      *         or <tt>null</tt> if there are no matches
      */
@@ -213,7 +211,7 @@ public class IMObjectHelper {
         if (reference == null) {
             result = match(shortNames, context);
         } else {
-            result = getObject(reference);
+            result = getObject(reference, context);
         }
         return result;
     }
@@ -293,66 +291,6 @@ public class IMObjectHelper {
                     String value = object.getName();
                     if (value != null && value.toLowerCase().matches(regex)) {
                         result.add(object);
-                    }
-                }
-            } catch (PatternSyntaxException exception) {
-                log.warn(exception);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns a list of entities with matching nameAll strings are treated as
-     * case-insensitive.
-     *
-     * @param name    the name. May contain wildcards. If null or empty,
-     *                indicates no filtering.
-     * @param objects the objects to filter
-     * @return the matching objects
-     */
-    public static <T extends Entity> List<T> findEntityByName(
-            String name, Collection<T> objects) {
-        List<T> result = new ArrayList<T>();
-        if (StringUtils.isEmpty(name)) {
-            result.addAll(objects);
-        } else {
-            try {
-                String regex = StringUtilities.toRegEx(name.toLowerCase());
-                for (T object : objects) {
-                    if (matches(object.getName(), regex)) {
-                        result.add(object);
-                    }
-                }
-            } catch (PatternSyntaxException exception) {
-                log.warn(exception);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns a list of entities with identity.
-     * All strings are treated as case-insensitive.
-     *
-     * @param id      the identity. May contain wildcards. If null or empty,
-     *                indicates no filtering.
-     * @param objects the objects to filter
-     * @return the matching objects
-     */
-    public static <T extends Entity> List<T> findEntityByIdentity(
-            String id, Collection<T> objects) {
-        List<T> result = new ArrayList<T>();
-        if (StringUtils.isEmpty(id)) {
-            result.addAll(objects);
-        } else {
-            try {
-                String regex = StringUtilities.toRegEx(id.toLowerCase());
-                for (T object : objects) {
-                    for (EntityIdentity identity : object.getIdentities()) {
-                        if (matches(identity.getIdentity(), regex)) {
-                            result.add(object);
-                        }
                     }
                 }
             } catch (PatternSyntaxException exception) {

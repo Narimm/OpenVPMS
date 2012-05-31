@@ -87,6 +87,15 @@ public class VisitEditorDialog extends PopupDialog {
     }
 
     /**
+     * Returns the visit editor.
+     *
+     * @return the editor
+     */
+    public VisitEditor getEditor() {
+        return editor;
+    }
+
+    /**
      * Invoked when the 'apply' button is pressed. This saves the editor.
      */
     @Override

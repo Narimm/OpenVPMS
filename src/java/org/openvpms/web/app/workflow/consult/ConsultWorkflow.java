@@ -88,7 +88,7 @@ public class ConsultWorkflow extends WorkflowImpl {
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
 
         // get the latest clinical event and edit it.
-        addTask(new EditVisitTask());
+        addTask(createEditVisitTask());
 
         // Reload the task to refresh the context with any edits made
         addTask(new ReloadTask(PatientArchetypes.CLINICAL_EVENT));
@@ -121,5 +121,13 @@ public class ConsultWorkflow extends WorkflowImpl {
         super.start(initial);
     }
 
+    /**
+     * Creates a new {@link EditVisitTask}.
+     *
+     * @return a new task to edit the visit
+     */
+    protected EditVisitTask createEditVisitTask() {
+        return new EditVisitTask();
+    }
 
 }

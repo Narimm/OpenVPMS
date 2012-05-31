@@ -45,7 +45,7 @@ public class EditVisitTask extends AbstractTask {
     /**
      * The dialog.
      */
-    private PopupDialog dialog;
+    private VisitEditorDialog dialog;
 
 
     /**
@@ -80,12 +80,12 @@ public class EditVisitTask extends AbstractTask {
      *
      * @return the visit dialog, or <tt>null</tt> if none is being displayed.
      */
-    public PopupDialog getVisitDialog() {
+    public VisitEditorDialog getVisitDialog() {
         return dialog;
     }
 
     /**
-     * Launches a {@link org.openvpms.web.app.patient.visit.VisitEditorDialog} to select and edit an event.
+     * Launches a {@link VisitEditorDialog} to select and edit an event.
      * <p/>
      * The supplied event is selected by default.
      *
@@ -103,7 +103,7 @@ public class EditVisitTask extends AbstractTask {
         }
         Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"));
         if (patient != null) {
-            VisitEditor editor = new VisitEditor(patient, event, invoice, context);
+            VisitEditor editor = createVisitEditor(event, invoice, context, patient);
             String title = Messages.get("workflow.consult.selectrecord.title");
             dialog = new VisitEditorDialog(title, editor);
             dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -127,6 +127,19 @@ public class EditVisitTask extends AbstractTask {
         } else {
             notifyCancelled();
         }
+    }
+
+    /**
+     * Creates a new visit editor.
+     *
+     * @param event   the event
+     * @param invoice the invoice
+     * @param context the task context
+     * @param patient the patient
+     * @return a new editor
+     */
+    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, TaskContext context, Party patient) {
+        return new VisitEditor(patient, event, invoice, context);
     }
 
 }

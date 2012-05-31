@@ -132,7 +132,7 @@ public class VisitEditor {
 
         visitWindow = new VisitBrowserCRUDWindow(query, context);
 
-        chargeWindow = new VisitChargeCRUDWindow(patient, event);
+        chargeWindow = createVisitChargeCRUDWindow(event, context);
         chargeWindow.setObject(invoice);
 
         reminderWindow = new ReminderBrowserCRUDWindow(patient);
@@ -156,6 +156,13 @@ public class VisitEditor {
      */
     public VisitChargeEditor getChargeEditor() {
         return chargeWindow.getEditor();
+    }
+
+    /**
+     * Selects the charges tab.
+     */
+    public void selectCharges() {
+        tab.setSelectedIndex(INVOICE_INDEX);
     }
 
     /**
@@ -247,6 +254,17 @@ public class VisitEditor {
             }
         }
         return saved;
+    }
+
+    /**
+     * Creates a new visit charge CRUD window.
+     *
+     * @param event   the event
+     * @param context the context
+     * @return a new visit charge CRUD window
+     */
+    protected VisitChargeCRUDWindow createVisitChargeCRUDWindow(Act event, Context context) {
+        return new VisitChargeCRUDWindow(event, context);
     }
 
     /**

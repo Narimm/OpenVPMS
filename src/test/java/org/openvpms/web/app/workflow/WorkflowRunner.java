@@ -21,8 +21,8 @@ package org.openvpms.web.app.workflow;
 import nextapp.echo2.app.Table;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -153,7 +153,7 @@ public class WorkflowRunner<T extends WorkflowImpl> {
      *
      * @return the dialog
      */
-    public PopupDialog editVisit() {
+    public VisitEditorDialog editVisit() {
         Task current = getTask();
         assertTrue(current instanceof EditVisitTask);
         EditVisitTask edit = (EditVisitTask) current;

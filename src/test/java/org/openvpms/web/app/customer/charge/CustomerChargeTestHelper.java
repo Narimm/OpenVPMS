@@ -58,8 +58,9 @@ public class CustomerChargeTestHelper {
      * @param mgr      the popup editor manager
      * @return the editor for the new item
      */
-    public static CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient, Product product,
-                                                      BigDecimal quantity, ChargePopupEditorManager mgr) {
+    public static CustomerChargeActItemEditor addItem(AbstractCustomerChargeActEditor editor, Party patient,
+                                                      Product product, BigDecimal quantity,
+                                                      ChargePopupEditorManager mgr) {
         CustomerChargeActItemEditor itemEditor = editor.addItem();
         itemEditor.getComponent();
         assertTrue(editor.isValid());
@@ -79,7 +80,7 @@ public class CustomerChargeTestHelper {
      * @param quantity   the quantity
      * @param mgr        the popup editor manager
      */
-    public static void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+    public static void setItem(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
                                Party patient, Product product, BigDecimal quantity, ChargePopupEditorManager mgr) {
         if (itemEditor.getProperty("patient") != null) {
             itemEditor.setPatient(patient);

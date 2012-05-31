@@ -18,8 +18,6 @@
 
 package org.openvpms.web.app.workflow;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -33,8 +31,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.app.customer.charge.ChargePopupEditorManager;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
-import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.addItem;
-import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.createProduct;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -46,9 +42,14 @@ import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.system.ServiceHelper;
-import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.addItem;
+import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.createProduct;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
@@ -123,23 +124,6 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
     }
 
     /**
-     * Verifies that the current task is an EditInvoiceTask, and adds invoice item, closing the dialog.
-     *
-     * @param patient   the patient
-     * @param clinician the clinician. May be <tt>null</tt>
-     * @param status    the invoice status
-     * @return the invoice total
-     */
-    public BigDecimal addInvoice(Party patient, User clinician, String status) {
-        BigDecimal amount = BigDecimal.valueOf(20);
-        EditDialog dialog = addInvoiceItem(patient, amount, clinician);
-        CustomerChargeActEditor editor = (CustomerChargeActEditor) dialog.getEditor();
-        editor.setStatus(status);
-        fireDialogButton(dialog, PopupDialog.OK_ID);  // save the invoice
-        return getInvoice().getTotal();
-    }
-
-    /**
      * Verifies that the invoice matches the specified details.
      *
      * @param status the expected status
@@ -152,6 +136,15 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
         ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
         BigDecimal itemTotal = calc.sum(act, "total");
         assertTrue(amount.compareTo(itemTotal) == 0);
+    }
+
+    /**
+     * Returns the practice.
+     *
+     * @return the practice
+     */
+    protected Party getPractice() {
+        return practice;
     }
 
     /**

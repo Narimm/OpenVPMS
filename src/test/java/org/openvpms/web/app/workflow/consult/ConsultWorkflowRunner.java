@@ -18,15 +18,33 @@
 
 package org.openvpms.web.app.workflow.consult;
 
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.web.app.customer.charge.ChargePopupEditorManager;
+import org.openvpms.web.app.patient.charge.VisitChargeEditor;
+import org.openvpms.web.app.patient.charge.VisitChargeItemRelationshipCollectionEditor;
+import org.openvpms.web.app.patient.visit.VisitChargeCRUDWindow;
+import org.openvpms.web.app.patient.visit.VisitEditor;
+import org.openvpms.web.app.patient.visit.VisitEditorDialog;
+import org.openvpms.web.app.workflow.EditVisitTask;
+import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.workflow.TaskContext;
+
+import java.math.BigDecimal;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.workflow.EditIMObjectTask;
+import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.addItem;
+import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.createProduct;
 
 
 /**
@@ -53,6 +71,41 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         super(practice);
         this.act = act;
         setWorkflow(new TestWorkflow(act, context));
+    }
+
+    /**
+     * Verifies that the current task is an EditVisitTask, and adds an invoice item.
+     *
+     * @param patient   the patient
+     * @param clinician the clinician. May be <tt>null</tt>
+     * @return the invoice total
+     */
+    public BigDecimal addVisitInvoiceItem(Party patient, User clinician) {
+        BigDecimal amount = BigDecimal.valueOf(20);
+        addVisitInvoiceItem(patient, amount, clinician);
+        return getInvoice().getTotal();
+    }
+
+    /**
+     * Verifies that the current task is an EditInvoiceTask, and adds invoice item for the specified amount.
+     *
+     * @param patient   the patient
+     * @param amount    the amount
+     * @param clinician the clinician. May be <tt>null</tt>
+     * @return the edit dialog
+     */
+    public VisitEditorDialog addVisitInvoiceItem(Party patient, BigDecimal amount, User clinician) {
+        TestEditVisitTask task = (TestEditVisitTask) getTask();
+        VisitEditorDialog dialog = task.getVisitDialog();
+
+        // get the editor and add an item
+        VisitEditor visitEditor = dialog.getEditor();
+        VisitChargeEditor editor = visitEditor.getChargeEditor();
+        assertNotNull(editor);
+        editor.setClinician(clinician);
+        Product product = createProduct(ProductArchetypes.SERVICE, amount, getPractice());
+        addItem(editor, patient, product, BigDecimal.ONE, task.getEditorManager());
+        return dialog;
     }
 
     /**
@@ -94,12 +147,75 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         }
 
         /**
-         * Creates a new task to edit the invoice.
+         * Creates a new {@link EditVisitTask}.
          *
-         * @return a new task
+         * @return a new task to edit the visit
          */
-        protected EditIMObjectTask createEditInvoiceTask() {
-            return new EditInvoiceTask();
+        @Override
+        protected EditVisitTask createEditVisitTask() {
+            return new TestEditVisitTask();
         }
     }
+
+    /**
+     * Helper to edit invoices.
+     * This is required to automatically close popup dialogs.
+     */
+    protected static class TestEditVisitTask extends EditVisitTask {
+
+        /**
+         * The popup dialog manager.
+         */
+        private ChargePopupEditorManager manager = new ChargePopupEditorManager();
+
+        /**
+         * Returns the popup dialog manager.
+         *
+         * @return the popup dialog manager
+         */
+        public ChargePopupEditorManager getEditorManager() {
+            return manager;
+        }
+
+        /**
+         * Creates a new visit editor.
+         *
+         * @param event   the event
+         * @param invoice the invoice
+         * @param context the task context
+         * @param patient the patient
+         * @return a new editor
+         */
+        @Override
+        protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, TaskContext context, Party patient) {
+            return new VisitEditor(patient, event, invoice, context) {
+                @Override
+                protected VisitChargeCRUDWindow createVisitChargeCRUDWindow(Act event, Context context) {
+                    return new VisitChargeCRUDWindow(event, context) {
+                        @Override
+                        protected VisitChargeEditor createVisitChargeEditor(FinancialAct charge, Act event,
+                                                                            LayoutContext context) {
+                            return new TestVisitChargeEditor(charge, event, context);
+                        }
+                    };
+                }
+            };
+        }
+
+        private class TestVisitChargeEditor extends VisitChargeEditor {
+            public TestVisitChargeEditor(FinancialAct charge, Act event, LayoutContext context) {
+                super(charge, event, context, false); // don't add a default item...
+            }
+
+            @Override
+            protected ActRelationshipCollectionEditor createItemsEditor(Act act,
+                                                                        CollectionProperty items) {
+                VisitChargeItemRelationshipCollectionEditor result
+                        = new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
+                result.setPopupEditorManager(manager);
+                return result;
+            }
+        }
+    }
+
 }
