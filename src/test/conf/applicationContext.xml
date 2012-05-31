@@ -148,12 +148,19 @@
     </bean>
 
     <!--  The Lookup Service -->
-    <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
+    <bean id="lookupService" class="org.openvpms.component.business.service.lookup.CachingLookupService">
+        <constructor-arg index="0" ref="archetypeRuleService"/>
         <constructor-arg index="1">
             <ref local="imObjectDao"/>
+        </constructor-arg>
+        <constructor-arg index="2">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="diskPersistent" value="false"/>
+                <property name="cacheName" value="lookupCache"/>
+                <property name="maxElementsInMemory" value="40000"/>
+                <property name="overflowToDisk" value="false"/>
+                <property name="eternal" value="true"/>
+            </bean>
         </constructor-arg>
     </bean>
 

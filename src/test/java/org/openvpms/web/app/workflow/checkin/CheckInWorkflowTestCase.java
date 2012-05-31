@@ -18,9 +18,6 @@
 
 package org.openvpms.web.app.workflow.checkin;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -33,8 +30,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import static org.openvpms.web.app.workflow.WorkflowTestHelper.createAppointment;
-import static org.openvpms.web.app.workflow.WorkflowTestHelper.createWorkList;
 import org.openvpms.web.app.workflow.WorkflowTestHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -42,9 +37,15 @@ import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.test.AbstractAppTest;
-import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.createAppointment;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.createWorkList;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
@@ -106,7 +107,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
 
         // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
@@ -133,7 +134,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
         workflow.checkComplete(true, customer, patient, context);
     }
 
@@ -165,7 +166,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(newPatient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(newPatient, clinician, ActStatus.IN_PROGRESS);
 
         workflow.checkComplete(true, customer, newPatient, context);
     }
@@ -246,7 +247,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
 
         // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
@@ -323,7 +324,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
 
         workflow.checkComplete(true, customer, patient, context);
     }
@@ -357,6 +358,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         Entity taskType = ScheduleTestHelper.createTaskType();
         workList = createWorkList(taskType, 1);
         context = new LocalContext();
+        context.setLocation(TestHelper.createLocation());
         context.setUser(user);
     }
 
