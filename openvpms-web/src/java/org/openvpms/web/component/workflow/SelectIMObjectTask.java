@@ -220,8 +220,17 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
              * Invoked to create a new object.
              */
             private void onNew() {
-                createTask.addTaskListener(getTaskListeners());
-                start(createTask, context);
+                if (createTask != null) {
+                    createTask.addTaskListener(new DefaultTaskListener() {
+                        public void taskEvent(TaskEvent event) {
+                            notifyEvent(event.getType());
+                        }
+                    });
+                    start(createTask, context);
+                } else {
+                    // shouldn't occur
+                    notifyCancelled();
+                }
             }
 
         });

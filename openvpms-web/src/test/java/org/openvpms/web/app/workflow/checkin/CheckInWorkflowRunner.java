@@ -18,11 +18,6 @@
 
 package org.openvpms.web.app.workflow.checkin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -49,12 +44,18 @@ import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.test.EchoTestHelper;
-import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 /**
  * Helper to run the check-in workflow.
@@ -281,6 +282,8 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
      * @param context            the context to check
      */
     public void checkComplete(boolean appointmentUpdated, Party customer, Party patient, Context context) {
+        assertNull(getTask());
+
         assertEquals(patient, context.getPatient());
         assertEquals(customer, context.getCustomer());
         appointment = IMObjectHelper.reload(appointment);

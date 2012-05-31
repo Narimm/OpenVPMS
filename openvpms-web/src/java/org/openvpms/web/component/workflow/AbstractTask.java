@@ -180,7 +180,7 @@ public abstract class AbstractTask implements Task {
      * @return the display names for the short names
      */
     protected static String getType(String[] shortNames) {
-        StringBuffer type = new StringBuffer();
+        StringBuilder type = new StringBuilder();
         for (int i = 0; i < shortNames.length && i < 2; ++i) {
             if (i != 0) {
                 type.append("/");
@@ -225,7 +225,7 @@ public abstract class AbstractTask implements Task {
      * @param type the event type
      * @throws IllegalStateException if notification has already occurred
      */
-    private void notifyEvent(TaskEvent.Type type) {
+    protected void notifyEvent(TaskEvent.Type type) {
         if (finished) {
             throw new IllegalStateException(
                     "Listener has already been notified");
