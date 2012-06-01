@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
@@ -39,6 +40,8 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.component.retry.AbstractRetryable;
+import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -182,10 +185,8 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     @Override
     protected void linkToEvents() {
-        List<FinancialAct> items = getItems().getPatientActs();
-        if (!items.isEmpty()) {
-            ChargeItemEventLinker linker = new ChargeItemEventLinker(null, null, ServiceHelper.getArchetypeService());
-            linker.link(event, items);
+        if (!getItems().getPatientActs().isEmpty()) {
+            Retryer.run(new ItemEventLinker());
         }
     }
 
@@ -212,4 +213,48 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
         visitTax.setValue(tax);
     }
 
+    private class ItemEventLinker extends AbstractRetryable {
+
+        /**
+         * Runs the action for the first time.
+         *
+         * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+         *         retried
+         * @throws RuntimeException if the action fails and may be retried
+         */
+        @Override
+        public boolean runFirst() {
+            return run(event);
+        }
+
+        /**
+         * Runs the action. This is invoked after the first attempt to run the action has failed.
+         *
+         * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+         *         retried
+         * @throws RuntimeException if the action fails and may be retried
+         */
+        @Override
+        public boolean runSubsequent() {
+            boolean result;
+            Act act = IMObjectHelper.reload(event);
+            result = act != null && run(act); // if act doesn't exist, don't attempt retry
+            return result;
+        }
+
+        /**
+         * Link the charge items to the event.
+         *
+         * @param act the event
+         * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+         *         retried
+         * @throws RuntimeException if the action fails and may be retried
+         */
+        private boolean run(Act act) {
+            List<FinancialAct> items = getItems().getPatientActs();
+            ChargeItemEventLinker linker = new ChargeItemEventLinker(null, null, ServiceHelper.getArchetypeService());
+            linker.link(act, items);
+            return true;
+        }
+    }
 }

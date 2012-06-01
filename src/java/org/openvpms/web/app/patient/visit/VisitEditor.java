@@ -20,14 +20,17 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ChangeListener;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.retry.AbstractRetryable;
+import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -240,17 +243,7 @@ public class VisitEditor {
     public boolean save() {
         boolean saved = chargeWindow.save();
         if (saved) {
-            String status = chargeWindow.getObject().getStatus();
-            String newStatus = null;
-            if (FinancialActStatus.ON_HOLD.equals(status) || ActStatus.IN_PROGRESS.equals(status)) {
-                newStatus = ActStatus.IN_PROGRESS;
-            } else if (ActStatus.POSTED.equals(status) || ActStatus.COMPLETED.equals(status)) {
-                newStatus = ActStatus.COMPLETED;
-            }
-            if (newStatus != null && !status.equals(event.getStatus())) {
-                event.setStatus(newStatus);
-                saved = SaveHelper.save(event);
-            }
+            updateVisitStatus();
         }
         return saved;
     }
@@ -340,8 +333,16 @@ public class VisitEditor {
 
     /**
      * Invoked when the patient history tab is selected.
+     * <p/>
+     * This refreshes the history if the current event being displayed.
      */
     private void onHistorySelected() {
+        Browser<Act> browser = visitWindow.getBrowser();
+        if (browser.getObjects().contains(event)) {
+            Act selected = browser.getSelected();
+            browser.query();
+            browser.setSelected(selected);
+        }
         if (listener != null) {
             listener.historySelected();
         }
@@ -371,6 +372,61 @@ public class VisitEditor {
     private void onDocumentsSelected() {
         if (listener != null) {
             listener.documentsSelected();
+        }
+    }
+
+    /**
+     * Updates the visit status based on the charge status.
+     */
+    private void updateVisitStatus() {
+        Retryer.run(new VisitStatusUpdater());
+    }
+
+    private class VisitStatusUpdater extends AbstractRetryable {
+        /**
+         * Runs the action for the first time.
+         *
+         * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+         *         retried
+         * @throws RuntimeException if the action fails and may be retried
+         */
+        @Override
+        public boolean runFirst() {
+            return false;
+        }
+
+        /**
+         * Runs the action. This is invoked after the first attempt to run the action has failed.
+         *
+         * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+         *         retried
+         * @throws RuntimeException if the action fails and may be retried
+         */
+        @Override
+        public boolean runSubsequent() {
+            Act act = IMObjectHelper.reload(event);
+            return (act != null) && updateStatus(act);
+        }
+
+        /**
+         * Updates the visit status based on that of the charge.
+         *
+         * @param event the visit
+         * @return {@code true}
+         */
+        private boolean updateStatus(Act event) {
+            String status = chargeWindow.getObject().getStatus();
+            String newStatus = null;
+            if (FinancialActStatus.ON_HOLD.equals(status) || ActStatus.IN_PROGRESS.equals(status)) {
+                newStatus = ActStatus.IN_PROGRESS;
+            } else if (ActStatus.POSTED.equals(status) || ActStatus.COMPLETED.equals(status)) {
+                newStatus = ActStatus.COMPLETED;
+            }
+            if (newStatus != null && !status.equals(event.getStatus())) {
+                event.setStatus(newStatus);
+                ServiceHelper.getArchetypeService().save(event);
+            }
+            return true;
         }
     }
 }
