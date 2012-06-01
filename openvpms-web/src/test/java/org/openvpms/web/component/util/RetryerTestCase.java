@@ -17,12 +17,17 @@
  */
 package org.openvpms.web.component.util;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
+import org.openvpms.web.component.retry.Retryable;
+import org.openvpms.web.component.retry.Retryer;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
- * Tests the {@link Retryer}.
+ * Tests the {@link org.openvpms.web.component.retry.Retryer}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -37,7 +42,7 @@ public class RetryerTestCase {
         Action action = new Action(9);
         Retryer retryer = new Retryer(action);
         retryer.setDelay(0); // no delay
-        retryer.start();
+        assertTrue(retryer.start());
         assertEquals(10, action.getCount());
     }
 
@@ -50,7 +55,7 @@ public class RetryerTestCase {
         FlagAction elseAction = new FlagAction();
         Retryer retryer = new Retryer(new Action(false), thenAction, elseAction);
         retryer.setDelay(0); // no delay
-        retryer.start();
+        assertTrue(retryer.start());
         assertTrue(thenAction.hasRun());
         assertFalse(elseAction.hasRun());
     }
@@ -64,7 +69,7 @@ public class RetryerTestCase {
         FlagAction elseAction = new FlagAction();
         Retryer retryer = new Retryer(new Action(true), thenAction, elseAction);
         retryer.setDelay(0); // no delay
-        retryer.start();
+        assertFalse(retryer.start());
         assertFalse(thenAction.hasRun());
         assertTrue(elseAction.hasRun());
     }
@@ -78,13 +83,13 @@ public class RetryerTestCase {
         FlagAction elseAction = new FlagAction();
         Retryer retryer = new Retryer(new Action(9), thenAction, elseAction);
         retryer.setDelay(0); // no delay
-        retryer.start();
+        assertTrue(retryer.start());
         assertTrue(thenAction.hasRun());
         assertFalse(elseAction.hasRun());
     }
 
 
-    private static class Action implements Runnable {
+    private static class Action implements Retryable {
 
         /**
          * Determines if the action should always fail.
@@ -124,10 +129,11 @@ public class RetryerTestCase {
         /**
          * Runs the action.
          */
-        public void run() {
+        public boolean run() {
             if (fail || ++count <= attempts) {
                 throw new RuntimeException("RetryerTestCase - action set to fail");
             }
+            return true;
         }
 
         /**

@@ -42,10 +42,10 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.Retryer;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Arrays;
@@ -161,7 +161,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
      * @param isNew determines if the object is a new instance
      */
     @Override
-    protected void onSaved(final Act act, final boolean isNew) {
+    protected void onSaved(Act act, boolean isNew) {
         if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
             if (getEvent() == null) {
                 createEvent();
@@ -169,13 +169,8 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
             // link the item to its parent event, if required. As there might be multiple user's accessing the event,
             // use a Retryer to retry if the linking fails initially
             PatientMedicalRecordLinker recordAction = new PatientMedicalRecordLinker(getEvent(), act);
-            Runnable done = new Runnable() {
-                public void run() {
-                    PatientHistoryCRUDWindow.super.onSaved(act, isNew);
-                }
-            };
-            Retryer retryer = new Retryer(recordAction, done, done);
-            retryer.start();
+            Retryer.run(recordAction);
+            super.onSaved(act, isNew);
         } else {
             setEvent(act);
             PatientHistoryCRUDWindow.super.onSaved(act, isNew);

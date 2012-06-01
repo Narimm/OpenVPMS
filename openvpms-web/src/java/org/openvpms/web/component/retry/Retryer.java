@@ -15,10 +15,11 @@
  *
  *  $Id$
  */
-package org.openvpms.web.component.util;
+package org.openvpms.web.component.retry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
@@ -47,7 +48,7 @@ public class Retryer {
     /**
      * The action to run.
      */
-    private Runnable action;
+    private Retryable action;
 
     /**
      * The action to invoke when the action successfully completes.
@@ -79,7 +80,7 @@ public class Retryer {
      *
      * @param action the action to run
      */
-    public Retryer(Runnable action) {
+    public Retryer(Retryable action) {
         this(action, null);
     }
 
@@ -87,9 +88,9 @@ public class Retryer {
      * Constructs a <tt>Retryer</tt>.
      *
      * @param action     the action
-     * @param thenAction the action to invoke when the action successfully completes. May be <tt>null</tt>
+     * @param thenAction the action to invoke when the action successfully completes. May be {@code null}
      */
-    public Retryer(Runnable action, Runnable thenAction) {
+    public Retryer(Retryable action, Runnable thenAction) {
         this(action, thenAction, null);
     }
 
@@ -97,30 +98,34 @@ public class Retryer {
      * Constructs a <tt>Retryer</tt>.
      *
      * @param action     the action
-     * @param thenAction the action to invoke when the action successfully completes. May be <tt>null</tt>
-     * @param elseAction the action to invoke when the action fails to complete. May be <tt>null</tt>
+     * @param thenAction the action to invoke when the action successfully completes. May be {@code null}
+     * @param elseAction the action to invoke when the action fails to complete. May be {@code null}
      */
-    public Retryer(Runnable action, Runnable thenAction, Runnable elseAction) {
+    public Retryer(Retryable action, Runnable thenAction, Runnable elseAction) {
         this.action = action;
         this.thenAction = thenAction;
         this.elseAction = elseAction;
     }
 
     /**
-     * Starts the action.
+     * Runs an action, retrying it if it fails.
+     *
+     * @param action the action to run
+     * @return {@code true} if the action ran successfully
      */
-    public void start() {
-        runs = 0;
-        run();
+    public static boolean run(Retryable action) {
+        Retryer retryer = new Retryer(action);
+        return retryer.start();
     }
 
     /**
-     * Returns the no. of attempts to run the action.
+     * Starts the action.
      *
-     * @return the no. of attempts
+     * @return {@code true} if the action (and any then-action) completes successfully
      */
-    public int getRuns() {
-        return runs;
+    public boolean start() {
+        runs = 0;
+        return run();
     }
 
     /**
@@ -136,69 +141,56 @@ public class Retryer {
      * Runs the action.
      * <p/>
      * If the action completes successfully, the {@link #runThenAction} will be invoked.
-     * If the action fails, then {@link #runFailed} will be invoked.
-     * or {@link #runElseAction()}
+     * If the action fails after the maximum no. of attempts, then {@link #runElseAction()} will be invoked.
+     *
+     * @return {@code true} if all actions complete successfully
      */
-    protected void run() {
+    protected boolean run() {
+        boolean result = false;
         boolean success = false;
-        ++runs;
-        try {
-            action.run();
-            success = true;
-        } catch (Throwable exception) {
-            runFailed(exception);
+        for (int i = 0; i < attempts; ++i) {
+            ++runs;
+            try {
+                if (action.run()) {
+                    success = true;
+                } else {
+                    logAbort();
+                }
+                break;
+            } catch (Throwable exception) {
+                if (runs >= attempts) {
+                    logAbort(exception);
+                    break;
+                } else {
+                    logRetry(exception);
+                    delay();
+                }
+            }
         }
         if (success) {
-            runThenAction();
+            result = runThenAction();
+        } else {
+            runElseAction();
         }
+        return result;
     }
 
     /**
      * Runs the "thenAction", if one is present.
-     */
-    protected void runThenAction() {
-        run(thenAction);
-    }
-
-    /**
-     * Rurns the "elseAction", if one is present.
-     */
-    protected void runElseAction() {
-        run(elseAction);
-    }
-
-    /**
-     * Invoked when the action fails.
      *
-     * @param exception the cause of the failure
+     * @return {@code true} if the action completes successfully
      */
-    protected void runFailed(Throwable exception) {
-        if (runs >= attempts) {
-            abort(exception);
-        } else {
-            retry(exception);
-        }
+    protected boolean runThenAction() {
+        return run(thenAction);
     }
 
     /**
-     * Invoked to run the action again, after failure.
+     * Runs the "elseAction", if one is present.
      *
-     * @param exception the cause of the failure
+     * @return {@code true} if the action completes successfully
      */
-    protected void retry(Throwable exception) {
-        logRetry(exception);
-        delay();
-        run();
-    }
-
-    /**
-     * Invoked to abort the action, after failure.
-     *
-     * @param exception the cause of the failure
-     */
-    protected void abort(Throwable exception) {
-        logAbort(exception);
-        runElseAction();
+    protected boolean runElseAction() {
+        return run(elseAction);
     }
 
     /**
@@ -208,6 +200,13 @@ public class Retryer {
      */
     protected void logRetry(Throwable exception) {
         log.warn("Retrying " + action + " after " + runs + " attempts", exception);
+    }
+
+    /**
+     * Logs that an action is being aborted.
+     */
+    protected void logAbort() {
+        log.warn("Aborting " + action + " after " + runs + " attempts");
     }
 
     /**
@@ -234,15 +233,19 @@ public class Retryer {
     /**
      * Runs an action, displaying any errors.
      *
-     * @param runnable the runnable. May be <tt>null</tt>
+     * @param action the action. May be {@code null}
+     * @return {@code} true if action is {@code null} or completes successfully
      */
-    private void run(Runnable runnable) {
-        if (runnable != null) {
+    private boolean run(Runnable action) {
+        boolean result = true;
+        if (action != null) {
             try {
-                runnable.run();
+                action.run();
             } catch (Throwable exception) {
+                result = false;
                 ErrorHelper.show(exception);
             }
         }
+        return result;
     }
 }

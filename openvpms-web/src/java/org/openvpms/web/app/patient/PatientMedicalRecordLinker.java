@@ -25,17 +25,18 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.retry.Retryable;
 
 
 /**
- * Helper to link medical records in a way suitable for {@link org.openvpms.web.component.util.Retryer}.
+ * Helper to link medical records in a way suitable for {@link org.openvpms.web.component.retry.Retryer}.
  * <p/>
  * This is required as there may be a lot of contention for a given set of patient records.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientMedicalRecordLinker implements Runnable {
+public class PatientMedicalRecordLinker implements Retryable {
 
     /**
      * The patient clinical event.
@@ -82,20 +83,24 @@ public class PatientMedicalRecordLinker implements Runnable {
     /**
      * Link the records.
      *
-     * @throws RuntimeException for any error
+     * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+     *         retried
+     * @throws RuntimeException if the action fails and may be retried
      */
-    public void run() {
+    public boolean run() {
+        boolean result = false;
         Act currentEvent = IMObjectHelper.reload(event);
         Act currentItem = IMObjectHelper.reload(item);
         if (currentEvent == null) {
             logMissing(event, item, event);
+        } else if (currentItem == null) {
+            logMissing(event, item, item);
         } else {
-            if (currentItem == null) {
-                logMissing(event, item, item);
-            }
-            // link the records to the event (those that exist...)
+            // link the records to the event
             rules.linkMedicalRecords(currentEvent, currentItem);
+            result = true;
         }
+        return result;
     }
 
     /**

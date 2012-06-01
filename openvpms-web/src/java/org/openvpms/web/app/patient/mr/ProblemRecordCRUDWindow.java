@@ -29,7 +29,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.Retryer;
+import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -105,18 +105,13 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
      * @param isNew determines if the object is a new instance
      */
     @Override
-    protected void onSaved(final Act act, final boolean isNew) {
+    protected void onSaved(Act act, boolean isNew) {
         Act event = getEvent(act);
         if (event != null) {
             // link the act to the event
             PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(event, act);
-            Runnable done = new Runnable() {
-                public void run() {
-                    ProblemRecordCRUDWindow.super.onSaved(act, isNew);
-                }
-            };
-            Retryer retryer = new Retryer(linker, done, done);
-            retryer.start();
+            Retryer.run(linker);
+            super.onSaved(act, isNew);
         }
     }
 
