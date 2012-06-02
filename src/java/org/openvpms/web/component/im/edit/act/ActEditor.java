@@ -131,8 +131,9 @@ public abstract class ActEditor extends AbstractActEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        if (editor != null) {
-            return new ActLayoutStrategy(editor);
+        ActRelationshipCollectionEditor items = getItems();
+        if (items != null) {
+            return new ActLayoutStrategy(items);
         } else if (getProperty("items") != null) {
             return new ActLayoutStrategy(false);
         } else {
