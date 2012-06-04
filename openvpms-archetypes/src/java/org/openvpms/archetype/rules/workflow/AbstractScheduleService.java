@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.workflow;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -146,8 +147,19 @@ public abstract class AbstractScheduleService implements ScheduleService {
                 result = copy(value);
             }
         } else {
+            // query the events for the day. If an event spans multiple days, try and use a cached version from
+            // to avoid unnecessary duplicates.
             List<PropertySet> sets = query(schedule, day);
-            Value value = new Value(sets);
+            List<PropertySet> toCache = new ArrayList<PropertySet>();
+            for (PropertySet set : sets) {
+                Date date = DateRules.getDate(set.getDate(ScheduleEvent.ACT_START_TIME));
+                if (!date.equals(day)) {
+                    // attempt to find a cached version of the set
+                    set = referenceExisting(set, schedule);
+                }
+                toCache.add(set);
+            }
+            Value value = new Value(toCache);
             result = copy(value);
             cache.put(new Element(key, value));
         }
@@ -166,8 +178,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
         List<PropertySet> results = new ArrayList<PropertySet>();
         while (fromDay.compareTo(toDay) <= 0) {
             for (PropertySet event : getEvents(schedule, fromDay)) {
-                Date startTime = event.getDate(
-                        ScheduleEvent.ACT_START_TIME);
+                Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
                 Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
                 if (DateRules.intersects(startTime, endTime, from, to)) {
                     results.add(event);
@@ -185,7 +196,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * Returns the schedule reference from an event.
      *
      * @param event the event
-     * @return a reference to the schedule. May be <tt>null</tt>
+     * @return a reference to the schedule. May be {@code null}
      */
     protected abstract IMObjectReference getSchedule(Act event);
 
@@ -198,8 +209,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * @param to       the end time
      * @return a new query
      */
-    protected abstract ScheduleEventQuery createQuery(Entity schedule,
-                                                      Date from, Date to);
+    protected abstract ScheduleEventQuery createQuery(Entity schedule, Date from, Date to);
 
     /**
      * Returns the archetype service.
@@ -221,8 +231,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
         ActBean bean = new ActBean(event, service);
         ObjectSet set = new ObjectSet();
         assemble(set, bean);
-        IMObjectReference schedule
-                = set.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
+        IMObjectReference schedule = set.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
         IMObjectReference act = set.getReference(ScheduleEvent.ACT_REFERENCE);
         addEvent(schedule, act, set);
     }
@@ -232,37 +241,22 @@ public abstract class AbstractScheduleService implements ScheduleService {
      *
      * @param schedule the event schedule
      * @param act      the event act reference
-     * @param set      the <tt>PropertySet</tt> representation of the event
+     * @param set      the <tt>ObjectSet</tt> representation of the event
      */
-    protected void addEvent(IMObjectReference schedule, IMObjectReference act,
-                            PropertySet set) {
-        Date date = set.getDate(ScheduleEvent.ACT_START_TIME);
-        addEvent(schedule, act, date, set);
-    }
-
-    /**
-     * Adds an event to the cache.
-     *
-     * @param schedule the event schedule
-     * @param act      the event act reference
-     * @param date     the date
-     * @param set      the <tt>PropertySet</tt> representation of the event
-     */
-    protected void addEvent(IMObjectReference schedule, IMObjectReference act,
-                            Date date, PropertySet set) {
-        if (schedule != null && act != null && date != null) {
-            Element element = getElement(schedule, date);
-            if (element != null) {
-                add(element, act, set);
-            }
+    protected void addEvent(IMObjectReference schedule, IMObjectReference act, PropertySet set) {
+        Date from = set.getDate(ScheduleEvent.ACT_START_TIME);
+        Date to = set.getDate(ScheduleEvent.ACT_END_TIME);
+        from = DateRules.getDate(from);
+        to = DateRules.getDate(to);
+        for (Element element : getElements(schedule, from, to)) {
+            add(element, act, set);
         }
     }
 
     /**
      * Removes an event from the cache.
      * <p/>
-     * This invokes {@link #removeEvent(Act, IMObjectReference)} with the
-     * original version of the event, if present.
+     * This invokes {@link #removeEvent(Act, IMObjectReference)} with the original version of the event, if present.
      *
      * @param event the event to remove
      */
@@ -281,10 +275,10 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * @param schedule the schedule to remove the event from
      */
     protected void removeEvent(Act event, IMObjectReference schedule) {
+        Date from = DateRules.getDate(event.getActivityStartTime());
+        Date to = DateRules.getDate(event.getActivityEndTime());
         IMObjectReference act = event.getObjectReference();
-        Date date = getStart(event.getActivityStartTime());
-        Element element = getElement(schedule, date);
-        if (element != null) {
+        for (Element element : getElements(schedule, from, to)) {
             remove(element, act);
         }
     }
@@ -296,8 +290,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
      * @param act     the act reference
      * @param set     the set representing the act
      */
-    protected void add(Element element, IMObjectReference act,
-                       PropertySet set) {
+    protected void add(Element element, IMObjectReference act, PropertySet set) {
         synchronized (element) {
             Value value = (Value) element.getObjectValue();
             value.put(act, set);
@@ -323,11 +316,10 @@ public abstract class AbstractScheduleService implements ScheduleService {
      *
      * @param schedule the reference to the schedule
      * @param from     the start date
-     * @param to       the end date. May be <tt>null</tt>
+     * @param to       the end date. May be {@code null}
      * @return cache elements matching the schedule and date range
      */
-    protected List<Element> getElements(IMObjectReference schedule,
-                                        Date from, Date to) {
+    protected List<Element> getElements(IMObjectReference schedule, Date from, Date to) {
         List keys = cache.getKeysNoDuplicateCheck();
         List<Element> result = new ArrayList<Element>();
         for (Object key : keys) {
@@ -358,8 +350,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
         target.set(ScheduleEvent.ACT_STATUS_NAME, statusNames.get(status));
         target.set(ScheduleEvent.ACT_DESCRIPTION, event.getDescription());
 
-        IMObjectReference customerRef
-                = source.getNodeParticipantRef("customer");
+        IMObjectReference customerRef = source.getNodeParticipantRef("customer");
         String customerName = getName(customerRef);
         target.set(ScheduleEvent.CUSTOMER_REFERENCE, customerRef);
         target.set(ScheduleEvent.CUSTOMER_NAME, customerName);
@@ -369,9 +360,7 @@ public abstract class AbstractScheduleService implements ScheduleService {
         target.set(ScheduleEvent.PATIENT_REFERENCE, patientRef);
         target.set(ScheduleEvent.PATIENT_NAME, patientName);
 
-
-        IMObjectReference clinicianRef
-                = source.getNodeParticipantRef("clinician");
+        IMObjectReference clinicianRef = source.getNodeParticipantRef("clinician");
         String clinicianName = getName(clinicianRef);
         target.set(ScheduleEvent.CLINICIAN_REFERENCE, clinicianRef);
         target.set(ScheduleEvent.CLINICIAN_NAME, clinicianName);
@@ -380,18 +369,16 @@ public abstract class AbstractScheduleService implements ScheduleService {
     /**
      * Returns the name of an object, given its reference.
      *
-     * @param reference the object reference. May be <tt>null</tt>
-     * @return the name or <tt>null</tt> if none exists
+     * @param reference the object reference. May be {@code null}
+     * @return the name or {@code null} if none exists
      */
     protected String getName(IMObjectReference reference) {
         if (reference != null) {
-            ObjectRefConstraint constraint
-                    = new ObjectRefConstraint("o", reference);
+            ObjectRefConstraint constraint = new ObjectRefConstraint("o", reference);
             ArchetypeQuery query = new ArchetypeQuery(constraint);
             query.add(new NodeSelectConstraint("o.name"));
             query.setMaxResults(1);
-            Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service,
-                                                                  query);
+            Iterator<ObjectSet> iter = new ObjectSetQueryIterator(service, query);
             if (iter.hasNext()) {
                 ObjectSet set = iter.next();
                 return set.getString("o.name");
@@ -437,25 +424,10 @@ public abstract class AbstractScheduleService implements ScheduleService {
     }
 
     /**
-     * Returns the cache element for the specified schedule and date.
-     *
-     * @param schedule the schedule reference
-     * @param date     the date
-     * @return the corresponding cache element, or <tt>null</tt> if none is
-     *         found
-     */
-    private Element getElement(IMObjectReference schedule, Date date) {
-        date = getStart(date);
-        Key key = new Key(schedule, date);
-        return cache.get(key);
-    }
-
-    /**
      * Returns the start of the specified date-time.
      *
      * @param datetime the date-time
-     * @return the date part of <tt>datetime</tt>, zero-ing out any time
-     *         component.
+     * @return the date part of {@code datetime}, zero-ing out any time component.
      */
     private Date getStart(Date datetime) {
         return DateRules.getDate(datetime);
@@ -506,6 +478,43 @@ public abstract class AbstractScheduleService implements ScheduleService {
     }
 
     /**
+     * Attempts to reference a cached version of the supplied set.
+     *
+     * @param event    the event to locate a cached version of
+     * @param schedule the schedule
+     * @return the cached version of {@code event}, or {@code event} if there is no cached version
+     */
+    private PropertySet referenceExisting(PropertySet event, Entity schedule) {
+        PropertySet result = null;
+        IMObjectReference scheduleRef = schedule.getObjectReference();
+        Date from = DateRules.getDate(event.getDate(ScheduleEvent.ACT_START_TIME));
+        Date to = DateRules.getDate(event.getDate(ScheduleEvent.ACT_END_TIME));
+        IMObjectReference act = event.getReference(ScheduleEvent.ACT_REFERENCE);
+        List keys = cache.getKeysNoDuplicateCheck();
+        for (Object key : keys) {
+            Key k = (Key) key;
+            if (k.getSchedule().equals(scheduleRef) && k.dayInRange(from, to)) {
+                Element element = cache.get(key);
+                if (element != null) {
+                    synchronized (element) {
+                        Value value = (Value) element.getObjectValue();
+                        for (PropertySet cached : value.getEvents()) {
+                            if (ObjectUtils.equals(act, cached.getReference(ScheduleEvent.ACT_REFERENCE))) {
+                                result = cached;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            result = event;
+        }
+        return result;
+    }
+
+    /**
      * Cache key.
      */
     private static class Key implements Serializable {
@@ -526,13 +535,15 @@ public abstract class AbstractScheduleService implements ScheduleService {
          * Indicates whether some other object is "equal to" this one.
          *
          * @param obj the reference object with which to compare.
-         * @return <code>true</code> if this object is the same as the obj
-         *         argument; <code>false</code> otherwise.
+         * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
          */
         @Override
         public boolean equals(Object obj) {
-            Key other = (Key) obj;
-            return (schedule.equals(other.schedule)) && day.equals(other.day);
+            if (obj instanceof Key) {
+                Key other = (Key) obj;
+                return (schedule.equals(other.schedule)) && day.equals(other.day);
+            }
+            return false;
         }
 
         /**
@@ -567,12 +578,11 @@ public abstract class AbstractScheduleService implements ScheduleService {
          * Determines if the day falls in the specified date range.
          *
          * @param from the from date
-         * @param to   the to date. May be <tt>null</tt>
+         * @param to   the to date. May be {@code null}
          * @return <tt>true</tt> if the day falls in the date range
          */
         public boolean dayInRange(Date from, Date to) {
-            return (DateRules.compareTo(from, day) <= 0
-                    && (to == null || DateRules.compareTo(day, to) <= 0));
+            return (DateRules.compareTo(from, day) <= 0 && (to == null || DateRules.compareTo(day, to) <= 0));
         }
     }
 
@@ -629,21 +639,16 @@ public abstract class AbstractScheduleService implements ScheduleService {
          *
          * @param o1 the first object to be compared.
          * @param o2 the second object to be compared.
-         * @return a negative integer, zero, or a positive integer as the
-         *         first argument is less than, equal to, or greater than the
-         *         second.
-         * @throws ClassCastException if the arguments' types prevent them from
-         *                            being compared by this Comparator.
+         * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or
+         *         greater than the second.
          */
         public int compare(PropertySet o1, PropertySet o2) {
             Date startTime1 = o1.getDate(ScheduleEvent.ACT_START_TIME);
             Date startTime2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
             int result = DateRules.compareTo(startTime1, startTime2);
             if (result == 0) {
-                IMObjectReference ref1 = o1.getReference(
-                        ScheduleEvent.ACT_REFERENCE);
-                IMObjectReference ref2 = o2.getReference(
-                        ScheduleEvent.ACT_REFERENCE);
+                IMObjectReference ref1 = o1.getReference(ScheduleEvent.ACT_REFERENCE);
+                IMObjectReference ref2 = o2.getReference(ScheduleEvent.ACT_REFERENCE);
                 if (ref1.getId() < ref2.getId()) {
                     result = -1;
                 } else if (ref1.getId() == ref2.getId()) {
