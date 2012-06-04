@@ -147,7 +147,9 @@ public class VisitEditorDialog extends PopupDialog {
     private void onInvoiceSelected() {
         ButtonSet buttons = getButtons();
         buttons.removeAll();
-        addButton(APPLY_ID);
+        if (getEditor().getChargeEditor() != null) {
+            addButton(APPLY_ID);
+        }
         addButton(OK_ID);
         addButton(CANCEL_ID);
         buttons.add(VisitChargeCRUDWindow.COMPLETED_ID, new ActionListener() {

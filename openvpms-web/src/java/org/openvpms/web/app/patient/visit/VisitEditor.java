@@ -383,6 +383,7 @@ public class VisitEditor {
     }
 
     private class VisitStatusUpdater extends AbstractRetryable {
+
         /**
          * Runs the action for the first time.
          *
@@ -392,7 +393,7 @@ public class VisitEditor {
          */
         @Override
         public boolean runFirst() {
-            return false;
+            return updateStatus(event);
         }
 
         /**
