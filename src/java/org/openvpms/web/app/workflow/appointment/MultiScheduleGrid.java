@@ -35,6 +35,7 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -225,8 +226,10 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         column.addEvent(set);
 
         // adjust the grid start and end times, if required
-        int slotStart = getSlotMinutes(startTime, false);
-        int slotEnd = getSlotMinutes(endTime, true);
+        Date startDate = DateRules.getDate(startTime);
+        Date endDate = DateRules.getDate(endTime);
+        int slotStart = startDate.compareTo(getDate()) < 0 ? getStartMins()  : getSlotMinutes(startTime, false);
+        int slotEnd = endDate.compareTo(getDate()) > 0 ? getEndMins() : getSlotMinutes(endTime, true);
         if (getStartMins() > slotStart) {
             setStartMins(slotStart);
         }

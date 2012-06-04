@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.appointment;
 
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -279,8 +280,11 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
 
         Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
         Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
-        int startMins = getSlotMinutes(startTime, false);
-        int endMins = getSlotMinutes(endTime, true);
+        Date startDate = DateRules.getDate(startTime);
+        Date endDate = DateRules.getDate(endTime);
+        int startMins = startDate.compareTo(getDate()) < 0 ? 0 : getSlotMinutes(startTime, false);
+        int endMins = endDate.compareTo(getDate()) > 0 ? 24 * 60 : getSlotMinutes(endTime, true);
+
         int slotSize = getSlotSize();
         int size = (endMins - startMins) / slotSize;
 

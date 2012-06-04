@@ -252,7 +252,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
         int slots = getSlots();
         int i = slot;
         while (i < slots
-               && getAvailability(schedule, i) == Availability.UNAVAILABLE) {
+                && getAvailability(schedule, i) == Availability.UNAVAILABLE) {
             ++i;
         }
         return i - slot;
@@ -265,8 +265,17 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * @return the slot, or <tt>-1</tt> if the time doesn't intersect any slot
      */
     public int getSlot(Date time) {
-        int mins = getSlotMinutes(time, false);
-        return (mins >= startMins) ? (mins - startMins) / slotSize : -1;
+        int result;
+        Date day = DateRules.getDate(time);
+        if (day.compareTo(date) < 0) {
+            result = 0;
+        } else if (day.compareTo(date) > 0) {
+            result = getSlots();
+        } else {
+            int mins = getSlotMinutes(time, false);
+            result = (mins >= startMins) ? (mins - startMins) / slotSize : -1;
+        }
+        return result;
     }
 
     /**
@@ -281,7 +290,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     /**
      * Sets the no. of minutes from midnight that the grid ends at.
      *
-     * @param endMins the minutes from midnight that the grid enjds at
+     * @param endMins the minutes from midnight that the grid ends at
      */
     protected void setEndMins(int endMins) {
         this.endMins = endMins;

@@ -173,7 +173,7 @@ public class Schedule {
         int index = indexOf(event);
         return (index != -1) ? events.get(index) : null;
     }
-    
+
 
     /**
      * Returns the index of an event, given its reference.
@@ -252,18 +252,19 @@ public class Schedule {
          *
          * @param o1 the first object to be compared.
          * @param o2 the second object to be compared.
-         * @return a negative integer, zero, or a positive integer as the
-         *         first argument is less than, equal to, or greater than the
-         *         second.
-         * @throws ClassCastException if the arguments' types prevent them from
-         *                            being compared by this Comparator.
+         * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or
+         *         greater than the second.
          */
         public int compare(PropertySet o1, PropertySet o2) {
-            int start1 = SchedulingHelper.getSlotMinutes(
-                    o1.getDate(ScheduleEvent.ACT_START_TIME), slotSize, false);
-            int start2 = SchedulingHelper.getSlotMinutes(
-                    o2.getDate(ScheduleEvent.ACT_START_TIME), slotSize, false);
-            return start1 - start2;
+            Date startTime1 = o1.getDate(ScheduleEvent.ACT_START_TIME);
+            Date startTime2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
+            int result = DateRules.getDate(startTime1).compareTo(DateRules.getDate(startTime2));
+            if (result == 0) {
+                int start1 = SchedulingHelper.getSlotMinutes(startTime1, slotSize, false);
+                int start2 = SchedulingHelper.getSlotMinutes(startTime2, slotSize, false);
+                result = start1 - start2;
+            }
+            return result;
         }
     }
 
@@ -294,11 +295,11 @@ public class Schedule {
             Date start2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
             Date end2 = o2.getDate(ScheduleEvent.ACT_END_TIME);
             if (DateRules.compareTo(start1, start2) < 0
-                && DateRules.compareTo(end1, start2) <= 0) {
+                    && DateRules.compareTo(end1, start2) <= 0) {
                 return -1;
             }
             if (DateRules.compareTo(start1, end2) >= 0
-                && DateRules.compareTo(end1, end2) > 0) {
+                    && DateRules.compareTo(end1, end2) > 0) {
                 return 1;
             }
             return 0;
