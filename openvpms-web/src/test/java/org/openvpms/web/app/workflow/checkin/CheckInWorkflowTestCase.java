@@ -107,7 +107,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
 
         // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
@@ -134,7 +134,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
         workflow.checkComplete(true, customer, patient, context);
     }
 
@@ -166,7 +166,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
 
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(newPatient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(newPatient, clinician, ActStatus.IN_PROGRESS);
 
         workflow.checkComplete(true, customer, newPatient, context);
     }
@@ -247,7 +247,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
 
         // verify the workflow is complete
         workflow.checkComplete(true, customer, patient, context);
@@ -324,7 +324,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
 
         workflow.checkComplete(true, customer, patient, context);
     }
