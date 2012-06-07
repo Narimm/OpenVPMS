@@ -155,6 +155,7 @@ public abstract class AbstractStatementGenerator
      */
     private void onCompletion() {
         if (dialog != null) {
+            dialog.setDefaultCloseAction(null);
             dialog.close();
             dialog = null;
         }
