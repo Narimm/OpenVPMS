@@ -30,8 +30,6 @@
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountRefund.after.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerAppointment.after.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.customerTask.after.drl" />
-  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.stockAdjust.before.drl" />
-  <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.stockTransfer.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.supplierDelivery.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.supplierReturn.before.drl" />
   <rule source="classpath" path="org/openvpms/archetype/rules/archetypeService.save.act.tillBalance.before.drl" />
