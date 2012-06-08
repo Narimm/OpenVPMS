@@ -21,7 +21,6 @@ package org.openvpms.archetype.rules.stock;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
-import static org.openvpms.archetype.rules.stock.StockArchetypes.*;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -33,17 +32,29 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_ADJUST;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_ADJUST_ITEM;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_ADJUST_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_PARTICIPATION;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_TRANSFER;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_TRANSFER_ITEM;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_TRANSFER_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_XFER_LOCATION_PARTICIPATION;
+
 
 /**
- * Tests the {@link StockUpdater} class, when invoked by the
- * <em>archetypeService.save.act.stockTransfer.before</em> and
- * <em>archetypeService.save.act.stockAdjust.before</em>
- * rules.
+ * Tests the {@link StockUpdater} class.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class StockUpdaterTestCase extends AbstractStockTest {
+
+    /**
+     * The updater.
+     */
+    private StockUpdater updater;
 
     /**
      * The product.
@@ -55,10 +66,8 @@ public class StockUpdaterTestCase extends AbstractStockTest {
      */
     private Party stockLocation;
 
-
     /**
-     * Verifies that stock is updated when an <em>act.stockTransfer</em>
-     * is posted.
+     * Verifies that {@link StockUpdater#update} updates stock for posted <em>act.stockTransfer</em> acts.
      */
     @Test
     public void testTransfer() {
@@ -76,15 +85,16 @@ public class StockUpdaterTestCase extends AbstractStockTest {
         save(act, item);
 
         // verify transfer doesn't take place till the act is posted
+        updater.update(act);
         checkEquals(BigDecimal.ZERO, getStock(stockLocation));
         checkEquals(BigDecimal.ZERO, getStock(xferLocation));
 
-        // post the transfer
+        // post the transfer and transfer again
         bean.setValue("status", ActStatus.POSTED);
         bean.save();
+        updater.update(act);
 
-        // verify stock at the from and to locations. Note that stock may
-        // go negative
+        // verify stock at the from and to locations. Note that stock may go negative
         checkEquals(quantity.negate(), getStock(stockLocation));
         checkEquals(quantity, getStock(xferLocation));
 
@@ -95,8 +105,7 @@ public class StockUpdaterTestCase extends AbstractStockTest {
     }
 
     /**
-     * Verifies that stock is updated when an <em>act.stockAdjust</em>
-     * is posted.
+     * Verifies that {@link StockUpdater#update} updates stock for posted <em>act.stockAdjust</em> acts.
      */
     @Test
     public void testAdjust() {
@@ -113,17 +122,15 @@ public class StockUpdaterTestCase extends AbstractStockTest {
         save(act, item);
 
         // verify stock is not adjusted till the act is posted
+        updater.update(act);
         checkEquals(BigDecimal.ZERO, getStock(stockLocation));
 
-        // post the act
+        // post the act and transfer again
         bean.setValue("status", ActStatus.POSTED);
         bean.save();
+        updater.update(act);
 
         // verify stock adjusted
-        checkEquals(quantity, getStock(stockLocation));
-
-        // verify subsequent save doesn't change the stock
-        bean.save();
         checkEquals(quantity, getStock(stockLocation));
     }
 
@@ -132,6 +139,7 @@ public class StockUpdaterTestCase extends AbstractStockTest {
      */
     @Before
     public void setUp() {
+        updater = new StockUpdater(getArchetypeService());
         product = TestHelper.createProduct();
         stockLocation = createStockLocation();
     }
