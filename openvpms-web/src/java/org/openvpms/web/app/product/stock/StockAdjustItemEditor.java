@@ -76,12 +76,12 @@ public class StockAdjustItemEditor extends ActItemEditor {
         rules = new StockRules();
         currentQuantity = new SimpleProperty("fromQuantity", BigDecimal.class);
         currentQuantity.setDisplayName(Messages.get("product.stock.quantity"));
-        currentQuantity.setValue(BigDecimal.ZERO);
         currentQuantity.setReadOnly(true);
         if (parent != null) {
             ActBean bean = new ActBean(parent);
             setStockLocation((Party) getObject(bean.getNodeParticipantRef("stockLocation")));
         }
+        updateCurrentQuantity(getProduct());
     }
 
     /**
@@ -100,15 +100,7 @@ public class StockAdjustItemEditor extends ActItemEditor {
      */
     @Override
     protected void productModified(Product product) {
-        try {
-            BigDecimal quantity = BigDecimal.ZERO;
-            if (stockLocation != null && product != null) {
-                quantity = rules.getStock(product, stockLocation);
-            }
-            currentQuantity.setValue(quantity);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+        updateCurrentQuantity(product);
     }
 
     /**
@@ -133,6 +125,23 @@ public class StockAdjustItemEditor extends ActItemEditor {
                 return set;
             }
         };
+    }
+
+    /**
+     * Updates the current quantity display.
+     *
+     * @param product the product. May be {@code null}
+     */
+    private void updateCurrentQuantity(Product product) {
+        BigDecimal quantity = BigDecimal.ZERO;
+        try {
+            if (stockLocation != null && product != null) {
+                quantity = rules.getStock(product, stockLocation);
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+        currentQuantity.setValue(quantity);
     }
 
 }
