@@ -18,15 +18,19 @@
 
 package org.openvpms.web.app.product.stock;
 
-import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.stock.StockUpdater;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActActions;
+import org.openvpms.web.component.retry.Retryable;
+import org.openvpms.web.component.retry.Retryer;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -70,9 +74,9 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
         boolean enableDeletePost = false;
         if (enable) {
             Act object = getObject();
-            enableEdit = getActions().canEdit(object);
-            String status = object.getStatus();
-            enableDeletePost = !ActStatus.POSTED.equals(status);
+            ActActions<Act> actions = getActions();
+            enableEdit = actions.canEdit(object);
+            enableDeletePost = actions.canDelete(object);
         }
         buttons.setEnabled(EDIT_ID, enableEdit);
         buttons.setEnabled(DELETE_ID, enableDeletePost);
@@ -91,4 +95,19 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
         return new ActEditDialog(editor);
     }
 
+    /**
+     * Updates stock when an <em>act.stockAdjust</em> or <em>act.stockTransfer</em> is posted.
+     *
+     * @param act the act
+     */
+    @Override
+    protected void onPosted(final Act act) {
+        Retryer.run(new Retryable() {
+            public boolean run() {
+                StockUpdater updater = new StockUpdater(ServiceHelper.getArchetypeService());
+                updater.update(act);
+                return true;
+            }
+        });
+    }
 }
