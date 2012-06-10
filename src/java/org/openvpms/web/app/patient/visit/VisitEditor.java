@@ -3,6 +3,7 @@ package org.openvpms.web.app.patient.visit;
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.event.ChangeEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
@@ -95,6 +96,15 @@ public class VisitEditor {
      */
     private FocusGroup focusGroup = new FocusGroup(getClass().getName());
 
+    /**
+     * The patient document browser.
+     */
+    private Browser<DocumentAct> documentBrowser;
+
+    /**
+     * Determines if the documents have been queried.
+     */
+    private boolean documentsQueried;
 
     /**
      * The index of the patient history tab.
@@ -139,7 +149,7 @@ public class VisitEditor {
 
         reminderWindow = new ReminderBrowserCRUDWindow(patient);
 
-        documentWindow = new VisitDocumentCRUDWindow();
+        documentWindow = new VisitDocumentCRUDWindow(context);
     }
 
     /**
@@ -231,6 +241,7 @@ public class VisitEditor {
             focusGroup.add(tab);
             container.add(tab);
             tab.setSelectedIndex(0);
+            visitWindow.getBrowser().setFocusOnResults();
         }
         return container;
     }
@@ -265,7 +276,10 @@ public class VisitEditor {
      * @param model the tab pane model to add to
      */
     private void addPatientHistoryTab(TabPaneModel model) {
-        addTab(1, "button.summary", model, visitWindow.getComponent());
+        // need to add the browser to a ContentPane to get scrollbars
+        ContentPane pane = new ContentPane();
+        pane.add(visitWindow.getComponent());
+        addTab(1, "button.summary", model, pane);
     }
 
     /**
@@ -293,8 +307,8 @@ public class VisitEditor {
      */
     private void addDocumentsTab(TabPaneModel model) {
         Query<DocumentAct> query = new PatientDocumentQuery<DocumentAct>(patient);
-        Browser<DocumentAct> browser = BrowserFactory.create(query);
-        BrowserCRUDWindow<DocumentAct> window = new BrowserCRUDWindow<DocumentAct>(browser, documentWindow);
+        documentBrowser = BrowserFactory.create(query);
+        BrowserCRUDWindow<DocumentAct> window = new BrowserCRUDWindow<DocumentAct>(documentBrowser, documentWindow);
         addTab(4, "button.document", model, window.getComponent());
     }
 
@@ -343,6 +357,7 @@ public class VisitEditor {
             browser.query();
             browser.setSelected(selected);
         }
+        browser.setFocusOnResults();
         if (listener != null) {
             listener.historySelected();
         }
@@ -370,6 +385,10 @@ public class VisitEditor {
      * Invoked when the documents tab is selected.
      */
     private void onDocumentsSelected() {
+        if (!documentsQueried) {
+            documentBrowser.query();
+            documentsQueried = true;
+        }
         if (listener != null) {
             listener.documentsSelected();
         }

@@ -21,8 +21,6 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 
-import org.openvpms.web.resource.util.Styles;
-
 
 /**
  * Factory for {@link SplitPane}s.
