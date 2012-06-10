@@ -104,7 +104,7 @@ public class EditVisitTask extends AbstractTask {
         Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"));
         if (patient != null) {
             VisitEditor editor = createVisitEditor(event, invoice, context, patient);
-            String title = Messages.get("workflow.consult.selectrecord.title");
+            String title = Messages.get("workflow.visit.edit.title");
             dialog = new VisitEditorDialog(title, editor);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override

@@ -18,22 +18,23 @@
 
 package org.openvpms.web.app.patient.history;
 
+import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.ArrayUtils;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
-import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
+import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
@@ -56,14 +57,19 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
     private String[] actItemShortNames;
 
     /**
-     * The set of possible act item short names.
+     * The set of possible act item short names, excluding the <em>act.customerAccountInvoiceItem</em>.
      */
-    private String[] allShortNames;
+    private String[] shortNames;
 
     /**
      * The act items to display.
      */
     private String[] selectedShortNames;
+
+    /**
+     * Determines if charges are included.
+     */
+    private CheckBox includeCharges;
 
     /**
      * Document act version short names.
@@ -83,10 +89,9 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
     public PatientHistoryQuery(Party patient) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION,
               new String[]{PatientArchetypes.CLINICAL_EVENT}, Act.class);
-        actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM,
-                                                                   PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
-        allShortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
-        selectedShortNames = allShortNames;
+        actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
+        shortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
+        selectedShortNames = (String[]) ArrayUtils.add(shortNames, CustomerAccountArchetypes.INVOICE_ITEM);
         setAuto(true);
     }
 
@@ -116,40 +121,35 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
      */
     @Override
     protected void doLayout(Component container) {
-        final ShortNameListModel model
-                = new ShortNameListModel(actItemShortNames, true, false);
-        final SelectField shortNameSelector = SelectFieldFactory.create(
-                model);
-        shortNameSelector.addActionListener(new ActionListener() {
+        final ShortNameListModel model = new ShortNameListModel(actItemShortNames, true, false);
+        final SelectField shortNameSelector = SelectFieldFactory.create(model);
+        ActionListener listener = new ActionListener() {
             public void onAction(ActionEvent event) {
                 int index = shortNameSelector.getSelectedIndex();
                 if (model.isAll(index)) {
-                    selectedShortNames = allShortNames;
+                    selectedShortNames = shortNames;
                 } else {
                     String shortName = model.getShortName(index);
                     selectedShortNames = getSelectedShortNames(shortName);
                 }
+                if (includeCharges.isSelected()) {
+                    selectedShortNames = (String[]) ArrayUtils.add(selectedShortNames,
+                                                                   CustomerAccountArchetypes.INVOICE_ITEM);
+                }
                 onQuery();
             }
-        });
+        };
+        shortNameSelector.addActionListener(listener);
         shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
 
         Label typeLabel = LabelFactory.create("query.type");
         container.add(typeLabel);
         container.add(shortNameSelector);
+        includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", true);
+        includeCharges.addActionListener(listener);
+        container.add(includeCharges);
         getFocusGroup().add(shortNameSelector);
         super.doLayout(container);
-    }
-
-    /**
-     * Creates a new result set.
-     *
-     * @param sort the sort constraint. May be <code>null</code>
-     * @return a new result set
-     */
-    @Override
-    protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        return super.createResultSet(sort);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     private String[] getSelectedShortNames(String shortName) {
