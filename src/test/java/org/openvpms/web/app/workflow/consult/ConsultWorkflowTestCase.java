@@ -165,6 +165,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.start();
 
         PopupDialog event = workflow.editVisit();
+        workflow.addNote();
         workflow.addVisitInvoiceItem(patient, clinician);
         fireDialogButton(event, PopupDialog.OK_ID);
 

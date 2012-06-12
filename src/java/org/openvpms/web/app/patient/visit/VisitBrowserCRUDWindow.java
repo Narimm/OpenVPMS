@@ -33,7 +33,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     /**
      * Constructs a {@code VisitBrowserCRUDWindow}.
      *
-     * @param query the patient medical record query
+     * @param query   the patient medical record query
      * @param context the context
      */
     public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context) {
@@ -46,11 +46,21 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
             }
         }
         setBrowser(browser);
-        VisitCRUDWindow window = new VisitCRUDWindow(context);
+        VisitCRUDWindow window = createWindow(context);
         window.setMailContext(new CustomerMailContext(context));
         window.setQuery(query);
         window.setEvent(browser.getEvent());
         setWindow(window);
+    }
+
+    /**
+     * Creates a new window.
+     *
+     * @param context the context
+     * @return a new window
+     */
+    protected VisitCRUDWindow createWindow(Context context) {
+        return new VisitCRUDWindow(context);
     }
 
     /**

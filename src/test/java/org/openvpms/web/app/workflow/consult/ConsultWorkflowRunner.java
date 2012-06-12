@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.consult;
 
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -27,14 +28,21 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.customer.charge.ChargePopupEditorManager;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
 import org.openvpms.web.app.patient.charge.VisitChargeItemRelationshipCollectionEditor;
+import org.openvpms.web.app.patient.history.PatientHistoryQuery;
+import org.openvpms.web.app.patient.visit.VisitBrowserCRUDWindow;
+import org.openvpms.web.app.patient.visit.VisitCRUDWindow;
 import org.openvpms.web.app.patient.visit.VisitChargeCRUDWindow;
 import org.openvpms.web.app.patient.visit.VisitEditor;
 import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.app.workflow.EditVisitTask;
 import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.workflow.TaskContext;
 
@@ -45,6 +53,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.addItem;
 import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.createProduct;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
@@ -71,6 +80,17 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         super(practice);
         this.act = act;
         setWorkflow(new TestWorkflow(act, context));
+    }
+
+    public void addNote() {
+        TestEditVisitTask task = (TestEditVisitTask) getTask();
+        VisitEditorDialog dialog = task.getVisitDialog();
+
+        // get the editor and add an item
+        VisitEditor visitEditor = dialog.getEditor();
+        TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistory();
+        assertNotNull(window);
+        window.addNote();
     }
 
     /**
@@ -157,6 +177,21 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         }
     }
 
+    private static class TestVisitCRUDWindow extends VisitCRUDWindow {
+        public TestVisitCRUDWindow(Context context) {
+            super(context);
+        }
+
+        public void addNote() {
+            Act act = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_NOTE);
+            assertNotNull(act);
+            LayoutContext context = createLayoutContext();
+            IMObjectEditor editor = createEditor(act, context);
+            EditDialog dialog = edit(editor);
+            fireDialogButton(dialog, PopupDialog.OK_ID);  // save the note
+        }
+    }
+
     /**
      * Helper to edit invoices.
      * This is required to automatically close popup dialogs.
@@ -190,6 +225,11 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, TaskContext context, Party patient) {
             return new VisitEditor(patient, event, invoice, context) {
                 @Override
+                protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
+                    return new TestVisitBrowserCRUDWindow(getQuery(), context);
+                }
+
+                @Override
                 protected VisitChargeCRUDWindow createVisitChargeCRUDWindow(Act event, Context context) {
                     return new VisitChargeCRUDWindow(event, context) {
                         @Override
@@ -200,6 +240,23 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
                     };
                 }
             };
+        }
+
+        private class TestVisitBrowserCRUDWindow extends VisitBrowserCRUDWindow {
+            /**
+             * Constructs a {@code VisitBrowserCRUDWindow}.
+             *
+             * @param query   the patient medical record query
+             * @param context the context
+             */
+            public TestVisitBrowserCRUDWindow(PatientHistoryQuery query, Context context) {
+                super(query, context);
+            }
+
+            protected VisitCRUDWindow createWindow(Context context) {
+                return new TestVisitCRUDWindow(context);
+            }
+
         }
 
         private class TestVisitChargeEditor extends VisitChargeEditor {
@@ -217,5 +274,6 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
             }
         }
     }
+
 
 }
