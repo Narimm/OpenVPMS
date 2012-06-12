@@ -22,6 +22,8 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
@@ -40,8 +42,13 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.resource.util.Styles;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -91,7 +98,7 @@ public class SMSEditor extends AbstractModifiable {
      * Constructs an <tt>SMSEditor</tt>.
      */
     public SMSEditor() {
-        this(null);
+        this(Collections.<Contact>emptyList());
     }
 
     /**
@@ -100,23 +107,23 @@ public class SMSEditor extends AbstractModifiable {
      * If no phone numbers are supplied, the phone number will be editable, otherwise it will be read-only.
      * If there are multiple phone numbers, they will be displayed in a dropdown, with the first no. as the default
      *
-     * @param numbers the available numbers. May be <tt>null</tt>
+     * @param contacts the available mobile contacts. May be <tt>null</tt>
      */
-    public SMSEditor(String[] numbers) {
-        int length = (numbers == null) ? 0 : numbers.length;
+    public SMSEditor(List<Contact> contacts) {
+        int length = (contacts == null) ? 0 : contacts.size();
         if (length <= 1) {
-            phone = TextComponentFactory.create(12);
+            phone = TextComponentFactory.create(20);
             phone.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onModified();
                 }
             });
             if (length == 1) {
-                phone.setText(numbers[0]);
+                phone.setText(formatPhone(contacts.get(0)));
                 phone.setEnabled(false);
             }
         } else {
-            phoneSelector = SelectFieldFactory.create(numbers);
+            phoneSelector = SelectFieldFactory.create(formatPhones(contacts));
             phoneSelector.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onModified();
@@ -165,19 +172,6 @@ public class SMSEditor extends AbstractModifiable {
     }
 
     /**
-     * Sets the phone number to send to.
-     *
-     * @param phone the phone number
-     */
-    public void setPhone(String phone) {
-        if (this.phone != null) {
-            this.phone.setText(phone);
-        } else {
-            phoneSelector.setSelectedItem(phone);
-        }
-    }
-
-    /**
      * Returns the phone number.
      *
      * @return the phone number. May be <tt>null</tt>
@@ -188,6 +182,10 @@ public class SMSEditor extends AbstractModifiable {
             result = phone.getText();
         } else if (phoneSelector.getSelectedItem() != null) {
             result = phoneSelector.getSelectedItem().toString();
+        }
+        if (result != null) {
+            // strip any spaces, brackets, and any characters after the last digit.
+            result = result.replaceAll("[\\s()]", "").replaceAll("[^\\d].*", "");
         }
         return result;
     }
@@ -282,6 +280,51 @@ public class SMSEditor extends AbstractModifiable {
      */
     protected boolean doValidation(Validator validator) {
         return !StringUtils.isEmpty(getPhone()) && !StringUtils.isEmpty(getMessage());
+    }
+
+    /**
+     * Formats phone numbers that are flagged for SMS messaging.
+     * <p/>
+     * The preferred no.s are at the head of the list
+     *
+     * @param contacts the SMS contacts
+     * @return a list of phone numbers
+     */
+    private String[] formatPhones(List<Contact> contacts) {
+        List<String> phones = new ArrayList<String>();
+        String preferred = null;
+        for (Contact contact : contacts) {
+            String phone = formatPhone(contact);
+            IMObjectBean bean = new IMObjectBean(contact);
+            if (bean.getBoolean("preferred")) {
+                preferred = phone;
+            }
+            phones.add(phone);
+        }
+        Collections.sort(phones);
+        if (preferred != null && !phones.get(0).equals(preferred)) {
+            phones.remove(preferred);
+            phones.add(0, preferred);
+        }
+        return phones.toArray(new String[phones.size()]);
+    }
+
+    /**
+     * Formats a mobile phone number.
+     *
+     * @param contact the phone contact
+     * @return a formatted number, including an area code, if specified
+     */
+    private String formatPhone(Contact contact) {
+        IMObjectBean bean = new IMObjectBean(contact);
+        String areaCode = bean.getString("areaCode");
+        String phone = bean.getString("telephoneNumber");
+        if (!StringUtils.isEmpty(areaCode)) {
+            phone = Messages.get("phone.withAreaCode", areaCode, phone);
+        } else {
+            phone = Messages.get("phone.noAreaCode");
+        }
+        return phone;
     }
 
     /**

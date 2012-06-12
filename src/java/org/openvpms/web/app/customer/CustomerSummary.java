@@ -25,7 +25,6 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
@@ -47,7 +46,6 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
@@ -155,13 +153,13 @@ public class CustomerSummary extends PartySummary {
         }
         Column result = ColumnFactory.create("PartySummary", column);
         if (SMSHelper.isSMSEnabled()) {
-            final String[] mobiles = getPhonesForSMS(party);
-            if (mobiles.length != 0) {
+            final List<Contact> contacts = getSMSContacts(party);
+            if (!contacts.isEmpty()) {
                 Context local = new LocalContext(context);
                 local.setCustomer(party);
                 Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
                     public void onAction(ActionEvent event) {
-                        SMSDialog dialog = new SMSDialog(mobiles, context);
+                        SMSDialog dialog = new SMSDialog(contacts, context);
                         dialog.show();
                     }
                 });
@@ -220,41 +218,17 @@ public class CustomerSummary extends PartySummary {
         return mail;
     }
 
-    /**
-     * Returns phone numbers that are flagged for SMS messaging.
-     * <p/>
-     * The preferred no.s are at the head of the list
-     *
-     * @param party the party
-     * @return a list of phone numbers
-     */
-    private String[] getPhonesForSMS(Party party) {
-        List<String> phones = new ArrayList<String>();
+    private List<Contact> getSMSContacts(Party party) {
         List<Contact> contacts = new ArrayList<Contact>();
         for (Contact contact : party.getContacts()) {
             if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-                contacts.add(contact);
-            }
-        }
-        int length = contacts.size();
-        if (length > 1) {
-            IMObjectSorter.sort(contacts, "telephoneNumber", true);
-        }
-        for (Contact contact : contacts) {
-            IMObjectBean bean = new IMObjectBean(contact);
-            if (bean.getBoolean("sms")) {
-                String phone = bean.getString("telephoneNumber");
-                if (!StringUtils.isEmpty(phone)) {
-                    if (bean.getBoolean("preferred")) {
-                        phones.add(0, phone);
-                    } else {
-                        phones.add(phone);
-                    }
+                IMObjectBean bean = new IMObjectBean(contact);
+                if (bean.getBoolean("sms")) {
+                    contacts.add(contact);
                 }
             }
-
         }
-        return phones.toArray(new String[phones.size()]);
+        return contacts;
     }
 
     /**
