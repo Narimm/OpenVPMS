@@ -142,7 +142,7 @@ public class VisitEditor {
         query.setFrom(event.getActivityStartTime());
         query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
 
-        visitWindow = new VisitBrowserCRUDWindow(query, context);
+        visitWindow = createVisitBrowserCRUDWindow(context);
 
         chargeWindow = createVisitChargeCRUDWindow(event, context);
         chargeWindow.setObject(invoice);
@@ -150,6 +150,15 @@ public class VisitEditor {
         reminderWindow = new ReminderBrowserCRUDWindow(patient);
 
         documentWindow = new VisitDocumentCRUDWindow(context);
+    }
+
+    /**
+     * Returns the patient history CRUD window.
+     *
+     * @return the history CRUD window
+     */
+    public VisitCRUDWindow getHistory() {
+        return (VisitCRUDWindow) visitWindow.getWindow();
     }
 
     /**
@@ -257,6 +266,16 @@ public class VisitEditor {
             updateVisitStatus();
         }
         return saved;
+    }
+
+    /**
+     * Creates a new visit browser CRUD window.
+     *
+     * @param context the context
+     * @return a new visit browser CRUD window
+     */
+    protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
+        return new VisitBrowserCRUDWindow(query, context);
     }
 
     /**
