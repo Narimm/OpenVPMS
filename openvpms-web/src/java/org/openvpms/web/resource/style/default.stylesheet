@@ -85,6 +85,13 @@
     </style>
 
 
+    <style name="HelpDialog.content" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${HelpDialog.content.separatorPosition}"/>
+        </properties>
+    </style>
+
     <style name="CustomerSummary.AlertDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
