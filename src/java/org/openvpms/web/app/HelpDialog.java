@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app;
 
+import echopointng.LabelEx;
+import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
@@ -26,15 +28,18 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
+import org.openvpms.web.app.admin.organisation.SubscriptionHelper;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.Version;
 
@@ -85,7 +90,14 @@ public class HelpDialog extends PopupDialog {
             }
         });
         topics.add(RowFactory.create(helpLink)); // force to minimum width
+        String content = "<p xmlns='http://www.w3.org/1999/xhtml'>" + SubscriptionHelper.formatSubscription() + "</p>";
+        LabelEx subscription = new LabelEx(new XhtmlFragment(content));
+        subscription.setLineWrap(true);
+        subscription.setTextAlignment(Alignment.ALIGN_CENTER);
         Column column = ColumnFactory.create("CellSpacing", row, topics);
-        getLayout().add(ColumnFactory.create("Inset", column));
+        SplitPane panel = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "HelpDialog.content",
+                                                  ColumnFactory.create("Inset", subscription),
+                                                  ColumnFactory.create("Inset", column));
+        getLayout().add(panel);
     }
 }
