@@ -153,8 +153,8 @@ public class CheckOutWorkflow extends WorkflowImpl {
         payWorkflow.setRequired(false);
         addTask(new ConditionalTask(posted, payWorkflow));
 
-        // add the most recent clinicial event to the context
-        addTask(new GetClinicalEventTask());
+        // add the most recent clinical event to the context
+        addTask(new GetClinicalEventTask(act.getActivityStartTime()));
 
         // print acts and documents created since the visit or invoice was
         // created

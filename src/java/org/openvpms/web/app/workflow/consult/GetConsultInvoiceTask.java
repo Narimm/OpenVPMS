@@ -15,11 +15,13 @@
  */
 package org.openvpms.web.app.workflow.consult;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
@@ -69,10 +71,15 @@ class GetConsultInvoiceTask extends GetInvoiceTask {
                 Act item = (Act) IMObjectHelper.getObject(relationship.getTarget());
                 if (item != null) {
                     ActBean itemBean = new ActBean(item);
-                    invoice = itemBean.getSourceAct(CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP);
-                    if (invoice != null && !ActStatus.POSTED.equals(invoice.getStatus())) {
-                        // now if there are multiple non-POSTED invoices, which one to select? TODO
-                        break;
+                    IMObjectReference invoiceRef = itemBean.getSourceObjectRef(
+                            item.getTargetActRelationships(), CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP);
+                    if (invoiceRef != null
+                            && (invoice == null || !ObjectUtils.equals(invoice.getObjectReference(), invoiceRef))) {
+                        invoice = (Act) IMObjectHelper.getObject(invoiceRef);
+                        if (invoice != null && !ActStatus.POSTED.equals(invoice.getStatus())) {
+                            // now if there are multiple non-POSTED invoices, which one to select? TODO
+                            break;
+                        }
                     }
                 }
             }

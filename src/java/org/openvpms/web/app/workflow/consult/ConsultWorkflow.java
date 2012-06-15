@@ -81,7 +81,7 @@ public class ConsultWorkflow extends WorkflowImpl {
         initial.setPractice(external.getPractice());
         initial.setLocation(external.getLocation());
 
-        addTask(new GetClinicalEventTask());
+        addTask(new GetClinicalEventTask(act.getActivityStartTime()));
 
         // get the latest invoice, possibly associated with the event. If none exists, creates a new one
         addTask(new GetConsultInvoiceTask());

@@ -143,6 +143,7 @@ public class VisitEditor {
         query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
 
         visitWindow = createVisitBrowserCRUDWindow(context);
+        visitWindow.getBrowser().setSelected(event);
 
         chargeWindow = createVisitChargeCRUDWindow(event, context);
         chargeWindow.setObject(invoice);
