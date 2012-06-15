@@ -41,31 +41,41 @@ import java.util.Date;
 public class GetClinicalEventTask extends SynchronousTask {
 
     /**
+     * The date to use to locate the event.
+     */
+    private final Date date;
+
+    /**
      * Properties to populate the created object with. May be <tt>null</tt>
      */
     private final TaskProperties properties;
 
     /**
      * Constructs a <tt>GetClinicalEventTask</tt>.
+     *
+     * @param date the date to use to locate the event
      */
-    public GetClinicalEventTask() {
-    	this(null);
+    public GetClinicalEventTask(Date date) {
+        this(date, null);
     }
 
     /**
      * Constructs a <tt>GetClinicalEventTask</tt>.
      *
+     * @param date       the date to use to locate the event
      * @param properties properties to populate any created event. May be <tt>null</tt>
      */
-    public GetClinicalEventTask(TaskProperties properties) {
-    	this.properties = properties;
+    public GetClinicalEventTask(Date date, TaskProperties properties) {
+        this.date = date;
+        this.properties = properties;
     }
 
 
     /**
      * Executes the task.
      *
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException for any error
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     *          for any error
      */
     public void execute(TaskContext context) {
         Party patient = context.getPatient();
@@ -74,11 +84,11 @@ public class GetClinicalEventTask extends SynchronousTask {
         }
         Entity clinician = context.getClinician();
         MedicalRecordRules rules = new MedicalRecordRules();
-        Act event = rules.getEventForAddition(patient, new Date(), clinician);
+        Act event = rules.getEventForAddition(patient, date, clinician);
         if (event.isNew()) {
-        	if (properties != null) {
-            	populate(event, properties, context);        		
-        	}
+            if (properties != null) {
+                populate(event, properties, context);
+            }
             ServiceHelper.getArchetypeService().save(event);
         }
         context.addObject(event);

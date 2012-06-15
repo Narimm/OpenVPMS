@@ -168,7 +168,8 @@ public class CheckInWorkflow extends WorkflowImpl {
         // get the act.patientClinicalEvent.
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", reason);
-        addTask(new GetClinicalEventTask(eventProps));
+        Date date = (appointment != null) ? appointment.getActivityStartTime() : new Date();
+        addTask(new GetClinicalEventTask(date, eventProps));
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask());
