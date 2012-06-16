@@ -33,13 +33,13 @@ public class BasicSelector<T extends IMObject> extends Selector<T> {
      * Constructs a <tt>BasicSelector</tt>.
      */
     public BasicSelector() {
-        this(null);
+        this("button.select");
     }
 
     /**
      * Construct a <tt>BasicSelector</tt>.
      *
-     * @param buttonId the button identifier, or <tt>null</tt> to use the default
+     * @param buttonId the button identifier
      */
     public BasicSelector(String buttonId) {
         super(buttonId);
