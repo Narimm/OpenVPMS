@@ -308,7 +308,10 @@ public class VisitEditor {
      * @param model the tab pane model to add to
      */
     private void addInvoiceTab(TabPaneModel model) {
-        addTab(2, "button.invoice", model, chargeWindow.getComponent());
+        // need to add the window to a ContentPane to get scrollbars
+        ContentPane pane = new ContentPane();
+        pane.add(chargeWindow.getComponent());
+        addTab(2, "button.invoice", model, pane);
     }
 
     /**
