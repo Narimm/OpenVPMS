@@ -35,6 +35,7 @@ import org.openvpms.web.component.dialog.PopupDialog;
 
 import java.math.BigDecimal;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.web.app.workflow.WorkflowTestHelper.cancelDialog;
@@ -133,6 +134,46 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     }
 
     /**
+     * Verifies that when the invoice is set to <em>IN_PROGRESS</em> from COMPLETE, the appointment status is remains
+     * <em>BILLED</em>.
+     */
+    @Test
+    public void testInProgressInvoiceStatusForBilledAppointment() {
+        Act appointment = createAppointment(customer, patient, clinician);
+        checkChangeCompleteInvoiceToInProgress(appointment, WorkflowStatus.BILLED);
+    }
+
+    /**
+     * Verifies that when the invoice is set to {@code IN_PROGRESS} from {@code COMPLETE}, the appointment status
+     * remains {@code COMPLETE}.
+     */
+    @Test
+    public void testInProgressInvoiceStatusForCompletedAppointment() {
+        Act appointment = createAppointment(customer, patient, clinician);
+        checkChangeCompleteInvoiceToInProgress(appointment, WorkflowStatus.COMPLETED);
+    }
+
+    /**
+     * Verifies that when the invoice is set to <em>IN_PROGRESS</em> from COMPLETE, the appointment status is remains
+     * <em>BILLED</em>.
+     */
+    @Test
+    public void testInProgressInvoiceStatusForBilledTask() {
+        Act task = createTask(customer, patient, clinician);
+        checkChangeCompleteInvoiceToInProgress(task, WorkflowStatus.BILLED);
+    }
+
+    /**
+     * Verifies that when the invoice is set to {@code IN_PROGRESS} from {@code COMPLETE}, the appointment status
+     * remains {@code COMPLETE}.
+     */
+    @Test
+    public void testInProgressInvoiceStatusForCompletedTask() {
+        Act task = createTask(customer, patient, clinician);
+        checkChangeCompleteInvoiceToInProgress(task, WorkflowStatus.COMPLETED);
+    }
+
+    /**
      * Verifies that cancelling the invoice edit dialog by the 'Cancel' button cancels the workflow,
      * and that unsaved amounts don't affect the invoice.
      */
@@ -227,6 +268,40 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         fireDialogButton(dialog, PopupDialog.OK_ID);
 
         workflow.checkComplete(WorkflowStatus.BILLED);
+        workflow.checkContext(context, customer, patient, clinician);
+    }
+
+    /**
+     * Transitions a {@code COMPLETED} invoice to {@code IN_PROGRESS} and verifies that an appointment/task that
+     * is {@code COMPLETED} or {@code BILLED} does not change status.
+     *
+     * @param act            the appointment or task
+     * @param expectedStatus the expected appointment/task status
+     */
+    private void checkChangeCompleteInvoiceToInProgress(Act act, String expectedStatus) {
+        // runs the workflow to create a COMPLETE invoice, and sets the appointment/task BILLED
+        checkCompleteInvoiceStatus(act);
+        if (!act.getStatus().equals(expectedStatus)) {
+            act.setStatus(expectedStatus);
+            save(act);
+        }
+
+        // run the workflow again, but this time mark the invoice IN_PROGRESS
+        ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
+        workflow.start();
+
+        VisitEditorDialog dialog = workflow.editVisit();
+        workflow.addVisitInvoiceItem(patient, clinician);
+        dialog.getEditor().getChargeEditor().setStatus(ActStatus.IN_PROGRESS);
+        fireDialogButton(dialog, PopupDialog.OK_ID);
+
+        // verify the invoice is now IN_PROGRESS
+        Act invoice = get(workflow.getInvoice());
+        assertNotNull(invoice);
+        assertEquals(ActStatus.IN_PROGRESS, invoice.getStatus());
+
+        // verify the appointment/task is that expected
+        workflow.checkComplete(expectedStatus);
         workflow.checkContext(context, customer, patient, clinician);
     }
 
