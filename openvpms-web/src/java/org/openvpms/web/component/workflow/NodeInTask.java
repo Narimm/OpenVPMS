@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -24,59 +24,52 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Determines if a node is a particular value.
+ * Determines if a node is in/not in a range of values.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class NodeConditionTask<T> extends NodeEvalTask<Boolean> {
+public class NodeInTask<T> extends NodeEvalTask<Boolean> {
 
     /**
-     * The expected value.
+     * The range of values.
      */
-    private final T expected;
+    private final T[] values;
 
     /**
-     * If <code>true</code> evaluate <em>node==value<em>
-     * otherwise evaluate <em>node != value</em>.
+     * If {@code true} indicates that the node value must not be in {@link #values}.
      */
-    private final boolean equals;
-
+    private final boolean not;
 
     /**
-     * Constructs a new <code>NodeConditionTask</code> to evaluate the value
-     * of an object in the {@link TaskContext}.
+     * Constructs a {@code NodeInTask}.
      *
      * @param shortName the short name of the object to evaluate the node of
      * @param node      the node name
-     * @param value     the expected value
+     * @param values    the values to check against
      */
-    public NodeConditionTask(String shortName, String node, T value) {
-        this(shortName, node, true, value);
+    public NodeInTask(String shortName, String node, T... values) {
+        this(shortName, node, false, values);
     }
 
     /**
-     * Constructs a new <code>NodeConditionTask</code> to evaluate the value
-     * of  an object in the {@link TaskContext}.
+     * Constructs a {@code NodeInTask}.
      *
      * @param shortName the short name of the object to evaluate the node of
      * @param node      the node name
-     * @param equals    if <code>true</code> evaluate <em>node==value<em>
-     *                  otherwise evaluate <em>node != value</em>
-     * @param value     the expected value
+     * @param not       if {@code true}, indicates that the node value must no be in {@code values}
+     * @param values    the values to check against
      */
-    public NodeConditionTask(String shortName, String node, boolean equals,
-                             T value) {
+    public NodeInTask(String shortName, String node, boolean not, T... values) {
         super(shortName, node);
-        this.equals = equals;
-        this.expected = value;
+        this.values = values;
+        this.not = not;
     }
 
     /**
      * Starts the task.
      * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
      * @throws OpenVPMSException for any error
@@ -89,16 +82,21 @@ public class NodeConditionTask<T> extends NodeEvalTask<Boolean> {
             notifyCancelled();
         } else {
             T value = (T) getValue(object);
-            boolean result;
-            if (expected instanceof Comparable && value != null) {
-                result = ((Comparable) expected).compareTo(value) == 0;
-            } else {
-                result = ObjectUtils.equals(expected, value);
+            boolean result = false;
+            for (T compare : values) {
+                if (compare instanceof Comparable && value != null) {
+                    result = ((Comparable) compare).compareTo(value) == 0;
+                } else {
+                    result = ObjectUtils.equals(compare, value);
+                }
+                if (result) {
+                    break;
+                }
             }
-            if (equals) {
-                setValue(result);
-            } else {
+            if (not) {
                 setValue(!result);
+            } else {
+                setValue(result);
             }
         }
     }
