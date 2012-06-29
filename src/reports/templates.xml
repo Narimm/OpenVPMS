@@ -16,7 +16,7 @@
 
     <template name="Invoice Reminders"
               archetype="SUBREPORT"
-              path="invoiceRemindersA4.jrxml"
+              path="invoiceRemindersA5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
@@ -301,5 +301,18 @@
               path="StockTake Sheet.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
+
+    <template name="Order"
+              archetype="act.supplierOrder"
+              path="order.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Order Items"
+              archetype="SUBREPORT"
+              path="orderItems.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
 
 </templates>
