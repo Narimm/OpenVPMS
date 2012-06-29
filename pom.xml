@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.6-SNAPSHOT</version>
+        <version>1.6-beta-1</version>
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
@@ -259,7 +259,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-subscription-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0-beta-1</version>
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
@@ -493,6 +493,16 @@
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
             <version>${xmlapis.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-spring</artifactId>
+            <version>2.9.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-main</artifactId>
+            <version>2.9.6</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
