@@ -70,11 +70,6 @@ public abstract class Reporter<T> {
      */
     private Map<String, Object> parameters = new HashMap<String, Object>();
 
-    /**
-     * The document mime type.
-     */
-    private String mimeType = DEFAULT_MIME_TYPE;
-
 
     /**
      * Constructs a <tt>Reporter</tt> to generate documents from a single object.
@@ -127,7 +122,7 @@ public abstract class Reporter<T> {
      * @throws OpenVPMSException for any error
      */
     public Document getDocument() {
-        return getDocument(mimeType, false);
+        return getDocument(null, false);
     }
 
     /**
@@ -156,25 +151,6 @@ public abstract class Reporter<T> {
      */
     public void print(Iterator<T> objects, PrintProperties properties) {
         getReport().print(objects, getParameters(false), properties);
-    }
-
-    /**
-     * Returns the document mime type.
-     *
-     * @return the mime type. May be <tt>null</tt>
-     */
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    /**
-     * Sets the document mime type.
-     *
-     * @param mimeType the mime type. If <tt>null</tt> the default mime type
-     *                 will be used
-     */
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
     }
 
     /**

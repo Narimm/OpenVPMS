@@ -54,6 +54,11 @@ public class DocumentActDownloader extends Downloader {
     private final DocumentAct act;
 
     /**
+     * Determines if the document should be downloaded as a template.
+     */
+    private final boolean asTemplate;
+
+    /**
      * The template, when there is no document present.
      */
     private DocumentTemplate template;
@@ -70,7 +75,18 @@ public class DocumentActDownloader extends Downloader {
      * @param act the act
      */
     public DocumentActDownloader(DocumentAct act) {
+        this(act, false);
+    }
+
+    /**
+     * Constructs a <tt>DocumentActDownloader</tt>.
+     *
+     * @param act        the act
+     * @param asTemplate determines if the document should be downloaded as a template
+     */
+    public DocumentActDownloader(DocumentAct act, boolean asTemplate) {
         this.act = act;
+        this.asTemplate = asTemplate;
     }
 
     /**
@@ -130,18 +146,28 @@ public class DocumentActDownloader extends Downloader {
      * @throws OpenOfficeException       if the document cannot be converted
      */
     protected Document getDocument(String mimeType) {
-        IMObjectReference ref = act.getDocument();
         Document document = null;
-        if (ref != null) {
-            document = getDocumentByRef(ref, mimeType);
+        if (!asTemplate) {
+            IMObjectReference ref = act.getDocument();
+            if (ref != null) {
+                document = getDocumentByRef(ref, mimeType);
+            } else {
+                DocumentTemplate template = getTemplate();
+                if (template != null) {
+                    DocumentActReporter reporter = new DocumentActReporter(act, template);
+                    if (mimeType == null) {
+                        document = reporter.getDocument();
+                    } else {
+                        document = reporter.getDocument(mimeType, true);
+                    }
+                }
+            }
         } else {
             DocumentTemplate template = getTemplate();
             if (template != null) {
-                DocumentActReporter reporter = new DocumentActReporter(act, template);
-                if (mimeType == null) {
-                    document = reporter.getDocument();
-                } else {
-                    document = reporter.getDocument(mimeType, true);
+                document = template.getDocument();
+                if (document != null && mimeType != null && !mimeType.equals(document.getMimeType())) {
+                    document = DocumentHelper.convert(document, mimeType);
                 }
             }
         }
