@@ -23,18 +23,13 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.openoffice.Converter;
-import org.openvpms.report.openoffice.OOConnection;
 import org.openvpms.report.openoffice.OpenOfficeException;
-import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.servlet.DownloadServlet;
-import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -122,7 +117,7 @@ public abstract class Downloader {
         if (listener != null) {
             listener.download(this, mimeType);
         } else {
-            download();
+            download(mimeType);
         }
     }
 
@@ -143,16 +138,7 @@ public abstract class Downloader {
             throw new DocumentException(DocumentException.ErrorCode.NotFound);
         }
         if (mimeType != null && !mimeType.equals(result.getMimeType())) {
-            OOConnection connection = null;
-            try {
-                DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
-                connection = OpenOfficeHelper.getConnectionPool().getConnection();
-                Converter converter = new Converter(connection, handlers);
-                Document target = converter.convert(result, mimeType);
-                DownloadServlet.startDownload(target);
-            } finally {
-                OpenOfficeHelper.close(connection);
-            }
+            result = DocumentHelper.convert(result, mimeType);
         }
         return result;
     }

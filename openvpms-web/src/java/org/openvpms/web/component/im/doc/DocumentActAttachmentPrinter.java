@@ -106,6 +106,9 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
         if (template == null) {
             DocumentAct act = (DocumentAct) getObject();
             result = (Document) IMObjectHelper.getObject(act.getDocument());
+            if (result != null && mimeType != null && !mimeType.equals(result.getMimeType())) {
+                result = DocumentHelper.convert(result, mimeType);
+            }
         }
         if (result == null) {
             result = super.getDocument(mimeType, email);

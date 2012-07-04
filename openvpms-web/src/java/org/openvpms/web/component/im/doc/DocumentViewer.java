@@ -59,6 +59,11 @@ public class DocumentViewer {
     private final boolean link;
 
     /**
+     * Determines if the document should be downloaded as a template.
+     */
+    private final boolean template;
+
+    /**
      * The downloader.
      */
     private Downloader downloader;
@@ -76,7 +81,18 @@ public class DocumentViewer {
      * @param link if <tt>true</tt> enable an hyperlink to the object
      */
     public DocumentViewer(DocumentAct act, boolean link) {
-        this(act.getDocument(), act, act.getFileName(), link);
+        this(act, link, false);
+    }
+
+    /**
+     * Constructs a <tt>DocumentViewer</tt>.
+     *
+     * @param act  the document act
+     * @param link if <tt>true</tt> enable an hyperlink to the object
+     * @param template  if <tt>true</tt>, display as a template, otherwise generate the document if required
+     */
+    public DocumentViewer(DocumentAct act, boolean link, boolean template) {
+        this(act.getDocument(), act, act.getFileName(), link, template);
     }
 
     /**
@@ -85,9 +101,10 @@ public class DocumentViewer {
      * @param reference the reference to view
      * @param parent    the parent. May be <tt>null</tt>
      * @param link      if <tt>true</tt> enable an hyperlink to the object
+     * @param template  if <tt>true</tt>, display as a template, otherwise generate the document if required
      */
-    public DocumentViewer(IMObjectReference reference, IMObject parent, boolean link) {
-        this(reference, parent, null, link);
+    public DocumentViewer(IMObjectReference reference, IMObject parent, boolean link, boolean template) {
+        this(reference, parent, null, link, template);
     }
 
     /**
@@ -97,8 +114,9 @@ public class DocumentViewer {
      * @param parent    the parent. May be <tt>null</tt>
      * @param name      the document file name. May be <tt>null</tt>
      * @param link      if <tt>true</tt> enable an hyperlink to the object
+     * @param template  if <tt>true</tt>, display as a template, otherwise generate the document if required
      */
-    public DocumentViewer(IMObjectReference reference, IMObject parent, String name, boolean link) {
+    public DocumentViewer(IMObjectReference reference, IMObject parent, String name, boolean link, boolean template) {
         this.reference = reference;
         this.parent = parent;
         if (name != null) {
@@ -111,6 +129,7 @@ public class DocumentViewer {
             this.name = null;
         }
         this.link = link;
+        this.template = template;
     }
 
     /**
@@ -147,7 +166,7 @@ public class DocumentViewer {
         if (hasDoc) {
             if (link) {
                 if (parent instanceof DocumentAct) {
-                    downloader = new DocumentActDownloader((DocumentAct) parent);
+                    downloader = new DocumentActDownloader((DocumentAct) parent, template);
                 } else {
                     downloader = new DocumentRefDownloader(reference, name);
                 }

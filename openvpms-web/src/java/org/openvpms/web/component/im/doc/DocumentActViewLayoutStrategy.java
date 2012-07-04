@@ -47,8 +47,9 @@ public class DocumentActViewLayoutStrategy extends DocumentActLayoutStrategy {
                                              LayoutContext context) {
         String name = property.getName();
         ComponentState result;
-        if (name.equals("documentTemplate") || name.equals(DOCUMENT)) {
-            DocumentViewer viewer = new DocumentViewer((DocumentAct) parent, true);
+        boolean template = name.equals("documentTemplate");
+        if (template || name.equals(DOCUMENT)) {
+            DocumentViewer viewer = new DocumentViewer((DocumentAct) parent, true, template);
             result = new ComponentState(viewer.getComponent(), property);
         } else {
             result = super.createComponent(property, parent, context);

@@ -382,7 +382,7 @@ public class MailEditor extends AbstractModifiable {
         }
         final DocRef ref = new DocRef(document, delete);
         documents.add(ref);
-        DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true);
+        DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true, false);
         documentViewer.setDownloadListener(new DownloaderListener() {
             public void download(Downloader downloader, String mimeType) {
                 onDownload(downloader, mimeType, ref.getReference());

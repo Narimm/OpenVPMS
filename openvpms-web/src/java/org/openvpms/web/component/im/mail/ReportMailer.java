@@ -65,7 +65,7 @@ public abstract class ReportMailer<T> extends AbstractMailer {
             throws MessagingException, UnsupportedEncodingException {
         super.populateMessage(helper, address);
 
-        final Document doc = reporter.getDocument();
+        final Document doc = reporter.getDocument(Reporter.DEFAULT_MIME_TYPE, true);
         addAttachment(helper, doc);
     }
 

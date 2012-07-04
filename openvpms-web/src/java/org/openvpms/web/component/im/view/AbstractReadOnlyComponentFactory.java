@@ -149,7 +149,7 @@ public abstract class AbstractReadOnlyComponentFactory
         }
         String[] range = property.getArchetypeRange();
         if (TypeHelper.matches(range, "document.*")) {
-            return new DocumentViewer(ref, context, link).getComponent();
+            return new DocumentViewer(ref, context, link, false).getComponent();
         }
 
         return new IMObjectReferenceViewer(ref, listener).getComponent();
