@@ -37,14 +37,14 @@ public class CustomerChargeDocuments {
     /**
      * The charge editor.
      */
-    private final CustomerChargeActEditor editor;
+    private final AbstractCustomerChargeActEditor editor;
 
     /**
      * Constructs a {@code CustomerChargeDocuments}.
      *
      * @param editor the charge editor
      */
-    public CustomerChargeDocuments(CustomerChargeActEditor editor) {
+    public CustomerChargeDocuments(AbstractCustomerChargeActEditor editor) {
         this.editor = editor;
     }
 
