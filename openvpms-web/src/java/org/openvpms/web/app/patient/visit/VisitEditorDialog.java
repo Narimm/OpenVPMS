@@ -20,6 +20,8 @@ package org.openvpms.web.app.patient.visit;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.app.customer.charge.CustomerChargeDocuments;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -27,6 +29,8 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+
+import java.util.List;
 
 /**
  * Browser that displays clinical events and their child acts and supports editing them.
@@ -96,19 +100,41 @@ public class VisitEditorDialog extends PopupDialog {
     }
 
     /**
-     * Invoked when the 'apply' button is pressed. This saves the editor.
+     * Invoked when the 'apply' button is pressed. This saves the editor, printing unprinted documents.
      */
     @Override
     protected void onApply() {
-        editor.save();
+        if (editor.getChargeEditor() != null) {
+            CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor());
+            List<Act> existing = docs.getUnprinted();
+            if (editor.save()) {
+                docs.printNew(existing, null);
+            }
+        }
     }
 
     /**
-     * Invoked when the 'OK' button is pressed. This saves the editor and closes the window.
+     * Invoked when the 'OK' button is pressed. This saves the editor, prints unprinted documents, and closes the
+     * window.
      */
     @Override
     protected void onOK() {
-        if (editor.save()) {
+        if (editor.getChargeEditor() != null) {
+            CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor());
+            List<Act> existing = docs.getUnprinted();
+            if (editor.save()) {
+                ActionListener printListener = new ActionListener() {
+                    @Override
+                    public void onAction(ActionEvent event) {
+                        VisitEditorDialog.super.onOK();
+                    }
+                };
+                if (!docs.printNew(existing, printListener)) {
+                    // nothing to print, so close now
+                    super.onOK();
+                }
+            }
+        } else {
             super.onOK();
         }
     }
