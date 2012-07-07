@@ -322,7 +322,7 @@ public class SMSEditor extends AbstractModifiable {
         if (!StringUtils.isEmpty(areaCode)) {
             phone = Messages.get("phone.withAreaCode", areaCode, phone);
         } else {
-            phone = Messages.get("phone.noAreaCode");
+            phone = Messages.get("phone.noAreaCode", phone);
         }
         return phone;
     }
