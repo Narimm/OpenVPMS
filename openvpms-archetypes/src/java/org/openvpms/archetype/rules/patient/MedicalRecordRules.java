@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -119,6 +120,37 @@ public class MedicalRecordRules {
                 }
             }
         }
+    }
+
+    /**
+     * Adds an <em>act.patientClinicalNote</em> to an <em>act.patientClinicalEvent</em>.
+     *
+     * @param event     the event
+     * @param startTime the start time for the note
+     * @param note      the note
+     * @param clinician the clinician. May be {@code null}
+     * @param author    the author. May be {@code null}
+     * @return the note act
+     */
+    public Act addNote(Act event, Date startTime, String note, User clinician, User author) {
+        Act act = (Act) service.create(PatientArchetypes.CLINICAL_NOTE);
+        ActBean bean = new ActBean(act, service);
+        ActBean eventBean = new ActBean(event, service);
+        bean.setValue("startTime", startTime);
+        IMObjectReference patient = eventBean.getNodeParticipantRef("patient");
+        if (patient != null) {
+            bean.addNodeParticipation("patient", patient);
+        }
+        if (author != null) {
+            bean.addNodeParticipation("author", author);
+        }
+        if (clinician != null) {
+            bean.addNodeParticipation("clinician", clinician);
+        }
+        bean.setValue("note", note);
+        eventBean.addNodeRelationship("items", act);
+        service.save(Arrays.asList(event, act));
+        return act;
     }
 
     /**
