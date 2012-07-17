@@ -16,6 +16,7 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
@@ -27,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -35,6 +37,7 @@ import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
+import org.openvpms.web.component.im.edit.act.TemplateProductListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
@@ -89,6 +92,13 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
         this.addDefaultItem = addDefaultItem;
+        if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
+            getItems().setTemplateProductListener(new TemplateProductListener() {
+                public void expanded(Product product) {
+                    templateProductExpanded(product);
+                }
+            });
+        }
     }
 
     /**
@@ -302,6 +312,33 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
             }
         }
         return reminders;
+    }
+
+    /**
+     * Invoked when a template product is expanded on an invoice.
+     * <p/>
+     * This appends any invoiceNote to the notes.
+     *
+     * @param product the template product
+     */
+    private void templateProductExpanded(Product product) {
+        Property property = getProperty("notes");
+        if (property != null) {
+            IMObjectBean bean = new IMObjectBean(product);
+            String invoiceNote = bean.getString("invoiceNote");
+            if (!StringUtils.isEmpty(invoiceNote)) {
+                String value = invoiceNote;
+                if (property.getValue() != null) {
+                    value = property.getValue().toString();
+                    if (!StringUtils.isEmpty(value)) {
+                        value = value + "\n" + invoiceNote;
+                    } else {
+                        value = invoiceNote;
+                    }
+                }
+                property.setValue(value);
+            }
+        }
     }
 
 }

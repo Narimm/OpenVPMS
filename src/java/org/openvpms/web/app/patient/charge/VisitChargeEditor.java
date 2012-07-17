@@ -17,12 +17,17 @@
  */
 package org.openvpms.web.app.patient.charge;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditor;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -44,6 +49,7 @@ import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -58,7 +64,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     /**
      * The event to link charge items to.
      */
-    private final Act event;
+    private Act event;
 
     /**
      * The total charge for the patient for the visit.
@@ -179,18 +185,34 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     }
 
     /**
+     * Save any edits.
+     * <p/>
+     * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
+     * matching reminders completed.
+     *
+     * @return <tt>true</tt> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        boolean result = super.doSave();
+        if (result) {
+            addTemplateNotes();
+        }
+        return result;
+    }
+
+    /**
      * Links the charge items to their corresponding clinical events.
      */
     @Override
     protected void linkToEvents() {
         List<FinancialAct> items = getItems().getPatientActs();
-        if (!items.isEmpty()) {
+        event = IMObjectHelper.reload(event); // make sure the most recent instance is being used
+        if (event != null && !items.isEmpty()) {
             // make sure the current event is being used
-            Act act = IMObjectHelper.reload(event);
-            if (act != null) {
-                ChargeItemEventLinker linker = new ChargeItemEventLinker(null, null, ServiceHelper.getArchetypeService());
-                linker.link(act, items);
-            }
+            ChargeItemEventLinker linker = new ChargeItemEventLinker(null, null,
+                                                                     ServiceHelper.getArchetypeService());
+            linker.link(event, items);
         }
     }
 
@@ -215,5 +237,36 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
 
         BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
         visitTax.setValue(tax);
+    }
+
+    /**
+     * Creates <em>act.patientClinicalNote</em> acts for any notes associated with template products, linking them to
+     * the event.
+     */
+    private void addTemplateNotes() {
+        List<TemplateChargeItems> templates = getItems().getTemplates();
+        if (event != null && !templates.isEmpty()) {
+            List<FinancialAct> items = getItems().getPatientActs();
+            MedicalRecordRules rules = new MedicalRecordRules(ServiceHelper.getArchetypeService());
+            for (TemplateChargeItems template : templates) {
+                Act item = template.findFirst(items);
+                if (item != null) {
+                    String visitNote = template.getVisitNote();
+                    if (!StringUtils.isEmpty(visitNote)) {
+                        ActBean bean = new ActBean(item);
+                        Date itemStartTime = bean.getDate("startTime");
+                        Date startTime = getStartTime();
+                        if (DateRules.getDate(itemStartTime).compareTo(DateRules.getDate(startTime)) != 0) {
+                            // use the item start time if its date is different to that of the invoice
+                            startTime = itemStartTime;
+                        }
+                        User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
+                        User author = (User) getObject(bean.getNodeParticipantRef("author"));
+                        rules.addNote(event, startTime, visitNote, clinician, author);
+                    }
+                }
+            }
+            getItems().clearTemplates();
+        }
     }
 }

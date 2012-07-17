@@ -23,12 +23,14 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -45,6 +47,11 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelationshipCollectionEditor {
+
+    /**
+     * The templates.
+     */
+    private List<TemplateChargeItems> templates = new ArrayList<TemplateChargeItems>();
 
     /**
      * Constructs a {@code VisitChargeItemRelationshipCollectionEditor}.
@@ -95,6 +102,31 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
     }
 
     /**
+     * Returns the templates that were expanded.
+     *
+     * @return the templates
+     */
+    public List<TemplateChargeItems> getTemplates() {
+        return templates;
+    }
+
+    /**
+     * Clears the templates.
+     */
+    public void clearTemplates() {
+        templates.clear();
+    }
+
+    /**
+     * Returns the current patient.
+     *
+     * @return the current patient. May be {@code null}
+     */
+    public Party getPatient() {
+        return getContext().getContext().getPatient();
+    }
+
+    /**
      * Creates a new result set for display.
      *
      * @return a new result set
@@ -123,11 +155,21 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
     }
 
     /**
-     * Returns the current patient.
+     * Copies an act item for each product referred to in its template.
      *
-     * @return the current patient. May be {@code null}
+     * @param editor   the editor
+     * @param act      the act
+     * @param template the product template
+     * @return the acts generated from the template
      */
-    private Party getPatient() {
-        return getContext().getContext().getPatient();
+    @Override
+    protected List<Act> expandTemplate(ActItemEditor editor, Act act, Product template) {
+        List<Act> acts = super.expandTemplate(editor, act, template);
+        if (!acts.isEmpty()) {
+            TemplateChargeItems items = new TemplateChargeItems(template, acts);
+            templates.add(items);
+        }
+        return acts;
     }
+
 }
