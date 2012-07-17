@@ -18,7 +18,6 @@
 
 package org.openvpms.archetype.rules.patient;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -37,6 +36,12 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link MedicalRecordRules} class.
@@ -177,6 +182,28 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         // In some cases, it is present, in others it is 00:00:00.
 
         checkEvent(jan2, event1);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#addNote} method.
+     */
+    @Test
+    public void testAddNote() {
+        Act event = createEvent();
+        Date startTime = getDate("2012-07-17");
+        User author = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
+        String text = "Test note";
+        Act note = rules.addNote(event, startTime, text, clinician, author);
+
+        ActBean eventBean = new ActBean(event);
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
+        ActBean bean = new ActBean(note);
+        assertEquals(startTime, note.getActivityStartTime());
+        assertEquals(text, bean.getString("note"));
+        assertEquals(patient, bean.getNodeParticipant("patient"));
+        assertEquals(clinician, bean.getNodeParticipant("clinician"));
+        assertEquals(author, bean.getNodeParticipant("author"));
     }
 
     /**
