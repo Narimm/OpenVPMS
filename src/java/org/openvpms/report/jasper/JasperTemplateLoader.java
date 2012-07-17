@@ -37,14 +37,15 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.ReportException;
-import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
-import static org.openvpms.report.ReportException.ErrorCode.FailedToFindSubReport;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToFindSubReport;
 
 
 /**
@@ -146,10 +147,14 @@ public class JasperTemplateLoader {
      */
     protected void init(String name, JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
         try {
-            for (JRBand band : design.getDetailSection().getBands()) {
-                compileSubReports(band, design, name, service, handlers);
+            if (design.getDetailSection() != null) {
+                for (JRBand band : design.getDetailSection().getBands()) {
+                    compileSubReports(band, design, name, service, handlers);
+                }
             }
-            compileSubReports(design.getSummary(), design, name, service, handlers);
+            if (design.getSummary() != null) {
+                compileSubReports(design.getSummary(), design, name, service, handlers);
+            }
             report = JasperCompileManager.compileReport(design);
         } catch (JRException exception) {
             throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
@@ -159,10 +164,10 @@ public class JasperTemplateLoader {
     /**
      * Compiles sub-reports referenced by the specified band.
      *
-     * @param band the band to locate sub-reports in
-     * @param design the parent report design
-     * @param name the template name, used for error reporting
-     * @param service the archetype service
+     * @param band     the band to locate sub-reports in
+     * @param design   the parent report design
+     * @param name     the template name, used for error reporting
+     * @param service  the archetype service
      * @param handlers the document handlers
      * @throws JRException for any jasper reports error
      */
