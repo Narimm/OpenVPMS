@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.archetype.rules.act.ActCopyHandler;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -81,6 +82,12 @@ public class ActRelationshipCollectionEditor
     private TemplateProductListener templateProductListener;
 
     /**
+     * Listener for product change events.
+     */
+    private final ProductListener productListener;
+
+
+    /**
      * Constructs an <tt>ActRelationshipCollectionEditor</tt>.
      *
      * @param property the collection property
@@ -90,6 +97,11 @@ public class ActRelationshipCollectionEditor
     public ActRelationshipCollectionEditor(CollectionProperty property,
                                            Act act, LayoutContext context) {
         super(new ActRelationshipCollectionPropertyEditor(property, act), act, context);
+        productListener = new ProductListener() {
+            public void productChanged(ActItemEditor editor, Product product) {
+                onProductChanged(editor, product);
+            }
+        };
     }
 
     /**
@@ -135,6 +147,22 @@ public class ActRelationshipCollectionEditor
     }
 
     /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
+     * @param context the layout context
+     * @return an editor to edit <code>object</code>
+     */
+    @Override
+    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
+        IMObjectEditor editor = super.createEditor(object, context);
+        if (editor instanceof ActItemEditor) {
+            ((ActItemEditor) editor).setProductListener(productListener);
+        }
+        return editor;
+    }
+
+    /**
      * Adds any object being edited to the collection, if it is valid.
      *
      * @param validator the validator
@@ -168,30 +196,15 @@ public class ActRelationshipCollectionEditor
     @Override
     public boolean addEdited(IMObjectEditor editor) {
         boolean result = false;
-        Act act = (Act) editor.getObject();
         if (needsTemplateExpansion(editor)) {
-            IMObjectReference product = ((ActItemEditor) editor).getProductRef();
+            Product product = ((ActItemEditor) editor).getProduct();
             if (TypeHelper.isA(product, TEMPLATE)) {
-                result = expandTemplate((ActItemEditor) editor, act, product);
-                if (result) {
-                    populateTable();
-                    // template act is replaced with the first product in
-                    // the template, so try and select it in the table
-                    IMObject object = editor.getObject();
-                    setSelected(object);
-                }
+                result = expandTemplate((ActItemEditor) editor, product);
             }
         } else {
             result = super.addEdited(editor);
         }
         return result;
-    }
-
-    /**
-     * Edits the selected object.
-     */
-    public void editSelected() {
-        onEdit();
     }
 
     /**
@@ -310,23 +323,20 @@ public class ActRelationshipCollectionEditor
      * @return the collection property editor
      */
     protected ActRelationshipCollectionPropertyEditor getEditor() {
-        return (ActRelationshipCollectionPropertyEditor)
-                getCollectionPropertyEditor();
+        return (ActRelationshipCollectionPropertyEditor) getCollectionPropertyEditor();
     }
 
     /**
-     * Copies an act item for each product referred to in its template.
+     * Creates an act item for each product referred to in its template.
      *
-     * @param editor      the editor
-     * @param act         the act
-     * @param templateRef a reference to the template
+     * @param editor   the editor
+     * @param template the template. May be {@code null}
      * @return <tt>true</tt> if the template was expanded; otherwise <tt>false</tt>
      */
-    protected boolean expandTemplate(ActItemEditor editor, Act act, IMObjectReference templateRef) {
+    protected boolean expandTemplate(ActItemEditor editor, Product template) {
         boolean result = false;
-        Product template = (Product) getObject(templateRef);
         if (template != null) {
-            List<Act> items = expandTemplate(editor, act, template);
+            List<Act> items = createTemplateActs(editor, template);
             result = !items.isEmpty();
             if (result && templateProductListener != null) {
                 templateProductListener.expanded(template);
@@ -335,6 +345,11 @@ public class ActRelationshipCollectionEditor
         if (!result) {
             // template failed to expand. Clear the product reference so its not saved.
             editor.setProductRef(null);
+        } else {
+            populateTable();
+            // template act is replaced with the first product in the template, so try and select it in the table
+            IMObject object = editor.getObject();
+            setSelected(object);
         }
         return result;
     }
@@ -343,17 +358,17 @@ public class ActRelationshipCollectionEditor
      * Copies an act item for each product referred to in its template.
      *
      * @param editor   the editor
-     * @param act      the act
      * @param template the product template
      * @return the acts generated from the template
      */
-    protected List<Act> expandTemplate(ActItemEditor editor, Act act, Product template) {
+    protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
         List<Act> result = new ArrayList<Act>();
         ActRelationshipCollectionPropertyEditor collection = getEditor();
 
         IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
         IMObjectBean bean = new IMObjectBean(template);
         List<IMObject> values = bean.getValues("includes");
+        Act act = (Act) editor.getObject();
         Act copy = act; // replace the existing act with the first
         Date startTime = act.getActivityStartTime();
         for (IMObject value : values) {
@@ -391,6 +406,29 @@ public class ActRelationshipCollectionEditor
             copy = null;
         }
         return result;
+    }
+
+    /**
+     * Returns the listener for product change events.
+     *
+     * @return the product listener
+     */
+    protected ProductListener getProductListener() {
+        return productListener;
+    }
+
+    /**
+     * Invoked when a product changes.
+     * <p/>
+     * This expands any template products
+     *
+     * @param editor  the editor
+     * @param product the product.
+     */
+    private void onProductChanged(ActItemEditor editor, Product product) {
+        if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+            expandTemplate(editor, product);
+        }
     }
 
     /**

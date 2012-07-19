@@ -1,10 +1,5 @@
 package org.openvpms.web.app.customer.charge;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActCalculator;
@@ -38,13 +33,19 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.checkSavePopup;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.checkSavePopup;
 
 /**
  * Tests the {@link CustomerChargeActEditor} class.
@@ -828,9 +829,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
         editor.getComponent();
         CustomerChargeTestHelper.addItem(editor, patient, template, BigDecimal.ONE, mgr);
-
-        // need to add a new item to force template to expand. As it is not populated, it won't be saved
-        editor.addItem();
 
         boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
         int product1Acts = 0;     // expected child acts for product1

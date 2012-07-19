@@ -46,7 +46,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class PriceActItemEditor extends ActItemEditor {
+public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Fixed price node editor.

@@ -23,9 +23,6 @@ import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -61,8 +58,7 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
      * @param context the layout context
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public SupplierStockItemEditor(FinancialAct act, Act parent,
-                                   LayoutContext context) {
+    public SupplierStockItemEditor(FinancialAct act, Act parent, LayoutContext context) {
         super(act, parent, context);
     }
 
@@ -200,25 +196,23 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
     }
 
     /**
-     * Invoked when the participation product is changed, to update prices.
+     * Invoked when the product is changed, to update prices.
      *
-     * @param participation the product participation instance
+     * @param product the product. May be {@code null}
      */
-    protected void productModified(Participation participation) {
-        IMObjectReference entity = participation.getEntity();
-        IMObject object = getObject(entity);
-        if (object instanceof Product) {
-            ProductParticipationEditor editor = getProductEditor();
-            ProductSupplier ps = editor.getProductSupplier();
-            if (ps != null) {
-                setReorderCode(ps.getReorderCode());
-                setReorderDescription(ps.getReorderDescription());
-                setPackageSize(ps.getPackageSize());
-                setPackageUnits(ps.getPackageUnits());
-                setListPrice(ps.getListPrice());
-                setUnitPrice(ps.getNettPrice());
-            }
+    @Override
+    protected void productModified(Product product) {
+        ProductParticipationEditor editor = getProductEditor();
+        ProductSupplier ps = editor.getProductSupplier();
+        if (ps != null) {
+            setReorderCode(ps.getReorderCode());
+            setReorderDescription(ps.getReorderDescription());
+            setPackageSize(ps.getPackageSize());
+            setPackageUnits(ps.getPackageUnits());
+            setListPrice(ps.getListPrice());
+            setUnitPrice(ps.getNettPrice());
         }
+        notifyProductListener(product);
     }
 
     /**
@@ -281,12 +275,11 @@ public abstract class SupplierStockItemEditor extends SupplierActItemEditor {
                 ps.setPreferred(true);
             }
         } else if (size != ps.getPackageSize()
-                   || !ObjectUtils.equals(units, ps.getPackageUnits())
-                   || !equals(listPrice, ps.getListPrice())
-                   || !equals(unitPrice, ps.getNettPrice())
-                   || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
-                   || !ObjectUtils.equals(ps.getReorderDescription(),
-                                          reorderDesc)) {
+                || !ObjectUtils.equals(units, ps.getPackageUnits())
+                || !equals(listPrice, ps.getListPrice())
+                || !equals(unitPrice, ps.getNettPrice())
+                || !ObjectUtils.equals(ps.getReorderCode(), reorderCode)
+                || !ObjectUtils.equals(ps.getReorderDescription(), reorderDesc)) {
             // properties are different to an existing relationship
             ps.setPackageSize(size);
             ps.setPackageUnits(units);

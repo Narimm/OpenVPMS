@@ -457,6 +457,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             updateStockLocation(product);
             updateSellingUnits(product);
         }
+        notifyProductListener(product);
     }
 
     /**
