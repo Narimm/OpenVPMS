@@ -130,6 +130,7 @@ public class StockTransferItemEditor extends ActItemEditor {
     protected void productModified(Product product) {
         updateFromQuantity(product);
         updateToQuantity(product);
+        notifyProductListener(product);
     }
 
     /**

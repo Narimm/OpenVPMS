@@ -101,6 +101,7 @@ public class StockAdjustItemEditor extends ActItemEditor {
     @Override
     protected void productModified(Product product) {
         updateCurrentQuantity(product);
+        notifyProductListener(product);
     }
 
     /**

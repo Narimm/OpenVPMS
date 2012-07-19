@@ -64,10 +64,10 @@ public class SupplierChargeActItemEditor extends SupplierActItemEditor {
     @Override
     protected void productModified(Product product) {
         Property unitCost = getProperty("unitPrice");
-        ProductPrice unit = getProductPrice(ProductArchetypes.UNIT_PRICE,
-                                            product);
+        ProductPrice unit = getProductPrice(ProductArchetypes.UNIT_PRICE, product);
         if (unit != null) {
             unitCost.setValue(unit.getPrice());
         }
+        notifyProductListener(product);
     }
 }

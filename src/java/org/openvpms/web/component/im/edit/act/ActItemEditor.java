@@ -50,10 +50,14 @@ import java.math.BigDecimal;
 public abstract class ActItemEditor extends AbstractActEditor {
 
     /**
-     * Current node filter. May be <tt>null</tt>
+     * Current node filter. May be {@code null}.
      */
-    private NodeFilter _filter;
+    private NodeFilter filter;
 
+    /**
+     * The product listener. May be {@code null}.
+     */
+    private ProductListener listener;
 
     /**
      * Construct a new <tt>ActItemEditor</tt>.
@@ -265,6 +269,15 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Sets the listener for product change events.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    public void setProductListener(ProductListener listener) {
+        this.listener = listener;
+    }
+
+    /**
      * Invoked when the participation product is changed.
      * <p/>
      * This delegates to {@link #productModified(Product)}.
@@ -284,6 +297,17 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param product the product. May be <tt>null</tt>
      */
     protected void productModified(Product product) {
+    }
+
+    /**
+     * Notify any registered {@link ProductListener} of a change in product.
+     *
+     * @param product the product. May be {@code null}
+     */
+    protected void notifyProductListener(Product product) {
+        if (listener != null) {
+            listener.productChanged(this, product);
+        }
     }
 
     /**
@@ -390,7 +414,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @param filter the node filter. May be <tt>null</tt>
      */
     protected void setFilter(NodeFilter filter) {
-        _filter = filter;
+        this.filter = filter;
     }
 
     /**
@@ -399,7 +423,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the current node filter. May be <tt>null</tt>
      */
     protected NodeFilter getFilter() {
-        return _filter;
+        return filter;
     }
 
     /**

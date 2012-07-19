@@ -78,8 +78,7 @@ public class MultipleRelationshipCollectionTargetEditor
      * @return an editor to edit <code>object</code>
      */
     @Override
-    public IMObjectEditor createEditor(IMObject object,
-                                       LayoutContext context) {
+    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         return super.createEditor(object, context);
     }
 

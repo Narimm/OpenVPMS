@@ -191,6 +191,7 @@ public class EstimationItemEditor extends PriceActItemEditor {
             }
             updateSellingUnits(product);
         }
+        notifyProductListener(product);
     }
 
     /**

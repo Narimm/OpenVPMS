@@ -149,8 +149,9 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        IMObjectEditor editor = new VisitChargeItemEditor((Act) object, (Act) getObject(), context);
+        VisitChargeItemEditor editor = new VisitChargeItemEditor((Act) object, (Act) getObject(), context);
         initialiseEditor(editor);
+        editor.setProductListener(getProductListener());
         return editor;
     }
 
@@ -158,13 +159,12 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
      * Copies an act item for each product referred to in its template.
      *
      * @param editor   the editor
-     * @param act      the act
      * @param template the product template
      * @return the acts generated from the template
      */
     @Override
-    protected List<Act> expandTemplate(ActItemEditor editor, Act act, Product template) {
-        List<Act> acts = super.expandTemplate(editor, act, template);
+    protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
+        List<Act> acts = super.createTemplateActs(editor, template);
         if (!acts.isEmpty()) {
             TemplateChargeItems items = new TemplateChargeItems(template, acts);
             templates.add(items);
