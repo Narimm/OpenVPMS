@@ -31,8 +31,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.alert.Alert;
+import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
@@ -53,7 +53,7 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.util.*;
+import java.util.List;
 
 
 /**
@@ -139,6 +139,16 @@ public class PatientSummary extends PartySummary {
         weight.setText(getPatientWeight(party));
         Grid grid = GridFactory.create(2, reminderTitle, reminderCount,
                                        ageTitle, age, weightTitle, weight);
+
+        String identity = rules.getMicrochip(party);
+        if (identity != null) {
+            Label microchipTitle = LabelFactory.create("patient.microchip");
+            Label microchip = LabelFactory.create();
+            microchip.setText(identity);
+            grid.add(microchipTitle);
+            grid.add(microchip);
+        }
+
         column.add(grid);
 
         AlertSummary alerts = getAlertSummary(party);
