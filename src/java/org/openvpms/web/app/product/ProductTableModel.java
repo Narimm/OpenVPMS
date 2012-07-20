@@ -34,7 +34,6 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.util.Date;
 
 
@@ -122,7 +121,7 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
             BigDecimal value = price.getPrice();
             if (value != null) {
                 Label label = LabelFactory.create();
-                String text = NumberFormatter.format(value, NumberFormat.getCurrencyInstance());
+                String text = NumberFormatter.formatCurrency(value);
                 label.setText(text);
                 TableLayoutData layout = new TableLayoutDataEx();
                 Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);

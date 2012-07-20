@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
@@ -584,7 +585,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         List<ValidatorError> list = validator.getErrors(editor);
         assertEquals(1, list.size());
         String message = Messages.get("act.validation.totalMismatch", editor.getProperty("amount").getDisplayName(),
-                                      charge.getTotal(), editor.getProperty("items").getDisplayName(), itemTotal);
+                                      NumberFormatter.formatCurrency(charge.getTotal()),
+                                      editor.getProperty("items").getDisplayName(),
+                                      NumberFormatter.formatCurrency(itemTotal));
         String expected = Messages.get(ValidatorError.MSG_KEY, message);
         assertEquals(expected, list.get(0).toString());
 

@@ -42,6 +42,7 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -204,7 +205,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                 } else {
                     String message = Messages.get(
                             "customer.account.balancecheck.error",
-                            expected, actual);
+                            NumberFormatter.formatCurrency(expected), NumberFormatter.formatCurrency(actual));
                     confirmRegenerate(message, customer);
                 }
             } catch (CustomerAccountRuleException exception) {

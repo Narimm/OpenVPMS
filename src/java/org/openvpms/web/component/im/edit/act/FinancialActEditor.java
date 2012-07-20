@@ -34,6 +34,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -119,8 +120,12 @@ public class FinancialActEditor extends ActEditor {
         BigDecimal sum = calc.sum(acts.iterator(), "total");
         result = total.compareTo(sum) == 0;
         if (!result) {
+            // need to pre-format the amounts as the Messages uses the browser's locale which may have different
+            // currency format
             String message = Messages.get("act.validation.totalMismatch", getProperty("amount").getDisplayName(),
-                                          total, getItems().getProperty().getDisplayName(), sum);
+                                          NumberFormatter.formatCurrency(total),
+                                          getItems().getProperty().getDisplayName(),
+                                          NumberFormatter.formatCurrency(sum));
             validator.add(this, new ValidatorError(message));
             if (log.isWarnEnabled()) {
                 log.warn(message);
