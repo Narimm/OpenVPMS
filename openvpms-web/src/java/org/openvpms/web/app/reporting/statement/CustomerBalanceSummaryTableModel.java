@@ -37,7 +37,6 @@ import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.util.Date;
 
 
@@ -96,11 +95,11 @@ public class CustomerBalanceSummaryTableModel
      */
     private String[][] columns = {
             {CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE,
-             Messages.get("customerbalancetablemodel.customer")},
+                    Messages.get("customerbalancetablemodel.customer")},
             {CustomerBalanceSummaryQuery.BALANCE,
-             Messages.get("customerbalancetablemodel.balance")},
+                    Messages.get("customerbalancetablemodel.balance")},
             {CustomerBalanceSummaryQuery.OVERDUE_BALANCE,
-             Messages.get("customerbalancetablemodel.overdueBalance")},
+                    Messages.get("customerbalancetablemodel.overdueBalance")},
             {CustomerBalanceSummaryQuery.CREDIT_BALANCE, Messages.get(
                     "customerbalancetablemodel.creditBalance")},
             {CustomerBalanceSummaryQuery.UNBILLED_AMOUNT, Messages.get(
@@ -226,8 +225,7 @@ public class CustomerBalanceSummaryTableModel
     private Component getAmount(BigDecimal amount) {
         Label label = LabelFactory.create();
         if (amount != null) {
-            String text = NumberFormatter.format(
-                    amount, NumberFormat.getCurrencyInstance());
+            String text = NumberFormatter.formatCurrency(amount);
             label.setText(text);
             TableLayoutData layout = new TableLayoutDataEx();
             Alignment right = new Alignment(Alignment.RIGHT,

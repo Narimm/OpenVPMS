@@ -57,6 +57,7 @@ import org.openvpms.web.component.util.ComponentFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -386,7 +387,8 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         ActBean bean = new ActBean(act);
         IMObjectReference product = bean.getNodeParticipantRef("product");
         String name = IMObjectHelper.getName(product);
-        String text = Messages.get("patient.record.summary.invoiceitem", name, act.getQuantity(), act.getTotal());
+        String text = Messages.get("patient.record.summary.invoiceitem", name, act.getQuantity(),
+                                   NumberFormatter.formatCurrency(act.getTotal()));
         return getDetail(text);
     }
 
@@ -401,7 +403,8 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         ActBean bean = new ActBean(act);
         FinancialAct item = (FinancialAct) bean.getNodeSourceObject("invoiceItem");
         if (item != null) {
-            text = Messages.get("patient.record.summary.medication", text, item.getTotal());
+            text = Messages.get("patient.record.summary.medication", text,
+                                NumberFormatter.formatCurrency(item.getTotal()));
         }
         return getDetail(text);
     }

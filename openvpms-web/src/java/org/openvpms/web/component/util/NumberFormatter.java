@@ -90,7 +90,7 @@ public class NumberFormatter {
             if (edit) {
                 format = getFormat(DECIMAL_EDIT);
             } else {
-                format = NumberFormat.getCurrencyInstance();
+                format = getCurrencyFormat();
             }
         } else if (property.getType().isAssignableFrom(Float.class)
                 || property.getType().isAssignableFrom(Double.class)
@@ -137,6 +137,26 @@ public class NumberFormatter {
     }
 
     /**
+     * Formats a currency amount.
+     * <p/>
+     * When using {@link Messages}, this should be used to format amounts instead of using currency MessageFormats.
+     * This is due to the fact that {@link Messages} uses the browser's locale to format messages, which may have a
+     * different currency symbol to that of the practice.
+     *
+     * @param amount the amount
+     * @return the formatted amount
+     */
+    public static String formatCurrency(Number amount) {
+        String result;
+        try {
+            result = getCurrencyFormat().format(amount);
+        } catch (IllegalArgumentException exception) {
+            result = amount.toString();
+        }
+        return result;
+    }
+
+    /**
      * Returns a number format for the specified key.
      *
      * @param key the key
@@ -149,10 +169,21 @@ public class NumberFormatter {
             DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
             return new DecimalFormat(pattern, symbols);
         } catch (Exception exception) {
-            log.error("Failed to create format for key=" + key + ", locale="
-                    + locale + ", pattern=" + pattern, exception);
+            log.error("Failed to create format for key=" + key + ", locale=" + locale + ", pattern=" + pattern,
+                      exception);
             return NumberFormat.getInstance();
         }
+    }
+
+    /**
+     * Returns the currency format.
+     *
+     * @return the currency format
+     */
+    private static NumberFormat getCurrencyFormat() {
+        // TODO - should use the configured currency's format, rather than the default Locale's.
+        // Doesn't appear to be a simple way of going from Currency -> NumberFormat
+        return NumberFormat.getCurrencyInstance();
     }
 
 }

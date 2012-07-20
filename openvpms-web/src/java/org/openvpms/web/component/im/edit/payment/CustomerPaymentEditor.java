@@ -43,6 +43,7 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
@@ -174,8 +175,10 @@ public class CustomerPaymentEditor extends PaymentEditor {
             BigDecimal amount = (BigDecimal) property.getValue();
             if (amount.compareTo(expectedAmount) != 0) {
                 valid = false;
+                // need to pre-format the amounts as the Messages uses the browser's locale which may have different
+                // currency format
                 String msg = Messages.get("customer.payment.amountMismatch",
-                                          expectedAmount);
+                                          NumberFormatter.formatCurrency(expectedAmount));
                 validator.add(property, new ValidatorError(msg));
             }
         }
