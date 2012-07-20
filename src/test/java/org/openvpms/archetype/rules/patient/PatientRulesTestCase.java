@@ -223,12 +223,32 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient(false);
         assertNull(rules.getMicrochip(patient));
 
-        EntityIdentity microchip = (EntityIdentity) create(
-                "entityIdentity.microchip");
+        EntityIdentity microchip = (EntityIdentity) create("entityIdentity.microchip");
         IMObjectBean tagBean = new IMObjectBean(microchip);
         tagBean.setValue("microchip", "1234567");
         patient.addIdentity(microchip);
         assertEquals("1234567", rules.getMicrochip(patient));
+
+        microchip.setActive(false);
+        assertNull(rules.getMicrochip(patient));
+    }
+
+    /**
+     * Tests the {@link PatientRules#getPetTag(Party)} method.
+     */
+    @Test
+    public void testGetPetTag() {
+        Party patient = TestHelper.createPatient(false);
+        assertNull(rules.getPetTag(patient));
+
+        EntityIdentity tag = (EntityIdentity) create("entityIdentity.petTag");
+        IMObjectBean tagBean = new IMObjectBean(tag);
+        tagBean.setValue("petTag", "1234567");
+        patient.addIdentity(tag);
+        assertEquals("1234567", rules.getPetTag(patient));
+
+        tag.setActive(false);
+        assertNull(rules.getPetTag(patient));
     }
 
     /**
