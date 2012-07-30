@@ -18,13 +18,17 @@
 
 package org.openvpms.etl.tools.doc;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -174,5 +178,29 @@ abstract class AbstractLoader implements Loader {
         if (listener != null) {
             listener.error(file, error);
         }
+    }
+
+    /**
+     * Returns all document act archetype short names that match the supplied short name, and have a "document" node.
+     *
+     * @param shortName the short name. May be <tt>null</tt> or contain wildcards
+     * @return the document act archetype short names
+     */
+    protected String[] getDocumentActShortNames(String shortName) {
+        List<String> result = new ArrayList<String>();
+        List<ArchetypeDescriptor> descriptors;
+        if (StringUtils.isEmpty(shortName)) {
+            descriptors = getService().getArchetypeDescriptors();
+        } else {
+            descriptors = DescriptorHelper.getArchetypeDescriptors(shortName, getService());
+        }
+        for (ArchetypeDescriptor descriptor : descriptors) {
+            if (DocumentAct.class.isAssignableFrom(descriptor.getClazz())
+                && descriptor.getNodeDescriptor("document") != null) {
+                result.add(descriptor.getType().getShortName());
+            }
+        }
+
+        return result.toArray(new String[result.size()]);
     }
 }

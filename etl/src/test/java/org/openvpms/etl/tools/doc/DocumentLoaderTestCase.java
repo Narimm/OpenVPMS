@@ -18,12 +18,18 @@
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.io.File;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -212,12 +218,56 @@ public class DocumentLoaderTestCase extends AbstractLoaderTest {
         checkFiles(target);
 
         String[] args2 = {"--byid", "--type", "act.patientDocumentAttachment", "-s", source.getPath(), "-d",
-                         target.getPath()};
+                          target.getPath()};
         DocumentLoader loader2 = new DocumentLoader(args2, service, transactionManager);
         loader2.load();
 
         checkFiles(source);
         checkFiles(target, file1, file2, file3, file4);
+    }
+
+    /**
+     * Verifies that <em>act.documentTemplate</em> acts aren't loaded to by default, when "--byid" is used.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testDocumentTemplateActNotLoadedByDefault() throws Exception {
+        File source = new File(parent, "sdocs4" + System.currentTimeMillis());
+        File target = new File(parent, "tdocs4" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        // create an act.documentTemplate and associated template
+        DocumentAct act = (DocumentAct) service.create("act.documentTemplate");
+        Entity template = (Entity) service.create("entity.documentTemplate");
+        ActBean actBean = new ActBean(act);
+        actBean.setValue("description", "A description");
+        actBean.addNodeParticipation("template", template);
+        template.setName("X Test template");
+        service.save(Arrays.asList(act, template));
+
+        // create a file with an id the same as the act
+        File file = createFile(act, source);
+
+        // verify the file isn't loaded with the default --type value of "act.*Document*".
+        String[] args = {"--byid", "-s", source.getPath(), "-d", target.getPath()};
+        DocumentLoader loader = new DocumentLoader(args, service, transactionManager);
+        loader.load();
+
+        checkFiles(source, file);
+        checkFiles(target);
+
+        // verify that specifying act.documentTemplate throws an IllegalArgumentException as it doesn't have a
+        // document node
+        try {
+            String[] args2 = {"--byid", "--type", "act.documentTemplate", "-s", source.getPath(), "-d",
+                              target.getPath()};
+            new DocumentLoader(args2, service, transactionManager);
+            fail("Expected DocumentLoader constructor to fail");
+        } catch (IllegalArgumentException expected) {
+            // the expected behaviour
+        }
     }
 
     /**

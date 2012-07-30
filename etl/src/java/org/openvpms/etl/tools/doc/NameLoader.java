@@ -22,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -77,11 +76,16 @@ class NameLoader extends AbstractLoader {
      * @param service   the archetype service
      * @param factory   the document factory
      */
-    public NameLoader(File dir, String shortName, IArchetypeService service,
-                      DocumentFactory factory) {
+    public NameLoader(File dir, String shortName, IArchetypeService service, DocumentFactory factory) {
         super(service, factory);
         this.dir = dir;
-        List<IMObjectReference> refs = getDocumentActs(shortName);
+        String[] shortNames = getDocumentActShortNames(shortName);
+        if (shortNames.length == 0) {
+            throw new IllegalArgumentException("Argument 'shortName' doesn't refer to a valid archetype for loading "
+                                               + "documents to: " + shortName);
+        }
+
+        List<IMObjectReference> refs = getDocumentActs(shortNames);
         log.info("Found " + refs.size() + " documents");
         iterator = refs.iterator();
     }
@@ -123,21 +127,14 @@ class NameLoader extends AbstractLoader {
     /**
      * Returns all document act references for the specified short names.
      *
-     * @param shortName the shortName. If <tt>null</tt> indicates to query all
-     *                  document acts. May contain wildcards
+     * @param shortNames the shortNames
      * @return the matching document act references
      */
-    private List<IMObjectReference> getDocumentActs(String shortName) {
-        ShortNameConstraint shortNames;
-        if (shortName == null) {
-            shortNames = new ShortNameConstraint(getShortNames(), false, true);
-        } else {
-            shortNames = new ShortNameConstraint(shortName, false, true);
-        }
-        ArchetypeQuery query = new ArchetypeQuery(shortNames);
+    private List<IMObjectReference> getDocumentActs(String[] shortNames) {
+        ArchetypeQuery query = new ArchetypeQuery(new ShortNameConstraint(shortNames, false, true));
         if (log.isInfoEnabled()) {
             StringBuilder buff = new StringBuilder();
-            for (String s : shortNames.getShortNames()) {
+            for (String s : shortNames) {
                 if (buff.length() != 0) {
                     buff.append(", ");
                 }
@@ -173,21 +170,5 @@ class NameLoader extends AbstractLoader {
         return (DocumentAct) getService().get(reference);
     }
 
-    /**
-     * Returns all document act short names with a document node.
-     *
-     * @return a list of short names
-     */
-    private String[] getShortNames() {
-        List<String> result = new ArrayList<String>();
-        for (ArchetypeDescriptor archetype
-                : getService().getArchetypeDescriptors()) {
-            if (DocumentAct.class.getName().equals(archetype.getClassName())
-                && archetype.getNodeDescriptor("document") != null) {
-                result.add(archetype.getType().getShortName());
-            }
-        }
-        return result.toArray(new String[result.size()]);
-    }
 
 }
