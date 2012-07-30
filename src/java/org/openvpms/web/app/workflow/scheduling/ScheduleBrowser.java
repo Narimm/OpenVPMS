@@ -33,7 +33,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
-import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.AbstractBrowser;
@@ -44,9 +43,9 @@ import org.openvpms.web.component.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.component.util.DoubleClickMonitor;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 
 /**
  * Schedule browser.
@@ -94,19 +94,19 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     private PropertySet selected;
 
     /**
-     * The selected time. May be <tt>null</tt>.
+     * The selected time. May be {@code null}.
      */
     private Date selectedTime;
 
     /**
-     * The selected schedule. May be <tt>null</tt>
+     * The selected schedule. May be {@code null}
      */
     private Entity selectedSchedule;
 
     /**
-     * The event selected to be cut. May be <tt>null</tt>
+     * The event selected to be cut. May be {@code null}
      */
-    private PropertySet cut;
+    private PropertySet marked;
 
     /**
      * Used to determine if there has been a double click.
@@ -138,7 +138,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <tt>null</tt> if none has been
+     * @return the selected object, or {@code null} if none has been
      *         selected.
      */
     public PropertySet getSelected() {
@@ -148,7 +148,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Select an object.
      *
-     * @param object the object to select. May be <tt>null</tt>
+     * @param object the object to select. May be {@code null}
      */
     public void setSelected(PropertySet object) {
         boolean found = false;
@@ -174,23 +174,40 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
-     * Returns the event selected to be cut.
+     * Returns the event marked to be cut or copied.
      *
-     * @return the cut event, or <tt>null</tt> if none has been selected to be cut.
+     * @return the event, or {@code null} if none has been marked
      */
-    public PropertySet getCut() {
-        return cut;
+    public PropertySet getMarked() {
+        return marked;
     }
 
     /**
-     * Sets the event selected to be cut.
+     * Marks an event to be cut/copied.
      *
-     * @param event the event to cut, or <tt>null</tt> to deselect the event
+     * @param event the event to mark, or {@code null} to deselect the event
+     * @param isCut if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied.
+     *              Ignored if the cell is being unmarked.
      */
-    public void setCut(PropertySet event) {
-        cut = event;
-        updateCutSelection();
+    public void setMarked(PropertySet event, boolean isCut) {
+        marked = event;
+        updateMarked(isCut);
+    }
 
+    /**
+     * Clears the cell marked to be cut/copied.
+     */
+    public void clearMarked() {
+        setMarked(null, isCut());
+    }
+
+    /**
+     * Determines if the marked cell is being cut or copied.
+     *
+     * @return {@code true} if the cell is being cut; {@code false} if it is being copied
+     */
+    public boolean isCut() {
+        return model != null && model.isCut();
     }
 
     /**
@@ -214,7 +231,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Sets the schedule view.
      *
-     * @param view the schedule view. May be <tt>null</tt>
+     * @param view the schedule view. May be {@code null}
      */
     public void setScheduleView(Entity view) {
         query.setScheduleView(view);
@@ -223,7 +240,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Returns the schedule view.
      *
-     * @return the schedule view. May be <tt>null</tt>
+     * @return the schedule view. May be {@code null}
      */
     public Entity getScheduleView() {
         return query.getScheduleView();
@@ -232,7 +249,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Returns the selected schedule.
      *
-     * @return the selected schedule. May be <tt>null</tt>
+     * @return the selected schedule. May be {@code null}
      */
     public Entity getSelectedSchedule() {
         return selectedSchedule;
@@ -241,7 +258,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Returns the selected time.
      *
-     * @return the selected time. May be <tt>null</tt>
+     * @return the selected time. May be {@code null}
      */
     public Date getSelectedTime() {
         return selectedTime;
@@ -250,7 +267,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Returns the objects matching the query.
      *
-     * @return the objects matcing the query
+     * @return the objects matching the query
      */
     public List<PropertySet> getObjects() {
         if (results == null) {
@@ -289,8 +306,8 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Helper to return the act associated with an event.
      *
-     * @param event the event. May be <tt>null</tt>
-     * @return the associated act, or <tt>null</tt> if <tt>event</tt> is null or has been deleted
+     * @param event the event. May be {@code null}
+     * @return the associated act, or {@code null} if <tt>event</tt> is null or has been deleted
      */
     public Act getAct(PropertySet event) {
         if (event != null) {
@@ -303,7 +320,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Helper to return the event associated with an act.
      *
-     * @param act the act. May be <tt>null</tt>
+     * @param act the act. May be {@code null}
      * @return the associated event, or <tt>nukl</tt> if <tt>act</tt> is null or has been deleted
      */
     public PropertySet getEvent(Act act) {
@@ -336,7 +353,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Returns the table model.
      *
-     * @return the table model. May be <tt>null</tt>
+     * @return the table model. May be {@code null}
      */
     protected ScheduleTableModel getModel() {
         return model;
@@ -345,7 +362,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Returns the table.
      *
-     * @return the table. May be <tt>null</tt>
+     * @return the table. May be {@code null}
      */
     protected TableEx getTable() {
         return table;
@@ -467,11 +484,14 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         ScheduleEventGrid grid = createEventGrid(query.getDate(), results);
         int lastRow = -1;
         int lastColumn = -1;
+        boolean isCut = true;
         IMObjectReference lastEventId = null;
         if (model != null) {
             lastRow = model.getSelectedRow();
             lastColumn = model.getSelectedColumn();
             lastEventId = getEventReference(lastColumn, lastRow);
+            isCut = model.isCut();
+
         }
         model = createTableModel(grid);
         if (table == null) {
@@ -498,14 +518,13 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             boolean sameSchedules = ObjectUtils.equals(lastSchedules, results.keySet());
             Date selectedDate = (selectedTime != null) ? DateRules.getDate(selectedTime) : null;
 
-            // if the schedules and date haven't changed and there was no
-            // previously selected object or the object hasn't changed,
-            // reselect the selected cell
+            // if the schedules and date haven't changed and there was no previously selected object or the object
+            // hasn't changed, reselect the selected cell
             boolean reselected = false;
             if (lastRow != -1 && lastColumn != -1 && sameSchedules && lastColumn < model.getColumnCount()) {
                 IMObjectReference eventId = getEventReference(lastColumn, lastRow);
                 if (ObjectUtils.equals(selectedDate, query.getDate())
-                    && (lastEventId == null || ObjectUtils.equals(lastEventId, eventId))) {
+                        && (lastEventId == null || ObjectUtils.equals(lastEventId, eventId))) {
                     model.setSelectedCell(lastColumn, lastRow);
                     reselected = true;
                 }
@@ -514,31 +533,36 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
                 setSelected(null);
             }
 
-            updateCutSelection();
+            updateMarked(isCut);
         }
     }
 
     /**
-     * Updates the cut selection.
+     * Updates the event marked to be cut or copied.
+     *
+     * @param isCut if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied.
+     *              Ignored if the cell is being unmarked.
      */
-    private void updateCutSelection() {
+    private void updateMarked(boolean isCut) {
         boolean found = false;
-        if (cut != null) {
-            IMObjectReference scheduleRef = cut.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
-            IMObjectReference eventRef = cut.getReference(ScheduleEvent.ACT_REFERENCE);
-            ScheduleTableModel model = getModel();
-            int column = model.getColumn(scheduleRef);
-            if (column != -1) {
-                Schedule schedule = model.getSchedule(column);
-                int row = model.getRow(schedule, eventRef);
-                if (row != -1) {
-                    model.setCutCell(column, row);
-                    found = true;
+        ScheduleTableModel model = getModel();
+        if (model != null) {
+            if (marked != null) {
+                IMObjectReference scheduleRef = marked.getReference(ScheduleEvent.SCHEDULE_REFERENCE);
+                IMObjectReference eventRef = marked.getReference(ScheduleEvent.ACT_REFERENCE);
+                int column = model.getColumn(scheduleRef);
+                if (column != -1) {
+                    Schedule schedule = model.getSchedule(column);
+                    int row = model.getRow(schedule, eventRef);
+                    if (row != -1) {
+                        model.setMarkedCell(column, row, isCut);
+                        found = true;
+                    }
                 }
             }
-        }
-        if (!found) {
-            model.setCutCell(-1, -1);
+            if (!found) {
+                model.setMarkedCell(-1, -1, isCut);
+            }
         }
     }
 
@@ -616,11 +640,11 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     }
 
     /**
-     * Returns the reference of the event at the speciifed column and row.
+     * Returns the reference of the event at the specified column and row.
      *
      * @param column the column
      * @param row    the row
-     * @return the corresponding event reference, or <tt>null</tt> if none exists
+     * @return the corresponding event reference, or {@code null} if none exists
      */
     private IMObjectReference getEventReference(int column, int row) {
         IMObjectReference result = null;

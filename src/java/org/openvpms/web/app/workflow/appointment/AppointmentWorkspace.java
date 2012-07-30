@@ -47,9 +47,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * Creates a new <tt>AppointmentWorkspace</tt>.
      */
     public AppointmentWorkspace() {
-        super("workflow", "scheduling",
-              Archetypes.create("entity.organisationScheduleView",
-                                Entity.class));
+        super("workflow", "scheduling", Archetypes.create("entity.organisationScheduleView", Entity.class));
     }
 
     /**
@@ -59,8 +57,19 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      */
     @Override
     public void setObject(Entity object) {
+        ScheduleBrowser browser = getBrowser();
+        PropertySet marked = null;
+        boolean isCut = false;
+        if (browser != null) {
+            marked = browser.getMarked();
+            isCut = browser.isCut();
+        }
         GlobalContext.getInstance().setScheduleView(object);
         super.setObject(object);
+        browser = getBrowser();
+        if (browser != null && marked != null) {
+            browser.setMarked(marked, isCut);
+        }
     }
 
     /**

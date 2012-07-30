@@ -23,7 +23,9 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
@@ -144,7 +146,7 @@ class MultiScheduleTableModel extends AppointmentTableModel {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
         List<Schedule> schedules = grid.getSchedules();
         int index = START_TIME_INDEX;
-        String startTime = getDisplayName("act.customerAppointment", "startTime");
+        String startTime = DescriptorHelper.getDisplayName(ScheduleArchetypes.APPOINTMENT, "startTime");
         Column leftStartCol = new Column(index, startTime);
         leftStartCol.setWidth(new Extent(100));
         result.addColumn(leftStartCol);

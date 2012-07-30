@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -86,14 +85,19 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     private int selectedRow = -1;
 
     /**
-     * The cut cell column.
+     * The marked cell column.
      */
-    private int cutColumn = -1;
+    private int markedColumn = -1;
 
     /**
-     * The cut cell row.
+     * The marked cell row.
      */
-    private int cutRow = -1;
+    private int markedRow = -1;
+
+    /**
+     * If {@code true} the marked cell is being cut, else it is being copied.
+     */
+    private boolean isCut;
 
     /**
      * Determines cell colour.
@@ -137,7 +141,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * Returns the column index of a schedule.
      *
      * @param scheduleRef the schedule reference
-     * @return the index of the schedule, or <tt>-1</tt> if the schedule isn't found
+     * @return the index of the schedule, or {@code -1} if the schedule isn't found
      */
     public int getColumn(IMObjectReference scheduleRef) {
         for (Column column : getColumns()) {
@@ -156,7 +160,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @param schedule the schedule
      * @param eventRef the event reference
-     * @return the row, or <tt>-1</tt> if the event is not found
+     * @return the row, or {@code -1} if the event is not found
      */
     public abstract int getRow(Schedule schedule, IMObjectReference eventRef);
 
@@ -203,7 +207,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Returns the selected column.
      *
-     * @return the selected column, or <tt>-1</tt> if none is selected
+     * @return the selected column, or {@code -1} if none is selected
      */
     public int getSelectedColumn() {
         return selectedColumn;
@@ -212,7 +216,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Returns the selected row.
      *
-     * @return the selected row, or <tt>-1</tt> if none is selected
+     * @return the selected row, or {@code -1} if none is selected
      */
     public int getSelectedRow() {
         return selectedRow;
@@ -230,51 +234,63 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     }
 
     /**
-     * Sets the cut cell. This flags a cell as being 'cut', for cutting and pasting purposes.
+     * Sets the marked cell. This flags a cell as being marked for cutting/copying and pasting purposes.
      *
-     * @param column the cut column, or <tt>-1</tt> to 'uncut' the cell
-     * @param row    the cut row, or <tt>-1</tt> to 'uncut' the cell
+     * @param column the marked column, or {@code -1} to unmark the cell
+     * @param row    the marked row, or {@code -1} to unmark the cell
+     * @param isCut  if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied.
+     *               Ignored if the cell is being unmarked.
      */
-    public void setCutCell(int column, int row) {
-        int oldColumn = cutColumn;
-        int oldRow = cutRow;
-        cutColumn = column;
-        cutRow = row;
+    public void setMarkedCell(int column, int row, boolean isCut) {
+        int oldColumn = markedColumn;
+        int oldRow = markedRow;
+        this.isCut = isCut;
+        markedColumn = column;
+        markedRow = row;
         if (oldColumn != -1 && oldRow != -1) {
             fireTableCellUpdated(oldColumn, oldRow);
         }
-        if (cutColumn != -1 && cutRow != -1) {
-            fireTableCellUpdated(cutColumn, cutRow);
+        if (markedColumn != -1 && markedRow != -1) {
+            fireTableCellUpdated(markedColumn, markedRow);
         }
     }
 
     /**
      * Returns the cut column.
      *
-     * @return the cut column, or <tt>-1</tt> if no cell is selected to be cut
+     * @return the cut column, or {@code -1} if no cell is selected to be cut
      */
-    public int getCutColumn() {
-        return cutColumn;
+    public int getMarkedColumn() {
+        return markedColumn;
     }
 
     /**
-     * Returns the cut row.
+     * Returns the marked row.
      *
-     * @return the cut row, or <tt>-1</tt> if no cell is selected to be cut
+     * @return the marked row, or {@code -1} if no cell is selected to be cut/copied
      */
-    public int getCutRow() {
-        return cutRow;
+    public int getMarkedRow() {
+        return markedRow;
     }
 
     /**
-     * Determines if a cell is cut.
+     * Determines if a cell is marked for cut/copy.
      *
      * @param column the column
      * @param row    the row
      * @return <tt>true</tt> if the cell is cut
      */
-    public boolean isCutCell(int column, int row) {
-        return cutColumn == column && cutColumn != -1 && cutRow == row && cutRow != -1;
+    public boolean isMarkedCell(int column, int row) {
+        return markedColumn == column && markedColumn != -1 && markedRow == row && markedRow != -1;
+    }
+
+    /**
+     * Determines if the marked cell is being cut or copied.
+     *
+     * @return {@code true} if the cell is being cut; {@code false} if it is being copied
+     */
+    public boolean isCut() {
+        return isCut;
     }
 
     /**
@@ -505,25 +521,11 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Returns the display name of the specified node.
      *
-     * @param archetype the archetype short name
-     * @param name      the node name
-     * @return the display name, or <tt>null</tt> if either argument is invalid
-     */
-    protected String getDisplayName(String archetype, String name) {
-        ArchetypeDescriptor descriptor
-                = DescriptorHelper.getArchetypeDescriptor(archetype);
-        return (descriptor != null) ? getDisplayName(descriptor, name) : name;
-    }
-
-    /**
-     * Returns the display name of the specified node.
-     *
      * @param archetype the archetype descriptor
      * @param name      the node name
      * @return the display name, or <tt>null</tt> if the node doesn't exist
      */
-    protected String getDisplayName(ArchetypeDescriptor archetype,
-                                    String name) {
+    protected String getDisplayName(ArchetypeDescriptor archetype, String name) {
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
         return (descriptor != null) ? descriptor.getDisplayName() : null;
     }

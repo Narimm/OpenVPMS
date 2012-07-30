@@ -38,9 +38,6 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
-import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.FREE;
-import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
-import static org.openvpms.web.app.workflow.scheduling.ScheduleTableModel.Highlight;
 import org.openvpms.web.component.table.TableHelper;
 import org.openvpms.web.component.util.ColourHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -48,6 +45,10 @@ import org.openvpms.web.component.util.LabelFactory;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.FREE;
+import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
+import static org.openvpms.web.app.workflow.scheduling.ScheduleTableModel.Highlight;
 
 
 /**
@@ -99,14 +100,12 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      *
      * @param table  the <tt>Table</tt> for which the rendering is
      *               occurring
-     * @param value  the value retrieved from the <tt>TableModel</tt> for
-     *               the specified coordinate
+     * @param value  the value retrieved from the <tt>TableModel</tt> for the specified coordinate
      * @param column the column index to render
      * @param row    the row index to render
      * @return a component representation  of the value.
      */
-    public Component getTableCellRendererComponent(Table table, Object value,
-                                                   int column, int row) {
+    public Component getTableCellRendererComponent(Table table, Object value, int column, int row) {
         Component component = getComponent(table, value, column, row);
         if (component != null) {
             if (isCut(table, column, row)) {
@@ -136,7 +135,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param table  the table
      * @param column the column
      * @param row    the row
-     * @return <tt>true<t/tt> if the cell causes selection
+     * @return {@code true} if the cell causes selection
      */
     public boolean isSelectionCausingCell(Table table, int column, int row) {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
@@ -156,8 +155,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param table  the Table in question
      * @param column the column in question
      * @param row    the row in quesiton
-     * @return - Return true means that the cell can cause actions while false
-     *         means the cells can not cause action events.
+     * @return true means that the cell can cause actions while false means the cells can not cause action events.
      */
     public boolean isActionCausingCell(Table table, int column, int row) {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
@@ -173,10 +171,9 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      *               specified coordinate
      * @param column the column
      * @param row    the row
-     * @return a component representation of the value. May be <tt>null</tt>
+     * @return a component representation of the value. May be {@code null}
      */
-    protected Component getComponent(Table table, Object value, int column,
-                                     int row) {
+    protected Component getComponent(Table table, Object value, int column, int row) {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
 
         if (previousRow != row) {
@@ -236,7 +233,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param table  the table
      * @param column the column
      * @param row    the row
-     * @return <tt>true</tt> if the cell can be highlighted
+     * @return {@code true} if the cell can be highlighted
      */
     protected boolean canHighlightCell(Table table, int column, int row) {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
@@ -254,11 +251,11 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param table  the table
      * @param column the column
      * @param row    the row
-     * @return <tt>true</tt> if the cell has been 'cut'
+     * @return {@code true} if the cell has been 'cut'
      */
     protected boolean isCut(Table table, int column, int row) {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
-        return model.isCutCell(column, row);
+        return model.isCut() && model.isMarkedCell(column, row);
     }
 
     /**
@@ -316,8 +313,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param row       the cell row
      * @param model     the event model
      */
-    protected void colourCell(Component component, int column, int row,
-                              ScheduleTableModel model) {
+    protected void colourCell(Component component, int column, int row, ScheduleTableModel model) {
         ScheduleEventGrid.Availability avail
                 = model.getAvailability(column, row);
         colourCell(component, avail, model, row);
@@ -331,9 +327,8 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param model     the event model
      * @param row       the cell row
      */
-    protected void colourCell(Component component,
-                              ScheduleEventGrid.Availability avail,
-                              ScheduleTableModel model, int row) {
+    protected void colourCell(Component component, ScheduleEventGrid.Availability avail, ScheduleTableModel model,  
+                              int row) {
         String style;
         style = getStyle(avail, model, row);
         TableHelper.mergeStyle(component, style);
@@ -347,8 +342,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param row   the cell row
      * @return the style name
      */
-    protected String getStyle(Availability avail,
-                              ScheduleTableModel model, int row) {
+    protected String getStyle(Availability avail, ScheduleTableModel model, int row) {
         String style;
         switch (avail) {
             case BUSY:
@@ -369,11 +363,9 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      *
      * @param event the event
      * @param model the model
-     * @return layout data for the event, or <tt>null</tt> if no style
-     *         information exists
+     * @return layout data for the event, or {@code null} if no style information exists
      */
-    protected TableLayoutDataEx getEventLayoutData(PropertySet event,
-                                                   ScheduleTableModel model) {
+    protected TableLayoutDataEx getEventLayoutData(PropertySet event, ScheduleTableModel model) {
         TableLayoutDataEx result = null;
         if (!isSelectedClinician(event, model)) {
             result = TableHelper.getTableLayoutDataEx("ScheduleTable.Busy");
@@ -405,18 +397,15 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     }
 
     /**
-     * Determines if a schedule has the same clinician as that specified
-     * by the table model.
+     * Determines if a schedule has the same clinician as that specified by the table model.
      *
      * @param event the schedule event
      * @param model the schedule table model
-     * @return <tt>true</tt> if they have the same clinician, or the model
-     *         indicates to display all clincians
+     * @return {@code true} if they have the same clinician, or the model indicates to display all clinicians
      */
-    private boolean isSelectedClinician(PropertySet event,
-                                        ScheduleTableModel model) {
+    private boolean isSelectedClinician(PropertySet event, ScheduleTableModel model) {
         IMObjectReference clinician = model.getClinician();
-        return clinician == null
+        return clinician == null 
                || ObjectUtils.equals(clinician, event.getReference(ScheduleEvent.CLINICIAN_REFERENCE));
     }
 
@@ -429,16 +418,14 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param model  the table model
      * @param column the column
      * @param row    the row
-     * @return <tt>true</tt> if the 'New' prompt shouldbe rendered for the cell
+     * @return {@code true} if the 'New' prompt should be rendered for the cell
      */
-    private boolean renderNewPrompt(ScheduleTableModel model, int column,
-                                    int row) {
+    private boolean renderNewPrompt(ScheduleTableModel model, int column, int row) {
         boolean result = false;
         int selected = model.getSelectedColumn();
         if (selected == column) {
             result = true;
-        } else if (model.isSingleScheduleView()
-                   && (column == selected - 1 || column == selected + 1)) {
+        } else if (model.isSingleScheduleView() && (column == selected - 1 || column == selected + 1)) {
             // if the column is adjacent to the selected column
             if (model.getValueAt(selected, row) != null) {
                 // render the prompt in the current column if the selected
@@ -452,23 +439,19 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     /**
      * Returns a colour for an event, for the given highlight style.
      *
-     * @param event     the event. May be <tt>null</tt>
+     * @param event     the event. May be {@code null}
      * @param highlight the highlight style
-     * @return the colour, or <tt>null</tt> if none is found
+     * @return the colour, or {@code null} if none is found
      */
     private Color getEventColour(PropertySet event, Highlight highlight) {
         Color result = null;
         if (event != null) {
             switch (highlight) {
                 case EVENT_TYPE:
-                    result = getColour(event,
-                                       ScheduleEvent.SCHEDULE_TYPE_REFERENCE,
-                                       eventColours);
+                    result = getColour(event, ScheduleEvent.SCHEDULE_TYPE_REFERENCE, eventColours);
                     break;
                 case CLINICIAN:
-                    result = getColour(event,
-                                       ScheduleEvent.CLINICIAN_REFERENCE,
-                                       clinicianColours);
+                    result = getColour(event, ScheduleEvent.CLINICIAN_REFERENCE, clinicianColours);
             }
         }
         return result;
@@ -480,10 +463,9 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param set     the set to look up the reference in
      * @param key     the reference key
      * @param colours the colours, keyed on object reference
-     * @return the colour, or <tt>null</tt> if none is found
+     * @return the colour, or {@code null} if none is found
      */
-    private Color getColour(PropertySet set, String key,
-                            Map<IMObjectReference, String> colours) {
+    private Color getColour(PropertySet set, String key, Map<IMObjectReference, String> colours) {
         String colour = colours.get(set.getReference(key));
         return ColourHelper.getColor(colour);
     }
@@ -496,8 +478,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return a map of the matching objects and their 'colour' node  values
      */
     private Map<IMObjectReference, String> getColours(String shortName) {
-        Map<IMObjectReference, String> result
-                = new HashMap<IMObjectReference, String>();
+        Map<IMObjectReference, String> result = new HashMap<IMObjectReference, String>();
         ArchetypeQuery query = new ArchetypeQuery(shortName, true, true);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         Iterator<IMObject> iter = new IMObjectQueryIterator<IMObject>(query);
@@ -514,7 +495,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * heirarchy if one isn't found on the specified component.
      *
      * @param component the component
-     * @return the font, or <tt>null</tt> if none is found
+     * @return the font, or {@code null} if none is found
      */
     private Font getFont(Component component) {
         Font font = component.getFont();
