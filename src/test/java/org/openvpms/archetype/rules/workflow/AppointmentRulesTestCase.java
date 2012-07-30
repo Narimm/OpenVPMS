@@ -18,20 +18,17 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -41,6 +38,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -271,6 +274,56 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
                     WorkflowStatus.COMPLETED);
         checkStatus(task, WorkflowStatus.CANCELLED, appointment,
                     WorkflowStatus.CANCELLED);
+    }
+
+    /**
+     * Tests the {@link AppointmentRules#copy(Act)} method.
+     */
+    @Test
+    public void testCopy() {
+        // create an appointment
+        Date arrival = createTime(8, 55);
+        Date start = createTime(9, 0);
+        Date end = createTime(9, 15);
+        Entity appointmentType = createAppointmentType();
+        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient();
+        User clinician = TestHelper.createClinician();
+        User author = TestHelper.createUser();
+        Act appointment = ScheduleTestHelper.createAppointment(start, end, schedule, appointmentType, customer, patient,
+                                                               clinician, author);
+        appointment.setStatus(AppointmentStatus.IN_PROGRESS);
+
+        ActBean bean = new ActBean(appointment);
+        bean.setValue("arrivalTime", arrival);
+        bean.setValue("description", "some notes");
+
+        // link it to a task
+        Act task = createTask();
+        save(task);
+        bean.addRelationship("actRelationship.customerAppointmentTask", task);
+        save(appointment);
+
+        // now copy it, and verify the task relationship isn't copied
+        Act copy = rules.copy(appointment);
+        assertTrue(TypeHelper.isA(copy, ScheduleArchetypes.APPOINTMENT));
+        assertTrue(copy.getActRelationships().isEmpty());
+
+        assertTrue(copy.isNew());        // shouldn't be saved
+        ActBean copyBean = new ActBean(copy);
+        assertEquals(0, DateRules.compareTo(start, copy.getActivityStartTime()));
+        assertEquals(0, DateRules.compareTo(end, copy.getActivityEndTime()));
+        assertEquals(schedule, copyBean.getNodeParticipant("schedule"));
+        assertEquals(customer, copyBean.getNodeParticipant("customer"));
+        assertEquals(patient, copyBean.getNodeParticipant("patient"));
+        assertEquals(clinician, copyBean.getNodeParticipant("clinician"));
+        assertEquals(author, copyBean.getNodeParticipant("author"));
+        assertEquals(appointmentType, copyBean.getNodeParticipant("appointmentType"));
+        assertEquals(AppointmentStatus.IN_PROGRESS, copy.getStatus());
+        assertEquals(0, DateRules.compareTo(arrival, copyBean.getDate("arrivalTime")));
+        assertEquals("some notes", copyBean.getString("description"));
+        assertEquals(appointment.getReason(), copyBean.getString("reason"));
     }
 
     /**

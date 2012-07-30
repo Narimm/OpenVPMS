@@ -19,13 +19,18 @@
 package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -33,6 +38,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -251,6 +258,29 @@ public class AppointmentRules {
     }
 
     /**
+     * Copies an appointment, excluding any act relationships it may have.
+     *
+     * @param appointment the appointment to copy
+     * @return a copy of the appointment
+     */
+    public Act copy(Act appointment) {
+        IMObjectCopyHandler handler = new DefaultActCopyHandler() {
+            {
+                setCopy(Act.class, Participation.class);
+                setExclude(ActRelationship.class);
+            }
+
+            @Override
+            protected boolean checkCopyable(ArchetypeDescriptor archetype, NodeDescriptor node) {
+                return true;
+            }
+        };
+        IMObjectCopier copier = new IMObjectCopier(handler, service);
+        return (Act) copier.apply(appointment).get(0);
+    }
+
+
+    /**
      * Returns the schedule slot size in minutes.
      *
      * @param schedule the schedule
@@ -299,13 +329,13 @@ public class AppointmentRules {
         String status = act.getStatus();
         // Only update the linked act status if workflow status not pending.
         if (WorkflowStatus.IN_PROGRESS.equals(status)
-                || WorkflowStatus.BILLED.equals(status)
-                || WorkflowStatus.COMPLETED.equals(status)
-                || WorkflowStatus.CANCELLED.equals(status)) {
+            || WorkflowStatus.BILLED.equals(status)
+            || WorkflowStatus.COMPLETED.equals(status)
+            || WorkflowStatus.CANCELLED.equals(status)) {
             if (!status.equals(linked.getStatus())) {
                 linked.setStatus(status);
                 if (TypeHelper.isA(linked, ScheduleArchetypes.TASK)
-                        && WorkflowStatus.COMPLETED.equals(status)) {
+                    && WorkflowStatus.COMPLETED.equals(status)) {
                     // update the task's end time to now
                     linked.setActivityEndTime(new Date());
                 }
