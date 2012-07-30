@@ -21,9 +21,12 @@ package org.openvpms.web.app.workflow.appointment;
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.LocalClinicianContext;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
@@ -61,6 +64,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     private final AppointmentBrowser browser;
 
     /**
+     * The rules.
+     */
+    private final AppointmentRules rules;
+
+    /**
      * Check-in button identifier.
      */
     private static final String CHECKIN_ID = "checkin";
@@ -74,6 +82,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     public AppointmentCRUDWindow(AppointmentBrowser browser) {
         super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")));
         this.browser = browser;
+        rules = new AppointmentRules();
     }
 
     /**
@@ -96,7 +105,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     protected EditDialog edit(IMObjectEditor editor) {
         Date startTime = browser.getSelectedTime();
         if (startTime != null && editor.getObject().isNew()
-            && editor instanceof AppointmentActEditor) {
+                && editor instanceof AppointmentActEditor) {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
         return super.edit(editor);
@@ -119,6 +128,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         buttons.add(createConsultButton());
         buttons.add(createCheckOutButton());
         buttons.add(createOverTheCounterButton());
+        buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'C', new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onCopy();
+            }
+        });
         buttons.addKeyListener(KeyStrokes.CONTROL_MASK | 'X', new ActionListener() {
             public void onAction(ActionEvent event) {
                 onCut();
@@ -191,9 +205,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     protected boolean canCheckoutOrConsult(Act act) {
         String status = act.getStatus();
         return AppointmentStatus.CHECKED_IN.equals(status)
-               || AppointmentStatus.IN_PROGRESS.equals(status)
-               || AppointmentStatus.COMPLETED.equals(status)
-               || AppointmentStatus.BILLED.equals(status);
+                || AppointmentStatus.IN_PROGRESS.equals(status)
+                || AppointmentStatus.COMPLETED.equals(status)
+                || AppointmentStatus.BILLED.equals(status);
     }
 
     /**
@@ -217,15 +231,30 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     }
 
     /**
+     * Invoked to copy an appointment.
+     */
+    private void onCopy() {
+        browser.clearMarked();
+        PropertySet selected = browser.getSelected();
+        Act appointment = browser.getAct(selected);
+        if (appointment != null) {
+            browser.setMarked(selected, false);
+        } else {
+            InformationDialog.show(Messages.get("workflow.scheduling.appointment.copy.title"),
+                                   Messages.get("workflow.scheduling.appointment.copy.select"));
+        }
+    }
+
+    /**
      * Invoked to cut an appointment.
      */
     private void onCut() {
-        browser.setCut(null);
+        browser.clearMarked();
         PropertySet selected = browser.getSelected();
         Act appointment = browser.getAct(selected);
         if (appointment != null) {
             if (AppointmentStatus.PENDING.equals(appointment.getStatus())) {
-                browser.setCut(selected);
+                browser.setMarked(selected, true);
             } else {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.cut.title"),
                                        Messages.get("workflow.scheduling.appointment.cut.pending"));
@@ -241,42 +270,82 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * <p/>
      * For the paste to be successful:
      * <ul>
-     * <li>the appointment must still exist and be PENDING
+     * <li>the appointment must still exist
+     * <li>for cut appointments, the appointment must be PENDING
      * <li>a schedule must be selected
      * <li>a time slot must be selected
      * </ul>
      */
     private void onPaste() {
-        if (browser.getCut() == null) {
+        if (browser.getMarked() == null) {
             InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                    Messages.get("workflow.scheduling.appointment.paste.select"));
         } else {
-            Act appointment = browser.getAct(browser.getCut());
+            Act appointment = browser.getAct(browser.getMarked());
             Entity schedule = browser.getSelectedSchedule();
             Date startTime = browser.getSelectedTime();
             if (appointment == null) {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                        Messages.get("workflow.scheduling.appointment.paste.noexist"));
                 onRefresh(appointment); // force redraw
-                browser.setCut(null);
-            } else if (!AppointmentStatus.PENDING.equals(appointment.getStatus())) {
+                browser.clearMarked();
+            } else if (browser.isCut() && !AppointmentStatus.PENDING.equals(appointment.getStatus())) {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                        Messages.get("workflow.scheduling.appointment.paste.pending"));
                 onRefresh(appointment); // force redraw
-                browser.setCut(null);
+                browser.clearMarked();
             } else if (schedule == null || startTime == null) {
                 InformationDialog.show(Messages.get("workflow.scheduling.appointment.paste.title"),
                                        Messages.get("workflow.scheduling.appointment.paste.noslot"));
+            } else if (browser.isCut()) {
+                cut(appointment, schedule, startTime);
             } else {
-                AppointmentActEditor editor = new AppointmentActEditor(appointment, null, new DefaultLayoutContext());
-                editor.setSchedule(schedule);
-                editor.setStartTime(startTime); // will recalc end time
-                EditDialog dialog = edit(editor);
-                dialog.save(true); // checks for overlapping appointments
-                browser.setCut(null);
-                browser.setSelected(browser.getEvent(appointment));
+                copy(appointment, schedule, startTime);
             }
         }
     }
 
+    /**
+     * Cuts an appointment and pastes it to the specified schedule and start time.
+     *
+     * @param appointment the appointment
+     * @param schedule    the new schedule
+     * @param startTime   the new start time
+     */
+    private void cut(Act appointment, Entity schedule, Date startTime) {
+        paste(appointment, schedule, startTime);
+        browser.clearMarked();
+    }
+
+    /**
+     * Copies an appointment and pastes it to the specified schedule and start time.
+     *
+     * @param appointment the appointment
+     * @param schedule    the new schedule
+     * @param startTime   the new start time
+     */
+    private void copy(Act appointment, Entity schedule, Date startTime) {
+        appointment = rules.copy(appointment);
+        ActBean bean = new ActBean(appointment);
+        bean.setValue("status", AppointmentStatus.PENDING);
+        bean.setValue("arrivalTime", null);
+        bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, GlobalContext.getInstance().getUser());
+        paste(appointment, schedule, startTime);
+    }
+
+    /**
+     * Pastes an appointment to the specified schedule and start time.
+     *
+     * @param appointment the appointment
+     * @param schedule    the new schedule
+     * @param startTime   the new start time
+     */
+    private void paste(Act appointment, Entity schedule, Date startTime) {
+        AppointmentActEditor editor = new AppointmentActEditor(appointment, null, new DefaultLayoutContext());
+        editor.setSchedule(schedule);
+        editor.setStartTime(startTime); // will recalc end time
+        EditDialog dialog = edit(editor);
+        dialog.save(true);              // checks for overlapping appointments
+        browser.setSelected(browser.getEvent(appointment));
+    }
 }

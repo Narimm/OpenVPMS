@@ -29,13 +29,13 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
-import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.Date;
 import java.util.List;
 
+import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability.UNAVAILABLE;
 
 /**
  * Appointment table model for a single schedule.
@@ -108,8 +108,8 @@ class SingleScheduleTableModel extends AppointmentTableModel {
      * @return <tt>true</tt> if the cell is cut
      */
     @Override
-    public boolean isCutCell(int column, int row) {
-        if (row != -1 && column != -1 && row == getCutRow()) {
+    public boolean isMarkedCell(int column, int row) {
+        if (row != -1 && column != -1 && row == getMarkedRow()) {
             Column col = getColumns().get(column);
             if (col.getModelIndex() != START_TIME_INDEX) {
                 return true;
