@@ -174,23 +174,26 @@ public class ScheduleTestHelper extends TestHelper {
     public static Act createAppointment(Date startTime, Date endTime,
                                         Party schedule, Party customer,
                                         Party patient) {
-        return createAppointment(startTime, endTime, schedule, customer, patient, null, null);
+        Entity appointmentType = createAppointmentType();
+        appointmentType.setName("XAppointmentType");
+        return createAppointment(startTime, endTime, schedule, appointmentType, customer, patient, null, null);
     }
 
     /**
      * Helper to create an <em>act.customerAppointment</em>.
      *
-     * @param startTime the act start time
-     * @param endTime   the act end time
-     * @param schedule  the schedule
-     * @param customer  the customer
-     * @param patient   the patient. May be <tt>null</tt>
-     * @param clinician the clinician. May be <tt>null</tt>
-     * @param author    the author. May be <tt>null</tt>
+     * @param startTime       the act start time
+     * @param endTime         the act end time
+     * @param schedule        the schedule
+     * @param appointmentType the appointment type
+     * @param customer        the customer
+     * @param patient         the patient. May be <tt>null</tt>
+     * @param clinician       the clinician. May be <tt>null</tt>
+     * @param author          the author. May be <tt>null</tt>
      * @return a new act
      */
     public static Act createAppointment(Date startTime, Date endTime,
-                                        Party schedule, Party customer,
+                                        Party schedule, Entity appointmentType, Party customer,
                                         Party patient, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.APPOINTMENT);
         Lookup reason = TestHelper.getLookup("lookup.appointmentReason", "XREASON", "Reason X", true);
@@ -200,8 +203,6 @@ public class ScheduleTestHelper extends TestHelper {
         bean.setValue("endTime", endTime);
         bean.setValue("reason", reason.getCode());
         bean.setValue("status", AppointmentStatus.IN_PROGRESS);
-        Entity appointmentType = createAppointmentType();
-        appointmentType.setName("XAppointmentType");
         save(appointmentType);
         bean.setParticipant("participation.customer", customer);
         if (patient != null) {
@@ -275,7 +276,7 @@ public class ScheduleTestHelper extends TestHelper {
      * Helper to create a new <em>party.organisationWorkList</em>, linked to a task type.
      *
      * @param taskType the task type. May be <tt>null</tt>
-     * @param noSlots the no. of slots
+     * @param noSlots  the no. of slots
      * @return a new work list
      */
     public static Party createWorkList(int noSlots, Entity taskType) {
@@ -293,10 +294,10 @@ public class ScheduleTestHelper extends TestHelper {
     /**
      * Helper to add a appointment type to a schedule.
      *
-     * @param workList        the work list
-     * @param taskType the appointment type
-     * @param noSlots         the work list no. of slots
-     * @param isDefault       determines if the appointment type is the default
+     * @param workList  the work list
+     * @param taskType  the appointment type
+     * @param noSlots   the work list no. of slots
+     * @param isDefault determines if the appointment type is the default
      * @return the new <em>entityRelationship.scheduleAppointmentType</em>
      */
     public static EntityRelationship addTaskType(Party workList, Entity taskType, int noSlots, boolean isDefault) {
