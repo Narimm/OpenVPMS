@@ -332,7 +332,7 @@ public class DocumentLoader {
                     .setHelp("The directory to move files to on successful load."));
             parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
                     .setLongFlag("type")
-                    .setDefault("act.*DocumentAttachment")
+                    .setDefault("act.*Document*")
                     .setHelp("The archetype short name. May contain wildcards."));
             parser.registerParameter(new FlaggedOption("failOnError")
                     .setShortFlag('e')

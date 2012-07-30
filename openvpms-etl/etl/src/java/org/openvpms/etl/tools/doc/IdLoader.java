@@ -28,12 +28,10 @@ import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -144,6 +142,8 @@ class IdLoader extends AbstractLoader {
      * @param transactionManager the transaction manager
      * @param overwrite          if <tt>true</tt> overwrite existing documents
      * @param pattern            the pattern to extract act ids from file names
+     * @throws IllegalArgumentException if {@code shortName} doesn't represent an archetype that may have documents
+     *                                  loaded to it
      */
     public IdLoader(File dir, String shortName, IArchetypeService service, DocumentFactory factory,
                     PlatformTransactionManager transactionManager, boolean recurse, boolean overwrite,
@@ -151,6 +151,10 @@ class IdLoader extends AbstractLoader {
         super(service, factory);
         this.transactionManager = transactionManager;
         shortNames = getDocumentActShortNames(shortName);
+        if (shortNames.length == 0) {
+            throw new IllegalArgumentException("Argument 'shortName' doesn't refer to a valid archetype for loading "
+                                               + "documents to: " + shortName);
+        }
         this.overwrite = overwrite;
         if (log.isDebugEnabled()) {
             log.debug("dir=" + dir);
@@ -351,29 +355,6 @@ class IdLoader extends AbstractLoader {
             result = (DocumentAct) results.get(0);
         }
         return result;
-    }
-
-    /**
-     * Returns all document act archetype short names.
-     *
-     * @param shortName the short name. May be <tt>null</tt> or contain wildcards
-     * @return the document act  archetype short names
-     */
-    private String[] getDocumentActShortNames(String shortName) {
-        List<String> result = new ArrayList<String>();
-        List<ArchetypeDescriptor> descriptors;
-        if (StringUtils.isEmpty(shortName)) {
-            descriptors = getService().getArchetypeDescriptors();
-        } else {
-            descriptors = DescriptorHelper.getArchetypeDescriptors(shortName, getService());
-        }
-        for (ArchetypeDescriptor descriptor : descriptors) {
-            if (DocumentAct.class.isAssignableFrom(descriptor.getClazz())) {
-                result.add(descriptor.getType().getShortName());
-            }
-        }
-
-        return result.toArray(new String[result.size()]);
     }
 
 }
