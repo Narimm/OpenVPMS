@@ -34,9 +34,6 @@ import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
-import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
-import static org.openvpms.report.ReportException.ErrorCode.FailedToPrintReport;
-import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -44,6 +41,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToPrintReport;
+import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 
 
 /**
@@ -441,9 +442,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
                     value = eval.getFormattedValue(value);
                 }
             }
-            if (value != null) {
-                document.setUserField(name, value);
-            }
+            document.setUserField(name, value);
         }
     }
 
