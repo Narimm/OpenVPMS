@@ -96,11 +96,7 @@ public class DocumentActDownloader extends Downloader {
      */
     public Component getComponent() {
         Component component;
-        Button button = ButtonFactory.create(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                selected(null);
-            }
-        });
+        Button button;
         boolean generated = false;
         String name = act.getFileName();
         if (act.getDocument() == null) {
@@ -113,12 +109,24 @@ public class DocumentActDownloader extends Downloader {
         if (generated) {
             // if the document is generated, then its going to be a PDF, at least for the forseeable future.
             // Fairly expensive to determine the mime type otherwise. TODO
+            button = ButtonFactory.create(new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    selected(DocFormats.PDF_TYPE);
+                }
+            });
             button.setStyleName(PDF_STYLE_NAME);
             button.setText(name);
-        } else if (name != null) {
-            setButtonStyle(button, name);
         } else {
-            button.setStyleName(DEFAULT_BUTTON_STYLE);
+            button = ButtonFactory.create(new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    selected(null);
+                }
+            });
+            if (name != null) {
+                setButtonStyle(button, name);
+            } else {
+                button.setStyleName(DEFAULT_BUTTON_STYLE);
+            }
         }
 
         if (!generated && Converter.canConvert(name, act.getMimeType(), DocFormats.PDF_TYPE)) {

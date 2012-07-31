@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.doc;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
@@ -47,14 +48,22 @@ public class DocumentActViewLayoutStrategy extends DocumentActLayoutStrategy {
                                              LayoutContext context) {
         String name = property.getName();
         ComponentState result;
-        boolean template = name.equals("documentTemplate");
-        if (template || name.equals(DOCUMENT)) {
+        if (name.equals("documentTemplate")) {
+            boolean template = hasDocumentNode(parent);
             DocumentViewer viewer = new DocumentViewer((DocumentAct) parent, true, template);
+            result = new ComponentState(viewer.getComponent(), property);
+        } else if (name.equals(DOCUMENT)) {
+            DocumentViewer viewer = new DocumentViewer((DocumentAct) parent, true, false);
             result = new ComponentState(viewer.getComponent(), property);
         } else {
             result = super.createComponent(property, parent, context);
         }
         return result;
+    }
+
+    private boolean hasDocumentNode(IMObject object) {
+        IMObjectBean bean = new IMObjectBean(object);
+        return bean.hasNode(DOCUMENT);
     }
 
 }
