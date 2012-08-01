@@ -8,7 +8,6 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderStatus;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
@@ -46,7 +45,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.checkSavePopup;
 
 /**
  * Tests the {@link CustomerChargeActEditor} class.
@@ -836,8 +834,6 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
         int product1Acts = 0;     // expected child acts for product1
         if (invoice) {
-            // close medication popup
-            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
             product1Acts++;
         }
 

@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -34,8 +35,11 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -88,26 +92,41 @@ public class CustomerChargeTestHelper {
         itemEditor.setProduct(product);
         itemEditor.setQuantity(quantity);
         if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
-            if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-                // invoice items have a dispensing node
-                assertFalse(itemEditor.isValid());  // not valid while popup is displayed
-                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
-                // save the popup editor - should be a medication
-            }
-
             if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+                checkSavePopups(editor, itemEditor, product, mgr);
+            } else {
                 EntityBean bean = new EntityBean(product);
-                for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
-                    assertFalse(editor.isValid()); // not valid while popup is displayed
-                    checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
-                }
-                for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
-                    assertFalse(editor.isValid()); // not valid while popup is displayed
-                    checkSavePopup(mgr, ReminderArchetypes.REMINDER);
+                List<Entity> includes = bean.getNodeTargetEntities("includes");
+                for (Entity include : includes) {
+                    checkSavePopups(editor, itemEditor, (Product) include, mgr);
                 }
             }
         }
+        Validator validator =new Validator();
+        boolean valid = itemEditor.validate(validator);
+        if (!valid) {
+            ValidationHelper.showError(validator);
+        }
         assertTrue(itemEditor.isValid());
+    }
+
+    private static void checkSavePopups(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor, Product product, ChargePopupEditorManager mgr) {
+        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
+            // invoice items have a dispensing node
+            assertFalse(itemEditor.isValid());  // not valid while popup is displayed
+            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
+            // save the popup editor - should be a medication
+        }
+
+        EntityBean bean = new EntityBean(product);
+        for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
+            assertFalse(editor.isValid()); // not valid while popup is displayed
+            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
+        }
+        for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
+            assertFalse(editor.isValid()); // not valid while popup is displayed
+            checkSavePopup(mgr, ReminderArchetypes.REMINDER);
+        }
     }
 
     /**

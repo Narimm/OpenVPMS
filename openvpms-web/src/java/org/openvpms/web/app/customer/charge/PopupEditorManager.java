@@ -113,6 +113,10 @@ public class PopupEditorManager {
         edit(dialog);
     }
 
+    public boolean isComplete() {
+        return  !editing && queue.isEmpty();
+    }
+
     /**
      * Displays an edit dialog.
      *
@@ -126,6 +130,7 @@ public class PopupEditorManager {
      * Invoked when the edit is completed.
      */
     protected void editCompleted() {
+        editing = false;
     }
 
     /**
