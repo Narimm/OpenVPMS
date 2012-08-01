@@ -116,12 +116,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private ActRelationshipCollectionEditor reminders;
 
     /**
-     * The no. of medication dialogs currently popped up. The invoice item
-     * is invalid until this is <code>0</tt>
-     */
-    private int patientActPopups = 0;
-
-    /**
      * The medication, investigation and reminder act editor manager.
      */
     private PopupEditorManager popupEditorMgr;
@@ -296,7 +290,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     public boolean validate(Validator validator) {
-        return (patientActPopups == 0) && super.validate(validator);
+        return (popupEditorMgr == null || popupEditorMgr.isComplete()) && super.validate(validator);
     }
 
     /**
@@ -654,11 +648,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         NodeFilter expectedFilter = getFilterForProduct(productRef);
         if (!ObjectUtils.equals(currentFilter, expectedFilter)) {
             Component popupFocus = null;
-            if (patientActPopups != 0) {
+            if (popupEditorMgr != null && !popupEditorMgr.isComplete()) {
                 popupFocus = FocusHelper.getFocus();
             }
             changeLayout(expectedFilter);  // this can move the focus away from the popups, if any
-            if (patientActPopups == 0) {
+            if (popupEditorMgr != null && popupEditorMgr.isComplete()) {
                 // no current popups, so move focus to the product
                 moveFocusToProduct();
             } else {
@@ -737,14 +731,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void queuePatientActEditor(final IMObjectEditor editor, boolean skip,
                                        final ActRelationshipCollectionEditor collection) {
         if (popupEditorMgr != null) {
-            ++patientActPopups;
             popupEditorMgr.queue(editor, skip, new PopupEditorManager.Listener() {
                 public void completed(boolean skipped) {
                     if (skipped) {
                         collection.remove(editor.getObject());
                     }
-                    --patientActPopups;
-                    if (patientActPopups == 0) {
+                    if (popupEditorMgr.isComplete()) {
                         moveFocusToProduct();
 
                         // force the parent collection editor to re-check the validation status of

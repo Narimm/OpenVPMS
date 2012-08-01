@@ -54,9 +54,10 @@ public class WorkflowTestHelper extends TestHelper {
         Date startTime = new Date();
         Date endTime = new Date();
         Party schedule = ScheduleTestHelper.createSchedule();
+        Entity appointmentType = ScheduleTestHelper.createAppointmentType();
 
-        Act act = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, customer, patient, clinician,
-                                                       null);
+        Act act = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer, patient,
+                                                       clinician, null);
         act.setStatus(AppointmentStatus.PENDING);
         TestHelper.save(act);
         return act;
