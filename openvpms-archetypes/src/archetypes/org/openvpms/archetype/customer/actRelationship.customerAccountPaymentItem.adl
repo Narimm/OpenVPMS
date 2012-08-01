@@ -45,6 +45,14 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
+							value="act.customerAccountPaymentCredit" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.customerAccountPaymentEFT" />
+					</propertyMap>			
+					<propertyMap name="archetype">
+						<property name="shortName"
 							value="act.customerAccountPaymentCash" />
 					</propertyMap>
 					<propertyMap name="archetype">
@@ -53,11 +61,7 @@
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="act.customerAccountPaymentCredit" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="act.customerAccountPaymentEFT" />
+							value="act.customerAccountPaymentOther" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
