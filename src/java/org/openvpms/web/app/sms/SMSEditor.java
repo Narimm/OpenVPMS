@@ -184,8 +184,8 @@ public class SMSEditor extends AbstractModifiable {
             result = phoneSelector.getSelectedItem().toString();
         }
         if (result != null) {
-            // strip any spaces, brackets, and any characters after the last digit.
-            result = result.replaceAll("[\\s()]", "").replaceAll("[^\\d].*", "");
+            // strip any spaces, hyphens, and brackets, and any characters after the last digit.
+            result = result.replaceAll("[\\s\\-()]", "").replaceAll("[^\\d].*", "");
         }
         return result;
     }
