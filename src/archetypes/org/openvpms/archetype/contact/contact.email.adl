@@ -28,7 +28,8 @@
 		<node name="emailAddress" path="/details/emailAddress"
 		      type="java.lang.String" minCardinality="1">
 	    </node>
-		<node name="startDate" path="/activeStartTime"
+        <node name="preferred" path="/details/preferred" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="startDate" path="/activeStartTime"
 			type="java.util.Date" hidden="true" minCardinality="1" defaultValue="java.util.Date.new()"/>
 		<node name="endDate" path="/activeEndTime"
 			type="java.util.Date" hidden="true" minCardinality="0" />

@@ -76,7 +76,6 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.customer", party);
 
-
         assertEquals("(03) 45678", ctx.getValue("party:getTelephone(.)"));
     }
 
