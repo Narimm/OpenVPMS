@@ -63,6 +63,8 @@ public class ContactHelper {
 
     /**
      * Returns email contacts for a party.
+     * <p/>
+     * The preferred email contact is the first element in the returned list, if it exists.
      *
      * @param party the party. May be <tt>null</tt>
      * @return the email contacts
@@ -111,7 +113,8 @@ public class ContactHelper {
         List<Contact> result = new ArrayList<Contact>();
         CollectionUtils.select(party.getContacts(), predicate, result);
         if (result.size() > 1) {
-            SortConstraint[] sort = {new NodeSortConstraint("preferred", true), new NodeSortConstraint(sortNode, true)};
+            SortConstraint[] sort = {new NodeSortConstraint("preferred", false),
+                    new NodeSortConstraint(sortNode, true)};
             IMObjectSorter.sort(result, sort);
         }
         return result;
