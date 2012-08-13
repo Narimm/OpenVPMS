@@ -112,7 +112,7 @@ public class CustomerSummary extends PartySummary {
         column.add(RowFactory.create("Inset.Small",
                                      customerName.getComponent()));
         Label phone = LabelFactory.create();
-        phone.setText(partyRules.getHomeTelephone(party));
+        phone.setText(partyRules.getTelephone(party));
         column.add(RowFactory.create("Inset.Small", phone));
 
         Contact email = ContactHelper.getPreferredEmail(party);
