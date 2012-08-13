@@ -43,6 +43,44 @@ import static org.junit.Assert.assertEquals;
 public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
     /**
+     * Tests the {@link PartyFunctions#getTelephone(Party)} method.
+     */
+    @Test
+    public void testGetTelephone() {
+        Party party = createCustomer();
+
+        JXPathContext ctx = JXPathHelper.newContext(party);
+        assertEquals("", ctx.getValue("party:getTelephone(.)"));
+
+        party.addContact(createPhone("12345", false, "HOME"));
+        party.addContact(createPhone("45678", true, null));  // preferred
+        assertEquals("(03) 45678", ctx.getValue("party:getTelephone(.)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getTelephone(Act)} method.
+     */
+    @Test
+    public void testActGetTelephone() {
+        Act act = (Act) create("act.customerEstimation");
+        Party party = createCustomer();
+        save(party);
+
+        JXPathContext ctx = JXPathHelper.newContext(act);
+        assertEquals("", ctx.getValue("party:getTelephone(.)"));
+
+        party.addContact(createPhone("12345", false, "HOME"));
+        party.addContact(createPhone("45678", true, null));  // preferred
+        save(party);
+
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.customer", party);
+
+
+        assertEquals("(03) 45678", ctx.getValue("party:getTelephone(.)"));
+    }
+
+    /**
      * Tests the {@link PartyFunctions#getHomeTelephone(Party)} method.
      */
     @Test

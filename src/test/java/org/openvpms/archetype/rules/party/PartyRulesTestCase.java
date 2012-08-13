@@ -218,6 +218,43 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyRules#getTelephone(Party)} method.
+     */
+    @Test
+    public void testGetTelephone() {
+        Party party = TestHelper.createCustomer(false);
+        Contact phone1 = getContact(party, ContactArchetypes.PHONE);
+        populatePhone(phone1, "12345", false, null);
+
+        assertEquals("(03) 12345", rules.getTelephone(party));
+
+        Contact phone2 = createPhone("56789", true, null);
+        party.addContact(phone2);
+        assertEquals("(03) 56789", rules.getTelephone(party));
+    }
+
+    /**
+     * Tests the {@link PartyRules#getTelephone(Party)} method.
+     */
+    @Test
+    public void testActGetTelephone() {
+        Act act = (Act) create("act.customerEstimation");
+        assertEquals("", rules.getTelephone(act));
+
+        Party party = TestHelper.createCustomer(false);
+        Contact phone1 = getContact(party, ContactArchetypes.PHONE);
+        populatePhone(phone1, "12345", false, null);
+        Contact phone2 = createPhone("56789", true, null);
+        party.addContact(phone2);
+        save(party);
+
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.customer", party);
+
+        assertEquals("(03) 56789", rules.getTelephone(act));
+    }
+
+    /**
      * Tests the {@link PartyRules#getHomeTelephone(Party)} method.
      */
     @Test

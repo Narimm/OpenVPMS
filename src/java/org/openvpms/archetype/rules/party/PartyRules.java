@@ -335,6 +335,35 @@ public class PartyRules {
     }
 
     /**
+     * Returns a formatted preferred telephone number for a party.
+     *
+     * @param party the party
+     * @return a formatted telephone number for the party. May be empty if there is no corresponding
+     *         <em>contact.phoneNumber</em> contact
+     */
+    public String getTelephone(Party party) {
+        Contact contact = getContact(party, ContactArchetypes.PHONE, null, false);
+        return (contact != null) ? formatPhone(contact) : "";
+    }
+
+    /**
+     * Returns a formatted preferred telephone number for a party associated with
+     * an act via an <em>participation.customer</em> participation.
+     *
+     * @param act the act
+     * @return a formatted telephone number for the party. May be empty if there is no corresponding
+     *         <em>contact.phoneNumber</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getTelephone(Act act) {
+        Party party = getCustomer(act);
+        if (party == null) {
+            party = getOwner(act);
+        }
+        return (party != null) ? getTelephone(party) : "";
+    }
+
+    /**
      * Returns a formatted home telephone number for a party.
      *
      * @param party the party
