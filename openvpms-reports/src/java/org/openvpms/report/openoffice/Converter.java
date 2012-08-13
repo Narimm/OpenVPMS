@@ -96,7 +96,7 @@ public class Converter {
                                      String targetMimeType) {
         for (String[] map : MIME_MAP) {
             if (map[0].equals(sourceMimeType)
-                    && map[1].equals(targetMimeType)) {
+                && map[1].equals(targetMimeType)) {
                 return true;
             }
         }
@@ -104,7 +104,7 @@ public class Converter {
             String ext = FilenameUtils.getExtension(fileName);
             for (String[] map : EXT_MAP) {
                 if (map[0].equals(ext)
-                        && map[1].equals(targetMimeType)) {
+                    && map[1].equals(targetMimeType)) {
                     return true;
                 }
             }
@@ -127,7 +127,8 @@ public class Converter {
         // when the source document contains user fields.
         // Alternative approach is to do a Thread.sleep(1000).
         try {
-            return doc.export(mimeType, document.getName());
+            String name = FilenameUtils.getBaseName(document.getName());
+            return doc.export(mimeType, name);
         } finally {
             doc.close();
         }
