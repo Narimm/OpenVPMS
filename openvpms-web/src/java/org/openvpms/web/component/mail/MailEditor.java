@@ -49,11 +49,14 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.report.DocFormats;
+import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.echo.DropDown;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
 import org.openvpms.web.component.im.doc.DownloaderListener;
@@ -376,6 +379,12 @@ public class MailEditor extends AbstractModifiable {
         }
 
         boolean delete = false;
+
+        if (document.getMimeType() != null && !DocFormats.PDF_TYPE.equals(document.getMimeType()) &&
+                Converter.canConvert(document.getName(), document.getMimeType(), DocFormats.PDF_TYPE)) {
+            document = DocumentHelper.convert(document, DocFormats.PDF_TYPE);
+        }
+
         if (document.isNew()) {
             ServiceHelper.getArchetypeService().save(document);
             delete = true;
