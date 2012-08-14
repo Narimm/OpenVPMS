@@ -38,7 +38,6 @@
                     <property name="act.customerAccountChargesCredit" value="Customer Credit"/>
                     <property name="act.customerAccountChargesCounter" value="Customer Counter Sale"/>
                     <property name="act.customerEstimation" value="Customer Estimation"/>
-                    <property name="act.customerAccountChargesCredit" value="Customer Credit"/>
                     <property name="act.patientMedication" value="Patient Medication Label"/>
                     <property name="act.patientReminder" value="Patient Reminders"/>
                     <property name="act.patientClinicalEvent" value="Patient Visit"/>
