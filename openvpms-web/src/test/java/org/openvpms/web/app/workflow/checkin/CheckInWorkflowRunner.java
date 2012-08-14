@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.checkin;
 
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -35,6 +36,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.DefaultActEditor;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.ListQuery;
@@ -219,7 +221,7 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
      */
     public EditDialog setWeight(BigDecimal weight) {
         EditDialog dialog = getWeightEditor();
-        IMObjectEditor editor = dialog.getEditor();
+        DefaultActEditor editor = (DefaultActEditor) dialog.getEditor();
         editor.getProperty("weight").setValue(weight);
         return dialog;
     }
@@ -242,12 +244,31 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
     }
 
     /**
+     * Verifies the context has an <em>act.customerAccountChargesInvoice</em>.
+     *
+     * @param clinician the expected clinician. May be <tt>null</tt>
+     * @param amount    the expected amount
+     * @param status    the expected status
+     * @param saved     if {@code} true, indicates that the invoice as been saved
+     */
+    public void checkInvoice(User clinician, BigDecimal amount, String status, boolean saved) {
+        Act invoice = (Act) getContext().getObject(CustomerAccountArchetypes.INVOICE);
+        assertNotNull(invoice);
+        assertEquals(saved, !invoice.isNew());
+        ActBean bean = new ActBean(invoice);
+        assertEquals(0, bean.getBigDecimal("amount").compareTo(amount));
+        assertEquals(clinician, bean.getNodeParticipant("clinician"));
+        assertEquals(status, invoice.getStatus());
+    }
+
+    /**
      * Verifies the weight for a patient matches that expected.
      *
-     * @param patient the patient
-     * @param weight  the expected weight
+     * @param patient   the patient
+     * @param weight    the expected weight
+     * @param clinician the expected clinician. May be {@code null}
      */
-    public void checkWeight(Party patient, BigDecimal weight) {
+    public void checkWeight(Party patient, BigDecimal weight, User clinician) {
         Act event = (Act) getContext().getObject(PatientArchetypes.CLINICAL_EVENT);
         assertNotNull(event);
         ActBean bean = new ActBean(event);
@@ -258,19 +279,21 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
         assertNull(IMObjectHelper.getObject(PatientArchetypes.PATIENT_WEIGHT, acts));
         ActBean weightBean = new ActBean(weightAct);
         assertEquals(patient, weightBean.getNodeParticipant("patient"));
+        assertEquals(clinician, weightBean.getNodeParticipant("clinician"));
         assertTrue(weight.compareTo(weightBean.getBigDecimal("weight")) == 0);
     }
 
     /**
      * Adds a weight for the patient.
      *
-     * @param patient the patient
-     * @param weight  the patient weight
+     * @param patient   the patient
+     * @param weight    the patient weight
+     * @param clinician the expected clinician. May be {@code null}
      */
-    public void addWeight(Party patient, BigDecimal weight) {
+    public void addWeight(Party patient, BigDecimal weight, User clinician) {
         EditDialog dialog = setWeight(weight);
         fireDialogButton(dialog, PopupDialog.OK_ID);
-        checkWeight(patient, weight);
+        checkWeight(patient, weight, clinician);
     }
 
     /**

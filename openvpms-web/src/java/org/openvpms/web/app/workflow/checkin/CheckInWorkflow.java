@@ -148,6 +148,9 @@ public class CheckInWorkflow extends WorkflowImpl {
         initial.setCustomer(customer);
         initial.setPatient(patient);
 
+        if (clinician == null) {
+            clinician = context.getClinician();
+        }
         initial.setClinician(clinician);
         initial.setUser(external.getUser());
         initial.setWorkListDate(new Date());
