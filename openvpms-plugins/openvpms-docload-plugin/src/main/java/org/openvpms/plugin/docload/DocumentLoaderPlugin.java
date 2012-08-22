@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.plugin.runas.RunAsService;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -46,6 +47,8 @@ public class DocumentLoaderPlugin {
 
     private final Scheduler scheduler;
 
+    private final RunAsService runAs;
+
     private Map<IMObjectReference, Entity> config = new HashMap<IMObjectReference, Entity>();
 
     /**
@@ -57,12 +60,26 @@ public class DocumentLoaderPlugin {
     private static final String CONFIG_BY_NAME = "entity.pluginDocumentLoaderByName";
 
     public DocumentLoaderPlugin(IArchetypeService service, PlatformTransactionManager transactionManager,
-                                Scheduler scheduler) throws IOException {
+                                Scheduler scheduler, RunAsService runAs) throws IOException {
         this.service = service;
         this.transactionManager = transactionManager;
         this.scheduler = scheduler;
-        loadArchetypes();
-        loadConfig();
+        this.runAs = runAs;
+        initialise(service);
+    }
+
+    private void initialise(IArchetypeService service) {
+        runAs.runAs(runAs.getDefaultUser(), new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    loadArchetypes();
+                } catch (IOException exception) {
+                    throw new DocumentLoaderException("Failed to load archetypes", exception);
+                }
+                loadConfig();
+            }
+        });
         service.addListener("entity.pluginDocumentLoader*", new AbstractArchetypeServiceListener() {
             @Override
             public void saved(IMObject object) {

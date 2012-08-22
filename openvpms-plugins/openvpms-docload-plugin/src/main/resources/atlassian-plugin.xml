@@ -8,6 +8,7 @@
     <component-import key="archetypeService" interface="org.openvpms.component.business.service.archetype.IArchetypeService" />
     <component-import key="transactionManager" interface="org.springframework.transaction.PlatformTransactionManager" />
     <component-import key="scheduler" interface="org.quartz.Scheduler"/>
+    <component-import key="runAs" interface="org.openvpms.plugin.runas.RunAsService"/>
 
     <component key="documentLoader" class="org.openvpms.plugin.docload.DocumentLoaderPlugin">
         <description>Document Loader</description>

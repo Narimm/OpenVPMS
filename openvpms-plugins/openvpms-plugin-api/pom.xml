@@ -8,10 +8,11 @@
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms-plugins</artifactId>
         <version>1.7-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.openvpms.plugin</groupId>
+    <groupId>org.openvpms</groupId>
     <artifactId>openvpms-plugin-api</artifactId>
 
     <name>OpenVPMS plugin API</name>

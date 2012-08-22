@@ -33,9 +33,9 @@ public interface RunAsService {
     /**
      * Runs an operation as the specified user.
      *
-     * @param runnable the operation to run
      * @param user     the user to run the operation as
+     * @param runnable the operation to run
      */
-    void runAs(Runnable runnable, String user);
+    void runAs(String user, Runnable runnable);
 
 }

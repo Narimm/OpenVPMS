@@ -49,11 +49,11 @@ public class RunAsServiceImpl implements RunAsService {
     /**
      * Runs an operation as the specified user.
      *
-     * @param runnable the operation to run
      * @param user     the user to run the operation as
+     * @param runnable the operation to run
      */
     @Override
-    public void runAs(Runnable runnable, String user) {
+    public void runAs(String user, Runnable runnable) {
         SecurityContext existing = SecurityContextHolder.getContext();
         try {
             UserRules rules = new UserRules(service);
