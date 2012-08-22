@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.openvpms</groupId>
+        <artifactId>openvpms</artifactId>
+        <version>1.7-SNAPSHOT</version>
+        <relativePath>../openvpms/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>openvpms-plugins</artifactId>
+    <packaging>pom</packaging>
+    <name>OpenVPMS plugins</name>
+
+    <description>
+        OpenVPMS plugins
+    </description>
+
+    <scm>
+        <connection>scm:svn:svn://svn.openvpms.org/openvpms/openvpms-plugins/trunk</connection>
+        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/openvpms-plugins/trunk</developerConnection>
+        <url>http://svn.openvpms.org</url>
+    </scm>
+
+    <modules>
+        <module>openvpms-plugin-api</module>
+        <module>openvpms-plugin-services</module>
+        <module>openvpms-docload-plugin</module>
+    </modules>
+
+</project>

@@ -1,0 +1,18 @@
+<archetypes>
+    <archetype name="entity.pluginDocumentLoaderById.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Document Loader (By Id)">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1">
+            <assertion name="propercase"/>
+        </node>
+        <node name="description" type="java.lang.String" path="/description"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="source" path="/details/source" type="java.lang.String"  minCardinality="1"/>
+        <node name="target" path="/details/target" type="java.lang.String"  minCardinality="1"/>
+        <node name="type" path="/details/type" type="java.lang.String"  minCardinality="1" defaultValue="'act.*Document*'"/>
+        <node name="recurse" path="/details/recurse" type="java.lang.Boolean"  minCardinality="1" defaultValue="false()"/>
+        <node name="overwrite" path="/details/overwrite" type="java.lang.Boolean"  minCardinality="1" defaultValue="false()"/>
+        <node name="pattern" path="/details/pattern" type="java.lang.String"  minCardinality="1"/>
+        <node name="runAs" path="/details/runAs" type="java.lang.String"  minCardinality="1"/>
+    </archetype>
+</archetypes>
