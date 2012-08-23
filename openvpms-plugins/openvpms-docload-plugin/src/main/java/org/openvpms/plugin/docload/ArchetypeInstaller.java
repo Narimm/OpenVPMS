@@ -121,7 +121,7 @@ public class ArchetypeInstaller {
         }
         Resource resource = new FileSystemResource(path);
         if (!resource.exists()) {
-            resource = new ClassPathResource(path);
+            resource = new ClassPathResource(path, getClass().getClassLoader());
         }
         try {
             return ArchetypeDescriptors.read(resource.getInputStream());
