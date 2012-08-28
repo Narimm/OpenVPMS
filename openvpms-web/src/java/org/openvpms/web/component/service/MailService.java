@@ -24,6 +24,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.GlobalContext;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
+import javax.mail.Session;
+import java.util.Properties;
+
 
 /**
  * Mail service that configures the SMTP details from <em>party.organisationLocation</em> from
@@ -33,6 +36,16 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class MailService extends JavaMailSenderImpl {
+
+    /**
+     * Property name for STARTTLS flag.
+     */
+    private static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
+
+    /**
+     * Property name for authentication flag.
+     */
+    private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
 
     /**
      * Return the mail server host.
@@ -80,6 +93,32 @@ public class MailService extends JavaMailSenderImpl {
     }
 
     /**
+     * Return the mail protocol.
+     */
+    @Override
+    public String getProtocol() {
+        String security = getConnectionSecurity();
+        if ("SSL_TLS".equals(security)) {
+            return "smtps";
+        }
+        return super.getProtocol();
+    }
+
+    /**
+     * Return the JavaMail <code>Session</code>,
+     * lazily initializing it if hasn't been specified explicitly.
+     */
+    @Override
+    public synchronized Session getSession() {
+        String protocol = getConnectionSecurity();
+        String username = getUsername();
+
+        setProperty(MAIL_SMTP_AUTH, !StringUtils.isEmpty(username));
+        setProperty(MAIL_SMTP_STARTTLS_ENABLE, "STARTTLS".equals(protocol));
+        return super.getSession();
+    }
+
+    /**
      * Returns the <em>party.organisationLocation</em> wrapped in a bean, if one is present in the global context.
      *
      * @return the location, or <tt>null</tt> if none is present.
@@ -101,4 +140,37 @@ public class MailService extends JavaMailSenderImpl {
         return (bean != null) ? StringUtils.trimToNull(bean.getString(name)) : null;
     }
 
+    /**
+     * Returns the mail connection security value.
+     *
+     * @return the mail connection security. May be {@code null}
+     */
+    private String getConnectionSecurity() {
+        return getString("mailSecurity");
+    }
+
+    /**
+     * Helper to set a configuration property.
+     * This only sets the property if it is unset or different, to avoid closing the session unecessarily.
+     *
+     * @param name  the property name
+     * @param value the property value
+     */
+    private void setProperty(String name, boolean value) {
+        Properties properties = getJavaMailProperties();
+        boolean update = false;
+        if (properties == null) {
+            properties = new Properties();
+            update = true;
+        } else {
+            String current = properties.getProperty(name);
+            if (current == null || Boolean.valueOf(current) != value) {
+                update = true;
+            }
+        }
+        if (update) {
+            properties.setProperty(name, Boolean.toString(value));
+            setJavaMailProperties(properties); // closes current session
+        }
+    }
 }
