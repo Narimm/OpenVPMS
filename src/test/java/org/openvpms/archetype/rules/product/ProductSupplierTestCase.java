@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -48,7 +49,17 @@ public class ProductSupplierTestCase extends ArchetypeServiceTest {
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
 
         assertEquals(product, ps.getProduct());
+        assertEquals(product.getObjectReference(), ps.getProductRef());
         assertEquals(supplier, ps.getSupplier());
+        assertEquals(supplier.getObjectReference(), ps.getSupplierRef());
+
+        Date startTime = new Date();
+        ps.setActiveStartTime(startTime);
+        assertEquals(startTime, ps.getActiveStartTime());
+
+        Date endTime = new Date();
+        ps.setActiveEndTime(endTime);
+        assertEquals(endTime, ps.getActiveEndTime());
 
         String reorderCode = "REORDERCODE";
         ps.setReorderCode(reorderCode);
@@ -69,6 +80,22 @@ public class ProductSupplierTestCase extends ArchetypeServiceTest {
         String packageUnits = "BOX";
         ps.setPackageUnits(packageUnits);
         assertEquals(packageUnits, ps.getPackageUnits());
+
+        int minQuantity = 10;
+        ps.setMinimumOrderQuantity(minQuantity);
+        assertEquals(minQuantity, ps.getMinimumOrderQuantity());
+
+        int increment = 11;
+        ps.setOrderQuantityIncrement(increment);
+        assertEquals(increment, ps.getOrderQuantityIncrement());
+
+        int leadTime = 12;
+        ps.setLeadTime(leadTime);
+        assertEquals(leadTime, ps.getLeadTime());
+
+        String leadTimeUnits = "MONTHS";
+        ps.setLeadTimeUnits(leadTimeUnits);
+        assertEquals(leadTimeUnits, ps.getLeadTimeUnits());
 
         BigDecimal listPrice = new BigDecimal("1");
         ps.setListPrice(listPrice);

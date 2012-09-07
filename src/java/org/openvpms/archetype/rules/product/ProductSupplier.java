@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -75,6 +76,15 @@ public class ProductSupplier {
     }
 
     /**
+     * Returns a reference to the product.
+     *
+     * @return the product reference, or <tt>null</tt> if none is found
+     */
+    public IMObjectReference getProductRef() {
+        return getRelationship().getSource();
+    }
+
+    /**
      * Returns the supplier.
      *
      * @return the supplier, or <tt>null</tt> if none is found
@@ -91,6 +101,42 @@ public class ProductSupplier {
      */
     public IMObjectReference getSupplierRef() {
         return getRelationship().getTarget();
+    }
+
+    /**
+     * Returns the active start time.
+     *
+     * @return the active start time. May be {@code null}
+     */
+    public Date getActiveStartTime() {
+        return bean.getDate("activeStartTime");
+    }
+
+    /**
+     * Sets the active start time.
+     *
+     * @param startTime the active start time
+     */
+    public void setActiveStartTime(Date startTime) {
+        bean.setValue("activeStartTime", startTime);
+    }
+
+    /**
+     * Returns the active end time.
+     *
+     * @return the active end time. May be {@code null}
+     */
+    public Date getActiveEndTime() {
+        return bean.getDate("activeEndTime");
+    }
+
+    /**
+     * Sets the active end time.
+     *
+     * @param endTime the active end time. May be {@code null}
+     */
+    public void setActiveEndTime(Date endTime) {
+        bean.setValue("activeEndTime", endTime);
     }
 
     /**
@@ -181,6 +227,78 @@ public class ProductSupplier {
      */
     public String getPackageUnits() {
         return bean.getString("packageUnits");
+    }
+
+    /**
+     * Returns the minimum order quantity.
+     *
+     * @return the minimum order quantity
+     */
+    public int getMinimumOrderQuantity() {
+        return bean.getInt("minimumQty");
+    }
+
+    /**
+     * Sets the minimum order quantity.
+     *
+     * @param quantity the minimum order quantity
+     */
+    public void setMinimumOrderQuantity(int quantity) {
+        bean.setValue("minimumQty", quantity);
+    }
+
+    /**
+     * Returns the order quantity increment.
+     *
+     * @return the order quantity increment
+     */
+    public int getOrderQuantityIncrement() {
+        return bean.getInt("orderQtyInc");
+    }
+
+    /**
+     * Sets the order quantity increment.
+     *
+     * @param increment the order quantity increment
+     */
+    public void setOrderQuantityIncrement(int increment) {
+        bean.setValue("orderQtyInc", increment);
+    }
+
+    /**
+     * Returns the lead time.
+     *
+     * @return the lead time
+     */
+    public int getLeadTime() {
+        return bean.getInt("leadTime");
+    }
+
+    /**
+     * Sets the lead time.
+     *
+     * @param leadTime the lead time
+     */
+    public void setLeadTime(int leadTime) {
+        bean.setValue("leadTime", leadTime);
+    }
+
+    /**
+     * Returns the lead time units.
+     *
+     * @return the lead time units. May be {@code null}
+     */
+    public String getLeadTimeUnits() {
+        return bean.getString("leadTimeUnits");
+    }
+
+    /**
+     * Sets the lead time units.
+     *
+     * @param units the lead time units
+     */
+    public void setLeadTimeUnits(String units) {
+        bean.setValue("leadTimeUnits", units);
     }
 
     /**
