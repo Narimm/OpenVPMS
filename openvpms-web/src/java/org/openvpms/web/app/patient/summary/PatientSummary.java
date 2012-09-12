@@ -23,6 +23,7 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -41,6 +42,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -117,18 +119,18 @@ public class PatientSummary extends PartySummary {
         column.add(RowFactory.create("Inset.Small", breed));
 
         Label reminderTitle = LabelFactory.create("patient.reminders");
-        int reminders = reminderRules.countReminders(party);
-        Component reminderCount;
-        if (reminders == 0) {
-            reminderCount = LabelFactory.create("patient.noreminders");
+        Component reminders;
+        ReminderRules.DueState due = getDueState(party);
+        if (due == null) {
+            reminders = LabelFactory.create("patient.noreminders");
         } else {
-            reminderCount = ButtonFactory.create(
-                    null, "reminder", new ActionListener() {
-                        public void onAction(ActionEvent event) {
-                            onShowReminders(party);
-                        }
-                    });
-            reminderCount = RowFactory.create(reminderCount);
+            String style = "reminder." + due.toString();
+            reminders = ButtonFactory.create(null, style, new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onShowReminders(party);
+                }
+            });
+            reminders = RowFactory.create(reminders);
         }
         Label ageTitle = LabelFactory.create("patient.age");
         Label age = LabelFactory.create();
@@ -137,7 +139,7 @@ public class PatientSummary extends PartySummary {
         Label weightTitle = LabelFactory.create("patient.weight");
         Label weight = LabelFactory.create();
         weight.setText(getPatientWeight(party));
-        Grid grid = GridFactory.create(2, reminderTitle, reminderCount,
+        Grid grid = GridFactory.create(2, reminderTitle, reminders,
                                        ageTitle, age, weightTitle, weight);
 
         String identity = rules.getMicrochip(party);
@@ -177,11 +179,45 @@ public class PatientSummary extends PartySummary {
      * @return the set of outstanding alerts for the patient
      */
     protected ActResultSet<Act> createAlertsResultSet(Party patient, int pageSize) {
-        String[] shortNames = {"act.patientAlert"};
+        return createActResultSet(patient, pageSize, PatientArchetypes.ALERT);
+    }
+
+    /**
+     * Returns outstanding acts for a patient.
+     *
+     * @param patient  the patient
+     * @param pageSize the no. of alerts to return per page
+     * @return the set IN_PROGRESS acts for the patient
+     */
+    private ActResultSet<Act> createActResultSet(Party patient, int pageSize, String... shortNames) {
         String[] statuses = {ActStatus.IN_PROGRESS};
         ShortNameConstraint archetypes = new ShortNameConstraint(shortNames, true, true);
         ParticipantConstraint[] participants = {new ParticipantConstraint("patient", "participation.patient", patient)};
         return new ActResultSet<Act>(archetypes, participants, null, statuses, false, null, pageSize, null);
+    }
+
+    /**
+     * Returns the highest due state of a patient's reminders.
+     * @param patient the patient
+     * @return the patient's highest due state
+     */
+    private ReminderRules.DueState getDueState(Party patient) {
+        ActResultSet<Act> reminders = createActResultSet(patient, 20, ReminderArchetypes.REMINDER);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(reminders);
+        ReminderRules.DueState result = null;
+        while (iterator.hasNext()) {
+            ReminderRules.DueState due = reminderRules.getDueState(iterator.next());
+            if (due != null) {
+                if (result == null || due.compareTo(result) > 0) {
+                    result = due;
+                }
+                if (result == ReminderRules.DueState.OVERDUE) {
+                    break;
+                }
+            }
+
+        }
+        return result;
     }
 
     /**
