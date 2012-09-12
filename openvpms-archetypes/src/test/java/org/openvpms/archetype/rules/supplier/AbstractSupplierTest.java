@@ -18,8 +18,6 @@
 
 package org.openvpms.archetype.rules.supplier;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -37,6 +35,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 
 /**
@@ -271,17 +272,26 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Creates and saves a delivery, associated with an order item.
+     * Creates and saves a delivery, associated with a delivery item.
      *
-     * @param deliveryItem the delivery item
+     * @param deliveryItems the delivery items
      * @return a new delivery
      */
-    protected FinancialAct createDelivery(FinancialAct deliveryItem) {
+    protected FinancialAct createDelivery(FinancialAct... deliveryItems) {
         ActBean bean = createAct(SupplierArchetypes.DELIVERY);
-        bean.addRelationship(SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP, deliveryItem);
-        bean.setValue("amount", deliveryItem.getTotal());
-        bean.setValue("tax", deliveryItem.getTaxAmount());
-        save(bean.getAct(), deliveryItem);
+        BigDecimal amount = BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.ZERO;
+        List<Act> toSave = new ArrayList<Act>();
+        toSave.add(bean.getAct());
+        for (FinancialAct deliveryItem : deliveryItems) {
+            bean.addRelationship(SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP, deliveryItem);
+            amount = amount.add(deliveryItem.getTotal());
+            tax = tax.add(deliveryItem.getTaxAmount());
+            toSave.add(deliveryItem);
+        }
+        bean.setValue("amount", amount);
+        bean.setValue("tax", tax);
+        save(toSave);
 
         return (FinancialAct) bean.getAct();
     }
@@ -295,7 +305,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @param orderItem   the order item
      * @return a new delivery item
      */
-    private FinancialAct createDeliveryItem(BigDecimal quantity, int packageSize, BigDecimal unitPrice,
+    protected FinancialAct createDeliveryItem(BigDecimal quantity, int packageSize, BigDecimal unitPrice,
                                             FinancialAct orderItem) {
         return createItem(SupplierArchetypes.DELIVERY_ITEM,
                           SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP,
@@ -487,8 +497,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * Verifies that the <em>enttiyRelationship.productStockLocation</em>
      * assopociated with the product and stock location matches that expected.
      *
-     * @param quantity the expected quantity, or <tt>null</tt> if the
-     *                 relationship shouldn't exist
+     * @param quantity the expected quantity, or <tt>null</tt> if the relationship shouldn't exist
      */
     protected void checkProductStockLocationRelationship(BigDecimal quantity) {
         product = get(product);
