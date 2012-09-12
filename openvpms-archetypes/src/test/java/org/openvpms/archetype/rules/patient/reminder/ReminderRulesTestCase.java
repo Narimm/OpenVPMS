@@ -548,6 +548,36 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ReminderRules#getDueState(Act, Date)} method.
+     */
+    @Test
+    public void testGetDueState() {
+        Lookup group = ReminderTestHelper.createReminderGroup();
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType(1, DateUnits.MONTHS, group);
+        Date start = getDate("2012-01-01");
+        Date due = rules.calculateReminderDueDate(start, reminderType);
+        Act reminder = createReminderWithDueDate(patient, reminderType, due);
+
+        assertEquals(ReminderRules.DueState.NOT_DUE, rules.getDueState(reminder, getDate("2012-01-01")));
+        assertEquals(ReminderRules.DueState.NOT_DUE, rules.getDueState(reminder, getDate("2012-01-31")));
+        assertEquals(ReminderRules.DueState.DUE, rules.getDueState(reminder, getDate("2012-02-01")));
+        assertEquals(ReminderRules.DueState.OVERDUE, rules.getDueState(reminder, getDate("2012-02-02")));
+
+        // change the sensitivity from the default (0 DAYS)
+        IMObjectBean bean = new IMObjectBean(reminderType);
+        bean.setValue("sensitivityUnits", DateUnits.DAYS.toString());
+        bean.setValue("sensitivityInterval", 5);
+        bean.save();
+
+        assertEquals(ReminderRules.DueState.NOT_DUE, rules.getDueState(reminder, getDate("2012-01-01")));
+        assertEquals(ReminderRules.DueState.DUE, rules.getDueState(reminder, getDate("2012-01-27")));
+        assertEquals(ReminderRules.DueState.DUE, rules.getDueState(reminder, getDate("2012-02-01")));
+        assertEquals(ReminderRules.DueState.DUE, rules.getDueState(reminder, getDate("2012-02-06")));
+        assertEquals(ReminderRules.DueState.OVERDUE, rules.getDueState(reminder, getDate("2012-02-07")));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before

@@ -79,6 +79,15 @@ public class ReminderRules {
      */
     private final ReminderTypeCache reminderTypes;
 
+    /**
+     * Reminder due indicator.
+     */
+    public enum DueState {
+        NOT_DUE,      // indicates the reminder is in the future, outside the sensitivity period
+        DUE,          // indicates the reminder is inside the sensitivity period
+        OVERDUE       // indicates the reminder is overdue
+    }
+
 
     /**
      * Creates a new <tt>ReminderRules</tt>.
@@ -488,6 +497,49 @@ public class ReminderRules {
             result = getInvoiceReminder(invoiceItem);
         } else {
             result = getProductReminder(formBean);
+        }
+        return result;
+    }
+
+    /**
+     * Determines the due state of a reminder relative to the current date.
+     *
+     * @param reminder the reminder
+     * @return the due state
+     */
+    public DueState getDueState(Act reminder) {
+        return getDueState(reminder, new Date());
+    }
+
+    /**
+     * Determines the due state of a reminder relative to the specified date.
+     *
+     * @param reminder the reminder
+     * @param date     the date
+     * @return the due state
+     */
+    public DueState getDueState(Act reminder, Date date) {
+        ActBean act = new ActBean(reminder, service);
+        DueState result = DueState.NOT_DUE;
+        Entity reminderType = act.getParticipant(ReminderArchetypes.REMINDER_TYPE_PARTICIPATION);
+        if (reminderType != null) {
+            EntityBean bean = new EntityBean(reminderType);
+            String sensitivityUnits = bean.getString("sensitivityUnits");
+            if (sensitivityUnits == null) {
+                sensitivityUnits = DateUnits.DAYS.toString();
+            }
+            int interval = bean.getInt("sensitivityInterval");
+            DateUnits units = DateUnits.valueOf(sensitivityUnits);
+            Date from = DateRules.getDate(date, -interval, units);
+            Date to = DateRules.getDate(date, interval, units);
+            Date dueDate = act.getAct().getActivityEndTime();
+            if (dueDate != null) {
+                if (DateRules.compareTo(dueDate, from) < 0) {
+                    result = DueState.OVERDUE;
+                } else if (DateRules.compareTo(dueDate, to) <= 0) {
+                    result = DueState.DUE;
+                }
+            }
         }
         return result;
     }
