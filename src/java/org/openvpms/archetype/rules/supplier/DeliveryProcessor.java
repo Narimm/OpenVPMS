@@ -151,8 +151,7 @@ public class DeliveryProcessor {
             && !ActStatusHelper.isPosted(act, service)) {
             ActBean bean = new ActBean(act, service);
             supplier = (Party) bean.getNodeParticipant("supplier");
-            stockLocation = (Party) bean.getNodeParticipant(
-                    "stockLocation");
+            stockLocation = (Party) bean.getNodeParticipant("stockLocation");
             for (Act item : bean.getNodeActs("items")) {
                 processItem(item);
             }
@@ -327,21 +326,29 @@ public class DeliveryProcessor {
      */
     private void updateDeliveryStatus(Act order) {
         ActBean bean = new ActBean(order, service);
-        DeliveryStatus current = DeliveryStatus.valueOf(
-                bean.getString("deliveryStatus"));
+        DeliveryStatus current = DeliveryStatus.valueOf(bean.getString("deliveryStatus"));
         DeliveryStatus newStatus = null;
-        for (ActRelationship relationship : bean.getRelationships(
-                SupplierArchetypes.ORDER_ITEM_RELATIONSHIP)) {
+        boolean pending = false;
+        boolean part = false;
+        boolean full = false;
+        for (ActRelationship relationship : bean.getRelationships(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP)) {
             IMObjectReference target = relationship.getTarget();
             DeliveryStatus status = getDeliveryStatus(target);
-            if (newStatus == null) {
-                newStatus = status;
-            } else if (status == DeliveryStatus.PART) {
-                newStatus = status;
-            } else if (status == DeliveryStatus.PENDING
-                       && newStatus != DeliveryStatus.PART) {
-                newStatus = status;
+            if (status == DeliveryStatus.PART) {
+                part = true;
+                break;
+            } else if (status == DeliveryStatus.FULL) {
+                full = true;
+            } else {
+                pending = true;
             }
+        }
+        if (part || (pending && full)) {
+            newStatus = DeliveryStatus.PART;
+        } else if (!pending && full) {
+            newStatus = DeliveryStatus.FULL;
+        } else if (pending) {
+            newStatus = DeliveryStatus.PENDING;
         }
         if (newStatus != null && newStatus != current) {
             bean.setValue("deliveryStatus", newStatus.toString());

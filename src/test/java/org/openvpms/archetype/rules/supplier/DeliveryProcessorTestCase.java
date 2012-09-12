@@ -18,7 +18,6 @@
 
 package org.openvpms.archetype.rules.supplier;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.product.ProductRules;
@@ -33,6 +32,11 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 
 /**
@@ -128,6 +132,62 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
         save(delivery2);
         checkOrder(order, orderItem, DeliveryStatus.FULL, delivery2Quantity);
         checkProductStockLocationRelationship(delivery2Quantity);
+    }
+
+    /**
+     * Tests that the {@link DeliveryProcessor} updates an order that is fulfilled by multiple deliveries.
+     */
+    @Test
+    public void testOrderWithMultipleDeliveries() {
+        BigDecimal quantity = new BigDecimal(5);
+        BigDecimal unitPrice = BigDecimal.ONE;
+
+        // create an order with a two items, and post it
+        FinancialAct orderItem1 = createOrderItem(BigDecimal.TEN, 1, unitPrice);
+        FinancialAct orderItem2 = createOrderItem(BigDecimal.TEN, 1, unitPrice);
+        Act order = createOrder(orderItem1, orderItem2);
+        order.setStatus(ActStatus.POSTED);
+        save(order);
+
+        checkDeliveryStatus(order, DeliveryStatus.PENDING);
+
+        // create a new delivery associated with the order item
+        FinancialAct delivery1Item = createDeliveryItem(quantity, 1, unitPrice, orderItem1);
+        FinancialAct delivery1 = createDelivery(delivery1Item);
+
+        // there should be no relationship until the delivery is posted,
+        // and the order shouldn't update
+        checkProductStockLocationRelationship(null);
+        checkDeliveryStatus(order, DeliveryStatus.PENDING);
+        checkReceivedQuantity(orderItem1, BigDecimal.ZERO);
+        checkReceivedQuantity(orderItem2, BigDecimal.ZERO);
+
+        // now post the delivery
+        delivery1.setStatus(ActStatus.POSTED);
+        save(delivery1);
+        checkDeliveryStatus(order, DeliveryStatus.PART);
+        checkReceivedQuantity(orderItem1, quantity);
+        checkReceivedQuantity(orderItem2, BigDecimal.ZERO);
+        checkProductStockLocationRelationship(quantity);
+
+        // create a new delivery that fulfills the remainder of orderItem1
+        orderItem1 = get(orderItem1);
+        FinancialAct delivery2Item = createDeliveryItem(quantity, 1, unitPrice, orderItem1);
+        FinancialAct delivery2 = createDelivery(delivery2Item);
+        delivery2.setStatus(ActStatus.POSTED);
+        save(delivery2);
+
+        // check the order
+        checkDeliveryStatus(order, DeliveryStatus.PART);
+
+        // create a new delivery that fulfills the order
+        FinancialAct delivery3Item = createDeliveryItem(BigDecimal.TEN, 1, unitPrice, orderItem2);
+        FinancialAct delivery3 = createDelivery(delivery3Item);
+        delivery3.setStatus(ActStatus.POSTED);
+        save(delivery3);
+
+        // check the order
+        checkDeliveryStatus(order, DeliveryStatus.FULL);
     }
 
     /**
@@ -313,15 +373,33 @@ public class DeliveryProcessorTestCase extends AbstractSupplierTest {
      * @param status    the expected delivery status
      * @param quantity  the expected quantity
      */
-    private void checkOrder(Act order, FinancialAct orderItem,
-                            DeliveryStatus status, BigDecimal quantity) {
-        order = get(order);
+    private void checkOrder(Act order, FinancialAct orderItem, DeliveryStatus status, BigDecimal quantity) {
+        checkDeliveryStatus(order, status);
+        checkReceivedQuantity(orderItem, quantity);
+    }
+
+    /**
+     * Verfies that an order item has the expected received quantity.
+     *
+     * @param orderItem        the order item
+     * @param receivedQuantity the expected
+     */
+    private void checkReceivedQuantity(FinancialAct orderItem, BigDecimal receivedQuantity) {
         orderItem = get(orderItem);
+        ActBean itemBean = new ActBean(orderItem);
+        checkEquals(receivedQuantity, itemBean.getBigDecimal("receivedQuantity"));
+    }
+
+    /**
+     * Verifies that the delivery status of an order matches that expected.
+     *
+     * @param order  the order
+     * @param status the expected delivery status
+     */
+    private void checkDeliveryStatus(Act order, DeliveryStatus status) {
+        order = get(order);
         ActBean bean = new ActBean(order);
         assertEquals(status.toString(), bean.getString("deliveryStatus"));
-
-        ActBean itemBean = new ActBean(orderItem);
-        checkEquals(quantity, itemBean.getBigDecimal("receivedQuantity"));
     }
 
     /**
