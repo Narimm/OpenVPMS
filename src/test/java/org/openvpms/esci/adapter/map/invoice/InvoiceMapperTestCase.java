@@ -447,7 +447,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
-     * Verifies that an invoice can reference multiple orders.
+     * Verifies that an invoice can reference multiple orders, with partial delivery of order items.
      */
     @Test
     public void testInvoiceWithMultipleOrdersForPartialDelivery() {
@@ -455,15 +455,20 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         Product product1 = getProduct();
         Product product2 = TestHelper.createProduct();
 
-        // create an order with 2 items.
-        FinancialAct item1 = createOrderItem(product1, BigDecimal.TEN, 1, BigDecimal.ONE, "product1");
-        FinancialAct item2 = createOrderItem(product2, BigDecimal.TEN, 1, BigDecimal.ONE, "product2");
-        FinancialAct order = createOrder(item1, item2);
+        // create orders
+        FinancialAct order1Item1 = createOrderItem(product1, BigDecimal.TEN, 1, BigDecimal.ONE, "product1");
+        FinancialAct order1Item2 = createOrderItem(product2, BigDecimal.TEN, 1, BigDecimal.ONE, "product2");
+        FinancialAct order1 = createOrder(order1Item1, order1Item2);
+
+        // create another order
+        FinancialAct order2Item1 = createOrderItem(product1, BigDecimal.TEN, 1, BigDecimal.ONE, "product1");
+        FinancialAct order2Item2 = createOrderItem(product2, BigDecimal.TEN, 1, BigDecimal.ONE, "product2");
+        FinancialAct order2 = createOrder(order2Item1, order2Item2);
 
         // create an invoice that references order item1, for half the amount
         BigDecimal five = new BigDecimal("5.0");
-        InvoiceLineType line1 = createInvoiceLine("1", five, item1);
-        line1.getOrderLineReference().add(createOrderLineReference(item1, order));
+        InvoiceLineType line1 = createInvoiceLine("1", five, order1Item1);
+        line1.getOrderLineReference().add(createOrderLineReference(order1Item1, order1));
 
         Invoice invoice1 = createInvoice(getSupplier(), getStockLocation(), line1);
 
@@ -474,20 +479,20 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         assertEquals(1, delivery1.getDeliveryItems().size());
         FinancialAct deliveryItem1 = delivery1.getDeliveryItems().get(0);
         FinancialAct delivery1Act = delivery1.getDelivery();
-        checkDeliveryOrderRelationship(delivery1Act, order);
+        checkDeliveryOrderRelationship(delivery1Act, order1);
 
-        checkDeliveryOrderItemRelationship(deliveryItem1, item1);
+        checkDeliveryOrderItemRelationship(deliveryItem1, order1Item1);
         checkEquals(five, deliveryItem1.getQuantity());
-        order = get(order);
-        checkDeliveryStatus(order, DeliveryStatus.PENDING);
+        order1 = get(order1);
+        checkDeliveryStatus(order1, DeliveryStatus.PENDING);
         delivery1Act.setStatus(ActStatus.POSTED);
         save(delivery1Act);
-        order = get(order);
-        checkDeliveryStatus(order, DeliveryStatus.PART);
+        order1 = get(order1);
+        checkDeliveryStatus(order1, DeliveryStatus.PART);
 
         // now invoice the remaining portion of order1
-        InvoiceLineType invoice2Line1 = createInvoiceLine("1", five, item1);
-        invoice2Line1.getOrderLineReference().add(createOrderLineReference(item1, order));
+        InvoiceLineType invoice2Line1 = createInvoiceLine("1", five, order1Item1);
+        invoice2Line1.getOrderLineReference().add(createOrderLineReference(order1Item1, order1));
 
         Invoice invoice2 = createInvoice(getSupplier(), getStockLocation(), invoice2Line1);
         invoice2.setID(UBLHelper.createID(78910));
@@ -498,39 +503,51 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         assertEquals(1, delivery2.getDeliveryItems().size());
         FinancialAct delivery2Item1 = delivery2.getDeliveryItems().get(0);
         FinancialAct delivery2Act = delivery2.getDelivery();
-        checkDeliveryOrderRelationship(delivery2Act, order);
-        checkDeliveryOrderItemRelationship(delivery2Item1, item1);
+        checkDeliveryOrderRelationship(delivery2Act, order1);
+        checkDeliveryOrderItemRelationship(delivery2Item1, order1Item1);
 
-        order = get(order);
-        checkDeliveryStatus(order, DeliveryStatus.PART);
+        order1 = get(order1);
+        checkDeliveryStatus(order1, DeliveryStatus.PART);
 
         delivery2Act.setStatus(ActStatus.POSTED);
         save(delivery2Act);
 
-        order = get(order);
-        checkDeliveryStatus(order, DeliveryStatus.PART);
+        order1 = get(order1);
+        checkDeliveryStatus(order1, DeliveryStatus.PART);
 
-        // now invoice order2
-        InvoiceLineType invoice3Line = createInvoiceLine("1", BigDecimal.TEN, item2);
-        invoice3Line.getOrderLineReference().add(createOrderLineReference(item2, order));
+        // now invoice order1 item 2, and all of order 2
+        InvoiceLineType invoice3Line1 = createInvoiceLine("1", BigDecimal.TEN, order1Item2);
+        invoice3Line1.getOrderLineReference().add(createOrderLineReference(order1Item2, order1));
+        InvoiceLineType invoice3Line2 = createInvoiceLine("2", BigDecimal.TEN, order2Item1);
+        invoice3Line2.getOrderLineReference().add(createOrderLineReference(order2Item1, order2));
+        InvoiceLineType invoice3Line3 = createInvoiceLine("3", BigDecimal.TEN, order2Item2);
+        invoice3Line3.getOrderLineReference().add(createOrderLineReference(order2Item2, order2));
 
-        Invoice invoice3 = createInvoice(getSupplier(), getStockLocation(), invoice3Line);
+        Invoice invoice3 = createInvoice(getSupplier(), getStockLocation(), invoice3Line1, invoice3Line2,
+                                         invoice3Line3);
         invoice3.setID(UBLHelper.createID(11121314));
 
         Delivery delivery3 = mapper.map(invoice3, getSupplier(), getStockLocation(), null);
         assertNull(delivery3.getOrder()); // won't have a document level order
         save(delivery3.getActs());
-        assertEquals(1, delivery3.getDeliveryItems().size());
+        assertEquals(3, delivery3.getDeliveryItems().size());
         FinancialAct delivery3Item1 = delivery3.getDeliveryItems().get(0);
+        FinancialAct delivery3Item2 = delivery3.getDeliveryItems().get(1);
+        FinancialAct delivery3Item3 = delivery3.getDeliveryItems().get(2);
         FinancialAct delivery3Act = delivery3.getDelivery();
-        checkDeliveryOrderRelationship(delivery3Act, order);
-        checkDeliveryOrderItemRelationship(delivery3Item1, item2);
+        checkDeliveryOrderRelationship(delivery3Act, order1);
+        checkDeliveryOrderRelationship(delivery3Act, order2);
+        checkDeliveryOrderItemRelationship(delivery3Item1, order1Item2);
+        checkDeliveryOrderItemRelationship(delivery3Item2, order2Item1);
+        checkDeliveryOrderItemRelationship(delivery3Item3, order2Item2);
 
         delivery3Act.setStatus(ActStatus.POSTED);
         save(delivery3Act);
 
-        order = get(order);
-        checkDeliveryStatus(order, DeliveryStatus.FULL);
+        order1 = get(order1);
+        order2 = get(order2);
+        checkDeliveryStatus(order1, DeliveryStatus.FULL);
+        checkDeliveryStatus(order2, DeliveryStatus.FULL);
     }
 
     /**
