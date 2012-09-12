@@ -21,19 +21,12 @@ package org.openvpms.web.app.patient.summary;
 import nextapp.echo2.app.Table;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
-
-import java.sql.Timestamp;
-import java.util.Date;
 
 
 /**
@@ -45,29 +38,28 @@ import java.util.Date;
 public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
 
     /**
+     * The reminder rules.
+     */
+    private final ReminderRules rules;
+
+    /**
      * The default row style.
      */
-    private static final String DEFAULT_STYLE
-            = "PatientSummary.Reminder.Normal";
+    private static final String DEFAULT_STYLE = "PatientSummary.Reminder.NOT_DUE";
 
-    /**
-     * The style for overdue reminders.
-     */
-    private static final String OVERDUE_STYLE
-            = "PatientSummary.Reminder.Overdue";
-
-    /**
-     * The style for reminders.
-     */
-    private static final String REMIND_STYLE
-            = "PatientSummary.Reminder.Remind";
 
     /**
      * The logger.
      */
-    private static final Log log
-            = LogFactory.getLog(ReminderTableCellRenderer.class);
+    private static final Log log = LogFactory.getLog(ReminderTableCellRenderer.class);
 
+
+    /**
+     * Default constructor.
+     */
+    public ReminderTableCellRenderer() {
+        rules = new ReminderRules();
+    }
 
     /**
      * Returns the style name for a column and row.
@@ -101,31 +93,9 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
         try {
             IMObject object = table.getObjects().get(row);
             if (object instanceof Act) {
-                ActBean act = new ActBean((Act) object);
-                Entity reminderType = act.getParticipant(
-                        "participation.reminderType");
-                if (reminderType != null) {
-                    EntityBean bean = new EntityBean(reminderType);
-                    String sensitivityUnits
-                            = bean.getString("sensitivityUnits");
-                    if (sensitivityUnits != null) {
-                        int interval = bean.getInt("sensitivityInterval");
-                        DateUnits units = DateUnits.valueOf(sensitivityUnits);
-                        Date now = new Date();
-                        Date from = DateRules.getDate(now, -interval, units);
-                        Date to = DateRules.getDate(now, interval, units);
-                        Date dueDate = act.getAct().getActivityEndTime();
-                        if (dueDate != null) {
-                            if (dueDate instanceof Timestamp) {
-                                dueDate = new Date(dueDate.getTime());
-                            }
-                            if (dueDate.compareTo(from) < 0) {
-                                style = OVERDUE_STYLE;
-                            } else if (dueDate.compareTo(to) < 0) {
-                                style = REMIND_STYLE;
-                            }
-                        }
-                    }
+                ReminderRules.DueState state = rules.getDueState((Act) object);
+                if (state != null) {
+                    style = "PatientSummary.Reminder." + state.toString();
                 }
             }
         } catch (OpenVPMSException exception) {

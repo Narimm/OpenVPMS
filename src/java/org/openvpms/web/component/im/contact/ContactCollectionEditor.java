@@ -25,7 +25,9 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 
 /**
- * Enter description.
+ * Edits a collection of contacts.
+ * <p/>
+ * This ensures that only one contact of a particular type can be 'preferred'.
  *
  * @author Tim Anderson
  */

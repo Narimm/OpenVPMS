@@ -125,7 +125,7 @@
         </properties>
     </style>
 
-    <style name="PatientSummary.Reminder.Overdue"
+    <style name="PatientSummary.Reminder.OVERDUE"
            type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
@@ -139,28 +139,28 @@
         </properties>
     </style>
 
-    <style name="PatientSummary.Reminder.Remind"
+    <style name="PatientSummary.Reminder.DUE"
            type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <property name="background" value="${reminder.remind.colour}"/>
+                        <property name="background" value="${reminder.due.colour}"/>
                     </properties>
                 </layout-data>
             </property>
         </properties>
     </style>
 
-    <style name="PatientSummary.Reminder.Normal"
+    <style name="PatientSummary.Reminder.NOT_DUE"
            type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="insets" value="${padding.small} ${padding.tiny}"/>
-                        <property name="background" value="${reminder.default.colour}"/>
+                        <property name="background" value="${reminder.notdue.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -1275,12 +1275,26 @@
     <!--  Reminder Button                                                    -->
     <!-- =================================================================== -->
 
-    <style name="reminder" type="nextapp.echo2.app.Button">
+    <style name="reminder.NOT_DUE" type="nextapp.echo2.app.Button">
         <properties>
-            <property name="icon"
-                      type="nextapp.echo2.app.ResourceImageReference">
-                <resource-image-reference
-                        resource="/org/openvpms/web/resource/image/buttons/reminder.gif"/>
+            <property name="icon" type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference resource="/org/openvpms/web/resource/image/buttons/reminder-green.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="reminder.DUE" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference resource="/org/openvpms/web/resource/image/buttons/reminder-amber.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="reminder.OVERDUE" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference resource="/org/openvpms/web/resource/image/buttons/reminder-red.png"/>
             </property>
         </properties>
     </style>
