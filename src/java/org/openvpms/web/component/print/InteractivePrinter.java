@@ -340,6 +340,8 @@ public class InteractivePrinter implements Printer {
                     }
                 } else if (PrintDialog.SKIP_ID.equals(action)) {
                     skipped();
+                } else if (MailDialog.SEND_ID.equals(action)) {
+                    mailed();
                 } else {
                     cancelled();
                 }
@@ -403,8 +405,10 @@ public class InteractivePrinter implements Printer {
                 @Override
                 public void onClose(WindowPaneEvent event) {
                     if (MailDialog.SEND_ID.equals(dialog.getAction())) {
+                        // close the parent dialog. This will notify registered listeners of the action taken,
+                        // so need to propagate the action to the parent.
+                        parent.setDefaultCloseAction(MailDialog.SEND_ID);
                         parent.close();
-                        printed(null); // TODO - need a mail notification?
                     }
                 }
             });
@@ -441,6 +445,16 @@ public class InteractivePrinter implements Printer {
      * Notifies any registered listener.
      */
     protected void skipped() {
+        if (listener != null) {
+            listener.skipped();
+        }
+    }
+
+    /**
+     * Invoked when the print job is mailed instead.
+     * Notifies any registered listener that the printing has been skipped.
+     */
+    protected void mailed() {
         if (listener != null) {
             listener.skipped();
         }
