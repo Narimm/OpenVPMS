@@ -17,15 +17,12 @@
  */
 package org.openvpms.esci.adapter.map.invoice;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
+import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -72,6 +69,12 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -441,6 +444,93 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         checkDeliveryOrderRelationship(delivery.getDelivery(), order2);
         checkDeliveryOrderItemRelationship(deliveryItem1, item1);
         checkDeliveryOrderItemRelationship(deliveryItem2, item2);
+    }
+
+    /**
+     * Verifies that an invoice can reference multiple orders.
+     */
+    @Test
+    public void testInvoiceWithMultipleOrdersForPartialDelivery() {
+        InvoiceMapper mapper = createMapper();
+        Product product1 = getProduct();
+        Product product2 = TestHelper.createProduct();
+
+        // create an order with 2 items.
+        FinancialAct item1 = createOrderItem(product1, BigDecimal.TEN, 1, BigDecimal.ONE, "product1");
+        FinancialAct item2 = createOrderItem(product2, BigDecimal.TEN, 1, BigDecimal.ONE, "product2");
+        FinancialAct order = createOrder(item1, item2);
+
+        // create an invoice that references order item1, for half the amount
+        BigDecimal five = new BigDecimal("5.0");
+        InvoiceLineType line1 = createInvoiceLine("1", five, item1);
+        line1.getOrderLineReference().add(createOrderLineReference(item1, order));
+
+        Invoice invoice1 = createInvoice(getSupplier(), getStockLocation(), line1);
+
+        // map the invoice to a delivery
+        Delivery delivery1 = mapper.map(invoice1, getSupplier(), getStockLocation(), null);
+        assertNull(delivery1.getOrder()); // won't have a document level order
+        save(delivery1.getActs());
+        assertEquals(1, delivery1.getDeliveryItems().size());
+        FinancialAct deliveryItem1 = delivery1.getDeliveryItems().get(0);
+        FinancialAct delivery1Act = delivery1.getDelivery();
+        checkDeliveryOrderRelationship(delivery1Act, order);
+
+        checkDeliveryOrderItemRelationship(deliveryItem1, item1);
+        checkEquals(five, deliveryItem1.getQuantity());
+        order = get(order);
+        checkDeliveryStatus(order, DeliveryStatus.PENDING);
+        delivery1Act.setStatus(ActStatus.POSTED);
+        save(delivery1Act);
+        order = get(order);
+        checkDeliveryStatus(order, DeliveryStatus.PART);
+
+        // now invoice the remaining portion of order1
+        InvoiceLineType invoice2Line1 = createInvoiceLine("1", five, item1);
+        invoice2Line1.getOrderLineReference().add(createOrderLineReference(item1, order));
+
+        Invoice invoice2 = createInvoice(getSupplier(), getStockLocation(), invoice2Line1);
+        invoice2.setID(UBLHelper.createID(78910));
+
+        Delivery delivery2 = mapper.map(invoice2, getSupplier(), getStockLocation(), null);
+        assertNull(delivery2.getOrder()); // won't have a document level order
+        save(delivery2.getActs());
+        assertEquals(1, delivery2.getDeliveryItems().size());
+        FinancialAct delivery2Item1 = delivery2.getDeliveryItems().get(0);
+        FinancialAct delivery2Act = delivery2.getDelivery();
+        checkDeliveryOrderRelationship(delivery2Act, order);
+        checkDeliveryOrderItemRelationship(delivery2Item1, item1);
+
+        order = get(order);
+        checkDeliveryStatus(order, DeliveryStatus.PART);
+
+        delivery2Act.setStatus(ActStatus.POSTED);
+        save(delivery2Act);
+
+        order = get(order);
+        checkDeliveryStatus(order, DeliveryStatus.PART);
+
+        // now invoice order2
+        InvoiceLineType invoice3Line = createInvoiceLine("1", BigDecimal.TEN, item2);
+        invoice3Line.getOrderLineReference().add(createOrderLineReference(item2, order));
+
+        Invoice invoice3 = createInvoice(getSupplier(), getStockLocation(), invoice3Line);
+        invoice3.setID(UBLHelper.createID(11121314));
+
+        Delivery delivery3 = mapper.map(invoice3, getSupplier(), getStockLocation(), null);
+        assertNull(delivery3.getOrder()); // won't have a document level order
+        save(delivery3.getActs());
+        assertEquals(1, delivery3.getDeliveryItems().size());
+        FinancialAct delivery3Item1 = delivery3.getDeliveryItems().get(0);
+        FinancialAct delivery3Act = delivery3.getDelivery();
+        checkDeliveryOrderRelationship(delivery3Act, order);
+        checkDeliveryOrderItemRelationship(delivery3Item1, item2);
+
+        delivery3Act.setStatus(ActStatus.POSTED);
+        save(delivery3Act);
+
+        order = get(order);
+        checkDeliveryStatus(order, DeliveryStatus.FULL);
     }
 
     /**
@@ -1041,6 +1131,17 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
         invoice.getLegalMonetaryTotal().getTaxExclusiveAmount().setValue(BigDecimal.ONE);
         checkMappingException(invoice, "ESCIA-0611: Calculated tax exclusive amount: 100 for Invoice: 12345 does not "
                                        + "match Invoice/LegalMonetaryTotal/TaxExcusiveAmount: 1");
+    }
+
+    /**
+     * Checks the delivery status of an order.
+     *
+     * @param order the order
+     * @param status the expected status
+     */
+    private void checkDeliveryStatus(FinancialAct order, DeliveryStatus status) {
+        ActBean bean = new ActBean(order);
+        assertEquals(status.toString(), bean.getString("deliveryStatus"));
     }
 
     /**

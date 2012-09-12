@@ -49,6 +49,7 @@ import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.AbstractUBLMapper;
 import org.openvpms.esci.adapter.map.ErrorContext;
 import org.openvpms.esci.adapter.map.UBLHelper;
+import org.openvpms.esci.adapter.map.UBLType;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.ubl.invoice.InvoiceType;
 
@@ -338,19 +339,22 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     protected void checkTax(UBLInvoiceLine line, TaxRates rates) {
         BigDecimal expectedTaxAmount = line.getTaxAmount();
         UBLTaxSubtotal subtotal = line.getTaxSubtotal();
-        checkTax(subtotal, expectedTaxAmount, line.getLineExtensionAmount(), rates);
+        checkTax(subtotal, expectedTaxAmount, line.getLineExtensionAmount(), rates, line);
     }
 
     /**
      * Verfies that a tax subtotal matches that expected, and has a valid rate.
      *
+     *
      * @param subtotal          the subtotal
      * @param expectedTaxAmount the expected tax amount
-     * @param rates             the tax rates
      * @param amount            the line extension amount
+     * @param rates             the tax rates
+     * @param parent            the parent element
      * @throws ESCIAdapterException if the subtotal is invalid
      */
-    protected void checkTax(UBLTaxSubtotal subtotal, BigDecimal expectedTaxAmount, BigDecimal amount, TaxRates rates) {
+    protected void checkTax(UBLTaxSubtotal subtotal, BigDecimal expectedTaxAmount, BigDecimal amount, TaxRates rates,
+                            UBLType parent) {
         if (subtotal != null) {
             BigDecimal taxAmount = subtotal.getTaxAmount();
             if (expectedTaxAmount.compareTo(taxAmount) != 0) {
@@ -372,7 +376,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
                 }
             }
         } else if (expectedTaxAmount.compareTo(BigDecimal.ZERO) != 0) {
-            ErrorContext context = new ErrorContext(subtotal.getParent(), "TaxTotal");
+            ErrorContext context = new ErrorContext(parent, "TaxTotal");
             throw new ESCIAdapterException(ESCIAdapterMessages.ublElementRequired(context.getPath(), context.getType(),
                                                                                   context.getID()));
         }
