@@ -21,13 +21,16 @@ package org.openvpms.web.app.workflow.consult;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
+import org.openvpms.web.app.patient.visit.VisitEditor;
 import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -183,6 +186,55 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     }
 
     /**
+     * Runs the consult workflow, verifying that the "Add Visit & Note" operation creates a note with a new visit,
+     * selecting the note.
+     */
+    @Test
+    public void testAddVisitAndNote() {
+        Act act = createAppointment(customer, patient, clinician);
+        ConsultWorkflowRunner workflow1 = new ConsultWorkflowRunner(act, getPractice(), context);
+        workflow1.start();
+
+        // verify the event has been created with COMPLETED status
+        VisitEditorDialog visitEditorDialog1 = workflow1.editVisit();
+        VisitEditor editor1 = visitEditorDialog1.getEditor();
+        Act event = editor1.getHistory().getObject();
+        assertEquals(ActStatus.COMPLETED, event.getStatus());
+
+        // verify the event is selected
+        checkSelectedHistory(editor1, event, event);
+
+        // add visit and note
+        Act note = workflow1.addVisitAndNote();
+        ActBean bean = new ActBean(note);
+        Act newEvent = bean.getSourceAct(PatientArchetypes.CLINICAL_EVENT_ITEM);
+        assertNotNull(newEvent);
+        assertEquals(ActStatus.COMPLETED, newEvent.getStatus());
+
+        // the note should now be selected, with newEvent as the selected event
+        checkSelectedHistory(editor1, note, newEvent);
+
+        // complete the workflow
+        fireDialogButton(visitEditorDialog1, PopupDialog.OK_ID);
+        workflow1.checkComplete(ActStatus.IN_PROGRESS);
+        workflow1.checkContext(context, customer, patient, null);
+
+        // start a new workflow
+        ConsultWorkflowRunner workflow2 = new ConsultWorkflowRunner(act, getPractice(), context);
+        workflow2.start();
+
+        // verify the original event is selected (as its timestamp is closest to that of the appointment)
+        VisitEditorDialog visitEditorDialog2 = workflow2.editVisit();
+        VisitEditor editor2 = visitEditorDialog2.getEditor();
+        checkSelectedHistory(editor2, event, event);
+
+        // complete the workflow
+        fireDialogButton(visitEditorDialog2, PopupDialog.OK_ID);
+        workflow1.checkComplete(ActStatus.IN_PROGRESS);
+        workflow1.checkContext(context, customer, patient, null);
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -303,6 +355,21 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // verify the appointment/task is that expected
         workflow.checkComplete(expectedStatus);
         workflow.checkContext(context, customer, patient, clinician);
+    }
+
+    /**
+     * Verifies that the selected act in the history matches that expected and is associated with or the same as
+     * the supplied event.
+     *
+     * @param editor   the visit editor
+     * @param selected the expected selected act
+     * @param event    the event
+     */
+    private void checkSelectedHistory(VisitEditor editor, Act selected, Act event) {
+        assertEquals(selected, editor.getHistory().getObject());
+        assertEquals(event, editor.getHistory().getEvent());
+        assertEquals(selected, editor.getHistoryBrowser().getSelected());
+        assertEquals(event, editor.getHistoryBrowser().getEvent());
     }
 
 }

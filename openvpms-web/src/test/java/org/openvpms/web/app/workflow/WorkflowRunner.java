@@ -147,7 +147,7 @@ public class WorkflowRunner<T extends WorkflowImpl> {
     }
 
     /**
-     * Returns the clinial event dialog.
+     * Returns the clinical event dialog.
      * <p/>
      * The current task must be an {@link EditVisitTask}.
      *

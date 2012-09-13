@@ -116,6 +116,18 @@ public class BrowserCRUDWindow<T extends IMObject> {
     }
 
     /**
+     * Sets the selected object.
+     *
+     * @param object the selected object
+     */
+    public void setSelected(T object) {
+        browser.setSelected(object);
+        if (window != null) {
+            window.setObject(browser.getSelected());
+        }
+    }
+
+    /**
      * Registers the browser.
      *
      * @param browser the browser

@@ -54,6 +54,37 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     }
 
     /**
+     * Sets the selected object.
+     *
+     * @param object the selected object
+     */
+    @Override
+    public void setSelected(Act object) {
+        super.setSelected(object);
+        getWindow().setEvent(getBrowser().getEvent());
+    }
+
+    /**
+     * Returns the CRUD window.
+     *
+     * @return the window
+     */
+    @Override
+    public VisitCRUDWindow getWindow() {
+        return (VisitCRUDWindow) super.getWindow();
+    }
+
+    /**
+     * Returns the browser.
+     *
+     * @return the browser
+     */
+    @Override
+    public PatientHistoryBrowser getBrowser() {
+        return (PatientHistoryBrowser) super.getBrowser();
+    }
+
+    /**
      * Creates a new window.
      *
      * @param context the context
@@ -70,8 +101,8 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      */
     @Override
     protected void onSelected(Act object) {
-        PatientHistoryBrowser browser = (PatientHistoryBrowser) getBrowser();
-        VisitCRUDWindow window = (VisitCRUDWindow) getWindow();
+        PatientHistoryBrowser browser = getBrowser();
+        VisitCRUDWindow window = getWindow();
         window.setEvent(browser.getEvent(object));
         super.onSelected(object);
     }

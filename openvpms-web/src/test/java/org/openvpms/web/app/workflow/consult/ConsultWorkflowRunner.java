@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.charge.ChargePopupEditorManager;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
 import org.openvpms.web.app.patient.charge.VisitChargeItemRelationshipCollectionEditor;
@@ -47,10 +48,13 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.workflow.TaskContext;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.addItem;
 import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.createProduct;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
@@ -91,6 +95,23 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistory();
         assertNotNull(window);
         window.addNote();
+    }
+
+    /**
+     * Performs the "Add Visit & Note" operation.
+     *
+     * @return the added note
+     */
+    public Act addVisitAndNote() {
+        TestEditVisitTask task = (TestEditVisitTask) getTask();
+        VisitEditorDialog dialog = task.getVisitDialog();
+
+        // get the editor
+        VisitEditor visitEditor = dialog.getEditor();
+        TestVisitCRUDWindow window = (TestVisitCRUDWindow) visitEditor.getHistory();
+        assertNotNull(window);
+        Act note = window.addVisitAndNote();
+        return get(note);  // need to reload as the Retryer loads it before linking it to the event
     }
 
     /**
@@ -178,8 +199,24 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
     }
 
     private static class TestVisitCRUDWindow extends VisitCRUDWindow {
+
+        private final List<Act> saved = new ArrayList<Act>();
+
         public TestVisitCRUDWindow(Context context) {
             super(context);
+        }
+
+        /**
+         * Performs the "Add Visit & Note" operation.
+         *
+         * @return the added note
+         */
+        public Act addVisitAndNote() {
+            saved.clear();
+            onAddNote();
+            assertEquals(1, saved.size());
+            assertTrue(TypeHelper.isA(saved.get(0), PatientArchetypes.CLINICAL_NOTE));
+            return saved.get(0);
         }
 
         public void addNote() {
@@ -187,8 +224,34 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
             assertNotNull(act);
             LayoutContext context = createLayoutContext();
             IMObjectEditor editor = createEditor(act, context);
-            EditDialog dialog = edit(editor);
-            fireDialogButton(dialog, PopupDialog.OK_ID);  // save the note
+            edit(editor);
+        }
+
+        /**
+         * Edits an object.
+         *
+         * @param editor the object editor
+         * @return the edit dialog
+         */
+        @Override
+        protected EditDialog edit(IMObjectEditor editor) {
+            EditDialog dialog = super.edit(editor);
+            fireDialogButton(dialog, PopupDialog.OK_ID);
+            return dialog;
+        }
+
+        /**
+         * Invoked when the object has been saved.
+         *
+         * @param act   the object
+         * @param isNew determines if the object is a new instance
+         */
+        @Override
+        protected void onSaved(Act act, boolean isNew) {
+            super.onSaved(act, isNew);
+            if (!saved.contains(act)) {
+                saved.add(act);
+            }
         }
     }
 
