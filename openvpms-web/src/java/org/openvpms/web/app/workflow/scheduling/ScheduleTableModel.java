@@ -567,6 +567,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         if (displayNotes && notes != null) {
             BalloonHelp help = BalloonHelpFactory.create(notes);
             result = RowFactory.create("CellSpacing", label, help);
+            help.setPopUpTopOffset(-45);       // workaround for OVPMS-1233
         } else {
             result = label;
         }
