@@ -14,6 +14,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
+import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.app.patient.mr.PatientDocumentCRUDWindow;
 import org.openvpms.web.app.patient.mr.PatientDocumentQuery;
@@ -143,7 +144,7 @@ public class VisitEditor {
         query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
 
         visitWindow = createVisitBrowserCRUDWindow(context);
-        visitWindow.getBrowser().setSelected(event);
+        visitWindow.setSelected(event);
 
         chargeWindow = createVisitChargeCRUDWindow(event, context);
         chargeWindow.setObject(invoice);
@@ -154,12 +155,21 @@ public class VisitEditor {
     }
 
     /**
+     * Returns the patient history browser.
+     *
+     * @return the patient history browser
+     */
+    public PatientHistoryBrowser getHistoryBrowser() {
+        return visitWindow.getBrowser();
+    }
+
+    /**
      * Returns the patient history CRUD window.
      *
      * @return the history CRUD window
      */
     public VisitCRUDWindow getHistory() {
-        return (VisitCRUDWindow) visitWindow.getWindow();
+        return visitWindow.getWindow();
     }
 
     /**

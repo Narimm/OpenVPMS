@@ -214,6 +214,15 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     }
 
     /**
+     * Adds a new <em>act.patientClinicalNote</em>.
+     */
+    protected void onAddNote() {
+        setEvent(null);     // event will be created in onSaved()
+        Archetypes<Act> archetypes = new Archetypes<Act>(PatientArchetypes.CLINICAL_NOTE, Act.class);
+        onCreate(archetypes);
+    }
+
+    /**
      * Creates and a new event, making it the current event.
      */
     private void createEvent() {
@@ -243,15 +252,6 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
                 onAddNote();
             }
         });
-    }
-
-    /**
-     * Adds a new <em>act.patientClinicalNote</em>.
-     */
-    private void onAddNote() {
-        setEvent(null);     // event will be created in onSaved()
-        Archetypes<Act> archetypes = new Archetypes<Act>(PatientArchetypes.CLINICAL_NOTE, Act.class);
-        onCreate(archetypes);
     }
 
     /**
