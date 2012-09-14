@@ -390,8 +390,7 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Returns the most recent <em>act.patientClinicalEvent</em> for the
-     * specified patient.
+     * Returns the most recent <em>act.patientClinicalEvent</em> for the specified patient.
      *
      * @param patient the patient
      * @return the corresponding <em>act.patientClinicalEvent</em> or
@@ -403,6 +402,10 @@ public class MedicalRecordRules {
         ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT, true, true);
         query.add(new CollectionNodeConstraint("patient").add(new ObjectRefNodeConstraint("entity", patient)));
         query.add(new NodeSortConstraint(START_TIME, false));
+
+        // ensure that for events with the same start time, the one with the highest id is used
+        query.add(new NodeSortConstraint("id", false));
+
         query.setMaxResults(1);
         QueryIterator<Act> iter = new IMObjectQueryIterator<Act>(service, query);
         return (iter.hasNext()) ? iter.next() : null;
@@ -426,8 +429,12 @@ public class MedicalRecordRules {
     /**
      * Returns an <em>act.patientClinicalEvent<em> for the specified patient
      * reference and date.
-     * NOTE: this method will return the closest matching event for the
-     * specified date, ignoring any time component if there is no exact match.
+     * NOTES:
+     * <ul>
+     * <li>this method will return the closest matching event for the specified date, ignoring any time component if
+     * there is no exact match.</li>
+     * <li>if two events have the same timestamp, the event with the smaller id will be returned</li>
+     * </ul>
      *
      * @param patient the patient reference
      * @param date    the date
@@ -452,15 +459,28 @@ public class MedicalRecordRules {
         or2.add(new NodeConstraint(END_TIME, RelationalOp.BTW, lowerBound, upperBound));
         query.add(or2);
         query.add(new NodeSortConstraint(START_TIME));
+        query.add(new NodeSortConstraint("id"));
         QueryIterator<Act> iter = new IMObjectQueryIterator<Act>(service, query);
         Act result = null;
         while (iter.hasNext()) {
             Act event = iter.next();
-            Date eventStart = new Date(event.getActivityStartTime().getTime());
-            if (result == null || eventStart.compareTo(date) <= 0) {
+            Date startTime = event.getActivityStartTime();
+            if (result == null) {
                 result = event;
             } else {
-                break;
+                int comp = DateRules.compareTo(startTime, date, true);
+                if (comp < 0) {
+                    result = event;
+                } else if (comp == 0) {
+                    if (DateRules.compareTo(result.getActivityStartTime(), startTime, true) == 0) {
+                        // same time, but result will have lower id, so use it
+                        break;
+                    } else {
+                        result = event;
+                    }
+                } else {
+                    break;
+                }
             }
         }
         return result;
