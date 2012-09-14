@@ -147,6 +147,12 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         event3.setStatus(ActStatus.IN_PROGRESS);
         save(event3);
         checkEvent(event3);
+
+        // ensure that where there are 2 events with the same timestamp, the one with the higher id is returned
+        Act event4 = createEvent(getDate("2008-01-01"));
+        event4.setStatus(ActStatus.IN_PROGRESS);
+        save(event4);
+        checkEvent(event4);
     }
 
     /**
@@ -182,6 +188,11 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         // In some cases, it is present, in others it is 00:00:00.
 
         checkEvent(jan2, event1);
+
+        // make sure that when an event has a duplicate timestamp, the earliest (by id) is returned
+        Act event2dup = createEvent(jan3);
+        save(event2dup);
+        checkEvent(jan3, event2);
     }
 
     /**
