@@ -157,9 +157,7 @@ public class MailConnectionTestCase {
             connection.send("0411234567", "test");
             fail("Expected SMSException to be thrown");
         } catch (SMSException expected) {
-            assertEquals("SMS-0202: Mail server connection failed: bar;\n" +
-                         "  nested exception is:\n" +
-                         "\tjava.net.ConnectException", expected.getLocalizedMessage());
+            assertEquals("SMS-0202: Mail server connection failed: bar", expected.getLocalizedMessage());
         }
     }
 
