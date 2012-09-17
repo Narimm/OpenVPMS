@@ -51,14 +51,25 @@ public class ActHierarchyFilter<T extends Act> {
      */
     private Predicate predicate;
 
+    /**
+     * Determines if items should be sorted on ascending timestamp.
+     */
+    private boolean sortAscending = true;
+
 
     /**
-     * Creates a new <tt>ActHierarchyFilter</tt>.
+     * Constructs an <tt>ActHierarchyFilter</tt>.
      */
     public ActHierarchyFilter() {
         this(null);
     }
 
+    /**
+     * Constructs an <tt>ActHierarchyFilter</tt>.
+     *
+     * @param shortNames the act short names
+     * @param include    if {@code true} include the acts, otherwise exclude them
+     */
     public ActHierarchyFilter(String[] shortNames, boolean include) {
         this(createIsA(shortNames, include));
     }
@@ -96,6 +107,17 @@ public class ActHierarchyFilter<T extends Act> {
             }
         }
         return result;
+    }
+
+    /**
+     * Determine if items should be sorted on ascending timestamp.
+     * <p/>
+     * Defaults to {@code true}.
+     *
+     * @param ascending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
+     */
+    public void setSortItemsAscending(boolean ascending) {
+        sortAscending = ascending;
     }
 
     /**
@@ -200,6 +222,9 @@ public class ActHierarchyFilter<T extends Act> {
         };
         Comparator comparator = ComparatorUtils.transformedComparator(
                 ComparatorUtils.nullHighComparator(null), transformer);
+        if (!sortAscending) {
+            comparator = ComparatorUtils.reversedComparator(comparator);
+        }
         Collections.sort(acts, comparator);
     }
 

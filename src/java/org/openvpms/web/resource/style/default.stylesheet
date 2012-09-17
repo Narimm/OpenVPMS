@@ -1126,6 +1126,27 @@
     </style>
 
     <!-- =================================================================== -->
+    <!--  Sort                                                               -->
+    <!-- =================================================================== -->
+
+    <style name="sort.ascending" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/up.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="sort.descending" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/buttons/down.png"/>
+            </property>
+        </properties>
+    </style>
+
+
+    <!-- =================================================================== -->
     <!--  Date selector                                                      -->
     <!-- =================================================================== -->
 

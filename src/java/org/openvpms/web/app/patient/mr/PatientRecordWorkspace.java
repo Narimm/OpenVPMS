@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -35,7 +36,6 @@ import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.app.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -46,6 +46,7 @@ import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -61,6 +62,20 @@ import java.util.List;
  */
 public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
+    /**
+     * The document archetypes.
+     */
+    private final Archetypes<DocumentAct> docArchetypes;
+
+    /**
+     * The double click monitor.
+     */
+    private final DoubleClickMonitor click = new DoubleClickMonitor();
+
+    /**
+     * Determines if patient visit items should be sorted ascending.
+     */
+    private boolean sortAscending;
 
     /**
      * Patient charges shortnames supported by teh workspace
@@ -76,15 +91,6 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     private static final SortConstraint[] DEFAULT_SORT
             = new SortConstraint[]{new NodeSortConstraint("startTime", false)};
 
-    /**
-     * The document archetypes.
-     */
-    private Archetypes<DocumentAct> docArchetypes;
-
-    /**
-     * The double click monitor.
-     */
-    private DoubleClickMonitor click = new DoubleClickMonitor();
 
     /**
      * The reminder statuses to query.
@@ -103,6 +109,9 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
         docArchetypes = Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
                                           Messages.get("patient.document.createtype"));
+        IMObjectBean bean = new IMObjectBean(GlobalContext.getInstance().getPractice());
+        String medicalRecordsSortOrder = bean.getString("medicalRecordsSortOrder");
+        sortAscending = "ASC".equals(medicalRecordsSortOrder);
     }
 
     /**
@@ -195,7 +204,9 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        return new PatientHistoryQuery(getObject());
+        PatientHistoryQuery query = new PatientHistoryQuery(getObject());
+        query.setSortAscending(sortAscending);
+        return query;
     }
 
     /**
@@ -321,7 +332,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
         CRUDWindow<Act> window;
         RecordBrowser.View view = browser.getView();
         if (view == RecordBrowser.View.SUMMARY
-            || view == RecordBrowser.View.PROBLEMS) {
+                || view == RecordBrowser.View.PROBLEMS) {
             PatientRecordCRUDWindow w;
             if (view == RecordBrowser.View.SUMMARY) {
                 w = (PatientRecordCRUDWindow) createCRUDWindow();
@@ -355,8 +366,8 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private DefaultActQuery<Act> createProblemsQuery() {
         String[] shortNames = {PatientArchetypes.CLINICAL_PROBLEM};
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(
-                getObject(), "patient", "participation.patient", shortNames);
+        DefaultActQuery<Act> query = new DefaultActQuery<Act>(getObject(), "patient", "participation.patient",
+                                                              shortNames);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
     }
@@ -368,9 +379,8 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private Query<Act> createReminderAlertQuery() {
         String[] shortNames = {ReminderArchetypes.REMINDER, "act.patientAlert"};
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(
-                getObject(), "patient", "participation.patient", shortNames,
-                STATUSES);
+        DefaultActQuery<Act> query = new DefaultActQuery<Act>(getObject(), "patient", "participation.patient",
+                                                              shortNames, STATUSES);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;
     }
@@ -382,8 +392,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     private Query<Act> createChargesQuery() {
         String[] statuses = {};
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(
-                getObject(), "patient", "participation.patient",
+        DefaultActQuery<Act> query = new DefaultActQuery<Act>(getObject(), "patient", "participation.patient",
                 CHARGES_SHORT_NAMES, false, statuses);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         query.setMaxResults(10);
