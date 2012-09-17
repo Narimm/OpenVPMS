@@ -30,6 +30,11 @@ import java.util.List;
 public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<Act> {
 
     /**
+     * Determines if the visit items are being sorted ascending or descending.
+     */
+    private boolean sortAscending = true;
+
+    /**
      * Constructs a {@code PagedPatientHistoryTableModel}.
      *
      * @param model      the underlying table model
@@ -37,6 +42,15 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
      */
     public PagedPatientHistoryTableModel(IMObjectTableModel<Act> model, String... shortNames) {
         super(model, shortNames);
+    }
+
+    /**
+     * Determines if the visit items are being sorted ascending or descending.
+     *
+     * @param ascending if {@code true} visit items are to be sorted ascending; {@code false} if descending
+     */
+    public void setSortAscending(boolean ascending) {
+        sortAscending = ascending;
     }
 
     /**
@@ -49,6 +63,7 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
     @Override
     protected ActHierarchyIterator<Act> createFlattener(List<Act> objects, final String[] shortNames) {
         PatientHistoryFilter filter = new PatientHistoryFilter(shortNames);
+        filter.setSortItemsAscending(sortAscending);
         // maxDepth = 2 - display the events, and their immediate children
         return new ActHierarchyIterator<Act>(objects, filter, 2);
     }

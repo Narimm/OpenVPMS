@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.patient.history;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -30,13 +31,17 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -70,6 +75,16 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
      * Determines if charges are included.
      */
     private CheckBox includeCharges;
+
+    /**
+     * Determines if the visit items are being sorted ascending or descending.
+     */
+    private boolean sortAscending = true;
+
+    /**
+     * Button to change the visit items sort order.
+     */
+    private Button sort;
 
     /**
      * Document act version short names.
@@ -114,8 +129,28 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Lays out the component in a container, and sets focus on the instance
-     * name.
+     * Determines if the visit items are being sorted ascending or descending.
+     *
+     * @param ascending if {@code true} visit items are to be sorted ascending; {@code false} if descending
+     */
+    public void setSortAscending(boolean ascending) {
+        sortAscending = ascending;
+        if (sort != null) {
+            setSortIcon();
+        }
+    }
+
+    /**
+     * Determines if the visit items are being sorted ascending or descending.
+     *
+     * @return {@code true} if visit items are being sorted ascending; {@code false} if descending
+     */
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
+    /**
+     * Lays out the component in a container, and sets focus on the instance name.
      *
      * @param container the container
      */
@@ -147,11 +182,33 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
         container.add(shortNameSelector);
         includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", true);
         includeCharges.addActionListener(listener);
+
+        sort = ButtonFactory.create(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                sortAscending = !sortAscending;
+                setSortIcon();
+                onQuery();
+                FocusHelper.setFocus(sort);
+            }
+        });
+        setSortIcon();
+
         container.add(includeCharges);
-        getFocusGroup().add(shortNameSelector);
+        container.add(sort);
+        FocusGroup focusGroup = getFocusGroup();
+        focusGroup.add(shortNameSelector);
+        focusGroup.add(includeCharges);
+        focusGroup.add(sort);
         super.doLayout(container);
     }
 
+    /**
+     * Returns the selected short names.
+     *
+     * @param shortName the short name
+     * @return the corresponding short names
+     */
     private String[] getSelectedShortNames(String shortName) {
         if (InvestigationArchetypes.PATIENT_INVESTIGATION.equals(shortName)) {
             return new String[]{shortName, InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION};
@@ -163,5 +220,22 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
             return new String[]{shortName, PatientArchetypes.DOCUMENT_LETTER_VERSION};
         }
         return new String[]{shortName};
+    }
+
+    /**
+     * Sets the sort button icon.
+     */
+    private void setSortIcon() {
+        String style;
+        String toolTip;
+        if (sortAscending) {
+            style = "sort.ascending";
+            toolTip = Messages.get("patient.record.query.sortAscending");
+        } else {
+            style = "sort.descending";
+            toolTip = Messages.get("patient.record.query.sortDescending");
+        }
+        sort.setStyleName(style);
+        sort.setToolTipText(toolTip);
     }
 }

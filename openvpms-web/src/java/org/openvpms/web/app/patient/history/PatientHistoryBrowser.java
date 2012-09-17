@@ -23,7 +23,6 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -45,7 +44,7 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     /**
      * The table model that wraps the underlying model, to filter acts.
      */
-    private PagedActHierarchyTableModel<Act> pagedModel;
+    private PagedPatientHistoryTableModel pagedModel;
 
 
     /**
@@ -68,6 +67,7 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
             // prior to performing the query
             PatientHistoryQuery query = (PatientHistoryQuery) getQuery();
             pagedModel.setShortNames(query.getActItemShortNames());
+            pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();
     }
@@ -120,6 +120,7 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         PatientHistoryQuery query = (PatientHistoryQuery) getQuery();
         pagedModel = new PagedPatientHistoryTableModel((IMObjectTableModel<Act>) model, query.getActItemShortNames());
+        pagedModel.setSortAscending(query.isSortAscending());
         PagedIMTable<Act> result = super.createTable(pagedModel);
         IMTable<Act> table = result.getTable();
         table.addActionListener(new ActionListener() {
