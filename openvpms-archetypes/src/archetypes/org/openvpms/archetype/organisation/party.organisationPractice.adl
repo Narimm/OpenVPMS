@@ -40,6 +40,15 @@
                 <errorMessage>Invalid duration format</errorMessage>
             </assertion>
         </node>
+        <node name="medicalRecordsSortOrder" path="/details/medicalRecordsSortOrder"
+              type="java.lang.String" minCardinality="0" defaultValue='DESC'>
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ASC" value="Ascending"/>
+                    <property name="DESC" value="Descending"/>
+                </propertyList>
+            </assertion>
+        </node>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
