@@ -79,7 +79,7 @@ public interface Property extends Modifiable {
     /**
      * Returns the maximum length of the property.
      *
-     * @return the maximum length
+     * @return the maximum length, or {@code -1} if it is unbounded
      */
     int getMaxLength();
 
