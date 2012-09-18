@@ -235,7 +235,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Returns the maximum length of the property.
      *
-     * @return the maximum length
+     * @return the maximum length, or {@code -1} if it is unbounded
      */
     public int getMaxLength() {
         return maxLength;
@@ -244,7 +244,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Sets the maximum length of the property.
      *
-     * @param length the maximum length
+     * @param length the maximum length. Use {@code -1} to indicate unbounded length
      */
     public void setMaxLength(int length) {
         maxLength = length;

@@ -167,7 +167,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
             String msg = Messages.get("property.error.minLength", minLength);
             throw new PropertyException(property, msg);
         }
-        if (result != null && result.length() > maxLength) {
+        if (result != null && maxLength != -1 && result.length() > maxLength) {
             String msg = Messages.get("property.error.maxLength", maxLength);
             throw new PropertyException(property, msg);
         }

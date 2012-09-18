@@ -248,6 +248,7 @@ public class MailEditor extends AbstractModifiable {
 
         message = createProperty("message", "mail.message");
         message.setRequired(false);
+        message.setMaxLength(-1);     // no maximum length
         message.setTransformer(new StringPropertyTransformer(message, new Object(), false));
         message.addModifiableListener(listener);
     }
