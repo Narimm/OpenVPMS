@@ -57,6 +57,7 @@ class CustomerActReversalHandler extends ActCopyHandler {
             {PAYMENT_CREDIT, REFUND_CREDIT},
             {PAYMENT_DISCOUNT, REFUND_DISCOUNT},
             {PAYMENT_EFT, REFUND_EFT},
+            {PAYMENT_OTHER, REFUND_OTHER},
             {DEBIT_ADJUST, CREDIT_ADJUST},
             {DEBIT_ADJUST, BAD_DEBT},
             {INITIAL_BALANCE, CREDIT_ADJUST}

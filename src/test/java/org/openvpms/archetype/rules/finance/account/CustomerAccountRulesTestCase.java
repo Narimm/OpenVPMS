@@ -547,6 +547,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
                      "act.customerAccountRefund",
                      "act.customerAccountRefundEFT");
 
+        checkReverse(createPaymentOther(new Money(26)),
+                     "act.customerAccountRefund",
+                     "act.customerAccountRefundOther");
+
         checkReverse(createRefundCash(new Money(10)),
                      "act.customerAccountPayment",
                      "act.customerAccountPaymentCash");
@@ -566,6 +570,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkReverse(createRefundEFT(new Money(15)),
                      "act.customerAccountPayment",
                      "act.customerAccountPaymentEFT");
+
+        checkReverse(createRefundOther(new Money(15)),
+                     "act.customerAccountPayment",
+                     "act.customerAccountPaymentOther");
 
         checkReverse(createDebitAdjust(new Money(5)),
                      "act.customerAccountCreditAdjust");
