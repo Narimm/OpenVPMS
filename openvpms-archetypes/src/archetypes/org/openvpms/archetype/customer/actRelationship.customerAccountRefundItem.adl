@@ -63,7 +63,11 @@
 						<property name="shortName"
 							value="act.customerAccountRefundDiscount" />
 					</propertyMap>
-				</propertyList>
+                    <propertyMap name="archetype">
+                        <property name="shortName"
+                                  value="act.customerAccountRefundOther" />
+                    </propertyMap>
+                </propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>

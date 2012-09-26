@@ -258,6 +258,23 @@ public class FinancialTestHelper extends TestHelper {
                                    amount, customer, till);
     }
 
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountPayment</em>
+     * with a single <em>act.customerAccountPaymentOther</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createPaymentOther(Money amount, Party customer, Party till) {
+        return createPaymentRefund("act.customerAccountPayment",
+                                   "act.customerAccountPaymentOther",
+                                   "actRelationship.customerAccountPaymentItem",
+                                   amount, customer, till);
+    }
+
     /**
      * Helper to create a POSTED <em>act.customerAccountRefund</em>.
      *
@@ -367,6 +384,25 @@ public class FinancialTestHelper extends TestHelper {
                                                Party till) {
         FinancialAct result = createPaymentRefund("act.customerAccountRefund",
                                                   "act.customerAccountRefundEFT",
+                                                  "actRelationship.customerAccountRefundItem",
+                                                  amount, customer, till);
+        ActBean bean = new ActBean(result);
+        bean.setValue("notes", "Dummy notes");
+        return result;
+    }
+
+    /**
+     * Helper to create a POSTED <em>act.customerAccountRefund</em> with
+     * a single <em>act.customerAccountRefundOther</em> item.
+     *
+     * @param amount   the act total
+     * @param customer the customer
+     * @param till     the till
+     * @return a new act
+     */
+    public static FinancialAct createRefundOther(Money amount, Party customer, Party till) {
+        FinancialAct result = createPaymentRefund("act.customerAccountRefund",
+                                                  "act.customerAccountRefundOther",
                                                   "actRelationship.customerAccountRefundItem",
                                                   amount, customer, till);
         ActBean bean = new ActBean(result);

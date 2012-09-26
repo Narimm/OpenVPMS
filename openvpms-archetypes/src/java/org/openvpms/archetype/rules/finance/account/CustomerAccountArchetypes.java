@@ -140,6 +140,11 @@ public class CustomerAccountArchetypes {
     public static final String PAYMENT_EFT = "act.customerAccountPaymentEFT";
 
     /**
+     * Custom payment act short name.
+     */
+    public static final String PAYMENT_OTHER = "act.customerAccountPaymentOther";
+
+    /**
      * Payment item act relationship act short name.
      */
     public static final String PAYMENT_ITEM_RELATIONSHIP
@@ -189,6 +194,11 @@ public class CustomerAccountArchetypes {
      * EFT refund act short name.
      */
     public static final String REFUND_EFT = "act.customerAccountRefundEFT";
+
+    /**
+     * 'Other' refund act short name.
+     */
+    public static final String REFUND_OTHER = "act.customerAccountRefundOther";
 
     /**
      * Initial balance act short name.

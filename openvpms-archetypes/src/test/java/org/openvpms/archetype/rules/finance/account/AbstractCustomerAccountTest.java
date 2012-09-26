@@ -341,74 +341,83 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     }
 
     /**
+     * Helper to create an <em>act.customerAccountPayment</em> containing an <em>act.customerAccountPaymentOther</em>.
+     *
+     * @param amount the amount
+     * @return a new payment
+     */
+    protected FinancialAct createPaymentOther(Money amount) {
+        return FinancialTestHelper.createPaymentOther(amount, getCustomer(), getTill());
+    }
+
+    /**
      * Helper to create an <em>act.customerAccountRefund</em>.
      *
      * @param amount the act total
      * @return a new refund
      */
     protected FinancialAct createRefund(Money amount) {
-        return FinancialTestHelper.createRefund(amount, getCustomer(),
-                                                getTill());
+        return FinancialTestHelper.createRefund(amount, getCustomer(), getTill());
     }
 
     /**
-     * Helper to create an <em>act.customerAccountRefund</em> containing an
-     * <em>act.customerAccountRefundCash</em>.
+     * Helper to create an <em>act.customerAccountRefund</em> containing an <em>act.customerAccountRefundCash</em>.
      *
      * @param amount the act total
-     * @return a new payment
+     * @return a new refund
      */
     protected FinancialAct createRefundCash(Money amount) {
-        return FinancialTestHelper.createRefundCash(amount, getCustomer(),
-                                                    getTill());
+        return FinancialTestHelper.createRefundCash(amount, getCustomer(), getTill());
     }
 
     /**
-     * Helper to create an <em>act.customerAccountRefund</em> containing an
-     * <em>act.customerAccountRefundCheque</em>.
+     * Helper to create an <em>act.customerAccountRefund</em> containing an <em>act.customerAccountRefundCheque</em>.
      *
      * @param amount the act total
-     * @return a new payment
+     * @return a new refund
      */
     protected FinancialAct createRefundCheque(Money amount) {
-        return FinancialTestHelper.createRefundCheque(amount, getCustomer(),
-                                                      getTill());
+        return FinancialTestHelper.createRefundCheque(amount, getCustomer(), getTill());
     }
 
     /**
-     * Helper to create an <em>act.customerAccountRefund</em> containing an
-     * <em>act.customerAccountRefundCredit</em>.
+     * Helper to create an <em>act.customerAccountRefund</em> containing an <em>act.customerAccountRefundCredit</em>.
      *
      * @param amount the act total
-     * @return a new payment
+     * @return a new refund
      */
     protected FinancialAct createRefundCredit(Money amount) {
-        return FinancialTestHelper.createRefundCredit(amount, getCustomer(),
-                                                      getTill());
+        return FinancialTestHelper.createRefundCredit(amount, getCustomer(), getTill());
     }
 
     /**
-     * Helper to create an <em>act.customerAccountRefund</em> containing an
-     * <em>act.customerAccountRefundDiscount</em>.
+     * Helper to create an <em>act.customerAccountRefund</em> containing an <em>act.customerAccountRefundDiscount</em>.
      *
      * @param amount the act total
-     * @return a new payment
+     * @return a new refund
      */
     protected FinancialAct createRefundDiscount(Money amount) {
-        return FinancialTestHelper.createRefundDiscount(amount, getCustomer(),
-                                                        getTill());
+        return FinancialTestHelper.createRefundDiscount(amount, getCustomer(), getTill());
     }
 
     /**
-     * Helper to create an <em>act.customerAccountRefund</em> containing an
-     * <em>act.customerAccountRefundEFT</em>.
+     * Helper to create an <em>act.customerAccountRefund</em> containing an <em>act.customerAccountRefundEFT</em>.
      *
      * @param amount the act total
-     * @return a new payment
+     * @return a new refund
      */
     protected FinancialAct createRefundEFT(Money amount) {
-        return FinancialTestHelper.createRefundEFT(amount, getCustomer(),
-                                                   getTill());
+        return FinancialTestHelper.createRefundEFT(amount, getCustomer(), getTill());
+    }
+
+    /**
+     * Helper to create an <em>act.customerAccountRefund</em> containing an <em>act.customerAccountRefundOther</em>.
+     *
+     * @param amount the act total
+     * @return a new refund
+     */
+    protected FinancialAct createRefundOther(Money amount) {
+        return FinancialTestHelper.createRefundOther(amount, getCustomer(), getTill());
     }
 
     /**
