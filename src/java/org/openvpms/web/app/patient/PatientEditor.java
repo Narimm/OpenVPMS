@@ -19,6 +19,8 @@
 package org.openvpms.web.app.patient;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -33,9 +35,12 @@ import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionTa
 import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetEditor;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.DatePropertyTransformer;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -49,6 +54,11 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientEditor extends AbstractIMObjectEditor {
+
+    /**
+     * A minimum for patient ages. This allows for parrots, turtles, while preventing some bad entry.
+     */
+    public static final Date MIN_DATE = java.sql.Date.valueOf("1900-01-01");
 
     /**
      * Editor for the "customFields" node.
@@ -67,8 +77,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * @param parent  the parent object. May be <tt>null</tt>
      * @param context the layout context. May be <tt>null</tt>.
      */
-    public PatientEditor(Party patient, IMObject parent,
-                         LayoutContext context) {
+    public PatientEditor(Party patient, IMObject parent, LayoutContext context) {
         super(patient, parent, context);
         if (patient.isNew()) {
             if (!(parent instanceof EntityRelationship)) {
@@ -80,8 +89,13 @@ public class PatientEditor extends AbstractIMObjectEditor {
                 speciesChanged();
             }
         });
-        CollectionProperty customField
-                = (CollectionProperty) getProperty("customFields");
+
+        // restrict the date of birth entry
+        Property dateOfBirth = getProperty("dateOfBirth");
+        Date maxDate = new Date();
+        dateOfBirth.setTransformer(new DatePropertyTransformer(dateOfBirth, MIN_DATE, maxDate));
+
+        CollectionProperty customField = (CollectionProperty) getProperty("customFields");
         customFieldEditor = new EntityRelationshipCollectionTargetEditor(customField, patient, getLayoutContext());
         getEditors().add(customFieldEditor);
         createLayoutStrategy();
