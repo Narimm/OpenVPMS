@@ -164,16 +164,25 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         populateLocation(location, "1 Foo St", null);
 
         // no location with billing address, uses the first available.
-        assertEquals("1 Foo St\nCoburg Victoria 3071",
-                     rules.getBillingAddress(party));
+        assertEquals("1 Foo St\nCoburg Victoria 3071", rules.getBillingAddress(party));
 
         // add a billing location
         Contact billing = createLocation("3 Bar St", "BILLING");
         party.addContact(billing);
 
         // verify the billing address is that just added
-        assertEquals("3 Bar St\nCoburg Victoria 3071",
-                     rules.getBillingAddress(party));
+        assertEquals("3 Bar St\nCoburg Victoria 3071", rules.getBillingAddress(party));
+
+        // verify nulls aren't displayed if the state doesn't exist
+        IMObjectBean locationBean = new IMObjectBean(billing);
+        locationBean.setValue("state", "BAD_STATE");
+        assertEquals("3 Bar St\n3071", rules.getBillingAddress(party));
+
+        // verify nulls aren't displayed if the suburb doesn't exist
+        locationBean.setValue("state", "VIC");
+        locationBean.setValue("suburb", "BAD_SUBURB");
+        assertEquals("3 Bar St\nVictoria 3071", rules.getBillingAddress(party));
+
 
         // remove all the contacts and verify there is no billing address
         Contact[] contacts = party.getContacts().toArray(new Contact[party.getContacts().size()]);
