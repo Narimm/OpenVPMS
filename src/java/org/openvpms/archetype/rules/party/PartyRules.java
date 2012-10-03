@@ -631,10 +631,16 @@ public class PartyRules {
             result.append(bean.getString("address", ""));
             result.append("\n");
         }
-        result.append(ArchetypeServiceFunctions.lookup(contact, "suburb", ""));
-        result.append(" ");
-        result.append(ArchetypeServiceFunctions.lookup(contact, "state", ""));
-        result.append(" ");
+        String suburb = ArchetypeServiceFunctions.lookup(contact, "suburb", "");
+        if (!StringUtils.isEmpty(suburb)) {
+            result.append(suburb);
+            result.append(" ");
+        }
+        String state = ArchetypeServiceFunctions.lookup(contact, "state", "");
+        if (!StringUtils.isEmpty(state)) {
+            result.append(state);
+            result.append(" ");
+        }
         result.append(bean.getString("postcode", ""));
         return result.toString();
     }
