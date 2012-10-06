@@ -26,14 +26,14 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.VetoListener;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -57,6 +57,16 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     private final VetoListener cancelListener;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
+     * The mail context.
+     */
+    private final MailContext mailContext;
+
+    /**
      * The name of the selected printer. Once a printer has been selected,
      * printing will occur in the background.
      */
@@ -69,15 +79,9 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     private boolean updatePrinted = true;
 
     /**
-     * The mail context.
-     */
-    private MailContext context;
-
-    /**
      * The logger.
      */
-    private static final Log log
-            = LogFactory.getLog(StatementPrintProcessor.class);
+    private static final Log log = LogFactory.getLog(StatementPrintProcessor.class);
 
 
     /**
@@ -87,14 +91,15 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      *                       statement, when printing interactively.
      * @param cancelListener the listener to cancel processing
      * @param practice       the practice
-     * @param context        the mail context. May be <tt>null</tt>
+     * @param mailContext    the mail context. May be <tt>null</tt>
      */
     public StatementPrintProcessor(StatementProgressBarProcessor processor, VetoListener cancelListener,
-                                   Party practice, MailContext context) {
+                                   Party practice, Context context, MailContext mailContext) {
         super(practice);
         this.processor = processor;
         this.cancelListener = cancelListener;
         this.context = context;
+        this.mailContext = mailContext;
     }
 
     /**
@@ -115,38 +120,43 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      */
     public void process(final Statement statement) {
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(CustomerAccountArchetypes.OPENING_BALANCE,
-                                                                             GlobalContext.getInstance());
+                                                                             context);
         IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(statement.getActs(), locator);
         printer.setParameters(getParameters(statement));
 
+        print(printer, statement);
+    }
+
+    /**
+     * Prints a statement.
+     *
+     * @param printer   the statement printer
+     * @param statement the statement being printed
+     */
+    protected void print(IMObjectReportPrinter<Act> printer, final Statement statement) {
         String title = Messages.get("reporting.statements.print.customer");
-        final InteractiveIMPrinter<Act> iPrinter
-                = new InteractiveIMPrinter<Act>(title, printer);
+        final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer);
         if (printerName != null) {
             iPrinter.setInteractive(false);
         }
         iPrinter.setCancelListener(cancelListener);
-        iPrinter.setMailContext(context);
+        iPrinter.setMailContext(mailContext);
         iPrinter.setListener(new PrinterListener() {
             public void printed(String printer) {
                 try {
-                    if (updatePrinted && !statement.isPreview()
-                        && !statement.isPrinted()) {
+                    if (updatePrinted && !statement.isPreview() && !statement.isPrinted()) {
                         setPrinted(statement);
                     }
                     printerName = printer;
                     processor.processCompleted(statement.getCustomer());
                     if (iPrinter.getInteractive()) {
-                        // Need to process the next statement. If
-                        // non-interactive, the next statement will be processed
+                        // Need to process the next statement. If non-interactive, the next statement will be processed
                         // automatically
                         processor.process();
                     }
                 } catch (OpenVPMSException exception) {
                     log.error(exception, exception);
-                    processor.processFailed(statement.getCustomer(),
-                                            exception.getMessage(),
-                                            exception);
+                    processor.processFailed(statement.getCustomer(), exception.getMessage(), exception);
                 }
             }
 
@@ -159,8 +169,7 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
 
             public void failed(Throwable cause) {
                 log.error(cause, cause);
-                processor.processFailed(statement.getCustomer(),
-                                        cause.getMessage(), cause);
+                processor.processFailed(statement.getCustomer(), cause.getMessage(), cause);
             }
         });
         if (iPrinter.getInteractive()) {

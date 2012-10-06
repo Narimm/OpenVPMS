@@ -73,7 +73,7 @@ public class SchedulingHelper {
     /**
      * Evaluates an xpath expression against the supplied event.
      * <p/>
-     * If the event has an {@link ScheduleEvent.ARRIVAL_TIME} property,
+     * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
      * a formatted string named <em>waiting</em> will be added to the set prior
      * to evaluation of the expression. This indicates the waiting time, and
      * is the difference between the arrival time and the current time.
