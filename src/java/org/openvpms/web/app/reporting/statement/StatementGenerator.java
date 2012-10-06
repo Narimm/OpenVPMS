@@ -193,7 +193,7 @@ class StatementGenerator extends AbstractStatementGenerator {
                 processor, customers);
 
         StatementPrintProcessor printer = new StatementPrintProcessor(progressBarProcessor, getCancelListener(),
-                                                                      practice, mailContext);
+                                                                      practice, context, mailContext);
         if (printOnly) {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);

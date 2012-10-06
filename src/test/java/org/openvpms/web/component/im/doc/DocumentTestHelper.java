@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.doc;
 
-import static org.junit.Assert.assertNotNull;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.TestHelper;
@@ -32,6 +31,8 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.io.InputStream;
 import java.util.Arrays;
+
+import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -71,14 +72,35 @@ public class DocumentTestHelper {
         template.setValue("name", document.getName());
         template.setValue("archetype", archetype);
 
+        createDocumentTemplate(entity, document);
+        return entity;
+    }
+
+    /**
+     * Creates a blank document and associates it with a <em>entity.documentTemplate</em>.
+     *
+     * @param template the <em>entity.documentTemplate</em>
+     */
+    public static void createDocumentTemplate(Entity template) {
+        Document document = createDocument("/blank.jrxml");
+        createDocumentTemplate(template, document);
+    }
+
+    /**
+     * Creates an <em>act.documentTemplate</em>, associating it with the supplied document and
+     * <em>entity.documentTemplate</em>.
+     *
+     * @param template the <em>entity.documentTemplate</em>
+     * @param document the document
+     */
+    public static void createDocumentTemplate(Entity template, Document document) {
         DocumentAct act = (DocumentAct) TestHelper.create("act.documentTemplate");
         act.setDocument(document.getObjectReference());
         act.setFileName(document.getName());
         act.setMimeType(document.getMimeType());
         act.setDescription(DescriptorHelper.getDisplayName(document));
         ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("template", entity);
-        TestHelper.save(Arrays.asList(act, entity, document));
-        return entity;
+        bean.addNodeParticipation("template", template);
+        TestHelper.save(Arrays.asList(act, template, document));
     }
 }

@@ -41,6 +41,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -156,7 +157,7 @@ public class StatementEmailProcessor
             helper.setSubject(emailSubject);
             helper.setText(emailText);
             Iterable<IMObject> objects = getActs(statement);
-            Reporter reporter = ReporterFactory.create(objects, template, IMObject.class);
+            Reporter reporter = ReporterFactory.create(objects, template, TemplatedReporter.class);
             reporter.setParameters(getParameters(statement));
             final Document doc = reporter.getDocument(DocFormats.PDF_TYPE, true);
 
