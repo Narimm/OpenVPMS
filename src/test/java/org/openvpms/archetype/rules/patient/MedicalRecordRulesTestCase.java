@@ -21,12 +21,15 @@ package org.openvpms.archetype.rules.patient;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -393,6 +396,28 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         // verify that it can be called again with no ill effect
         rules.linkMedicalRecords(event, note);
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#linkMedicalRecords(Act, Act)} method passing
+     * an <em>act.customerAccountInvoiceItem</em>.
+     */
+    @Test
+    public void testLinkMedicalRecordsWithInvoiceItem() {
+        Act event = createEvent();
+        Act invoiceItem = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM,
+                                                         Money.ONE, patient, TestHelper.createProduct());
+        save(invoiceItem);
+        rules.linkMedicalRecords(event, invoiceItem);
+
+        event = get(event);
+        invoiceItem = get(invoiceItem);
+
+        ActBean eventBean = new ActBean(event);
+        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, invoiceItem));
+
+        // verify that it can be called again with no ill effect
+        rules.linkMedicalRecords(event, invoiceItem);
     }
 
     /**
