@@ -224,7 +224,7 @@ public class MedicalRecordRules {
 
         if (item != null) {
             // link the event and item
-            if (TypeHelper.isA(item, PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM)) {
+            if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
                 if (!bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, item)) {
                     bean.addNodeRelationship("chargeItems", item);
                     service.save(Arrays.asList(event, item));
