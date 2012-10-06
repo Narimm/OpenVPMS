@@ -19,9 +19,7 @@
     <archetype name="contact.location.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.party.Contact" displayName="Location Contact">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name"
-              hidden="true" derived="true"
-              derivedValue="'Location'"/>
+        <node name="name" type="java.lang.String" path="/name" defaultValue="'Location'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/details/address,' ', openvpms:lookup(., 'suburb'),' ',/details/postCode, ' ',party:getContactPurposes())"/>

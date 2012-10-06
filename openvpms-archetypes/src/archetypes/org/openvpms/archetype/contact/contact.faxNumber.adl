@@ -19,9 +19,7 @@
     <archetype name="contact.faxNumber.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.party.Contact" displayName="Fax Contact">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name"
-              hidden="true" derived="true"
-              derivedValue="'Fax Number'"/>
+        <node name="name" type="java.lang.String" path="/name" defaultValue="'Fax Number'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat('(',/details/areaCode,') ', /details/faxNumber,' ',party:getContactPurposes())"/>
