@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
@@ -40,8 +38,7 @@ import java.util.List;
  * Abstract implementation of the {@link ResultSet} interface for result sets
  * that query the {@link IArchetypeService}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractArchetypeServiceResultSet<T>
         extends AbstractResultSet<T> {
@@ -332,7 +329,11 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     protected IPage<T> get(int page) {
         IPage<T> result = (IPage<T>) cache.get(page);
         if (result == null) {
-            result = query(page);
+            if (page > 0 && getPageSize() == ArchetypeQuery.ALL_RESULTS) {
+                // nothing to do - results should have been returned in the first page
+            } else {
+                result = query(page);
+            }
         }
         return result;
     }

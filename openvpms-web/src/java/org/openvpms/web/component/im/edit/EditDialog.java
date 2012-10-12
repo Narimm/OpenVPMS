@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit;
@@ -21,13 +19,12 @@ package org.openvpms.web.component.im.edit;
 /**
  * A popup window that displays an {@link IMObjectEditor}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class EditDialog extends AbstractEditDialog {
 
     /**
-     * Constructs an <tt>EditDialog</tt>.
+     * Constructs an {@code EditDialog}.
      *
      * @param editor the editor
      */
@@ -36,57 +33,60 @@ public class EditDialog extends AbstractEditDialog {
     }
 
     /**
-     * Constructs an <tt>EditDialog</tt>.
+     * Constructs an {@code EditDialog}.
      *
      * @param editor the editor
-     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or
-     *               'Apply' buttons are pressed.
+     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      */
     public EditDialog(IMObjectEditor editor, boolean save) {
         this(editor, save, false);
     }
 
     /**
-     * Constructs an <tt>EditDialog</tt>.
+     * Constructs an {@code EditDialog}.
      *
      * @param editor the editor
-     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or
-     *               'Apply' buttons are pressed.
-     * @param skip   if <tt>true</tt> display a 'Skip' button that simply
-     *               closes the dialog
+     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param skip   if <tt>true</tt> display a 'Skip' button that simply closes the dialog
      */
     public EditDialog(IMObjectEditor editor, boolean save, boolean skip) {
         this(editor, save, true, skip);
     }
 
     /**
-     * Constructs an <tt>EditDialog</tt>.
+     * Constructs an {@code EditDialog}.
      *
      * @param editor the editor
-     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or
-     *               'Apply' buttons are pressed.
+     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      * @param apply  if <tt>true</tt>, display an 'Apply' button
-     * @param skip   if <tt>true</tt> display a 'Skip' button that simply
-     *               closes the dialog
+     * @param skip   if <tt>true</tt> display a 'Skip' button that simply closes the dialog
      */
     public EditDialog(IMObjectEditor editor, boolean save, boolean apply, boolean skip) {
         this(editor, save, apply, true, skip);
     }
 
     /**
-     * Constructs an <tt>EditDialog</tt>.
+     * Constructs an {@code EditDialog}.
      *
      * @param editor the editor
-     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or
-     *               'Apply' buttons are pressed.
+     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      * @param apply  if <tt>true</tt>, display an 'Apply' button
      * @param cancel if <tt>true</tt>, display a 'Cancel' button
-     * @param skip   if <tt>true</tt> display a 'Skip' button that simply
-     *               closes the dialog
+     * @param skip   if <tt>true</tt> display a 'Skip' button that simply closes the dialog
      */
     public EditDialog(IMObjectEditor editor, boolean save, boolean apply, boolean cancel, boolean skip) {
         super(editor, getButtons(apply, cancel, skip), save);
     }
 
+    /**
+     * Constructs an {@code EditDialog}.
+     *
+     * @param editor  the editor
+     * @param buttons the buttons to display
+     * @param save    if <tt>true</tt>, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     */
+    public EditDialog(IMObjectEditor editor, String[] buttons, boolean save) {
+        super(editor, buttons, save);
+    }
 
 }

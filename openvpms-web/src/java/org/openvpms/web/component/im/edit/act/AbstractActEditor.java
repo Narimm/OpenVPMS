@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -27,13 +25,10 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCreator;
-import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -47,8 +42,7 @@ import java.util.Date;
 /**
  * Editor for {@link Act}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AbstractActEditor extends AbstractIMObjectEditor {
 
@@ -213,8 +207,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     protected void initParticipant(String name, IMObjectReference entity) {
         Property property = getProperty(name);
         if (property != null) {
-            Participation participant
-                    = getParticipation((IMObjectProperty) property);
+            Participation participant = getParticipation(property);
             if (participant != null) {
                 if (participant.getAct() == null) {
                     participant.setAct(getObject().getObjectReference());
@@ -265,7 +258,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
             if (property == null) {
                 throw new IllegalArgumentException("Invalid node: " + name);
             }
-            Participation participant = getParticipation((IMObjectProperty) property);
+            Participation participant = getParticipation(property);
             if (participant != null) {
                 if (participant.getAct() == null) {
                     participant.setAct(getObject().getObjectReference());
@@ -322,26 +315,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @param property the participation property
      * @return the participation
      */
-    protected Participation getParticipation(IMObjectProperty property) {
-        Object value = null;
-        if (property.isCollection()) {
-            Object[] values = property.getValues().toArray();
-            if (values.length > 0) {
-                value = values[0];
-            } else {
-                String[] shortNames = DescriptorHelper.getShortNames(
-                        property.getDescriptor());
-                if (shortNames.length == 1) {
-                    value = IMObjectCreator.create(shortNames[0]);
-                    if (value != null) {
-                        property.add(value);
-                    }
-                }
-            }
-        } else {
-            value = property.getValue();
-        }
-        return (value instanceof Participation) ? (Participation) value : null;
+    protected Participation getParticipation(Property property) {
+        return ParticipationHelper.getParticipation(property);
     }
 
     /**

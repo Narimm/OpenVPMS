@@ -19,6 +19,7 @@
 package org.openvpms.web.app.admin;
 
 import org.openvpms.web.app.admin.archetype.ArchetypeWorkspace;
+import org.openvpms.web.app.admin.group.GroupWorkspace;
 import org.openvpms.web.app.admin.lookup.LookupWorkspace;
 import org.openvpms.web.app.admin.template.DocumentTemplateWorkspace;
 import org.openvpms.web.app.admin.user.UserWorkspace;
@@ -44,6 +45,7 @@ public class AdminSubsystem extends AbstractSubsystem {
         addWorkspace(new DocumentTemplateWorkspace());
         addWorkspace(new LookupWorkspace());
         addWorkspace(new UserWorkspace());
+        addWorkspace(new GroupWorkspace());
         addWorkspace(new RoleWorkspace());
         addWorkspace(new AuthorityWorkspace());
         addWorkspace(new ArchetypeWorkspace());

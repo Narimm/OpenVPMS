@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.echo;
@@ -38,26 +36,25 @@ import org.w3c.dom.Node;
 
 
 /**
- * Peer for {@link SMSTextArea}.
+ * Peer for {@link CountedTextArea}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
-public class SMSTextAreaPeer extends TextFieldPeer {
+public class CountedTextAreaPeer extends TextFieldPeer {
 
     /**
      * Service to provide supporting JavaScript library.
      */
     static final Service SERVICE = JavaScriptService.forResource(
-            "SMSTextArea", "/org/openvpms/web/resource/js/SMSTextArea.js");
+            "CountedTextArea", "/org/openvpms/web/resource/js/CountedTextArea.js");
 
     static {
         WebRenderServlet.getServiceRegistry().add(SERVICE);
     }
 
     /**
-     * @see DomUpdateSupport#renderHtml(RenderContext ,
-     *      ServerComponentUpdate , Node , Component)
+     * @see DomUpdateSupport#renderHtml(RenderContext,
+     *      ServerComponentUpdate, Node, Component)
      */
     @Override
     public void renderHtml(RenderContext rc, ServerComponentUpdate addUpdate, Node parentNode, Component component) {
@@ -118,7 +115,7 @@ public class SMSTextAreaPeer extends TextFieldPeer {
         ServerMessage serverMessage = rc.getServerMessage();
 
         Element itemizedUpdateElement = serverMessage.getItemizedDirective(
-                ServerMessage.GROUP_ID_POSTUPDATE, "SMSTextArea.MessageProcessor", "init", new String[0],
+                ServerMessage.GROUP_ID_POSTUPDATE, "CountedTextArea.MessageProcessor", "init", new String[0],
                 new String[0]);
         Element itemElement = serverMessage.getDocument().createElement("item");
         itemElement.setAttribute("eid", elementId);
@@ -170,7 +167,8 @@ public class SMSTextAreaPeer extends TextFieldPeer {
         String elementId = ContainerInstance.getElementId(textComponent);
         ServerMessage serverMessage = rc.getServerMessage();
         Element itemizedUpdateElement = serverMessage.getItemizedDirective(ServerMessage.GROUP_ID_PREREMOVE,
-                                                                           "SMSTextArea.MessageProcessor", "dispose", new String[0], new String[0]);
+                                                                           "CountedTextArea.MessageProcessor",
+                                                                           "dispose", new String[0], new String[0]);
         Element itemElement = serverMessage.getDocument().createElement("item");
         itemElement.setAttribute("eid", elementId);
         itemizedUpdateElement.appendChild(itemElement);

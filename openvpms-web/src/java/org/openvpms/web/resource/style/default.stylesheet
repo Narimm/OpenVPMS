@@ -319,19 +319,22 @@
 
     <style name="AlertType.HIGH" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="background" value="#FF0000"/> <!-- red -->
+            <property name="background" value="#FF0000"/>
+            <!-- red -->
         </properties>
     </style>
 
     <style name="AlertType.MEDIUM" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="background" value="#FFFF00"/> <!-- yellow -->
+            <property name="background" value="#FFFF00"/>
+            <!-- yellow -->
         </properties>
     </style>
 
     <style name="AlertType.LOW" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="background" value="#C0C0C0"/> <!-- silver -->
+            <property name="background" value="#C0C0C0"/>
+            <!-- silver -->
         </properties>
     </style>
 
@@ -677,6 +680,21 @@
             <property name="insets" value="${padding.small}"/>
         </properties>
     </style>
+
+    <style name="UserMessageEditDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${MailDialog.width}"/>
+            <property name="height" value="${MailDialog.height}"/>
+        </properties>
+    </style>
+
+    <style name="UserMessage.message" type="nextapp.echo2.app.TextArea" base-name="default">
+        <properties>
+            <property name="width" value="100%"/>
+            <property name="height" value="${UserMessage.message.height}"/>
+        </properties>
+    </style>
+
 
     <style name="SelectUserDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.echo;
@@ -24,49 +22,48 @@ import nextapp.echo2.app.text.Document;
 
 
 /**
- * SMS text area.
+ * Counted text area. This displays the available remaining characters.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
-public class SMSTextArea extends TextArea {
+public class CountedTextArea extends TextArea {
 
     /**
      * Default maximum length.
      */
-    private static final int MAX_LENGTH = 160;
+    private static final int MAX_LENGTH = 255;
 
 
     /**
-     * Constructs an <tt>SMSTextArea</tt> with an empty <tt>StringDocument</tt> as its model, and default width and
+     * Constructs an {@code CountedTextArea} with an empty <tt>StringDocument</tt> as its model, and default width and
      * height settings.
      */
-    public SMSTextArea() {
+    public CountedTextArea() {
         this(new StringDocumentEx());
     }
 
     /**
-     * Constructs an <tt>SMSTextArea</tt> with the specified <tt>Document</tt> model.
+     * Constructs an {@code CountedTextArea} with the specified <tt>Document</tt> model.
      *
      * @param document the document
      */
-    public SMSTextArea(Document document) {
+    public CountedTextArea(Document document) {
         super(document);
         setMaximumLength(MAX_LENGTH);
     }
 
     /**
-     * Constructs an <tt>SMSTextArea</tt> with the specified initial columns and rows.
+     * Constructs an {@code CountedTextArea} with the specified initial columns and rows.
      *
      * @param columns the number of columns to display
      * @param rows    the number of rows to display
      */
-    public SMSTextArea(int columns, int rows) {
+    public CountedTextArea(int columns, int rows) {
         this(new StringDocumentEx(), null, columns, rows);
     }
 
     /**
-     * Constructs an <tt>SMSTextArea</tt> with the specified <tt>Document</tt> model, initial text, column
+     * Constructs an {@code CountedTextArea} with the specified <tt>Document</tt> model, initial text, column
      * and row settings.
      *
      * @param document the document
@@ -74,7 +71,7 @@ public class SMSTextArea extends TextArea {
      * @param columns  the number of columns to display
      * @param rows     the number of rows to display
      */
-    public SMSTextArea(Document document, String text, int columns, int rows) {
+    public CountedTextArea(Document document, String text, int columns, int rows) {
         super(document, text, columns, rows);
         setMaximumLength(MAX_LENGTH);
     }

@@ -12,50 +12,49 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.messaging;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerMailContext;
-import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
-import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
  * Messaging CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
     /**
      * Message archetypes that may be created by this workspace.
      */
-    private static final Archetypes<Act> MESSAGES
-            = Archetypes.create(MessageArchetypes.USER, Act.class);
+    private static final Archetypes<Act> MESSAGES = Archetypes.create(MessageArchetypes.USER, Act.class);
+
+    /**
+     * The reply button identifier.
+     */
+    private static final String REPLY_ID = "reply";
 
     /**
      * The forward button identifier.
@@ -111,6 +110,11 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
+        Button reply = ButtonFactory.create(REPLY_ID, new ActionListener() {
+            public void onAction(ActionEvent e) {
+                onReply();
+            }
+        });
         Button forward = ButtonFactory.create(FORWARD_ID, new ActionListener() {
             public void onAction(ActionEvent e) {
                 onForward();
@@ -123,7 +127,9 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
             }
         });
         buttons.add(createNewButton());
+        buttons.add(reply);
         buttons.add(forward);
+        buttons.add(createDeleteButton());
         buttons.add(completed);
         buttons.add(createPrintButton());
     }
@@ -136,6 +142,8 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
+        super.enableButtons(buttons, enable);
+        buttons.setEnabled(REPLY_ID, enable);
         buttons.setEnabled(FORWARD_ID, enable);
         buttons.setEnabled(COMPLETED_ID, enable);
         buttons.setEnabled(PRINT_ID, enable);
@@ -153,35 +161,60 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
     }
 
     /**
-     * Invoked when the 'forward' button is pressed.
+     * Invoked when the 'reply' button is pressed.
      */
-    private void onForward() {
-        String title = Messages.get("workflow.messaging.forward.title");
-        final SelectUserDialog dialog = new SelectUserDialog(title);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void onClose(WindowPaneEvent event) {
-                if (dialog.getUser() != null) {
-                    forward(dialog.getUser());
-                }
-            }
-        });
-        dialog.show();
+    private void onReply() {
+        UserMessageEditor editor = new UserMessageEditor(getObject(), null, createLayoutContext());
+        User from = editor.getFrom();
+        String subject = editor.getSubject();
+        String message = editor.getMessage();
+
+        String date = DateHelper.formatDateTime(editor.getStartTime(), false);
+        String fromName = (from != null) ? from.getName() : "";
+
+        User newFrom = GlobalContext.getInstance().getUser();
+        editor.setFrom(newFrom);
+        editor.setTo(from);
+        String newSubject = Messages.get("workflow.messaging.reply.subject", subject);
+        String newMessage = Messages.get("workflow.messaging.reply.body", date, fromName, message);
+        editor.setSubject(newSubject);
+        editor.setMessage(newMessage);
+        edit(editor, Messages.get("workflow.messaging.reply.title"));
     }
 
     /**
-     * Forwards a message to a particular user.
-     *
-     * @param user the user to forward to
+     * Invoked when the 'forward' button is pressed.
      */
-    private void forward(User user) {
-        try {
-            ActBean bean = new ActBean(getObject());
-            bean.setParticipant("participation.user", user);
-            bean.save();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+    private void onForward() {
+        UserMessageEditor editor = new UserMessageEditor(getObject(), null, createLayoutContext());
+        User from = editor.getFrom();
+        User to = editor.getTo();
+
+        String subject = editor.getSubject();
+        String message = editor.getMessage();
+        String date = DateHelper.formatDateTime(editor.getStartTime(), false);
+        String fromName = (from != null) ? from.getName() : "";
+        String toName = (to != null) ? to.getName() : null;
+
+        String newSubject = Messages.get("workflow.messaging.forward.subject", subject);
+        String newMessage = Messages.get("workflow.messaging.forward.body", subject, date, fromName, toName, message);
+        editor.setTo(null);
+        editor.setSubject(newSubject);
+        editor.setMessage(newMessage);
+        edit(editor, Messages.get("workflow.messaging.forward.title"));
+    }
+
+    /**
+     * Displays a dialog to perform editing.
+     *
+     * @param editor the editor
+     * @param title  the dialog title
+     */
+    private void edit(IMObjectEditor editor, String title) {
+        EditDialog dialog = edit(editor);
+        if (dialog != null) {
+            dialog.setTitle(title);
         }
-        onRefresh(getObject());
     }
 
     /**

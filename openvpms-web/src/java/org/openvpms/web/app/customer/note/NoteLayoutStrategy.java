@@ -12,20 +12,12 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.note;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.GridFactory;
 
 import java.util.List;
 
@@ -33,30 +25,19 @@ import java.util.List;
 /**
  * Layout strategy for <em>act.customerNote</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class NoteLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * Lays out child components in a grid.
+     * Determines the no. of columns to display.
      *
-     * @param object      the object to lay out
-     * @param parent      the parent object. May be <tt>null</tt>
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container to use
-     * @param context     the layout context
+     * @param descriptors the node descriptors
+     * @return {@code 1}
      */
     @Override
-    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                  PropertySet properties, Component container, LayoutContext context) {
-        if (!descriptors.isEmpty()) {
-            // display in a single column
-            Grid grid = GridFactory.create(2);
-            doGridLayout(object, descriptors, properties, grid, context);
-            container.add(grid);
-        }
+    protected int getColumns(List<NodeDescriptor> descriptors) {
+        return 1;
     }
 
 }

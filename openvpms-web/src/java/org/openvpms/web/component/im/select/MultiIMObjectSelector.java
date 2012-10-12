@@ -11,14 +11,12 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.select;
 
-import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.DocumentEvent;
@@ -34,31 +32,30 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.DocumentListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.TextComponentFactory;
 
 import java.util.List;
 
 
 /**
- * Selector that provides query support for partial/incorrect names.
+ * Multiple IMObject selector that provides query support for partial/incorrect names.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class IMObjectSelector<T extends IMObject> extends Selector<T> {
+public class MultiIMObjectSelector<T extends IMObject> {
 
     /**
-     * The selected object.
+     * The selected objects.
      */
-    private T object;
+    private final SelectedObjects<T> objects = new SelectedObjects<T>();
 
     /**
      * The archetype short names to query on.
@@ -81,7 +78,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     private final DocumentListener textListener;
 
     /**
-     * The listener. May be <tt>null</tt>
+     * The listener. May be {@code null}
      */
     private IMObjectSelectorListener<T> listener;
 
@@ -95,68 +92,48 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      */
     private boolean inSelect;
 
-
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
-     *
-     * @param property the property
+     * Selected object's text. Null if the selector is not editable.
      */
-    public IMObjectSelector(Property property) {
-        this(property, false);
-    }
+    private TextField field;
 
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
-     *
-     * @param property    the property
-     * @param allowCreate determines if objects may be created
+     * Flag to indicate if the text field was updated. If so, then the action listener won't trigger a browser
+     * dialog. Note that this is not 100% reliable as its not possible to determine if an action listener was invoked
+     * after an update listener within the same web request.
      */
-    public IMObjectSelector(Property property, boolean allowCreate) {
-        this(property.getDisplayName(), allowCreate);
-    }
+    private boolean onTextChangedInvoked;
 
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
+     * The focus group.
+     */
+    private final FocusGroup focusGroup;
+
+
+    /**
+     * Constructs a {@code MultiIMObjectSelector}.
      *
      * @param type       display name for the types of objects this may select
      * @param shortNames the archetype short names to query
      */
-    public IMObjectSelector(String type, String... shortNames) {
+    public MultiIMObjectSelector(String type, String... shortNames) {
         this(type, false, shortNames);
     }
 
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
+     * Constructs a {@code MultiIMObjectSelector}.
      *
      * @param type        display name for the types of objects this may select
      * @param allowCreate determines if objects may be created
      * @param shortNames  the archetype short names to query
      */
-    public IMObjectSelector(String type, boolean allowCreate, String... shortNames) {
-        this(type, allowCreate, ButtonStyle.RIGHT, shortNames);
-    }
-
-    /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
-     *
-     * @param type        display name for the types of objects this may select
-     * @param allowCreate determines if objects may be created
-     * @param style       the button style
-     * @param shortNames  the archetype short names to query
-     */
-    public IMObjectSelector(String type, boolean allowCreate, ButtonStyle style, String... shortNames) {
-        super(style, true);
-        setFormat(Format.NAME);
+    public MultiIMObjectSelector(String type, boolean allowCreate, String... shortNames) {
         this.type = type;
         this.shortNames = shortNames;
         this.allowCreate = allowCreate;
-        getSelect().addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onSelect();
-            }
-        });
-
+        focusGroup = new FocusGroup(getClass().getSimpleName());
         TextField text = getTextField();
+        focusGroup.add(text);
         textListener = new DocumentListener() {
             public void onUpdate(DocumentEvent event) {
                 onTextChanged();
@@ -174,87 +151,32 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     }
 
     /**
-     * Sets the current object.
+     * Sets the current objects.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param objects the objects. May be empty
      */
-    @Override
-    public void setObject(T object) {
-        this.object = object;
-        TextField text = getTextField();
-        text.getDocument().removeDocumentListener(textListener);
-        super.setObject(object);
-        text.getDocument().addDocumentListener(textListener);
-        prevText = text.getText();
+    public void setObjects(List<T> objects) {
+        this.objects.setObjects(objects);
+        refresh();
+        prevText = field.getText();
     }
 
     /**
-     * Returns the current object.
+     * Returns the objects.
      *
-     * @return the current object. May be <tt>null</tt>
+     * @return the objects
      */
-    public T getObject() {
-        return object;
+    public List<T> getObjects() {
+        return objects.getObjects();
     }
 
     /**
      * Sets the listener.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setListener(IMObjectSelectorListener<T> listener) {
         this.listener = listener;
-    }
-
-    /**
-     * Determines if the selector is valid.
-     * It is valid if no dialog is currently displayed and:
-     * <ul>
-     * <li>an object has been selected and the entered text is the same as its name
-     * <li>no object is present and no text is input
-     * </ul>
-     *
-     * @return <tt>true</tt> if the selector is valid, otherwise <tt>false</tt>
-     */
-    public boolean isValid() {
-        boolean valid = !inSelect;
-        if (valid) {
-            String text = getText();
-            if (object != null) {
-                valid = ObjectUtils.equals(object.getName(), text);
-            } else {
-                valid = StringUtils.isEmpty(text);
-            }
-        }
-        return valid;
-    }
-
-    /**
-     * Determines if a selection dialog has been popped up.
-     *
-     * @return <tt>true</tt> if a selection dialog has been popped up
-     *         otherwise <tt>false</tt>
-     */
-    public boolean inSelect() {
-        return inSelect;
-    }
-
-    /**
-     * Determines if objects may be created.
-     *
-     * @param create if <tt>true</tt>, objects may be created
-     */
-    public void setAllowCreate(boolean create) {
-        allowCreate = create;
-    }
-
-    /**
-     * Determines if objects may be created.
-     *
-     * @return <tt>true</tt> if objects may be created
-     */
-    public boolean allowCreate() {
-        return allowCreate;
     }
 
     /**
@@ -267,31 +189,113 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     }
 
     /**
+     * Determines if the selector is valid.
+     * It is valid if no dialog is currently displayed and:
+     * <ul>
+     * <li>an object has been selected and the entered text is the same as its name
+     * <li>no object is present and no text is input
+     * </ul>
+     *
+     * @return {@code true} if the selector is valid, otherwise {@code false}
+     */
+    public boolean isValid() {
+        objects.parseNames(getText());
+        return !inSelect() && objects.isValid();
+    }
+
+    /**
+     * Determines if a selection dialog has been popped up.
+     *
+     * @return {@code true} if a selection dialog has been popped up otherwise {@code false}
+     */
+    public boolean inSelect() {
+        return inSelect;
+    }
+
+    /**
+     * Returns the selector component.
+     *
+     * @return the selector component
+     */
+    public Component getComponent() {
+        return getTextField();
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return focusGroup;
+    }
+
+    /**
+     * Returns the text field.
+     *
+     * @return the text field
+     */
+    public TextField getTextField() {
+        if (field == null) {
+            field = TextComponentFactory.create();
+        }
+        return field;
+    }
+
+    /**
+     * Returns the text from the editable text field.
+     *
+     * @return the text, or {@code null} if there is no text, or this is not an editable selector.
+     */
+    public String getText() {
+        return getTextField().getText();
+    }
+
+    /**
+     * Refreshes the field.
+     */
+    protected void refresh() {
+        field.getDocument().removeDocumentListener(textListener);
+        field.setText(objects.getText());
+        field.getDocument().addDocumentListener(textListener);
+
+        prevText = field.getText();
+    }
+
+    /**
      * Pops up a dialog to select an object.
      * <p/>
      * Only pops up a dialog if one isn't already visible.
      */
     protected void onSelect() {
         if (!inSelect) {
-            onSelect(createQuery(), false);
+            int index = objects.size();
+            for (int i = objects.size() - 1; i >= 0; i--) {
+                if (!objects.haveMatch(i)) {
+                    index = i;
+                    break;
+                }
+            }
+            onSelect(createQuery(null), false, index);
         }
+
     }
 
     /**
      * Pop up a dialog to select an object.
      *
      * @param query    the query
-     * @param runQuery if <tt>true</tt> run the query
+     * @param runQuery if {@code true} run the query
+     * @param index    the position to locate the selected object
      */
-    protected void onSelect(Query<T> query, boolean runQuery) {
+    protected void onSelect(Query<T> query, boolean runQuery, final int index) {
         if (runQuery) {
             query.setAuto(runQuery);
         }
         try {
             final FocusCommand focus = new FocusCommand();
             final Browser<T> browser = BrowserFactory.create(query);
-            final BrowserDialog<T> popup = new BrowserDialog<T>(
-                    type, browser, allowCreate);
+            final BrowserDialog<T> popup = new BrowserDialog<T>(type, browser, allowCreate);
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -302,7 +306,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
                     } else {
                         T object = popup.getSelected();
                         if (object != null) {
-                            onSelected(object, browser);
+                            onSelected(object, browser, index);
                         }
                     }
                 }
@@ -320,12 +324,12 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      *
      * @param object  the selected object
      * @param browser the browser
+     * @param index   the position of the selected object
      */
-    protected void onSelected(T object, Browser<T> browser) {
-        T current = getObject();
-        setObject(object);
+    protected void onSelected(T object, Browser<T> browser, int index) {
+        setObject(index, object);
         getFocusGroup().setFocus(); // set the focus back to the component
-        if (listener != null && !ObjectUtils.equals(current, object)) {
+        if (listener != null) {
             listener.selected(object, browser);
         }
     }
@@ -342,17 +346,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Creates a query to select objects.
      *
-     * @return a new query
-     */
-    protected Query<T> createQuery() {
-        String value = getText();
-        return createQuery(value);
-    }
-
-    /**
-     * Creates a query to select objects.
-     *
-     * @param value a value to filter on. May be <tt>null</tt>
+     * @param value a value to filter on. May be {@code null}
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
@@ -375,7 +369,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Determines if a selection dialog has been popped up.
      *
-     * @param select if <tt>true</tt> denotes that a selection dialog has
+     * @param select if {@code true} denotes that a selection dialog has
      *               been popped up
      */
     protected void setInSelect(boolean select) {
@@ -383,71 +377,120 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     }
 
     /**
-     * Creates the select button.
-     *
-     * @param buttonId the button identifier. Ignored for this implementation
-     * @return the select button
-     */
-    protected Button createSelectButton(String buttonId) {
-        return ButtonFactory.create(null, "select");
-    }
-
-    /**
      * Invoked when the text field is updated.
      */
     private void onTextChanged() {
+        onTextChangedInvoked = true;
         String text = getText();
         if (!ObjectUtils.equals(text, prevText)) {
             if (StringUtils.isEmpty(text)) {
-                setObject(null);
-                notifySelected();
+                clear();
             } else {
-                try {
-                    Query<T> query = createQuery(text);
-                    ResultSet<T> set = query.query(null);
-                    if (set != null && set.hasNext()) {
-                        IPage<T> page = set.next();
-                        List<T> rows = page.getResults();
-                        int size = rows.size();
-                        if (size == 0) {
-                            setObject(null);
-                            notifySelected();
-                        } else if (size == 1) {
-                            T object = rows.get(0);
-                            setObject(object);
-                            notifySelected();
-                        } else {
-                            onSelect(query, true);
+                objects.parseNames(getText());
+                List<String> names = objects.getNames();
+                for (int i = 0; i < names.size(); ++i) {
+                    String name = names.get(i);
+                    if (!objects.haveMatch(i)) {
+                        if (!query(name, i)) {
+                            return;
                         }
                     }
-                } catch (OpenVPMSException exception) {
-                    ErrorHelper.show(exception);
-                    listener.selected(null);
                 }
             }
         }
     }
 
     /**
+     * Invoked when the field is cleared.
+     * <p/>
+     * Clears the internal state and notifies any registered listener.
+     */
+    private void clear() {
+        objects.clear();
+        prevText = null;
+        notifySelected(null);
+    }
+
+    /**
+     * Queries the supplied text.
+     * <p/>
+     * If there is a single match, the selected object is updated at the specified index.
+     * If there are no matches, or multiple matches, then a browser is displayed.
+     *
+     * @param text  the text to query
+     * @param index the index to store the selection
+     * @return {@code true} if querying is complete, {@code false} if a browser was displayed
+     */
+    private boolean query(String text, int index) {
+        boolean result = true;
+        try {
+            Query<T> query = createQuery(text);
+            ResultSet<T> set = query.query(null);
+            if (set != null) {
+                T selected = null;
+                if (set.hasNext()) {
+                    IPage<T> page = set.next();
+                    List<T> rows = page.getResults();
+                    if (rows.size() == 1) {
+                        // exact match
+                        selected = rows.get(0);
+                    }
+                }
+                if (selected != null) {
+                    setObject(index, selected);
+                    notifySelected(selected);
+                } else {
+                    onSelect(query, true, index);
+                    result = false;
+                }
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+            listener.selected(null);
+        }
+        return result;
+    }
+
+    /**
      * Invoked by the action listener associated with the text field.
      * <p/>
-     * This is provided to handle Enter being pressed in the field when it is empty, to display a search dialog.
+     * This is provided to handle Enter being pressed in the field to display a search dialog.
      * <p/>
-     * Note that {@link #onTextChanged} will have been invoked just prior to this method if the text was updated.
+     * Note:
+     * <ul>
+     * <li>that {@link #onTextChanged} will have been invoked just prior to this method if the text was updated.</li>
+     * <li>in {@link #onTextChanged()} was invoked without enter being pressed, then enter must be pressed
+     * <strong>twice</<strong> in order for the dialog to be displayed</li>
+     * </ul>
      */
     private void onTextAction() {
-        if (!isValid() || StringUtils.isEmpty(getText())) {
+        if (!onTextChangedInvoked) {
             onSelect();
+        } else {
+            onTextChangedInvoked = false;
         }
     }
 
     /**
      * Notifies the listener of selection via the text field.
+     *
+     * @param object the selected object. May be {@code null}
      */
-    private void notifySelected() {
+    private void notifySelected(T object) {
         if (listener != null) {
-            listener.selected(getObject());
+            listener.selected(object);
         }
+    }
+
+    /**
+     * Sets the object at the specified index and refreshes the field.
+     *
+     * @param index  the index
+     * @param object the object
+     */
+    private void setObject(int index, T object) {
+        objects.setObject(index, object);
+        refresh();
     }
 
 }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.util;
@@ -35,8 +33,7 @@ import java.util.Locale;
 /**
  * Date helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DateHelper {
 
@@ -77,10 +74,10 @@ public class DateHelper {
      *
      * @param d1 the first date/time
      * @param d2 the second date/time
-     * @return the <tt>0</tt> if <tt>d1</tt> is equal to this <tt>d2</tt>;
-     *         a value less than <tt>0</tt> if <tt>d1</tt>  is before the
-     *         <tt>d2</tt>; and a value greater than <tt>0</tt> if
-     *         <tt>d1</tt> is after <tt>d2</tt>.
+     * @return the {@code 0} if {@code d1} is equal to this {@code d2};
+     *         a value less than {@code 0} if {@code d1}  is before the
+     *         {@code d2}; and a value greater than {@code 0} if
+     *         {@code d1} is after {@code d2}.
      */
     public static int compareDates(Date d1, Date d2) {
         d1 = getDayMonthYear(d1);
@@ -93,15 +90,15 @@ public class DateHelper {
      * current date, otherwise returns the date unchanged.
      *
      * @param date the date
-     * @return the current date/time if <tt>date</tt> falls on the current date.
-     *         If not, returns <tt>date</tt> unchanged.
+     * @return the current date/time if {@code date} falls on the current date.
+     *         If not, returns {@code date} unchanged.
      */
     public static Date getDatetimeIfToday(Date date) {
         Calendar now = Calendar.getInstance();
         Calendar d = Calendar.getInstance();
         d.setTime(date);
         if (now.get(Calendar.DAY_OF_YEAR) == d.get(Calendar.DAY_OF_YEAR)
-            && now.get(Calendar.YEAR) == d.get(Calendar.YEAR)) {
+                && now.get(Calendar.YEAR) == d.get(Calendar.YEAR)) {
             return now.getTime();
         }
         return date;
@@ -111,7 +108,7 @@ public class DateHelper {
      * Format a date.
      *
      * @param date the date to format
-     * @param edit if <code>true</code> format the number for editing
+     * @param edit if {@code true} format the number for editing
      * @return the formatted date
      */
     public static String formatDate(Date date, boolean edit) {
@@ -121,8 +118,7 @@ public class DateHelper {
     /**
      * Returns a date format.
      *
-     * @param edit if <code>true</code> return a format for editing otherwise
-     *             return a format for viewing dates
+     * @param edit if {@code true} return a format for editing otherwise return a format for viewing dates
      * @return a date format
      */
     public static DateFormat getDateFormat(boolean edit) {
@@ -147,7 +143,7 @@ public class DateHelper {
      * Returns the full date format for the current locale.
      * <p/>
      * This can be overridden by specifying the <em>date.format.full</em>
-     * property in <tt>messages.properties</tt>.
+     * property in {@code messages.properties}.
      *
      * @return the full date format
      */
@@ -173,7 +169,7 @@ public class DateHelper {
      * Format a time.
      *
      * @param time the time to format
-     * @param edit if <code>true</code> format the number for editing
+     * @param edit if {@code true} format the number for editing
      * @return the formatted date
      */
     public static String formatTime(Date time, boolean edit) {
@@ -182,8 +178,11 @@ public class DateHelper {
 
     /**
      * Returns a time format.
+     * <p/>
+     * This will use the <em>time.format.edit</em> and <em>time.format.view</em> properties if specified in
+     * <em>messages.properties</em>, else it will fall back to those provided by the locale.
      *
-     * @param edit if <code>true</code> return a format for editing otherwise
+     * @param edit if {@code true} return a format for editing otherwise
      *             return a format for viewing dates
      * @return a date format
      */
@@ -206,9 +205,19 @@ public class DateHelper {
     }
 
     /**
+     * Returns the time format for the specified style and current locale.
+     *
+     * @param style the style
+     * @return the corresponding time format
+     */
+    public static DateFormat getTimeFormat(int style) {
+        return DateFormat.getTimeInstance(style, getLocale());
+    }
+
+    /**
      * Returns a date-time format.
      *
-     * @param edit if <code>true</code> return a format for editing otherwise
+     * @param edit if {@code true} return a format for editing otherwise
      *             return a format for viewing date-times.
      * @return a date-time format
      */
@@ -218,11 +227,9 @@ public class DateHelper {
         if (edit) {
             // specify SHORT style for dates when parsing, so that 2 digit years
             // are handled correctly
-            format = DateFormat.getDateTimeInstance(DateFormat.SHORT,
-                                                    DateFormat.SHORT, locale);
+            format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
         } else {
-            format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-                                                    DateFormat.SHORT, locale);
+            format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale);
         }
         return format;
     }
@@ -231,7 +238,7 @@ public class DateHelper {
      * Format a date-time.
      *
      * @param dateTime the date-time to format
-     * @param edit     if <code>true</code> format the date-time for editing
+     * @param edit     if {@code true} format the date-time for editing
      * @return the formatted date
      */
     public static String formatDateTime(Date dateTime, boolean edit) {
@@ -273,7 +280,7 @@ public class DateHelper {
     public static String formatTime(long time) {
         long hours = time / DateUtils.MILLIS_PER_HOUR;
         long mins = (time % DateUtils.MILLIS_PER_HOUR)
-                    / DateUtils.MILLIS_PER_MINUTE;
+                / DateUtils.MILLIS_PER_MINUTE;
         return Messages.get("time.format.abs", hours, mins);
     }
 

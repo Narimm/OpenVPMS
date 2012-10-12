@@ -12,24 +12,22 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 //_________________________
-// Object SMSTextArea
+// Object CountedTextArea
 
 /**
  * Object/namespace for Text Component support.
  * This object/namespace should not be used externally.
  */
-SMSTextArea = Core.extend(EchoTextComponent, {
+CountedTextArea = Core.extend(EchoTextComponent, {
 
-    $construct : function(elementId) {
+    $construct:function (elementId) {
         EchoTextComponent.call(this, elementId);
     },
 
-    init: function() {
+    init:function () {
         EchoTextComponent.prototype.init.call(this);
 
         var element = document.getElementById(this.elementId);
@@ -44,12 +42,12 @@ SMSTextArea = Core.extend(EchoTextComponent, {
         this.updateCount();
     },
 
-    updateClientMessage: function() {
+    updateClientMessage:function () {
         EchoTextComponent.prototype.updateClientMessage.call(this);
         this.updateCount();
     },
 
-    updateCount: function() {
+    updateCount:function () {
         var label = document.getElementById(this.elementId + "_label");
         EP.DOM.removeChildren(label);
         var length = this.maximumLength - this.getElement().value.length;
@@ -60,12 +58,12 @@ SMSTextArea = Core.extend(EchoTextComponent, {
 });
 
 /**
- * Static object/namespace for SNS Text Component MessageProcessor
+ * Static object/namespace for CountedTextArea Component MessageProcessor
  * implementation.
  */
-SMSTextArea.MessageProcessor = {
+CountedTextArea.MessageProcessor = {
 
-    $construct: function(elementId) {
+    $construct:function (elementId) {
         EchoTextComponent.call(this, elementId);
     },
 
@@ -75,18 +73,18 @@ SMSTextArea.MessageProcessor = {
      *
      * @param messagePartElement the <code>message-part</code> element to process.
      */
-    process: function(messagePartElement) {
+    process:function (messagePartElement) {
         for (var i = 0; i < messagePartElement.childNodes.length; ++i) {
             if (messagePartElement.childNodes[i].nodeType == 1) {
                 switch (messagePartElement.childNodes[i].tagName) {
                     case "init":
-                        SMSTextArea.MessageProcessor.processInit(messagePartElement.childNodes[i]);
+                        CountedTextArea.MessageProcessor.processInit(messagePartElement.childNodes[i]);
                         break;
                     case "dispose":
-                        SMSTextArea.MessageProcessor.processDispose(messagePartElement.childNodes[i]);
+                        CountedTextArea.MessageProcessor.processDispose(messagePartElement.childNodes[i]);
                         break;
                     case "set-text":
-                        SMSTextArea.MessageProcessor.processSetText(messagePartElement.childNodes[i]);
+                        CountedTextArea.MessageProcessor.processSetText(messagePartElement.childNodes[i]);
                         break;
                 }
             }
@@ -99,7 +97,7 @@ SMSTextArea.MessageProcessor = {
      *
      * @param disposeMessageElement the <code>dispose</code> element to process
      */
-    processDispose: function(disposeMessageElement) {
+    processDispose:function (disposeMessageElement) {
         for (var item = disposeMessageElement.firstChild; item; item = item.nextSibling) {
             var elementId = item.getAttribute("eid");
             var textComponent = EchoTextComponent.getComponent(elementId);
@@ -115,7 +113,7 @@ SMSTextArea.MessageProcessor = {
      *
      * @param setTextMessageElement the <code>set-text</code> element to process
      */
-    processSetText: function(setTextMessageElement) {
+    processSetText:function (setTextMessageElement) {
         for (var item = setTextMessageElement.firstChild; item; item = item.nextSibling) {
             var elementId = item.getAttribute("eid");
             var text = item.getAttribute("text");
@@ -133,19 +131,19 @@ SMSTextArea.MessageProcessor = {
      *
      * @param initMessageElement the <code>init</code> element to process
      */
-    processInit: function(initMessageElement) {
+    processInit:function (initMessageElement) {
         for (var item = initMessageElement.firstChild; item; item = item.nextSibling) {
             var elementId = item.getAttribute("eid");
 
-            var textComponent = new SMSTextArea(elementId);
+            var textComponent = new CountedTextArea(elementId);
             textComponent.enabled = item.getAttribute("enabled") != "false";
             textComponent.text = item.getAttribute("text") ? item.getAttribute("text") : null;
             textComponent.serverNotify = item.getAttribute("server-notify") == "true";
-            textComponent.maximumLength = item.getAttribute("maximum-length") ? item.getAttribute("maximum-length") : 160;
+            textComponent.maximumLength = item.getAttribute("maximum-length") ? item.getAttribute("maximum-length") : 255;
             textComponent.horizontalScroll = item.getAttribute("horizontal-scroll") ?
-                                             parseInt(item.getAttribute("horizontal-scroll"), 10) : 0;
+                parseInt(item.getAttribute("horizontal-scroll"), 10) : 0;
             textComponent.verticalScroll = item.getAttribute("vertical-scroll") ?
-                                           parseInt(item.getAttribute("vertical-scroll"), 10) : 0;
+                parseInt(item.getAttribute("vertical-scroll"), 10) : 0;
 
             textComponent.init();
         }

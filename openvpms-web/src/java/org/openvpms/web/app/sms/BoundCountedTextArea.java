@@ -12,26 +12,25 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.sms;
 
+import nextapp.echo2.app.Extent;
 import org.openvpms.web.component.bound.Binder;
 import org.openvpms.web.component.bound.TextAreaComponentBinder;
-import org.openvpms.web.component.echo.SMSTextArea;
+import org.openvpms.web.component.echo.CountedTextArea;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.util.TextDocument;
 
+
 /**
- * Binds a {@link Property} to an {@link SMSTextArea}.
+ * Binds a {@link Property} to an {@link CountedTextArea}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
-public class BoundSMSTextArea extends SMSTextArea {
+public class BoundCountedTextArea extends CountedTextArea {
 
     /**
      * The binder.
@@ -40,7 +39,22 @@ public class BoundSMSTextArea extends SMSTextArea {
 
 
     /**
-     * Constructs a new <tt>BoundTextArea</tt>.
+     * Constructs a new {@code BoundTextArea}.
+     * <p/>
+     * If not already present, the property is associated with an {@link StringPropertyTransformer}
+     * that doesn't trim leading and trailing spaces or new lines.
+     *
+     * @param property the property to bind
+     */
+    public BoundCountedTextArea(Property property) {
+        super(new TextDocument());
+        setMaximumLength(property.getMaxLength());
+        binder = new TextAreaComponentBinder(this, property);
+    }
+
+    /**
+     * Constructs a new {@code BoundTextArea}.
+     * <p/>
      * If not already present, the property is associated with an {@link StringPropertyTransformer}
      * that doesn't trim leading and trailing spaces or new lines.
      *
@@ -48,9 +62,10 @@ public class BoundSMSTextArea extends SMSTextArea {
      * @param columns  the no. of columns to display
      * @param rows     the no. of rows to display
      */
-    public BoundSMSTextArea(Property property, int columns, int rows) {
-        super(new TextDocument());
-        binder = new TextAreaComponentBinder(this, property, columns, rows);
+    public BoundCountedTextArea(Property property, int columns, int rows) {
+        this(property);
+        setWidth(new Extent(columns, Extent.EX));
+        setHeight(new Extent(rows, Extent.EM));
     }
 
     /**
