@@ -12,40 +12,53 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.layout;
 
+import nextapp.echo2.app.Component;
+import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
  * Represents a set of labelled components.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ComponentSet {
 
     /**
      * The components.
      */
-    private final List<ComponentState> components
-            = new ArrayList<ComponentState>();
+    private final List<ComponentState> components = new ArrayList<ComponentState>();
 
     /**
-     * The labels, keyed on component.
+     * The focus group. May be {@code null}
      */
-    private final Map<ComponentState, String> labels
-            = new HashMap<ComponentState, String>();
+    private final FocusGroup focusGroup;
 
+
+    /**
+     * Default constructor.
+     */
+    public ComponentSet() {
+        this(null);
+    }
+
+    /**
+     * Constructs a {@code ComponentSet}.
+     *
+     * @param focusGroup the focus group. May be {@code null}
+     */
+    public ComponentSet(FocusGroup focusGroup) {
+        this.focusGroup = focusGroup;
+    }
 
     /**
      * Adds a component.
@@ -53,17 +66,7 @@ public class ComponentSet {
      * @param component the component to add
      */
     public void add(ComponentState component) {
-        add(component, component.getDisplayName());
-    }
-
-    /**
-     * Adds a component.
-     *
-     * @param component the component
-     * @param label     a label for the component
-     */
-    public void add(ComponentState component, String label) {
-        add(components.size(), component, label);
+        add(components.size(), component);
     }
 
     /**
@@ -73,21 +76,7 @@ public class ComponentSet {
      * @param component the component to add
      */
     public void add(int index, ComponentState component) {
-        add(index, component, component.getDisplayName());
-    }
-
-    /**
-     * Adds a component at the specified index.
-     *
-     * @param index     index at which the component is to be inserted.
-     * @param component the component
-     * @param label     a label for the component
-     * @throws IndexOutOfBoundsException if the index is out of range
-     *                                   (index &lt; 0 || index &gt; size()).
-     */
-    public void add(int index, ComponentState component, String label) {
         components.add(index, component);
-        labels.put(component, label);
     }
 
     /**
@@ -127,14 +116,73 @@ public class ComponentSet {
     }
 
     /**
-     * Returns the label for a component.
+     * Returns the number of components.
      *
-     * @param component the component
-     * @return the component's label, or <code>null</code> if the component is
-     *         not found
+     * @return the number of components
      */
-    public String getLabel(ComponentState component) {
-        return labels.get(component);
+    public int size() {
+        return components.size();
+    }
+
+    /**
+     * Sets the focus traversal index of a component, if it is a focus traversal
+     * participant.
+     * NOTE: if a component doesn't specify a focus group, this may register a child component with the focus group
+     * rather than the parent.
+     *
+     * @param state the component state
+     */
+    public void setFocusTraversal(ComponentState state) {
+        Component component = state.getComponent();
+        if (state.getFocusGroup() != null) {
+            components.add(state);
+            focusGroup.add(state.getFocusGroup());
+        } else {
+            Component focusable = FocusHelper.getFocusable(component);
+            if (focusable != null) {
+                components.add(state);
+                focusGroup.add(focusable);
+            }
+        }
+    }
+
+    /**
+     * Returns the first focusable component, selecting invalid properties in preference to other components.
+     *
+     * @return the first focusable component
+     */
+    public Component getFocusable() {
+        Component result = null;
+        for (ComponentState state : components) {
+            Component child = state.getFocusable();
+            if (child != null) {
+                Property property = state.getProperty();
+                if (property != null && !property.isValid()) {
+                    result = child;
+                    break;
+                }
+                if (result == null) {
+                    result = child;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the focusable component associated with the property with the specified name.
+     *
+     * @param name the property name
+     * @return the corresponding component, or {@code null} if none is found
+     */
+    public Component getFocusable(String name) {
+        for (ComponentState state : components) {
+            Property property = state.getProperty();
+            if (property != null && name.equals(property.getName())) {
+                return state.getFocusable();
+            }
+        }
+        return null;
     }
 
 }

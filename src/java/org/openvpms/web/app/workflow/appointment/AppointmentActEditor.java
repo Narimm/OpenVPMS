@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -31,10 +29,11 @@ import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.workflow.scheduling.AbstractScheduleActEditor;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
+import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.PropertySet;
@@ -42,19 +41,16 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.app.Context;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 
 /**
  * An editor for <em>act.customerAppointment</em>s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentActEditor extends AbstractScheduleActEditor {
 
@@ -429,8 +425,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
          * @return the customer component, or <tt>null</tt> if none is found
          */
         @Override
-        protected Component getDefaultFocus(List<ComponentState> components) {
-            return getFocusable(components, "customer");
+        protected Component getDefaultFocus(ComponentSet components) {
+            return components.getFocusable("customer");
         }
     }
 }

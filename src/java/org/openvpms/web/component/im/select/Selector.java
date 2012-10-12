@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.select;
@@ -39,8 +37,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Component that provides a 'select' button and object summary.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class Selector<T extends IMObject> {
 
@@ -49,7 +46,7 @@ public abstract class Selector<T extends IMObject> {
      */
     public enum ButtonStyle {
 
-        LEFT, RIGHT
+        LEFT, RIGHT, NONE
     }
 
     /**
@@ -252,6 +249,9 @@ public abstract class Selector<T extends IMObject> {
      */
     public void setFillWidth(boolean fillWidth) {
         this.fillWidth = fillWidth;
+        if (objectText != null) {
+            objectText.setWidth(new Extent(100, Extent.PERCENT));
+        }
     }
 
     /**
@@ -279,14 +279,16 @@ public abstract class Selector<T extends IMObject> {
             objectLabel.setText(text);
         }
 
-        if (!active) {
-            if (deactivated == null) {
-                deactivated = LabelFactory.create("imobject.deactivated", "Selector.Deactivated");
-                child.add(deactivated);
+        if (child != null) {
+            if (!active) {
+                if (deactivated == null) {
+                    deactivated = LabelFactory.create("imobject.deactivated", "Selector.Deactivated");
+                    child.add(deactivated);
+                }
+            } else if (deactivated != null) {
+                child.remove(deactivated);
+                deactivated = null;
             }
-        } else if (deactivated != null) {
-            child.remove(deactivated);
-            deactivated = null;
         }
     }
 
@@ -295,22 +297,28 @@ public abstract class Selector<T extends IMObject> {
      */
     protected void doLayout() {
         component = new Row();
+        Component objectComponent = getObjectComponent();
         if (buttonStyle == ButtonStyle.RIGHT && fillWidth) {
             // button on the right. The 'child' forces the summary+deactivated
             // labels to take up as much space as possible, ensuring that the
             // button is displayed hard on the right.
             // Seems more successful than using alignments
-            child = RowFactory.create("CellSpacing", getObjectComponent());
+            child = RowFactory.create("CellSpacing", objectComponent);
             RowLayoutData layout = new RowLayoutData();
             layout.setWidth(new Extent(100, Extent.PERCENT));
             child.setLayoutData(layout);
             child = RowFactory.create(child, getButtons(component));
+            child.setLayoutData(layout);
         } else if (buttonStyle == ButtonStyle.RIGHT && !fillWidth) {
-            child = RowFactory.create("CellSpacing", RowFactory.create(getObjectComponent(), getButtons(component)));
-        } else {
+            child = RowFactory.create("CellSpacing", RowFactory.create(objectComponent, getButtons(component)));
+        } else if (buttonStyle == ButtonStyle.LEFT) {
             // display button(s) on the left
-            child = RowFactory.create("CellSpacing", getObjectComponent());
+            child = RowFactory.create("CellSpacing", objectComponent);
             child.add(getButtons(component), 0);
+        } else {
+            // no buttons
+            component = objectComponent;
+            child = null;
         }
         if (objectText != null) {
             if (buttonStyle == ButtonStyle.RIGHT) {
@@ -319,7 +327,9 @@ public abstract class Selector<T extends IMObject> {
                 focusGroup.add(objectText);
             }
         }
-        component.add(child);
+        if (child != null) {
+            component.add(child);
+        }
     }
 
     /**
@@ -332,6 +342,9 @@ public abstract class Selector<T extends IMObject> {
         if (editable) {
             if (objectText == null) {
                 objectText = TextComponentFactory.create();
+                if (fillWidth) {
+                    objectText.setWidth(new Extent(100, Extent.PERCENT));
+                }
             }
             component = objectText;
         } else {

@@ -20,7 +20,6 @@ package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -39,7 +38,6 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -94,9 +92,15 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
                 return super.createComponent(property, parent, context);
             }
 
+            /**
+             * Determines the no. of columns to display.
+             *
+             * @param descriptors the node descriptors
+             * @return the number of columns
+             */
             @Override
-            protected Grid createGrid(List<NodeDescriptor> descriptors) {
-                return GridFactory.create(2);
+            protected int getColumns(List<NodeDescriptor> descriptors) {
+                return 1;
             }
         };
 

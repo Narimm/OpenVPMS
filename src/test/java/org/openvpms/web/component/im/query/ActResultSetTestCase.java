@@ -12,30 +12,33 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.Date;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * {@link ActResultSet} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ActResultSetTestCase extends AbstractResultSetTest {
 
@@ -77,8 +80,7 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
         assertNull(set.getPage(1));
         assertEquals(rowsPerPage, set.getPageSize());
         assertTrue(set.isSortedAscending());
-        assertTrue(set.getSortConstraints() != null
-                   && set.getSortConstraints().length == 0);
+        assertTrue(set.getSortConstraints() != null && set.getSortConstraints().length == 0);
     }
 
     /**
@@ -86,40 +88,22 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
      */
     @Test
     public void testIteration() {
-        final int rowsPerPage = 5;
-        final int total = acts.length;
+        int rowsPerPage = 5;
+        int total = acts.length;
         int expectedPages = (total / rowsPerPage);
         if (total % rowsPerPage > 0) {
             ++expectedPages;
         }
+        checkIteration(expectedPages, rowsPerPage, total);
+    }
 
-        ShortNameConstraint archetypes = new ShortNameConstraint(
-                "act.customerEstimation", true, true);
-        Date from = null;       // query all dates
-        Date to = null;
-        String[] statuses = {}; // query all statuses
-        SortConstraint[] sort = null;
-        ParticipantConstraint participant = new ParticipantConstraint(
-                "customer", "participation.customer",
-                customer.getObjectReference());
-        ActResultSet<Act> set = new ActResultSet<Act>(archetypes, participant,
-                                                      from, to, statuses,
-                                                      rowsPerPage, sort);
-
-        assertFalse(set.hasPrevious());
-        for (int i = 0; i < expectedPages; ++i) {
-            assertTrue(set.hasNext());
-            IPage<Act> page = set.next();
-            checkPage(set, page, i, rowsPerPage, total);
-        }
-        assertFalse(set.hasNext());
-
-        for (int i = expectedPages - 1; i >= 0; --i) {
-            assertTrue(set.hasPrevious());
-            IPage<Act> page = set.previous();
-            checkPage(set, page, i, rowsPerPage, total);
-        }
-        assertFalse(set.hasPrevious());
+    /**
+     * Verifies that iteration works when all results are returned.
+     */
+    @Test
+    public void testIterateAll() {
+        final int rowsPerPage = ArchetypeQuery.ALL_RESULTS;
+        checkIteration(1, rowsPerPage, acts.length);
     }
 
     /**
@@ -159,7 +143,7 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     public void testNonPrimary() {
         Party patient = TestHelper.createPatient(true);
         String[] shortNames = {"act.customerAccountInvoiceItem",
-                               "act.customerAccountCreditItem"};
+                "act.customerAccountCreditItem"};
         ShortNameConstraint archetypes = new ShortNameConstraint(shortNames,
                                                                  false, true);
         ParticipantConstraint participant = new ParticipantConstraint(
@@ -251,6 +235,44 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
             count = rowsPerPage;
         }
         return count;
+    }
+
+    /**
+     * Tests iteration.
+     *
+     * @param expectedPages the expected no. of pages
+     * @param rowsPerPage   the no. of rows per page
+     * @param total         the total no. of rows
+     */
+    private void checkIteration(int expectedPages, int rowsPerPage, int total) {
+        ShortNameConstraint archetypes = new ShortNameConstraint(
+                "act.customerEstimation", true, true);
+        Date from = null;       // query all dates
+        Date to = null;
+        String[] statuses = {}; // query all statuses
+        SortConstraint[] sort = null;
+        ParticipantConstraint participant = new ParticipantConstraint(
+                "customer", "participation.customer",
+                customer.getObjectReference());
+        ActResultSet<Act> set = new ActResultSet<Act>(archetypes, participant,
+                                                      from, to, statuses,
+                                                      rowsPerPage, sort);
+
+        assertFalse(set.hasPrevious());
+        int rows = (rowsPerPage == ArchetypeQuery.ALL_RESULTS) ? total : rowsPerPage;
+        for (int i = 0; i < expectedPages; ++i) {
+            assertTrue(set.hasNext());
+            IPage<Act> page = set.next();
+            checkPage(set, page, i, rows, total);
+        }
+        assertFalse(set.hasNext());
+
+        for (int i = expectedPages - 1; i >= 0; --i) {
+            assertTrue(set.hasPrevious());
+            IPage<Act> page = set.previous();
+            checkPage(set, page, i, rows, total);
+        }
+        assertFalse(set.hasPrevious());
     }
 
 }

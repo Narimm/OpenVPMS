@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.filter;
@@ -26,42 +24,78 @@ import java.util.List;
 
 
 /**
- * Node filter that enables nodes to be excluded by name.
+ * Node filter that enables nodes to be included or excluded by name.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class NamedNodeFilter implements NodeFilter {
 
     /**
-     * Set of nodes to exclude.
+     * Set of nodes to include/exclude.
      */
-    private final String[] exclude;
+    private final String[] names;
+
+    /**
+     * Determines if nodes are to be included or excluded.
+     */
+    private final boolean exclude;
 
 
     /**
      * Constructs a <tt>NamedNodeFilter</tt>.
      *
-     * @param exclude the names of the nodes to exclude
+     * @param names the names of the nodes to exclude
      */
-    public NamedNodeFilter(String... exclude) {
-        this.exclude = exclude;
+    public NamedNodeFilter(String... names) {
+        this(true, names);
     }
 
     /**
      * Constructs a <tt>NamedNodeFilter</tt>.
      *
-     * @param exclude the names of the nodes to exclude
+     * @param exclude if {@code true} exclude the named nodes otherwise include them
+     * @param names   the names of the nodes to include/exclude
      */
-    public NamedNodeFilter(List<String> exclude) {
-        this.exclude = exclude.toArray(new String[exclude.size()]);
+    public NamedNodeFilter(boolean exclude, String... names) {
+        this.exclude = exclude;
+        this.names = names;
+    }
+
+    /**
+     * Constructs a <tt>NamedNodeFilter</tt>.
+     *
+     * @param names the names of the nodes to exclude
+     */
+    public NamedNodeFilter(List<String> names) {
+        this.names = names.toArray(new String[names.size()]);
+        this.exclude = true;
+    }
+
+    /**
+     * Creates a filter to include the specified nodes.
+     *
+     * @param names the names of the nodes to include
+     * @return a new filter
+     */
+    public static NamedNodeFilter include(String... names) {
+        return new NamedNodeFilter(false, names);
+    }
+
+    /**
+     * Creates a filter to include the specified nodes.
+     *
+     * @param names the names of the nodes to exclude
+     * @return a new filter
+     */
+    public static NamedNodeFilter exclude(String... names) {
+        return new NamedNodeFilter(names);
     }
 
     /**
      * Indicates whether some other object is "equal to" this one.
      *
      * @param obj the reference object with which to compare.
-     * @return <tt>true</tt> if this object is the same as the obj argument; <tt>false</tt> otherwise.
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
      */
     @Override
     public boolean equals(Object obj) {
@@ -69,11 +103,11 @@ public class NamedNodeFilter implements NodeFilter {
             return false;
         }
         NamedNodeFilter other = (NamedNodeFilter) obj;
-        if (exclude.length != other.exclude.length) {
+        if (names.length != other.names.length) {
             return false;
         }
-        for (String excluded : exclude) {
-            if (!ArrayUtils.contains(other.exclude, excluded)) {
+        for (String name : names) {
+            if (!ArrayUtils.contains(other.names, name)) {
                 return false;
             }
         }
@@ -85,13 +119,13 @@ public class NamedNodeFilter implements NodeFilter {
      *
      * @param descriptor the node descriptor
      * @param object     the object
-     * @return <tt>true</tt> if the node should be included; otherwise <tt>false</tt>
+     * @return {@code true} if the node should be included; otherwise {@code false}
      */
     public boolean include(NodeDescriptor descriptor, IMObject object) {
-        boolean result = true;
-        for (String excluded : exclude) {
-            if (excluded.equals(descriptor.getName())) {
-                result = false;
+        boolean result = exclude;
+        for (String name : names) {
+            if (name.equals(descriptor.getName())) {
+                result = !exclude;
                 break;
             }
         }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.layout;
@@ -24,13 +22,11 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -40,13 +36,10 @@ import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,16 +48,14 @@ import java.util.Map;
 /**
  * Abstract implementation of the {@link IMObjectLayoutStrategy} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
-     * List of component states, used to determine initial focus.
+     * The component states, used to determine initial focus.
      */
-    private final List<ComponentState> components
-            = new ArrayList<ComponentState>();
+    private ComponentSet components;
 
     /**
      * Pre-created component states, keyed on property name.
@@ -129,12 +120,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public ComponentState apply(IMObject object, PropertySet properties,
-                                IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         ComponentState state;
         if (inApply) {
             throw new IllegalStateException("Cannot call apply() recursively");
@@ -142,11 +132,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         inApply = true;
         try {
             focusGroup = new FocusGroup(DescriptorHelper.getDisplayName(object));
-            Column column = ColumnFactory.create("CellSpacing");
-            doLayout(object, properties, parent, column, context);
+            components = new ComponentSet(focusGroup);
+            Component container = doLayout(object, properties, parent, context);
             focusGroup.setDefault(getDefaultFocus());
-            state = new ComponentState(column, focusGroup);
-            components.clear();
+            state = new ComponentState(container, focusGroup);
+            components = null;
             if (!keepState) {
                 focusGroup = null;
             }
@@ -159,11 +149,25 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <code>null</code> if it hasn't been
-     *         initialised
+     * @return the focus group, or {@code null} if it hasn't been initialised
      */
     protected FocusGroup getFocusGroup() {
         return focusGroup;
+    }
+
+    /**
+     * Lay out out the object.
+     *
+     * @param object     the object to lay out
+     * @param properties the object's properties
+     * @param parent     the parent object. May be {@code null}
+     * @param context    the layout context
+     * @return the component
+     */
+    protected Component doLayout(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+        Column container = ColumnFactory.create("CellSpacing");
+        doLayout(object, properties, parent, container, context);
+        return container;
     }
 
     /**
@@ -171,12 +175,12 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param object     the object to lay out
      * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param container  the container to use
      * @param context    the layout context
      */
-    protected void doLayout(IMObject object, PropertySet properties, IMObject parent,
-                            Component container, LayoutContext context) {
+    protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
+                            LayoutContext context) {
         ArchetypeDescriptor archetype = context.getArchetypeDescriptor(object);
         List<NodeDescriptor> simple = getSimpleNodes(archetype);
         List<NodeDescriptor> complex = getComplexNodes(archetype);
@@ -193,35 +197,82 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Lays out child components in a grid.
      *
      * @param object      the object to lay out
-     * @param parent      the parent object. May be <tt>null</tt>
+     * @param parent      the parent object. May be {@code null}
      * @param descriptors the property descriptors
      * @param properties  the properties
      * @param container   the container to use
      * @param context     the layout context
      */
     protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                  PropertySet properties, Component container,
-                                  LayoutContext context) {
+                                  PropertySet properties, Component container, LayoutContext context) {
         if (!descriptors.isEmpty()) {
-            Grid grid = createGrid(descriptors);
-            doGridLayout(object, descriptors, properties, grid, context);
+            Grid grid = createGrid(object, descriptors, properties, context);
             container.add(ColumnFactory.create("Inset.Small", grid));
         }
+    }
+
+    /**
+     * Lays out components in a grid.
+     *
+     * @param object      the object to lay out
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param context     the layout context
+     */
+    protected Grid createGrid(IMObject object, List<NodeDescriptor> descriptors,
+                              PropertySet properties, LayoutContext context) {
+        int columns = getColumns(descriptors);
+        return createGrid(object, descriptors, properties, context, columns);
+    }
+
+    /**
+     * Lays out components in a grid.
+     *
+     * @param object      the object to lay out
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param context     the layout context
+     */
+    protected Grid createGrid(IMObject object, List<NodeDescriptor> descriptors,
+                              PropertySet properties, LayoutContext context, int columns) {
+        ComponentSet set = createComponentSet(object, descriptors, properties, context);
+        ComponentGrid grid = new ComponentGrid();
+        grid.add(set, columns);
+        return createGrid(grid);
+    }
+
+    /**
+     * Creates a grid.
+     *
+     * @param grid the component grid
+     * @return the corresponding grid
+     */
+    protected Grid createGrid(ComponentGrid grid) {
+        return grid.createGrid(components);
+    }
+
+    /**
+     * Determines the no. of columns to display.
+     *
+     * @param descriptors the node descriptors
+     * @return the number of columns
+     */
+    protected int getColumns(List<NodeDescriptor> descriptors) {
+        return (descriptors.size() <= 4) ? 1 : 2;
     }
 
     /**
      * Lays out each child component in a tabbed pane.
      *
      * @param object      the object to lay out
-     * @param parent      the parent object. May be <tt>null</tt>
+     * @param parent      the parent object. May be {@code null}
      * @param descriptors the property descriptors
      * @param properties  the properties
      * @param container   the container to use
      * @param context     the layout context
      */
     protected void doComplexLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                   PropertySet properties, Component container,
-                                   LayoutContext context) {
+                                   PropertySet properties, Component container, LayoutContext context) {
         if (!descriptors.isEmpty()) {
             TabModel model = doTabLayout(object, descriptors, properties, container, context, false);
             TabbedPane pane = TabbedPaneFactory.create(model);
@@ -236,10 +287,9 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param archetype the archetype
      * @return the simple nodes
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor#getSimpleNodeDescriptors()
+     * @see ArchetypeDescriptor#getSimpleNodeDescriptors()
      */
-    protected List<NodeDescriptor> getSimpleNodes(
-            ArchetypeDescriptor archetype) {
+    protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
         return archetype.getSimpleNodeDescriptors();
     }
 
@@ -248,21 +298,18 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param archetype the archetype
      * @return the complex nodes
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor#getComplexNodeDescriptors()
+     * @see ArchetypeDescriptor#getComplexNodeDescriptors()
      */
-    protected List<NodeDescriptor> getComplexNodes(
-            ArchetypeDescriptor archetype) {
+    protected List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype) {
         return archetype.getComplexNodeDescriptors();
     }
 
     /**
-     * Returns a node filter to filter nodes. This implementation return {@link
-     * LayoutContext#getDefaultNodeFilter()}.
+     * Returns a node filter to filter nodes. This implementation returns {@link LayoutContext#getDefaultNodeFilter()}.
      *
      * @param object  the object to filter nodes for
      * @param context the context
-     * @return a node filter to filter nodes, or <code>null</code> if no
-     *         filterering is required
+     * @return a node filter to filter nodes, or {@code null} if no filtering is required
      */
     protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         return context.getDefaultNodeFilter();
@@ -276,8 +323,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param filter  the node filter
      * @return a new chained node filter
      */
-    protected ChainedNodeFilter getNodeFilter(LayoutContext context,
-                                              NodeFilter filter) {
+    protected ChainedNodeFilter getNodeFilter(LayoutContext context, NodeFilter filter) {
         return FilterHelper.chain(context.getDefaultNodeFilter(), filter);
     }
 
@@ -289,55 +335,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param filter      the filter to use
      * @return the filtered nodes
      */
-    protected List<NodeDescriptor> filter(IMObject object,
-                                          List<NodeDescriptor> descriptors,
-                                          NodeFilter filter) {
+    protected List<NodeDescriptor> filter(IMObject object, List<NodeDescriptor> descriptors, NodeFilter filter) {
         return FilterHelper.filter(object, filter, descriptors);
-    }
-
-    /**
-     * Lays out child components in columns.
-     *
-     * @param object      the parent object
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param grid        the grid to use
-     * @param context     the layout context
-     */
-    protected void doGridLayout(IMObject object,
-                                List<NodeDescriptor> descriptors,
-                                PropertySet properties, Grid grid,
-                                LayoutContext context) {
-        ComponentSet set = createComponentSet(object, descriptors, properties,
-                                              context);
-        ComponentState[] states = set.getComponents().toArray(new ComponentState[set.getComponents().size()]);
-        Component[] components = new Component[states.length];
-        String[] labels = new String[states.length];
-        for (int i = 0; i < states.length; ++i) {
-            ComponentState state = states[i];
-            Component component = state.getComponent();
-            components[i] = component;
-            labels[i] = set.getLabel(state);
-            setFocusTraversal(state);
-            if (component instanceof SelectField) {
-                // workaround for render bug in firefox. See OVPMS-239
-                components[i] = RowFactory.create(component);
-            }
-        }
-        int size = components.length;
-        int columns = (grid.getSize() <= 2) ? 1 : 2;
-        int rows;
-        if (columns == 1) {
-            rows = size;
-        } else {
-            rows = (size / 2) + (size % 2);
-        }
-        for (int i = 0, j = rows; i < rows; ++i, ++j) {
-            add(grid, labels[i], components[i]);
-            if (j < size) {
-                add(grid, labels[j], components[j]);
-            }
-        }
     }
 
     /**
@@ -347,23 +346,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param container the container to add the grid to
      */
     protected void doGridLayout(ComponentGrid grid, Component container) {
-        Grid g = GridFactory.create(grid.getColumns() * 2);
-        for (int row = 0; row < grid.getRows(); ++row) {
-            for (int col = 0; col < grid.getColumns(); ++col) {
-                ComponentState state = grid.get(row, col);
-                if (state != null) {
-                    setFocusTraversal(state);
-                    Component component = state.getComponent();
-                    if (component instanceof SelectField) {
-                        // workaround for render bug in firefox. See OVPMS-239
-                        component = RowFactory.create(component);
-                    }
-                    add(g, state.getDisplayName(), component);
-                } else {
-                    add(g, null, LabelFactory.create());
-                }
-            }
-        }
+        Grid g = grid.createGrid(components);
         container.add(g);
     }
 
@@ -397,7 +380,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Creates a new tab model.
      *
-     * @param container the tab container. May be <tt>null</tt>
+     * @param container the tab container. May be {@code null}
      * @return a new tab model
      */
     protected TabPaneModel createTabModel(Component container) {
@@ -465,29 +448,42 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param context     the layout context
      * @return the components
      */
-    protected ComponentSet createComponentSet(IMObject object,
-                                              List<NodeDescriptor> descriptors,
-                                              PropertySet properties,
+    protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
                                               LayoutContext context) {
         ComponentSet result = new ComponentSet();
         for (NodeDescriptor descriptor : descriptors) {
-            Property property = properties.get(descriptor);
-            ComponentState component = createComponent(property, object,
-                                                       context);
-            String displayName = component.getDisplayName();
-            if (displayName == null) {
-                displayName = descriptor.getDisplayName();
-            }
-            result.add(component, displayName);
+            ComponentState component = createComponent(object, descriptor, properties, context);
+            result.add(component);
         }
         return result;
+    }
+
+    /**
+     * Creates a components to render the property associated with the supplied descriptor.
+     *
+     * @param object     the parent object
+     * @param descriptor the property descriptors
+     * @param properties the properties
+     * @param context    the layout context
+     * @return the components
+     */
+    protected ComponentState createComponent(IMObject object, NodeDescriptor descriptor, PropertySet properties,
+                                             LayoutContext context) {
+        Property property = properties.get(descriptor);
+        ComponentState component = createComponent(property, object, context);
+        String displayName = component.getDisplayName();
+        if (displayName == null) {
+            displayName = descriptor.getDisplayName();
+            component.setDisplayName(displayName);
+        }
+        return component;
     }
 
     /**
      * Helper to add a node to a container.
      *
      * @param container the container
-     * @param name      the node display name. May be <tt>null</tt>
+     * @param name      the node display name. May be {@code null}
      * @param component the component representing the node
      */
     protected void add(Component container, String name, Component component) {
@@ -495,6 +491,17 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         if (name != null) {
             label.setText(name);
         }
+        add(container, label, component);
+    }
+
+    /**
+     * Helper to add a node to a container.
+     *
+     * @param container the container
+     * @param label     the component label
+     * @param component the component representing the node
+     */
+    protected void add(Component container, Label label, Component component) {
         container.add(label);
         container.add(component);
     }
@@ -506,8 +513,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param name      the node display name
      * @param component the component representing the node
      */
-    protected void add(Component container, String name,
-                       ComponentState component) {
+    protected void add(Component container, String name, ComponentState component) {
         add(container, name, component.getComponent());
         setFocusTraversal(component);
     }
@@ -548,23 +554,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Creates a grid with the no. of columns determined by the no. of
-     * node descriptors.
-     *
-     * @param descriptors the node descriptors
-     * @return a new grid
-     */
-    protected Grid createGrid(List<NodeDescriptor> descriptors) {
-        return (descriptors.size() <= 4) ? GridFactory.create(2)
-                : GridFactory.create(4);
-    }
-
-    /**
      * Returns the default focus component.
      * <p/>
-     * Delegates to {@link #getDefaultFocus(List)}.
+     * Delegates to {@link #getDefaultFocus(ComponentSet)}.
      *
-     * @return the default focus component, or <tt>null</tt> if none is found
+     * @return the default focus component, or {@code null} if none is found
      */
     protected Component getDefaultFocus() {
         return getDefaultFocus(components);
@@ -576,75 +570,22 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * This implementation returns the first focusable component.
      *
      * @param components the components
-     * @return the default focus component, or <tt>null</tt> if none is found
+     * @return the default focus component, or {@code null} if none is found
      */
-    protected Component getDefaultFocus(List<ComponentState> components) {
-        return getFocusable(components);
-    }
-
-    /**
-     * Returns the first focusable component, selecting invalid properties
-     * in preference to other components.
-     *
-     * @param components the components
-     * @return the first focusable component
-     */
-    protected Component getFocusable(List<ComponentState> components) {
-        Component result = null;
-        for (ComponentState state : components) {
-            Component child = state.getFocusable();
-            if (child != null) {
-                Property property = state.getProperty();
-                if (property != null && !property.isValid()) {
-                    result = child;
-                    break;
-                }
-                if (result == null) {
-                    result = child;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the focusable component associated with the property with the specified name.
-     *
-     * @param components the components
-     * @param name       the property name
-     * @return the corresponding component, or <tt>null</tt> if none is found
-     */
-    protected Component getFocusable(List<ComponentState> components, String name) {
-        for (ComponentState state : components) {
-            Property property = state.getProperty();
-            if (property != null && name.equals(property.getName())) {
-                return state.getFocusable();
-            }
-        }
-        return null;
+    protected Component getDefaultFocus(ComponentSet components) {
+        return components.getFocusable();
     }
 
     /**
      * Sets the focus traversal index of a component, if it is a focus traversal
      * participant.
-     * NOTE: if a component doesn't specify a focus group,
-     * this may register a child component with the focus group rather than the
-     * parent.
+     * NOTE: if a component doesn't specify a focus group, this may register a child component with the focus group
+     * rather than the parent.
      *
      * @param state the component state
      */
     protected void setFocusTraversal(ComponentState state) {
-        Component component = state.getComponent();
-        if (state.getFocusGroup() != null) {
-            focusGroup.add(state.getFocusGroup());
-            components.add(state);
-        } else {
-            Component focusable = FocusHelper.getFocusable(component);
-            if (focusable != null) {
-                focusGroup.add(focusable);
-                components.add(state);
-            }
-        }
+        components.setFocusTraversal(state);
     }
 
     /**

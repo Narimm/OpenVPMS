@@ -12,24 +12,23 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.focus.FocusHelper;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
  * Component state.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ComponentState {
 
@@ -39,20 +38,24 @@ public class ComponentState {
     private final Component component;
 
     /**
-     * The component's property. May be <tt>null</tt>
+     * The component's property. May be {@code null}
      */
     private final Property property;
 
     /**
-     * The component's focus group. May be <tt>null</tt>
+     * The component's focus group. May be {@code null}
      */
     private final FocusGroup focusGroup;
 
     /**
-     * Display name for the component. May be <tt>null</tt>
+     * Display name for the component. May be {@code null}
      */
     private String displayName;
 
+    /**
+     * The label for the component. May be {@code null}
+     */
+    private Label label;
 
     /**
      * Constructs a new <tt>ComponentState</tt> for a component
@@ -68,8 +71,7 @@ public class ComponentState {
      * Constructs a new <tt>ComponentState</tt>, not associated with a node.
      *
      * @param component  the component
-     * @param focusGroup the component's focus group, or <tt>null</tt>
-     *                   if the component is a simple component or doesn't
+     * @param focusGroup the component's focus group, or {@code null} if the component is a simple component or doesn't
      *                   receive focus
      */
     public ComponentState(Component component, FocusGroup focusGroup) {
@@ -80,8 +82,7 @@ public class ComponentState {
      * Constructs a <tt>ComponentState</tt> not associated with a focus group.
      *
      * @param component the component
-     * @param property  the property, or <tt>null</tt> if the component
-     *                  isn't associated with a node
+     * @param property  the property, or {@code null} if the component isn't associated with a node
      */
     public ComponentState(Component component, Property property) {
         this(component, property, null);
@@ -91,14 +92,11 @@ public class ComponentState {
      * Constructs a <tt>ComponentState</tt>.
      *
      * @param component  the component
-     * @param property   the property, or <tt>null</tt> if the component
-     *                   isn't associated with a node
-     * @param focusGroup the component's focus group, or <tt>null</tt>
-     *                   if the component is a simple component or doesn't
+     * @param property   the property, or {@code null} if the component isn't associated with a node
+     * @param focusGroup the component's focus group, or {@code null} if the component is a simple component or doesn't
      *                   receive focus
      */
-    public ComponentState(Component component, Property property,
-                          FocusGroup focusGroup) {
+    public ComponentState(Component component, Property property, FocusGroup focusGroup) {
         this(component, property, focusGroup, null);
     }
 
@@ -109,24 +107,20 @@ public class ComponentState {
      */
     public ComponentState(PropertyEditor editor) {
         this(editor.getComponent(), editor.getProperty(), editor.getFocusGroup(),
-                editor.getProperty().getDisplayName());
+             editor.getProperty().getDisplayName());
     }
 
     /**
      * Constructs a new <tt>ComponentState</tt>.
      *
      * @param component   the component
-     * @param property    the property, or <tt>null</tt> if the component
-     *                    isn't associated with a node
-     * @param focusGroup  the component's focus group, or <tt>null</tt>
-     *                    if the component is a simple component or doesn't
-     *                    receive focus
-     * @param displayName a display name for the component. If not specified,
-     *                    defaults to the property's display name, if a
-     *                    property is supplied
+     * @param property    the property, or {@code null} if the component isn't associated with a node
+     * @param focusGroup  the component's focus group, or {@code null} if the component is a simple component or
+     *                    doesn't receive focus
+     * @param displayName a display name for the component. If not specified, defaults to the property's display name,
+     *                    if a property is supplied
      */
-    public ComponentState(Component component, Property property,
-                          FocusGroup focusGroup, String displayName) {
+    public ComponentState(Component component, Property property, FocusGroup focusGroup, String displayName) {
         this.component = component;
         this.property = property;
         this.focusGroup = focusGroup;
@@ -151,7 +145,7 @@ public class ComponentState {
     /**
      * The property associated with the component.
      *
-     * @return the property associated with the component, or <tt>null</tt>
+     * @return the property associated with the component, or {@code null}
      *         if the component isn't associated with a node
      */
     public Property getProperty() {
@@ -161,7 +155,7 @@ public class ComponentState {
     /**
      * Returns the component's focus group.
      *
-     * @return the component's focus group, or <tt>null</tt> if the
+     * @return the component's focus group, or {@code null} if the
      *         component is a simple component or doesn't receive focus
      */
     public FocusGroup getFocusGroup() {
@@ -169,9 +163,29 @@ public class ComponentState {
     }
 
     /**
+     * Returns a label for the component.
+     */
+    public Label getLabel() {
+        if (label == null) {
+            label = LabelFactory.create();
+            label.setText(displayName);
+        }
+        return label;
+    }
+
+    /**
+     * Sets the component label.
+     *
+     * @param label the label. May be {@code null}
+     */
+    public void setLabel(Label label) {
+        this.label = label;
+    }
+
+    /**
      * Returns a display name for the component.
      *
-     * @return a display name for the component. May be <tt>null</tt>
+     * @return a display name for the component. May be {@code null}
      */
     public String getDisplayName() {
         return displayName;
@@ -180,7 +194,7 @@ public class ComponentState {
     /**
      * Sets the display name for the component.
      *
-     * @param displayName the display name. May be <tt>null</tt>
+     * @param displayName the display name. May be {@code null}
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -189,8 +203,7 @@ public class ComponentState {
     /**
      * Returns the first component that may have focus set.
      *
-     * @return the first component that may have focus set, or
-     *         <tt>null</tt> if none may have focus set
+     * @return the first component that may have focus set, or {@code null} if none may have focus set
      */
     public Component getFocusable() {
         Component result;

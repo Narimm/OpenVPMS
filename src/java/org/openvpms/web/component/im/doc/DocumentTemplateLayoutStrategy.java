@@ -98,22 +98,19 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Lays out child components in 2 columns.
+     * Lays out components in a grid.
      *
-     * @param object      the parent object
+     * @param object      the object to lay out
      * @param descriptors the property descriptors
      * @param properties  the properties
-     * @param grid        the grid to use
      * @param context     the layout context
      */
     @Override
-    protected void doGridLayout(IMObject object,
-                                List<NodeDescriptor> descriptors,
-                                PropertySet properties, Grid grid,
-                                LayoutContext context) {
-        super.doGridLayout(object, descriptors, properties, grid,
-                           context);
+    protected Grid createGrid(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
+                              LayoutContext context) {
+        Grid grid = super.createGrid(object, descriptors, properties, context);
         add(grid, "Content", content);
+        return grid;
     }
 
     /**

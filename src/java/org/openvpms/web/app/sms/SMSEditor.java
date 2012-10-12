@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.sms;
@@ -27,14 +25,13 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
-import org.openvpms.web.component.echo.SMSTextArea;
+import org.openvpms.web.component.echo.CountedTextArea;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
@@ -54,8 +51,7 @@ import java.util.List;
 /**
  * An editor for SMS messages.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SMSEditor extends AbstractModifiable {
 
@@ -72,12 +68,12 @@ public class SMSEditor extends AbstractModifiable {
     /**
      * The text message.
      */
-    private SMSTextArea message;
+    private CountedTextArea message;
 
     /**
      * The text property. Used to support macro expansion.
      */
-    private Property property;
+    private SimpleProperty property;
 
     /**
      * Determines if this has been modified.
@@ -95,7 +91,13 @@ public class SMSEditor extends AbstractModifiable {
     private FocusGroup focus;
 
     /**
-     * Constructs an <tt>SMSEditor</tt>.
+     * Maximum SMS length.
+     */
+    private static final int MAX_LENGTH = 160;
+
+
+    /**
+     * Constructs an {@code SMSEditor}.
      */
     public SMSEditor() {
         this(Collections.<Contact>emptyList());
@@ -131,8 +133,9 @@ public class SMSEditor extends AbstractModifiable {
             });
         }
         property = new SimpleProperty("property", String.class);
+        property.setMaxLength(MAX_LENGTH);
         property.setTransformer(new StringPropertyTransformer(property, new Object(), false));
-        message = new BoundSMSTextArea(property, 40, 15);
+        message = new BoundCountedTextArea(property, 40, 15);
         message.setStyleName(Styles.DEFAULT);
         message.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {

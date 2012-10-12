@@ -12,38 +12,38 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.workflow.messaging;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.app.ContextSwitchListener;
+import org.openvpms.web.component.util.DateHelper;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 
 
 /**
  * Table model for <em>act.userMessage</em> and <em>act.systemMessage</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MessageTableModel extends AbstractActTableModel {
 
     /**
      * The node descriptor names to display in the table.
      */
-    private static final String[] NODES = {"to", "startTime", "reason", "description", "status", "item"};
+    private static final String[] NODES = {"description", "from", "reason", "status", "startTime", "item"};
 
 
     /**
@@ -54,6 +54,30 @@ public class MessageTableModel extends AbstractActTableModel {
      */
     public MessageTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
+    }
+
+    /**
+     * Helper to format an act start time.
+     * This excludes the date if the act was done today.
+     *
+     * @param act the act
+     * @return the formatted start time
+     */
+    public static String formatStartTime(Act act) {
+        String result;
+        DateFormat format;
+        Date startTime = act.getActivityStartTime();
+        if (startTime != null) {
+            if (DateHelper.compareDates(startTime, new Date()) == 0) {
+                format = DateHelper.getTimeFormat(DateFormat.SHORT);
+            } else {
+                format = DateHelper.getDateTimeFormat(false);
+            }
+            result = format.format(startTime);
+        } else {
+            result = "";
+        }
+        return result;
     }
 
     /**
@@ -88,7 +112,9 @@ public class MessageTableModel extends AbstractActTableModel {
     @Override
     protected Object getValue(Act object, DescriptorTableColumn column, int row) {
         Object result;
-        if ("item".equals(column.getName())) {
+        if ("startTime".equals(column.getName())) {
+            result = formatStartTime(object);
+        } else if ("item".equals(column.getName())) {
             List<IMObject> values = column.getValues(object);
             if (values != null && !values.isEmpty()) {
                 result = values.get(0);
