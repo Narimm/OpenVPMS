@@ -41,7 +41,8 @@
         <node name="description" path="/description" type="java.lang.String" displayName="Description"/>
         <node name="colour" path="/details/colour" type="java.lang.String" maxLength="10"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node dislayName="User Level" name="userLevel" path="/details/userLevel" type="java.lang.String" minCardinality="0">
+        <node dislayName="User Level" name="userLevel" path="/details/userLevel" type="java.lang.String"
+              minCardinality="0">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="0" value="0"/>
@@ -68,6 +69,20 @@
                     </propertyMap>
                 </propertyList>
                 <errorMessage>Can only add security.role objects</errorMessage>
+            </assertion>
+        </node>
+        <node name="groups" path="/entityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+              filter="entityRelationship.userGroup">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entityRelationship.userGroup"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active user group relationship</errorMessage>
             </assertion>
         </node>
         <node displayName="Category" name="classifications" path="/classifications" parentChild="false"

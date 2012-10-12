@@ -25,8 +25,7 @@
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
-						<property name="shortName"
-							value="security.user*" />
+						<property name="shortName" value="security.user*" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
