@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.user;
@@ -22,8 +20,7 @@ package org.openvpms.archetype.rules.user;
 /**
  * User archetypes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UserArchetypes {
 
@@ -31,6 +28,11 @@ public class UserArchetypes {
      * Default user.
      */
     public static final String USER = "security.user";
+
+    /**
+     * User group.
+     */
+    public static final String GROUP = "entity.userGroup";
 
     /**
      * User archetype short names.

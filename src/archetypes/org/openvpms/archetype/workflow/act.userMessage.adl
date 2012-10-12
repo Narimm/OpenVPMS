@@ -21,15 +21,16 @@
 		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Message'" />
-	    <node name="from" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+        <node name="from" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.author" readOnly="true"/>
         <node name="to" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.user" />
-		<node name="customer" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
+        <node displayName="Subject" name="description" type="java.lang.String" path="/description" minCardinality="1"/>
+        <node name="customer" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.customer" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.patient" />
-		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
+		<node name="startTime" displayName="Date" path="/activityStartTime" type="java.util.Date" readOnly="true" minCardinality="1" defaultValue="java.util.Date.new()"/>
 		<node name="reason" path="/reason" type="java.lang.String" minCardinality="1" >
 			<assertion name="lookup">
 				<property name="type" value="lookup" />
@@ -37,8 +38,8 @@
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
-		<node displayName="Notes" name="description" type="java.lang.String" path="/description" />
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'PENDING'" >
+        <node name="message" type="java.lang.String" path="/details/message" maxLength="5000"/>
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'PENDING'" >
 			<assertion name="lookup.local">
 				<propertyList name="entries">
 					<property name="PENDING" value="Pending" />
