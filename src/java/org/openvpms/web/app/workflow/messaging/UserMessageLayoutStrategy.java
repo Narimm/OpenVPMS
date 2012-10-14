@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.app.sms.BoundCountedTextArea;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -179,11 +178,11 @@ public class UserMessageLayoutStrategy extends AbstractLayoutStrategy {
      */
     private ComponentState createMessage(PropertySet properties, LayoutContext context) {
         Property message = properties.get("message");
-        TextComponent textArea;
-        if (context.isEdit()) {
-            textArea = new BoundCountedTextArea(message);
-        } else {
-            textArea = new BoundTextArea(message);
+        TextComponent textArea = new BoundTextArea(message);
+        if (message.getMaxLength() != -1) {
+            textArea.setMaximumLength(message.getMaxLength());
+        }
+        if (!context.isEdit()) {
             textArea.setEnabled(false);
         }
         textArea.setStyleName("UserMessage.message");

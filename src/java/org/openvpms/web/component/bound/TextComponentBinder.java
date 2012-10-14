@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.bound;
@@ -29,20 +27,19 @@ import org.openvpms.web.component.property.Property;
 /**
  * Helper to bind a property to a text component..
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 class TextComponentBinder extends Binder {
 
     /**
      * The text component to bind to.
      */
-    private final TextComponent _component;
+    private final TextComponent component;
 
     /**
      * The document update listener.
      */
-    private final DocumentListener _listener;
+    private final DocumentListener listener;
 
 
     /**
@@ -53,14 +50,14 @@ class TextComponentBinder extends Binder {
      */
     public TextComponentBinder(TextComponent component, Property property) {
         super(property, false);
-        _component = component;
+        this.component = component;
 
-        _listener = new DocumentListener() {
+        listener = new DocumentListener() {
             public void onUpdate(DocumentEvent event) {
                 setProperty();
             }
         };
-        _component.getDocument().addDocumentListener(_listener);
+        this.component.getDocument().addDocumentListener(listener);
 
         // Register an action listener to ensure document update events
         // are triggered in a timely fashion
@@ -69,7 +66,7 @@ class TextComponentBinder extends Binder {
                 // no-op.
             }
         };
-        _component.addActionListener(actionListener);
+        this.component.addActionListener(actionListener);
         bind();
     }
 
@@ -79,7 +76,7 @@ class TextComponentBinder extends Binder {
      * @return the value of the field
      */
     protected Object getFieldValue() {
-        return _component.getText();
+        return component.getText();
     }
 
     /**
@@ -88,9 +85,9 @@ class TextComponentBinder extends Binder {
      * @param value the value to set
      */
     protected void setFieldValue(Object value) {
-        _component.getDocument().removeDocumentListener(_listener);
+        component.getDocument().removeDocumentListener(listener);
         String text = (value != null) ? value.toString() : null;
-        _component.setText(text);
-        _component.getDocument().addDocumentListener(_listener);
+        component.setText(text);
+        component.getDocument().addDocumentListener(listener);
     }
 }
