@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.im.report;
@@ -29,8 +27,7 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
 /**
  * Factory for {@link Reporter} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ReporterFactory {
 
@@ -45,6 +42,14 @@ public class ReporterFactory {
     private static final Log log = LogFactory.getLog(ReporterFactory.class);
 
 
+    /**
+     * Creates a new {@link Reporter}.
+     *
+     * @param object   the object to report on
+     * @param template the document template
+     * @param type     the expected type of the reporter
+     * @return a new reporter
+     */
     @SuppressWarnings("unchecked")
     public static <T extends IMObject, R extends Reporter<T>> R create(T object, DocumentTemplate template,
                                                                        Class type) {
@@ -54,13 +59,21 @@ public class ReporterFactory {
                 result = (R) new IMObjectReporter<T>(object, template);
             } else {
                 throw new IllegalArgumentException("No Reporters extend " + type.getName()
-                                                   + " and support archetype="
-                                                   + object.getArchetypeId().getShortName());
+                                                           + " and support archetype="
+                                                           + object.getArchetypeId().getShortName());
             }
         }
         return result;
     }
 
+    /**
+     * Creates a new {@link Reporter}.
+     *
+     * @param objects  the objects to report on
+     * @param template the document template
+     * @param type     the expected type of the reporter
+     * @return a new reporter
+     */
     @SuppressWarnings("unchecked")
     public static <T extends IMObject, R extends Reporter<T>> R create(Iterable<T> objects, DocumentTemplate template,
                                                                        Class type) {
@@ -70,12 +83,20 @@ public class ReporterFactory {
                 result = (R) new IMObjectReporter<T>(objects, template);
             } else {
                 throw new IllegalArgumentException("No Reporters extend " + type.getName()
-                                                   + " and support archetype=" + template.getArchetype());
+                                                           + " and support archetype=" + template.getArchetype());
             }
         }
         return result;
     }
 
+    /**
+     * Creates a new {@link Reporter}.
+     *
+     * @param object  the object to report on
+     * @param locator the document template locator
+     * @param type    the expected type of the reporter
+     * @return a new reporter
+     */
     @SuppressWarnings("unchecked")
     public static <T extends IMObject, R extends Reporter<T>> R create(T object, DocumentTemplateLocator locator,
                                                                        Class type) {
@@ -84,23 +105,32 @@ public class ReporterFactory {
             if (type.isAssignableFrom(IMObjectReporter.class)) {
                 result = (R) new IMObjectReporter<T>(object, locator);
             } else {
-                throw new IllegalArgumentException("No Reporters extend " + type.getName()
-                                                   + " and support archetype="
-                                                   + object.getArchetypeId().getShortName());
+                throw new IllegalArgumentException("No Reporters extend " + type.getName() + " and support archetype="
+                                                           + object.getArchetypeId().getShortName());
             }
         }
         return result;
     }
 
+    /**
+     * Creates a new {@link Reporter}.
+     *
+     * @param objects  the objects to report on
+     * @param locator the document template locator
+     * @param type    the expected type of the reporter
+     * @return a new reporter
+     */
     @SuppressWarnings("unchecked")
     public static <T extends IMObject, R extends Reporter> R create(Iterable<T> objects,
                                                                     DocumentTemplateLocator locator, Class type) {
         R result = newInstance(locator.getShortName(), objects, locator, type);
-        if (result == null && type.isAssignableFrom(IMObjectReporter.class)) {
-            result = (R) new IMObjectReporter<T>(objects, locator);
-        } else {
-            throw new IllegalArgumentException("No Reporters extend " + type.getClass().getName()
-                                               + " and support archetype=" + locator.getShortName());
+        if (result == null) {
+            if (type.isAssignableFrom(IMObjectReporter.class)) {
+                result = (R) new IMObjectReporter<T>(objects, locator);
+            } else {
+                throw new IllegalArgumentException("No Reporters extend " + type.getName() + " and support archetype="
+                                                           + locator.getShortName());
+            }
         }
         return result;
     }
@@ -134,7 +164,7 @@ public class ReporterFactory {
                 }
                 if (result != null && !type.isAssignableFrom(result.getClass())) {
                     log.error("Reporter of type " + result.getClass().getName()
-                              + " is not an instance of " + type.getName());
+                                      + " is not an instance of " + type.getName());
                     result = null;
                 }
             } catch (Throwable exception) {
