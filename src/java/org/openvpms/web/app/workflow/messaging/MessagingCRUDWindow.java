@@ -191,7 +191,13 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
         User to = editor.getTo();
 
         String subject = editor.getSubject();
+        if (subject == null) {
+            subject = "";
+        }
         String message = editor.getMessage();
+        if (message == null) {
+            message = "";
+        }
         String date = DateHelper.formatDateTime(editor.getStartTime(), false);
         String fromName = (from != null) ? from.getName() : "";
         String toName = (to != null) ? to.getName() : null;
