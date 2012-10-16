@@ -25,7 +25,8 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="/name" />
-		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

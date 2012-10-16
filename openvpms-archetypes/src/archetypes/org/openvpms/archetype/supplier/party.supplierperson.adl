@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
 -->
 <archetypes>
     <archetype name="party.supplierperson.1.0" latest="true"
@@ -44,6 +42,7 @@
               minCardinality="1" maxLength="30">
             <assertion name="propercase"/>
         </node>
+        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="300"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
