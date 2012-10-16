@@ -12,48 +12,42 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
 -->
 <archetypes>
-	<archetype name="entityRelationship.supplierRepresentatives.1.0"
-		latest="true"
-		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Supplier Representatives" >
-		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Practice Veterinarians', '')" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat('Practice Veterinarian', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')" />
-		<node name="activeStartTime" displayName="From Date" path="/activeStartTime"
-			type="java.util.Date" minCardinality="1"
-			defaultValue="java.util.Date.new()" />
-		<node name="activeEndTime" displayName="To Date" path="/activeEndTime"
-			type="java.util.Date" minCardinality="0" />
-		<node name="source" displayName="Supplier" path="/source"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="party.supplierorganisation" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="target" displayName="Contact" path="/target"
-			type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="party.supplierperson" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-	</archetype>
+    <archetype name="entityRelationship.supplierRepresentatives.1.0"
+               latest="true"
+               type="org.openvpms.component.business.domain.im.common.EntityRelationship"
+               displayName="Supplier Representative">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Supplier Representative'"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat('Representative (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
+        <node name="activeStartTime" displayName="From Date" path="/activeStartTime"
+              type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()"/>
+        <node name="activeEndTime" displayName="To Date" path="/activeEndTime"
+              type="java.util.Date" minCardinality="0"/>
+        <node name="source" displayName="Supplier" path="/source"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="party.supplierorganisation"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="target" displayName="Contact" path="/target"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="party.supplierperson"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
 </archetypes>
