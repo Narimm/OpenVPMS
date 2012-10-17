@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.reporting.statement;
 
@@ -85,6 +83,8 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         bean.setValue("emailText", "Statement text");
         if (entity.isNew() || helper.getDocumentAct(entity) == null) {
             DocumentTestHelper.createDocumentTemplate(entity);
+        } else {
+            bean.save();
         }
     }
 
@@ -129,7 +129,6 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         StatementEmailProcessor emailprocessor = new StatementEmailProcessor(sender, "Foo", "foo@bar.com", getPractice());
         emailprocessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);
-
     }
 
     /**

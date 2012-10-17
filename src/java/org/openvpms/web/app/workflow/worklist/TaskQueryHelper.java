@@ -12,14 +12,12 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -32,10 +30,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.util.DateHelper;
 
 import java.util.Date;
 
@@ -43,69 +38,33 @@ import java.util.Date;
 /**
  * Helper for task queries.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class TaskQueryHelper {
 
-    /**
-     * Helper to create a date range constraint for a particular date.
-     *
-     * @param date the date
-     * @return a new constraint
-     */
-    public static IConstraint createDateRangeConstraint(Date date) {
-        Date from = DateHelper.getDayMonthYear(date);
-        long end = from.getTime() + DateUtils.MILLIS_PER_DAY - DateUtils.MILLIS_PER_SECOND;
-        Date to = new Date(end);
-        return createDateRangeConstraint(from, to);
-    }
 
     /**
-     * Helper to create a constraint of the form:
-     * <code>act.startTime <= to && (act.endTime >= from || act.endTime == null)
-     * </code>
+     * Determines there are too many outstanding tasks for a worklist associated with an act.
      *
-     * @param from the from date
-     * @param to   the to date
-     * @return a new constraint
-     */
-    public static IConstraint createDateRangeConstraint(Date from, Date to) {
-        return Constraints.and(Constraints.lte("startTime", to),
-                               Constraints.or(Constraints.gte("endTime", from),
-                                              Constraints.isNull("endTime")));
-    }
-
-    /**
-     * Determines there are too many outstanding tasks for a worklist associated
-     * with an act.
-     *
-     * @param act the act. Any instance of <em>act.customerTask</em> with a
-     *            non-null start date.
-     * @return <code>true</code> if there are too many outstanding tasks;
-     *         otherwise <code>false</code>
+     * @param act the act. An instance of <em>act.customerTask</em> with a non-null start date.
+     * @return {@code true} if there are too many outstanding tasks; otherwise {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static boolean tooManyTasks(Act act) {
         boolean result = false;
         ActBean actBean = new ActBean(act);
         Date startTime = act.getActivityStartTime();
-        Party workList = (Party) actBean.getParticipant(
-                "participation.worklist");
+        Party workList = (Party) actBean.getNodeParticipant("worklist");
         if (startTime != null && workList != null) {
             IMObjectBean bean = new IMObjectBean(workList);
             int maxSlots = bean.getInt("maxSlots");
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            ArchetypeQuery query
-                    = new ArchetypeQuery("act.customerTask", false, true);
-            query.add(new ParticipantConstraint("worklist",
-                                                "participation.worklist",
-                                                workList));
-            query.add(new NodeConstraint("id", RelationalOp.NE, act.getId()));
-            query.add(new NodeConstraint("status", RelationalOp.NE,
-                                         FinancialActStatus.CANCELLED));
-            query.add(createDateRangeConstraint(startTime));
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.TASK, false, true);
+            query.add(new ParticipantConstraint("worklist", ScheduleArchetypes.WORKLIST_PARTICIPATION, workList));
+            query.add(Constraints.ne("id", act.getId()));
+            query.add(Constraints.and(Constraints.ne("status", FinancialActStatus.CANCELLED),
+                                      Constraints.ne("status", FinancialActStatus.COMPLETED)));
+            query.add(createDateRangeConstraint(startTime, act.getActivityEndTime()));
             query.setFirstResult(0);
             query.setMaxResults(1);
             query.setCountResults(true);
@@ -114,6 +73,35 @@ class TaskQueryHelper {
             if (totalResults >= maxSlots) {
                 result = true;
             }
+        }
+        return result;
+    }
+
+    /**
+     * Helper to create a date range constraint for a particular date.
+     *
+     * @param date the date
+     * @return a new constraint
+     */
+    private static IConstraint createDateRangeConstraint(Date date) {
+        return Constraints.and(Constraints.lte("startTime", date),
+                               Constraints.or(Constraints.gte("endTime", date), Constraints.isNull("endTime")));
+    }
+
+    /**
+     * Helper to create a constraint of the form:<br/>
+     * {@code act.startTime <= from && (act.endTime >= from || act.endTime == null)}
+     *
+     * @param from the from date
+     * @param to   the to date. May be {@code null}
+     * @return a new constraint
+     */
+    private static IConstraint createDateRangeConstraint(Date from, Date to) {
+        IConstraint result;
+        if (to != null) {
+            result = Constraints.or(createDateRangeConstraint(from), createDateRangeConstraint(to));
+        } else {
+            result = Constraints.or(Constraints.gte("startTime", from), createDateRangeConstraint(from));
         }
         return result;
     }
