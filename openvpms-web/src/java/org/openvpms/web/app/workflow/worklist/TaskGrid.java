@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
@@ -34,8 +32,7 @@ import java.util.Map;
 /**
  * Task event grid.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskGrid implements ScheduleEventGrid {
 
@@ -88,8 +85,8 @@ public class TaskGrid implements ScheduleEventGrid {
 
             // display up to events + 1 slots
             int events = schedule.getSlots() + 1;
-            if (slots < events && events <= schedule.getMaxSlots()) {
-                slots = events;
+            if (slots < events) {
+                slots = (events <= schedule.getMaxSlots()) ? events : schedule.getMaxSlots();
             } else if (slots == 0) {
                 slots = schedule.getSlots();
             }
@@ -169,7 +166,7 @@ public class TaskGrid implements ScheduleEventGrid {
     public Date getStartTime(Schedule schedule, int slot) {
         PropertySet event = getEvent(schedule, slot);
         return (event != null)
-               ? event.getDate(ScheduleEvent.ACT_START_TIME) : null;
+                ? event.getDate(ScheduleEvent.ACT_START_TIME) : null;
     }
 
     /**

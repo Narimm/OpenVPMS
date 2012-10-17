@@ -12,14 +12,10 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
 
-import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
-import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,18 +26,21 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
+import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
+
 
 /**
  * An editor for <em>act.customerTask</em>s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskActEditor extends AbstractScheduleActEditor {
 
@@ -123,6 +122,23 @@ public class TaskActEditor extends AbstractScheduleActEditor {
     }
 
     /**
+     * Validates the object.
+     * <p/>
+     * This extends validation by ensuring that there are not too many tasks.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean result = super.doValidation(validator);
+        if (result) {
+            result = checkMaxSlots();
+        }
+        return result;
+    }
+
+    /**
      * Invoked when layout has completed. All editors have been created.
      */
     @Override
@@ -161,20 +177,18 @@ public class TaskActEditor extends AbstractScheduleActEditor {
     /**
      * Determines if there are enough slots available to save the task.
      *
-     * @return <tt>true</tt> if there are less than maxSlots tasks,
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if there are less than maxSlots tasks, otherwise {@code false}
      */
     private boolean checkMaxSlots() {
-        IMObject object = getObject();
-        boolean result = true;
-        if (isValid()) {
-            Act act = (Act) object;
-            if (TaskQueryHelper.tooManyTasks(act)) {
-                String title = Messages.get("workflow.worklist.toomanytasks.title");
-                String message = Messages.get("workflow.worklist.toomanytasks.message");
-                ErrorDialog.show(title, message);
-                result = false;
-            }
+        boolean result;
+        Act act = (Act) getObject();
+        if (TaskQueryHelper.tooManyTasks(act)) {
+            String title = Messages.get("workflow.worklist.toomanytasks.title");
+            String message = Messages.get("workflow.worklist.toomanytasks.message");
+            ErrorDialog.show(title, message);
+            result = false;
+        } else {
+            result = true;
         }
         return result;
     }
