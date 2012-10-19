@@ -43,7 +43,7 @@ public class MessageTableModel extends AbstractActTableModel {
     /**
      * The node descriptor names to display in the table.
      */
-    private static final String[] NODES = {"description", "from", "reason", "status", "startTime", "item"};
+    private static final String[] NODES = {"startTime", "description", "from", "reason", "status", "item"};
 
 
     /**
