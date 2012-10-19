@@ -23,7 +23,7 @@
               derivedValue="'Message'"/>
         <node name="to" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.user"/>
-        <node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
+        <node name="startTime" displayName="Date" path="/activityStartTime" type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()"/>
         <node name="reason" path="/reason" type="java.lang.String" minCardinality="0">
             <assertion name="lookup.local">
