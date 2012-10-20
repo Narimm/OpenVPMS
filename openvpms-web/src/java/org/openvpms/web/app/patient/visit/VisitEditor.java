@@ -400,6 +400,7 @@ public class VisitEditor {
      * Invoked when the invoice tab is selected.
      */
     private void onInvoiceSelected() {
+        chargeWindow.getEditor().getFocusGroup().setFocus();
         if (listener != null) {
             listener.invoiceSelected();
         }
@@ -409,6 +410,7 @@ public class VisitEditor {
      * Invoked when the reminders tab is selected.
      */
     private void onRemindersSelected() {
+        reminderWindow.getBrowser().setFocusOnResults();
         if (listener != null) {
             listener.remindersSelected();
         }
@@ -421,6 +423,8 @@ public class VisitEditor {
         if (!documentsQueried) {
             documentBrowser.query();
             documentsQueried = true;
+        } else {
+            documentBrowser.setFocusOnResults();
         }
         if (listener != null) {
             listener.documentsSelected();
