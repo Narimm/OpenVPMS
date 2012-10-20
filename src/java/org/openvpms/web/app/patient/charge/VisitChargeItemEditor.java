@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.patient.charge;
 
@@ -26,6 +24,7 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 
 
 /**
@@ -68,5 +67,19 @@ public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
                 return FilterHelper.chain(patientFilter, context.getDefaultNodeFilter(), getFilter());
             }
         };
+    }
+
+    /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        // the patient node is hidden, so need to update the product with the current patient to restrict
+        // product searches by species
+        ProductParticipationEditor product = getProductEditor();
+        if (product != null) {
+            product.setPatient(getPatient());
+        }
     }
 }
