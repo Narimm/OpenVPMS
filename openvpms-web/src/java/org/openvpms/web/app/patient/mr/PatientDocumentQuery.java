@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.patient.mr;
@@ -29,8 +27,7 @@ import org.openvpms.web.component.im.query.DateRangeActQuery;
  * Queries <em>act.patientDocumentForm</em>, <em>act.patientDocumentLetter</em>, <em>act.patientDocumentAttachment</em>
  * <em>act.patientDocumentImage</em> and <em>act.patientInvestigation</em> acts for a patient.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class PatientDocumentQuery<T extends Act> extends DateRangeActQuery<T> {
 
@@ -62,5 +59,6 @@ public class PatientDocumentQuery<T extends Act> extends DateRangeActQuery<T> {
      */
     public PatientDocumentQuery(Party patient) {
         super(patient, "patient", "participation.patient", DOCUMENT_SHORT_NAMES, DOC_STATUSES, Act.class);
+        setAuto(true);
     }
 }
