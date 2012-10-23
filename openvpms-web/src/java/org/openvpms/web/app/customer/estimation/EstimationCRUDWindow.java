@@ -22,6 +22,8 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
@@ -168,7 +170,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
             if (CANCELLED.equals(status) || INVOICED.equals(status)) {
                 showStatusError(act, "customer.estimation.noinvoice.title",
                                 "customer.estimation.noinvoice.message");
-            } else if (act.getActivityEndTime() != null && act.getActivityEndTime().before(new Date())) {
+            } else if (expired(act)) {
                 showStatusError(act, "customer.estimation.expired.title", "customer.estimation.expired.message");
             } else {
                 String title = Messages.get("customer.estimation.invoice.title");
@@ -185,6 +187,21 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         } else {
             ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
         }
+    }
+
+    /**
+     * Determines if an estimation has expired.
+     *
+     * @param act the estimation act
+     * @return the estimation act
+     */
+    private boolean expired(Act act) {
+        boolean result = false;
+        Date endTime = DateRules.getDate(act.getActivityEndTime());
+        if (endTime != null) {
+            result = endTime.before(DateRules.getToday());
+        }
+        return result;
     }
 
     /**
