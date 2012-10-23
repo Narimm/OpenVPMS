@@ -63,6 +63,11 @@ public class DateHelper {
     private static final String TIME_VIEW_PATTERN;
 
     /**
+     * Date/time view pattern.
+     */
+    private static final String DATE_TIME_VIEW_PATTERN;
+
+    /**
      * Date/time to generate a maximum width (in en locales).
      */
     private static final Date WIDE_DATE;
@@ -218,8 +223,7 @@ public class DateHelper {
      * Returns a date-time format.
      *
      * @param edit if {@code true} return a format for editing otherwise
-     *             return a format for viewing date-times.
-     * @return a date-time format
+     * @return a format for viewing date-times.
      */
     public static DateFormat getDateTimeFormat(boolean edit) {
         DateFormat format;
@@ -228,6 +232,8 @@ public class DateHelper {
             // specify SHORT style for dates when parsing, so that 2 digit years
             // are handled correctly
             format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+        } else if (DATE_TIME_VIEW_PATTERN != null) {
+            format = new SimpleDateFormat(DATE_TIME_VIEW_PATTERN, locale);
         } else {
             format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale);
         }
@@ -279,8 +285,7 @@ public class DateHelper {
      */
     public static String formatTime(long time) {
         long hours = time / DateUtils.MILLIS_PER_HOUR;
-        long mins = (time % DateUtils.MILLIS_PER_HOUR)
-                / DateUtils.MILLIS_PER_MINUTE;
+        long mins = (time % DateUtils.MILLIS_PER_HOUR) / DateUtils.MILLIS_PER_MINUTE;
         return Messages.get("time.format.abs", hours, mins);
     }
 
@@ -412,6 +417,9 @@ public class DateHelper {
 
         String timeView = Messages.get("time.format.view", true);
         TIME_VIEW_PATTERN = (!StringUtils.isEmpty(timeView)) ? timeView : null;
+
+        String dateTimeView = Messages.get("datetime.format.view", true);
+        DATE_TIME_VIEW_PATTERN = (!StringUtils.isEmpty(dateTimeView)) ? dateTimeView : null;
 
         Calendar calendar = new GregorianCalendar(2006, 12, 30, 12, 59, 59);
         WIDE_DATE = calendar.getTime();
