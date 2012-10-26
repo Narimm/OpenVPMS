@@ -176,4 +176,22 @@ public class DateRules {
     public static boolean between(Date date, Date lowerBound, Date upperBound) {
         return (compareTo(date, lowerBound) >= 0 && compareTo(date, upperBound) <= 0);
     }
+
+    /**
+     * Determines if a date falls between two dates, inclusive.
+     * <p/>
+     * Any time component of the specified dates is ignored.
+     *
+     * @param date the date to compare
+     * @param from the lower bound. If {@code null}, indicates there is no lower bound
+     * @param to   the upper bound. If {@code null}, indicates there is no upper bound
+     * @return {@code true} if the date falls between the two dates, inclusive; otherwise {@code false}
+     */
+    public static boolean betweenDates(Date date, Date from, Date to) {
+        date = getDate(date);
+        from = getDate(from);
+        to = getDate(to);
+        return (from == null || DateRules.compareTo(from, date) <= 0)
+               && (to == null || DateRules.compareTo(to, date) >= 0);
+    }
 }

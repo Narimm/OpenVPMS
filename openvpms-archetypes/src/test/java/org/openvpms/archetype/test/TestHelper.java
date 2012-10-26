@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.test;
@@ -54,8 +52,7 @@ import java.util.List;
 /**
  * Unit test helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TestHelper extends Assert {
 
@@ -269,9 +266,8 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createClinician(boolean save) {
-        User user = createUser("zvet" + System.currentTimeMillis(), false);
-        user.addClassification(
-                getLookup("lookup.userType", "CLINICIAN"));
+        User user =  createUser("zuser" + Math.abs((int) System.nanoTime()), false);
+        user.addClassification( getLookup("lookup.userType", "CLINICIAN"));
         if (save) {
             save(user);
         }

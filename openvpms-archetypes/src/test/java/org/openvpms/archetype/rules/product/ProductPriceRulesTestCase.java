@@ -12,25 +12,16 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.product;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -44,12 +35,20 @@ import java.util.Date;
 import java.util.Random;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
+import static org.openvpms.archetype.test.TestHelper.getDate;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
+
 
 /**
  * Tests the {@link ProductPriceRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
@@ -244,7 +243,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         BigDecimal two = new BigDecimal("2.0");
         BigDecimal three = new BigDecimal("3.0");
 
-        ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-01-31", false);
+        ProductPrice fixed1 = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false);
         ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
         ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
 
@@ -273,7 +272,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         checkPrice(null, two, FIXED_PRICE, "2008-01-31", product);
         checkPrice(fixed1, one, FIXED_PRICE, "2008-01-31", product);
         checkPrice(null, one, FIXED_PRICE, "2008-02-01", product);
-        checkPrice(fixed2, two, FIXED_PRICE, "2008-12-31", product);
+        checkPrice(fixed2, two, FIXED_PRICE, getDatetime("2008-12-31 23:45:00"), product); // verify time is ignored
         checkPrice(null, two, FIXED_PRICE, "2009-01-01", product);
 
         checkPrice(null, one, UNIT_PRICE, "2007-12-31", product);
@@ -470,7 +469,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verfies a price matches that expected.
+     * Verifies a price matches that expected.
      *
      * @param expected  the expected price
      * @param shortName the price short name
@@ -478,11 +477,23 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param product   the product to use
      */
     private void checkPrice(ProductPrice expected, String shortName, String date, Product product) {
-        assertEquals(expected, rules.getProductPrice(product, shortName, getDate(date)));
+        checkPrice(expected, shortName, getDate(date), product);
     }
 
     /**
-     * Verfies a price matches that expected.
+     * Verifies a price matches that expected.
+     *
+     * @param expected  the expected price
+     * @param shortName the price short name
+     * @param date      the date that the price applies to
+     * @param product   the product to use
+     */
+    private void checkPrice(ProductPrice expected, String shortName, Date date, Product product) {
+        assertEquals(expected, rules.getProductPrice(product, shortName, date));
+    }
+
+    /**
+     * Verifies a price matches that expected.
      *
      * @param expected  the expected price
      * @param price     the price
@@ -491,7 +502,20 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param product   the product to use
      */
     private void checkPrice(ProductPrice expected, BigDecimal price, String shortName, String date, Product product) {
-        assertEquals(expected, rules.getProductPrice(product, price, shortName, getDate(date)));
+        checkPrice(expected, price, shortName, getDate(date), product);
+    }
+
+    /**
+     * Verifies a price matches that expected.
+     *
+     * @param expected  the expected price
+     * @param price     the price
+     * @param shortName the price short name
+     * @param date      the date that the price applies to
+     * @param product   the product to use
+     */
+    private void checkPrice(ProductPrice expected, BigDecimal price, String shortName, Date date, Product product) {
+        assertEquals(expected, rules.getProductPrice(product, price, shortName, date));
     }
 
     /**
@@ -503,6 +527,20 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @return a new fixed price
      */
     private ProductPrice createFixedPrice(String from, String to, boolean defaultPrice) {
+        Date fromDate = (from != null) ? getDate(from) : null;
+        Date toDate = (to != null) ? getDate(to) : null;
+        return createFixedPrice(fromDate, toDate, defaultPrice);
+    }
+
+    /**
+     * Helper to create a new fixed price.
+     *
+     * @param from         the active from date. May be <tt>null</tt>
+     * @param to           the active to date. May be <tt>null</tt>
+     * @param defaultPrice <tt>true</tt> if the price is the default
+     * @return a new fixed price
+     */
+    private ProductPrice createFixedPrice(Date from, Date to, boolean defaultPrice) {
         ProductPrice result = createPrice(ProductArchetypes.FIXED_PRICE, from, to);
         IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("default", defaultPrice);
@@ -518,13 +556,25 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @return a new price
      */
     private ProductPrice createPrice(String shortName, String from, String to) {
-        ProductPrice result = (ProductPrice) create(shortName);
-        result.setName("XPrice");
         Date fromDate = (from != null) ? getDate(from) : null;
         Date toDate = (to != null) ? getDate(to) : null;
+        return createPrice(shortName, fromDate, toDate);
+    }
+
+    /**
+     * Helper to create a new price.
+     *
+     * @param shortName the short name
+     * @param from      the active from date. May be <tt>null</tt>
+     * @param to        the active to date. May be <tt>null</tt>
+     * @return a new price
+     */
+    private ProductPrice createPrice(String shortName, Date from, Date to) {
+        ProductPrice result = (ProductPrice) create(shortName);
+        result.setName("XPrice");
         result.setPrice(BigDecimal.ONE);
-        result.setFromDate(fromDate);
-        result.setToDate(toDate);
+        result.setFromDate(from);
+        result.setToDate(to);
         return result;
     }
 

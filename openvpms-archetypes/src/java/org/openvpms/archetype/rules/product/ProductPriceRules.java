@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.product;
@@ -49,8 +47,7 @@ import java.util.Set;
 /**
  * Product price rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z` $
+ * @author Tim Anderson
  */
 public class ProductPriceRules {
 
@@ -415,8 +412,7 @@ public class ProductPriceRules {
             if (TypeHelper.isA(price, shortName) && price.isActive()) {
                 Date from = price.getFromDate();
                 Date to = price.getToDate();
-                if ((from == null || DateRules.compareTo(from, date) <= 0)
-                    && (to == null || DateRules.compareTo(to, date) >= 0)) {
+                if (DateRules.betweenDates(date, from, to)) {
                     return true;
                 }
             }
