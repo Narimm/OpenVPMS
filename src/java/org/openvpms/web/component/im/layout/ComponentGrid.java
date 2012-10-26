@@ -163,7 +163,6 @@ public class ComponentGrid {
                 State state = getState(row, col);
                 if (state != null && state.getComponentState() != null) {
                     if (state.getComponentState() != null) {
-                        set.setFocusTraversal(state.getComponentState());
                         Component component = state.getComponent();
                         if (component instanceof SelectField) {
                             // workaround for render bug in firefox. See OVPMS-239
@@ -183,6 +182,15 @@ public class ComponentGrid {
                     grid.add(LabelFactory.create());
                     grid.add(LabelFactory.create());
                     col++;
+                }
+            }
+        }
+        // set the focus traversal in column order
+        for (int col = 0; col < columns; ++col) {
+            for (int row = 0; row < rows; ++row) {
+                State state = getState(row, col);
+                if (state != null && state.getComponentState() != null) {
+                    set.setFocusTraversal(state.getComponentState());
                 }
             }
         }
