@@ -353,6 +353,15 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     }
 
     /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
+    }
+
+    /**
      * Invoked when the property updates. Updates the selector and invokes
      * {@link #onUpdated}.
      */
