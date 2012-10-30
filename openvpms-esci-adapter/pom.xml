@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.6-beta-3-SNAPSHOT</version>
+        <version>1.6-beta-3</version>
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
