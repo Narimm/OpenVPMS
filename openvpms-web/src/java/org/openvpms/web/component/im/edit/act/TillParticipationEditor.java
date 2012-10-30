@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: PatientParticipationEditor.java 899 2006-05-18 04:13:02Z tanderson $
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -22,36 +20,30 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
 
 
 /**
- * Participation editor for patients. This updates the context when a till is
- * selected.
+ * Participation editor for tills. This updates the context when a till is selected.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-18 14:13:02 +1000 (Thu, 18 May 2006) $
+ * @author Tim Anderson
  */
 public class TillParticipationEditor extends ParticipationEditor<Party> {
 
     /**
-     * Construct a new <tt>TillParticipationEditor</tt>.
+     * Constructs a {@code TillParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
      * @param context       the layout context. May be <tt>null</tt>
      */
-    public TillParticipationEditor(Participation participation,
-                                   Act parent,
-                                   LayoutContext context) {
+    public TillParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
         if (!TypeHelper.isA(participation, "participation.till")) {
-            throw new IllegalArgumentException(
-                    "Invalid participation type:"
-                            + participation.getArchetypeId().getShortName());
+            throw new IllegalArgumentException("Invalid participation type: "
+                                                       + participation.getArchetypeId().getShortName());
         }
         if (participation.isNew() && participation.getEntity() == null) {
             Party till = getLayoutContext().getContext().getTill();
@@ -66,10 +58,8 @@ public class TillParticipationEditor extends ParticipationEditor<Party> {
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Party> createEntityEditor(
-            Property property) {
-        return new AbstractIMObjectReferenceEditor<Party>(
-                property, getParent(), getLayoutContext()) {
+    protected IMObjectReferenceEditor<Party> createEntityEditor(Property property) {
+        return new TillReferenceEditor(property, getParent(), getLayoutContext()) {
 
             @Override
             public boolean setObject(Party object) {

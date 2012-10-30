@@ -18,9 +18,6 @@
 
 package org.openvpms.web.app.workflow.checkout;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -30,17 +27,22 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.app.workflow.WorkflowTestHelper;
-import static org.openvpms.web.app.workflow.WorkflowTestHelper.cancelDialog;
-import static org.openvpms.web.app.workflow.WorkflowTestHelper.createTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
-import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.cancelDialog;
+import static org.openvpms.web.app.workflow.WorkflowTestHelper.createTask;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
@@ -225,6 +227,9 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         patient = TestHelper.createPatient(customer);
         clinician = TestHelper.createClinician();
         till = FinancialTestHelper.createTill();
+        EntityBean bean = new EntityBean(location);
+        bean.addNodeRelationship("tills", till);
+        save(location, till);
     }
 
     /**
@@ -295,6 +300,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
 
     /**
      * Verifies that the workflow cancels if the invoice confirmation dialog is cancelled.
+     *
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelFinaliseInvoice(boolean userClose) {
@@ -311,6 +317,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
 
     /**
      * Verifies that the workflow cancels if the payment confirmation is cancelled.
+     *
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelPaymentConfirmation(boolean userClose) {
@@ -326,7 +333,6 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         workflow.checkInvoice(ActStatus.POSTED, amount);
         assertNull(workflow.getPayment());
     }
-
 
 
     /**
