@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>maven-plugins</artifactId>
-        <version>1.6-beta-3-SNAPSHOT</version>
+        <version>1.6-beta-3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
