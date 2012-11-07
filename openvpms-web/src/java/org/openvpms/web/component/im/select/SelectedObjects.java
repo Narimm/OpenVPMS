@@ -148,6 +148,23 @@ public class SelectedObjects<T extends IMObject> {
     }
 
     /**
+     * Returns the first name for which there is no corresponding object.
+     *
+     * @return the first name, or {@code null} if none exists
+     */
+    public String getFirstNotFound() {
+        String result = null;
+        for (int i = 0; i < names.size() && i < objects.size(); ++i) {
+            String name = names.get(i);
+            T object = objects.get(i);
+            if (object == null || !StringUtils.equals(name, object.getName())) {
+                result = (name == null) ? "" : name;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Determines if this is valid.
      *
      * @return {@code true} if there is an object for each name
@@ -155,16 +172,7 @@ public class SelectedObjects<T extends IMObject> {
     public boolean isValid() {
         boolean valid = false;
         if (names.size() == objects.size()) {
-            boolean found = true;
-            for (int i = 0; i < names.size(); ++i) {
-                String name = names.get(i);
-                T object = objects.get(i);
-                if (object == null || !StringUtils.equals(name, object.getName())) {
-                    found = false;
-                    break;
-                }
-            }
-            valid = found;
+            valid = getFirstNotFound() == null;
         }
         return valid;
     }
