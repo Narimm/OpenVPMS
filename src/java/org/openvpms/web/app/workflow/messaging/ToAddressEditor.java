@@ -116,7 +116,7 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
         for (Entity entity : selector.getObjects()) {
             if (entity instanceof User) {
                 result.add((User) entity);
-            } else {
+            } else if (entity != null) {
                 if (!groups.contains(entity)) {
                     groups.add(entity);
                     List<User> users = getUsers(entity);
@@ -228,11 +228,17 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
     @Override
     protected boolean doValidation(Validator validator) {
         boolean valid = false;
-        if (!getTo().isEmpty()) {
+        if (selector.isValid() && !getTo().isEmpty()) {
             valid = true;
         } else {
             Property property = state.getProperty();
-            String message = Messages.get("property.error.required", property.getDisplayName());
+            String message;
+            String notFound = selector.getFirstNotFound();
+            if (notFound != null) {
+                message = Messages.get("workflow.message.invaliduserorgroup", notFound);
+            } else {
+                message = Messages.get("property.error.required", property.getDisplayName());
+            }
             validator.add(property, new ValidatorError(property, message));
         }
         return valid;

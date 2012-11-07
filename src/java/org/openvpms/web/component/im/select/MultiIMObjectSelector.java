@@ -252,6 +252,15 @@ public class MultiIMObjectSelector<T extends IMObject> {
     }
 
     /**
+     * Returns the first name for which there is no corresponding object.
+     *
+     * @return the first name, or {@code null} if none exists
+     */
+    public String getFirstNotFound() {
+        return objects.getFirstNotFound();
+    }
+
+    /**
      * Refreshes the field.
      */
     protected void refresh() {
