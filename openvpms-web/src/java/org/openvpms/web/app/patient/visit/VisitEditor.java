@@ -400,7 +400,10 @@ public class VisitEditor {
      * Invoked when the invoice tab is selected.
      */
     private void onInvoiceSelected() {
-        chargeWindow.getEditor().getFocusGroup().setFocus();
+        VisitChargeEditor editor = chargeWindow.getEditor();
+        if (editor != null) {
+            editor.getFocusGroup().setFocus();
+        }
         if (listener != null) {
             listener.invoiceSelected();
         }
