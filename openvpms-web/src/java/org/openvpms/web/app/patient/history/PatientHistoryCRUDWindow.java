@@ -199,7 +199,9 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     protected void onPrint() {
         if (query != null) {
             try {
-                Iterable<Act> summary = new ActHierarchyIterator<Act>(query, query.getActItemShortNames());
+                PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
+                // maxDepth = 2 - display the events, and their immediate children
+                Iterable<Act> summary = new ActHierarchyIterator<Act>(query, filter, 2);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
                                                                                      GlobalContext.getInstance());
                 IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator);
