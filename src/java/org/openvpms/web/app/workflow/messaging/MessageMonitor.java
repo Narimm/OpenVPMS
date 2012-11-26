@@ -32,6 +32,10 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.web.component.im.query.ParticipantConstraint;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -93,11 +97,12 @@ public class MessageMonitor {
      * @return <tt>true</tt> if there are unread messages; otherwise <tt>false</tt>
      */
     public boolean hasNewMessages(User user) {
-        MessageQuery query = new MessageQuery(user);
-        query.getComponent();
-        query.setStatus(MessageStatus.PENDING);
+        ArchetypeQuery query = new ArchetypeQuery(MessageQuery.ARCHETYPES, true, true);
+        query.add(Constraints.eq("status", MessageStatus.PENDING));
+        query.add(new ParticipantConstraint("to", "participation.user", user));
         query.setMaxResults(1);
-        return query.query().hasNext();
+        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
+        return iterator.hasNext();
     }
 
     public synchronized void addListener(User user, MessageListener listener) {
@@ -117,7 +122,7 @@ public class MessageMonitor {
         List<Listener> userListeners = listeners.get(userRef);
         if (userListeners != null) {
             purge(userListeners);
-            for (ListIterator<Listener> iter = userListeners.listIterator(); iter.hasNext();) {
+            for (ListIterator<Listener> iter = userListeners.listIterator(); iter.hasNext(); ) {
                 Listener state = iter.next();
                 if (ObjectUtils.equals(state.getMessageListener(), listener)) {
                     iter.remove();
@@ -169,7 +174,7 @@ public class MessageMonitor {
      * @param listeners the listeners
      */
     private void purge(List<Listener> listeners) {
-        for (ListIterator<Listener> iter = listeners.listIterator(); iter.hasNext();) {
+        for (ListIterator<Listener> iter = listeners.listIterator(); iter.hasNext(); ) {
             Listener listener = iter.next();
             if (!listener.active()) {
                 listener.destroy();
