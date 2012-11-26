@@ -49,6 +49,11 @@ import org.openvpms.web.resource.util.Messages;
 public class MessageQuery extends DateRangeActQuery<Act> {
 
     /**
+     * The archetypes to query.
+     */
+    public static final String[] ARCHETYPES = {MessageArchetypes.USER, MessageArchetypes.SYSTEM};
+
+    /**
      * The user selector.
      */
     private final IMObjectSelector<Entity> user;
@@ -58,11 +63,6 @@ public class MessageQuery extends DateRangeActQuery<Act> {
      * is selected.
      */
     private static final ActStatuses STATUSES = new ActStatuses(MessageArchetypes.USER);
-
-    /**
-     * The archetypes to query.
-     */
-    private static final String[] ARCHETYPES = {MessageArchetypes.USER, MessageArchetypes.SYSTEM};
 
     /**
      * The default statuses to query.
