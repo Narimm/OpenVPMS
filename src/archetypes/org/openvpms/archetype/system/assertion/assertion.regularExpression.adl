@@ -20,7 +20,7 @@
 		latest="true" primary="true"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor">
 		<node name="name" path="/name" displayName="Regular Expression"
-			defaultValue="'lookup'" type="java.lang.String" minCardinality="1"
+			defaultValue="'regularExpression'" type="java.lang.String" minCardinality="1"
 			hidden="true" />
 		<node name="propertyMap" path="/propertyMap"
 			type="org.openvpms.component.business.domain.im.datatypes.property.PropertyMap"
