@@ -58,17 +58,29 @@ public class DocumentException extends OpenVPMSException {
      * The appropriate resource file is loaded cached into memory when this
      * class is loaded.
      */
-    private static Messages MESSAGES
-            = Messages.getMessages("org.openvpms.archetype.rules.doc."
-            + OpenVPMSException.ERRMESSAGES_FILE);
+    private static Messages MESSAGES = Messages.getMessages("org.openvpms.archetype.rules.doc."
+                                                            + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Constructs a new <code>DocumentException</code>.
+     * Constructs a {@code DocumentException}.
      *
      * @param errorCode the error code
+     * @param args      message arguments
      */
-    public DocumentException(ErrorCode errorCode, Object ... args) {
+    public DocumentException(ErrorCode errorCode, Object... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args));
+        this.errorCode = errorCode;
+    }
+
+    /**
+     * Constructs a {@code DocumentException}.
+     *
+     * @param errorCode the error code
+     * @param exception the cause
+     * @param args      message arguments
+     */
+    public DocumentException(ErrorCode errorCode, Throwable exception, Object... args) {
+        super(MESSAGES.getMessage(errorCode.toString(), args), exception);
         this.errorCode = errorCode;
     }
 
