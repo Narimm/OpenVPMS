@@ -21,13 +21,17 @@ package org.openvpms.web.app.customer.estimation;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
+import org.openvpms.web.app.workflow.GetInvoiceTask;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -40,6 +44,8 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.workflow.DefaultTaskContext;
+import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -210,10 +216,32 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * @param estimation the estimation
      */
     private void invoice(final Act estimation) {
-        rules = new EstimationRules();
+        try {
+            final FinancialAct invoice = getInvoice(estimation);
+            if (invoice != null) {
+                String title = Messages.get("customer.estimation.existinginvoice.title");
+                String message = Messages.get("customer.estimation.existinginvoice.message");
+                ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        invoice(estimation, invoice);
+                    }
+                });
+                dialog.show();
+            } else {
+                invoice(estimation, invoice);
+            }
+        } catch (OpenVPMSException exception) {
+            String title = Messages.get("customer.estimation.invoice.failed");
+            ErrorHelper.show(title, exception);
+        }
+    }
+
+    private void invoice(final Act estimation, FinancialAct invoice) {
         try {
             EstimationInvoicer invoicer = new EstimationInvoicer();
-            CustomerChargeActEditDialog editor = invoicer.invoice(estimation, new DefaultLayoutContext(true));
+            CustomerChargeActEditDialog editor = invoicer.invoice(estimation, invoice, new DefaultLayoutContext(true));
             editor.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     onRefresh(estimation);
@@ -223,6 +251,19 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
             String title = Messages.get("customer.estimation.invoice.failed");
             ErrorHelper.show(title, exception);
         }
+    }
+
+    private FinancialAct getInvoice(Act estimation) {
+        ActBean bean = new ActBean(estimation);
+        Party customer = (Party) bean.getNodeParticipant("customer");
+        if (customer != null) {
+            TaskContext context = new DefaultTaskContext();
+            context.setCustomer(customer);
+            GetInvoiceTask task = new GetInvoiceTask();
+            task.execute(context);
+            return (FinancialAct) context.getObject(CustomerAccountArchetypes.INVOICE);
+        }
+        return null;
     }
 
 }

@@ -57,20 +57,23 @@ class EstimationInvoicer {
      * correctly.
      *
      * @param estimation the estimation to invoice
+     * @param invoice    the invoice to add to, or {@code null} to create a new invoice
      * @param context    the layout context
      * @return an editor for the invoice, or <tt>null</tt> if the editor cannot be created
      * @throws OpenVPMSException for any error
      */
-    public CustomerChargeActEditDialog invoice(Act estimation, LayoutContext context) {
+    public CustomerChargeActEditDialog invoice(Act estimation, FinancialAct invoice, LayoutContext context) {
         estimation.setStatus(EstimationActStatus.INVOICED);
         ActBean estimationBean = new ActBean(estimation);
 
-        FinancialAct invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
         if (invoice == null) {
-            throw new IllegalStateException("Failed to create invoice");
+            invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
+            if (invoice == null) {
+                throw new IllegalStateException("Failed to create invoice");
+            }
+            ActBean invoiceBean = new ActBean(invoice);
+            invoiceBean.addNodeParticipation("customer", estimationBean.getNodeParticipantRef("customer"));
         }
-        ActBean invoiceBean = new ActBean(invoice);
-        invoiceBean.addNodeParticipation("customer", estimationBean.getNodeParticipantRef("customer"));
 
         ChargeEditor editor = createChargeEditor(invoice, context);
 
