@@ -82,7 +82,7 @@ public class DateRules {
      * @return tomorrow's date
      */
     public static Date getTomorrow() {
-        return DateRules.getDate(getToday(), 1, DateUnits.DAYS);
+        return getNextDate(getToday());
     }
 
     /**
@@ -96,6 +96,19 @@ public class DateRules {
             return null;
         }
         return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * Returns the next date given the supplied date, zero-ing out any time component.
+     *
+     * @param datetime the date/time. May be {@code null}
+     * @return the date part of {@code datetime}, or {@code null} if {@code datetime} is null
+     */
+    public static Date getNextDate(Date datetime) {
+        if (datetime == null) {
+            return null;
+        }
+        return getDate(getDate(datetime), 1, DateUnits.DAYS);
     }
 
     /**
