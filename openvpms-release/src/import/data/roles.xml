@@ -315,6 +315,13 @@
 		serviceName="archetypeService" method="save" archetypeShortName="act.customerTask" />
 	<data id="RWRKTAS" archetype="security.archetypeAuthority" name="Task Remove" description="Authority to Remove Task"
 		serviceName="archetypeService" method="remove" archetypeShortName="act.customerTask" />
+    <!-- Message Authorities -->
+    <data id="CWRKMSG" archetype="security.archetypeAuthority" name="Message Create" description="Authority to Create Messages"
+          serviceName="archetypeService" method="create" archetypeShortName="act.userMessage"/>
+    <data id="SWRKMSG" archetype="security.archetypeAuthority" name="Message Save" description="Authority to Save Messages"
+          serviceName="archetypeService" method="save" archetypeShortName="act.userMessage"/>
+    <data id="RWRKMSG" archetype="security.archetypeAuthority" name="Message Remove" description="Authority to Remove Messages"
+          serviceName="archetypeService" method="remove" archetypeShortName="act.userMessage"/>
 
 	<!-- ROLES -->
 	<!-- Base Role that contains all the authorities that relate to object collections and child objects -->
