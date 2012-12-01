@@ -114,7 +114,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
 
         EstimationInvoicer invoicer = new TestEstimationInvoicer();
 
-        CustomerChargeActEditDialog dialog = invoicer.invoice(estimation, context);
+        CustomerChargeActEditDialog dialog = invoicer.invoice(estimation, null, context);
         IMObjectEditor editor = dialog.getEditor();
         assertTrue(SaveHelper.save(editor));
 

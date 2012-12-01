@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -25,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IConstraintContainer;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -89,8 +91,8 @@ public abstract class AbstractActResultSet<T>
      *
      * @param archetypes  the act archetype constraint
      * @param participant the participant constraint. May be <tt>null</tt>
-     * @param from        the act start-from date. May be <tt>null</tt>
-     * @param to          the act start-to date. May be <tt>null</tt>
+     * @param from        the act from date. May be <tt>null</tt>
+     * @param to          the act to date, inclusive. May be <tt>null</tt>
      * @param statuses    the act statuses. If empty, indicates all acts
      * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <tt>null</tt>
@@ -112,8 +114,8 @@ public abstract class AbstractActResultSet<T>
      *
      * @param archetypes  the act archetype constraint
      * @param participant the participant constraint. May be <tt>null</tt>
-     * @param from        the act start-from date. May be <tt>null</tt>
-     * @param to          the act start-to date. May be <tt>null</tt>
+     * @param from        the act from date. May be <tt>null</tt>
+     * @param to          the act to date, inclusive. May be <tt>null</tt>
      * @param statuses    the act statuses. If empty, indicates all acts
      * @param exclude     if <tt>true</tt> exclude acts with status in
      *                    <tt>statuses</tt>; otherwise include them.
@@ -142,8 +144,8 @@ public abstract class AbstractActResultSet<T>
      *
      * @param archetypes   the act archetype constraint
      * @param participants the participant constraints. May be <tt>null</tt>
-     * @param from         the act start-from date. May be <tt>null</tt>
-     * @param to           the act start-to date. May be <tt>null</tt>
+     * @param from        the act from date. May be <tt>null</tt>
+     * @param to          the act to date, inclusive. May be <tt>null</tt>
      * @param statuses     the act statuses. If empty, indicates all acts
      * @param exclude      if <tt>true</tt> exclude acts with status in
      *                     <tt>statuses</tt>; otherwise include them.
@@ -321,14 +323,16 @@ public abstract class AbstractActResultSet<T>
      * Helper to create a constraint on startTime, if the from and to dates
      * are non-null.
      *
-     * @param from the act start-from date. May be <tt>null</tt>
-     * @param to   the act start-to date. May be <tt>null</tt>
+     * @param from the act from date. May be <tt>null</tt>
+     * @param to   the act to date, inclusive. May be <tt>null</tt>
      * @return a new constraint, if both dates are non-null, otherwise
      *         <tt>null</tt>
      */
-    private static NodeConstraint createTimeConstraint(Date from, Date to) {
+    private static IConstraint createTimeConstraint(Date from, Date to) {
         if (from != null && to != null) {
-            return new NodeConstraint("startTime", RelationalOp.BTW, from, to);
+            from = DateRules.getDate(from);
+            to = DateRules.getNextDate(to);
+            return Constraints.and(Constraints.gte("startTime", from), Constraints.lt("startTime", to));
         }
         return null;
     }
