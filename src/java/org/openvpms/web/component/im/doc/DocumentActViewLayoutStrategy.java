@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -27,11 +25,9 @@ import org.openvpms.web.component.property.Property;
 
 
 /**
- * A layout strategy for {@link DocumentAct}s that enables the document to
- * be viewed.
+ * A layout strategy for {@link DocumentAct}s that enables the document to be viewed.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActViewLayoutStrategy extends DocumentActLayoutStrategy {
 
@@ -50,10 +46,10 @@ public class DocumentActViewLayoutStrategy extends DocumentActLayoutStrategy {
         ComponentState result;
         if (name.equals("documentTemplate")) {
             boolean template = hasDocumentNode(parent);
-            DocumentViewer viewer = new DocumentViewer((DocumentAct) parent, true, template);
+            DocumentViewer viewer = new DocumentViewer((DocumentAct) parent, true, template, context);
             result = new ComponentState(viewer.getComponent(), property);
         } else if (name.equals(DOCUMENT)) {
-            DocumentViewer viewer = new DocumentViewer((DocumentAct) parent, true, false);
+            DocumentViewer viewer = new DocumentViewer((DocumentAct) parent, true, false, context);
             result = new ComponentState(viewer.getComponent(), property);
         } else {
             result = super.createComponent(property, parent, context);

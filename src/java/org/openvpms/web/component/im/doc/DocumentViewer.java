@@ -11,20 +11,28 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2006-2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
 
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -32,8 +40,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Viewer for {@link IMObjectReference}s of type <em>document.*</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentViewer {
 
@@ -43,12 +50,12 @@ public class DocumentViewer {
     private final IMObjectReference reference;
 
     /**
-     * The parent object. May be <tt>null</tt>
+     * The parent object. May be {@code null}
      */
     private final IMObject parent;
 
     /**
-     * The document name. May be <tt>null</tt>
+     * The document name. May be {@code null}
      */
     private final String name;
 
@@ -64,6 +71,11 @@ public class DocumentViewer {
     private final boolean template;
 
     /**
+     * The layout context.
+     */
+    private final LayoutContext context;
+
+    /**
      * The downloader.
      */
     private Downloader downloader;
@@ -73,50 +85,61 @@ public class DocumentViewer {
      */
     private DownloaderListener listener;
 
+    /**
+     * Determines if a message should be displayed if no document is present.
+     */
+    private boolean showNoDocument = true;
+
 
     /**
-     * Constructs a <tt>DocumentViewer</tt>.
+     * Constructs a {@code DocumentViewer}.
      *
-     * @param act  the document act
-     * @param link if <tt>true</tt> enable an hyperlink to the object
+     * @param act     the document act
+     * @param link    if {@code true} enable an hyperlink to the object
+     * @param context the layout context
      */
-    public DocumentViewer(DocumentAct act, boolean link) {
-        this(act, link, false);
+    public DocumentViewer(DocumentAct act, boolean link, LayoutContext context) {
+        this(act, link, false, context);
     }
 
     /**
-     * Constructs a <tt>DocumentViewer</tt>.
+     * Constructs a {@code DocumentViewer}.
      *
-     * @param act  the document act
-     * @param link if <tt>true</tt> enable an hyperlink to the object
-     * @param template  if <tt>true</tt>, display as a template, otherwise generate the document if required
+     * @param act      the document act
+     * @param link     if {@code true} enable an hyperlink to the object
+     * @param template if {@code true}, display as a template, otherwise generate the document if required
+     * @param context  the layout context
      */
-    public DocumentViewer(DocumentAct act, boolean link, boolean template) {
-        this(act.getDocument(), act, act.getFileName(), link, template);
+    public DocumentViewer(DocumentAct act, boolean link, boolean template, LayoutContext context) {
+        this(act.getDocument(), act, act.getFileName(), link, template, context);
     }
 
     /**
-     * Constructs a <tt>DocumentViewer</tt>.
+     * Constructs a {@code DocumentViewer}.
      *
      * @param reference the reference to view
-     * @param parent    the parent. May be <tt>null</tt>
-     * @param link      if <tt>true</tt> enable an hyperlink to the object
-     * @param template  if <tt>true</tt>, display as a template, otherwise generate the document if required
+     * @param parent    the parent. May be {@code null}
+     * @param link      if {@code true} enable an hyperlink to the object
+     * @param template  if {@code true}, display as a template, otherwise generate the document if required
+     * @param context   the layout context
      */
-    public DocumentViewer(IMObjectReference reference, IMObject parent, boolean link, boolean template) {
-        this(reference, parent, null, link, template);
+    public DocumentViewer(IMObjectReference reference, IMObject parent, boolean link, boolean template,
+                          LayoutContext context) {
+        this(reference, parent, null, link, template, context);
     }
 
     /**
-     * Constructs a <tt>DocumentViewer</tt>.
+     * Constructs a {@code DocumentViewer}.
      *
-     * @param reference the reference to view. May be <tt>null</tt>
-     * @param parent    the parent. May be <tt>null</tt>
-     * @param name      the document file name. May be <tt>null</tt>
-     * @param link      if <tt>true</tt> enable an hyperlink to the object
-     * @param template  if <tt>true</tt>, display as a template, otherwise generate the document if required
+     * @param reference the reference to view. May be {@code null}
+     * @param parent    the parent. May be {@code null}
+     * @param name      the document file name. May be {@code null}
+     * @param link      if {@code true} enable an hyperlink to the object
+     * @param template  if {@code true}, display as a template, otherwise generate the document if required
+     * @param context   the layout context
      */
-    public DocumentViewer(IMObjectReference reference, IMObject parent, String name, boolean link, boolean template) {
+    public DocumentViewer(IMObjectReference reference, IMObject parent, String name, boolean link, boolean template,
+                          LayoutContext context) {
         this.reference = reference;
         this.parent = parent;
         if (name != null) {
@@ -130,14 +153,15 @@ public class DocumentViewer {
         }
         this.link = link;
         this.template = template;
+        this.context = context;
     }
 
     /**
      * Registers a listener for download events.
      * <p/>
-     * This enables download events to be intercepted. Only applicable if <tt>link</tt> was specified at construction.
+     * This enables download events to be intercepted. Only applicable if {@code link} was specified at construction.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setDownloadListener(DownloaderListener listener) {
         if (downloader != null) {
@@ -148,39 +172,88 @@ public class DocumentViewer {
     }
 
     /**
+     * Determines if a message should be displayed if no document is present.
+     *
+     * @param show if {@code true} show a message, otherwise leave the component blank. Defaults to {@code true}
+     */
+    public void setShowNoDocument(boolean show) {
+        showNoDocument = show;
+    }
+
+    /**
      * Returns the component.
      *
      * @return the component
      */
     public Component getComponent() {
-        Component result;
-        boolean hasDoc;
+        Component result = null;
+        boolean hasDoc = false;
         if (reference != null) {
             hasDoc = true;
         } else if (parent instanceof DocumentAct) {
-            IMObjectBean bean = new IMObjectBean(parent);
-            hasDoc = bean.hasNode("documentTemplate");
-        } else {
-            hasDoc = false;
+            ActBean bean = new ActBean((DocumentAct) parent);
+            if (parent.getId() != -1 && bean.hasNode("investigationType")) {
+                // can't link if the act hasn't been saved
+                result = getInvestigation(bean);
+            }
+            if (result == null) {
+                hasDoc = bean.hasNode("documentTemplate");
+            }
         }
-        if (hasDoc) {
-            if (link) {
-                if (parent instanceof DocumentAct) {
-                    downloader = new DocumentActDownloader((DocumentAct) parent, template);
+        if (result == null) {
+            if (hasDoc) {
+                if (link) {
+                    if (parent instanceof DocumentAct) {
+                        downloader = new DocumentActDownloader((DocumentAct) parent, template);
+                    } else {
+                        downloader = new DocumentRefDownloader(reference, name);
+                    }
+                    downloader.setListener(listener);
+                    result = downloader.getComponent();
                 } else {
-                    downloader = new DocumentRefDownloader(reference, name);
+                    Label label = LabelFactory.create();
+                    label.setText(name);
+                    result = label;
                 }
-                downloader.setListener(listener);
-                result = downloader.getComponent();
             } else {
                 Label label = LabelFactory.create();
-                label.setText(name);
+                if (showNoDocument) {
+                    label.setText(Messages.get("document.none"));
+                }
                 result = label;
             }
-        } else {
-            Label label = LabelFactory.create();
-            label.setText(Messages.get("document.none"));
-            result = label;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a component to view an external investigation, if available.
+     *
+     * @param bean the act bean
+     * @return a component to view the external investigation, or {@code null} if the investigation type doesn't support
+     *         it or the act has no investigation type
+     */
+    private Component getInvestigation(ActBean bean) {
+        Component result = null;
+        Entity investigationType = (Entity) context.getCache().get(bean.getNodeParticipantRef("investigationType"));
+        if (investigationType != null) {
+            IMObjectBean typeBean = new IMObjectBean(investigationType);
+            if (typeBean.hasNode("url")) {
+                String url = typeBean.getString("url");
+                if (!StringUtils.isEmpty(url)) {
+                    final String accessionURL = url + parent.getId();
+                    Button button = ButtonFactory.create(null, "hyperlink", new ActionListener() {
+                        @Override
+                        public void onAction(ActionEvent event) {
+                            ApplicationInstance.getActive().enqueueCommand(
+                                    new BrowserOpenWindowCommand(accessionURL, "", ""));
+                        }
+                    });
+                    button.setText(Messages.get("document.link", investigationType.getName()));
+                    button.setToolTipText(accessionURL);
+                    result = button;
+                }
+            }
         }
         return result;
     }

@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -141,7 +142,7 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
      * @return a new table model
      */
     private static IMObjectTableModel<Act> newTableModel() {
-        return IMObjectTableModelFactory.create(PatientHistoryTableModel.class, null);
+        return IMObjectTableModelFactory.create(PatientHistoryTableModel.class, new DefaultLayoutContext());
     }
 
     /**

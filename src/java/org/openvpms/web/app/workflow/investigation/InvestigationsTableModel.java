@@ -21,12 +21,16 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -38,19 +42,23 @@ import java.util.List;
 /**
  * Table model for <em>act.patientInvestigation</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class InvestigationsTableModel extends AbstractActTableModel {
+
+    /**
+     * The index of the document column.
+     */
+    private int documentIndex;
 
     /**
      * The index of the supplier column.
      */
     private int supplierIndex;
 
-    
+
     /**
-     * Creates a new <tt>InvestigationsTableModel</tt>.
+     * Constructs a {@code InvestigationsTableModel}.
      *
      * @param context the layout context
      */
@@ -65,7 +73,7 @@ class InvestigationsTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"startTime", "investigationType", "patient", "id", "status", "document"};
+        return new String[]{"startTime", "investigationType", "patient", "id", "status"};
     }
 
     /**
@@ -82,6 +90,10 @@ class InvestigationsTableModel extends AbstractActTableModel {
         int index = column.getModelIndex();
         if (index == supplierIndex) {
             result = getSupplier(act);
+        } else if (index == documentIndex) {
+            DocumentViewer viewer = new DocumentViewer((DocumentAct) act, true, getLayoutContext());
+            viewer.setShowNoDocument(false);
+            result = viewer.getComponent();
         } else {
             result = super.getValue(act, column, row);
         }
@@ -101,7 +113,13 @@ class InvestigationsTableModel extends AbstractActTableModel {
         supplierIndex = getNextModelIndex(model);
         TableColumn supplierColumnn = createTableColumn(supplierIndex, "investigationstablemodel.supplier");
         model.addColumn(supplierColumnn);
-        model.moveColumn(model.getColumnCount() - 1, model.getColumnCount() - 2);
+
+        documentIndex = getNextModelIndex(model);
+        TableColumn documentColumn = new TableColumn(documentIndex);
+        String displayName = DescriptorHelper.getDisplayName(InvestigationArchetypes.PATIENT_INVESTIGATION, "document");
+        documentColumn.setHeaderValue(displayName);
+        model.addColumn(documentColumn);
+
         return model;
     }
 

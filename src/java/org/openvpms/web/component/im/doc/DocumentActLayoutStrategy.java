@@ -11,21 +11,16 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2009-2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.doc;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
-import org.openvpms.web.component.property.Property;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +31,7 @@ import java.util.List;
  * <p/>
  * This implementation displays any 'document' node as a simple node.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActLayoutStrategy extends ActLayoutStrategy {
 
@@ -50,16 +44,6 @@ public class DocumentActLayoutStrategy extends ActLayoutStrategy {
      * The versions node name.
      */
     public static final String VERSIONS = "versions";
-
-    /**
-     * The document editor. May be <tt>null</tt>.
-     */
-    private final DocumentEditor docEditor;
-
-    /**
-     * The document versions editor. May be <tt>null</tt>.
-     */
-    private final ActRelationshipCollectionEditor versionsEditor;
 
     /**
      * Constructs a <tt>DocumentActLayoutStrategy</tt> for viewing document acts.
@@ -75,27 +59,12 @@ public class DocumentActLayoutStrategy extends ActLayoutStrategy {
      * @param versionsEditor the document version editor. May be <tt>null</tt>
      */
     public DocumentActLayoutStrategy(DocumentEditor editor, ActRelationshipCollectionEditor versionsEditor) {
-        this.docEditor = editor;
-        this.versionsEditor = versionsEditor;
-    }
-
-    /**
-     * Creates a component for a property.
-     *
-     * @param property the property
-     * @param parent   the parent object
-     * @param context  the layout context
-     * @return a component to display <code>property</code>
-     */
-    @Override
-    protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-        String name = property.getName();
-        if (DOCUMENT.equals(name) && docEditor != null) {
-            return new ComponentState(docEditor.getComponent(), docEditor.getProperty());
-        } else if (VERSIONS.equals(name) && versionsEditor != null) {
-            return new ComponentState(versionsEditor.getComponent(), versionsEditor.getProperty());
+        if (editor != null) {
+            addComponent(new ComponentState(editor));
         }
-        return super.createComponent(property, parent, context);
+        if (versionsEditor != null) {
+            addComponent(new ComponentState(versionsEditor));
+        }
     }
 
     /**

@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2007-2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -28,6 +26,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -35,10 +34,14 @@ import org.openvpms.web.component.util.LabelFactory;
 /**
  * Table model for document acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
+
+    /**
+     * The layout context.
+     */
+    private final LayoutContext context;
 
     /**
      * The fileName/reference model index.
@@ -52,21 +55,26 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
 
 
     /**
-     * Constructs a <tt>DocumentActTableModel</tt>.
+     * Constructs a {@code DocumentActTableModel}.
+     *
+     * @param context the layout context
      */
-    public DocumentActTableModel() {
-        this(true, true, true);
+    public DocumentActTableModel(LayoutContext context) {
+        this(true, true, true, context);
     }
 
     /**
-     * Constructs a <tt>DocumentActTableModel</tt>.
+     * Constructs a {@code DocumentActTableModel}.
      *
      * @param showArchetype determines if the archetype column should be displayed
      * @param showStatus    determines if the status column should be displayed
      * @param showVersions  determines if the versions column should be displayed
+     * @param context       the layout context
      */
-    public DocumentActTableModel(boolean showArchetype, boolean showStatus, boolean showVersions) {
+    public DocumentActTableModel(boolean showArchetype, boolean showStatus, boolean showVersions,
+                                 LayoutContext context) {
         super(showArchetype, showStatus, false);
+        this.context = context;
 
         if (showVersions) {
             DefaultTableColumnModel model = (DefaultTableColumnModel) getColumnModel();
@@ -89,7 +97,9 @@ public class DocumentActTableModel extends ActAmountTableModel<DocumentAct> {
         Object result;
         int index = column.getModelIndex();
         if (index == docIndex) {
-            result = DocumentActTableHelper.getDocumentViewer(act, true);
+            DocumentViewer viewer = new DocumentViewer(act, true, context);
+            viewer.setShowNoDocument(false);
+            result = viewer.getComponent();
         } else if (index == versionsIndex) {
             result = getVersions(act);
         } else {
