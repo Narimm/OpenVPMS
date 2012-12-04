@@ -11,29 +11,28 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2007-2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
 
+
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 /**
  * Table model for document version acts.
  * <p/>
  * This suppresses the status, type and version columns.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActVersionTableModel extends DocumentActTableModel {
 
     /**
-     * Constructs a <tt>DocumentActTableModel</tt>.
+     * Constructs a {@code DocumentActTableModel}.
      */
-    public DocumentActVersionTableModel() {
-        super(false, false, false);
+    public DocumentActVersionTableModel(LayoutContext context) {
+        super(false, false, false, context);
     }
 
 }

@@ -50,7 +50,8 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.doc.DocumentActTableHelper;
+import org.openvpms.web.component.im.doc.DocumentViewer;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ComponentFactory;
@@ -75,21 +76,20 @@ import java.util.Map;
  * See http://forum.nextapp.com/forum/index.php?showtopic=4114 for details
  * TODO.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
+
+    /**
+     * The layout context.
+     */
+    private final LayoutContext context;
 
     /**
      * A map of jxpath expressions, keyed on archetype short name,
      * used to format the text column.
      */
     private Map<String, String> expressions = new HashMap<String, String>();
-
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(PatientHistoryTableModel.class);
 
     /**
      * The selected visit row.
@@ -121,11 +121,19 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private static final String SELECTED_VISIT_IMAGE = "../images/navigation/next.png";
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(PatientHistoryTableModel.class);
+
 
     /**
-     * Constructs a <tt>SummaryTableModel</tt>.
+     * Constructs a {@code PatientHistoryTableModel}.
+     *
+     * @param context the layout context
      */
-    public PatientHistoryTableModel() {
+    public PatientHistoryTableModel(LayoutContext context) {
+        this.context = context;
         TableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(new TableColumn(SELECTION_COLUMN, new Extent(16))); // 16px for the icon
         model.addColumn(new TableColumn(SUMMARY_COLUMN));
@@ -365,12 +373,13 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         Component result;
         Label label = getDetail(act);
 
-        Component viewer = DocumentActTableHelper.getDocumentViewer(act, true);
+        DocumentViewer viewer = new DocumentViewer(act, true, context);
+        viewer.setShowNoDocument(false);
 
         if (StringUtils.isEmpty(label.getText())) {
-            result = viewer;
+            result = viewer.getComponent();
         } else {
-            result = RowFactory.create("CellSpacing", label, viewer);
+            result = RowFactory.create("CellSpacing", label, viewer.getComponent());
         }
         return result;
     }

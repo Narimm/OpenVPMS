@@ -545,12 +545,22 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @return a component to display <code>property</code>
      */
     protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-        ComponentState result = states.get(property.getName());
+        ComponentState result = getComponent(property);
         if (result == null) {
             IMObjectComponentFactory factory = context.getComponentFactory();
             result = factory.create(property, parent);
         }
         return result;
+    }
+
+    /**
+     * Returns the component associated with the specified property.
+     *
+     * @param property the property
+     * @return the corresponding component, or {@code null} if none is found
+     */
+    protected ComponentState getComponent(Property property) {
+        return states.get(property.getName());
     }
 
     /**
