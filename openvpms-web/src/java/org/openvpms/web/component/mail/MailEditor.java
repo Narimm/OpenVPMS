@@ -60,6 +60,7 @@ import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
 import org.openvpms.web.component.im.doc.DownloaderListener;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.Modifiable;
@@ -392,7 +393,8 @@ public class MailEditor extends AbstractModifiable {
         }
         final DocRef ref = new DocRef(document, delete);
         documents.add(ref);
-        DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true, false);
+        DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true, false,
+                                                           new DefaultLayoutContext());
         documentViewer.setDownloadListener(new DownloaderListener() {
             public void download(Downloader downloader, String mimeType) {
                 onDownload(downloader, mimeType, ref.getReference());
