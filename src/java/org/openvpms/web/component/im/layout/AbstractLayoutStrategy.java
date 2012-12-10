@@ -399,22 +399,10 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected void doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
                                TabPaneModel model, LayoutContext context, boolean shortcuts) {
-        int shortcut = 1;
         for (NodeDescriptor nodeDesc : descriptors) {
             Property property = properties.get(nodeDesc);
             ComponentState child = createComponent(property, object, context);
-            Component inset = ColumnFactory.create("Inset", child.getComponent());
-            setFocusTraversal(child);
-            String text = child.getDisplayName();
-            if (text == null) {
-                text = nodeDesc.getDisplayName();
-            }
-
-            if (shortcuts && shortcut <= 10) {
-                text = getShortcut(text, shortcut);
-                ++shortcut;
-            }
-            model.addTab(text, inset);
+            addTab(model, property, child, shortcuts);
         }
     }
 
@@ -587,15 +575,16 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Sets the focus traversal index of a component, if it is a focus traversal
-     * participant.
+     * Sets the focus traversal index of a component, if it is a focus traversal participant.
      * NOTE: if a component doesn't specify a focus group, this may register a child component with the focus group
      * rather than the parent.
      *
      * @param state the component state
      */
     protected void setFocusTraversal(ComponentState state) {
-        components.setFocusTraversal(state);
+        if (components != null) {    // will be null if apply() has completed
+            components.setFocusTraversal(state);
+        }
     }
 
     /**
