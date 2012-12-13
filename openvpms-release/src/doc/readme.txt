@@ -15,8 +15,8 @@ OpenVPMS ${pom.version} Release
   - MySQL Connector/J JDBC driver 
     See http://dev.mysql.com/downloads/connector/j/5.1.html
 
-  - Tomcat 5.5.12 or higher
-    See http://tomcat.apache.org/download-55.cgi
+  - Tomcat 6.0 or higher
+    See http://tomcat.apache.org/download-60.cgi
 
   - OpenOffice 2.2.1 or higher
     See http://download.openoffice.org/
@@ -58,9 +58,11 @@ OpenVPMS ${pom.version} Release
 
   This needs to be copied to:
 
-    * the Apache Tomcat shared library directory: <TOMCAT_HOME>/shared/lib
+    * the Apache Tomcat library directory: <TOMCAT_HOME>/lib
     * the OpenVPMS library directory:  <OPENVPMS_HOME>/lib
 
+  In the above, <TOMCAT_HOME> refers to the directory where Apache Tomcat is installed.
+  On Windows, this will be something like: C:\Program Files\Apache Software Foundation\Tomcat 6.0
 
 1.4 Database setup
 
@@ -82,9 +84,18 @@ OpenVPMS ${pom.version} Release
 
 1.5. Web application installation
 
-  To install the OpenVPMS web application,
-  copy <OPENVPMS_HOME>/webapps/openvpms.war
-  to the <TOMCAT_HOME>/webapps directory.
+  If you are upgrading OpenVPMS, the existing web application should be
+  removed before installing the new version.
+  To do this:
+  1. Shut down Apache Tomcat if it is already running.
+  2. Delete the directory: <TOMCAT_HOME>/webapps/openvpms
+  3. Delete the file:      <TOMCAT_HOME>/webapps/openvpms.war
+
+  To install the OpenVPMS web application:
+
+  1. Copy <OPENVPMS_HOME>/webapps/openvpms.war to the <TOMCAT_HOME>/webapps
+     directory.
+  2. Start Apache Tomcat if it is not running
 
 
 2. Testing the installation
@@ -95,3 +106,35 @@ OpenVPMS ${pom.version} Release
       http://localhost:8080/openvpms/app
 
   Login to OpenVPMS using user admin and password admin
+
+3. Subscription
+
+ OpenVPMS relies on user subscriptions to fund development. Your subscription
+ status is displayed on the OpenVPMS login screen. If you have not paid, a
+ link to a payment page is displayed. On payment, a subscription key will be
+ mailed to you.
+ If you have a current subscription, you can request a subscription key be
+ emailing a copy of your receipt to subscription@openvpms.org.
+
+ To update your subscription status, edit the Practice in the
+ Administration -> Organisation workspace and upload the new subscription key.
+
+4. Data Migration
+
+ OpenVPMS doesn't directly support data migration from other veterinary
+ practice systems.
+ It does however provide a plugin for Pentaho Data Integration
+ (PDI, aka Kettle) that can be used to get data into OpenVPMS.
+
+ At this stage, only PDI 3.2 is supported. This can be obtained from:
+   http://sourceforge.net/projects/pentaho/files/Data%20Integration/3.2.0-stable/pdi-ce-3.2.0-stable.zip/download
+
+ Extract this zip file to a directory. This will be referred to as <PDI_HOME>.
+
+ To install the OpenVPMSLoader plugin:
+
+ 1. Extract <OPENVPMS_HOME>/import/plugin/OpenVPMSLoader.zip to <PDI_HOME>/plugins/steps/OpenVPMSLoader
+ 2. Remove <PDI_HOME>/libext/spring/spring-core.jar
+ 3. Copy the OpenVPMS jars to libext/spring i.e.
+    copy plugins/steps/OpenVPMSLoader/*.jar libext/spring/
+
