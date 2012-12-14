@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -33,13 +31,12 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 /**
  * A printer for {@link DocumentAct}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
-     * Constructs a <tt>DocumentActPrinter</tt>.
+     * Constructs a {@code DocumentActPrinter}.
      *
      * @param object  the object to print
      * @param locator the document template locator
@@ -51,8 +48,8 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
     /**
      * Prints the object.
      *
-     * @param printer the printer name. May be <tt>null</tt>
-     * @throws PrintException    if <tt>printer</tt> is null and {@link #getDefaultPrinter()} also returns <tt>null</tt>
+     * @param printer the printer name. May be {@code null}
+     * @throws PrintException    if {@code printer} is null and {@link #getDefaultPrinter()} also returns {@code null}
      * @throws OpenVPMSException for any error
      */
     @Override
@@ -72,4 +69,37 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
         }
     }
 
+    /**
+     * Returns a document corresponding to that which would be printed.
+     *
+     * @return a document
+     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
+     *          for any error
+     */
+    @Override
+    public Document getDocument() {
+        return getDocument(null, false);
+    }
+
+    /**
+     * Returns a document corresponding to that which would be printed.
+     *
+     * @param mimeType the mime type. If {@code null} the default mime type associated with the report will be used.
+     * @param email    if {@code true} indicates that the document will be emailed. Documents generated from templates
+     *                 can perform custom formatting
+     * @return a document
+     * @throws OpenVPMSException for any error
+     */
+    @Override
+    public Document getDocument(String mimeType, boolean email) {
+        DocumentAct act = (DocumentAct) getObject();
+        Document result = (Document) IMObjectHelper.getObject(act.getDocument());
+        if (result != null && mimeType != null && !mimeType.equals(result.getMimeType())) {
+            result = DocumentHelper.convert(result, mimeType);
+        }
+        if (result == null) {
+            result = super.getDocument(mimeType, email);
+        }
+        return result;
+    }
 }

@@ -72,7 +72,7 @@ public class PatientMedicalRecordLinker implements Retryable {
             throw new IllegalStateException("Argument 'event' must be saved");
         }
         if (item.isNew()) {
-            throw new IllegalStateException("Argument 'item' must be saved");
+            throw new IllegalStateException("Argument 'item' must be saved: " + item.getArchetypeId().getShortName());
         }
         if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
             throw new IllegalArgumentException("Argument 'event' is invalid: " + event.getArchetypeId().getShortName());
