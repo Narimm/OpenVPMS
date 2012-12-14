@@ -342,9 +342,9 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     private void paste(Act appointment, Entity schedule, Date startTime) {
         AppointmentActEditor editor = new AppointmentActEditor(appointment, null, new DefaultLayoutContext());
-        editor.setSchedule(schedule);
+        EditDialog dialog = edit(editor);  // NOTE: need to update the start time after dialog is created
+        editor.setSchedule(schedule);      //       See AppointmentEditDialog.timesModified().
         editor.setStartTime(startTime); // will recalc end time
-        EditDialog dialog = edit(editor);
         dialog.save(true);              // checks for overlapping appointments
         browser.setSelected(browser.getEvent(appointment));
     }
