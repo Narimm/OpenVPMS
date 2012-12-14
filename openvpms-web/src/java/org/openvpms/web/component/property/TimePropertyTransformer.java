@@ -76,7 +76,7 @@ public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer
     /**
      * Converts the supplied value to a date/time.
      * <p/>
-     * This implemetation expects the value to be a time, which is added to the current date, using
+     * This implementation expects the value to be a time, which is added to the current date, using
      * {@link #addTime}.
      *
      * @param value the time string
