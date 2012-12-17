@@ -25,7 +25,6 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -35,6 +34,7 @@ import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.app.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
+import org.openvpms.web.app.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
@@ -73,11 +73,6 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     private final DoubleClickMonitor click = new DoubleClickMonitor();
 
     /**
-     * Determines if patient visit items should be sorted ascending.
-     */
-    private boolean sortAscending;
-
-    /**
      * Patient charges shortnames supported by teh workspace
      */
     private static final String[] CHARGES_SHORT_NAMES = {
@@ -109,9 +104,6 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
         docArchetypes = Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
                                           Messages.get("patient.document.createtype"));
-        IMObjectBean bean = new IMObjectBean(GlobalContext.getInstance().getPractice());
-        String medicalRecordsSortOrder = bean.getString("medicalRecordsSortOrder");
-        sortAscending = "ASC".equals(medicalRecordsSortOrder);
     }
 
     /**
@@ -204,9 +196,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        PatientHistoryQuery query = new PatientHistoryQuery(getObject());
-        query.setSortAscending(sortAscending);
-        return query;
+        return PatientHistoryQueryFactory.create(getObject(), GlobalContext.getInstance().getPractice());
     }
 
     /**
@@ -393,7 +383,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     private Query<Act> createChargesQuery() {
         String[] statuses = {};
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(getObject(), "patient", "participation.patient",
-                CHARGES_SHORT_NAMES, false, statuses);
+                                                              CHARGES_SHORT_NAMES, false, statuses);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         query.setMaxResults(10);
         return query;
