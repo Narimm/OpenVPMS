@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -43,8 +41,7 @@ import static org.junit.Assert.assertNull;
 /**
  * Base class for supplier test cases.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AbstractSupplierTest extends ArchetypeServiceTest {
 
@@ -78,11 +75,6 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      */
     private Party practice;
 
-    /**
-     * The practice location.
-     */
-    private Party practiceLocation;
-
 
     /**
      * Sets up the test case.
@@ -93,7 +85,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         stockLocation = createStockLocation();
 
         // create a practice for currency and tax calculation purposes
-        practiceLocation = TestHelper.createLocation();
+        Party practiceLocation = TestHelper.createLocation();
         EntityBean locBean = new EntityBean(practiceLocation);
         locBean.addRelationship("entityRelationship.locationStockLocation", stockLocation);
         practice = TestHelper.getPractice();
@@ -139,15 +131,6 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Returns the practice location.
-     *
-     * @return the practice location
-     */
-    protected Party getPracticeLocation() {
-        return practiceLocation;
-    }
-
-    /**
      * Returns the stock location.
      *
      * @return the stock location
@@ -164,8 +147,20 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @return a new order
      */
     protected FinancialAct createOrder(Party supplier, FinancialAct... orderItems) {
+        return createOrder(supplier, stockLocation, orderItems);
+    }
+
+    /**
+     * Creates an order associated with order items.
+     *
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @param orderItems    the order item
+     * @return a new order
+     */
+    protected FinancialAct createOrder(Party supplier, Party stockLocation, FinancialAct... orderItems) {
         List<Act> toSave = new ArrayList<Act>();
-        ActBean bean = createAct(SupplierArchetypes.ORDER, supplier);
+        ActBean bean = createAct(SupplierArchetypes.ORDER, supplier, stockLocation);
         BigDecimal total = BigDecimal.ZERO;
         for (FinancialAct item : orderItems) {
             bean.addRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, item);
@@ -306,7 +301,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @return a new delivery item
      */
     protected FinancialAct createDeliveryItem(BigDecimal quantity, int packageSize, BigDecimal unitPrice,
-                                            FinancialAct orderItem) {
+                                              FinancialAct orderItem) {
         return createItem(SupplierArchetypes.DELIVERY_ITEM,
                           SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP,
                           quantity, packageSize, unitPrice, orderItem);
@@ -407,6 +402,17 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      * @return a new act
      */
     protected ActBean createAct(String shortName, Party supplier) {
+        return createAct(shortName, supplier, stockLocation);
+    }
+
+    /**
+     * Creates a new supplier act.
+     *
+     * @param shortName the act short name
+     * @param supplier  the supplier
+     * @return a new act
+     */
+    protected ActBean createAct(String shortName, Party supplier, Party stockLocation) {
         Act act = (Act) create(shortName);
         ActBean bean = new ActBean(act);
         bean.addParticipation(SupplierArchetypes.SUPPLIER_PARTICIPATION, supplier);
