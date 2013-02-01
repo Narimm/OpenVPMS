@@ -102,8 +102,7 @@ public class JRXMLDocumentHandler extends AbstractDocumentHandler {
         try {
             design = JRXmlLoader.load(stream);
         } catch (JRException exception) {
-            throw new DocumentException(DocumentException.ErrorCode.ReadError,
-                                        name, exception);
+            throw new DocumentException(DocumentException.ErrorCode.ReadError, exception, name);
         }
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -112,8 +111,7 @@ public class JRXMLDocumentHandler extends AbstractDocumentHandler {
             output.close();
             document = create(name, bytes.toByteArray(), "text/xml", size);
         } catch (Exception exception) {
-            throw new DocumentException(DocumentException.ErrorCode.WriteError,
-                                        name, exception);
+            throw new DocumentException(DocumentException.ErrorCode.WriteError, exception, name);
         }
         return document;
     }
