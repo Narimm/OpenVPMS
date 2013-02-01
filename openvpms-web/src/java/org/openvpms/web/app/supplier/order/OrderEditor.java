@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2006-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.supplier.order;
@@ -27,6 +25,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.app.supplier.SupplierHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -45,11 +44,9 @@ import java.util.List;
 
 
 /**
- * An editor for {@link Act}s which have an archetype of
- * <em>act.supplierOrder</em>.
+ * An editor for {@link Act}s which have an archetype of <em>act.supplierOrder</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public class OrderEditor extends FinancialActEditor {
 
@@ -92,7 +89,7 @@ public class OrderEditor extends FinancialActEditor {
         }
         posted = OrderStatus.POSTED.equals(act.getStatus());
         accepted = OrderStatus.ACCEPTED.equals(act.getStatus());
-        rules = new OrderRules();
+        rules = SupplierHelper.createOrderRules(context.getContext().getPractice());
     }
 
     /**

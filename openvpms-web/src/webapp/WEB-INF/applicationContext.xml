@@ -168,6 +168,9 @@
                 <value>
                     /org/openvpms/archetype/rules/finance/account/Balance.hbm.xml
                 </value>
+                <value>
+                    /org/openvpms/archetype/rules/supplier/Supplier.hbm.xml
+                </value>
             </list>
         </property>
     </bean>

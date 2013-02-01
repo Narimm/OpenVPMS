@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.supplier.delivery;
@@ -28,6 +26,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.supplier.SupplierHelper;
 import org.openvpms.web.app.supplier.order.ESCISupplierCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
@@ -51,8 +50,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * CRUD window for supplier deliveries.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-04-06 14:41:46Z $
+ * @author Tim Anderson
  */
 public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
 
@@ -79,7 +77,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      */
     public DeliveryCRUDWindow(Archetypes<FinancialAct> archetypes) {
         super(archetypes, DeliveryActions.INSTANCE);
-        rules = new OrderRules();
+        rules = SupplierHelper.createOrderRules(GlobalContext.getInstance().getPractice());
     }
 
     /**

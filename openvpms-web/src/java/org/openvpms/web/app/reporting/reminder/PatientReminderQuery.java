@@ -28,9 +28,9 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
@@ -38,10 +38,10 @@ import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -157,10 +157,9 @@ public class PatientReminderQuery extends AbstractArchetypeQuery<Act> {
      */
     private ListModel createReminderTypeModel() {
         ArchetypeQuery query = new ArchetypeQuery("entity.reminderType", true)
+                .add(Constraints.sort("name"))
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        List<IMObject> rows = service.get(query).getResults();
-        return new IMObjectListModel(rows, true, false);
+        return new IMObjectListModel(QueryHelper.query(query), true, false);
     }
 
 }

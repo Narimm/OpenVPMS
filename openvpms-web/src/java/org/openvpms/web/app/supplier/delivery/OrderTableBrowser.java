@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.supplier.delivery;
@@ -24,6 +22,7 @@ import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.app.supplier.SupplierHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
@@ -49,8 +48,7 @@ import java.util.Set;
 /**
  * Order browser.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
 
@@ -63,9 +61,14 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
      */
     private final boolean delivery;
 
+    /**
+     * The context.
+     */
+    private final Context context;
+
 
     /**
-     * Creates a new <tt>OrderTableBrowser</tt>.
+     * Constructs an {@code OrderTableBrowser}.
      *
      * @param delivery if <tt>true</tt> query orders for a delivery, otherwise
      *                 query orders for a return
@@ -74,6 +77,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
     public OrderTableBrowser(boolean delivery, Context context) {
         super(new PostedOrderQuery(!delivery, context), new OrderSelectionTableModel());
         this.delivery = delivery;
+        this.context = context;
     }
 
     /**
@@ -371,7 +375,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
          */
         public Filter() {
             super(null);
-            rules = new OrderRules();
+            rules = SupplierHelper.createOrderRules(context.getPractice());
         }
 
         /**
