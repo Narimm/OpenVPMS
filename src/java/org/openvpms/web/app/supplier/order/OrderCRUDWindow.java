@@ -11,25 +11,26 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2005-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.supplier.order;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
+import org.openvpms.web.app.supplier.SupplierHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.InformationDialog;
@@ -37,17 +38,20 @@ import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.processor.BatchProcessorDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Arrays;
+import java.util.List;
+
 
 /**
  * CRUD window for supplier orders.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
 
@@ -56,9 +60,14 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     private static final String COPY_ID = "copy";
 
+    /**
+     * Generate orders button identifier.
+     */
+    private static final String GENERATE_ID = "generateOrders";
+
 
     /**
-     * Create a new <tt>OrderCRUDWindow</tt>.
+     * Create a new {@code OrderCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      */
@@ -78,10 +87,16 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
                 onCopy();
             }
         });
+        Button generate = ButtonFactory.create(GENERATE_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onGenerate();
+            }
+        });
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
         buttons.add(createPreviewButton());
         buttons.add(copy);
+        buttons.add(generate);
         buttons.add(createCheckInboxButton());
     }
 
@@ -119,11 +134,8 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     @Override
     protected void onCreated(final FinancialAct act) {
-        String title = Messages.get("supplier.order.selectdetails.title",
-                                    DescriptorHelper.getDisplayName(act));
-        final SelectStockDetailsDialog dialog
-                = new SelectStockDetailsDialog(title,
-                                               GlobalContext.getInstance());
+        String title = Messages.get("supplier.order.selectdetails.title", DescriptorHelper.getDisplayName(act));
+        final SelectStockDetailsDialog dialog = new SelectStockDetailsDialog(title, GlobalContext.getInstance());
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -141,7 +153,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     protected void onCopy() {
         try {
-            OrderRules rules = new OrderRules();
+            OrderRules rules = SupplierHelper.createOrderRules(GlobalContext.getInstance().getPractice());
             FinancialAct object = getObject();
             FinancialAct copy = rules.copyOrder(object);
             String notes = Messages.get("supplier.order.copy.notes",
@@ -184,6 +196,60 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         } else {
             print(act);
         }
+    }
+
+    /**
+     * Invoked to generate orders.
+     */
+    private void onGenerate() {
+        String title = Messages.get("supplier.order.generate.title");
+        final StockLocationSupplierDialog dialog
+                = new StockLocationSupplierDialog(title, GlobalContext.getInstance());
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                Party location = dialog.getStockLocation();
+                Party supplier = dialog.getSupplier();
+                generateOrders(location, supplier, dialog.getStockLocations(), dialog.getSuppliers());
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Generates orders.
+     *
+     * @param stockLocation the selected stock location. May be {@code null} to indicate all stock locations
+     * @param supplier      the selected supplier. May be {@code null} to indicate all suppliers
+     * @param locations     the available stock locations
+     * @param suppliers     the available suppliers
+     */
+    private void generateOrders(Party stockLocation, Party supplier, List<IMObject> locations,
+                                List<IMObject> suppliers) {
+        final String title = Messages.get("supplier.order.generate.title");
+        if (stockLocation != null) {
+            locations = Arrays.asList((IMObject) stockLocation);
+        }
+        if (supplier != null) {
+            suppliers = Arrays.asList((IMObject) supplier);
+        }
+        final OrderProgressBarProcessor processor = new OrderProgressBarProcessor(
+                GlobalContext.getInstance().getPractice(), locations, suppliers, title);
+        final BatchProcessorDialog dialog = new BatchProcessorDialog(processor.getTitle(), processor);
+        processor.setListener(new BatchProcessorListener() {
+            public void completed() {
+                dialog.close();
+                String message = Messages.get("supplier.order.generated.message", processor.getOrders());
+                InformationDialog.show(title, message);
+                onRefresh(null);
+            }
+
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+                onRefresh(null);
+            }
+        });
+        dialog.show();
     }
 
 }

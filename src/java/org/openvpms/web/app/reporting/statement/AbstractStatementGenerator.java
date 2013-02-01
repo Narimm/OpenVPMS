@@ -11,24 +11,20 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting.statement;
 
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.processor.BatchProcessorDialog;
 import org.openvpms.web.component.processor.RetryListener;
-import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
 
@@ -37,11 +33,9 @@ import org.openvpms.web.component.util.Vetoable;
  * Abstract implementation of the {@link BatchProcessor} for statement
  * generation.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public abstract class AbstractStatementGenerator
-        extends AbstractBatchProcessor {
+public abstract class AbstractStatementGenerator extends AbstractBatchProcessor {
 
     /**
      * The generation dialog title.
@@ -76,7 +70,7 @@ public abstract class AbstractStatementGenerator
     /**
      * The current generation dialog.
      */
-    private GenerationDialog dialog;
+    private BatchProcessorDialog dialog;
 
 
     /**
@@ -124,7 +118,7 @@ public abstract class AbstractStatementGenerator
         processor.setRetryListener(retryListener);
         if (processor.getCount() > 1) {
             // open a dialog to give the user the opportunity to cancel
-            dialog = new GenerationDialog(processor);
+            dialog = new BatchProcessorDialog(title, processor);
             dialog.setCancelListener(cancelListener);
             dialog.show();
         } else {
@@ -223,35 +217,4 @@ public abstract class AbstractStatementGenerator
         dialog.show();
     }
 
-    private class GenerationDialog extends PopupDialog {
-
-        /**
-         * The processor.
-         */
-        private final StatementProgressBarProcessor processor;
-
-
-        /**
-         * Creates a new <tt>GenerationDialog</tt>.
-         *
-         * @param processor the processor
-         */
-        public GenerationDialog(StatementProgressBarProcessor processor) {
-            super(title, CANCEL);
-            setModal(true);
-            Column column = ColumnFactory.create(
-                    "Inset", processor.getComponent());
-            getLayout().add(column);
-            this.processor = processor;
-        }
-
-        /**
-         * Shows the dialog, and starts the statement generation.
-         */
-        public void show() {
-            super.show();
-            processor.process();
-        }
-
-    }
 }

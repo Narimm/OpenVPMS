@@ -41,10 +41,21 @@ public final class SelectFieldFactory extends ComponentFactory {
      * @param model the model
      */
     public static SelectField create(ListModel model) {
+        return create(model, null);
+    }
+
+    /**
+     * Creates a new select field with the provided model.
+     *
+     * @param model    the model
+     * @param selected the initial selection, or {@code null} to select the first item
+     */
+    public static SelectField create(ListModel model, Object selected) {
         SelectField select = new SelectField(model);
         setDefaultStyle(select);
-        if (model.size() > 0) {
-            // default to the first element
+        if (selected != null) {
+            select.setSelectedItem(selected);
+        } else if (model.size() != 0) {
             select.setSelectedIndex(0);
         }
         return select;
@@ -63,8 +74,7 @@ public final class SelectFieldFactory extends ComponentFactory {
     }
 
     /**
-     * Create a new select field that will initially contain the provided list
-     * of items.
+     * Create a new select field that will initially contain the provided list of items.
      *
      * @param items the items to add
      * @return a new select field

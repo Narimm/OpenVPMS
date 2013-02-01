@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.processor;
@@ -34,8 +32,7 @@ import java.util.Collection;
 /**
  * A {BatchProcessor} that displays the current progress in a progress bar.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class ProgressBarProcessor<T>
         extends AbstractAsynchronousBatchProcessor<T>
@@ -72,18 +69,23 @@ public abstract class ProgressBarProcessor<T>
     private long lastRefresh = 0;
 
     /**
-     * Determines how often to re-schedule the processor, to force a refresh.
-     */
-    private long refreshInterval = DateUtils.MILLIS_PER_SECOND * 2;
-
-    /**
      * The retry listener.
      */
     private RetryListener<T> retryListener;
 
+    /**
+     * Determines if batch processing has completed.
+     */
+    private boolean completed = false;
 
     /**
-     * Constructs a new <tt>ProgressBarProcessor</tt>.
+     * Determines how often to re-schedule the processor, to force a refresh.
+     */
+    private static final long REFRESH_INTERVAL = DateUtils.MILLIS_PER_SECOND * 2;
+
+
+    /**
+     * Constructs a {@code ProgressBarProcessor}.
      *
      * @param items the items to process
      * @param title the processor title. May be <tt>null</tt>
@@ -93,7 +95,7 @@ public abstract class ProgressBarProcessor<T>
     }
 
     /**
-     * Constructs a new <tt>ProgressBarProcessor</tt>.
+     * Constructs a {@code ProgressBarProcessor}.
      *
      * @param items the items
      * @param size  the expected no. of items. This need not be exact
@@ -105,15 +107,15 @@ public abstract class ProgressBarProcessor<T>
     }
 
     /**
-     * Constructs a new <tt>ProgressBarProcessor</tt>.
-     * The {@link #setItems} method must be invoked prior to starting
-     * processing.
+     * Constructs a {@code ProgressBarProcessor}.
+     * The {@link #setItems} method must be invoked prior to starting processing.
      *
      * @param title the progress bar title. May be <tt>null</tt>
      */
     public ProgressBarProcessor(String title) {
         bar = new ProgressBar();
         bar.setCompletedColor(Color.GREEN);
+        bar.setNumberOfBlocks(20);
         this.title = title;
     }
 
@@ -162,6 +164,23 @@ public abstract class ProgressBarProcessor<T>
     }
 
     /**
+     * Cancels processing.
+     */
+    public void cancel() {
+        setSuspend(true);
+        processingCompleted();
+    }
+
+    /**
+     * Processes the batch.
+     */
+    @Override
+    public void process() {
+        completed = false;
+        super.process();
+    }
+
+    /**
      * Sets the items to iterate.
      *
      * @param items the items.
@@ -182,9 +201,12 @@ public abstract class ProgressBarProcessor<T>
      */
     @Override
     protected void processingCompleted() {
-        removeTaskQueue();
-        bar.setValue(getProcessed());
-        super.processingCompleted();
+        if (!completed) {
+            completed = true;
+            removeTaskQueue();
+            bar.setValue(getProcessed());
+            super.processingCompleted();
+        }
     }
 
     /**
@@ -213,8 +235,7 @@ public abstract class ProgressBarProcessor<T>
         if (processed % step == 0) {
             bar.setValue(processed);
         }
-        if (!isSuspended() && (lastRefresh == 0
-                               || ((time - lastRefresh) > refreshInterval))) {
+        if (!isSuspended() && (lastRefresh == 0 || ((time - lastRefresh) > REFRESH_INTERVAL))) {
             // enable a refresh of the progress bar
             setSuspend(true);
             final ApplicationInstance app = ApplicationInstance.getActive();

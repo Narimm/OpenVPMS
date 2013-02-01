@@ -27,10 +27,13 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -108,6 +111,21 @@ public class QueryHelper {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns all objects matching the specified query in a list.
+     *
+     * @param query the query
+     * @return the matching objects
+     */
+    public static <T extends IMObject> List<T> query(ArchetypeQuery query) {
+        Iterator<T> iterator = new IMObjectQueryIterator<T>(query);
+        List<T> matches = new ArrayList<T>();
+        while (iterator.hasNext()) {
+            matches.add(iterator.next());
+        }
+        return matches;
     }
 
     /**

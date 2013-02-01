@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2006-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.list;
@@ -26,21 +24,19 @@ import java.util.List;
 /**
  * List model for {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-07-05 22:12:49Z $
+ * @author Tim Anderson
  * @see IMObjectListCellRenderer
  */
 public class IMObjectListModel extends AbstractIMObjectListModel<IMObject> {
 
     /**
-     * Creates a new <tt>IMObjectListModel</tt>.
+     * Constructs a {@code IMObjectListModel}.
      *
      * @param objects the objects to populate the list with.
-     * @param all     if <tt>true</tt>, add a localised "All"
-     * @param none    if <tt>true</tt>, add a localised "None"
+     * @param all     if {@code true}, add a localised "All"
+     * @param none    if {@code true}, add a localised "None"
      */
-    public IMObjectListModel(List<? extends IMObject> objects, boolean all,
-                             boolean none) {
+    public IMObjectListModel(List<? extends IMObject> objects, boolean all, boolean none) {
         super(objects, all, none);
     }
 
