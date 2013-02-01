@@ -4,8 +4,10 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
     <!--  Property configuration -->
-    <bean id="props"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+
+        <property name="ignoreResourceNotFound" value="true"/>
+
         <property name="locations">
             <list>
                 <value>classpath:hibernate.properties</value>
@@ -15,7 +17,7 @@
 
     <bean id="propertyPlaceholderConfigurer"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="properties" ref="props"/>
+        <property name="properties" ref="properties"/>
 
         <!-- allow system properties to override any other property source -->
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
