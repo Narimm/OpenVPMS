@@ -11,24 +11,21 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
 
 import org.openvpms.archetype.rules.act.ActCopyHandler;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
-import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
-import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.*;
+import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -39,14 +36,36 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.CREDIT;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.CREDIT_ITEM;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.CREDIT_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.DELIVERY;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.DELIVERY_ITEM;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.DELIVERY_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.DELIVERY_ORDER_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.INVOICE;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.INVOICE_ITEM;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.INVOICE_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.ORDER;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.ORDER_ITEM;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.RETURN;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.RETURN_ITEM;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.RETURN_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.RETURN_ORDER_ITEM_RELATIONSHIP;
+
 
 /**
  * Supplier Order rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OrderRules {
+
+    /**
+     * The tax rules.
+     */
+    private final TaxRules taxRules;
 
     /**
      * The archetype service.
@@ -56,17 +75,11 @@ public class OrderRules {
 
     /**
      * Creates a new <tt>OrderRules</tt>.
-     */
-    public OrderRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>OrderRules</tt>.
      *
      * @param service the archetype service
      */
-    public OrderRules(IArchetypeService service) {
+    public OrderRules(TaxRules taxRules, IArchetypeService service) {
+        this.taxRules = taxRules;
         this.service = service;
     }
 
@@ -205,6 +218,18 @@ public class OrderRules {
     }
 
     /**
+     * Creates an order for all products supplied by the supplier for the specified stock location.
+     *
+     * @param supplier      the supplier
+     * @param stockLocation the stock location
+     * @return the order and its items, or an empty list if there are no products to order
+     */
+    public List<FinancialAct> createOrder(Party supplier, Party stockLocation) {
+        OrderGenerator generator = new OrderGenerator(taxRules, service);
+        return generator.createOrder(supplier, stockLocation);
+    }
+
+    /**
      * Helper to copy an act.
      *
      * @param object    the object to copy
@@ -220,8 +245,8 @@ public class OrderRules {
         if (!TypeHelper.isA(object, type)) {
             throw new IllegalArgumentException(
                     "Expected a " + type + " for argument 'object'"
-                            + ", but got a"
-                            + object.getArchetypeId().getShortName());
+                    + ", but got a"
+                    + object.getArchetypeId().getShortName());
         }
         IMObjectCopier copier = new IMObjectCopier(handler, service);
         List<IMObject> objects = copier.apply(object);

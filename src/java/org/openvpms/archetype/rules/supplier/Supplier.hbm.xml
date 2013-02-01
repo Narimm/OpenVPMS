@@ -117,11 +117,14 @@
         where   product.active = 1
                 and convert(idealQty.value, decimal) <> 0.0
                 and (convert(quantity.value, decimal) < convert(idealQty.value, decimal))
-                and (orders.status is null or orders.status in ("IN_PROGRESS", "COMPLETED", "POSTED", "ACCEPTED"))
+                and ((orders.status is null and orderItem.act_id is null)
+                    or orders.status in ("IN_PROGRESS", "COMPLETED", "POSTED", "ACCEPTED"))
                 and (deliveryStatus.value is null or deliveryStatus.value <> "FULL")
         group by productId
         order by productId
         ]]>
+        <!-- NOTE: need both "orders.status is null and orderItem.act_id is null" as order items can exist without
+                   orders, due to an archetype bug -->
     </sql-query>
 
 </hibernate-mapping>
