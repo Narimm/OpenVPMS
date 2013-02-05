@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -27,6 +25,7 @@ import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -48,8 +47,7 @@ import java.util.regex.Pattern;
  * To load documents by identifier, the identifier is parsed from the document file name and used to retrieve the
  * corresponding document act.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentLoader {
 
@@ -158,7 +156,7 @@ public class DocumentLoader {
             LoaderListener listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log, target)
                                                                      : new DefaultLoaderListener(target);
 
-            String type = config.getString("type");
+            String type[] = config.getStringArray("type");
             if (byId) {
                 boolean recurse = config.getBoolean("recurse");
                 boolean overwrite = config.getBoolean("overwrite");
@@ -302,50 +300,52 @@ public class DocumentLoader {
         dirParser.setMustBeDirectory(true);
         dirParser.setMustExist(true);
         try {
-            parser.registerParameter(new Switch("byid").setShortFlag('i')
-                    .setLongFlag("byid")
-                    .setHelp("Load files using the identifiers in their names"));
+            parser.registerParameter(
+                    new Switch("byid").setShortFlag('i')
+                                             .setLongFlag("byid")
+                                             .setHelp("Load files using the identifiers in their names"));
             parser.registerParameter(new Switch("byname").setShortFlag('n')
-                    .setLongFlag("byname")
-                    .setHelp("Load files by matching their names with document acts"));
+                                             .setLongFlag("byname")
+                                             .setHelp("Load files by matching their names with document acts"));
             parser.registerParameter(new FlaggedOption("source").setShortFlag('s')
-                    .setLongFlag("source")
-                    .setStringParser(dirParser)
-                    .setDefault("./")
-                    .setHelp("The directory to load files from. "));
+                                             .setLongFlag("source")
+                                             .setStringParser(dirParser)
+                                             .setDefault("./")
+                                             .setHelp("The directory to load files from. "));
             parser.registerParameter(new Switch("recurse").setShortFlag('r')
-                    .setLongFlag("recurse")
-                    .setDefault("false")
-                    .setHelp("Recursively scan the source directory"));
+                                             .setLongFlag("recurse")
+                                             .setDefault("false")
+                                             .setHelp("Recursively scan the source directory"));
             parser.registerParameter(new Switch("overwrite").setShortFlag('o')
-                    .setLongFlag("overwrite")
-                    .setDefault("false")
-                    .setHelp("Overwrite existing attachments. Ony applies when --byid is used"));
+                                             .setLongFlag("overwrite")
+                                             .setDefault("false")
+                                             .setHelp("Overwrite existing attachments. Ony applies when --byid is used"));
             parser.registerParameter(new FlaggedOption("regexp")
-                    .setLongFlag("regexp")
-                    .setDefault(IdLoader.DEFAULT_REGEXP)
-                    .setHelp("Regular expression for parsing identifiers from file names. "
-                             + "Only applies when --byid is used"));
+                                             .setLongFlag("regexp")
+                                             .setDefault(IdLoader.DEFAULT_REGEXP)
+                                             .setHelp("Regular expression for parsing identifiers from file names. "
+                                                      + "Only applies when --byid is used"));
             parser.registerParameter(new FlaggedOption("dest").setShortFlag('d')
-                    .setLongFlag("dest")
-                    .setStringParser(dirParser)
-                    .setHelp("The directory to move files to on successful load."));
+                                             .setLongFlag("dest")
+                                             .setStringParser(dirParser)
+                                             .setHelp("The directory to move files to on successful load."));
             parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
-                    .setLongFlag("type")
-                    .setDefault("act.*Document*")
-                    .setHelp("The archetype short name. May contain wildcards."));
+                                             .setLongFlag("type")
+                                             .setDefault(new String[]{"act.*Document*", InvestigationArchetypes.PATIENT_INVESTIGATION})
+                                             .setAllowMultipleDeclarations(true)
+                                             .setHelp("The archetype short name. May contain wildcards."));
             parser.registerParameter(new FlaggedOption("failOnError")
-                    .setShortFlag('e')
-                    .setLongFlag("failOnError")
-                    .setDefault("false")
-                    .setStringParser(BooleanStringParser.getParser())
-                    .setHelp("Fail on error"));
+                                             .setShortFlag('e')
+                                             .setLongFlag("failOnError")
+                                             .setDefault("false")
+                                             .setStringParser(BooleanStringParser.getParser())
+                                             .setHelp("Fail on error"));
             parser.registerParameter(new Switch("verbose").setShortFlag('v')
-                    .setLongFlag("verbose").setDefault("false").setHelp("Displays verbose info to the console."));
+                                             .setLongFlag("verbose").setDefault("false").setHelp("Displays verbose info to the console."));
             parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
-                    .setLongFlag("context")
-                    .setDefault(APPLICATION_CONTEXT)
-                    .setHelp("Application context path"));
+                                             .setLongFlag("context")
+                                             .setDefault(APPLICATION_CONTEXT)
+                                             .setHelp("Application context path"));
         } catch (JSAPException exception) {
             throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.FailedToCreateParser, exception);
         }

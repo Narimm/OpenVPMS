@@ -11,14 +11,11 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -35,12 +32,16 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link NameLoader} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class NameLoaderTestCase extends AbstractLoaderTest {
 
@@ -74,7 +75,7 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
         File act7File = createFile(source, act7.getFileName(), null);
         File act8File = createFile(source, act8.getFileName(), null);
 
-        Loader loader = new NameLoader(source, PatientArchetypes.DOCUMENT_ATTACHMENT, service,
+        Loader loader = new NameLoader(source, new String[]{PatientArchetypes.DOCUMENT_ATTACHMENT}, service,
                                        new DefaultDocumentFactory());
         LoggingLoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
         load(loader, listener);

@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2009-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -40,8 +38,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link IdLoader} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IdLoaderTestCase extends AbstractLoaderTest {
 
@@ -383,8 +380,8 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
      * @return the loader listener
      */
     private LoaderListener load(File source, String shortName, File target, boolean overwrite) {
-        Loader loader = new IdLoader(source, shortName, service, new DefaultDocumentFactory(), transactionManager,
-                                     true, overwrite);
+        Loader loader = new IdLoader(source, shortName != null ? new String[]{shortName} : null, service,
+                                     new DefaultDocumentFactory(), transactionManager, true, overwrite);
         LoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
         load(loader, listener);
         return listener;

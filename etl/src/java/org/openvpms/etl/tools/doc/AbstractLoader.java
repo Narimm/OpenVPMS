@@ -11,14 +11,11 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -35,8 +32,7 @@ import java.util.List;
 /**
  * Abstract implementation of the {@link Loader} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 abstract class AbstractLoader implements Loader {
 
@@ -51,7 +47,7 @@ abstract class AbstractLoader implements Loader {
     private final DocumentFactory factory;
 
     /**
-     * The loader listener. May be <tt>null</tt>
+     * The loader listener. May be {@code null}
      */
     private LoaderListener listener;
 
@@ -61,13 +57,12 @@ abstract class AbstractLoader implements Loader {
     private final DocumentRules rules;
 
     /**
-     * Creates a new <tt>AbstractLoader</tt>.
+     * Constructs an {@code AbstractLoader}.
      *
      * @param service the archetype service
      * @param factory the document factory
      */
-    public AbstractLoader(IArchetypeService service,
-                          DocumentFactory factory) {
+    public AbstractLoader(IArchetypeService service, DocumentFactory factory) {
         this.service = service;
         this.factory = factory;
         this.rules = new DocumentRules(service);
@@ -85,7 +80,7 @@ abstract class AbstractLoader implements Loader {
     /**
      * Returns the listener.
      *
-     * @return the listener. May be <tt>null</tt>
+     * @return the listener. May be {@code null}
      */
     public LoaderListener getListener() {
         return listener;
@@ -136,10 +131,11 @@ abstract class AbstractLoader implements Loader {
      * Notifies any registered listener that a file has been loaded.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    protected void notifyLoaded(File file) {
+    protected void notifyLoaded(File file, long id) {
         if (listener != null) {
-            listener.loaded(file);
+            listener.loaded(file, id);
         }
     }
 
@@ -148,10 +144,11 @@ abstract class AbstractLoader implements Loader {
      * has already been processed.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    protected void notifyAlreadyLoaded(File file) {
+    protected void notifyAlreadyLoaded(File file, long id) {
         if (listener != null) {
-            listener.alreadyLoaded(file);
+            listener.alreadyLoaded(file, id);
         }
     }
 
@@ -160,10 +157,11 @@ abstract class AbstractLoader implements Loader {
      * corresponding act cannot be found.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    protected void notifyMissingAct(File file) {
+    protected void notifyMissingAct(File file, long id) {
         if (listener != null) {
-            listener.missingAct(file);
+            listener.missingAct(file, id);
         }
     }
 
@@ -183,16 +181,16 @@ abstract class AbstractLoader implements Loader {
     /**
      * Returns all document act archetype short names that match the supplied short name, and have a "document" node.
      *
-     * @param shortName the short name. May be <tt>null</tt> or contain wildcards
+     * @param shortNames the short names. May be {@code null} or contain wildcards
      * @return the document act archetype short names
      */
-    protected String[] getDocumentActShortNames(String shortName) {
+    protected String[] getDocumentActShortNames(String[] shortNames) {
         List<String> result = new ArrayList<String>();
         List<ArchetypeDescriptor> descriptors;
-        if (StringUtils.isEmpty(shortName)) {
+        if (shortNames == null || shortNames.length == 0) {
             descriptors = getService().getArchetypeDescriptors();
         } else {
-            descriptors = DescriptorHelper.getArchetypeDescriptors(shortName, getService());
+            descriptors = DescriptorHelper.getArchetypeDescriptors(shortNames, getService());
         }
         for (ArchetypeDescriptor descriptor : descriptors) {
             if (DocumentAct.class.isAssignableFrom(descriptor.getClazz())

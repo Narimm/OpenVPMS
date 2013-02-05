@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -24,10 +22,9 @@ import java.io.File;
 
 
 /**
- * Implementation of {@link LoaderListener} that logs events to a <tt>Log</tt>.
+ * Implementation of {@link LoaderListener} that logs events to a {@code Log}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class LoggingLoaderListener extends AbstractLoaderListener {
 
@@ -38,16 +35,7 @@ class LoggingLoaderListener extends AbstractLoaderListener {
 
 
     /**
-     * Creates a new <tt>LoggingLoaderListener</tt>.
-     *
-     * @param log the log
-     */
-    public LoggingLoaderListener(Log log) {
-        this(log, null);
-    }
-
-    /**
-     * Creates a new <tt>LoggingLoaderListener</tt>.
+     * Constructs a {@code LoggingLoaderListener}.
      *
      * @param log the log
      * @param dir if non-null, files will be moved here on successful load
@@ -61,36 +49,37 @@ class LoggingLoaderListener extends AbstractLoaderListener {
      * Notifies when a file is loaded.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
     @Override
-    public void loaded(File file) {
+    public void loaded(File file, long id) {
         if (doLoaded(file)) {
-            log.info("Loaded " + file.getPath());
+            log.info("Loaded " + file.getPath() + ", identifier=" + id);
         }
     }
 
     /**
-     * Notifies that a file couldn't be loaded as it or another file had
-     * already been processed.
+     * Notifies that a file couldn't be loaded as it or another file had already been processed.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
     @Override
-    public void alreadyLoaded(File file) {
-        super.alreadyLoaded(file);
-        log.info("Skipping " + file.getPath());
+    public void alreadyLoaded(File file, long id) {
+        super.alreadyLoaded(file, id);
+        log.info("Skipping " + file.getPath() + ", identifier=" + id);
     }
 
     /**
-     * Notifies that a file couldn't be loaded as there was no corresponding
-     * act.
+     * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
     @Override
-    public void missingAct(File file) {
-        super.missingAct(file);
-        log.info("Missing act for " + file.getPath());
+    public void missingAct(File file, long id) {
+        super.missingAct(file, id);
+        log.info("Missing act for " + file.getPath() + ", identifier=" + id);
     }
 
     /**

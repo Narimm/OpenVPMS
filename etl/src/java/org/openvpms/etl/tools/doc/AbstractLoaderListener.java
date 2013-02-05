@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -27,8 +25,7 @@ import java.io.IOException;
 /**
  * Abstract implementation of the {@link LoaderListener} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 abstract class AbstractLoaderListener implements LoaderListener {
 
@@ -78,8 +75,9 @@ abstract class AbstractLoaderListener implements LoaderListener {
      * Notifies when a file is loaded.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    public void loaded(File file) {
+    public void loaded(File file, long id) {
         doLoaded(file);
     }
 
@@ -97,15 +95,15 @@ abstract class AbstractLoaderListener implements LoaderListener {
      * already been processed.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    public void alreadyLoaded(File file) {
+    public void alreadyLoaded(File file, long id) {
         ++skipped;
         ++errors;
     }
 
     /**
-     * Returns the no. of files that weren't loaded as the corresponding act
-     * was already associated with a document.
+     * Returns the no. of files that weren't loaded as the corresponding act was already associated with a document.
      *
      * @return the no. of files that were skipped
      */
@@ -118,8 +116,9 @@ abstract class AbstractLoaderListener implements LoaderListener {
      * act.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    public void missingAct(File file) {
+    public void missingAct(File file, long id) {
         ++missing;
         ++errors;
     }
@@ -177,7 +176,7 @@ abstract class AbstractLoaderListener implements LoaderListener {
                 File target = new File(dir, file.getName());
                 if (target.exists()) {
                     throw new IOException("Cannot copy " + file.getPath()
-                            + " to " + dir.getPath() + ": file exists");
+                                          + " to " + dir.getPath() + ": file exists");
                 }
                 FileUtils.copyFile(file, target);
                 if (!file.delete()) {
