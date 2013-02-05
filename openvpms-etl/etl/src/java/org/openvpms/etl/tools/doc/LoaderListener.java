@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -24,8 +22,7 @@ import java.io.File;
 /**
  * Listener for {@link Loader} events.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 interface LoaderListener {
 
@@ -33,8 +30,9 @@ interface LoaderListener {
      * Notifies when a file is loaded.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    void loaded(File file);
+    void loaded(File file, long id);
 
     /**
      * Returns the no. of files loaded.
@@ -48,8 +46,9 @@ interface LoaderListener {
      * already been processed.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    void alreadyLoaded(File file);
+    void alreadyLoaded(File file, long id);
 
     /**
      * Returns the no. of files that weren't loaded as the corresponding act
@@ -60,12 +59,12 @@ interface LoaderListener {
     int getAlreadyLoaded();
 
     /**
-     * Notifies that a file couldn't be loaded as there was no corresponding
-     * act.
+     * Notifies that a file couldn't be loaded as there was no corresponding act.
      *
      * @param file the file
+     * @param id   the corresponding act identifier
      */
-    void missingAct(File file);
+    void missingAct(File file, long id);
 
     /**
      * Returns the no. of files that don't have a corresponding act.

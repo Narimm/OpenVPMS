@@ -11,13 +11,12 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,8 +46,7 @@ import java.util.List;
  * source directory and attach it to the act.
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class NameLoader extends AbstractLoader {
 
@@ -68,21 +66,21 @@ class NameLoader extends AbstractLoader {
     private static final Log log = LogFactory.getLog(NameLoader.class);
 
     /**
-     * Creates a new <tt>NameLoader</tt>.
+     * Creates a new {@code NameLoader}.
      *
-     * @param dir       the source directory
-     * @param shortName the shortName. If <tt>null</tt> indicates to query all
-     *                  document acts. May contain wildcards
-     * @param service   the archetype service
-     * @param factory   the document factory
+     * @param dir        the source directory
+     * @param shortNames the document archetype(s) that may be loaded to. May be {@code null}, or contain
+     *                   wildcards
+     * @param service    the archetype service
+     * @param factory    the document factory
      */
-    public NameLoader(File dir, String shortName, IArchetypeService service, DocumentFactory factory) {
+    public NameLoader(File dir, String[] shortNames, IArchetypeService service, DocumentFactory factory) {
         super(service, factory);
         this.dir = dir;
-        String[] shortNames = getDocumentActShortNames(shortName);
+        shortNames = getDocumentActShortNames(shortNames);
         if (shortNames.length == 0) {
             throw new IllegalArgumentException("Argument 'shortName' doesn't refer to a valid archetype for loading "
-                                               + "documents to: " + shortName);
+                                               + "documents to: " + ArrayUtils.toString(shortNames));
         }
 
         List<IMObjectReference> refs = getDocumentActs(shortNames);
@@ -93,8 +91,7 @@ class NameLoader extends AbstractLoader {
     /**
      * Determines if there is a document to load.
      *
-     * @return <tt>true</tt> if there is a document to load, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if there is a document to load, otherwise {@code false}
      */
     public boolean hasNext() {
         return iterator.hasNext();
@@ -103,7 +100,7 @@ class NameLoader extends AbstractLoader {
     /**
      * Loads the next document.
      *
-     * @return <tt>true</tt> if the document was loaded successfully
+     * @return {@code true} if the document was loaded successfully
      */
     public boolean loadNext() {
         boolean result = false;
@@ -114,7 +111,7 @@ class NameLoader extends AbstractLoader {
             try {
                 Document doc = createDocument(file);
                 addDocument(act, doc);
-                notifyLoaded(file);
+                notifyLoaded(file, act.getId());
             } catch (Throwable exception) {
                 notifyError(file, exception);
             }
@@ -164,11 +161,10 @@ class NameLoader extends AbstractLoader {
      * Helper to return a document act given its reference.
      *
      * @param reference the document act reference
-     * @return the corresponding act, or <tt>null</tt>
+     * @return the corresponding act, or {@code null}
      */
     private DocumentAct getDocumentAct(IMObjectReference reference) {
         return (DocumentAct) getService().get(reference);
     }
-
 
 }
