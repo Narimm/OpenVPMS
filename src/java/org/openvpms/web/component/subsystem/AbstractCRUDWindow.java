@@ -233,16 +233,21 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     public void edit() {
         T object = getObject();
         if (object != null) {
-            if (object.isNew()) {
-                edit(object);
-            } else {
-                // make sure the latest instance is being used.
-                object = IMObjectHelper.reload(object);
-                if (object == null) {
-                    ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
-                } else {
+            if (canEdit()) {
+                if (object.isNew()) {
                     edit(object);
+                } else {
+                    // make sure the latest instance is being used.
+                    IMObject previous = object;
+                    object = IMObjectHelper.reload(object);
+                    if (object == null) {
+                        ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
+                    } else {
+                        edit(object);
+                    }
                 }
+            } else {
+                ErrorDialog.show(Messages.get("imobject.noedit", DescriptorHelper.getDisplayName(object)));
             }
         }
     }
