@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -22,8 +20,7 @@ package org.openvpms.archetype.rules.supplier;
 /**
  * Supplier archetype short names.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SupplierArchetypes {
 
@@ -134,6 +131,26 @@ public class SupplierArchetypes {
      */
     public static final String CREDIT_ITEM_RELATIONSHIP
             = "actRelationship.supplierAccountCreditItem";
+
+    /**
+     * Supplier payment act short name.
+     */
+    public static final String PAYMENT = "act.supplierAccountPayment";
+
+    /**
+     * Supplier cash payment item act short name.
+     */
+    public static final String PAYMENT_CASH = "act.supplierAccountPaymentCash";
+
+    /**
+     * Supplier refund act short name.
+     */
+    public static final String REFUND = "act.supplierAccountRefund";
+
+    /**
+     * Supplier cash refund act short name.
+     */
+    public static final String REFUND_CASH = "act.supplierAccountRefundCash";
 
     /**
      * Supplier participation short name.
