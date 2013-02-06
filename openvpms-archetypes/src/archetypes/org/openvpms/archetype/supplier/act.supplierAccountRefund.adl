@@ -44,12 +44,12 @@
 			</assertion>
 		</node>
 		<node name="items" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
-			filter="actRelationship.customerAccountRefundItem" >
+			filter="actRelationship.supplierAccountRefundItem" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="actRelationship.customerAccountRefundItem" />
+							value="actRelationship.supplierAccountRefundItem" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

@@ -23,6 +23,7 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true"/>
 		<node name="description" type="java.lang.String" path="/description"
               hidden="true"/>
+        <node name="parentChild" path="/parentChildRelationship" type="java.lang.Boolean" readOnly="true" hidden="true" defaultValue="true()" />
 		<node name="source" displayName="Invoice" path="/source"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
