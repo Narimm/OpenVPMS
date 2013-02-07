@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2010-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.product;
 
@@ -35,8 +33,7 @@ import java.util.List;
 /**
  * Tests the {@link ProductQuery} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
 
@@ -129,7 +126,7 @@ public class ProductQueryTestCase extends AbstractEntityQueryTest<Product> {
         checkExists(felineProduct, query, matches, false);
         checkExists(universalProduct, query, matches, true);
 
-        // now constrain query to feline products. Feline products should be excluded
+        // now constrain query to feline products. Canine products should be excluded
         query.setSpecies(FELINE);
         matches = getObjectRefs(query);
         checkExists(canineProduct1, query, matches, false);
