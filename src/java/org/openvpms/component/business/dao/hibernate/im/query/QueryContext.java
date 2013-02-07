@@ -1,30 +1,60 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
 package org.openvpms.component.business.dao.hibernate.im.query;
 
 import org.apache.commons.lang.WordUtils;
-import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.OperatorNotSupported;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.JoinConstraint;
-import static org.openvpms.component.system.common.query.JoinConstraint.JoinType;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.SelectConstraint;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.LinkedHashMap;
+
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.OperatorNotSupported;
+import static org.openvpms.component.system.common.query.JoinConstraint.JoinType;
 
 
 /**
  * This class holds the state of the HQL as it is being built.
+ *
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class QueryContext {
+
+    /**
+     * The parent context.
+     */
+    private final QueryContext parent;
+
+    /**
+     * The select constraints.
+     */
+    private List<SelectConstraint> selectConstraints = new ArrayList<SelectConstraint>();
 
     /**
      * The select clause.
@@ -84,12 +114,12 @@ public class QueryContext {
     /**
      * Name allocator for types.
      */
-    private NameAllocator typeNames = new NameAllocator();
+    private final NameAllocator typeNames;
 
     /**
      * Name allocator for parameters.
      */
-    private NameAllocator paramNames = new NameAllocator();
+    private final NameAllocator paramNames;
 
     /**
      * a stack of parameters while processing the {@link ArchetypeQuery}.
@@ -104,24 +134,28 @@ public class QueryContext {
     /**
      * Holds a reference to the parameters and the values used to process
      */
-    private Map<String, Object> params = new HashMap<String, Object>();
+    private final Map<String, Object> params;
 
 
     /**
-     * Default constructor.
-     */
-    QueryContext() {
-        this(false);
-    }
-
-    /**
-     * Constructs a <tt>QueryContext</tt>.
+     * Constructs a {@code QueryContext}.
      *
-     * @param distinct if <tt>true</tt> filter duplicate rows
+     * @param distinct if {@code true} filter duplicate rows
+     * @param parent   the parent context. May be {@code null}
      */
-    QueryContext(boolean distinct) {
+    QueryContext(boolean distinct, QueryContext parent) {
+        this.parent = parent;
         if (distinct) {
             selectClause.append("distinct ");
+        }
+        if (parent != null) {
+            typeNames = parent.typeNames;
+            paramNames = parent.paramNames;
+            params = parent.params;
+        } else {
+            typeNames = new NameAllocator();
+            paramNames = new NameAllocator();
+            params = new HashMap<String, Object>();
         }
     }
 
@@ -158,6 +192,24 @@ public class QueryContext {
             result.append(orderedClause);
         }
         return result.toString();
+    }
+
+    /**
+     * Adds a select constraint.
+     *
+     * @param select the constraint to add
+     */
+    public void addSelectConstraint(SelectConstraint select) {
+        selectConstraints.add(select);
+    }
+
+    /**
+     * Returns the select constraints.
+     *
+     * @return the select constraints
+     */
+    public List<SelectConstraint> getSelectConstraints() {
+        return selectConstraints;
     }
 
     /**
@@ -235,7 +287,7 @@ public class QueryContext {
      * The result of the method must be passed to {@link #popTypeSet} to correctly manage the context stack.
      *
      * @param types the type set
-     * @return <tt>true</tt> if the type set was pushed; or <tt>false</tt> if it was already present
+     * @return {@code true} if the type set was pushed; or {@code false} if it was already present
      */
     boolean pushTypeSet(TypeSet types) {
         boolean added = addTypeSet(types, types.getAlias());
@@ -287,7 +339,7 @@ public class QueryContext {
     /**
      * Pop the type set from the stack.
      *
-     * @param popJoin if <tt>true</tt> pop the join and from constraints
+     * @param popJoin if {@code true} pop the join and from constraints
      */
     void popTypeSet(boolean popJoin) {
         varStack.pop();
@@ -310,25 +362,16 @@ public class QueryContext {
     /**
      * Returns the primary type set. This is the type of the first from clause.
      *
-     * @return the primary type, or <tt>null</tt> if none is registered
+     * @return the primary type, or {@code null} if none is registered
      */
     TypeSet getPrimarySet() {
         return (!typesets.isEmpty()) ? typesets.values().iterator().next() : null;
     }
 
     /**
-     * Look at the join type that is currently on the stack.
-     *
-     * @return the join type
-     */
-    JoinType peekJoinType() {
-        return joinStack.peek().operator;
-    }
-
-    /**
      * Determines if the current constraint is an outer join.
      *
-     * @return <tt>true</tt> if there is a join
+     * @return {@code true} if there is a join
      */
     boolean isOuterJoin() {
         return !joinStack.isEmpty() && joinStack.peek().operator != JoinType.InnerJoin;
@@ -338,45 +381,30 @@ public class QueryContext {
      * Returns the type associated with an alias, or the type on type top
      * of the stack if the alias is null.
      *
-     * @param alias the type alias. May be <tt>null</tt>
-     * @return the associated result set or <tt>null</tt> if none is found
+     * @param alias the type alias. May be {@code null}
+     * @return the associated result set or {@code null} if none is found
      */
     TypeSet getTypeSet(String alias) {
         TypeSet result = null;
-        if (alias != null) {
-            result = typesets.get(alias);
-        } else if (!typeStack.isEmpty()) {
-            result = typeStack.peek();
+        if (parent != null) {
+            result = parent.getTypeSet(alias);
+        }
+        if (result == null) {
+            if (alias != null) {
+                result = typesets.get(alias);
+            } else if (!typeStack.isEmpty()) {
+                result = typeStack.peek();
+            }
         }
         return result;
     }
 
     /**
-     * Push a variable name on the stack
-     *
-     * @param varName the variable name to push
-     * @return this context
-     */
-    QueryContext pushVariable(String varName) {
-        varStack.push(varName);
-        return this;
-    }
-
-    /**
-     * Pop the variable name on the stack
-     *
-     * @return String
-     */
-    String popVariable() {
-        return varStack.pop();
-    }
-
-    /**
      * Adds a select constraint.
      *
-     * @param alias    the type alias. May be <tt>null</tt>
-     * @param node     the node name. May be <tt>null</tt>
-     * @param property the property. May be <tt>null</tt>
+     * @param alias    the type alias. May be {@code null}
+     * @param node     the node name. May be {@code null}
+     * @param property the property. May be {@code null}
      */
     void addSelectConstraint(String alias, String node, String property) {
         if (alias == null) {
@@ -401,8 +429,8 @@ public class QueryContext {
     /**
      * Adds an object reference select constraint.
      *
-     * @param alias    the type alias. May be <tt>null</tt>
-     * @param nodeName the node name. May ve <tt>null</tt>
+     * @param alias    the type alias. May be {@code null}
+     * @param nodeName the node name. May ve {@code null}
      */
     void addObjectRefSelectConstraint(String alias, String nodeName) {
         if (alias == null) {
@@ -429,7 +457,7 @@ public class QueryContext {
     /**
      * Adds a constraint to the current from or where clause.
      *
-     * @param alias    the type alias. If <tt>null</tt> the current alias will be used
+     * @param alias    the type alias. If {@code null} the current alias will be used
      * @param property the property name
      * @param op       the operator
      * @param value    the value
@@ -470,7 +498,7 @@ public class QueryContext {
     /**
      * Add the specified sort constraint.
      *
-     * @param alias     the type alias. May be <tt>null</tt>
+     * @param alias     the type alias. May be {@code null}
      * @param property  the property to be sorted.
      * @param ascending whether it is ascending or not
      * @return this context
@@ -511,7 +539,7 @@ public class QueryContext {
             case BTW:
                 if (parameters[0] != null || parameters[1] != null) {
                     // process left hand side
-                    clause.push(LogicalOperator.And);
+                    clause.push(LogicalOperator.AND);
                     if (parameters[0] != null) {
                         clause.appendOperator();
                         varName = paramNames.getName(property);
@@ -624,6 +652,30 @@ public class QueryContext {
     }
 
     /**
+     * Adds a not constraint.
+     *
+     * @return this context
+     */
+    QueryContext addNotConstraint() {
+        whereClause.appendOperator();
+        whereClause.append("not ");
+        return this;
+    }
+
+    /**
+     * Adds an exists constraint.
+     *
+     * @param query the constraint
+     * @return this context
+     */
+    QueryContext addExistsConstraint(String query) {
+        whereClause.append("exists (");
+        whereClause.append(query);
+        whereClause.append(")");
+        return this;
+    }
+
+    /**
      * Return the HQL operator.
      *
      * @param operator the operator type
@@ -712,8 +764,8 @@ public class QueryContext {
      * If the type set already exists with the alias, but with different archetypes, an exception will be thrown.
      *
      * @param types the type set
-     * @param alias an alias for the type if it doesn't have one. May be <tt>null</tt>
-     * @return <tt>true</tt> if the type set was pushed; or <tt>false</tt> if it was already present
+     * @param alias an alias for the type if it doesn't have one. May be {@code null}
+     * @return {@code true} if the type set was pushed; or {@code false} if it was already present
      */
     private boolean addTypeSet(TypeSet types, String alias) {
         if (types.getAlias() != null) {
@@ -742,7 +794,7 @@ public class QueryContext {
      * Determines if a property is an object reference.
      *
      * @param property the property
-     * @return <tt>true</tt> if the property is an object reference
+     * @return {@code true} if the property is an object reference
      */
     private boolean isReference(String property) {
         int index = property.indexOf('.');
@@ -791,8 +843,8 @@ public class QueryContext {
      */
     enum LogicalOperator {
 
-        And(" and "),
-        Or(" or ");
+        AND(" and "),
+        OR(" or ");
 
         /**
          * Holds the string value.

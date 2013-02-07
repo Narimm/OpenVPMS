@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: QueryBuilderTestCase.java 2915 2008-07-28 01:41:16Z tanderson $
+ *  Copyright 2005-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -22,7 +20,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.AssemblerImpl;
@@ -54,12 +51,22 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
+import static org.junit.Assert.assertEquals;
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.idEq;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.leftJoin;
+import static org.openvpms.component.system.common.query.Constraints.notExists;
+import static org.openvpms.component.system.common.query.Constraints.or;
+import static org.openvpms.component.system.common.query.Constraints.shortName;
+import static org.openvpms.component.system.common.query.Constraints.subQuery;
+
 
 /**
  * Tests the {@link QueryBuilder} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-07-28 01:41:16Z $
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 @ContextConfiguration("query-appcontext.xml")
 public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
@@ -80,7 +87,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                                 + "where (party0.archetypeId.shortName = :shortName0 and "
                                 + "party0.id = :id0)";
         ArchetypeQuery query = new ArchetypeQuery(new ArchetypeId("party.person.1.0"), false)
-                .add(Constraints.eq("id", "1"));
+                .add(eq("id", "1"));
         checkQuery(query, expected);
     }
 
@@ -94,7 +101,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                                 + "where (party0.archetypeId.shortName = :shortName0 and "
                                 + "party0.id = :id0)";
         ArchetypeQuery query = new ArchetypeQuery("party.person", false, false)
-                .add(Constraints.eq("id", "1"));
+                .add(eq("id", "1"));
         checkQuery(query, expected);
     }
 
@@ -108,7 +115,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                                 + "where (party0.archetypeId.shortName = :shortName0 and "
                                 + "party0.name like :name0)";
         ArchetypeQuery query = new ArchetypeQuery(new ArchetypeId("party.person.1.0"), false)
-                .add(Constraints.eq("name", "sa*"));
+                .add(eq("name", "sa*"));
         checkQuery(query, expected);
     }
 
@@ -125,9 +132,9 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
                 new ArchetypeId("party.person.1.0"), false)
-                .add(Constraints.eq("name", "sa*"))
+                .add(eq("name", "sa*"))
                 .add(Constraints.sort("name", true))
-                .add(Constraints.join("contacts", Constraints.shortName("contact.location")));
+                .add(Constraints.join("contacts", shortName("contact.location")));
         checkQuery(query, expected);
     }
 
@@ -145,9 +152,9 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                                 + "contacts.archetypeId.shortName = :shortName2) "
                                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
-                Constraints.shortName(new String[]{"party.person", "organization.organization"}))
-                .add(Constraints.eq("id", "1"))
-                .add(Constraints.eq("name", "sa*"))
+                shortName(new String[]{"party.person", "organization.organization"}))
+                .add(eq("id", "1"))
+                .add(eq("name", "sa*"))
                 .add(Constraints.sort("name", true))
                 .add(Constraints.join("contacts", new ShortNameConstraint("contact.location", false, false)));
         checkQuery(query, expected);
@@ -168,9 +175,9 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                                 + "contacts.archetypeId.shortName like :shortName2) "
                                 + "order by party0.name asc";
         ArchetypeQuery query = new ArchetypeQuery(
-                Constraints.shortName(new String[]{"party.person", "organization.organization"}))
-                .add(Constraints.eq("id", "1"))
-                .add(Constraints.eq("name", "sa*"))
+                shortName(new String[]{"party.person", "organization.organization"}))
+                .add(eq("id", "1"))
+                .add(eq("name", "sa*"))
                 .add(Constraints.sort("name", true))
                 .add(Constraints.join("contacts", new ShortNameConstraint("contact.*", false, false)));
         checkQuery(query, expected);
@@ -191,13 +198,13 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                           + "order by party0.name asc, party0.archetypeId.shortName asc, "
                           + "contacts.archetypeId.shortName desc";
         ArchetypeQuery query = new ArchetypeQuery(
-                Constraints.shortName(new String[]{"party.person", "organization.organization"}))
-                .add(Constraints.eq("id", "1"))
-                .add(Constraints.eq("name", "sa*"))
+                shortName(new String[]{"party.person", "organization.organization"}))
+                .add(eq("id", "1"))
+                .add(eq("name", "sa*"))
                 .add(Constraints.sort("name", true))
                 .add(new ArchetypeSortConstraint(true))
-                .add(Constraints.join("contacts", Constraints.shortName("contact.*"))
-                        .add(new ArchetypeSortConstraint(false)));
+                .add(Constraints.join("contacts", shortName("contact.*"))
+                             .add(new ArchetypeSortConstraint(false)));
         checkQuery(query, expected);
     }
 
@@ -214,7 +221,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                                 + "order by lookup0.name asc";
         ArchetypeQuery query = new ArchetypeQuery("lookup", "country",
                                                   false, false)
-                .add(Constraints.join("target", Constraints.shortName("lookupRelationship.countryState")))
+                .add(Constraints.join("target", shortName("lookupRelationship.countryState")))
                 .add(Constraints.sort("name"))
                 .setFirstResult(0)
                 .setMaxResults(-1);
@@ -239,14 +246,14 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                 new ShortNameConstraint("product.product", false, true))
                 .add(new CollectionNodeConstraint("classifications",
                                                   new ShortNameConstraint("lookup.staff", false, false))
-                        .add(new OrConstraint()
-                        .add(new NodeConstraint("code", "equine"))
-                        .add(new NodeConstraint("code", "all"))));
+                             .add(new OrConstraint()
+                                          .add(new NodeConstraint("code", "equine"))
+                                          .add(new NodeConstraint("code", "all"))));
         checkQuery(query, expected);
     }
 
     /**
-     * Test for ovpms-245.
+     * Test for OVPMS-245.
      */
     @Test
     public void testOVPMS245() {
@@ -259,21 +266,12 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         ArchetypeQuery query = new ArchetypeQuery("product.product", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .add(new CollectionNodeConstraint("classifications")
-                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
-                        .add(new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.species")))
+                             .setJoinType(JoinConstraint.JoinType.LeftOuterJoin)
+                             .add(new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.species")))
                 .add(new OrConstraint()
-                        .add(new NodeConstraint("classifications.code", RelationalOp.EQ, "CANINE"))
-                        .add(new NodeConstraint("classifications.code", RelationalOp.IS_NULL)));
+                             .add(new NodeConstraint("classifications.code", RelationalOp.EQ, "CANINE"))
+                             .add(new NodeConstraint("classifications.code", RelationalOp.IS_NULL)));
         checkQuery(query, expected);
-
-        ArchetypeQuery query2 = new ArchetypeQuery("product.product", false, false)
-                .setMaxResults(ArchetypeQuery.ALL_RESULTS)
-                .add(new CollectionNodeConstraint("classifications")
-                        .setJoinType(JoinConstraint.JoinType.LeftOuterJoin))
-                .add(new OrConstraint()
-                        .add(new NodeConstraint("classifications.code", RelationalOp.EQ, "CANINE"))
-                        .add(new NodeConstraint("classifications.code", RelationalOp.IS_NULL)));
-        checkQuery(query2, expected);
     }
 
     /**
@@ -316,7 +314,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         ArchetypeQuery query = new ArchetypeQuery(act);
         query.setDistinct(true);
 
-        query.add(Constraints.eq("status", "IN_PROGRESS"));
+        query.add(eq("status", "IN_PROGRESS"));
         query.add(Constraints.join("patient", participation));
         query.add(new IdConstraint("act", "participation.act"));
         query.add(owner);
@@ -353,14 +351,14 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                   + "and customer.id = owner.source.id) "
                   + "order by customer.name asc, patient.name asc";
 
-        ShortNameConstraint act = Constraints.shortName("act", "act.patientReminder", true);
-        ShortNameConstraint patient = Constraints.shortName("patient", "party.patientpet", true);
-        ShortNameConstraint customer = Constraints.shortName("customer", "party.customer*", true);
+        ShortNameConstraint act = shortName("act", "act.patientReminder", true);
+        ShortNameConstraint patient = shortName("patient", "party.patientpet", true);
+        ShortNameConstraint customer = shortName("customer", "party.customer*", true);
 
         ArchetypeQuery query = new ArchetypeQuery(act);
         query.setDistinct(true);
 
-        query.add(Constraints.eq("status", "IN_PROGRESS"));
+        query.add(eq("status", "IN_PROGRESS"));
         query.add(Constraints.join("patient", "participation"));
         query.add(customer.add(Constraints.join("patients", "owner")));
         query.add(patient);
@@ -424,8 +422,8 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         // create a query that returns all customer estimations for a particular
         // customer or that has an author.
         IMObjectReference customerRef = new IMObjectReference(new ArchetypeId("participation.customer"), 12345);
-        ObjectRefNodeConstraint customer = Constraints.eq("entity", customerRef);
-        ObjectRefNodeConstraint author = Constraints.eq("entity", new ArchetypeId("participation.author"));
+        ObjectRefNodeConstraint customer = eq("entity", customerRef);
+        ObjectRefNodeConstraint author = eq("entity", new ArchetypeId("participation.author"));
 
         ArchetypeQuery query = new ArchetypeQuery("act.customerEstimation", false, false);
         query.add(Constraints.join("participants").add(Constraints.or(customer, author)));
@@ -485,9 +483,9 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         // archetype
         ArchetypeQuery query1 = new ArchetypeQuery("product.product", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
-                .add(Constraints.leftJoin("classifications")
-                        .add(new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.species")))
-                .add(Constraints.or(Constraints.eq("classifications.code", "Canine"),
+                .add(leftJoin("classifications")
+                             .add(new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.species")))
+                .add(Constraints.or(eq("classifications.code", "Canine"),
                                     Constraints.isNull("classifications.code")));
         checkQuery(query1, expected);
 
@@ -495,8 +493,8 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
         // collection archetype
         ArchetypeQuery query2 = new ArchetypeQuery("product.product", false, false)
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
-                .add(Constraints.leftJoin("classifications", Constraints.shortName("lookup.species")))
-                .add(Constraints.or(Constraints.eq("classifications.code", "Canine"),
+                .add(leftJoin("classifications", shortName("lookup.species")))
+                .add(Constraints.or(eq("classifications.code", "Canine"),
                                     Constraints.isNull("classifications.code")));
         checkQuery(query2, expected);
     }
@@ -517,11 +515,11 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                           + "where (act0.archetypeId.shortName = :shortName0) order by entity.name asc";
         ArchetypeQuery query = new ArchetypeQuery("act.patientReminder");
         IMObjectReference clinicanRef = new IMObjectReference(new ArchetypeId("security.user"), 12345);
-        JoinConstraint clinician = Constraints.leftJoin("clinician");
-        clinician.add(Constraints.eq("entity", clinicanRef));
+        JoinConstraint clinician = leftJoin("clinician");
+        clinician.add(eq("entity", clinicanRef));
         query.add(clinician);
-        JoinConstraint patient = Constraints.leftJoin("patient");
-        JoinConstraint entity = Constraints.leftJoin("entity");
+        JoinConstraint patient = leftJoin("patient");
+        JoinConstraint entity = leftJoin("entity");
         patient.add(entity);
         query.add(patient);
         query.add(Constraints.sort(entity.getAlias(), "name"));
@@ -540,7 +538,7 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
                           + "from " + PartyDO.class.getName() + " as customer "
                           + "where (customer.archetypeId.shortName = :shortName0 "
                           + "and (customer.archetypeId.shortName = :shortName1 and customer.id = :id0))";
-        ShortNameConstraint customer = Constraints.shortName("customer", "party.person");
+        ShortNameConstraint customer = shortName("customer", "party.person");
         IMObjectReference customerRef = new IMObjectReference(new ArchetypeId("party.person"), 12345);
         ArchetypeQuery query = new ArchetypeQuery(customer);
         query.add(new ObjectRefConstraint("customer", customerRef));
@@ -549,12 +547,36 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
     }
 
     /**
+     * Tests ExistsConstraints.
+     */
+    @Test
+    public void testExistsConstraint() {
+        // query to find all products that have a CANINE species classification, or no species classification
+        String expected = "select p from "
+                          + ProductDO.class.getName() + " as p "
+                          + "left outer join p.classifications as s with s.archetypeId.shortName = :shortName1 "
+                          + "where (p.archetypeId.shortName = :shortName0 and (s.code = :code0 or not exists ("
+                          + "select p2 from "
+                          + ProductDO.class.getName() + " as p2 "
+                          + "inner join p2.classifications as classifications "
+                          + "where (p2.archetypeId.shortName = :shortName2 and "
+                          + "(classifications.archetypeId.shortName = :shortName3 and p.id = p2.id)))))";
+        ArchetypeQuery query = new ArchetypeQuery(shortName("p", "product.product"));
+        query.add(leftJoin("classifications", shortName("s", "lookup.species")));
+        query.add(or(eq("s.code", "CANINE"),
+                     notExists(subQuery("product.product", "p2")
+                                       .add(join("classifications", shortName("lookup.species"))
+                                                    .add(idEq("p", "p2"))))));
+        checkQuery(query, expected);
+    }
+
+    /**
      * Verifies that an exception is thrown if an alias is duplicated.
      */
     @Test
     public void testDuplicateAlias() {
-        ShortNameConstraint constraint1 = Constraints.shortName("duplicate", "party.customerperson", true);
-        ShortNameConstraint constraint2 = Constraints.shortName("duplicate", "party.patientpet", true);
+        ShortNameConstraint constraint1 = shortName("duplicate", "party.customerperson", true);
+        ShortNameConstraint constraint2 = shortName("duplicate", "party.patientpet", true);
         ArchetypeQuery query = new ArchetypeQuery(constraint1);
         query.add(constraint2);
         try {
@@ -564,13 +586,13 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
             assertEquals(QueryBuilderException.ErrorCode.DuplicateAlias, exception.getErrorCode());
         }
     }
-    
+
     /**
      * Verifies that an exception is thrown if an join is used with the same alias.
      */
     @Test
     public void testCannotJoinDuplicateAlias() {
-        ShortNameConstraint act = Constraints.shortName("act", "act.patientReminder", true);
+        ShortNameConstraint act = shortName("act", "act.patientReminder", true);
         ArchetypeQuery query = new ArchetypeQuery(act);
         query.add(Constraints.join("patient", "participation"));
         query.add(Constraints.join("patient", "participation"));

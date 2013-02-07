@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2009-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.system.common.query;
 
@@ -24,10 +22,21 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 /**
  * Helper class for creating constraints.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class Constraints {
+
+
+    /**
+     * Creates a constraint to compare object on their identifiers.
+     *
+     * @param source the source object
+     * @param target the target object
+     * @return a new constraint
+     */
+    public static IdConstraint idEq(String source, String target) {
+        return new IdConstraint(source, target);
+    }
 
     /**
      * Creates an <em>equal</em> constraint for the named node.
@@ -416,4 +425,59 @@ public class Constraints {
     public static SortConstraint sort(String alias, String name, boolean ascending) {
         return new NodeSortConstraint(alias, name, ascending);
     }
+
+    /**
+     * Creates a new <em>not</em> constraint.
+     *
+     * @param constraint the constraint to negate
+     * @return a new not constraint
+     */
+    public static NotConstraint not(IConstraint constraint) {
+        return new NotConstraint(constraint);
+    }
+
+    /**
+     * Creates a new <em>exists</em> constraint.
+     *
+     * @param query the sub-query
+     * @return a new exists constraint
+     */
+    public static ExistsConstraint exists(ArchetypeQuery query) {
+        return new ExistsConstraint(query);
+    }
+
+    /**
+     * Creates a new <em> not exists</em> constraint.
+     *
+     * @param query the sub-query
+     * @return a new not exists constraint
+     */
+    public static NotConstraint notExists(ArchetypeQuery query) {
+        return not(exists(query));
+    }
+
+    /**
+     * Creates a new sub-query.
+     *
+     * @param shortName the archetype short name to query
+     * @param alias     the alias to use
+     * @return a new sub-query
+     */
+    public static ArchetypeQuery subQuery(String shortName, String alias) {
+        return new ArchetypeQuery(shortName(alias, shortName));
+    }
+
+    /**
+     * Creates a new sub-query.
+     *
+     * @param shortNames the archetype short name to query
+     * @param alias      the alias to use
+     * @return a new sub-query
+     */
+    public static ArchetypeQuery subQuery(String[] shortNames, String alias) {
+        ShortNameConstraint constraint = shortName(shortNames);
+        constraint.setAlias(alias);
+        return new ArchetypeQuery(constraint);
+    }
+
 }

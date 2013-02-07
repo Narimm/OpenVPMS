@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: QueryBuilder.java 2904 2008-07-18 01:37:40Z tanderson $
+ *  Copyright 2005-2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -22,7 +20,6 @@ package org.openvpms.component.business.dao.hibernate.im.query;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipDO;
-import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.*;
 import org.openvpms.component.business.dao.hibernate.im.query.QueryContext.LogicalOperator;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -38,11 +35,13 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.ExistsConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IdConstraint;
 import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.NotConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
@@ -52,17 +51,22 @@ import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SelectConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
+
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.InvalidObjectReferenceConstraint;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.InvalidQualifiedName;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.MustSpecifyNodeName;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoNodeDescWithName;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoNodeDescriptorForName;
+import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NodeDescriptorsDoNotMatch;
 
 
 /**
  * The builder is responsible for building the HQL from an
  * {@link ArchetypeQuery} instance.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-07-18 01:37:40Z $
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class QueryBuilder {
 
@@ -75,13 +79,6 @@ public class QueryBuilder {
      * The assembler.
      */
     private final CompoundAssembler assembler;
-
-    /**
-     * List of select constraints encountered while processing the query.
-     * These must be handled last in order to resolve types associated with
-     * aliases.
-     */
-    private List<SelectConstraint> select = new ArrayList<SelectConstraint>();
 
 
     /**
@@ -102,17 +99,26 @@ public class QueryBuilder {
      * @return QueryContext the built hql
      */
     public QueryContext build(ArchetypeQuery query) {
-        select.clear();
+        return process(query, null);
+    }
+
+    /**
+     * Processes an {@link ArchetypeQuery}.
+     *
+     * @param query  the query
+     * @param parent the parent context. May be {@code null}
+     * @return the query context
+     */
+    private QueryContext process(ArchetypeQuery query, QueryContext parent) {
         if (query == null || query.getArchetypeConstraint() == null) {
             throw new QueryBuilderException(QueryBuilderException.ErrorCode.NullQuery);
         }
 
-        QueryContext context = new QueryContext(query.isDistinct());
+        QueryContext context = new QueryContext(query.isDistinct(), parent);
         processConstraint(query.getArchetypeConstraint(), context);
-        for (SelectConstraint constraint : select) {
+        for (SelectConstraint constraint : context.getSelectConstraints()) {
             process(constraint, context);
         }
-
         return context;
     }
 
@@ -179,7 +185,7 @@ public class QueryBuilder {
         ArchetypeId id = constraint.getArchetypeId();
         String alias = constraint.getAlias();
 
-        context.pushLogicalOperator(LogicalOperator.And);
+        context.pushLogicalOperator(LogicalOperator.AND);
 
         context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, id.getShortName());
 
@@ -224,7 +230,7 @@ public class QueryBuilder {
         boolean and = false;
 
         if (constraint.isActiveOnly() || !constraint.getConstraints().isEmpty()) {
-            context.pushLogicalOperator(LogicalOperator.And);
+            context.pushLogicalOperator(LogicalOperator.AND);
             and = true;
         }
 
@@ -233,7 +239,7 @@ public class QueryBuilder {
 
         boolean or = false;
         if (shortNames.length > 1) {
-            context.pushLogicalOperator(LogicalOperator.Or);
+            context.pushLogicalOperator(LogicalOperator.OR);
             or = true;
         }
 
@@ -293,7 +299,7 @@ public class QueryBuilder {
         boolean and = false;
         // process the active flag
         if (constraint.isActiveOnly() && !constraint.getConstraints().isEmpty()) {
-            context.pushLogicalOperator(LogicalOperator.And);
+            context.pushLogicalOperator(LogicalOperator.AND);
             and = true;
         }
 
@@ -367,7 +373,7 @@ public class QueryBuilder {
      */
     private void process(OrConstraint constraint, QueryContext context) {
         // push the operator
-        context.pushLogicalOperator(LogicalOperator.Or);
+        context.pushLogicalOperator(LogicalOperator.OR);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
@@ -386,7 +392,7 @@ public class QueryBuilder {
      */
     private void process(AndConstraint constraint, QueryContext context) {
         // push the operator
-        context.pushLogicalOperator(LogicalOperator.And);
+        context.pushLogicalOperator(LogicalOperator.AND);
 
         // process the embedded constraints.
         for (IConstraint oc : constraint.getConstraints()) {
@@ -463,7 +469,7 @@ public class QueryBuilder {
 
         ArchetypeId id = constraint.getArchetypeId();
 
-        context.pushLogicalOperator(LogicalOperator.And);
+        context.pushLogicalOperator(LogicalOperator.AND);
 
         TypeSet types = TypeSet.create(constraint, cache, assembler);
         boolean popJoin = context.pushTypeSet(types);
@@ -537,13 +543,13 @@ public class QueryBuilder {
 
         if (!constrainsByShortName(archetypeConstraint)) {
             if (activeOnly || !archetypeConstraint.getConstraints().isEmpty()) {
-                context.pushLogicalOperator(LogicalOperator.And);
+                context.pushLogicalOperator(LogicalOperator.AND);
                 and = true;
             }
             Set<String> shortNames = types.getShortNames();
             boolean or = false;
             if (shortNames.size() > 1) {
-                context.pushLogicalOperator(LogicalOperator.Or);
+                context.pushLogicalOperator(LogicalOperator.OR);
                 or = true;
             }
             for (String shortName : shortNames) {
@@ -702,6 +708,28 @@ public class QueryBuilder {
     }
 
     /**
+     * Process a {@link NotConstraint}.
+     *
+     * @param constraint the constraint
+     * @param context    the query context
+     */
+    private void process(NotConstraint constraint, QueryContext context) {
+        context.addNotConstraint();
+        processConstraint(constraint.getConstraint(), context);
+    }
+
+    /**
+     * Process an {@link ExistsConstraint}.
+     *
+     * @param constraint the constraint
+     * @param context    the query context
+     */
+    private void process(ExistsConstraint constraint, QueryContext context) {
+        QueryContext subContext = process(constraint.getSubQuery(), context);
+        context.addExistsConstraint(subContext.getQueryString());
+    }
+
+    /**
      * Process the appropriate constraint
      *
      * @param constraint the constraint to process
@@ -710,7 +738,7 @@ public class QueryBuilder {
     private void processConstraint(IConstraint constraint,
                                    QueryContext context) {
         if (constraint instanceof SelectConstraint) {
-            select.add((SelectConstraint) constraint);
+            context.addSelectConstraint((SelectConstraint) constraint);
         } else if (constraint instanceof ObjectRefConstraint) {
             process((ObjectRefConstraint) constraint, context);
         } else if (constraint instanceof ArchetypeIdConstraint) {
@@ -739,6 +767,10 @@ public class QueryBuilder {
             process((ArchetypeSortConstraint) constraint, context);
         } else if (constraint instanceof ParticipationConstraint) {
             process((ParticipationConstraint) constraint, context);
+        } else if (constraint instanceof NotConstraint) {
+            process((NotConstraint) constraint, context);
+        } else if (constraint instanceof ExistsConstraint) {
+            process((ExistsConstraint) constraint, context);
         } else {
             throw new QueryBuilderException(QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
                                             constraint.getClass().getName());
