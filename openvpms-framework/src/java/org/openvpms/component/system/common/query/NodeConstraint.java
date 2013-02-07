@@ -22,7 +22,7 @@ package org.openvpms.component.system.common.query;
 
 /**
  * Used to construct a query constraint on a particular node of the enclosed
- * {@link BaseArchetypeConstraint}. A constraint requirs a node name, a
+ * {@link BaseArchetypeConstraint}. A constraint requires a node name, a
  * relational operator and one or more values. The number of values will depend
  * on the select operator type. For example a 'GT' operator requires a single
  * parameter where an 'BTW' operator requires two parameters.
@@ -73,7 +73,7 @@ public class NodeConstraint extends AbstractNodeConstraint {
      *                   the node
      */
     public NodeConstraint(String nodeName, RelationalOp operator,
-                          Object ... parameters) {
+                          Object... parameters) {
         super(nodeName, operator, parameters);
     }
 
