@@ -62,7 +62,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
      *
      * @param type   the object type
      * @param typeDO the data object interface type
-     * @param impl the data object implementation type
+     * @param impl   the data object implementation type
      */
     public IMObjectAssembler(Class<T> type, Class<DO> typeDO,
                              Class<? extends IMObjectDOImpl> impl) {
@@ -88,9 +88,13 @@ public abstract class IMObjectAssembler<T extends IMObject,
             // target not yet assembled from the source
             if (source.isNew()) {
                 target = create(object);
+                // need to populate the identifiers before adding to any HashMaps as when there is a hash collision,
+                // the IMObjectDOImpl.equals() method is invoked.
+                target.setId(source.getId());
+                target.setLinkId(source.getLinkId());
+                target.setArchetypeId(source.getArchetypeId());
             } else {
-                target = load(source.getObjectReference(), typeDO, impl,
-                              context);
+                target = load(source.getObjectReference(), typeDO, impl, context);
                 target = deproxy(target);
             }
             state = new DOState(target, source);
