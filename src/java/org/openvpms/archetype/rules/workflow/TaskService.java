@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
@@ -44,8 +45,8 @@ public class TaskService extends AbstractScheduleService {
      * @param service the archetype service
      * @param cache   the cache
      */
-    public TaskService(IArchetypeService service, Cache cache) {
-        super(ScheduleArchetypes.TASK, service, cache);
+    public TaskService(IArchetypeService service, ILookupService lookupService, Cache cache) {
+        super(ScheduleArchetypes.TASK, service, lookupService, cache);
     }
 
     /**
