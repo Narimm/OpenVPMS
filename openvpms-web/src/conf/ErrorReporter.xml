@@ -34,4 +34,7 @@
     <exclude-exception>
         <className>org.openvpms.web.component.mail.MailException</className>
     </exclude-exception>
+    <exclude-exception>
+        <className>org.openvpms.web.app.workflow.otc.OTCException</className>
+    </exclude-exception>
 </error-reporter-config>
