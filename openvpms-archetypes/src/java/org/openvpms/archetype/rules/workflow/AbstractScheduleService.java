@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -88,15 +89,15 @@ public abstract class AbstractScheduleService implements ScheduleService {
      *
      * @param eventShortName the event act archetype short name
      * @param service        the archetype service
+     * @param lookupService  the lookup service
      * @param cache          the event cache
      */
-    public AbstractScheduleService(String eventShortName,
-                                   IArchetypeService service,
+    public AbstractScheduleService(String eventShortName, IArchetypeService service, ILookupService lookupService,
                                    Cache cache) {
         this.service = service;
         this.cache = cache;
 
-        statusNames = LookupHelper.getNames(service, eventShortName, "status");
+        statusNames = LookupHelper.getNames(service, lookupService, eventShortName, "status");
 
         // add a listener to receive notifications from the archetype service
         service.addListener(eventShortName, new AbstractArchetypeServiceListener() {

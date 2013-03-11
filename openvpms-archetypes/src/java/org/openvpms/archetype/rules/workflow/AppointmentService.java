@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Collections;
@@ -53,13 +54,15 @@ public class AppointmentService extends AbstractScheduleService {
     /**
      * Constructs an <tt>AppointmentService</tt>.
      *
-     * @param service the archetype service
-     * @param cache   the cache
+     * @param service       the archetype service
+     * @param lookupService the lookup service
+     * @param cache         the cache
      */
-    public AppointmentService(IArchetypeService service, Cache cache) {
-        super(ScheduleArchetypes.APPOINTMENT, service, cache);
+    public AppointmentService(IArchetypeService service, ILookupService lookupService, Cache cache) {
+        super(ScheduleArchetypes.APPOINTMENT, service, lookupService, cache);
 
-        Map<String, String> map = LookupHelper.getNames(service, ScheduleArchetypes.APPOINTMENT, "reason");
+        Map<String, String> map = LookupHelper.getNames(service, lookupService, ScheduleArchetypes.APPOINTMENT,
+                                                        "reason");
         reasonNames.putAll(map);
         service.addListener("lookup.appointmentReason", new AbstractArchetypeServiceListener() {
             @Override
