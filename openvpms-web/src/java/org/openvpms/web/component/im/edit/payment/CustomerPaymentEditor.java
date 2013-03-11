@@ -140,6 +140,15 @@ public class CustomerPaymentEditor extends PaymentEditor {
     }
 
     /**
+     * Sets the invoice amount.
+     *
+     * @param amount the invoice amount
+     */
+    public void setInvoiceAmount(BigDecimal amount) {
+        invoiceAmount.setValue(amount);
+    }
+
+    /**
      * Determines the expected amount of the payment. If <tt>null</tt>, there
      * is no limit on the payment amount. If non-null, validation will fail
      * if the act total is not that specified.
