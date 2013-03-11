@@ -58,6 +58,7 @@ class OTCPaymentTask extends EditIMObjectTask {
                 CustomerAccountArchetypes.COUNTER);
         if (editor instanceof CustomerPaymentEditor && charge != null) {
             CustomerPaymentEditor payment = (CustomerPaymentEditor) editor;
+            payment.setInvoiceAmount(charge.getTotal());
             payment.setExpectedAmount(charge.getTotal());
         }
         return editor;
