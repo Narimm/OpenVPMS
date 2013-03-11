@@ -1029,7 +1029,7 @@
         </properties>
     </style>
 
-    <style name="Table.Header" type="echopointng.ButtonEx">
+    <style name="Table.Header" type="nextapp.echo2.app.Button">
         <properties>
             <property name="background" value="#afafef"/>
             <property name="textAlignment">
@@ -1044,7 +1044,6 @@
                 </font>
             </property>
             <property name="insets" value="0px 0px"/>
-            <property name="outsets" value="0px 0px"/>
             <property name="rolloverEnabled" value="false"/>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">

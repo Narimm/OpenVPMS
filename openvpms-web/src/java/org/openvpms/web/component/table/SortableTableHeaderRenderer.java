@@ -127,7 +127,8 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
      */
     protected Button getSortButton(String label, final int column,
                                    final SortableTableModel model) {
-        Button button = ButtonFactory.create(null, style);
+        Button button = new Button();
+        button.setStyleName(style);
         button.setText(label);
         button.setFocusTraversalParticipant(false);
         button.addActionListener(new ActionListener() {
