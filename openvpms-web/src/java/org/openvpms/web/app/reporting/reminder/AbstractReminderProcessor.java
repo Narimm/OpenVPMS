@@ -98,8 +98,8 @@ public abstract class AbstractReminderProcessor implements Processor<List<Remind
             set.set("reminderType", event.getReminderType().getEntity());
             set.set("patient", bean.getNodeParticipant("patient"));
             set.set("product", bean.getNodeParticipant("product"));
-            set.set("clinician", bean.getNodeParticipant("product"));
-            set.set("startTime", event.getReminder().getActivityEndTime());
+            set.set("clinician", bean.getNodeParticipant("clinician"));
+            set.set("startTime", event.getReminder().getActivityStartTime());
             set.set("endTime", event.getReminder().getActivityEndTime());
             set.set("reminderCount", bean.getInt("reminderCount"));
             set.set("act", event.getReminder());
