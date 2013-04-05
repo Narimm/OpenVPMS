@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -21,8 +19,6 @@ package org.openvpms.archetype.rules.patient.reminder;
 import org.openvpms.archetype.component.processor.AbstractActionProcessor;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
-import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -30,7 +26,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -40,12 +35,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderType;
+
 
 /**
  * Reminder processor.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderProcessor
         extends AbstractActionProcessor<Action, Act, ReminderEvent> {
@@ -101,43 +98,21 @@ public class ReminderProcessor
 
 
     /**
-     * Constructs a new <tt>DefaultReminderProcessor</tt>, using the current
-     * time as the processing date.
+     * Constructs a new {@code ReminderProcessor}.
      *
-     * @param from the 'from' date. May be <tt>null</tt>
-     * @param to   the 'to' date. Nay be <tt>null</tt>
-     */
-    public ReminderProcessor(Date from, Date to) {
-        this(from, to, ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Constructs a new <tt>ReminderProcessor</tt>, using the current time
-     * as the processing date.
-     *
-     * @param from    the 'from' date. May be <tt>null</tt>
-     * @param to      the 'to' date. Nay be <tt>null</tt>
-     * @param service the archetype service
-     */
-    public ReminderProcessor(Date from, Date to, IArchetypeService service) {
-        this(from, to, new Date(), service);
-    }
-
-    /**
-     * Constructs a new <tt>ReminderProcessor</tt>.
-     *
-     * @param from           the 'from' date. May be <tt>null</tt>
-     * @param to             the 'to' date. Nay be <tt>null</tt>
+     * @param from           the 'from' date. May be {@code null}
+     * @param to             the 'to' date. Nay be {@code null}
      * @param processingDate the processing date
      * @param service        the archetype service
      */
-    public ReminderProcessor(Date from, Date to, Date processingDate, IArchetypeService service) {
+    public ReminderProcessor(Date from, Date to, Date processingDate, IArchetypeService service,
+                             PatientRules patientRules) {
         this.from = from;
         this.to = to;
         this.processingDate = processingDate;
         this.service = service;
-        rules = new ReminderRules(service, new ReminderTypeCache());
-        patientRules = new PatientRules(service, null, null);
+        this.patientRules = patientRules;
+        rules = new ReminderRules(service, new ReminderTypeCache(), patientRules);
         reminderTypes = new ReminderTypeCache(service);
     }
 
@@ -171,9 +146,9 @@ public class ReminderProcessor
     /**
      * Determines if reminder events should be fully populated, even if the reminder is to be cancelled or skipped.
      * <p/>
-     * For performance, defaults to <tt>false</tt>
+     * For performance, defaults to {@code false}
      *
-     * @param evaluateFully if <tt>true</tt> populate patient, customer and contact information for cancelled and
+     * @param evaluateFully if {@code true} populate patient, customer and contact information for cancelled and
      *                      skipped reminders
      */
     public void setEvaluateFully(boolean evaluateFully) {
@@ -246,7 +221,7 @@ public class ReminderProcessor
      *
      * @param reminder     the reminder
      * @param reminderType the reminder type
-     * @param patient      the patient. May be <tt>null</tt>
+     * @param patient      the patient. May be {@code null}
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
@@ -297,7 +272,7 @@ public class ReminderProcessor
      * @param patient          the patient
      * @param customer         the customer
      * @param contact          the reminder contact
-     * @param documentTemplate the document template. May be <tt>null</tt>
+     * @param documentTemplate the document template. May be {@code null}
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
@@ -341,7 +316,7 @@ public class ReminderProcessor
      * @param reminderType     the reminder type
      * @param patient          the patient
      * @param customer         the customer
-     * @param contact          the reminder contact. May be <tt>null</tt>
+     * @param contact          the reminder contact. May be {@code null}
      * @param documentTemplate the document template
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
@@ -403,7 +378,7 @@ public class ReminderProcessor
      * @param action       the event action
      * @param reminder     the reminder
      * @param reminderType the reminder type
-     * @param patient      the patient. May be <tt>null</tt>
+     * @param patient      the patient. May be {@code null}
      * @return a new reminder event
      */
     private ReminderEvent notifyListeners(Action action, Act reminder, ReminderType reminderType, Party patient) {
@@ -426,8 +401,8 @@ public class ReminderProcessor
     /**
      * Returns the template for the specified template reference.
      *
-     * @param reference the reference. May be <tt>null</tt>
-     * @return the corresponding template, or <tt>null</tt> if none is found
+     * @param reference the reference. May be {@code null}
+     * @return the corresponding template, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Entity getTemplate(IMObjectReference reference) {
@@ -448,7 +423,7 @@ public class ReminderProcessor
      * Returns the patient of a reminder.
      *
      * @param reminder the reminder
-     * @return the patient, or <tt>null</tt> if it cannot be found
+     * @return the patient, or {@code null} if it cannot be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Party getPatient(Act reminder) {
@@ -460,7 +435,7 @@ public class ReminderProcessor
      * Returns the customer associated with a patient.
      *
      * @param patient the patient
-     * @return the corresponding customer, or <tt>null</tt> if it cannot be found
+     * @return the corresponding customer, or {@code null} if it cannot be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Party getCustomer(Party patient) {
@@ -470,8 +445,8 @@ public class ReminderProcessor
     /**
      * Returns the default contact for a customer.
      *
-     * @param customer the customer. May be <tt>null</tt>
-     * @return the default contact, or <tt>null</tt>
+     * @param customer the customer. May be {@code null}
+     * @return the default contact, or {@code null}
      */
     private Contact getContact(Party customer) {
         return (customer != null) ? rules.getContact(customer.getContacts()) : null;

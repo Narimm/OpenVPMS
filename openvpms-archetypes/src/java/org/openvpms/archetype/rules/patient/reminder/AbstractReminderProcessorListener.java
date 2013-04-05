@@ -12,16 +12,14 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.component.processor.ProcessorListener;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.util.Date;
@@ -31,8 +29,7 @@ import java.util.Date;
  * Abstract implementation of the {@link ProcessorListener} interface
  * for the {@link ReminderProcessor}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractReminderProcessorListener
         implements ProcessorListener<ReminderEvent> {
@@ -41,22 +38,15 @@ public abstract class AbstractReminderProcessorListener
      * The rules.
      */
     private final ReminderRules rules;
-    
 
     /**
-     * Constructs a new <tt>AbstractReminderProcessorListener</tt>.
-     */
-    public AbstractReminderProcessorListener() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Constructs a new <tt>AbstractReminderProcessorListener</tt>.
+     * Constructs a new {@code AbstractReminderProcessorListener}.
      *
-     * @param service the archetype service
+     * @param service      the archetype service
+     * @param patientRules the patient rules
      */
-    public AbstractReminderProcessorListener(IArchetypeService service) {
-        rules = new ReminderRules(service, new ReminderTypeCache());
+    public AbstractReminderProcessorListener(IArchetypeService service, PatientRules patientRules) {
+        rules = new ReminderRules(service, new ReminderTypeCache(), patientRules);
     }
 
     /**
