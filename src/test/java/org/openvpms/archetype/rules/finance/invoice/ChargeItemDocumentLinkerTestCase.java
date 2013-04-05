@@ -12,22 +12,17 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
@@ -53,14 +48,19 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * Tests the {@link ChargeItemDocumentLinker} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
 
@@ -113,15 +113,6 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
         linker.link();
         documents = bean.getNodeActs("documents");
         assertEquals(0, documents.size());
-    }
-
-    private FinancialAct createItem(Party patient, Product product, User author, User clinician) {
-        FinancialAct item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE, patient,
-                                                           product);
-        ActBean bean = new ActBean(item);
-        bean.addNodeParticipation("author", author);
-        bean.addNodeParticipation("clinician", clinician);
-        return item;
     }
 
     /**
@@ -198,6 +189,70 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
         assertFalse(different3.equals(different4));
         assertNull(get(different3));  // should have been deleted
         checkDocument(different4, patient2, product2, template2, author2, clinician2, item);
+    }
+
+    /**
+     * Verifies that the document acts that are recreated if the clinician changes, are correctly removed when they
+     * are linked to an event.
+     */
+    @Test
+    public void testRecreateDocumentsLinkedToEvent() {
+        Party patient = TestHelper.createPatient();
+        Entity template1 = createDocumentTemplate();
+        Entity template2 = createDocumentTemplate();
+        Product product = createProduct(template1, template2);
+        User author = TestHelper.createUser();
+        User clinician1 = TestHelper.createClinician();
+        User clinician2 = TestHelper.createClinician();
+
+        // create an invoice item with a product that is linked to two documents
+        FinancialAct item = createItem(patient, product, author, clinician1);
+        ActBean bean = new ActBean(item);
+        bean.save();
+
+        // link the product documents to the item
+        ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker(item, getArchetypeService());
+        linker.link();
+
+        List<Act> documents = bean.getNodeActs("documents");
+        assertEquals(2, documents.size());
+
+        // link the documents to an event
+        MedicalRecordRules rules = new MedicalRecordRules();
+        Act event = rules.getEventForAddition(patient, new Date(), null);
+        for (Act document : documents) {
+            rules.linkMedicalRecords(event, document);
+        }
+
+        // verify the documents have been linked
+        event = get(event);
+        assertEquals(2, event.getSourceActRelationships().size());
+
+        // change the invoice item's clinician and re-link the documents
+        bean.setParticipant(UserArchetypes.CLINICIAN_PARTICIPATION, clinician2);
+        linker.link();
+
+        // the event shouldn't have any relationships to documents any more
+        event = get(event);
+        assertEquals(0, event.getSourceActRelationships().size());
+    }
+
+    /**
+     * Helper to create an invoice item.
+     *
+     * @param patient   the patient
+     * @param product   the product
+     * @param author    the author
+     * @param clinician the clinician
+     * @return a new invoice item
+     */
+    private FinancialAct createItem(Party patient, Product product, User author, User clinician) {
+        FinancialAct item = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE, patient,
+                                                           product);
+        ActBean bean = new ActBean(item);
+        bean.addNodeParticipation("author", author);
+        bean.addNodeParticipation("clinician", clinician);
+        return item;
     }
 
     /**

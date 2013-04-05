@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -46,14 +44,19 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link PatientRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientRulesTestCase extends ArchetypeServiceTest {
 
+    /**
+     * The lookup service.
+     */
     @Autowired
     private LookupService lookups;
 
+    /**
+     * The bean factory.
+     */
     @Autowired
     private IMObjectBeanFactory factory;
 
@@ -298,7 +301,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new PatientRules(getArchetypeService(), null, null);
+        rules = new PatientRules(getArchetypeService(), lookups);
     }
 
     /**

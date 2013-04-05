@@ -25,15 +25,23 @@
     <rule name="Mark matching reminders completed">
         <parameter identifier="act">
             <java:class>
-                org.openvpms.component.business.domain.im.act.Act</java:class>
+                org.openvpms.component.business.domain.im.act.Act
+            </java:class>
         </parameter>
         <parameter identifier="service">
             <java:class>
-                org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
+                org.openvpms.component.business.service.archetype.IArchetypeService
+            </java:class>
+        </parameter>
+        <parameter identifier="lookups">
+            <java:class>
+                org.openvpms.component.business.service.lookup.ILookupService
+            </java:class>
         </parameter>
         <java:consequence>
             import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-            ReminderRules rules = new ReminderRules(service);
+            import org.openvpms.archetype.rules.patient.PatientRules;
+            ReminderRules rules = new ReminderRules(service, new PatientRules(service, lookups));
             rules.markMatchingRemindersCompleted(act);
         </java:consequence>
 

@@ -12,41 +12,44 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 
 /**
  * Tests the {@link PatientRelationshipRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientRelationshipRulesTestCase extends ArchetypeServiceTest {
 
     /**
+     * The patient rules.
+     */
+    @Autowired
+    private PatientRules rules;
+
+    /**
      * Tests the {@link PatientRelationshipRules#checkRelationships(Party)}
-     * method. Requires that the
-     * <tt>archetypeService.save.party.patientpet.before</tt> rule is
+     * method. Requires that the <em>archetypeService.save.party.patientpet.before</em> rule is
      * configured.
      */
     @Test
     public void testCheckRelationships() {
         Party patient = TestHelper.createPatient();
-        PatientRules rules = new PatientRules();
         Party owner1 = TestHelper.createCustomer();
         Party owner2 = TestHelper.createCustomer();
         Party owner3 = TestHelper.createCustomer();

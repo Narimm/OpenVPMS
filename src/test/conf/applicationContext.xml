@@ -156,6 +156,7 @@
     
     <bean id="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
         <constructor-arg ref="defaultArchetypeService"/>
+        <constructor-arg ref="patientRules"/>
     </bean>
 
     <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
@@ -259,6 +260,14 @@
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg>
+            <null/>
+        </constructor-arg>
     </bean>
 
     <bean id="imObjectBeanFactory" class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">

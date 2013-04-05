@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -49,8 +47,7 @@ import java.util.Set;
 /**
  * Manages documents associated with a charge item.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ChargeItemDocumentLinker {
 
@@ -72,11 +69,11 @@ public class ChargeItemDocumentLinker {
     /**
      * The acts to save.
      */
-    private List<Act> toSave = new ArrayList<Act>();
+    private Map<IMObjectReference, Act> toSave = new HashMap<IMObjectReference, Act>();
 
 
     /**
-     * Constructs a <tt>ChargeItemDocumentLinker</tt>.
+     * Constructs a {@code ChargeItemDocumentLinker}.
      *
      * @param item    the item
      * @param service the archetype service
@@ -91,8 +88,8 @@ public class ChargeItemDocumentLinker {
      * charge item's product.
      * This:
      * <ol>
-     * <li>gets all document templates associated with the product's <tt>document</tt> node</li>
-     * <li>iterates through the acts associated with the invoice item's <tt>document</tt> node and:</li>
+     * <li>gets all document templates associated with the product's {@code document} node</li>
+     * <li>iterates through the acts associated with the invoice item's {@code document} node and:</li>
      * <ol>
      * <li>removes acts that don't have participation to any of the document templates</li>
      * <li>retains acts which have participations to the document templates</li>
@@ -149,11 +146,7 @@ public class ChargeItemDocumentLinker {
             ActBean bean = new ActBean(document, service);
             if (productChanged(bean, product) || patientChanged(bean, itemBean) || authorChanged(bean, itemBean)
                 || clinicianChanged(bean, itemBean)) {
-                toRemove.add(document);
-                ActRelationship r = itemBean.getRelationship(document);
-                itemBean.removeRelationship(r);
-                document.removeActRelationship(r);
-                documents.remove(document);
+                removeDocument(document, itemBean, documents);
             } else {
                 IMObjectReference templateRef = bean.getNodeParticipantRef("documentTemplate");
                 if (templateRef != null) {
@@ -186,15 +179,16 @@ public class ChargeItemDocumentLinker {
     /**
      * Commits the changes, optionally including the charge item.
      *
-     * @param saveItem if <tt>true</tt> save the charge item as well
+     * @param saveItem if {@code true} save the charge item as well
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void commit(boolean saveItem) {
+        List<Act> save = new ArrayList<Act>(toSave.values());
         if (saveItem) {
-            toSave.add(0, item);
+            save.add(0, item);
         }
-        if (!toSave.isEmpty()) {
-            service.save(toSave);
+        if (!save.isEmpty()) {
+            service.save(save);
         }
         for (IMObject object : toRemove) {
             service.remove(object);
@@ -239,8 +233,39 @@ public class ChargeItemDocumentLinker {
                 IMObjectReference product = itemBean.getParticipantRef(ProductArchetypes.PRODUCT_PARTICIPATION);
                 documentAct.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
             }
-            toSave.add(act);
+            toSave.put(act.getObjectReference(), act);
             itemBean.addRelationship("actRelationship.invoiceItemDocument", documentAct.getAct());
+        }
+    }
+
+    /**
+     * Removes a document.
+     *
+     * @param document  the document to remove
+     * @param itemBean  the invoice item that links to the document
+     * @param documents the documents associated with the invoice item
+     */
+    private void removeDocument(Act document, ActBean itemBean, List<Act> documents) {
+        toSave.put(document.getObjectReference(), document); // need to save the document with relationships removed
+                                                             // prior to removing the document itself... TODO
+        toRemove.add(document);
+        ActRelationship r = itemBean.getRelationship(document);
+        itemBean.removeRelationship(r);
+        document.removeActRelationship(r);
+        documents.remove(document);
+
+        ActRelationship[] relationships = document.getTargetActRelationships().toArray(
+                new ActRelationship[document.getTargetActRelationships().size()]);
+        for (ActRelationship relationship : relationships) {
+            Act source = toSave.get(relationship.getSource());
+            if (source == null) {
+                source = (Act) getObject(relationship.getSource());
+            }
+            if (source != null) {
+                document.removeActRelationship(relationship);
+                source.removeActRelationship(relationship);
+                toSave.put(source.getObjectReference(), source);
+            }
         }
     }
 
@@ -249,7 +274,7 @@ public class ChargeItemDocumentLinker {
      *
      * @param bean    the document act bean
      * @param product the item product
-     * @return <tt>true</tt> if the product has changed
+     * @return {@code true} if the product has changed
      */
     private boolean productChanged(ActBean bean, Product product) {
         return bean.hasNode("product") &&
@@ -261,7 +286,7 @@ public class ChargeItemDocumentLinker {
      *
      * @param docBean  the document act bean
      * @param itemBean the item bean
-     * @return <tt>true</tt> if the patient has changed
+     * @return {@code true} if the patient has changed
      */
     private boolean patientChanged(ActBean docBean, ActBean itemBean) {
         return checkParticipant(docBean, itemBean, "patient");
@@ -272,7 +297,7 @@ public class ChargeItemDocumentLinker {
      *
      * @param docBean  the document act bean
      * @param itemBean the item bean
-     * @return <tt>true</tt> if the author has changed
+     * @return {@code true} if the author has changed
      */
     private boolean authorChanged(ActBean docBean, ActBean itemBean) {
         return checkParticipant(docBean, itemBean, "author");
@@ -283,7 +308,7 @@ public class ChargeItemDocumentLinker {
      *
      * @param docBean  the document act bean
      * @param itemBean the item bean
-     * @return <tt>true</tt> if the clinician has changed
+     * @return {@code true} if the clinician has changed
      */
     private boolean clinicianChanged(ActBean docBean, ActBean itemBean) {
         return checkParticipant(docBean, itemBean, "clinician");
@@ -295,7 +320,7 @@ public class ChargeItemDocumentLinker {
      * @param docBean  the document act bean
      * @param itemBean the item bean
      * @param node     the participant node to check
-     * @return <tt>true</tt> if the participant has changed
+     * @return {@code true} if the participant has changed
      */
     private boolean checkParticipant(ActBean docBean, ActBean itemBean, String node) {
         return docBean.hasNode(node) &&
@@ -306,7 +331,7 @@ public class ChargeItemDocumentLinker {
      * Helper to retrieve an object given its reference.
      *
      * @param ref the reference
-     * @return the object corresponding to the reference, or <tt>null</tt>
+     * @return the object corresponding to the reference, or {@code null}
      *         if it can't be retrieved
      * @throws ArchetypeServiceException for any error
      */

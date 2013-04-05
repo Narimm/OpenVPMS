@@ -12,17 +12,10 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.party;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -34,8 +27,6 @@ import org.openvpms.archetype.rules.finance.statement.EndOfPeriodProcessor;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
-import static org.openvpms.archetype.test.TestHelper.getDate;
-import static org.openvpms.archetype.test.TestHelper.getDatetime;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -46,6 +37,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -55,12 +47,19 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.openvpms.archetype.test.TestHelper.getDate;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
+
 
 /**
  * Tests the {@link CustomerMerger} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerMergerTestCase extends AbstractPartyMergerTest {
 
@@ -72,6 +71,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     /**
      * Patient rules.
      */
+    @Autowired
     private PatientRules patientRules;
 
     /**
@@ -329,7 +329,6 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         template = new TransactionTemplate(mgr);
 
         customerRules = new CustomerRules();
-        patientRules = new PatientRules();
         practice = (Party) create("party.organisationPractice");
     }
 

@@ -12,13 +12,12 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -26,9 +25,11 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,8 +40,7 @@ import java.util.Random;
 /**
  * Unit test helper for reminders.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderTestHelper extends TestHelper {
 
@@ -129,7 +129,9 @@ public class ReminderTestHelper extends TestHelper {
     public static Act createReminder(Party patient, Entity reminderType, Date startTime) {
         Act reminder = createReminder(patient, reminderType);
         reminder.setActivityStartTime(startTime);
-        ReminderRules rules = new ReminderRules();
+        ReminderRules rules = new ReminderRules(ArchetypeServiceHelper.getArchetypeService(),
+                                                new PatientRules(ArchetypeServiceHelper.getArchetypeService(),
+                                                                 LookupServiceHelper.getLookupService()));
         rules.calculateReminderDueDate(reminder);
         save(reminder);
         return reminder;
