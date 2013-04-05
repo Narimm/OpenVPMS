@@ -12,18 +12,16 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.reminder;
 
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
@@ -33,12 +31,12 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of <em>act.patientReminder</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 
 public class ReminderEditor extends PatientActEditor {
@@ -117,8 +115,9 @@ public class ReminderEditor extends PatientActEditor {
      */
     private void onReminderTypeChanged() {
         try {
-            ReminderRules rules = new ReminderRules(
-                    ArchetypeServiceHelper.getArchetypeService());
+            ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
+                                                    new PatientRules(ServiceHelper.getArchetypeService(),
+                                                                     ServiceHelper.getLookupService()));
             rules.calculateReminderDueDate((Act) getObject());
             Property property = getProperty("endTime");
             property.refresh();

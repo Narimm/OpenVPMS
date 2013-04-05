@@ -22,6 +22,8 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
+import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
@@ -34,6 +36,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -95,8 +98,7 @@ import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_
  * <em>act.customerAccountCreditItem</em>
  * or <em>act.customerAccountCounterItem</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
@@ -204,7 +206,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         reminders = createCollectionEditor(REMINDERS, act);
 
         rules = new StockRules();
-        reminderRules = new ReminderRules();
+        reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(),
+                                          new PatientRules(ServiceHelper.getArchetypeService(),
+                                                           ServiceHelper.getLookupService()));
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateMedicationQuantity();
@@ -315,7 +319,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Saves the object.
      * <p/>
      * For invoice items, this implementation also creates/deletes document acts related to the document templates
-     * associated with the product, using {@link org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker}.
+     * associated with the product, using {@link ChargeItemDocumentLinker}.
      *
      * @return <tt>true</tt> if the save was successful
      */
@@ -457,8 +461,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Calculates the tax amount.
      *
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException for any archetype service error
-     * @throws org.openvpms.archetype.rules.finance.tax.TaxRuleException          for any tax error
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws TaxRuleException for any tax error
      */
     protected void calculateTax() {
         Party customer = getCustomer();

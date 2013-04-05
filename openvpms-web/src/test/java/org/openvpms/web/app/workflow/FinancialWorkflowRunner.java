@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.workflow;
@@ -31,6 +29,11 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.app.customer.charge.ChargePopupEditorManager;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
+import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.app.patient.charge.VisitChargeEditor;
+import org.openvpms.web.app.patient.charge.VisitChargeItemEditor;
+import org.openvpms.web.app.patient.visit.VisitEditor;
+import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -46,6 +49,7 @@ import org.openvpms.web.system.ServiceHelper;
 import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.addItem;
 import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.createProduct;
@@ -55,8 +59,7 @@ import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 /**
  * Helper to run financial workflows.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends WorkflowRunner<T> {
 
@@ -78,7 +81,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
     /**
      * Returns the invoice.
      *
-     * @return the invoice. May be <tt>null</tt>
+     * @return the invoice. May be {@code null}
      */
     public FinancialAct getInvoice() {
         return (FinancialAct) getContext().getObject(CustomerAccountArchetypes.INVOICE);
@@ -89,7 +92,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
      *
      * @param patient   the patient
      * @param amount    the amount
-     * @param clinician the clinician. May be <tt>null</tt>
+     * @param clinician the clinician. May be {@code null}
      * @return the edit dialog
      */
     public EditDialog addInvoiceItem(Party patient, BigDecimal amount, User clinician) {
@@ -108,7 +111,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
      * Verifies that the current task is an EditInvoiceTask, and adds invoice item, closing the dialog.
      *
      * @param patient   the patient
-     * @param clinician the clinician. May be <tt>null</tt>
+     * @param clinician the clinician. May be {@code null}
      * @param post      if <tt>true</tt> post the invoice
      * @return the invoice total
      */
@@ -136,6 +139,58 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
         ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
         BigDecimal itemTotal = calc.sum(act, "total");
         assertTrue(amount.compareTo(itemTotal) == 0);
+    }
+
+    /**
+     * Verifies that the current task is an EditVisitTask, and adds invoice item for the specified amount.
+     *
+     * @param patient   the patient
+     * @param amount    the amount
+     * @param clinician the clinician. May be {@code null}
+     * @return the item editor
+     */
+    public CustomerChargeActItemEditor addVisitInvoiceItem(Party patient, BigDecimal amount, User clinician) {
+        Product product = createProduct(ProductArchetypes.SERVICE, amount, getPractice());
+        return addVisitInvoiceItem(patient, clinician, product);
+    }
+
+    /**
+     * Verifies that the current task is an {@link EditVisitTask} and returns the corresponding dialog.
+     */
+    public VisitEditorDialog getVisitEditorDialog() {
+        TestEditVisitTask task = (TestEditVisitTask) getTask();
+        return task.getVisitDialog();
+    }
+
+    /**
+     * Verifies that the current task is an {@link EditVisitTask}, and adds invoice item for the specified product.
+     *
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @param product   the product
+     * @return the item editor
+     */
+    public VisitChargeItemEditor addVisitInvoiceItem(Party patient, User clinician, Product product) {
+        TestEditVisitTask task = (TestEditVisitTask) getTask();
+        VisitEditorDialog dialog = task.getVisitDialog();
+
+        // get the editor and add an item
+        VisitEditor visitEditor = dialog.getEditor();
+        VisitChargeEditor editor = visitEditor.getChargeEditor();
+        assertNotNull(editor);
+        editor.setClinician(clinician);
+        return (VisitChargeItemEditor) addItem(editor, patient, product, BigDecimal.ONE, task.getEditorManager());
+    }
+
+    public VisitChargeItemEditor getVisitItemEditor() {
+        TestEditVisitTask task = (TestEditVisitTask) getTask();
+        VisitEditorDialog dialog = task.getVisitDialog();
+
+        // get the editor and add an item
+        VisitEditor visitEditor = dialog.getEditor();
+        TestVisitChargeEditor editor = (TestVisitChargeEditor) visitEditor.getChargeEditor();
+        assertNotNull(editor);
+        return (VisitChargeItemEditor) editor.getItems().getCurrentEditor();
     }
 
     /**

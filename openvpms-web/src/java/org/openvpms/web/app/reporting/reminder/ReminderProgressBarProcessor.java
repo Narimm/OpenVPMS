@@ -12,12 +12,11 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.reporting.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -25,6 +24,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -35,8 +35,7 @@ import java.util.Map;
 /**
  * Abstract implementation of {@link ProgressBarProcessor} for reminders.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<ReminderEvent>>
         implements ReminderBatchProcessor {
@@ -72,7 +71,9 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     public ReminderProgressBarProcessor(List<List<ReminderEvent>> items, Statistics statistics, String title) {
         super(items, count(items), title);
         this.statistics = statistics;
-        rules = new ReminderRules();
+        rules = new ReminderRules(ServiceHelper.getArchetypeService(),
+                                  new PatientRules(ServiceHelper.getArchetypeService(),
+                                                   ServiceHelper.getLookupService()));
     }
 
     /**

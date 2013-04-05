@@ -21,12 +21,14 @@ package org.openvpms.web.app.patient.summary;
 import nextapp.echo2.app.Table;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.table.AbstractTableCellRenderer;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -58,7 +60,9 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
      * Default constructor.
      */
     public ReminderTableCellRenderer() {
-        rules = new ReminderRules();
+        rules = new ReminderRules(ServiceHelper.getArchetypeService(),
+                                  new PatientRules(ServiceHelper.getArchetypeService(),
+                                                   ServiceHelper.getLookupService()));
     }
 
     /**

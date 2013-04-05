@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -24,10 +22,9 @@ import org.openvpms.web.component.im.edit.EditDialog;
 /**
  * Manages edit dialogs displayed during charging.
 *
-* @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
-* @version $LastChangedDate: $
+* @author Tim Anderson
 */
-public class ChargePopupEditorManager extends PopupEditorManager {
+public class ChargePopupEditorManager extends DefaultPopupEditorManager {
 
     /**
      * The current edit dialog.

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.checkin;
@@ -51,8 +49,7 @@ import java.util.Date;
 /**
  * Check-in workflow.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CheckInWorkflow extends WorkflowImpl {
 
@@ -185,7 +182,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
 
         // edit the act.patientClinicalEvent
-        addTask(new EditVisitTask());
+        addTask(createEditVisitTask());
 
         // Reload the task to refresh the context with any edits made
         addTask(new ReloadTask(PatientArchetypes.CLINICAL_EVENT));
@@ -221,12 +218,20 @@ public class CheckInWorkflow extends WorkflowImpl {
      * Creates a new {@link SelectIMObjectTask} to select a work list.
      *
      * @param context the context
-     * @return a new task to select a worklist
+     * @return a new task to select a work list
      */
     protected SelectIMObjectTask<Party> createSelectWorkListTask(TaskContext context) {
         return new SelectIMObjectTask<Party>(WORK_LIST_SHORTNAME, context);
     }
 
+    /**
+     * Creates a new {@link EditVisitTask}.
+     *
+     * @return a new task to edit the visit
+     */
+    protected EditVisitTask createEditVisitTask() {
+        return new EditVisitTask();
+    }
 
     private class CustomerTaskWorkflow extends WorkflowImpl {
 

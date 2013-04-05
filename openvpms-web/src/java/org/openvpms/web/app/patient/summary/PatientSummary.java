@@ -82,7 +82,7 @@ public class PatientSummary extends PartySummary {
      */
     public PatientSummary() {
         rules = (PatientRules) ServiceHelper.getContext().getBean("patientRules");
-        reminderRules = new ReminderRules();
+        reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(), rules);
     }
 
     /**

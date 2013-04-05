@@ -470,7 +470,7 @@ public class VisitEditor {
          */
         @Override
         public boolean runFirst() {
-            return updateStatus(event);
+            return runSubsequent();
         }
 
         /**

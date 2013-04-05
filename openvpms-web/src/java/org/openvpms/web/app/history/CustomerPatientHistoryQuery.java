@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.history;
 
@@ -21,7 +19,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
@@ -32,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.SelectionHistory;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.AbstractQuery;
@@ -42,6 +40,7 @@ import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,8 +54,7 @@ import java.util.Set;
 /**
  * Browser for customer and patient selection history.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> {
 
@@ -178,7 +176,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
      */
     private List<CustomerPatient> getHistory(SelectionHistory customers, SelectionHistory patients) {
         List<CustomerPatient> result = new ArrayList<CustomerPatient>();
-        PatientRules rules = new PatientRules();
+        PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
         Set<SelectionHistory.Selection> allCustomers
                 = new HashSet<SelectionHistory.Selection>(customers.getSelections());
         Set<SelectionHistory.Selection> allPatients

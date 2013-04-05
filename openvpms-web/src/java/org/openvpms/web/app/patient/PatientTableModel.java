@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient;
@@ -30,13 +28,13 @@ import org.openvpms.web.component.im.table.AbstractEntityObjectSetTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
  * Patient table model that can display the owner of a patient.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientTableModel extends AbstractEntityObjectSetTableModel {
 
@@ -66,7 +64,7 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
      */
     public PatientTableModel() {
         super("patient", "identity");
-        rules = new PatientRules();
+        rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
         setTableColumnModel(createTableColumnModel());
     }
 

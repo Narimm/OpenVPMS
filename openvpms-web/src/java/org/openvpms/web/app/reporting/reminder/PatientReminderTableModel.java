@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.reminder;
@@ -23,6 +21,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
@@ -43,6 +42,7 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -51,8 +51,7 @@ import java.util.Iterator;
 /**
  * Patient reminder table model.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientReminderTableModel extends AbstractActTableModel {
 
@@ -100,7 +99,8 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     public PatientReminderTableModel(LayoutContext context) {
         super(new String[]{ReminderArchetypes.REMINDER}, context);
         rules = new ReminderRules(ArchetypeServiceHelper.getArchetypeService(),
-                                  new ReminderTypeCache());
+                                  new ReminderTypeCache(), new PatientRules(ServiceHelper.getArchetypeService(),
+                                                                            ServiceHelper.getLookupService()));
     }
 
     /**
@@ -364,7 +364,9 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      */
     private ReminderProcessor getProcessor(int row) {
         if (processor == null || row < lastRow) {
-            processor = new ReminderProcessor(null, null);
+            processor = new ReminderProcessor(null, null, new Date(), ServiceHelper.getArchetypeService(),
+                                              new PatientRules(ServiceHelper.getArchetypeService(),
+                                                               ServiceHelper.getLookupService()));
             processor.setEvaluateFully(true);
         }
         lastRow = row;

@@ -32,6 +32,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Set;
 
@@ -222,7 +223,8 @@ public class UserMessageEditor extends ActEditor {
         try {
             Party customer = getCustomerEditor().getEntity();
             Party patient = getPatientEditor().getEntity();
-            PatientRules rules = new PatientRules();
+            PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
+                                                  ServiceHelper.getLookupService());
             if (customer != null && patient != null) {
                 if (!rules.isOwner(customer, patient)) {
                     getPatientEditor().setEntity(null);

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -23,6 +21,7 @@ import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
@@ -41,6 +40,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
@@ -57,8 +57,7 @@ import static org.junit.Assert.fail;
 /**
  * Abstract base class for customer charge act editor tests.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTest {
 
@@ -389,7 +388,9 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         Act reminder = getReminder(item, reminderType);
         EntityBean productBean = new EntityBean(product);
 
-        ReminderRules rules = new ReminderRules();
+        ReminderRules rules = new ReminderRules(getArchetypeService(),
+                                                new PatientRules(getArchetypeService(),
+                                                                 ServiceHelper.getLookupService()));
         List<EntityRelationship> rels = productBean.getNodeRelationships("reminders");
         assertEquals(1, rels.size());
         ActBean bean = new ActBean(reminder);
