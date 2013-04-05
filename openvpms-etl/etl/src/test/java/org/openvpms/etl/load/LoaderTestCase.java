@@ -12,15 +12,12 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.etl.load;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
 import org.junit.Before;
+import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -37,8 +34,8 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -46,12 +43,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link Loader}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("/applicationContext.xml")
 public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
@@ -328,6 +328,29 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         ETLRow row2 = createPatientRow("patient2", species2, breed2);
         loader.load(row2);
         checkSpeciesBreedLookups(species2, breed2);
+    }
+
+    /**
+     * Verifies that lookup.local codes are passed through and not uppercased.
+     */
+    @Test
+    public void testLocalLookups() {
+        Mappings mappings = new Mappings();
+        mappings.setIdColumn("TEMPLATEID");
+        Mapping archetypeMap = createMapping("ARCHETYPE", "<entity.documentTemplate>archetype");
+        mappings.addMapping(archetypeMap);
+
+        Loader loader = createLoader("TEMPLATELOAD", mappings);
+        ETLRow row1 = createTemplateRow("document1", "act.patientDocumentForm");
+        List<IMObject> objects = loader.load(row1);
+        assertEquals(1, objects.size());
+        assertEquals("act.patientDocumentForm", objects.get(0).getDetails().get("archetype"));
+
+        ETLRow row2 = createTemplateRow("document2", "REPORT");
+        objects = loader.load(row2);
+        assertEquals(1, objects.size());
+        assertEquals("REPORT", objects.get(0).getDetails().get("archetype"));
+        loader.close();
     }
 
     /**
@@ -657,6 +680,20 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         ETLRow row = new ETLRow(legacyId);
         row.add("PRICE", price);
         row.add("PRODID", productId);
+        return row;
+    }
+
+    /**
+     * Helper to create a row containing a document template id and archetype.
+     *
+     * @param rowId     the document template id
+     * @param archetype the archetype
+     * @return a new row
+     */
+    private ETLRow createTemplateRow(String rowId, String archetype) {
+        ETLRow row = new ETLRow(rowId);
+        row.add("TEMPLATEID", rowId);
+        row.add("ARCHETYPE", archetype);
         return row;
     }
 

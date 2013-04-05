@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.etl.load;
@@ -43,8 +41,7 @@ import java.util.Map;
 /**
  * Automatically generates lookups for lookup nodes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class LookupHandler {
 
@@ -135,8 +132,7 @@ class LookupHandler {
      * generated.
      *
      * @param descriptor the node descriptor
-     * @return <tt>true</tt> if the descriptro refers to an automatically
-     *         generated lookup
+     * @return <tt>true</tt> if the descriptor refers to an automatically generated lookup
      */
     public boolean isGeneratedLookup(NodeDescriptor descriptor) {
         return lookups.containsKey(descriptor);
@@ -167,7 +163,7 @@ class LookupHandler {
     }
 
     /**
-     * Generates a code for a lopokup name.
+     * Generates a code for a lookup name.
      * This capitalises the lookup name, and replaces all non-alphanumeric
      * characters with underscores.
      *
