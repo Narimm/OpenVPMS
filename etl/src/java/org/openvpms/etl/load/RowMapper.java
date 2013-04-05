@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.etl.load;
@@ -24,7 +22,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,13 +29,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.openvpms.etl.load.LoaderException.ErrorCode.ArchetypeNotFound;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.InvalidMapping;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.MissingRowValue;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.NullReference;
+
 
 /**
  * Maps an {@link ETLRow} to one or more {@link IMObject} instances, using
  * mappings defined by an {@link Mappings}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class RowMapper {
 
@@ -156,8 +157,7 @@ class RowMapper {
                 throw new LoaderException(MissingRowValue, mapping.getSource());
             }
             Object value = row.get(mapping.getSource());
-            if (!mapping.getExcludeNull()
-                || (mapping.getExcludeNull() && value != null)) {
+            if (!mapping.getExcludeNull() || value != null) {
                 mapValue(value, mapping, row);
             }
         }
@@ -196,14 +196,12 @@ class RowMapper {
             String targetValue = getStringValue(value, mapping);
             descriptor.addChildToCollection(object,
                                             handler.getObject(targetValue));
-        } else if (lookupHandler != null && descriptor.isLookup()) {
+        } else if (lookupHandler != null && descriptor.isLookup() && lookupHandler.isGeneratedLookup(descriptor)) {
             String targetValue = getStringValue(value, mapping);
             if (targetValue != null) {
                 String code = lookupHandler.getCode(targetValue);
                 descriptor.setValue(object, code);
-                if (lookupHandler.isGeneratedLookup(descriptor)) {
-                    lookups.put(descriptor, new CodeName(code, targetValue));
-                }
+                lookups.put(descriptor, new CodeName(code, targetValue));
             }
         } else {
             Object targetValue = getValue(value, mapping);
