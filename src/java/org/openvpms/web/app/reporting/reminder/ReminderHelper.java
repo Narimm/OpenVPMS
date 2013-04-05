@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.reporting.reminder;
 
@@ -21,6 +19,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -32,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -42,8 +42,7 @@ import java.util.Map;
 /**
  * Reminder helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class ReminderHelper {
 
@@ -69,7 +68,9 @@ class ReminderHelper {
         if (current != null && !ActStatus.CANCELLED.equals(current.getStatus())) {
             try {
                 if (compare(reminder, current)) {
-                    ReminderRules rules = new ReminderRules();
+                    ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
+                                                            new PatientRules(ServiceHelper.getArchetypeService(),
+                                                                             ServiceHelper.getLookupService()));
                     rules.updateReminder(current, lastSent);
                     result = true;
                 }

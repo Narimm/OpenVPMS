@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -49,8 +47,7 @@ import java.util.List;
  * This is responsible for calculating the amount and tax when a child item
  * changes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class FinancialActEditor extends ActEditor {
 
@@ -60,11 +57,11 @@ public class FinancialActEditor extends ActEditor {
     private static final Log log = LogFactory.getLog(FinancialActEditor.class);
 
     /**
-     * Constructs a <tt>FinancialActEditor</tt>.
+     * Constructs a {@code FinancialActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
-     * @param context the layout context. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}
      */
     protected FinancialActEditor(FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
@@ -89,7 +86,7 @@ public class FinancialActEditor extends ActEditor {
      * This extends validation by ensuring that the total matches that of the sum of the item totals.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendents are valid otherwise {@code false}
      */
     @Override
     public boolean validate(Validator validator) {
@@ -106,7 +103,7 @@ public class FinancialActEditor extends ActEditor {
      * This should only be necessary for acts that have been migrated from other systems.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the amounts match
+     * @return {@code true} if the amounts match
      */
     protected boolean validateAmounts(Validator validator) {
         boolean result;

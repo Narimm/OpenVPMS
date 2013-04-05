@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.reminder;
@@ -23,6 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
@@ -58,8 +57,7 @@ import org.openvpms.web.system.ServiceHelper;
 /**
  * Reminder generation workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
 
@@ -134,10 +132,10 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         try {
             Act reminder = browser.getSelected();
             if (reminder != null) {
-                ReminderProcessor processor = new ReminderProcessor(reminder.getActivityStartTime(),
-                                                                    reminder.getActivityEndTime(),
-                                                                    reminder.getActivityStartTime(),
-                                                                    ServiceHelper.getArchetypeService());
+                ReminderProcessor processor = new ReminderProcessor(
+                        reminder.getActivityStartTime(), reminder.getActivityEndTime(),
+                        reminder.getActivityStartTime(), ServiceHelper.getArchetypeService(),
+                        new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService()));
                 IMObjectBean bean = new IMObjectBean(reminder);
                 int reminderCount = bean.getInt("reminderCount");
                 ReminderEvent event = processor.process(reminder, reminderCount);

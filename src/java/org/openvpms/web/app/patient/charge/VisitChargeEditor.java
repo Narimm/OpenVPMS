@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.patient.charge;
 

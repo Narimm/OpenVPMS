@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient;
@@ -26,16 +24,16 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.patient.summary.PatientSummary;
-import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
  * Renders customer and patient summary information.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  * @see org.openvpms.web.app.customer.CustomerSummary
  * @see PatientSummary
  */
@@ -58,7 +56,7 @@ public class CustomerPatientSummary {
      * @param context the context
      */
     public CustomerPatientSummary(Context context) {
-        rules = new PatientRules();
+        rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
         this.context = context;
     }
 
@@ -124,7 +122,7 @@ public class CustomerPatientSummary {
             customerSummary = new CustomerSummary(local).getSummary(customer);
         }
         Component patientSummary = (patient != null) ?
-                                   new PatientSummary().getSummary(patient) : null;
+                new PatientSummary().getSummary(patient) : null;
         if (customerSummary != null || patientSummary != null) {
             result = ColumnFactory.create("CellSpacing");
             if (customerSummary != null) {

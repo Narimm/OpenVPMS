@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.patient.mr;
 
@@ -22,6 +20,7 @@ import nextapp.echo2.app.SelectField;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -33,8 +32,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.reporting.reminder.ReminderGenerator;
 import org.openvpms.web.app.customer.CustomerMailContext;
+import org.openvpms.web.app.reporting.reminder.ReminderGenerator;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -55,10 +54,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Add description here.
+ * Reminder resend dialog.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class ResendReminderDialog extends PopupDialog {
 
@@ -137,10 +135,12 @@ class ResendReminderDialog extends PopupDialog {
         ResendReminderDialog result = null;
         IMObjectBean bean = new IMObjectBean(reminder);
         int reminderCount = bean.getInt("reminderCount");
+        PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
         ReminderProcessor processor = new ReminderProcessor(reminder.getActivityStartTime(),
                                                             reminder.getActivityEndTime(),
                                                             reminder.getActivityStartTime(),
-                                                            ServiceHelper.getArchetypeService());
+                                                            ServiceHelper.getArchetypeService(),
+                                                            rules);
         processor.setEvaluateFully(true);
         ReminderEvent event = processor.process(reminder, reminderCount);
         Party customer = event.getCustomer();
@@ -261,7 +261,9 @@ class ResendReminderDialog extends PopupDialog {
      */
     private void update() {
         try {
-            ReminderRules rules = new ReminderRules();
+            ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
+                                                    new PatientRules(ServiceHelper.getArchetypeService(),
+                                                                     ServiceHelper.getLookupService()));
             rules.updateReminder(reminder, new Date());
         } catch (Throwable exception) {
             ErrorHelper.show(exception);

@@ -10,7 +10,8 @@
     <bean id="appointmentService"
           class="org.openvpms.archetype.rules.workflow.AppointmentService">
         <constructor-arg index="0" ref="archetypeService"/>
-        <constructor-arg index="1">
+        <constructor-arg index="1" ref="lookupService"/>
+        <constructor-arg index="2">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="appointmentCache"/>
@@ -28,8 +29,9 @@
 
     <bean id="taskService"
           class="org.openvpms.archetype.rules.workflow.TaskService">
-        <constructor-arg ref="archetypeService" index="0"/>
-        <constructor-arg index="1">
+        <constructor-arg index="0" ref="archetypeService"/>
+        <constructor-arg index="1" ref="lookupService"/>
+        <constructor-arg index="2">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="appointmentCache"/>

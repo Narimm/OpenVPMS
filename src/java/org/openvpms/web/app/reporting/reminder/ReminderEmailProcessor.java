@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.reporting.reminder;
 
@@ -21,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
@@ -33,9 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.app.reporting.ReportingException;
-import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
-import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
-import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
@@ -51,12 +47,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.FailedToProcessReminder;
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.ReminderMissingDocTemplate;
+import static org.openvpms.web.app.reporting.ReportingException.ErrorCode.TemplateMissingEmailText;
+
 
 /**
  * Sends reminder emails.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderEmailProcessor extends AbstractReminderProcessor {
 
@@ -90,7 +89,9 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
      */
     public ReminderEmailProcessor(JavaMailSender sender, Party practice, DocumentTemplate groupTemplate) {
         super(groupTemplate);
-        ReminderRules rules = new ReminderRules();
+        ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
+                                                new PatientRules(ServiceHelper.getArchetypeService(),
+                                                                 ServiceHelper.getLookupService()));
         Contact email = rules.getEmailContact(practice.getContacts());
         if (email == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoReminderContact, practice.getName());

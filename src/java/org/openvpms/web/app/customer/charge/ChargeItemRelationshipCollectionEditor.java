@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -36,10 +34,9 @@ import java.util.Date;
 /**
  * Editor for <em>actRelationship.customerAccountInvoiceItem</em> and
  * <em>actRelationship.customerAccountCreditItem</em> act relationships.
- * Sets an {@link PopupEditorManager} on {@link CustomerChargeActItemEditor} instances.
+ * Sets a {@link PopupEditorManager} on {@link CustomerChargeActItemEditor} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ChargeItemRelationshipCollectionEditor
         extends AltModelActRelationshipCollectionEditor {
@@ -52,7 +49,7 @@ public class ChargeItemRelationshipCollectionEditor
     /**
      * The popup editor manager.
      */
-    private PopupEditorManager popupEditorMgr = new PopupEditorManager();
+    private PopupEditorManager popupEditorMgr = new DefaultPopupEditorManager();
 
 
     /**

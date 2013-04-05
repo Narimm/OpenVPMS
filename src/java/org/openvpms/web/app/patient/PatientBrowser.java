@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient;
@@ -28,13 +26,13 @@ import org.openvpms.web.component.im.query.PatientResultSet;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
  * Patient browser.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
 
@@ -56,7 +54,8 @@ public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
         Party result = null;
         Party patient = getSelected();
         if (patient != null) {
-            PatientRules rules = new PatientRules();
+            PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
+                                                  ServiceHelper.getLookupService());
             result = rules.getOwner(patient);
         }
         return result;

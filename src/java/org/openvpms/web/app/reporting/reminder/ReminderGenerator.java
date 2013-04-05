@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.reminder;
@@ -28,6 +26,7 @@ import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
@@ -64,8 +63,7 @@ import java.util.List;
 /**
  * Reminder generator.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderGenerator extends AbstractBatchProcessor {
 
@@ -159,7 +157,9 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     public ReminderGenerator(Iterator<Act> reminders, Date from, Date to, Context context, MailContext mailContext) {
         this(context);
 
-        ReminderProcessor processor = new ReminderProcessor(from, to);
+        ReminderProcessor processor = new ReminderProcessor(from, to, new Date(), ServiceHelper.getArchetypeService(),
+                                                            new PatientRules(ServiceHelper.getArchetypeService(),
+                                                                              ServiceHelper.getLookupService()));
 
         ReminderCollector cancelCollector = new ReminderCollector();
         ReminderCollector listCollector = new ReminderCollector();

@@ -12,16 +12,16 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.workflow.checkin;
 
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.TestHelper;
@@ -29,17 +29,29 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
+import org.openvpms.web.app.customer.charge.CustomerChargeTestHelper;
+import org.openvpms.web.app.patient.charge.VisitChargeItemEditor;
+import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.app.workflow.WorkflowTestHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.component.util.ErrorHandler;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -51,10 +63,9 @@ import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 /**
  * Tests the {@link CheckInWorkflow}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
-public class CheckInWorkflowTestCase extends AbstractAppTest {
+public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest {
 
     /**
      * The patient.
@@ -81,6 +92,10 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     private Party workList;
 
+    /**
+     * Tracks errors logged.
+     */
+    private List<String> errors = new ArrayList<String>();
 
     /**
      * Tests the check-in workflow when launched from an appointment with no patient.
@@ -88,7 +103,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
     @Test
     public void testCheckInFromAppointmentNoPatient() {
         Act appointment = createAppointment(customer, null, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setPatient(patient);                              // need to pre-set patient and worklist
         workflow.setWorkList(workList);                            // so they can be selected in popups
         workflow.start();
@@ -121,7 +136,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
     @Test
     public void testCheckInFromAppointmentWithPatient() {
         Act appointment = createAppointment(customer, patient, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
 
@@ -144,7 +159,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
     @Test
     public void testCreatePatient() {
         Act appointment = createAppointment(customer, null, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList); // need to pre-set work list so it can be selected in popup
         workflow.start();
 
@@ -177,7 +192,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
     @Test
     public void testCancelCreatePatient() {
         Act appointment = createAppointment(customer, null, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
         BrowserDialog<Party> dialog = workflow.getSelectionDialog();
@@ -195,7 +210,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
     @Test
     public void testCancelCreatePatientByUserClose() {
         Act appointment = createAppointment(customer, null, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
         BrowserDialog<Party> dialog = workflow.getSelectionDialog();
@@ -229,7 +244,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
     @Test
     public void testSkipSelectWorkList() {
         Act appointment = createAppointment(customer, patient, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
 
@@ -326,7 +341,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
     @Test
     public void testSkipPatientWeight() {
         Act appointment = createAppointment(customer, patient, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
 
@@ -364,6 +379,56 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         checkCancelPatientWeight(true);
     }
 
+    @Test
+    public void testChangeClinicianOnInvoiceItem() {
+        Act appointment = createAppointment(customer, patient, clinician);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
+        workflow.start();
+
+        fireDialogButton(workflow.getSelectionDialog(), PopupDialog.SKIP_ID);
+        fireDialogButton(workflow.getWeightEditor(), PopupDialog.SKIP_ID);
+        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+
+        Product product = CustomerChargeTestHelper.createProduct(ProductArchetypes.MEDICATION, BigDecimal.TEN,
+                                                                 getPractice());
+        Entity template1 = addDocumentTemplate(product);
+        Entity template2 = addDocumentTemplate(product);
+
+        // edit the charge
+        VisitEditorDialog dialog = workflow.getVisitEditorDialog();
+        dialog.getEditor().selectCharges(); // make sure the charges tab is selected, to enable the Apply button
+        VisitChargeItemEditor itemEditor = workflow.addVisitInvoiceItem(patient, clinician, product);
+        itemEditor.setClinician(clinician);
+        fireDialogButton(dialog, PopupDialog.APPLY_ID);
+
+        List<Act> documents1 = getDocuments(itemEditor);
+        assertEquals(2, documents1.size());
+
+        itemEditor.setClinician(TestHelper.createClinician());
+        fireDialogButton(dialog, PopupDialog.OK_ID);
+
+        List<Act> documents2 = getDocuments(itemEditor);
+        assertEquals(2, documents2.size());
+
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkComplete(true, customer, patient, context);
+
+        assertTrue(errors.isEmpty());
+    }
+
+    private Act getPatientDocumentForm(VisitChargeItemEditor itemEditor) {
+        List<Act> documents = getDocuments(itemEditor);
+        assertEquals(1, documents.size());
+        Act document = documents.get(0);
+        assertTrue(TypeHelper.isA(document, PatientArchetypes.DOCUMENT_FORM));
+        return document;
+    }
+
+    private List<Act> getDocuments(VisitChargeItemEditor itemEditor) {
+        ActBean bean = new ActBean((Act) itemEditor.getObject());
+        return bean.getNodeActs("documents");
+    }
+
     /**
      * Sets up the test case.
      */
@@ -379,6 +444,13 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         context = new LocalContext();
         context.setLocation(TestHelper.createLocation());
         context.setUser(user);
+
+        // register an ErrorHandler to collect errors
+        ErrorHandler.setInstance(new ErrorHandler() {
+            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
+                errors.add(message);
+            }
+        });
     }
 
     /**
@@ -388,7 +460,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     private void checkCancelSelectPatient(boolean userClose) {
         Act appointment = createAppointment(customer, null, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setPatient(patient);         // need to pre-set patient so it can be selected in popup
         workflow.start();
 
@@ -404,7 +476,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     private void checkCancelSelectWorkList(boolean userClose) {
         Act appointment = createAppointment(customer, patient, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work-list so it can be selected in popup
         workflow.start();
 
@@ -424,7 +496,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     private void checkCancelSelectDialog(boolean userClose) {
         Act appointment = createAppointment(customer, patient, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work-list so it can be selected in popup
         workflow.start();
 
@@ -445,7 +517,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     private void checkCancelEditEvent(boolean userClose) {
         Act appointment = createAppointment(customer, patient, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
 
@@ -472,7 +544,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      */
     private void checkCancelPatientWeight(boolean userClose) {
         Act appointment = createAppointment(customer, patient, clinician);
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
 
@@ -491,7 +563,7 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
      * @param context     the context
      */
     private void checkClinician(Act appointment, User clinician, Context context) {
-        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, context);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
         workflow.start();
 
@@ -509,4 +581,11 @@ public class CheckInWorkflowTestCase extends AbstractAppTest {
         workflow.checkComplete(true, customer, patient, context);
     }
 
+    private Entity addDocumentTemplate(Product product) {
+        Entity template = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeRelationship("documents", template);
+        bean.save();
+        return template;
+    }
 }

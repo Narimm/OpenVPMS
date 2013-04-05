@@ -12,15 +12,11 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -39,6 +35,7 @@ import org.openvpms.web.component.property.DatePropertyTransformer;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 import java.util.List;
@@ -50,8 +47,7 @@ import java.util.List;
  * Creates an <em>entityRelationship.patientOwner</em> with the current
  * customer, if the parent object isn't an entity relationship.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientEditor extends AbstractIMObjectEditor {
 
@@ -124,7 +120,8 @@ public class PatientEditor extends AbstractIMObjectEditor {
     private void addOwnerRelationship(Party patient) {
         Party customer = getLayoutContext().getContext().getCustomer();
         if (customer != null) {
-            PatientRules rules = new PatientRules();
+            PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
+                                                  ServiceHelper.getLookupService());
             if (!rules.isOwner(customer, patient)) {
                 rules.addPatientOwnerRelationship(customer, patient);
             }

@@ -12,14 +12,10 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.customer.estimation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.EstimationActStatus;
@@ -40,6 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
+import org.openvpms.web.app.customer.charge.DefaultPopupEditorManager;
 import org.openvpms.web.app.customer.charge.PopupEditorManager;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -49,17 +46,19 @@ import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
-import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
  * Tests the {@link EstimationInvoicer} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorTest {
 
@@ -217,7 +216,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
          */
         @Override
         protected ChargeEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-            final PopupEditorManager manager = new PopupEditorManager() {
+            final PopupEditorManager manager = new DefaultPopupEditorManager() {
                 @Override
                 protected void edit(EditDialog dialog) {
                     super.edit(dialog);

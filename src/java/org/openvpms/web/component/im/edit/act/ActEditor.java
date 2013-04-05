@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -32,8 +30,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 /**
  * An editor for parent {@link Act}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public abstract class ActEditor extends AbstractActEditor {
 
@@ -49,23 +46,23 @@ public abstract class ActEditor extends AbstractActEditor {
 
 
     /**
-     * Construct a new <tt>ActEditor</tt>.
+     * Constructs an {@code ActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
-     * @param context the layout context. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}
      */
     protected ActEditor(Act act, IMObject parent, LayoutContext context) {
         this(act, parent, true, context);
     }
 
     /**
-     * Construct a new <tt>ActEditor</tt>.
+     * Constructs an {@code ActEditor}.
      *
      * @param act       the act to edit
-     * @param parent    the parent object. May be <tt>null</tt>
-     * @param editItems if <tt>true</tt> create an editor for any items node
-     * @param context   the layout context. May be <tt>null</tt>
+     * @param parent    the parent object. May be {@code null}
+     * @param editItems if {@code true} create an editor for any items node
+     * @param context   the layout context. May be {@code null}
      */
     protected ActEditor(Act act, IMObject parent, boolean editItems, LayoutContext context) {
         super(act, parent, context);
@@ -86,7 +83,7 @@ public abstract class ActEditor extends AbstractActEditor {
     /**
      * Returns the items collection editor.
      *
-     * @return the items collection editor. May be <tt>null</tt>
+     * @return the items collection editor. May be {@code null}
      */
     protected ActRelationshipCollectionEditor getItems() {
         if (editor == null && editItems) {
@@ -113,7 +110,7 @@ public abstract class ActEditor extends AbstractActEditor {
      * This is necessary to avoid stale object exceptions when related acts
      * are deleted.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     @Override
     protected boolean doSave() {

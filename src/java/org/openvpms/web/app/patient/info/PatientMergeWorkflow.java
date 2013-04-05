@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.info;
@@ -39,8 +37,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Patient merge workflow.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class PatientMergeWorkflow extends MergeWorkflow<Party> {
 
@@ -109,7 +106,8 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
                 ServiceHelper.getTransactionManager());
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
-                PatientRules rules = new PatientRules();
+                PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
+                                                      ServiceHelper.getLookupService());
                 rules.mergePatients(from, getObject());
                 return true;
             }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer;
@@ -33,6 +31,7 @@ import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.im.relationship.RelationshipState;
 import org.openvpms.web.component.im.relationship.RelationshipStateFactory;
 import org.openvpms.web.component.im.relationship.RelationshipStateQuery;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,8 +44,7 @@ import java.util.Map;
  * A {@link RelationshipStateQuery} for patients that marks deceased patients
  * inactive.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class PatientRelationshipStateQuery extends RelationshipStateQuery {
 
@@ -96,7 +94,8 @@ class PatientRelationshipStateQuery extends RelationshipStateQuery {
         if (TypeHelper.isA(getParent(), "party.patientpet")) {
             // if the entity is the patient, update the states using the
             // its deceased state
-            PatientRules rules = new PatientRules();
+            PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
+                                                  ServiceHelper.getLookupService());
             boolean deceased = rules.isDeceased((Party) getParent());
             if (deceased) {
                 for (RelationshipState state : states.values()) {

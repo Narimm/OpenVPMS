@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.workflow.scheduling;
 
@@ -31,12 +29,13 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.DateTimePropertyTransformer;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.DateTimePropertyTransformer;
 import org.openvpms.web.component.util.DateTimeFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -44,8 +43,7 @@ import org.openvpms.web.component.util.ErrorHelper;
  * <p/>
  * This displays a date/time for the start and end times.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AbstractScheduleActEditor extends AbstractActEditor {
 
@@ -141,7 +139,8 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
         try {
             Party customer = getCustomerEditor().getEntity();
             Party patient = getPatientEditor().getEntity();
-            PatientRules rules = new PatientRules();
+            PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
+                                                  ServiceHelper.getLookupService());
             if (customer != null && patient != null) {
                 if (!rules.isOwner(customer, patient)) {
                     getPatientEditor().setEntity(null);

@@ -12,17 +12,17 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.reminder;
 
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.AbstractReminderProcessorListener;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessor;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,8 +38,7 @@ import java.util.List;
  * <li>whether or not the associated reminder type supports grouping</li>
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class ReminderCollector extends AbstractReminderProcessorListener {
 
@@ -47,6 +46,14 @@ class ReminderCollector extends AbstractReminderProcessorListener {
      * The reminders.
      */
     private HashMap<Key, List<ReminderEvent>> reminders = new LinkedHashMap<Key, List<ReminderEvent>>();
+
+    /**
+     * Constructs a {@code ReminderCollector}.
+     */
+    public ReminderCollector() {
+        super(ServiceHelper.getArchetypeService(), new PatientRules(ServiceHelper.getArchetypeService(),
+                                                                    ServiceHelper.getLookupService()));
+    }
 
     /**
      * Process an event.

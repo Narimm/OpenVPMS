@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.workflow.checkin;
@@ -31,7 +29,9 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.PatientEditor;
-import org.openvpms.web.app.workflow.WorkflowRunner;
+import org.openvpms.web.app.workflow.EditVisitTask;
+import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
+import org.openvpms.web.app.workflow.TestEditVisitTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -45,6 +45,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.EchoTestHelper;
 
 import java.math.BigDecimal;
@@ -62,10 +63,9 @@ import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 /**
  * Helper to run the check-in workflow.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
-class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestCheckInWorkflow> {
+class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunner.TestCheckInWorkflow> {
 
     /**
      * The appointment.
@@ -77,9 +77,11 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
      * Constructs a <tt>WorkflowRunner</tt>.
      *
      * @param appointment the appointment
+     * @param practice    the practice
      * @param context     the context
      */
-    public CheckInWorkflowRunner(Act appointment, Context context) {
+    public CheckInWorkflowRunner(Act appointment, Party practice, Context context) {
+        super(practice);
         this.appointment = appointment;
         setWorkflow(new TestCheckInWorkflow(appointment, context));
     }
@@ -144,7 +146,7 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
         Party p = getContext().getPatient();
         assertEquals(patient, p);
         assertFalse(p.isNew());
-        PatientRules rules = new PatientRules();
+        PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
         customer = IMObjectHelper.reload(customer);
         assertNotNull(customer);
         assertTrue(rules.isOwner(customer, patient));
@@ -397,13 +399,23 @@ class CheckInWorkflowRunner extends WorkflowRunner<CheckInWorkflowRunner.TestChe
          * Creates a new {@link SelectIMObjectTask} to select a work list.
          *
          * @param context the context
-         * @return a new task to select a worklist
+         * @return a new task to select a work list
          */
         @Override
         protected SelectIMObjectTask<Party> createSelectWorkListTask(TaskContext context) {
             List<Party> worklists = (workList != null) ? Arrays.asList(workList) : Collections.<Party>emptyList();
             Query<Party> query = new ListQuery<Party>(worklists, WORK_LIST_SHORTNAME, Party.class);
             return new SelectIMObjectTask<Party>(query);
+        }
+
+        /**
+         * Creates a new {@link org.openvpms.web.app.workflow.EditVisitTask}.
+         *
+         * @return a new task to edit the visit
+         */
+        @Override
+        protected EditVisitTask createEditVisitTask() {
+            return new TestEditVisitTask();
         }
     }
 
