@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="stock reorder report" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="stock reorder report 20130305" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
@@ -25,122 +25,144 @@
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select
-  stockLocation,
-  supplier,
-  product,
-  reorderCode,
-  reorderDesc,
-  nettPrice,
-  max(current) as current,
-  max(ideal) as ideal,
-  max(critical) as critical,
-  packsize,
-  max(orderSize) as orderPackSize,
-  sum((orderedQty-receivedQty-cancelledQty)*if(orderSize is not null, orderSize,packsize)) as onorder,
-  ceil((max(ideal) - (max(current) + sum((orderedQty-receivedQty-cancelledQty)*if(orderSize is not null, orderSize,packsize))))/packsize) as toorder
+		<![CDATA[select 	stockLocation,
+	supplier,
+	product,
+	reorderCode,
+	reorderDesc,
+	nettPrice,
+	max(current) as current,
+	max(ideal) as ideal,
+	max(critical) as critical,
+	packsize,
+	max(orderSize) as orderPackSize,
+	sum((orderedQty-receivedQty-cancelledQty)*if(orderSize is not null, orderSize,packsize)) as onorder,
+	ceil((max(ideal) - (max(current) + sum((orderedQty-receivedQty-cancelledQty)*if(orderSize is not null, orderSize,packsize))))/packsize) as toorder
 from
 (
-select
-  stockLocation.entity_id as stockLocationId,
+select  stockLocation.entity_id as stockLocationId,
 	stockLocation.name as stockLocation,
-  supplier.entity_id as supplierId,
+	supplier.entity_id as supplierId,
 	supplier.name as supplier,
-  product.entity_id as productId,
+	product.entity_id as productId,
 	product.name as product,
-  currentqty.value as current,
-  idealqty.value as ideal,
-  criticalqty.value as critical,
-  packageSize.value as packsize,
-  preferred.value as prefSupplier,
-  reordercode.value as reorderCode,
-  reorderdesc.value as reorderDesc,
-  nettprice.value as nettPrice,
-  orderDetail.quantity as orderedQty,
-  receivedqty.value as receivedQty,
-  cancelledqty.value as cancelledQty,
-  orderpacksize.value as orderSize
+	currentqty.value as current,
+	idealqty.value as ideal,
+	criticalqty.value as critical,
+	packageSize.value as packsize,
+	preferred.value as prefSupplier,
+	reordercode.value as reorderCode,
+	reorderdesc.value as reorderDesc,
+	nettprice.value as nettPrice,
+	orderDetail.quantity as orderedQty,
+	receivedqty.value as receivedQty,
+	cancelledqty.value as cancelledQty,
+	orderpacksize.value as orderSize
 from entities product
-    join entity_relationships productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityRelationship.productStockLocation"
-    left outer join entity_relationship_details currentqty on currentqty.entity_relationship_id = productStock.entity_relationship_id  and currentqty.name = "quantity"
-    left outer join entity_relationship_details idealqty on idealqty.entity_relationship_id = productStock.entity_relationship_id  and idealqty.name = "idealQty"
-    left outer join entity_relationship_details criticalqty on criticalqty.entity_relationship_id = productStock.entity_relationship_id  and criticalqty.name = "criticalQty"
-    left outer join entities stockLocation on stockLocation.entity_id = productStock.target_id
-    left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
-    left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
-    join entity_relationships productSupplier on product.entity_id = productSupplier.source_id and productSupplier.arch_short_name = "entityRelationship.productSupplier"
-    left outer join entity_relationship_details packageSize on packageSize.entity_relationship_id = productSupplier.entity_relationship_id  and packageSize.name = "packageSize"
-    left outer join entity_relationship_details preferred on preferred.entity_relationship_id = productSupplier.entity_relationship_id  and preferred.name = "preferred"
-    left outer join entity_relationship_details reordercode on reordercode.entity_relationship_id = productSupplier.entity_relationship_id  and reordercode.name = "reorderCode"
-    left outer join entity_relationship_details reorderdesc on reorderdesc.entity_relationship_id = productSupplier.entity_relationship_id  and reorderdesc.name = "reorderDescription"
-    left outer join entity_relationship_details nettprice on nettprice.entity_relationship_id = productSupplier.entity_relationship_id  and nettprice.name = "nettPrice"
-    join entities supplier on supplier.entity_id = productSupplier.target_id
-    left outer join participations productParticipation on productParticipation.entity_id = product.entity_id
-    left outer join acts orderLine on orderLine.act_id = productParticipation.act_id and orderLine.arch_short_name = "act.supplierOrderItem"
-    left outer join financial_acts orderDetail on orderDetail.financial_act_id = orderLine.act_id
-    left outer join act_details receivedqty on receivedqty.act_id = orderLine.act_id and receivedqty.name ="receivedQuantity"
-    left outer join act_details cancelledqty on cancelledqty.act_id = orderLine.act_id and cancelledqty.name ="cancelledQuantity"
-    left outer join act_details orderpackSize on orderpacksize.act_id = orderLine.act_id and orderpacksize.name ="packageSize"
-    left outer join act_relationships orderLink on orderLink.target_id = orderLine.act_id and orderLink.arch_short_name = "actRelationship.supplierOrderItem"
-    left outer join acts orders on orders.act_id = orderLink.source_id
-    left outer join act_details deliveryStatus on deliveryStatus.act_id = orders.act_id and deliveryStatus.name ="deliveryStatus"
-    left outer join participations stockParticipation on stockParticipation.act_id = orders.act_id and stockParticipation.arch_short_name = "participation.stockLocation"
-where
-  product.name like $P{Product} and
-  product.active = 1 and
-  stockLocation.name like $P{Stock Location} and
-  supplier.name like $P{Supplier} and
-  if($P{Classification} = "%",(grouplookup.name like $P{Classification} or grouplookup.lookup_id is null),grouplookup.name like $P{Classification}) and
-  preferred.value = "true" and
-  idealqty.value <> "0.00" and
-  (productParticipation.act_arch_short_name = "act.supplierOrderItem") and
-  (orders.status = "POSTED" or orders.status is null) and
-  (deliveryStatus.value <> "FULL" or deliveryStatus.value is null) and
-  stockParticipation.entity_id = stockLocation.entity_id
+join entity_relationships productStock on product.entity_id = productStock.source_id
+	and productStock.arch_short_name = "entityRelationship.productStockLocation"
+left outer join entity_relationship_details currentqty on currentqty.entity_relationship_id = productStock.entity_relationship_id
+	and currentqty.name = "quantity"
+left outer join entity_relationship_details idealqty on idealqty.entity_relationship_id = productStock.entity_relationship_id
+	and idealqty.name = "idealQty"
+left outer join entity_relationship_details criticalqty on criticalqty.entity_relationship_id = productStock.entity_relationship_id
+	and criticalqty.name = "criticalQty"
+left outer join entities stockLocation on stockLocation.entity_id = productStock.target_id
+left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
+left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
+join entity_relationships productSupplier on product.entity_id = productSupplier.source_id
+	and productSupplier.arch_short_name = "entityRelationship.productSupplier"
+	and (productSupplier.active_start_time is null or productSupplier.active_start_time < now())
+	and (productSupplier.active_end_time is null or productSupplier.active_end_time > now())
+left outer join entity_relationship_details packageSize on packageSize.entity_relationship_id = productSupplier.entity_relationship_id
+	and packageSize.name = "packageSize"
+left outer join entity_relationship_details preferred on preferred.entity_relationship_id = productSupplier.entity_relationship_id
+	and preferred.name = "preferred"
+left outer join entity_relationship_details reordercode on reordercode.entity_relationship_id = productSupplier.entity_relationship_id
+	and reordercode.name = "reorderCode"
+left outer join entity_relationship_details reorderdesc on reorderdesc.entity_relationship_id = productSupplier.entity_relationship_id
+	and reorderdesc.name = "reorderDescription"
+left outer join entity_relationship_details nettprice on nettprice.entity_relationship_id = productSupplier.entity_relationship_id
+	and nettprice.name = "nettPrice"
+join entities supplier on supplier.entity_id = productSupplier.target_id
+left outer join participations productParticipation on productParticipation.entity_id = product.entity_id
+left outer join acts orderLine on orderLine.act_id = productParticipation.act_id and orderLine.arch_short_name = "act.supplierOrderItem"
+left outer join financial_acts orderDetail on orderDetail.financial_act_id = orderLine.act_id
+left outer join act_details receivedqty on receivedqty.act_id = orderLine.act_id and receivedqty.name ="receivedQuantity"
+left outer join act_details cancelledqty on cancelledqty.act_id = orderLine.act_id and cancelledqty.name ="cancelledQuantity"
+left outer join act_details orderpackSize on orderpacksize.act_id = orderLine.act_id and orderpacksize.name ="packageSize"
+left outer join act_relationships orderLink on orderLink.target_id = orderLine.act_id and orderLink.arch_short_name = "actRelationship.supplierOrderItem"
+left outer join acts orders on orders.act_id = orderLink.source_id
+left outer join act_details deliveryStatus on deliveryStatus.act_id = orders.act_id and deliveryStatus.name ="deliveryStatus"
+left outer join participations stockParticipation on stockParticipation.act_id = orders.act_id
+	and stockParticipation.arch_short_name = "participation.stockLocation"
+where	product.name like $P{Product}
+	and product.active = 1
+	and stockLocation.name like $P{Stock Location}
+	and supplier.name like $P{Supplier}
+	and supplier.active = 1
+	and if($P{Classification} = "%",(grouplookup.name like $P{Classification} or grouplookup.lookup_id is null),grouplookup.name like $P{Classification})
+	and preferred.value = "true"
+	and idealqty.value <> "0.00"
+	and (productParticipation.act_arch_short_name = "act.supplierOrderItem")
+	and (orders.status = "POSTED" or orders.status is null)
+	and (deliveryStatus.value <> "FULL" or deliveryStatus.value is null)
+	and stockParticipation.entity_id = stockLocation.entity_id
 union
-select
-  stockLocation.entity_id as stockLocationId,
+select 	stockLocation.entity_id as stockLocationId,
 	stockLocation.name as stockLocation,
-  supplier.entity_id as supplierId,
+	supplier.entity_id as supplierId,
 	supplier.name as supplier,
-  product.entity_id as productId,
+	product.entity_id as productId,
 	product.name as product,
-  currentqty.value as current,
-  idealqty.value as ideal,
-  criticalqty.value as critical,
-  packageSize.value as packsize,
-  preferred.value as prefSupplier,
-  reordercode.value as reorderCode,
-  reorderdesc.value as reorderDesc,
-  nettprice.value as nettPrice,
-  0 as orderedQty,
-  0 as receivedQty,
-  0 as cancelledQty,
-  packageSize.value as orderSize
+	currentqty.value as current,
+	idealqty.value as ideal,
+	criticalqty.value as critical,
+	packageSize.value as packsize,
+	preferred.value as prefSupplier,
+	reordercode.value as reorderCode,
+	reorderdesc.value as reorderDesc,
+	nettprice.value as nettPrice,
+	0 as orderedQty,
+	0 as receivedQty,
+	0 as cancelledQty,
+	packageSize.value as orderSize
 from entities product
-    join entity_relationships productStock on product.entity_id = productStock.source_id and productStock.arch_short_name = "entityRelationship.productStockLocation"
-    left outer join entity_relationship_details currentqty on currentqty.entity_relationship_id = productStock.entity_relationship_id  and currentqty.name = "quantity"
-    left outer join entity_relationship_details idealqty on idealqty.entity_relationship_id = productStock.entity_relationship_id  and idealqty.name = "idealQty"
-    left outer join entity_relationship_details criticalqty on criticalqty.entity_relationship_id = productStock.entity_relationship_id  and criticalqty.name = "criticalQty"
-    join entities stockLocation on stockLocation.entity_id = productStock.target_id
-    left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
-    left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
-    join entity_relationships productSupplier on product.entity_id = productSupplier.source_id and productSupplier.arch_short_name = "entityRelationship.productSupplier"
-    left outer join entity_relationship_details packageSize on packageSize.entity_relationship_id = productSupplier.entity_relationship_id  and packageSize.name = "packageSize"
-    left outer join entity_relationship_details preferred on preferred.entity_relationship_id = productSupplier.entity_relationship_id  and preferred.name = "preferred"
-    left outer join entity_relationship_details reordercode on reordercode.entity_relationship_id = productSupplier.entity_relationship_id  and reordercode.name = "reorderCode"
-    left outer join entity_relationship_details reorderdesc on reorderdesc.entity_relationship_id = productSupplier.entity_relationship_id  and reorderdesc.name = "reorderDescription"
-    left outer join entity_relationship_details nettprice on nettprice.entity_relationship_id = productSupplier.entity_relationship_id  and nettprice.name = "nettPrice"
-    join entities supplier on supplier.entity_id = productSupplier.target_id
-where
-  product.name like $P{Product} and
-  product.active = 1 and
-  stockLocation.name like $P{Stock Location} and
-  supplier.name like $P{Supplier} and
-  if($P{Classification} = "%",(grouplookup.name like $P{Classification} or grouplookup.lookup_id is null),grouplookup.name like $P{Classification}) and
-  preferred.value = "true" and
-  idealqty.value <> "0.00"
-) as tmp
+join entity_relationships productStock on product.entity_id = productStock.source_id
+	and productStock.arch_short_name = "entityRelationship.productStockLocation"
+left outer join entity_relationship_details currentqty on currentqty.entity_relationship_id = productStock.entity_relationship_id
+	and currentqty.name = "quantity"
+left outer join entity_relationship_details idealqty on idealqty.entity_relationship_id = productStock.entity_relationship_id
+	and idealqty.name = "idealQty"
+left outer join entity_relationship_details criticalqty on criticalqty.entity_relationship_id = productStock.entity_relationship_id
+	and criticalqty.name = "criticalQty"
+join entities stockLocation on stockLocation.entity_id = productStock.target_id
+left outer join entity_classifications productgroup on productgroup.entity_id = product.entity_id
+left outer join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
+join entity_relationships productSupplier on product.entity_id = productSupplier.source_id
+	and productSupplier.arch_short_name = "entityRelationship.productSupplier"
+	and productSupplier.arch_short_name = "entityRelationship.productSupplier"
+	and (productSupplier.active_start_time is null or productSupplier.active_start_time < now())
+	and (productSupplier.active_end_time is null or productSupplier.active_end_time > now())
+left outer join entity_relationship_details packageSize on packageSize.entity_relationship_id = productSupplier.entity_relationship_id
+	and packageSize.name = "packageSize"
+left outer join entity_relationship_details preferred on preferred.entity_relationship_id = productSupplier.entity_relationship_id
+	and preferred.name = "preferred"
+left outer join entity_relationship_details reordercode on reordercode.entity_relationship_id = productSupplier.entity_relationship_id
+	and reordercode.name = "reorderCode"
+left outer join entity_relationship_details reorderdesc on reorderdesc.entity_relationship_id = productSupplier.entity_relationship_id
+	and reorderdesc.name = "reorderDescription"
+left outer join entity_relationship_details nettprice on nettprice.entity_relationship_id = productSupplier.entity_relationship_id
+	and nettprice.name = "nettPrice"
+join entities supplier on supplier.entity_id = productSupplier.target_id
+where product.name like $P{Product}
+	and product.active = 1
+	and stockLocation.name like $P{Stock Location}
+	and supplier.name like $P{Supplier}
+	and supplier.active = 1
+	and if($P{Classification} = "%",(grouplookup.name like $P{Classification} or grouplookup.lookup_id is null),grouplookup.name like $P{Classification})
+	and preferred.value = "true"
+	and idealqty.value <> "0.00") as tmp
 group by stockLocationId, supplierId, productId
 having (current + onorder) <= critical and toorder > 0]]>
 	</queryString>
@@ -157,6 +179,9 @@ having (current + onorder) <= critical and toorder > 0]]>
 	<field name="orderPackSize" class="java.lang.String"/>
 	<field name="onorder" class="java.math.BigDecimal"/>
 	<field name="toorder" class="java.math.BigDecimal"/>
+	<sortField name="stockLocation"/>
+	<sortField name="supplier"/>
+	<sortField name="product"/>
 	<variable name="SUPPLIER_TOTAL" class="java.math.BigDecimal" resetType="Group" resetGroup="supplier" calculation="Sum">
 		<variableExpression><![CDATA[$F{nettPrice}.multiply($F{toorder})]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal("0.00")]]></initialValueExpression>
