@@ -246,12 +246,28 @@ public class LookupHelper {
     public static Map<String, String> getNames(IArchetypeService service,
                                                String shortName,
                                                String node) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(shortName, service);
+        return getNames(service, LookupServiceHelper.getLookupService(), shortName, node);
+    }
+
+    /**
+     * Returns a list of lookups for the specified archetype short name and node
+     * name.
+     *
+     * @param service       the archetype service
+     * @param lookupService the lookup service
+     * @param shortName     the archetype short name
+     * @param node          the node name
+     * @return a map of lookup codes to lookup names
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static Map<String, String> getNames(IArchetypeService service, ILookupService lookupService,
+                                               String shortName, String node) {
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(shortName, service);
         if (archetype != null) {
             NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
             if (descriptor != null) {
-                return getNames(service, descriptor);
+                return getNames(service, lookupService, descriptor);
             }
         }
         return Collections.emptyMap();
@@ -267,10 +283,26 @@ public class LookupHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if the lookup is incorrectly specified
      */
-    public static Map<String, String> getNames(IArchetypeService service,
+    public static Map<String, String> getNames(IArchetypeService service, NodeDescriptor descriptor) {
+        return getNames(service, LookupServiceHelper.getLookupService(), descriptor);
+    }
+
+    /**
+     * Returns a map of lookup codes to lookup names for the specified
+     * {@link NodeDescriptor}.
+     *
+     * @param service       the archetype service
+     * @param lookupService lookup service
+     * @param descriptor    the node descriptor
+     * @return a map of lookup codes to lookup names
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws LookupHelperException     if the lookup is incorrectly specified
+     */
+    public static Map<String, String> getNames(IArchetypeService service, ILookupService lookupService,
                                                NodeDescriptor descriptor) {
         Map<String, String> result = new HashMap<String, String>();
-        List<Lookup> lookups = LookupHelper.get(service, descriptor);
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor, service, lookupService);
+        List<Lookup> lookups = assertion.getLookups();
         for (Lookup lookup : lookups) {
             if (lookup.isActive()) {
                 result.put(lookup.getCode(), lookup.getName());
@@ -365,8 +397,8 @@ public class LookupHelper {
                 new ShortNameConstraint(
                         target, false, false))
                 .add(new CollectionNodeConstraint("target", false)
-                        .add(new ObjectRefNodeConstraint("source",
-                                                         source.getObjectReference())))
+                             .add(new ObjectRefNodeConstraint("source",
+                                                              source.getObjectReference())))
                 .add(new NodeSortConstraint("name", true))
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .setActiveOnly(true);
@@ -397,8 +429,8 @@ public class LookupHelper {
                 new ShortNameConstraint(
                         source, false, false))
                 .add(new CollectionNodeConstraint("source", false)
-                        .add(new ObjectRefNodeConstraint("target",
-                                                         target.getObjectReference())))
+                             .add(new ObjectRefNodeConstraint("target",
+                                                              target.getObjectReference())))
                 .add(new NodeSortConstraint("name", true))
                 .setMaxResults(ArchetypeQuery.ALL_RESULTS)
                 .setActiveOnly(true);
