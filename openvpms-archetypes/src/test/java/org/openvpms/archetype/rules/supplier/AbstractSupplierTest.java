@@ -75,6 +75,11 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      */
     private Party practice;
 
+    /**
+     * The practice location.
+     */
+    private Party practiceLocation;
+
 
     /**
      * Sets up the test case.
@@ -85,7 +90,7 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
         stockLocation = createStockLocation();
 
         // create a practice for currency and tax calculation purposes
-        Party practiceLocation = TestHelper.createLocation();
+        practiceLocation = TestHelper.createLocation();
         EntityBean locBean = new EntityBean(practiceLocation);
         locBean.addRelationship("entityRelationship.locationStockLocation", stockLocation);
         practice = TestHelper.getPractice();
@@ -128,6 +133,15 @@ public class AbstractSupplierTest extends ArchetypeServiceTest {
      */
     protected Party getPractice() {
         return practice;
+    }
+
+    /**
+     * Returns the practice location.
+     *
+     * @return the practice location
+     */
+    protected Party getPracticeLocation() {
+        return practiceLocation;
     }
 
     /**
