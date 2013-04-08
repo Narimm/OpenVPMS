@@ -69,6 +69,7 @@
 
     <bean name="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
         <constructor-arg index="0" ref="archetypeRuleService"/>
+        <constructor-arg ref="patientRules"/>
     </bean>
 
     <bean id="supplierRules" class="org.openvpms.archetype.rules.supplier.SupplierRules">
