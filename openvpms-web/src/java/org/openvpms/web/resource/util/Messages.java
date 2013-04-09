@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.resource.util;
@@ -29,16 +27,20 @@ import java.util.ResourceBundle;
 /**
  * A utility class that provides resources for obtaining localized messages.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public final class Messages {
 
     /**
-     * Resource bundle name.
+     * The help resource bundle name.
      */
-    private static final String BUNDLE_NAME
-            = "org.openvpms.web.resource.localisation.messages";
+    public static final String HELP = "org.openvpms.web.resource.localisation.help";
+
+    /**
+     * Default resource bundle name.
+     */
+    private static final String DEFAULT_BUNDLE_NAME = "org.openvpms.web.resource.localisation.messages";
+
 
     /**
      * Returns a localised, formatted message.
@@ -48,7 +50,7 @@ public final class Messages {
      * @return the appropriate formatted localized text
      *         (if the key is not defined, the string "!key!" is returned)
      */
-    public static String get(String key, Object ... arguments) {
+    public static String get(String key, Object... arguments) {
         return get(key, false, arguments);
     }
 
@@ -62,7 +64,7 @@ public final class Messages {
      *         (if the key is not defined, the string "!key!" is returned)
      */
     public static String get(String key, boolean allowNull,
-                             Object ... arguments) {
+                             Object... arguments) {
         String result = null;
         Locale locale = getLocale();
         String pattern = get(key, allowNull);
@@ -91,8 +93,7 @@ public final class Messages {
      */
     public static Locale getLocale() {
         ApplicationInstance active = ApplicationInstance.getActive();
-        return (active != null) ? active.getLocale()
-                : Locale.getDefault();
+        return (active != null) ? active.getLocale() : Locale.getDefault();
     }
 
     /**
@@ -100,16 +101,35 @@ public final class Messages {
      *
      * @param key       the key of the text to be returned
      * @param allowNull determines behaviour if the key doesn't exist
-     * @return the appropriate formatted localized text; or <code>null</code>
-     *         if the key doesn't exist and <tt>allowNull</tt> is <tt>true</tt>;
-     *         or the string "!key!" if the key doesn't exist and
-     *         <tt>allowNull</tt> is <tt>false</tt>
+     * @return the appropriate formatted localized text; or {@code null} if the key doesn't exist and {@code allowNull}
+     *         is {@code true}; or the string "!key!" if the key doesn't exist and {@code allowNull} is {@code false}
      */
     public static String get(String key, boolean allowNull) {
         String result = null;
         try {
-            ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE_NAME,
-                                                             getLocale());
+            ResourceBundle bundle = ResourceBundle.getBundle(DEFAULT_BUNDLE_NAME, getLocale());
+            result = bundle.getString(key);
+        } catch (MissingResourceException exception) {
+            if (!allowNull) {
+                result = '!' + key + '!';
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns localised text.
+     *
+     * @param key        the key of the text to be returned
+     * @param bundleName the resource bundle name
+     * @param allowNull  determines behaviour if the key doesn't exist
+     * @return the appropriate formatted localized text; or {@code null} if the key doesn't exist and {@code allowNull}
+     *         is {@code true}; or the string "!key!" if the key doesn't exist and {@code allowNull} is {@code false}
+     */
+    public static String get(String key, String bundleName, boolean allowNull) {
+        String result = null;
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle(bundleName, getLocale());
             result = bundle.getString(key);
         } catch (MissingResourceException exception) {
             if (!allowNull) {

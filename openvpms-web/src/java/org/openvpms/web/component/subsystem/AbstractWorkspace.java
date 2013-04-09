@@ -12,14 +12,17 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.subsystem;
 
+import echopointng.KeyStrokeListener;
+import echopointng.KeyStrokes;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.dialog.HelpDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 
@@ -30,8 +33,7 @@ import java.beans.PropertyChangeSupport;
 /**
  * Abstract implementation of the {@link Workspace} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractWorkspace<T extends IMObject>
         implements Workspace<T> {
@@ -60,6 +62,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Property change listener notifier.
      */
     private PropertyChangeSupport propertyChangeNotifier;
+
     /**
      * The email context.
      */
@@ -182,7 +185,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @param object the object to update the workspace with
      */
     public void update(IMObject object) {
-       setIMObject(object);
+        setIMObject(object);
     }
 
     /**
@@ -260,7 +263,17 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the component
      */
     protected Component doLayout() {
-        return Heading.getHeading(subsystemId, workspaceId);
+        Component heading = Heading.getHeading(subsystemId, workspaceId);
+        KeyStrokeListener listener = new KeyStrokeListener();
+        listener.addKeyCombination(KeyStrokes.VK_F1);
+        listener.addActionListener(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onHelp();
+            }
+        });
+        heading.add(listener);
+        return heading;
     }
 
     /**
@@ -319,6 +332,14 @@ public abstract class AbstractWorkspace<T extends IMObject>
             return context;
         }
         return getObject();
+    }
+
+    /**
+     * Launches help for the workspace.
+     */
+    protected void onHelp() {
+        String topic = "workspace/" + subsystemId + "/" + workspaceId;
+        HelpDialog.show(topic);
     }
 
 }
