@@ -85,10 +85,45 @@
     </style>
 
 
+    <style name="HelpDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.small.width}"/>
+            <property name="height" value="${dialog.medium.height}"/>
+        </properties>
+    </style>
+
+    <style name="HelpDialog.header" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${HelpDialog.header.separatorPosition}"/>
+        </properties>
+    </style>
+
     <style name="HelpDialog.content" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
             <property name="separatorPosition" value="${HelpDialog.content.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="HelpDialog.content.size" type="nextapp.echo2.app.Grid">
+        <properties>
+            <property name="height" value="${HelpDialog.content.size}"/>
+        </properties>
+    </style>
+
+    <style name="HelpDialog.content" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${HelpDialog.content.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="HelpDialog.footer" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${HelpDialog.footer.separatorPosition}"/>
         </properties>
     </style>
 

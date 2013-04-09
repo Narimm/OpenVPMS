@@ -55,6 +55,7 @@ import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.dialog.HelpDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;

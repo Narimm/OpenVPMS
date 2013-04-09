@@ -42,6 +42,21 @@ public final class Styles {
     public static final String ERROR = "error";
 
     /**
+     * Bold style name.
+     */
+    public static final String BOLD = "bold";
+
+    /**
+     * Inset style name.
+     */
+    public static final String INSET = "Inset";
+
+    /**
+     * Cell spacing style name.
+     */
+    public static final String CELL_SPACING = "CellSpacing";
+
+    /**
      * Selected style name.
      */
     public static final String SELECTED = "selected";

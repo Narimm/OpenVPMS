@@ -436,6 +436,13 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
+     * Invoked when the help key is pressed.
+     */
+    protected void onHelp() {
+
+    }
+
+    /**
      * Invoked when the 'new' button is pressed.
      *
      * @param archetypes the archetypes
