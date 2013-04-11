@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.product.stock;
@@ -30,31 +28,29 @@ import java.util.Iterator;
 
 
 /**
- * Table model for <em>act.stockAdjust</em> and <em>act.stockTransfer</em>
- * acts.
+ * Table model for <em>act.stockAdjust</em> and <em>act.stockTransfer</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StockActTableModel extends AbstractActTableModel {
 
     /**
      * The nodes to display.
      */
-    private static final String[] NODE_NAMES = {"startTime", "stockLocation",
-                                                "to", "status"};
+    private static final String[] NODE_NAMES = {"startTime", "stockLocation", "to", "status"};
 
     /**
      * The archetype short names.
      */
-    private static final String[] SHORT_NAMES = {
-            StockArchetypes.STOCK_ADJUST, StockArchetypes.STOCK_TRANSFER};
+    private static final String[] SHORT_NAMES = {StockArchetypes.STOCK_ADJUST, StockArchetypes.STOCK_TRANSFER};
 
     /**
-     * Creates a new <tt>StockActTableModel</tt>.
+     * Creates a new {@code StockActTableModel}.
+     *
+     * @param context the layout context
      */
-    public StockActTableModel() {
-        super(SHORT_NAMES);
+    public StockActTableModel(LayoutContext context) {
+        super(SHORT_NAMES, context);
     }
 
     /**
@@ -85,8 +81,7 @@ public class StockActTableModel extends AbstractActTableModel {
      * @return a new column model
      */
     @Override
-    protected TableColumnModel createColumnModel(String[] shortNames,
-                                                 LayoutContext context) {
+    protected TableColumnModel createColumnModel(String[] shortNames, LayoutContext context) {
         TableColumnModel model = super.createColumnModel(shortNames, context);
         Iterator iter = model.getColumns();
         while (iter.hasNext()) {

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer;
@@ -22,63 +20,67 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
  * Customer act workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class CustomerActWorkspace<T extends Act>
         extends BrowserCRUDWorkspace<Party, T> {
 
     /**
-     * Constructs a new <tt>CustomerActWorkspace</tt>.
+     * Constructs a new {@code CustomerActWorkspace}.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
+     * @param workspaceId the workspace localisation identifier
+     * @param context     the context
      */
-    public CustomerActWorkspace(String subsystemId, String workspaceId) {
-        this(subsystemId, workspaceId, null);
+    public CustomerActWorkspace(String subsystemId, String workspaceId, Context context) {
+        this(subsystemId, workspaceId, null, context);
     }
 
 
     /**
-     * Constructs a new <tt>CustomerActWorkspace</tt>.
+     * Constructs a new {@code CustomerActWorkspace}.
      *
      * @param subsystemId   the subsystem localisation identifier
-     * @param workspaceId   the workspace localisation identfifier
+     * @param workspaceId   the workspace localisation identifier
      * @param actArchetypes the act archetypes that this operates on
+     * @param context       the context
      */
     public CustomerActWorkspace(String subsystemId, String workspaceId,
-                                Archetypes<T> actArchetypes) {
+                                Archetypes<T> actArchetypes, Context context) {
         super(subsystemId, workspaceId, null, actArchetypes);
         setArchetypes(Party.class, "party.customer*");
+        setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 
     /**
-     * Constructs a new <tt>CustomerActWorkspace</tt>.
+     * Constructs a new {@code CustomerActWorkspace}.
      *
      * @param subsystemId     the subsystem localisation identifier
-     * @param workspaceId     the workspace localisation identfifier
+     * @param workspaceId     the workspace localisation identifier
      * @param partyArchetypes the party archetypes that this operates on
      * @param actArchetypes   the act archetypes that this operates on
      */
     public CustomerActWorkspace(String subsystemId, String workspaceId,
-                                Archetypes<Party> partyArchetypes,
-                                Archetypes<T> actArchetypes) {
+                                Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes,
+                                Context context) {
         super(subsystemId, workspaceId, partyArchetypes, actArchetypes);
+        setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Party object) {
@@ -91,11 +93,11 @@ public abstract class CustomerActWorkspace<T extends Act>
      * Renders the workspace summary.
      *
      * @return the component representing the workspace summary, or
-     *         <tt>null</tt> if there is no summary
+     *         {@code null} if there is no summary
      */
     @Override
     public Component getSummary() {
-        CustomerSummary summarizer = new CustomerSummary(GlobalContext.getInstance());
+        CustomerSummary summarizer = new CustomerSummary(GlobalContext.getInstance(), getHelpContext());
         return summarizer.getSummary(getObject());
     }
 

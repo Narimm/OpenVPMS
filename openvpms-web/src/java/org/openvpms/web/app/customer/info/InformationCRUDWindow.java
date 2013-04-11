@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.info;
@@ -23,24 +21,24 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
-import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
+import org.openvpms.web.component.workflow.TaskEvent;
 
 
 /**
  * Information CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
 
@@ -51,12 +49,12 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
 
 
     /**
-     * Constructs an <tt>InformationCRUDWindow</tt>.
+     * Constructs an {@code InformationCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      */
-    public InformationCRUDWindow(Archetypes<Party> archetypes) {
-        super(archetypes, DefaultIMObjectActions.<Party>getInstance());
+    public InformationCRUDWindow(Archetypes<Party> archetypes, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Party>getInstance(), help);
     }
 
     /**
@@ -95,7 +93,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Merges the current customer with another.
      */
     private void onMerge() {
-        final MergeWorkflow workflow = new CustomerMergeWorkflow(getObject());
+        final MergeWorkflow workflow = new CustomerMergeWorkflow(getObject(), getHelpContext());
         workflow.addTaskListener(new DefaultTaskListener() {
             /**
              * Invoked when a task event occurs.

@@ -12,13 +12,12 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.note;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
@@ -27,18 +26,18 @@ import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 /**
  * Customer note CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class NoteCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
     /**
-     * Constructs a new <tt>NoteCRUDWindow</tt>.
+     * Constructs a new {@code NoteCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create.
+     * @param help       the help context
      */
-    public NoteCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, DefaultIMObjectActions.<Act>getInstance());
+    public NoteCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), help);
     }
 
 }

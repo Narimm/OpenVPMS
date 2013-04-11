@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
@@ -22,6 +20,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 
@@ -29,39 +28,40 @@ import org.openvpms.web.component.im.util.Archetypes;
 /**
  * Supplier act workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class SupplierActWorkspace<T extends Act>
         extends BrowserCRUDWorkspace<Party, T> {
 
     /**
-     * Constructs a new <tt>SupplierActWorkspace</tt>.
+     * Constructs a {@code SupplierActWorkspace}.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
+     * @param workspaceId the workspace localisation identifier
+     * @param context     the context
      */
-    public SupplierActWorkspace(String subsystemId, String workspaceId) {
-        this(subsystemId, workspaceId, null);
+    public SupplierActWorkspace(String subsystemId, String workspaceId, Context context) {
+        this(subsystemId, workspaceId, null, context);
     }
 
     /**
-     * Constructs a new <tt>SupplierActWorkspace</tt>.
+     * Constructs a {@code SupplierActWorkspace}.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
+     * @param workspaceId the workspace localisation identifier
      * @param archetypes  the archetype short names that this operates on
+     * @param context     the context
      */
-    public SupplierActWorkspace(String subsystemId, String workspaceId,
-                                Archetypes<T> archetypes) {
+    public SupplierActWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes, Context context) {
         super(subsystemId, workspaceId, null, archetypes);
         setArchetypes(Party.class, "party.supplier*");
+        setMailContext(new SupplierMailContext(context, getHelpContext()));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Party object) {
@@ -73,8 +73,7 @@ public abstract class SupplierActWorkspace<T extends Act>
     /**
      * Renders the workspace summary.
      *
-     * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
+     * @return the component representing the workspace summary, or {@code null} if there is no summary
      */
     @Override
     public Component getSummary() {
@@ -84,8 +83,7 @@ public abstract class SupplierActWorkspace<T extends Act>
     /**
      * Returns the latest version of the current supplier context object.
      *
-     * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same
+     * @return the latest version of the context object, or {@link #getObject()} if they are the same
      */
     @Override
     protected Party getLatest() {

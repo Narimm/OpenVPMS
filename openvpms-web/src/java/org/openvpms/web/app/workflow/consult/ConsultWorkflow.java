@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.workflow.EditVisitTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -46,8 +47,7 @@ import org.openvpms.web.component.workflow.WorkflowImpl;
 /**
  * Consult workflow.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ConsultWorkflow extends WorkflowImpl {
 
@@ -58,19 +58,20 @@ public class ConsultWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs a new <code>ConsultWorkflow</code> from an
-     * <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+     * Constructs a {@code ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
      * @param act      the act
      * @param external the external context to access and update
+     * @param help     the help context
      */
-    public ConsultWorkflow(Act act, final Context external) {
+    public ConsultWorkflow(Act act, final Context external, HelpContext help) {
+        super(help);
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
         User clinician = external.getClinician();
 
-        initial = new DefaultTaskContext(false);
+        initial = new DefaultTaskContext(help, false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);

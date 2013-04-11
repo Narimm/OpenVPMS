@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.print;
@@ -23,6 +21,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
@@ -37,8 +36,7 @@ import org.openvpms.web.servlet.DownloadServlet;
  * the underlying implementation requires it. Pops up a dialog with options to
  * print, preview, or cancel.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InteractivePrinter implements Printer {
 
@@ -48,12 +46,12 @@ public class InteractivePrinter implements Printer {
     private final Printer printer;
 
     /**
-     * The print listener. May be <tt>null</tt>.
+     * The print listener. May be {@code null}.
      */
     private PrinterListener listener;
 
     /**
-     * The cancel listener. May be <tt>null</tt>.
+     * The cancel listener. May be {@code null}.
      */
     private VetoListener cancelListener;
 
@@ -63,9 +61,14 @@ public class InteractivePrinter implements Printer {
     private final String title;
 
     /**
-     * If <tt>true</tt> display a 'skip' button that simply closes the dialog.
+     * If {@code true} display a 'skip' button that simply closes the dialog.
      */
     private final boolean skip;
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * Determines if printing should occur interactively or be performed
@@ -81,47 +84,50 @@ public class InteractivePrinter implements Printer {
 
 
     /**
-     * Constructs an <tt>InteractivePrinter</tt>.
+     * Constructs an {@code InteractivePrinter}.
      *
      * @param printer the printer to delegate to
+     * @param help    the help context
      */
-    public InteractivePrinter(Printer printer) {
-        this(printer, false);
+    public InteractivePrinter(Printer printer, HelpContext help) {
+        this(printer, false, help);
     }
 
     /**
-     * Constructs an <tt>InteractivePrinter</tt>.
+     * Constructs an {@code InteractivePrinter}.
      *
      * @param printer the printer to delegate to
-     * @param skip    if <tt>true</tt> display a 'skip' button that simply
-     *                closes the dialog
+     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param help    the help context
      */
-    public InteractivePrinter(Printer printer, boolean skip) {
-        this(null, printer, skip);
+    public InteractivePrinter(Printer printer, boolean skip, HelpContext help) {
+        this(null, printer, skip, help);
     }
 
     /**
-     * Constructs an <tt>InteractivePrinter</tt>.
+     * Constructs an {@code InteractivePrinter}.
      *
-     * @param title   the dialog title. May be <tt>null</tt>
+     * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
+     * @param help    the help context
      */
-    public InteractivePrinter(String title, Printer printer) {
-        this(title, printer, false);
+    public InteractivePrinter(String title, Printer printer, HelpContext help) {
+        this(title, printer, false, help);
     }
 
     /**
-     * Constructs an <tt>InteractivePrinter</tt>.
+     * Constructs an {@code InteractivePrinter}.
      *
-     * @param title   the dialog title. May be <tt>null</tt>
+     * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
-     * @param skip    if <tt>true</tt> display a 'skip' button that simply
-     *                closes the dialog
+     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param help    the help context
      */
-    public InteractivePrinter(String title, Printer printer, boolean skip) {
+    public InteractivePrinter(String title, Printer printer, boolean skip, HelpContext help) {
         this.title = title;
         this.printer = printer;
         this.skip = skip;
+        this.help = help;
         interactive = printer.getInteractive();
     }
 
@@ -141,7 +147,7 @@ public class InteractivePrinter implements Printer {
      * object should proceed, invoking {@link #doPrint} if 'OK' is selected, or
      * {@link #doPrintPreview} if 'preview' is selected.
      *
-     * @param printer the printer name. May be <tt>null</tt>
+     * @param printer the printer name. May be {@code null}
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
@@ -155,7 +161,7 @@ public class InteractivePrinter implements Printer {
     /**
      * Returns the default printer for the object.
      *
-     * @return the default printer for the object, or <tt>null</tt> if none
+     * @return the default printer for the object, or {@code null} if none
      *         is defined
      * @throws OpenVPMSException for any error
      */
@@ -176,8 +182,8 @@ public class InteractivePrinter implements Printer {
     /**
      * Returns a document for the object, corresponding to that which would be printed.
      *
-     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
-     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     * @param mimeType the mime type. If {@code null} the default mime type associated with the report will be used.
+     * @param email    if {@code true} indicates that the document will be emailed. Documents generated from templates
      *                 can perform custom formatting
      * @return a document
      * @throws OpenVPMSException for any error
@@ -190,7 +196,7 @@ public class InteractivePrinter implements Printer {
      * Determines if printing should occur interactively or be performed
      * without user intervention.
      *
-     * @param interactive if <tt>true</tt> print interactively
+     * @param interactive if {@code true} print interactively
      * @throws OpenVPMSException for any error
      */
     public void setInteractive(boolean interactive) {
@@ -200,8 +206,8 @@ public class InteractivePrinter implements Printer {
     /**
      * Determines if printing should occur interactively.
      *
-     * @return <tt>true</tt> if printing should occur interactively,
-     *         <tt>false</tt> if it can be performed non-interactively
+     * @return {@code true} if printing should occur interactively,
+     *         {@code false} if it can be performed non-interactively
      * @throws OpenVPMSException for any error
      */
     public boolean getInteractive() {
@@ -238,7 +244,7 @@ public class InteractivePrinter implements Printer {
     /**
      * Sets the listener for print events.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setListener(PrinterListener listener) {
         this.listener = listener;
@@ -247,7 +253,7 @@ public class InteractivePrinter implements Printer {
     /**
      * Sets a listener to veto cancel events.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setCancelListener(VetoListener listener) {
         cancelListener = listener;
@@ -256,7 +262,7 @@ public class InteractivePrinter implements Printer {
     /**
      * Sets a context to support mailing documents.
      *
-     * @param context the mail context. If <tt>null</tt>, mailing won't be enabled
+     * @param context the mail context. If {@code null}, mailing won't be enabled
      */
     public void setMailContext(MailContext context) {
         this.context = context;
@@ -287,6 +293,15 @@ public class InteractivePrinter implements Printer {
      */
     protected String getTitle() {
         return title;
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    protected HelpContext getHelpContext() {
+        return help;
     }
 
     /**
@@ -396,7 +411,7 @@ public class InteractivePrinter implements Printer {
     protected void doMail(final PrintDialog parent) {
         try {
             Document document = getDocument(DocFormats.PDF_TYPE, true);
-            final MailDialog dialog = new MailDialog(context);
+            final MailDialog dialog = new MailDialog(context, help);
             MailEditor editor = dialog.getMailEditor();
             editor.setSubject(getDisplayName());
             editor.addAttachment(document);
@@ -422,7 +437,7 @@ public class InteractivePrinter implements Printer {
      * Notifies any registered listener.
      *
      * @param printer the printer that was used to print the object.
-     *                May be <tt>null</tt>
+     *                May be {@code null}
      */
     protected void printed(String printer) {
         if (listener != null) {

@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.resource.util.Messages;
@@ -29,12 +30,16 @@ import java.util.LinkedList;
 
 
 /**
- * Helper to queue editing of patient medication, investigation and reminder popups, only showing one
- * dialog at a time.
+ * Helper to queue editing of patient medication, investigation and reminder popups, only showing one dialog at a time.
  *
  * @author Tim Anderson
  */
 public class DefaultPopupEditorManager implements PopupEditorManager {
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * The queue of editors.
@@ -46,6 +51,14 @@ public class DefaultPopupEditorManager implements PopupEditorManager {
      */
     private boolean editing;
 
+    /**
+     * Constructs a {@code DefaultPopupEditorManager}.
+     *
+     * @param help the help context
+     */
+    public DefaultPopupEditorManager(HelpContext help) {
+        this.help = help;
+    }
 
     /**
      * Queue an edit.
@@ -73,7 +86,7 @@ public class DefaultPopupEditorManager implements PopupEditorManager {
         final IMObjectEditor editor = state.editor;
         final Listener listener = state.listener;
         // create an edit dialog with OK and (for non-medication acts) Skip buttons
-        EditDialog dialog = new EditDialog(editor, false, false, false, state.skip);
+        EditDialog dialog = new EditDialog(editor, false, false, false, state.skip, help);
         dialog.setTitle(getTitle(editor));
         dialog.setStyleName("ChildEditDialog");
         dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -104,7 +117,7 @@ public class DefaultPopupEditorManager implements PopupEditorManager {
      * @return {@code true} if there are no more popups
      */
     public boolean isComplete() {
-        return  !editing && queue.isEmpty();
+        return !editing && queue.isEmpty();
     }
 
     /**

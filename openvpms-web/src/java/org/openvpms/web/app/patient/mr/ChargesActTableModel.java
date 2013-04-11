@@ -12,31 +12,31 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 
 import java.util.List;
 
 /**
- * Table model for <em>act.customerChargesInvoiceItem</em> and
- * <em>act.customerChargesCreditItem</em>
- * acts.
+ * Table model for <em>act.customerChargesInvoiceItem</em> and <em>act.customerChargesCreditItem</em> acts.
+ *
+ * @author Tim Anderson
  */
 public class ChargesActTableModel extends AbstractActTableModel {
 
     /**
-     * Creates a new <tt>ChargesActTableModel</tt>.
+     * Creates a new {@code ChargesActTableModel}.
      *
      * @param shortNames the act archetype short names
+     * @param context    the layout context
      */
-    public ChargesActTableModel(String[] shortNames) {
-        super(shortNames);
+    public ChargesActTableModel(String[] shortNames, LayoutContext context) {
+        super(shortNames, context);
     }
 
     /**
@@ -47,8 +47,8 @@ public class ChargesActTableModel extends AbstractActTableModel {
     @Override
     protected String[] getNodeNames() {
         return new String[]{"startTime", "product", "clinician", "quantity",
-                            "fixedPrice", "unitPrice", "discount", "tax",
-                            "total"};
+                "fixedPrice", "unitPrice", "discount", "tax",
+                "total"};
     }
 
     /**
@@ -56,7 +56,7 @@ public class ChargesActTableModel extends AbstractActTableModel {
      * <p/>
      *
      * @param archetypes the archetypes
-     * @return <tt>false</tt>
+     * @return {@code false}
      */
     @Override
     protected boolean showArchetypeColumn(

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
@@ -22,14 +20,15 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 
 
 /**
  * A dialog that prompts for the supplier and stock location when creating
  * orders, deliveries or returns.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SelectStockDetailsDialog extends PopupDialog {
 
@@ -43,12 +42,13 @@ public class SelectStockDetailsDialog extends PopupDialog {
      *
      * @param title   the window title
      * @param context the context
+     * @param help    the help context
      */
-    public SelectStockDetailsDialog(String title, Context context) {
-        super(title, OK_CANCEL);
+    public SelectStockDetailsDialog(String title, Context context, HelpContext help) {
+        super(title, OK_CANCEL, help);
         setModal(true);
 
-        selector = new StockDetailsSelector(context);
+        selector = new StockDetailsSelector(new DefaultLayoutContext(context, help));
         getLayout().add(selector.getComponent());
         FocusGroup group = getFocusGroup();
         group.add(selector.getFocusGroup());

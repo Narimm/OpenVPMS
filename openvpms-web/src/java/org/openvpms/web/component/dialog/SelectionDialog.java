@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.dialog;
@@ -28,6 +26,7 @@ import nextapp.echo2.app.list.ListModel;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.component.focus.FocusHelper;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.list.KeyListBox;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -38,8 +37,7 @@ import java.util.List;
 /**
  * A modal dialog that prompts the user to select an item from a list.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-04-03 06:42:28Z $
+ * @author Tim Anderson
  */
 public class SelectionDialog extends PopupDialog {
 
@@ -70,7 +68,7 @@ public class SelectionDialog extends PopupDialog {
 
 
     /**
-     * Creates a new <tt>SelectionDialog</tt>.
+     * Constructs a {@code SelectionDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
@@ -81,7 +79,7 @@ public class SelectionDialog extends PopupDialog {
     }
 
     /**
-     * Creates a new <tt>SelectionDialog</tt>.
+     * Constructs a {@code SelectionDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
@@ -92,13 +90,25 @@ public class SelectionDialog extends PopupDialog {
     }
 
     /**
-     * Creates a new <code>SelectionDialog</code>.
+     * Constructs a {@code SelectionDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
      * @param list    the list of items to select from
      */
     public SelectionDialog(String title, String message, ListBox list) {
+        this(title, message, list, null);
+    }
+
+    /**
+     * Constructs a {@code SelectionDialog}.
+     *
+     * @param title   the dialog title
+     * @param message the message to display
+     * @param list    the list of items to select from
+     * @param help    the help context. May be {@code null}
+     */
+    public SelectionDialog(String title, String message, ListBox list, HelpContext help) {
         super(title, STYLE, OK_CANCEL);
         setModal(true);
         focus = new FocusCommand();
@@ -124,7 +134,7 @@ public class SelectionDialog extends PopupDialog {
     /**
      * Returns the selected item.
      *
-     * @return the selected item, or <tt>null</tt> if no item was selected.
+     * @return the selected item, or {@code null} if no item was selected.
      */
     public Object getSelected() {
         return selected;
@@ -133,7 +143,7 @@ public class SelectionDialog extends PopupDialog {
     /**
      * Returns the selected index.
      *
-     * @return the selected index, or <tt>-1</tt> if no item was selected.
+     * @return the selected index, or {@code -1} if no item was selected.
      */
     public int getSelectedIndex() {
         return index;

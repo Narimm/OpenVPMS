@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.product;
@@ -30,6 +28,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
@@ -44,8 +43,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * CRUD window for products.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-11-15 17:59:45 +1100 (Thu, 15 Nov 2007) $
+ * @author Tim Anderson
  */
 public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
 
@@ -56,14 +54,16 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
 
 
     /**
-     * Constructs a <tt>ProductCRUDWindow</tt>.
+     * Constructs a {@code ProductCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
-     * @param query      the query. May be <tt>null</tt>
-     * @param set        the result set. May be <tt>null</tt>
+     * @param query      the query. May be {@code null}
+     * @param set        the result set. May be {@code null}
+   ` * @param help       the help context
      */
-    public ProductCRUDWindow(Archetypes<Product> archetypes, Query<Product> query, ResultSet<Product> set) {
-        super(archetypes, query, set);
+    public ProductCRUDWindow(Archetypes<Product> archetypes, Query<Product> query, ResultSet<Product> set,
+                             HelpContext help) {
+        super(archetypes, query, set, help);
     }
 
     /**

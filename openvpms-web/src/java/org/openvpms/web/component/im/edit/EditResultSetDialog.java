@@ -23,6 +23,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -34,8 +35,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * A edit dialog that allows the results from an {@link ResultSet} to be iterated through and edited.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog {
 
@@ -76,14 +76,15 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
 
 
     /**
-     * Constructs an <tt>EditResultSetDialog</tt>.
+     * Constructs an {@code EditResultSetDialog}.
      *
      * @param title the window title
      * @param first the first object to edit
      * @param set   the set of results to edit
+     * @param help  the help context
      */
-    public EditResultSetDialog(String title, T first, ResultSet<T> set) {
-        super(title, BUTTONS, true);
+    public EditResultSetDialog(String title, T first, ResultSet<T> set, HelpContext help) {
+        super(title, BUTTONS, true, help);
         setDefaultCloseAction(CANCEL_ID);
         iter = new ResultSetIterator<T>(set, first);
         if (iter.hasNext()) {
@@ -139,10 +140,10 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
      * Checks the editor to see if is modified, and if so, displays a confirmation dialog prompting to save or revert
      * changes, or to cancel the operation.
      *
-     * @param editor the editor. May be <tt>null</tt>
-     * @param next   the operation. If <tt>true</tt> move next, else move previous
-     * @return <tt>true</tt> if the editor is modified; <tt>false</tt> if the editor hasn't been modified, or is
-     *         <tt>null</tt>
+     * @param editor the editor. May be {@code null}
+     * @param next   the operation. If {@code true} move next, else move previous
+     * @return {@code true} if the editor is modified; {@code false} if the editor hasn't been modified, or is
+     *         {@code null}
      */
     private boolean checkModified(final IMObjectEditor editor, final boolean next) {
         boolean result = true;
@@ -202,7 +203,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
         if (current == null) {
             ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(object)));
         } else {
-            LayoutContext context = new DefaultLayoutContext(true);
+            LayoutContext context = new DefaultLayoutContext(true, getHelpContext());
             context.getContext().setCurrent(object); // TODO - requirement for setCurrent()
             IMObjectEditor editor = IMObjectEditorFactory.create(current, context);
             setEditor(editor);

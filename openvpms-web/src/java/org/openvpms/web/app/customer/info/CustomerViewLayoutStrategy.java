@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.customer.info;
 
@@ -26,9 +24,9 @@ import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -41,8 +39,7 @@ import java.util.List;
 /**
  * Layout strategy for customers that includes an appointment browser.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
 
@@ -79,8 +76,8 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
      */
     protected Browser<Act> getAppointments(Party customer, LayoutContext context) {
         Query<Act> query = new CustomerAppointmentQuery(customer);
-        IMTableModel<Act> model = new CustomerAppointmentTableModel();
-        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model);
+        IMTableModel<Act> model = new CustomerAppointmentTableModel(context);
+        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model, context);
         final ContextSwitchListener listener = context.getContextSwitchListener();
         browser.addBrowserListener(new BrowserListener<Act>() {
             public void selected(Act object) {

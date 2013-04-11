@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.delivery;
@@ -23,7 +21,7 @@ import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
@@ -35,25 +33,23 @@ import org.openvpms.web.component.util.RowFactory;
  * Query for <em>act.supplierDelivery</em> and <em>act.supplierReturn</em>
  * acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-04-07 03:39:23Z $
+ * @author Tim Anderson
  */
 public class DeliveryQuery extends SupplierActQuery<FinancialAct> {
 
     /**
      * The act statuses.
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses("act.supplierDelivery");
+    private static final ActStatuses STATUSES = new ActStatuses("act.supplierDelivery");
 
 
     /**
-     * Constructs a new <tt>DeliveryQuery</tt>.
+     * Constructs a new {@code DeliveryQuery}.
      *
      * @param shortNames the act short names to query
-     * @param context    the context. May be <tt>null</tt>
+     * @param context    the layout context
      */
-    public DeliveryQuery(String[] shortNames, Context context) {
+    public DeliveryQuery(String[] shortNames, LayoutContext context) {
         super(shortNames, STATUSES, FinancialAct.class, context);
     }
 
@@ -86,10 +82,10 @@ public class DeliveryQuery extends SupplierActQuery<FinancialAct> {
     protected ActResultSet<FinancialAct> createResultSet(
             ParticipantConstraint[] participants, SortConstraint[] sort) {
         return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                participants, getFrom(), getTo(),
-                getStatuses(), excludeStatuses(),
-                getConstraints(), getMaxResults(),
-                sort);
+                                              participants, getFrom(), getTo(),
+                                              getStatuses(), excludeStatuses(),
+                                              getConstraints(), getMaxResults(),
+                                              sort);
     }
 
 }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.supplier.delivery;
@@ -25,20 +23,22 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Query;
-import static org.openvpms.web.component.im.query.QueryTestHelper.checkEmpty;
-import static org.openvpms.web.component.im.query.QueryTestHelper.checkExists;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.openvpms.web.component.im.query.QueryTestHelper.checkEmpty;
+import static org.openvpms.web.component.im.query.QueryTestHelper.checkExists;
+
 
 /**
  * Tests the {@link PostedOrderQuery} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class PostedOrderQueryTestCase extends AbstractAppTest {
 
@@ -59,7 +59,7 @@ public class PostedOrderQueryTestCase extends AbstractAppTest {
         FinancialAct accepted = createOrder(supplier1, stockLocation, OrderStatus.ACCEPTED);
         FinancialAct rejected = createOrder(supplier1, stockLocation, OrderStatus.REJECTED);
 
-        PostedOrderQuery query = new PostedOrderQuery(true, null);
+        PostedOrderQuery query = new PostedOrderQuery(true, new DefaultLayoutContext(new HelpContext("foo", null)));
         checkEmpty(query);
         checkExists(inProgress, query, false);
         checkExists(completed, query, false);

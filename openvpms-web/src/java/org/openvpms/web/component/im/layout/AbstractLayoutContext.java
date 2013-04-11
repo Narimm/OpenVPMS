@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.im.layout;
 
@@ -24,6 +22,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -44,8 +43,7 @@ import java.util.Set;
 /**
  * Abstract implementation of the {@link LayoutContext} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractLayoutContext implements LayoutContext {
 
@@ -110,6 +108,11 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     private Set<IMObjectReference> rendered = new HashSet<IMObjectReference>();
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
      * The default layout strategy factory.
      */
     private static final IMObjectLayoutStrategyFactory DEFAULT_LAYOUT_FACTORY
@@ -123,45 +126,48 @@ public abstract class AbstractLayoutContext implements LayoutContext {
 
 
     /**
-     * Construct a new <tt>AbstractLayoutContext</tt>.
+     * Constructs an {@code AbstractLayoutContext}.
+     *
+     * @param help the help context
      */
-    public AbstractLayoutContext() {
-        this((IMObjectComponentFactory) null);
+    public AbstractLayoutContext(HelpContext help) {
+        this((IMObjectComponentFactory) null, help);
     }
 
     /**
-     * Construct a new <tt>AbstractLayoutContext</tt>.
+     * Constructs an {@code AbstractLayoutContext}.
      *
-     * @param edit if <tt>true</tt> this is an edit context; if
-     *             <tt>false</tt> it is a view context.
+     * @param edit if {@code true} this is an edit context; if {@code false} it is a view context.
+     * @param help the help context
      */
-    public AbstractLayoutContext(boolean edit) {
-        this((IMObjectComponentFactory) null);
+    public AbstractLayoutContext(boolean edit, HelpContext help) {
+        this((IMObjectComponentFactory) null, help);
         this.edit = edit;
     }
 
     /**
-     * Construct a new <tt>AbstractLayoutContext</tt>.
+     * Constructs an {@code AbstractLayoutContext}.
      *
-     * @param factory the component factory. May  be <tt>null</tt>
+     * @param factory the component factory. May  be {@code null}
+     * @param help    the help context
      */
-    public AbstractLayoutContext(IMObjectComponentFactory factory) {
+    public AbstractLayoutContext(IMObjectComponentFactory factory, HelpContext help) {
         this.factory = factory;
+        this.help = help;
         NodeFilter id = new ValueNodeFilter("id", -1);
         NodeFilter showOptional = new BasicNodeFilter(true);
         filter = new ChainedNodeFilter(id, showOptional);
     }
 
     /**
-     * Construct a new  <tt>AbstractLayoutContext</tt> from an existing
-     * layout context. Increases the layout depth by 1.
+     * Construct a new  {@code AbstractLayoutContext} from an existing layout context. Increases the layout depth by 1.
      *
      * @param context the context
      */
     public AbstractLayoutContext(LayoutContext context) {
         this.parent = context;
         this.context = context.getContext();
-        this.cache = context.getCache();
+        cache = context.getCache();
         factory = context.getComponentFactory();
         filter = context.getDefaultNodeFilter();
         edit = context.isEdit();
@@ -170,6 +176,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         deletionListener = context.getDeletionListener();
         mailContext = context.getMailContext();
         contextSwitchListener = context.getContextSwitchListener();
+        help = context.getHelpContext();
     }
 
     /**
@@ -219,8 +226,8 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Determines if this is an edit context.
      *
-     * @return <tt>true</tt> if this is an edit context; <tt>false</tt>
-     *         if it is a view context. Defaults to <tt>false</tt>
+     * @return {@code true} if this is an edit context; {@code false}
+     *         if it is a view context. Defaults to {@code false}
      */
     public boolean isEdit() {
         return edit;
@@ -229,8 +236,8 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Sets if this is an edit context.
      *
-     * @param edit if <tt>true</tt> this is an edit context; if
-     *             <tt>false</tt> it is a view context.
+     * @param edit if {@code true} this is an edit context; if
+     *             {@code false} it is a view context.
      */
     public void setEdit(boolean edit) {
         this.edit = edit;
@@ -257,7 +264,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Returns the default filter.
      *
-     * @return the default filter. May be <tt>null</tt>
+     * @return the default filter. May be {@code null}
      */
     public NodeFilter getDefaultNodeFilter() {
         return filter;
@@ -266,7 +273,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Sets the default filter.
      *
-     * @param filter the default filter. May be <tt>null</tt>
+     * @param filter the default filter. May be {@code null}
      */
     public void setNodeFilter(NodeFilter filter) {
         this.filter = filter;
@@ -294,7 +301,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Returns the layout depth.
      *
-     * @return the layout depth. If unset, defaults to <tt>0</tt>
+     * @return the layout depth. If unset, defaults to {@code 0}
      */
     public int getLayoutDepth() {
         return depth;
@@ -344,7 +351,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * Returns an archetype descriptor for an object.
      *
      * @param object the object
-     * @return an archetype descriptor for the object, or <tt>null</tt> if none can be found
+     * @return an archetype descriptor for the object, or {@code null} if none can be found
      */
     public ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
         ArchetypeDescriptor result = null;
@@ -375,7 +382,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Registers a mail context.
      *
-     * @param context the mail context. May be <tt>null</tt>
+     * @param context the mail context. May be {@code null}
      */
     public void setMailContext(MailContext context) {
         mailContext = context;
@@ -384,7 +391,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Returns the mail context.
      *
-     * @return the mail context. May be <tt>null</tt>
+     * @return the mail context. May be {@code null}
      */
     public MailContext getMailContext() {
         return mailContext;
@@ -393,7 +400,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Registers a listener for context switch events.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setContextSwitchListener(ContextSwitchListener listener) {
         contextSwitchListener = listener;
@@ -402,9 +409,18 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Returns the context switch listener.
      *
-     * @return the context switch listener, or <tt>null</tt> if none is registered
+     * @return the context switch listener, or {@code null} if none is registered
      */
     public ContextSwitchListener getContextSwitchListener() {
         return contextSwitchListener;
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    public HelpContext getHelpContext() {
+        return help;
     }
 }

@@ -19,6 +19,7 @@ package org.openvpms.web.app.patient;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserAdapter;
 import org.openvpms.web.component.im.query.PatientQuery;
@@ -37,18 +38,19 @@ import org.openvpms.web.system.ServiceHelper;
 public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
 
     /**
-     * Constructs a <tt>PatientBrowser</tt>.
+     * Constructs a {@code PatientBrowser}.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      */
-    public PatientBrowser(PatientQuery query) {
-        setBrowser(createBrowser(query));
+    public PatientBrowser(PatientQuery query, LayoutContext context) {
+        setBrowser(createBrowser(query, context));
     }
 
     /**
      * Returns the customer associated with the selected patient.
      *
-     * @return the customer, or <tt>null</tt> if no patient is selected or has no current owner
+     * @return the customer, or {@code null} if no patient is selected or has no current owner
      */
     public Party getCustomer() {
         Party result = null;
@@ -75,13 +77,14 @@ public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
      * Creates a table browser that changes the model depending on what
      * columns have been queried on.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      * @return a new browser
      */
-    private static Browser<ObjectSet> createBrowser(final PatientQuery query) {
+    private static Browser<ObjectSet> createBrowser(final PatientQuery query, LayoutContext context) {
         final PatientTableModel model = new PatientTableModel();
         Query<ObjectSet> delegate = query.getQuery();
-        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model) {
+        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
             /**
              * Performs the query.
              *

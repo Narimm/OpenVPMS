@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -26,6 +24,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -40,8 +39,7 @@ import java.util.Set;
  * <p/>
  * For document acts that have an existing document and no document template, the existing document will be returned.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentGenerator {
 
@@ -73,22 +71,28 @@ public class DocumentGenerator {
      */
     private final Listener listener;
 
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
-     * Constructs a <tt>DocumentGenerator</tt>.
+     * Constructs a {@code DocumentGenerator}.
      *
      * @param act      the document act
+     * @param help     the help context
      * @param listener the listener to notify when generation completes
      */
-    public DocumentGenerator(DocumentAct act, Listener listener) {
+    public DocumentGenerator(DocumentAct act, HelpContext help, Listener listener) {
         this.act = act;
+        this.help = help;
         this.listener = listener;
     }
 
     /**
      * Returns the generated document.
      *
-     * @return the generated document, or <tt>null</tt> if generation hasn't been performed
+     * @return the generated document, or {@code null} if generation hasn't been performed
      */
     public Document getDocument() {
         return document;
@@ -106,8 +110,8 @@ public class DocumentGenerator {
     /**
      * Generates the document, notifying the listener on completion.
      *
-     * @param save    if <tt>true</tt> save the act and generated document
-     * @param version if <tt>true</tt>  and saving the document, version any old document if the act supports it
+     * @param save    if {@code true} save the act and generated document
+     * @param version if {@code true}  and saving the document, version any old document if the act supports it
      */
     public void generate(boolean save, boolean version) {
         if (DocumentActReporter.hasTemplate(act)) {
@@ -135,8 +139,8 @@ public class DocumentGenerator {
      * Generates a document from a report.
      *
      * @param reporter the reporter
-     * @param save     if <tt>true</tt>, save the document
-     * @param version  if <tt>true</tt>  and saving the document, version any old document if the act supports it
+     * @param save     if {@code true}, save the document
+     * @param version  if {@code true}  and saving the document, version any old document if the act supports it
      */
     private void generate(DocumentActReporter reporter, boolean save, boolean version) {
         document = reporter.getDocument();
@@ -156,13 +160,13 @@ public class DocumentGenerator {
      * Pops up a dialog to prompt for report parameters.
      *
      * @param reporter the report er
-     * @param save     if <tt>true</tt>, save the document
-     * @param version  if <tt>true</tt>  and saving the document, version any old document if the act supports it
+     * @param save     if {@code true}, save the document
+     * @param version  if {@code true}  and saving the document, version any old document if the act supports it
      */
     private void promptParameters(final DocumentActReporter reporter, final boolean save, final boolean version) {
         Set<ParameterType> parameters = reporter.getParameterTypes();
         String title = Messages.get("document.input.parameters");
-        final ParameterDialog dialog = new ParameterDialog(title, parameters, act);
+        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

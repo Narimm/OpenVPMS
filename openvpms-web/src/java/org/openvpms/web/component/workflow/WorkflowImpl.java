@@ -12,12 +12,11 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.workflow;
 
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.ArrayList;
@@ -27,8 +26,7 @@ import java.util.List;
 /**
  * Default implementation of the {@link Workflow} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class WorkflowImpl extends AbstractTask implements Workflow {
 
@@ -36,6 +34,11 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      * The tasks to execute.
      */
     private final List<Task> tasks = new ArrayList<Task>();
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * The task context.
@@ -74,9 +77,12 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
 
 
     /**
-     * Constructs a new <code>WorkflowImpl</code>.
+     * Constructs a {@code WorkflowImpl}.
+     *
+     * @param help the help context
      */
-    public WorkflowImpl() {
+    public WorkflowImpl(HelpContext help) {
+        this.help = help;
         taskListener = new DefaultTaskListener() {
             @Override
             public void taskEvent(TaskEvent event) {
@@ -108,8 +114,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     /**
      * Determines if skipping a task should cause the workflow to terminate.
      *
-     * @param breakOnSkip if <code>true</code> terminate the workflow if a task
-     *                    is skipped
+     * @param breakOnSkip if {@code true} terminate the workflow if a task is skipped
      */
     public void setBreakOnSkip(boolean breakOnSkip) {
         this.breakOnSkip = breakOnSkip;
@@ -119,14 +124,13 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      * Starts the workflow.
      */
     public void start() {
-        start(new DefaultTaskContext());
+        start(new DefaultTaskContext(help));
     }
 
     /**
      * Starts the task.
      * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
      */
@@ -213,6 +217,15 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
                 next();
                 break;
         }
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    protected HelpContext getHelpContext() {
+        return help;
     }
 
 }

@@ -12,14 +12,11 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.history;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -29,6 +26,8 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.SelectionHistory;
+import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
@@ -40,23 +39,24 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Browser of customer and patient selection history.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient> {
 
     /**
-     * Construct a new <code>TableBrowser</code> that queries objects using the
+     * Construct a new {@code TableBrowser} that queries objects using the
      * specified query, displaying them in the table.
+     *
+     * @param context the layout context
      */
-    public CustomerPatientHistoryBrowser() {
-        super(createQuery(), null, new HistoryModel());
+    public CustomerPatientHistoryBrowser(LayoutContext context) {
+        super(createQuery(), null, new HistoryModel(), context);
     }
 
     /**
      * Returns the selected party (i.e customer or patient).
      *
-     * @return the selected party. May be <tt>null</tt>
+     * @return the selected party. May be {@code null}
      */
     public Party getSelectedParty() {
         return ((HistoryModel) getTableModel()).getSelectedParty();
@@ -99,7 +99,7 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
         private CustomerPatientHistoryBrowser browser;
 
         /**
-         * The selected party. May be <tt>null</tt>
+         * The selected party. May be {@code null}
          */
         private Party party;
 
@@ -115,7 +115,7 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
 
 
         /**
-         * Creates a new <tt>HistoryModel</tt>.
+         * Creates a new {@code HistoryModel}.
          */
         public HistoryModel() {
             TableColumnModel columns = new DefaultTableColumnModel();
@@ -136,7 +136,7 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
         /**
          * Returns the selected party.
          *
-         * @return the selected party. May be <tt>null</tt>
+         * @return the selected party. May be {@code null}
          */
         public Party getSelectedParty() {
             return party;
@@ -167,9 +167,9 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
          * Returns the sort criteria.
          *
          * @param column    the primary sort column
-         * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-         *                  sort in <tt>descending</tt> order
-         * @return the sort criteria, or <tt>null</tt> if the column isn't sortable
+         * @param ascending if {@code true} sort in ascending order; otherwise
+         *                  sort in {@code descending} order
+         * @return the sort criteria, or {@code null} if the column isn't sortable
          */
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
             if (column == CUSTOMER_INDEX) {
@@ -184,8 +184,8 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
          * Returns a viewer for the specified customer/patient pair.
          *
          * @param pair  the customer/patient pair
-         * @param party the party in the pair being displayed. May be <tt>null</tt>
-         * @return a new component, or <tt>null</tt> if <tt>party</tt> is <tt>null</tt>
+         * @param party the party in the pair being displayed. May be {@code null}
+         * @return a new component, or {@code null} if {@code party} is {@code null}
          */
         private Component getViewer(final CustomerPatient pair, final Party party) {
             if (party != null) {

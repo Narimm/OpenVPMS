@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.admin.lookup;
 
@@ -28,7 +26,9 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
@@ -46,8 +46,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * CRUD window for lookups.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
 
@@ -58,14 +57,16 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
 
 
     /**
-     * Constructs a <tt>LookupCRUDWindow</tt>.
+     * Constructs a {@code LookupCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param query      the query
      * @param lookups    the lookups
+     * @param help       the help context
      */
-    public LookupCRUDWindow(Archetypes<Lookup> archetypes, Query<Lookup> query, ResultSet<Lookup> lookups) {
-        super(archetypes, query, lookups);
+    public LookupCRUDWindow(Archetypes<Lookup> archetypes, Query<Lookup> query, ResultSet<Lookup> lookups,
+                            HelpContext help) {
+        super(archetypes, query, lookups, help);
     }
 
     /**
@@ -78,7 +79,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
             ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
             IMObjectDeletor deletor = new DefaultIMObjectDeletor();
-            deletor.delete(object, new LookupDeletorListener());
+            deletor.delete(object, new LookupDeletorListener(), getHelpContext());
         }
     }
 
@@ -121,9 +122,11 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
             String shortName = lookup.getArchetypeId().getShortName();
             Query<Lookup> query = QueryFactory.create(shortName, GlobalContext.getInstance(), Lookup.class);
             query.setAuto(true);
-            final ReplaceLookupBrowser browser = new ReplaceLookupBrowser(query, lookup);
+            final ReplaceLookupBrowser browser = new ReplaceLookupBrowser(query, lookup,
+                                                                          new DefaultLayoutContext(getHelpContext()));
             String title = Messages.get("lookup.replace.title");
-            BrowserDialog<Lookup> dialog = new BrowserDialog<Lookup>(title, BrowserDialog.OK_CANCEL, browser);
+            BrowserDialog<Lookup> dialog = new BrowserDialog<Lookup>(
+                    title, BrowserDialog.OK_CANCEL, browser, getHelpContext());
             dialog.setCloseOnSelection(false);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
@@ -140,7 +143,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
      *
      * @param source the source lookup
      * @param target the target lookup
-     * @param delete if <tt>true</tt> delete the source lookup
+     * @param delete if {@code true} delete the source lookup
      */
     private void confirmReplace(final Lookup source, final Lookup target, final boolean delete) {
         String title = Messages.get("lookup.replace.title");
@@ -190,7 +193,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
          * Determines if the lookup is in used.
          *
          * @param cause the deletion failure cause
-         * @return <tt>true</tt> if the lookup is in use
+         * @return {@code true} if the lookup is in use
          */
         private boolean lookupInUse(Throwable cause) {
             if (cause instanceof ArchetypeServiceException) {

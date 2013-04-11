@@ -12,25 +12,23 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.estimation;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Estimation workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class EstimationWorkspace extends CustomerActWorkspace<Act> {
 
@@ -38,16 +36,19 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      * The act statuses.
      */
     private static final ActStatuses STATUSES;
+
     static {
         STATUSES = new ActStatuses("act.customerEstimation");
-        STATUSES.setDefault((String)null);
+        STATUSES.setDefault((String) null);
     }
-    
+
     /**
-     * Constructs a new <tt>EstimationWorkspace</tt>.
+     * Constructs an {@code EstimationWorkspace}.
+     *
+     * @param context the context
      */
-    public EstimationWorkspace() {
-        super("customer", "estimation");
+    public EstimationWorkspace(Context context) {
+        super("customer", "estimation", context);
         setChildArchetypes(Act.class, "act.customerEstimation");
     }
 
@@ -58,7 +59,7 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new EstimationCRUDWindow(getChildArchetypes());
+        return new EstimationCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**

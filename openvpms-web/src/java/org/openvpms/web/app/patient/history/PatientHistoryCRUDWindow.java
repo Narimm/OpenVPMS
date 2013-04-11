@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.history;
@@ -30,6 +28,7 @@ import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -54,8 +53,7 @@ import java.util.Arrays;
 /**
  * CRUD Window for patient history.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements PatientRecordCRUDWindow {
 
@@ -71,19 +69,23 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
 
 
     /**
-     * Constructs a <tt>SummaryCRUDWindow</tt>.
+     * Constructs a {@code PatientHistoryCRUDWindow}.
+     *
+     * @param help the help context
      */
-    public PatientHistoryCRUDWindow() {
-        this(Archetypes.create(PatientArchetypes.CLINICAL_EVENT, Act.class, Messages.get("patient.record.createtype")));
+    public PatientHistoryCRUDWindow(HelpContext help) {
+        this(Archetypes.create(PatientArchetypes.CLINICAL_EVENT, Act.class, Messages.get("patient.record.createtype")),
+             help);
     }
 
     /**
-     * Constructs a <tt>SummaryCRUDWindow</tt>.
+     * Constructs a {@code PatientHistoryCRUDWindow}.
      *
      * @param archetypes the archetypes
+     * @param help       the help context
      */
-    public PatientHistoryCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, PatientHistoryActions.INSTANCE);
+    public PatientHistoryCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
+        super(archetypes, PatientHistoryActions.INSTANCE, help);
     }
 
     /**
@@ -206,7 +208,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
                                                                                      GlobalContext.getInstance());
                 IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator);
                 String title = Messages.get("patient.record.summary.print");
-                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer);
+                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getHelpContext());
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (OpenVPMSException exception) {

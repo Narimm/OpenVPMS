@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.reminder;
@@ -23,6 +21,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -39,8 +38,7 @@ import java.util.List;
 /**
  * Prints reminders.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class ReminderPrintProcessor extends AbstractReminderProcessor {
 
@@ -65,28 +63,35 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
     private final PrinterListener listener;
 
     /**
-     * The mail context, used when printing interactively. May be <tt>null</tt>
+     * The mail context, used when printing interactively. May be {@code null}
      */
     private final MailContext mailContext;
 
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
-     * Constructs a <tt>ReminderPrintProcessor</tt>.
+     * Constructs a {@code ReminderPrintProcessor}.
      *
      * @param groupTemplate the grouped reminder document template
      * @param listener      the listener for printer events
-     * @param context       the mail context, used when printing interactively. May be <tt>null</tt>
+     * @param context       the mail context, used when printing interactively. May be {@code null}
+     * @param help          the help context
      */
-    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener, MailContext context) {
+    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener, MailContext context,
+                                  HelpContext help) {
         super(groupTemplate);
         this.listener = listener;
         this.mailContext = context;
+        this.help = help;
     }
 
     /**
      * Determines if reminders are being printed interactively, or in the background.
      *
-     * @return <tt>true</tt> if reminders are being printed interactively, or <tt>false</tt> if they are being
+     * @return {@code true} if reminders are being printed interactively, or {@code false} if they are being
      *         printed in the background
      */
     public boolean isInteractive() {
@@ -96,7 +101,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
     /**
      * Determines if reminders should always be printed interactively.
      *
-     * @param interactive if <tt>true</tt>, reminders should always be printed interactively. If <tt>false</tt>,
+     * @param interactive if {@code true}, reminders should always be printed interactively. If {@code false},
      *                    reminders will only be printed interactively if a printer needs to be selected
      */
     public void setInteractiveAlways(boolean interactive) {
@@ -108,7 +113,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      *
      * @param events    the events
      * @param shortName the report archetype short name, used to select the document template if none specified
-     * @param template  the document template to use. May be <tt>null</tt>
+     * @param template  the document template to use. May be {@code null}
      */
     protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate template) {
         // TODO - fix this so its not dependent on the global context
@@ -136,7 +141,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      * @param printer the printer
      */
     private <T> void print(IMPrinter<T> printer) {
-        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer);
+        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, help);
         String printerName = printer.getDefaultPrinter();
         if (printerName == null) {
             printerName = fallbackPrinter;
@@ -168,7 +173,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
         private final PrinterListener listener;
 
         /**
-         * Creates a new <tt>DelegatingPrinterListener</tt>.
+         * Creates a new {@code DelegatingPrinterListener}.
          *
          * @param listener the listener to delegate to
          */
@@ -179,7 +184,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
         /**
          * Notifies of a successful print.
          *
-         * @param printer the printer that was used. May be <tt>null</tt>
+         * @param printer the printer that was used. May be {@code null}
          */
         public void printed(String printer) {
             listener.printed(printer);

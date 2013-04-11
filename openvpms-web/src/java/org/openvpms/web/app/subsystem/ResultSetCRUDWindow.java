@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.subsystem;
 
@@ -26,6 +24,7 @@ import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
@@ -33,16 +32,15 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.ViewResultSetDialog;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * A <tt>CRUDWindow</tt> that supports iteration over a {@link ResultSet}.
+ * A {@code CRUDWindow} that supports iteration over a {@link ResultSet}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<T> {
 
@@ -63,14 +61,15 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
 
 
     /**
-     * Constructs a <tt>ResultSetCRUDWindow</tt>.
+     * Constructs a {@code ResultSetCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create instances of
-     * @param query      the query. May be <tt>null</tt>
-     * @param set        the result set. May be <tt>null</tt>
+     * @param query      the query. May be {@code null}
+     * @param set        the result set. May be {@code null}
+     * @param help       the help context
      */
-    public ResultSetCRUDWindow(Archetypes<T> archetypes, Query<T> query, ResultSet<T> set) {
-        super(archetypes, DefaultIMObjectActions.<T>getInstance());
+    public ResultSetCRUDWindow(Archetypes<T> archetypes, Query<T> query, ResultSet<T> set, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<T>getInstance(), help);
         setResultSet(set);
         setQuery(query);
     }
@@ -100,7 +99,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
     /**
      * Returns the result set.
      *
-     * @return the result set. May be <tt>null</tt>
+     * @return the result set. May be {@code null}
      */
     public ResultSet<T> getResultSet() {
         return set;
@@ -115,7 +114,8 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
             final FocusCommand focus = new FocusCommand();
             String title = DescriptorHelper.getDisplayName(object);
             boolean edit = canEdit();      // TODO - says nothing about whether other objects in the set may be edited
-            final ViewResultSetDialog<T> dialog = new ViewResultSetDialog<T>(title, object, set, edit);
+            final ViewResultSetDialog<T> dialog = new ViewResultSetDialog<T>(title, object, set, edit,
+                                                                             getHelpContext());
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {
@@ -185,11 +185,11 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      * Creates a new result set dialog for editing.
      *
      * @param object the first object to edit
-     * @param title the dialog title
+     * @param title  the dialog title
      * @return a new dialog
      */
     protected EditResultSetDialog<T> createEditResultSetDialog(T object, String title) {
-        return new EditResultSetDialog<T>(title, object, set);
+        return new EditResultSetDialog<T>(title, object, set, getHelpContext());
     }
 
     /**

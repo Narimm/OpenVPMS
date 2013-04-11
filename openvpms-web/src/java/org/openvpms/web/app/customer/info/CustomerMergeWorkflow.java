@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.info;
@@ -21,6 +19,7 @@ package org.openvpms.web.app.customer.info;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -33,18 +32,18 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Customer merge workflow.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class CustomerMergeWorkflow extends MergeWorkflow<Party> {
 
     /**
-     * Constructs a new <tt>MergeWorkflow</tt>.
+     * Constructs a {@code MergeWorkflow}.
      *
      * @param customer the customer to merge to
+     * @param help     the help context
      */
-    public CustomerMergeWorkflow(Party customer) {
-        super(customer);
+    public CustomerMergeWorkflow(Party customer, HelpContext help) {
+        super(customer, help);
     }
 
     /**

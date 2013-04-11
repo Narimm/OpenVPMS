@@ -23,9 +23,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.customer.CustomerMailContext;
-import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
-import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
-import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
 import org.openvpms.web.app.workflow.otc.OverTheCounterWorkflow;
@@ -33,9 +30,13 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
@@ -46,8 +47,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Schedule event CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
 
@@ -68,12 +68,13 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
 
 
     /**
-     * Constructs a <tt>ScheduleCRUDWindow</tt>.
+     * Constructs a {@code ScheduleCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public ScheduleCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, DefaultIMObjectActions.<Act>getInstance());
+    public ScheduleCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), help);
     }
 
     /**
@@ -107,13 +108,14 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     /**
      * Returns the mail context.
      *
-     * @return the mail context. May be <tt>null</tt>
+     * @return the mail context. May be {@code null}
      */
     @Override
     public MailContext getMailContext() {
         MailContext context = null;
         if (getObject() != null) {
-            context = CustomerMailContext.create(getObject(), GlobalContext.getInstance());
+            context = CustomerMailContext.create(getObject(), GlobalContext.getInstance(),
+                                                 getHelpContext());
         }
         if (context == null) {
             context = super.getMailContext();
@@ -193,7 +195,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      * Determines if a consulation or checkout can be performed on an act.
      *
      * @param act the act
-     * @return <tt>true</tt> if consultation can be performed
+     * @return {@code true} if consultation can be performed
      */
     protected abstract boolean canCheckoutOrConsult(Act act);
 
@@ -205,7 +207,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         // make sure the act is still available and has a valid status prior to
         // beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
-            ConsultWorkflow workflow = new ConsultWorkflow(act, GlobalContext.getInstance());
+            ConsultWorkflow workflow = new ConsultWorkflow(act, GlobalContext.getInstance(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
@@ -225,7 +227,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         // make sure the act is still available and has a valid status prior
         // to beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
-            CheckOutWorkflow workflow = new CheckOutWorkflow(act, GlobalContext.getInstance());
+            CheckOutWorkflow workflow = new CheckOutWorkflow(act, GlobalContext.getInstance(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
@@ -241,7 +243,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      * Invoked when the 'over-the-counter' button is pressed.
      */
     private void onOverTheCounter() {
-        Workflow workflow = new OverTheCounterWorkflow();
+        Workflow workflow = new OverTheCounterWorkflow(getHelpContext());
         workflow.start();
     }
 

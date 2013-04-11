@@ -21,6 +21,7 @@ package org.openvpms.web.app.workflow.merge;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
@@ -33,8 +34,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Workflow for merging objects of the same type.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
 
@@ -50,13 +50,15 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
 
 
     /**
-     * Constructs a new <tt>MergeWorkflow</tt>.
+     * Constructs a {@code MergeWorkflow.
      *
      * @param object the object to merge to
+     * @param help   the help context
      */
-    public MergeWorkflow(T object) {
+    public MergeWorkflow(T object, HelpContext help) {
+        super(help);
         this.object = object;
-        initial = createContext();
+        initial = createContext(help);
 
         String displayName = DescriptorHelper.getDisplayName(object);
         String mergeTitle = Messages.get("workflow.merge.title", displayName);
@@ -92,13 +94,13 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
     /**
      * Creates the task context.
      * <p/>
-     * This implementation creates the an {@link DefaultTaskContext} that
-     * doesn't inherit from the global context
+     * This implementation creates the an {@link DefaultTaskContext} that doesn't inherit from the global context
      *
+     * @param help the help context
      * @return a new task context
      */
-    protected TaskContext createContext() {
-        return new DefaultTaskContext(false);
+    protected TaskContext createContext(HelpContext help) {
+        return new DefaultTaskContext(help, false);
     }
 
     /**

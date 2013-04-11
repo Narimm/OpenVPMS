@@ -20,6 +20,8 @@ import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 
 import java.util.List;
 
@@ -31,13 +33,22 @@ import java.util.List;
 public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
      * Constructs a {@code VisitBrowserCRUDWindow}.
      *
      * @param query   the patient medical record query
      * @param context the context
+     * @param help    the help context
      */
-    public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context) {
-        PatientHistoryBrowser browser = new PatientHistoryBrowser(query);
+    public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context, HelpContext help) {
+        this.help = help;
+        DefaultLayoutContext layout = new DefaultLayoutContext(help);
+        layout.setContext(context);
+        PatientHistoryBrowser browser = new PatientHistoryBrowser(query, layout);
         if (browser.getSelected() == null) {
             browser.query();
             List<Act> objects = browser.getObjects();
@@ -47,7 +58,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
         }
         setBrowser(browser);
         VisitCRUDWindow window = createWindow(context);
-        window.setMailContext(new CustomerMailContext(context));
+        window.setMailContext(new CustomerMailContext(context, help));
         window.setQuery(query);
         window.setEvent(browser.getEvent());
         setWindow(window);
@@ -91,7 +102,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      * @return a new window
      */
     protected VisitCRUDWindow createWindow(Context context) {
-        return new VisitCRUDWindow(context);
+        return new VisitCRUDWindow(context, help);
     }
 
     /**

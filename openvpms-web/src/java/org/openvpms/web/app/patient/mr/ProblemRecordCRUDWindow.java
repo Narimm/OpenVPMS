@@ -26,6 +26,7 @@ import org.openvpms.web.app.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -36,8 +37,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * CRUD Window for patient record acts in 'problem' view.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
         implements PatientRecordCRUDWindow {
@@ -49,11 +49,13 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
 
 
     /**
-     * Constructs a new <tt>ProblemRecordCRUDWindow</tt>.
+     * Constructs a {@code ProblemRecordCRUDWindow}.
+     *
+     * @param help the help context
      */
-    public ProblemRecordCRUDWindow() {
+    public ProblemRecordCRUDWindow(HelpContext help) {
         super(Archetypes.create(PatientArchetypes.CLINICAL_PROBLEM, Act.class,
-                                Messages.get("patient.record.createtype")), ProblemActions.INSTANCE);
+                                Messages.get("patient.record.createtype")), ProblemActions.INSTANCE, help);
     }
 
     /**
@@ -68,7 +70,7 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
     /**
      * Returns the current patient clinical event.
      *
-     * @return the current event. May be <tt>null</tt>
+     * @return the current event. May be {@code null}
      */
     public Act getEvent() {
         return event;
@@ -122,7 +124,7 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
      * be returned.
      *
      * @param act the act
-     * @return the associated event, or <tt>null</tt> if none is found and there is no current event
+     * @return the associated event, or {@code null} if none is found and there is no current event
      */
     private Act getEvent(Act act) {
         for (ActRelationship relationship : act.getTargetActRelationships()) {

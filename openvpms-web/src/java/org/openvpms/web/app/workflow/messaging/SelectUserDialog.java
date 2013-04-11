@@ -12,30 +12,29 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.messaging;
 
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.select.IMObjectSelector;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.select.AbstractIMObjectSelectorListener;
+import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 
 
 /**
  * Dialog to select a user.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SelectUserDialog extends PopupDialog {
 
@@ -46,16 +45,17 @@ public class SelectUserDialog extends PopupDialog {
 
 
     /**
-     * Construct a new <code>SelectUserDialog</code>.
+     * Constructs a {@code SelectUserDialog}.
      *
      * @param title the window title
+     * @param help  the help context
      */
-    public SelectUserDialog(String title) {
+    public SelectUserDialog(String title, HelpContext help) {
         super(title, "SelectUserDialog", CANCEL);
 
         String shortName = UserArchetypes.USER;
         String type = DescriptorHelper.getDisplayName(shortName);
-        selector = new IMObjectSelector<User>(type, shortName);
+        selector = new IMObjectSelector<User>(type, new DefaultLayoutContext(help), shortName);
         selector.setListener(new AbstractIMObjectSelectorListener<User>() {
             public void selected(User object) {
                 onSelected(object);
@@ -80,7 +80,7 @@ public class SelectUserDialog extends PopupDialog {
     /**
      * Invoked when a user is selected. If non-null, closes the dialog.
      *
-     * @param object the selected user. May be <code>null</code>
+     * @param object the selected user. May be {@code null}
      */
     private void onSelected(IMObject object) {
         if (object != null) {

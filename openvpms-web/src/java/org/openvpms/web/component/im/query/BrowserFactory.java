@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
@@ -24,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
@@ -46,8 +45,7 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
  * <p/>
  * Multiple <em>BrowserFactory.properties</em> may be used.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-11-07 21:27:47Z $
+ * @author Tim Anderson
  */
 public final class BrowserFactory {
 
@@ -70,13 +68,14 @@ public final class BrowserFactory {
 
     /**
      * Creates a new {@link Browser}.
-     * This is the same as invoking <tt>create(query, null)</tt>.
+     * <p/>
+     * This is the same as invoking {@code create(query, null, context)}.
      *
      * @param query the query
      * @return a new browser
      */
-    public static <T> Browser<T> create(Query<T> query) {
-        return create(query, null);
+    public static <T> Browser<T> create(Query<T> query, LayoutContext context) {
+        return create(query, null, context);
     }
 
     /**
@@ -84,26 +83,24 @@ public final class BrowserFactory {
      * Implementations must provide at least one constructor accepting the
      * following arguments, invoked in the order:
      * <ul>
-     * <li>(Query<T> query, SortConstraint[] sort)</li>
-     * <li>(Query<T> query)</li>
+     * <li>(Query<T> query, SortConstraint[] sort, LayoutContext)</li>
+     * <li>(Query<T> query, LayoutContext)</li>
      * </ul>
      *
-     * @param query the query
-     * @param sort  the sort criteria. May be <tt>null</tt>
+     * @param query   the query
+     * @param sort    the sort criteria. May be {@code null}
+     * @param context the layout context
      * @return a new browser
      */
-    public static <T> Browser<T> create(
-            Query<T> query, SortConstraint[] sort) {
+    public static <T> Browser<T> create(Query<T> query, SortConstraint[] sort, LayoutContext context) {
         Browser<T> result = null;
-        String[] shortNames = DescriptorHelper.getShortNames(
-                query.getShortNames());
-        ArchetypeHandler<Browser> handler
-                = getBrowsers().getHandler(shortNames);
+        String[] shortNames = DescriptorHelper.getShortNames(query.getShortNames());
+        ArchetypeHandler<Browser> handler = getBrowsers().getHandler(shortNames);
         if (handler != null) {
-            result = create(handler, query, sort);
+            result = create(handler, query, sort, context);
         }
         if (result == null) {
-            result = createDefaultBrowser(query, sort, null, shortNames);
+            result = createDefaultBrowser(query, sort, null, shortNames, context);
         }
         return result;
     }
@@ -113,27 +110,25 @@ public final class BrowserFactory {
      * Implementations must provide at least one constructor accepting the
      * following arguments, invoked in the order:
      * <ul>
-     * <li>(Query<T> query, SortConstraint[] sort, IMTableModel<T> model)
-     * <li>(Query<T> query, SortConstraint[] sort)</li>
-     * <li>(Query<T> query)</li>
+     * <li>(Query<T> query, SortConstraint[] sort, IMTableModel<T> model, LayoutContext)
+     * <li>(Query<T> query, SortConstraint[] sort, LayoutContext)</li>
+     * <li>(Query<T> query, LayoutContext)</li>
      * </ul>
      *
      * @param query the query
-     * @param sort  the sort criteria. May be <tt>null</tt>
+     * @param sort  the sort criteria. May be {@code null}
      * @return a new browser
      */
-    public static <T> Browser<T> create(
-            Query<T> query, SortConstraint[] sort, IMTableModel<T> model) {
+    public static <T> Browser<T> create(Query<T> query, SortConstraint[] sort, IMTableModel<T> model,
+                                        LayoutContext context) {
         Browser<T> result = null;
-        String[] shortNames = DescriptorHelper.getShortNames(
-                query.getShortNames());
-        ArchetypeHandler<Browser> handler
-                = getBrowsers().getHandler(shortNames);
+        String[] shortNames = DescriptorHelper.getShortNames(query.getShortNames());
+        ArchetypeHandler<Browser> handler = getBrowsers().getHandler(shortNames);
         if (handler != null) {
-            result = create(handler, query, sort, model);
+            result = create(handler, query, sort, model, context);
         }
         if (result == null) {
-            result = createDefaultBrowser(query, sort, model, shortNames);
+            result = createDefaultBrowser(query, sort, model, shortNames, context);
         }
         return result;
     }
@@ -142,24 +137,26 @@ public final class BrowserFactory {
      * Creates a default browser for the supplied query.
      *
      * @param query      the query
-     * @param sort       the sort constraint. May be <tt>null</tt>
-     * @param model      the model. May be <tt>null</tt>
+     * @param sort       the sort constraint. May be {@code null}
+     * @param model      the model. May be {@code null}
      * @param shortNames the archetype short names
+     * @param context    the layout context
      * @return a new browser
      * @throws QueryException if there is no default browser for the query
      */
     @SuppressWarnings("unchecked")
-    private static <T>Browser<T> createDefaultBrowser(Query<T> query,
-                                                      SortConstraint[] sort,
-                                                      IMTableModel<T> model,
-                                                      String[] shortNames) {
+    private static <T> Browser<T> createDefaultBrowser(Query<T> query,
+                                                       SortConstraint[] sort,
+                                                       IMTableModel<T> model,
+                                                       String[] shortNames,
+                                                       LayoutContext context) {
         Browser<T> result;
         Class type = query.getType();
         if (IMObject.class.isAssignableFrom(type)) {
             if (model != null) {
-                result = new DefaultIMObjectTableBrowser(query, sort, model);
+                result = new DefaultIMObjectTableBrowser(query, sort, model, context);
             } else {
-                result = new DefaultIMObjectTableBrowser(query, sort);
+                result = new DefaultIMObjectTableBrowser(query, sort, context);
             }
         } else {
             throw new QueryException(QueryException.ErrorCode.NoBrowser,
@@ -175,7 +172,7 @@ public final class BrowserFactory {
      *
      * @param handler the {@link Browser} implementation
      * @param query   the query
-     * @return a new browser, or <tt>null</tt> if no appropriate constructor
+     * @return a new browser, or {@code null} if no appropriate constructor
      *         can be found or construction fails
      */
     @SuppressWarnings("unchecked")
@@ -194,23 +191,22 @@ public final class BrowserFactory {
 
     /**
      * Attempts to create a new browser. First tries the
-     * BrowserImpl(Query<T>, SortConstraint[]) constructor. If that doesn't
-     * exist, tries the BrowserImpl(Query<T>) constructor.
+     * BrowserImpl(Query<T>, SortConstraint[], LayoutContext) constructor. If that doesn't
+     * exist, tries the BrowserImpl(Query<T>, LayoutContext) constructor.
      *
      * @param handler the {@link Browser} implementation
      * @param query   the query
-     * @param sort    the sort criteria. May be <tt>null</tt>
-     * @return a new browser, or <tt>null</tt> if no appropriate constructor
+     * @param sort    the sort criteria. May be {@code null}
+     * @return a new browser, or {@code null} if no appropriate constructor
      *         can be found or construction fails
      */
     @SuppressWarnings("unchecked")
-    private static <T> Browser<T> create(
-            ArchetypeHandler<Browser> handler, Query<T> query,
-            SortConstraint[] sort) {
+    private static <T> Browser<T> create(ArchetypeHandler<Browser> handler, Query<T> query,
+                                         SortConstraint[] sort, LayoutContext context) {
         Browser<T> result = null;
         try {
-            Object[] args = {query, sort};
-            Class[] types = {query.getClass(), SortConstraint[].class};
+            Object[] args = {query, sort, context};
+            Class[] types = {query.getClass(), SortConstraint[].class, LayoutContext.class};
             result = (Browser<T>) handler.create(args, types);
         } catch (NoSuchMethodException ignore) {
             result = create(handler, query);
@@ -222,28 +218,27 @@ public final class BrowserFactory {
 
     /**
      * Attempts to create a new browser. First tries the
-     * BrowserImpl(Query<T>, SortConstraint[], IMTableModel<T>) constructor.
-     * If that doesn't exist, tries the BrowserImpl(Query<T>, SortConstraint[]),
-     * followed by the BrowserImpl(Query<T>) constructor.
+     * BrowserImpl(Query<T>, SortConstraint[], IMTableModel<T>, LayoutContext) constructor.
+     * If that doesn't exist, tries the BrowserImpl(Query<T>, SortConstraint[], LayoutContext),
+     * followed by the BrowserImpl(Query<T>, LayoutContext) constructor.
      *
      * @param handler the {@link Browser} implementation
      * @param query   the query
-     * @param sort    the sort criteria. May be <tt>null</tt>
-     * @return a new browser, or <tt>null</tt> if no appropriate constructor
+     * @param sort    the sort criteria. May be {@code null}
+     * @param context the layout context
+     * @return a new browser, or {@code null} if no appropriate constructor
      *         can be found or construction fails
      */
     @SuppressWarnings("unchecked")
-    private static <T> Browser<T> create(
-            ArchetypeHandler<Browser> handler, Query<T> query,
-            SortConstraint[] sort, IMTableModel<T> model) {
+    private static <T> Browser<T> create(ArchetypeHandler<Browser> handler, Query<T> query,
+                                         SortConstraint[] sort, IMTableModel<T> model, LayoutContext context) {
         Browser<T> result = null;
         try {
-            Object[] args = {query, sort, model};
-            Class[] types = {Query.class, SortConstraint[].class,
-                             IMTableModel.class};
+            Object[] args = {query, sort, model, context};
+            Class[] types = {Query.class, SortConstraint[].class, IMTableModel.class, LayoutContext.class};
             result = (Browser<T>) handler.create(args, types);
         } catch (NoSuchMethodException ignore) {
-            result = create(handler, query, sort);
+            result = create(handler, query, sort, context);
         } catch (Throwable exception) {
             log.error(exception, exception);
         }

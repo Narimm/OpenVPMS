@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.product;
@@ -55,11 +53,9 @@ import java.util.List;
 /**
  * Editor for product {@link IMObjectReference}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-03-19 10:19:58 +1100 (Wed, 19 Mar 2008) $
+ * @author Tim Anderson
  */
-class ProductReferenceEditor
-        extends AbstractIMObjectReferenceEditor<Product> {
+class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
 
     /**
      * The parent editor.
@@ -68,7 +64,7 @@ class ProductReferenceEditor
 
 
     /**
-     * Creates a new <tt>ProductReferenceEditor</tt>.
+     * Constructs a {@code ProductReferenceEditor}.
      *
      * @param editor   the parent editor
      * @param property the product reference property
@@ -83,12 +79,11 @@ class ProductReferenceEditor
     /**
      * Invoked when an object is selected.
      *
-     * @param product the selected object. May be <tt>null</tt>
+     * @param product the selected object. May be {@code null}
      */
     @Override
     protected void onSelected(Product product) {
-        if (product != null && editor.getSupplier() != null
-            && hasSuppliers(product)) {
+        if (product != null && editor.getSupplier() != null && hasSuppliers(product)) {
             checkSupplier(product);
         } else {
             setProduct(product, null);
@@ -99,7 +94,7 @@ class ProductReferenceEditor
      * Invoked when the underlying property updates.
      * This updates the product supplier relationship.
      *
-     * @param product the updated object. May be <tt>null</tt>
+     * @param product the updated object. May be {@code null}
      */
     @Override
     protected void onUpdated(Product product) {
@@ -121,7 +116,7 @@ class ProductReferenceEditor
     /**
      * Creates a query to select objects.
      *
-     * @param name the name to filter on. May be <tt>null</tt>
+     * @param name the name to filter on. May be {@code null}
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
@@ -161,10 +156,10 @@ class ProductReferenceEditor
      * Determines if the reference is valid.
      * <p/>
      * TODO - this is an expensive operation as products do filtering on species and stock location.
-     * The check is disabled in 1.4 - needs to be enabled in 1.5 where there is better left join support  
+     * The check is disabled in 1.4 - needs to be enabled in 1.5 where there is better left join support
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the reference is valid, otherwise <tt>false</tt>
+     * @return {@code true} if the reference is valid, otherwise {@code false}
      */
     @Override
     protected boolean isValidReference(Validator validator) {
@@ -174,9 +169,9 @@ class ProductReferenceEditor
     /**
      * Updates the product details.
      *
-     * @param product      the product. May be <tt>null</tt>
+     * @param product      the product. May be {@code null}
      * @param relationship the product supplier relationship. May be
-     *                     <tt>null</tt>
+     *                     {@code null}
      */
     private void setProduct(Product product, EntityRelationship relationship) {
         setProductSupplier(relationship);
@@ -186,7 +181,7 @@ class ProductReferenceEditor
     /**
      * Sets the product supplier relationship.
      *
-     * @param relationship the relationship. May be <tt>null</tt>
+     * @param relationship the relationship. May be {@code null}
      */
     private void setProductSupplier(EntityRelationship relationship) {
         if (relationship != null) {
@@ -209,7 +204,7 @@ class ProductReferenceEditor
         Entity otherSupplier;
 
         if (!rules.isSuppliedBy(editor.getSupplier(), product)
-            && (otherSupplier = getSupplier(product)) != null) {
+                && (otherSupplier = getSupplier(product)) != null) {
             String title = Messages.get("product.othersupplier.title");
             String message = Messages.get("product.othersupplier.message",
                                           product.getName(),
@@ -236,8 +231,8 @@ class ProductReferenceEditor
      * Determines if a product can have suppliers.
      *
      * @param product the product
-     * @return <tt>true</tt> if the product can have suppliers, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the product can have suppliers, otherwise
+     *         {@code false}
      */
     private boolean hasSuppliers(Product product) {
         EntityBean bean = new EntityBean(product);
@@ -248,7 +243,7 @@ class ProductReferenceEditor
      * Returns the first active supplier for a product.
      *
      * @param product the product
-     * @return the supplier, or <tt>null</tt> if none is found
+     * @return the supplier, or {@code null} if none is found
      */
     private Entity getSupplier(Product product) {
         EntityBean bean = new EntityBean(product);
@@ -266,8 +261,7 @@ class ProductReferenceEditor
      */
     private void checkProductSupplierRelationships(final Product product) {
         // find all relationships for the product and supplier
-        List<EntityRelationship> relationships
-                = getSupplierRelationships(product);
+        List<EntityRelationship> relationships = getSupplierRelationships(product);
 
         if (relationships.isEmpty()) {
             setProduct(product, null);
@@ -278,14 +272,13 @@ class ProductReferenceEditor
             // preferred one selected
             EntityRelationship preferred = getPreferred(relationships);
             Query<EntityRelationship> query
-                    = new ListQuery<EntityRelationship>(
-                    relationships, "entityRelationship.productSupplier",
-                    EntityRelationship.class);
+                    = new ListQuery<EntityRelationship>(relationships, "entityRelationship.productSupplier",
+                                                        EntityRelationship.class);
             String title = Messages.get("product.supplier.type");
-            final Browser<EntityRelationship> browser
-                    = new ProductSupplierBrowser(query);
+            LayoutContext context = getLayoutContext();
+            final Browser<EntityRelationship> browser = new ProductSupplierBrowser(query, context);
             final BrowserDialog<EntityRelationship> dialog
-                    = new BrowserDialog<EntityRelationship>(title, browser);
+                    = new BrowserDialog<EntityRelationship>(title, browser, context.getHelpContext());
 
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -309,7 +302,7 @@ class ProductReferenceEditor
      *
      * @param relationships the relationships
      * @return the preferred relationship, or the first if none is preferred,
-     *         or <tt>null</tt> if there are no relationships
+     *         or {@code null} if there are no relationships
      */
     private EntityRelationship getPreferred(
             List<EntityRelationship> relationships) {
@@ -334,9 +327,7 @@ class ProductReferenceEditor
     private List<EntityRelationship> getSupplierRelationships(Product product) {
         EntityBean bean = new EntityBean(product);
         Party supplier = editor.getSupplier();
-        Predicate predicate = new AndPredicate(
-                IsActiveRelationship.ACTIVE_NOW,
-                RefEquals.getTargetEquals(supplier));
+        Predicate predicate = new AndPredicate(IsActiveRelationship.ACTIVE_NOW, RefEquals.getTargetEquals(supplier));
         return bean.getNodeRelationships("suppliers", predicate);
     }
 
@@ -347,15 +338,13 @@ class ProductReferenceEditor
             extends TableBrowser<EntityRelationship> {
 
         /**
-         * Construct a new <code>TableBrowser</code> that queries objects using
-         * the specified query, displaying them in the table.
+         * Constructs a TableBrowser} that queries objects using the specified query, displaying them in the table.
          *
-         * @param query the query
+         * @param query   the query
+         * @param context the layout context
          */
-        public ProductSupplierBrowser(Query<EntityRelationship> query) {
-            super(query, null,
-                  new ProductSupplierTableModel(query.getShortNames(), null,
-                                                true));
+        public ProductSupplierBrowser(Query<EntityRelationship> query, LayoutContext context) {
+            super(query, null, new ProductSupplierTableModel(query.getShortNames(), null, true), context);
         }
 
         /**

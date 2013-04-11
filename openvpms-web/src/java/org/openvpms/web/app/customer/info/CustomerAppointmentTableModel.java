@@ -12,14 +12,13 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.customer.info;
 
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.system.common.query.Constraints;
@@ -27,7 +26,6 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 
 import java.util.Date;
 import java.util.List;
@@ -36,8 +34,7 @@ import java.util.List;
 /**
  * Table for <em>act.customerAppointment</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerAppointmentTableModel extends AbstractActTableModel {
 
@@ -58,18 +55,20 @@ public class CustomerAppointmentTableModel extends AbstractActTableModel {
 
 
     /**
-     * Constructs a <tt>CustomerAppointmentTableModel</tt>.
+     * Constructs a {@code CustomerAppointmentTableModel}.
+     *
+     * @param context the layout context
      */
-    public CustomerAppointmentTableModel() {
-        super(ScheduleArchetypes.APPOINTMENT);
+    public CustomerAppointmentTableModel(LayoutContext context) {
+        super(ScheduleArchetypes.APPOINTMENT, context);
     }
 
     /**
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     @Override
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -96,7 +95,7 @@ public class CustomerAppointmentTableModel extends AbstractActTableModel {
             if (startTime != null) {
                 if (index == dateIndex) {
                     return DateHelper.formatDate(startTime, false);
-                } else if (index == timeIndex) {
+                } else {
                     return DateHelper.formatTime(startTime, false);
                 }
             }

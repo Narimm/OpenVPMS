@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.checkout;
@@ -32,6 +30,7 @@ import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
@@ -55,8 +54,7 @@ import java.util.Date;
 /**
  * Check-out workflow.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CheckOutWorkflow extends WorkflowImpl {
 
@@ -72,15 +70,16 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs a new <tt>CheckOutWorkflow</tt> from an
-     * <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+     * Constructs a {@code CheckOutWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
      * @param act     the act
      * @param context the external context to access and update
+     * @param help    the help context
      */
-    public CheckOutWorkflow(Act act, Context context) {
+    public CheckOutWorkflow(Act act, Context context, HelpContext help) {
+        super(help);
         external = context;
-        initialise(act);
+        initialise(act, help);
 
         // update the act status
         TaskProperties appProps = new TaskProperties();
@@ -117,15 +116,16 @@ public class CheckOutWorkflow extends WorkflowImpl {
     /**
      * Initialise the workflow.
      *
-     * @param act the act
+     * @param act  the act
+     * @param help the help context
      */
-    private void initialise(Act act) {
+    private void initialise(Act act, HelpContext help) {
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
         User clinician = external.getClinician();
 
-        initial = new DefaultTaskContext(false);
+        initial = new DefaultTaskContext(help, false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);
@@ -207,7 +207,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
      * @return a task to post the invoice
      */
     private Task getPostTask() {
-        Tasks postTasks = new Tasks();
+        Tasks postTasks = new Tasks(getHelpContext());
         TaskProperties invoiceProps = new TaskProperties();
         invoiceProps.add("status", FinancialActStatus.POSTED);
         invoiceProps.add(new Variable("startTime") {
@@ -238,7 +238,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         private final Date startTime;
 
         /**
-         * Creates a new <tt>PrintTask</tt>.
+         * Creates a new {@code PrintTask}.
          *
          * @param act the act. Either an <em>act.customerAppointment</em> or
          *            <em>act.customerTask</em>.

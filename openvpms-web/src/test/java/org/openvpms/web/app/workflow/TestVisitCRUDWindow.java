@@ -21,6 +21,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.visit.VisitCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -36,16 +37,16 @@ import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
-* A test {@link VisitCRUDWindow}.
-*
-* @author Tim Anderson
-*/
+ * A test {@link VisitCRUDWindow}.
+ *
+ * @author Tim Anderson
+ */
 public class TestVisitCRUDWindow extends VisitCRUDWindow {
 
     private final List<Act> saved = new ArrayList<Act>();
 
     public TestVisitCRUDWindow(Context context) {
-        super(context);
+        super(context, new HelpContext("foo", null));
     }
 
     /**

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.otc;
@@ -25,6 +23,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.PracticeMailContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -46,8 +45,7 @@ import java.util.Date;
 /**
  * Over-the-counter workflow.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OverTheCounterWorkflow extends WorkflowImpl {
 
@@ -74,14 +72,16 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs a new <tt>OverTheCounterWorkflow</tt>.
+     * Constructs an {@code OverTheCounterWorkflow}.
      *
+     * @param help the help context
      * @throws ArchetypeServiceException for any archetype service error
      * @throws OTCException              for any OTC error
      */
-    public OverTheCounterWorkflow() {
+    public OverTheCounterWorkflow(HelpContext help) {
+        super(help);
         final GlobalContext global = GlobalContext.getInstance();
-        initial = new DefaultTaskContext(false);
+        initial = new DefaultTaskContext(help, false);
         Party location = global.getLocation();
         if (location == null) {
             throw new OTCException(OTCException.ErrorCode.NoLocation);

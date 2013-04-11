@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.checkin;
@@ -24,10 +22,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.component.app.ContextException;
-import org.openvpms.web.component.app.Context;
-import static org.openvpms.web.component.app.ContextException.ErrorCode.NoObject;
-import static org.openvpms.web.component.app.ContextException.ErrorCode.NoPatient;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
@@ -36,13 +32,14 @@ import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
-import org.openvpms.web.app.customer.CustomerMailContext;
+
+import static org.openvpms.web.component.app.ContextException.ErrorCode.NoObject;
+import static org.openvpms.web.component.app.ContextException.ErrorCode.NoPatient;
 
 /**
  * Task to optionally print an <em>act.patientDocumentForm</em> for a patient.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class PrintDocumentFormTask extends WorkflowImpl {
 
@@ -57,12 +54,13 @@ class PrintDocumentFormTask extends WorkflowImpl {
     private static final String DOCUMENT_TEMPLATE = "entity.documentTemplate";
 
     /**
-     * Constructs a new <code>PatientDocumentFormTask</code>.
+     * Constructs a {@code PatientDocumentFormTask}.
      *
      * @param context the context
      * @throws OpenVPMSException for any error
      */
-    public PrintDocumentFormTask(Context context) {
+    public PrintDocumentFormTask(TaskContext context) {
+        super(context.getHelpContext());
         // create a query for all entity.documentTemplate instances with
         // archetype node='act.patientDocumentForm'.
         DocumentTemplateQuery query = new DocumentTemplateQuery();
@@ -94,8 +92,8 @@ class PrintDocumentFormTask extends WorkflowImpl {
 
         // task to print the act.patientDocumentForm. May be skipped if
         // printing interactively
-        PrintIMObjectTask printTask = new PrintIMObjectTask(DOCUMENT_FORM, new CustomerMailContext(context),
-                                                            false);
+        CustomerMailContext mailContext = new CustomerMailContext(context, context.getHelpContext());
+        PrintIMObjectTask printTask = new PrintIMObjectTask(DOCUMENT_FORM, mailContext, false);
         printTask.setRequired(false);
 
         // task to save the act.patientDocumentForm, setting its 'printed'

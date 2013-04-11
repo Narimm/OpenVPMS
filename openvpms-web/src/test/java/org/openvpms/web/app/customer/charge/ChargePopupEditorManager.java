@@ -16,14 +16,15 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 
 
 /**
  * Manages edit dialogs displayed during charging.
-*
-* @author Tim Anderson
-*/
+ *
+ * @author Tim Anderson
+ */
 public class ChargePopupEditorManager extends DefaultPopupEditorManager {
 
     /**
@@ -32,9 +33,16 @@ public class ChargePopupEditorManager extends DefaultPopupEditorManager {
     private EditDialog current;
 
     /**
+     * Constructs a {@code ChargePopupEditorManager}.
+     */
+    public ChargePopupEditorManager() {
+        super(new HelpContext("ChargePopupEditorManager", null));
+    }
+
+    /**
      * Returns the current popup dialog.
      *
-     * @return the current popup dialog. May be <tt>null</tt>
+     * @return the current popup dialog. May be {@code null}
      */
     public EditDialog getCurrent() {
         return current;

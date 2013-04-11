@@ -39,6 +39,7 @@ import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.app.customer.charge.DefaultPopupEditorManager;
 import org.openvpms.web.app.customer.charge.PopupEditorManager;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -68,7 +69,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
     @Test
     public void testInvoice() {
         Party customer = TestHelper.createCustomer();
-        DefaultLayoutContext context = new DefaultLayoutContext(true);
+        DefaultLayoutContext context = new DefaultLayoutContext(true, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createClinician();
         User clinician = TestHelper.createClinician();
@@ -208,7 +209,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
     private static class TestEstimationInvoicer extends EstimationInvoicer {
 
         /**
-         * Creates a new <tt>TestEstimationInvoicer</tt>.
+         * Constructs a {@code TestEstimationInvoicer}.
          *
          * @param invoice the invoice
          * @param context the layout context
@@ -216,7 +217,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
          */
         @Override
         protected ChargeEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-            final PopupEditorManager manager = new DefaultPopupEditorManager() {
+            final PopupEditorManager manager = new DefaultPopupEditorManager(new HelpContext("foo", null)) {
                 @Override
                 protected void edit(EditDialog dialog) {
                     super.edit(dialog);

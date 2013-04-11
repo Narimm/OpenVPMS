@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin.archetype;
@@ -35,12 +33,13 @@ import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.doc.UploadDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.AbstractUploadListener;
+import org.openvpms.web.component.im.doc.UploadDialog;
+import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.servlet.DownloadServlet;
@@ -54,11 +53,10 @@ import java.util.List;
 
 
 /**
- * Archetype CRUD window, providing facilties to import and export archetype
+ * Archetype CRUD window, providing facilities to import and export archetype
  * descriptors.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor> {
 
@@ -79,15 +77,16 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
 
 
     /**
-     * Constructs an <tt>ArchetypeCRUDWindow</tt>.
+     * Constructs an {@code ArchetypeCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
-     * @param query      the query. May be <tt>null</tt>
-     * @param set        the result set. May be <tt>null</tt>
+     * @param query      the query. May be {@code null}
+     * @param set        the result set. May be {@code null}
+     * @param help       the help context
      */
     public ArchetypeCRUDWindow(Archetypes<ArchetypeDescriptor> archetypes, Query<ArchetypeDescriptor> query,
-                               ResultSet<ArchetypeDescriptor> set) {
-        super(archetypes, query, set);
+                               ResultSet<ArchetypeDescriptor> set, HelpContext help) {
+        super(archetypes, query, set, help);
     }
 
     /**
@@ -100,7 +99,7 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     @Override
     protected EditResultSetDialog<ArchetypeDescriptor> createEditResultSetDialog(ArchetypeDescriptor object,
                                                                                  String title) {
-        return new ArchetypeEditDialog(title, object, getResultSet());
+        return new ArchetypeEditDialog(title, object, getResultSet(), getHelpContext());
     }
 
     /**

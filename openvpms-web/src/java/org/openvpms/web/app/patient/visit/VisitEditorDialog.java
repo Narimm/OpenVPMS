@@ -26,6 +26,7 @@ import org.openvpms.web.app.patient.charge.VisitChargeEditor;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
@@ -50,9 +51,10 @@ public class VisitEditorDialog extends PopupDialog {
      *
      * @param title       the dialog title
      * @param visitEditor the visit browser
+     * @param help        the help context
      */
-    public VisitEditorDialog(String title, VisitEditor visitEditor) {
-        super(title, "BrowserDialog", APPLY_OK_CANCEL);
+    public VisitEditorDialog(String title, VisitEditor visitEditor, HelpContext help) {
+        super(title, "BrowserDialog", APPLY_OK_CANCEL, help);
         this.editor = visitEditor;
         setModal(true);
         getLayout().add(visitEditor.getComponent());
@@ -105,7 +107,7 @@ public class VisitEditorDialog extends PopupDialog {
     @Override
     protected void onApply() {
         if (editor.getChargeEditor() != null) {
-            CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor());
+            CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
             List<Act> existing = docs.getUnprinted();
             if (editor.save()) {
                 docs.printNew(existing, null);
@@ -120,7 +122,7 @@ public class VisitEditorDialog extends PopupDialog {
     @Override
     protected void onOK() {
         if (editor.getChargeEditor() != null) {
-            CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor());
+            CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
             List<Act> existing = docs.getUnprinted();
             if (editor.save()) {
                 ActionListener printListener = new ActionListener() {

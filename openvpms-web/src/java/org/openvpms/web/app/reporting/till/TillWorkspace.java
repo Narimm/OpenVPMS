@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.till;
@@ -23,6 +21,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
@@ -37,8 +36,7 @@ import org.openvpms.web.component.subsystem.CRUDWindow;
 /**
  * Till workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-19 07:20:38Z $
+ * @author Tim Anderson
  */
 public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
 
@@ -87,7 +85,7 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new TillCRUDWindow();
+        return new TillCRUDWindow(getHelpContext());
     }
 
     /**
@@ -111,9 +109,8 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      */
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
-        IMObjectTableModel<FinancialAct> model
-                = new ActAmountTableModel<FinancialAct>(true, true);
-        return BrowserFactory.create(query, null, model);
+        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
+        return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getHelpContext()));
     }
 
     /**

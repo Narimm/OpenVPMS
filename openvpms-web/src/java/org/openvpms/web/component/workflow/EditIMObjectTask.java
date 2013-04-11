@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.workflow;
@@ -41,8 +39,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 /**
  * Task to edit an {@link IMObject} using an {@link IMObjectEditor}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EditIMObjectTask extends AbstractTask {
 
@@ -278,13 +275,13 @@ public class EditIMObjectTask extends AbstractTask {
         try {
             final IMObjectEditor editor = createEditor(object, context);
             if (interactive) {
-                interactiveEdit(editor);
+                interactiveEdit(editor, context);
             } else {
                 backgroundEdit(editor, context);
             }
         } catch (OpenVPMSException exception) {
             if (deleteOnCancelOrSkip) {
-                delete(object);
+                delete(object, context);
             }
             notifyCancelledOnError(exception);
         }
@@ -298,7 +295,7 @@ public class EditIMObjectTask extends AbstractTask {
      * @return a new editor
      */
     protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
-        LayoutContext layout = new DefaultLayoutContext(true);
+        LayoutContext layout = new DefaultLayoutContext(true, context.getHelpContext());
         layout.setContext(context);
         return IMObjectEditorFactory.create(object, layout);
     }
@@ -306,11 +303,12 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Shows the editor in an edit dialog.
      *
-     * @param editor the editor
+     * @param editor  the editor
+     * @param context the task context
      */
-    protected void interactiveEdit(final IMObjectEditor editor) {
+    protected void interactiveEdit(final IMObjectEditor editor, final TaskContext context) {
         GlobalContext.getInstance().setCurrent(object);
-        dialog = createEditDialog(editor, skip);
+        dialog = createEditDialog(editor, skip, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 GlobalContext.getInstance().setCurrent(null);
@@ -319,9 +317,9 @@ public class EditIMObjectTask extends AbstractTask {
                 if (PopupDialog.OK_ID.equals(action)) {
                     onEditCompleted();
                 } else if (PopupDialog.SKIP_ID.equals(action)) {
-                    onEditSkipped(editor);
+                    onEditSkipped(editor, context);
                 } else {
-                    onEditCancelled(editor);
+                    onEditCancelled(editor, context);
                 }
             }
 
@@ -349,13 +347,13 @@ public class EditIMObjectTask extends AbstractTask {
                 notifyCompleted();
             } else {
                 if (deleteOnCancelOrSkip) {
-                    delete(editor.getObject());
+                    delete(editor.getObject(), context);
                 }
                 notifyCancelled();
             }
         } else {
             // editor invalid. Pop up a dialog.
-            interactiveEdit(editor);
+            interactiveEdit(editor, context);
         }
     }
 
@@ -372,12 +370,13 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Creates a new edit dialog.
      *
-     * @param editor the editor
-     * @param skip   if <tt>true</tt>, editing may be skipped
+     * @param editor  the editor
+     * @param skip    if <tt>true</tt>, editing may be skipped
+     * @param context the help context
      * @return a new edit dialog
      */
-    protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip) {
-        EditDialog dialog = EditDialogFactory.create(editor);
+    protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip, TaskContext context) {
+        EditDialog dialog = EditDialogFactory.create(editor, context.getHelpContext());
         dialog.addSkip(skip);
         return dialog;
     }
@@ -392,11 +391,12 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Invoked when editing is skipped.
      *
-     * @param editor the editor
+     * @param editor  the editor
+     * @param context the task context
      */
-    protected void onEditSkipped(IMObjectEditor editor) {
+    protected void onEditSkipped(IMObjectEditor editor, TaskContext context) {
         if (deleteOnCancelOrSkip) {
-            delete(editor.getObject());
+            delete(editor.getObject(), context);
         }
         notifySkipped();
     }
@@ -404,11 +404,12 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Invoked when editing is cancelled.
      *
-     * @param editor the editor
+     * @param editor  the editor
+     * @param context the task context
      */
-    protected void onEditCancelled(IMObjectEditor editor) {
+    protected void onEditCancelled(IMObjectEditor editor, TaskContext context) {
         if (deleteOnCancelOrSkip) {
-            delete(editor.getObject());
+            delete(editor.getObject(), context);
         }
         notifyCancelled();
     }
@@ -416,9 +417,10 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Deletes an object.
      *
-     * @param object the object to delete
+     * @param object  the object to delete
+     * @param context the task context
      */
-    private void delete(IMObject object) {
+    private void delete(IMObject object, TaskContext context) {
         if (!object.isNew()) {
             try {
                 object = IMObjectHelper.reload(object);
@@ -426,7 +428,7 @@ public class EditIMObjectTask extends AbstractTask {
                     // make sure the the last saved instance is being deleted
                     // to avoid validation errors
                     IMObjectDeletor deletor = new SilentIMObjectDeletor();
-                    deletor.delete(object, new DefaultIMObjectDeletionListener());
+                    deletor.delete(object, new DefaultIMObjectDeletionListener(), context.getHelpContext());
                 }
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

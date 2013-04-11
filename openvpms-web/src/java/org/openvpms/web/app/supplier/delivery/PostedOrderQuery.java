@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.delivery;
@@ -28,13 +26,13 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.app.Context;
 
 import java.util.Date;
 
@@ -42,8 +40,7 @@ import java.util.Date;
 /**
  * A query for POSTED and ACCEPTED orders, for a given supplier.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
 
@@ -59,12 +56,12 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
 
 
     /**
-     * Constructs a new <tt>PostedOrderQuery</tt>.
+     * Constructs a new {@code PostedOrderQuery}.
      *
-     * @param includeDateRange if <tt>true</tt> include the date range
-     * @param context          the context. May be <tt>null</tt>
+     * @param includeDateRange if {@code true} include the date range
+     * @param context          the layout context
      */
-    public PostedOrderQuery(boolean includeDateRange, Context context) {
+    public PostedOrderQuery(boolean includeDateRange, LayoutContext context) {
         super(ACTS, null, FinancialAct.class, context);
         setStatuses(new String[]{OrderStatus.POSTED, OrderStatus.ACCEPTED});
         this.includeDateRange = includeDateRange;
@@ -73,10 +70,10 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
     /**
      * Performs the query.
      * If constraining acts to a particular entity, the entity must be non-null
-     * or a <tt>null</tt> will be returned.
+     * or a {@code null} will be returned.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
+     * @return the query result set. May be {@code null}
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
@@ -123,10 +120,10 @@ public class PostedOrderQuery extends SupplierActQuery<FinancialAct> {
     protected ActResultSet<FinancialAct> createResultSet(
             ParticipantConstraint[] participants, SortConstraint[] sort) {
         return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                participants, null, null,
-                getStatuses(), false,
-                getConstraints(), getMaxResults(),
-                sort);
+                                              participants, null, null,
+                                              getStatuses(), false,
+                                              getConstraints(), getMaxResults(),
+                                              sort);
     }
 
     /**

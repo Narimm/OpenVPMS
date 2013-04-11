@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.subsystem;
@@ -21,14 +19,14 @@ package org.openvpms.web.component.subsystem;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
 
 
 /**
  * CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public interface CRUDWindow<T extends IMObject> {
 
@@ -107,4 +105,11 @@ public interface CRUDWindow<T extends IMObject> {
      * @return the mail context. May be <tt>null</tt>
      */
     MailContext getMailContext();
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    HelpContext getHelpContext();
 }

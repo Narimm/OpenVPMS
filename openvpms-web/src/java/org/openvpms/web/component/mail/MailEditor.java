@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.mail;
@@ -55,6 +53,7 @@ import org.openvpms.web.component.echo.DropDown;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
@@ -95,8 +94,7 @@ import java.util.Map;
 /**
  * An editor for mail messages.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class MailEditor extends AbstractModifiable {
 
@@ -114,6 +112,11 @@ public class MailEditor extends AbstractModifiable {
      * The 'to' addresses.
      */
     private List<Contact> toAddresses;
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * The selected 'from' contact.
@@ -220,10 +223,13 @@ public class MailEditor extends AbstractModifiable {
      * @param fromAddresses the available 'from' addresses
      * @param toAddresses   the available 'to' addresses
      * @param preferredTo   the preferred 'to' address. May be <tt>null</tt>
+     * @param help          the help context
      */
-    public MailEditor(List<Contact> fromAddresses, List<Contact> toAddresses, Contact preferredTo) {
+    public MailEditor(List<Contact> fromAddresses, List<Contact> toAddresses, Contact preferredTo,
+                      HelpContext help) {
         this.fromAddresses = fromAddresses;
         this.toAddresses = toAddresses;
+        this.help = help;
         from = createProperty("from", "mail.from");
         to = createProperty("to", "mail.to");
         toListener = new ModifiableListener() {
@@ -394,7 +400,7 @@ public class MailEditor extends AbstractModifiable {
         final DocRef ref = new DocRef(document, delete);
         documents.add(ref);
         DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true, false,
-                                                           new DefaultLayoutContext());
+                                                           new DefaultLayoutContext(help));
         documentViewer.setDownloadListener(new DownloaderListener() {
             public void download(Downloader downloader, String mimeType) {
                 onDownload(downloader, mimeType, ref.getReference());
@@ -520,7 +526,7 @@ public class MailEditor extends AbstractModifiable {
      */
     protected boolean doValidation(Validator validator) {
         return validator.validate(from) && validator.validate(to) && validator.validate(subject)
-               && validator.validate(message);
+                && validator.validate(message);
     }
 
     /**

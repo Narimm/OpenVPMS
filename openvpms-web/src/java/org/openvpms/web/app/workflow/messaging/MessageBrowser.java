@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.workflow.messaging;
 
@@ -23,24 +21,25 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 
 
 /**
  * Browser for <em>act.userMessage</em> and <em>act.systemMessage</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MessageBrowser extends IMObjectTableBrowser<Act> {
 
     /**
-     * Constructs a <tt>MessageBrowser</tt>.
+     * Constructs a {@code MessageBrowser}.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      */
-    public MessageBrowser(MessageQuery query) {
-        super(query);
+    public MessageBrowser(MessageQuery query, LayoutContext context) {
+        super(query, context);
     }
 
     /**

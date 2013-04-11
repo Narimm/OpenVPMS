@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -25,8 +23,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
-import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.DOCUMENT;
-import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.VERSIONS;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -40,12 +37,14 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 
+import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.DOCUMENT;
+import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.VERSIONS;
+
 
 /**
  * Editor for {@link DocumentAct}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActEditor extends AbstractActEditor {
 
@@ -210,7 +209,8 @@ public class DocumentActEditor extends AbstractActEditor {
                 if (!act.isNew()) {
                     act = IMObjectHelper.reload(act);
                     if (act != null) {
-                        IMObjectEditor editor = versionsEditor.createEditor(act, new DefaultLayoutContext());
+                        DefaultLayoutContext context = new DefaultLayoutContext(getLayoutContext().getHelpContext());
+                        IMObjectEditor editor = versionsEditor.createEditor(act, context);
                         deleted = editor.delete();
                         if (!deleted) {
                             break;
@@ -295,7 +295,8 @@ public class DocumentActEditor extends AbstractActEditor {
      */
     private void generateDoc() {
         DocumentAct act = (DocumentAct) getObject();
-        final DocumentGenerator generator = new DocumentGenerator(act, new DocumentGenerator.Listener() {
+        HelpContext help = getLayoutContext().getHelpContext();
+        final DocumentGenerator generator = new DocumentGenerator(act, help, new DocumentGenerator.Listener() {
             public void generated(Document document) {
                 docEditor.setDocument(document);
             }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.customer.estimation;
@@ -27,6 +25,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -45,8 +44,7 @@ import org.springframework.transaction.support.TransactionCallback;
  * <li>edit labels and reminders
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 class EstimationInvoicer {
 
@@ -59,7 +57,7 @@ class EstimationInvoicer {
      * @param estimation the estimation to invoice
      * @param invoice    the invoice to add to, or {@code null} to create a new invoice
      * @param context    the layout context
-     * @return an editor for the invoice, or <tt>null</tt> if the editor cannot be created
+     * @return an editor for the invoice, or {@code null} if the editor cannot be created
      * @throws OpenVPMSException for any error
      */
     public CustomerChargeActEditDialog invoice(Act estimation, FinancialAct invoice, LayoutContext context) {
@@ -79,7 +77,7 @@ class EstimationInvoicer {
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        EditDialog dialog = new EditDialog(editor, estimation);
+        EditDialog dialog = new EditDialog(editor, estimation, context.getHelpContext());
         dialog.show();
         for (Act estimationItem : estimationBean.getNodeActs("items")) {
             ActBean itemBean = new ActBean(estimationItem);
@@ -100,7 +98,7 @@ class EstimationInvoicer {
     }
 
     /**
-     * Creates a new <tt>ChargeEditor</tt>.
+     * Creates a new {@code ChargeEditor}.
      *
      * @param invoice the invoice
      * @param context the layout context
@@ -113,7 +111,7 @@ class EstimationInvoicer {
     protected static class ChargeEditor extends CustomerChargeActEditor {
 
         /**
-         * Constructs a <tt>ChargeEditor</tt>.
+         * Constructs a {@code ChargeEditor}.
          *
          * @param act     the act to edit
          * @param context the layout context
@@ -154,7 +152,7 @@ class EstimationInvoicer {
         /**
          * Returns the items collection editor.
          *
-         * @return the items collection editor. May be <tt>null</tt>
+         * @return the items collection editor. May be {@code null}
          */
         @Override
         public ActRelationshipCollectionEditor getItems() {
@@ -175,13 +173,14 @@ class EstimationInvoicer {
         private boolean estimationSaved = false;
 
         /**
-         * Constructs an <tt>EditDialog</tt>.
+         * Constructs an {@code EditDialog}.
          *
          * @param editor     the invoice editor
          * @param estimation the estimation
+         * @param help       the help context
          */
-        public EditDialog(CustomerChargeActEditor editor, Act estimation) {
-            super(editor);
+        public EditDialog(CustomerChargeActEditor editor, Act estimation, HelpContext help) {
+            super(editor, help);
             this.estimation = estimation;
         }
 
@@ -189,7 +188,7 @@ class EstimationInvoicer {
          * Saves the editor in a transaction.
          *
          * @param editor the editor
-         * @return <tt>true</tt> if the save was successful
+         * @return {@code true} if the save was successful
          */
         @Override
         protected boolean save(final IMObjectEditor editor) {

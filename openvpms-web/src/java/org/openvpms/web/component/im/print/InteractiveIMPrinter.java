@@ -12,12 +12,11 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.print;
 
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.resource.util.Messages;
 
@@ -27,54 +26,52 @@ import org.openvpms.web.resource.util.Messages;
  * the underlying implementation requires it. Pops up a dialog with options to
  * print, preview, or cancel.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InteractiveIMPrinter<T>
         extends InteractivePrinter implements IMPrinter<T> {
 
 
     /**
-     * Constructs a new <tt>InteractiveIMPrinter</tt>.
+     * Constructs a new {@code InteractiveIMPrinter}.
      *
      * @param printer the printer to delegate to
      */
-    public InteractiveIMPrinter(IMPrinter<T> printer) {
-        this(printer, false);
+    public InteractiveIMPrinter(IMPrinter<T> printer, HelpContext help) {
+        this(printer, false, help);
     }
 
     /**
-     * Constructs a new <tt>InteractiveIMPrinter</tt>.
+     * Constructs a new {@code InteractiveIMPrinter}.
      *
      * @param printer the printer to delegate to
-     * @param skip    if <tt>triue</tt> display a 'skip' button that simply
-     *                closes the dialog
+     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
      */
-    public InteractiveIMPrinter(IMPrinter<T> printer, boolean skip) {
-        this(null, printer, skip);
+    public InteractiveIMPrinter(IMPrinter<T> printer, boolean skip, HelpContext help) {
+        this(null, printer, skip, help);
     }
 
     /**
-     * Constructs a new <tt>InteractiveIMPrinter</tt>.
+     * Constructs a new {@code InteractiveIMPrinter}.
      *
-     * @param title   the dialog title. May be <tt>null</tt>
+     * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
+     * @param help    the help context
      */
-    public InteractiveIMPrinter(String title, IMPrinter<T> printer) {
-        this(title, printer, false);
+    public InteractiveIMPrinter(String title, IMPrinter<T> printer, HelpContext help) {
+        this(title, printer, false, help);
     }
 
     /**
-     * Constructs a new <tt>InteractiveIMPrinter</tt>.
+     * Constructs a new {@code InteractiveIMPrinter}.
      *
-     * @param title   the dialog title. May be <tt>null</tt>
+     * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
-     * @param skip    if <tt>triue</tt> display a 'skip' button that simply
-     *                closes the dialog
+     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param help    the help context
      */
-    public InteractiveIMPrinter(String title, IMPrinter<T> printer,
-                                boolean skip) {
-        super(title, printer, skip);
+    public InteractiveIMPrinter(String title, IMPrinter<T> printer, boolean skip, HelpContext help) {
+        super(title, printer, skip, help);
     }
 
     /**

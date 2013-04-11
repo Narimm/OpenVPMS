@@ -34,14 +34,17 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -71,12 +74,13 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
 
 
     /**
-     * Create a new <tt>DeliveryCRUDWindow</tt>.
+     * Constructs a {@code DeliveryCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public DeliveryCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DeliveryActions.INSTANCE);
+    public DeliveryCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+        super(archetypes, DeliveryActions.INSTANCE, help);
         rules = SupplierHelper.createOrderRules(GlobalContext.getInstance().getPractice());
     }
 
@@ -88,14 +92,14 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     @Override
     protected void onCreated(final FinancialAct act) {
         boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
-        final OrderTableBrowser browser = new OrderTableBrowser(delivery, GlobalContext.getInstance());
+        LayoutContext context = new DefaultLayoutContext(GlobalContext.getInstance(),getHelpContext());
+        final OrderTableBrowser browser = new OrderTableBrowser(delivery, context);
         String displayName = DescriptorHelper.getDisplayName(act);
         String title = Messages.get("supplier.delivery.selectorders.title",
                                     displayName);
         String message = Messages.get("supplier.delivery.selectorders.message",
                                       displayName);
-        PopupDialog dialog = new OrderSelectionBrowserDialog(title, message,
-                                                             browser);
+        PopupDialog dialog = new OrderSelectionBrowserDialog(title, message, browser, getHelpContext());
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
                 onCreated(act, browser);
@@ -181,13 +185,13 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new ActEditDialog(editor);
+        return new ActEditDialog(editor, getHelpContext());
     }
 
     /**
      * Posts the act. This changes the act's status to POSTED, and saves it.
      *
-     * @return <tt>true</tt> if the act was saved
+     * @return {@code true} if the act was saved
      */
     @Override
     protected boolean post(FinancialAct act) {

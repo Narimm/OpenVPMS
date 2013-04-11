@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.till;
@@ -24,6 +22,8 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
@@ -31,7 +31,6 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.web.component.app.DefaultContextSwitchListener;
 
 import java.util.Date;
 
@@ -39,22 +38,28 @@ import java.util.Date;
 /**
  * Displays acts associated with a till balance.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * The customer model index.
      */
     private int customerIndex;
 
-
     /**
-     * Constructs a <tt>TillActTableModel</tt>.
+     * Constructs a {@code TillActTableModel}.
+     *
+     * @param help the help context
      */
-    public TillActTableModel() {
+    public TillActTableModel(HelpContext help) {
         super(true, false, true, true);
+        this.help = help;
     }
 
     /**
@@ -78,7 +83,7 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
             ActBean bean = new ActBean(act);
             if (bean.hasNode("customer")) {
                 NodeDescriptor descriptor = bean.getDescriptor("customer");
-                LayoutContext context = new DefaultLayoutContext();
+                LayoutContext context = new DefaultLayoutContext(help);
                 context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
                 TableComponentFactory factory = new TableComponentFactory(context);
                 context.setComponentFactory(factory);

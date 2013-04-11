@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit;
@@ -31,8 +29,7 @@ import java.lang.reflect.Constructor;
 /**
  * A factory for {@link IMObjectEditor} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class IMObjectEditorFactory {
 
@@ -57,11 +54,10 @@ public class IMObjectEditorFactory {
      * Creates a new editor.
      *
      * @param object  the object to edit
-     * @param context the layout context. May be <code>null</code>
-     * @return an editor for <code>object</code>
+     * @param context the layout context. May be {@code null}
+     * @return an editor for {@code object}
      */
-    public static IMObjectEditor create(IMObject object,
-                                        LayoutContext context) {
+    public static IMObjectEditor create(IMObject object, LayoutContext context) {
         return create(object, null, context);
     }
 
@@ -69,12 +65,11 @@ public class IMObjectEditorFactory {
      * Creates a new editor.
      *
      * @param object  the object to edit
-     * @param context the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
-     * @return an editor for <code>object</code>
+     * @param context the parent object. May be {@code null}
+     * @param context the layout context
+     * @return an editor for {@code object}
      */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        LayoutContext context) {
+    public static IMObjectEditor create(IMObject object, IMObject parent, LayoutContext context) {
         IMObjectEditor result = null;
 
         ArchetypeHandler handler;
@@ -126,14 +121,11 @@ public class IMObjectEditorFactory {
      *
      * @param type    the editor type
      * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
-     * @return a constructor to construct the editor, or <code>null</code> if
-     *         none can be found
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}
+     * @return a constructor to construct the editor, or {@code null} if none can be found
      */
-    private static Constructor getConstructor(Class type, IMObject object,
-                                              IMObject parent,
-                                              LayoutContext context) {
+    private static Constructor getConstructor(Class type, IMObject object, IMObject parent, LayoutContext context) {
         Constructor[] ctors = type.getConstructors();
 
         for (Constructor ctor : ctors) {
@@ -145,14 +137,10 @@ public class IMObjectEditorFactory {
                 Class ctorLayout = ctorTypes[2];
 
                 if (ctorObj.isAssignableFrom(object.getClass())
-                        && ((parent != null && ctorParent.isAssignableFrom(
-                        parent.getClass()))
-                        || (parent == null && IMObject.class.isAssignableFrom(
-                        ctorParent)))
-                        && ((context != null && ctorLayout.isAssignableFrom(
-                        context.getClass()))
-                        || (context == null && LayoutContext.class.isAssignableFrom(
-                        ctorLayout)))) {
+                        && ((parent != null && ctorParent.isAssignableFrom(parent.getClass()))
+                        || (parent == null && IMObject.class.isAssignableFrom(ctorParent)))
+                        && ((context != null && ctorLayout.isAssignableFrom(context.getClass()))
+                        || (context == null && LayoutContext.class.isAssignableFrom(ctorLayout)))) {
                     return ctor;
                 }
             }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -29,19 +27,22 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.test.AbstractAppTest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * Tests the {@link SingleParticipationCollectionEditor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SingleParticipationCollectionEditorTestCase extends AbstractAppTest {
 
@@ -58,7 +59,7 @@ public class SingleParticipationCollectionEditorTestCase extends AbstractAppTest
         // create a SingleParticipationCollectionEditor for a clinician participation
         CollectionProperty property = createCollectionProperty(act, "clinician");
         SingleParticipationCollectionEditor editor = new SingleParticipationCollectionEditor(property, act,
-                new DefaultLayoutContext());
+                new DefaultLayoutContext(new HelpContext("foo", null)));
         editor.getComponent();
         assertTrue(editor.isEmpty());
         assertTrue(editor.isValid());

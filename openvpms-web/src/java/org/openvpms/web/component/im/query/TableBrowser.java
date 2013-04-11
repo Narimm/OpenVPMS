@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
@@ -30,6 +28,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
@@ -46,15 +45,9 @@ import java.util.List;
  * Implementation of {@link Browser} that renders results in a table.
  * .
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
-
-    /**
-     * The selected action command.
-     */
-    public static final String SELECTED = "selected";
 
     /**
      * The paged table.
@@ -65,6 +58,11 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      * The model to render results.
      */
     private IMTableModel<T> model;
+
+    /**
+     * The layout context.
+     */
+    private final LayoutContext context;
 
     /**
      * Determines if the model should be created for each query.
@@ -87,13 +85,15 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      * Construct a new <code>TableBrowser</code> that queries objects using the
      * specified query, displaying them in the table.
      *
-     * @param query the query
-     * @param sort  the sort criteria. May be <code>null</code>
-     * @param model the table model. If <tt>null</tt>, one will be created on each query
+     * @param query   the query
+     * @param sort    the sort criteria. May be <code>null</code>
+     * @param model   the table model. If <tt>null</tt>, one will be created on each query
+     * @param context the layout context
      */
-    public TableBrowser(Query<T> query, SortConstraint[] sort, IMTableModel<T> model) {
+    public TableBrowser(Query<T> query, SortConstraint[] sort, IMTableModel<T> model, LayoutContext context) {
         super(query, sort);
         this.model = model;
+        this.context = context;
         createModel = (model == null);
         if (model != null) {
             registerTableChangeListener(model);
@@ -280,7 +280,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
     protected PagedIMTable<T> getTable() {
         if (table == null) {
             if (model == null) {
-                model = createTableModel();
+                model = createTableModel(context);
                 registerTableChangeListener(model);
             }
             table = createTable(model);
@@ -303,9 +303,10 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
      * <p/>
      * Subclasses must override this method if they do not specify a model at construction.
      *
+     * @param context the layout context
      * @return a table model
      */
-    protected IMTableModel<T> createTableModel() {
+    protected IMTableModel<T> createTableModel(LayoutContext context) {
         throw new IllegalStateException("No table model has been registered");
     }
 
@@ -335,6 +336,15 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
                 }
             }
         });
+    }
+
+    /**
+     * Returns the layout context.
+     *
+     * @return the layout context
+     */
+    protected LayoutContext getContext() {
+        return context;
     }
 
     /**

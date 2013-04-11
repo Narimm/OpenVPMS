@@ -29,7 +29,7 @@ import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.workflow.scheduling.AbstractScheduleActEditor;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -66,10 +66,10 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
 
 
     /**
-     * Constructs an <tt>AppointmentActEditor</tt>.
+     * Constructs an {@code AppointmentActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
     public AppointmentActEditor(Act act, IMObject parent, LayoutContext context) {
@@ -213,7 +213,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     /**
      * Creates a component representing the customerr and patient alerts.
      *
-     * @return the alerts component or <tt>null</tt> if neither has alerts
+     * @return the alerts component or {@code null} if neither has alerts
      */
     private Component createAlerts() {
         Component result = null;
@@ -247,12 +247,13 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * Returns any alerts associated with the customer.
      *
      * @param customer the customer
-     * @return any alerts associated with the customer, or <tt>null</tt> if the customer has no alerts
+     * @return any alerts associated with the customer, or {@code null} if the customer has no alerts
      */
     private Component getCustomerAlerts(Party customer) {
         Component result = null;
-        Context context = getLayoutContext().getContext();
-        AlertSummary alerts = new CustomerSummary(context).getAlertSummary(customer);
+        LayoutContext context = getLayoutContext();
+        CustomerSummary summary = new CustomerSummary(context.getContext(), context.getHelpContext());
+        AlertSummary alerts = summary.getAlertSummary(customer);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", "bold"),
                                           alerts.getComponent());
@@ -264,11 +265,12 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      * Returns any alerts associated with the patient.
      *
      * @param patient the patient
-     * @return any alerts associated with the patient, or <tt>null</tt> if the patient has no alerts
+     * @return any alerts associated with the patient, or {@code null} if the patient has no alerts
      */
     private Component getPatientAlerts(Party patient) {
         Component result = null;
-        AlertSummary alerts = new PatientSummary().getAlertSummary(patient);
+        HelpContext help = getLayoutContext().getHelpContext();
+        AlertSummary alerts = new PatientSummary(help).getAlertSummary(patient);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", "bold"),
                                           alerts.getComponent());
@@ -380,7 +382,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      *
      * @param schedule the schedule
      * @return the default appointment type, or the the first appointment type
-     *         if there is no default, or <tt>null</tt> if none is found
+     *         if there is no default, or {@code null} if none is found
      */
     private Entity getDefaultAppointmentType(Party schedule) {
         return new AppointmentRules().getDefaultAppointmentType(schedule);
@@ -405,7 +407,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
          *
          * @param object     the object to lay out
          * @param properties the object's properties
-         * @param parent     the parent object. May be <tt>null</tt>
+         * @param parent     the parent object. May be {@code null}
          * @param container  the container to use
          * @param context    the layout context
          */
@@ -422,7 +424,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
          * This implementation returns the customer component.
          *
          * @param components the components
-         * @return the customer component, or <tt>null</tt> if none is found
+         * @return the customer component, or {@code null} if none is found
          */
         @Override
         protected Component getDefaultFocus(ComponentSet components) {

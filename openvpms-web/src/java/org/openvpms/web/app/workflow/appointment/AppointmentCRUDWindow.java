@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -36,6 +34,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -53,8 +52,7 @@ import java.util.Date;
 /**
  * Appointment CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
@@ -75,12 +73,14 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
 
 
     /**
-     * Constructs a new <tt>AppointmentCRUDWindow</tt>.
+     * Constructs an {@code AppointmentCRUDWindow}.
      *
      * @param browser the browser
+     * @param help    the help context
      */
-    public AppointmentCRUDWindow(AppointmentBrowser browser) {
-        super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")));
+    public AppointmentCRUDWindow(AppointmentBrowser browser, HelpContext help) {
+        super(Archetypes.create("act.customerAppointment", Act.class, Messages.get("workflow.scheduling.createtype")),
+              help);
         this.browser = browser;
         rules = new AppointmentRules();
     }
@@ -194,7 +194,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new AppointmentEditDialog(editor);
+        return new AppointmentEditDialog(editor, getHelpContext());
     }
 
     /**
@@ -218,7 +218,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         // make sure the act is still available and PENDING prior to beginning
         // workflow
         if (act != null && AppointmentStatus.PENDING.equals(act.getStatus())) {
-            CheckInWorkflow workflow = new CheckInWorkflow(act, GlobalContext.getInstance());
+            CheckInWorkflow workflow = new CheckInWorkflow(act, GlobalContext.getInstance(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
@@ -341,7 +341,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param startTime   the new start time
      */
     private void paste(Act appointment, Entity schedule, Date startTime) {
-        AppointmentActEditor editor = new AppointmentActEditor(appointment, null, new DefaultLayoutContext());
+        DefaultLayoutContext context = new DefaultLayoutContext(getHelpContext());
+        AppointmentActEditor editor = new AppointmentActEditor(appointment, null, context);
         EditDialog dialog = edit(editor);  // NOTE: need to update the start time after dialog is created
         editor.setSchedule(schedule);      //       See AppointmentEditDialog.timesModified().
         editor.setStartTime(startTime); // will recalc end time

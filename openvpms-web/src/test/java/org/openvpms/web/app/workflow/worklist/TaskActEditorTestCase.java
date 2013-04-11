@@ -12,13 +12,9 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.workflow.worklist;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -35,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -42,11 +39,13 @@ import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.Date;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests the {@link TaskActEditor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskActEditorTestCase extends AbstractAppTest {
 
@@ -67,12 +66,12 @@ public class TaskActEditorTestCase extends AbstractAppTest {
 
 
     /**
-     * Verfies that a task editor can be created and saved when mandatory fields are populated.
+     * Verifies that a task editor can be created and saved when mandatory fields are populated.
      */
     @Test
     public void testSave() {
         Context context = new LocalContext();
-        LayoutContext layout = new DefaultLayoutContext();
+        LayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
         layout.setContext(context);
         Act act = (Act) create(ScheduleArchetypes.TASK);
 
@@ -129,7 +128,7 @@ public class TaskActEditorTestCase extends AbstractAppTest {
     }
 
     /**
-     * Creates a new editor, pre-populating the customer, workk list, and user.
+     * Creates a new editor, pre-populating the customer, worklist, and user.
      *
      * @return a new editor
      */
@@ -137,12 +136,12 @@ public class TaskActEditorTestCase extends AbstractAppTest {
         Context context = new LocalContext();
         Party customer = TestHelper.createCustomer();
 
-        // populate the context. These will be used to initalise the task
+        // populate the context. These will be used to initialise the task
         context.setCustomer(customer);
         context.setWorkList(worklist);
         context.setUser(user);
 
-        LayoutContext layout = new DefaultLayoutContext();
+        LayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
         layout.setContext(context);
         Act act = (Act) create(ScheduleArchetypes.TASK);
 

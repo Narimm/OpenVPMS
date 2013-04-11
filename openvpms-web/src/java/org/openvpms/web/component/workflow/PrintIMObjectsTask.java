@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.workflow;
@@ -32,8 +30,7 @@ import java.util.Collection;
 /**
  * Prints a collection of objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PrintIMObjectsTask<T extends IMObject> extends AbstractTask {
 
@@ -74,7 +71,7 @@ public class PrintIMObjectsTask<T extends IMObject> extends AbstractTask {
             try {
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(shortName, context);
                 IMObjectReportPrinter<T> printer = new IMObjectReportPrinter<T>(objects, locator);
-                InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, skip);
+                InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, skip, context.getHelpContext());
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed(String printer) {

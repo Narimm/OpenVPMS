@@ -60,8 +60,7 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 /**
  * Editor for collections of {@link ActRelationship}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public class ActRelationshipCollectionEditor
         extends MultipleRelationshipCollectionTargetEditor {
@@ -379,7 +378,7 @@ public class ActRelationshipCollectionEditor
                 // copy the act, and associate the product
                 List<IMObject> objects = copier.apply(act);
                 copy = (Act) objects.get(0);
-                LayoutContext context = new DefaultLayoutContext();
+                LayoutContext context = new DefaultLayoutContext(getContext().getHelpContext());
                 context.setComponentFactory(new ReadOnlyComponentFactory(context));
                 context.setCache(getContext().getCache());
                 editor = (ActItemEditor) createEditor(copy, context);

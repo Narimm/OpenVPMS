@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -38,13 +36,12 @@ import org.openvpms.web.component.im.util.Archetypes;
 /**
  * Appointment workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentWorkspace extends SchedulingWorkspace {
 
     /**
-     * Creates a new <tt>AppointmentWorkspace</tt>.
+     * Constructs an {@code AppointmentWorkspace}.
      */
     public AppointmentWorkspace() {
         super("workflow", "scheduling", Archetypes.create("entity.organisationScheduleView", Entity.class));
@@ -53,7 +50,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Entity object) {
@@ -76,7 +73,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * Determines if the workspace can be updated with instances of the specified archetype.
      *
      * @param shortName the archetype's short name
-     * @return <tt>true</tt> if the workspace can be updated by the archetype; otherwise <tt>false</tt>
+     * @return {@code true} if the workspace can be updated by the archetype; otherwise {@code false}
      * @see #update
      */
     @Override
@@ -125,7 +122,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * @return a new CRUD window
      */
     protected ScheduleCRUDWindow createCRUDWindow() {
-        return new AppointmentCRUDWindow((AppointmentBrowser) getBrowser());
+        return new AppointmentCRUDWindow((AppointmentBrowser) getBrowser(), getHelpContext());
     }
 
     /**
@@ -146,7 +143,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
     /**
      * Invoked when an event is selected.
      *
-     * @param event the event. May be <tt>null</tt>
+     * @param event the event. May be {@code null}
      */
     @Override
     protected void eventSelected(PropertySet event) {
@@ -181,7 +178,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * Returns the default schedule view for the specified practice location.
      *
      * @param location the practice location
-     * @return the default schedule view, or <tt>null</tt> if there is no
+     * @return the default schedule view, or {@code null} if there is no
      *         default
      */
     protected Entity getDefaultView(Party location) {

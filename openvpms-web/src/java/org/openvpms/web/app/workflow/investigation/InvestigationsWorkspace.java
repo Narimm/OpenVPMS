@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.investigation;
@@ -36,14 +34,12 @@ import org.openvpms.web.component.util.GroupBoxFactory;
 /**
  * Workspace to display list of investigation results.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class InvestigationsWorkspace
-        extends AbstractReportingWorkspace<Act> {
+public class InvestigationsWorkspace extends AbstractReportingWorkspace<Act> {
 
     /**
-     * Creates a new <tt>InvestigationsWorkspace</tt>.
+     * Constructs an {@code InvestigationsWorkspace}.
      */
     public InvestigationsWorkspace() {
         super("workflow", "investigation", Act.class);
@@ -60,13 +56,13 @@ public class InvestigationsWorkspace
         Query<Act> query = new InvestigationsQuery();
 
         // create a layout context, with hyperlinks enabled
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(getHelpContext());
         TableComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
 
         InvestigationsTableModel model = new InvestigationsTableModel(context);
-        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model);
+        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model, context);
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
@@ -75,7 +71,7 @@ public class InvestigationsWorkspace
     /**
      * Determines if the workspace should be refreshed.
      *
-     * @return <tt>true</tt>
+     * @return {@code true}
      */
     @Override
     protected boolean refreshWorkspace() {

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -27,6 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.resource.util.Messages;
@@ -39,8 +38,7 @@ import java.util.Date;
 /**
  * Edit dialog for appointment acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentEditDialog extends EditDialog {
 
@@ -56,12 +54,13 @@ public class AppointmentEditDialog extends EditDialog {
 
 
     /**
-     * Construct a new <code>AppointmentEditDialog</code>.
+     * Constructs a <code>AppointmentEditDialog</code>.
      *
      * @param editor the editor
+     * @param help   the help context
      */
-    public AppointmentEditDialog(IMObjectEditor editor) {
-        super(editor);
+    public AppointmentEditDialog(IMObjectEditor editor, HelpContext help) {
+        super(editor, help);
         getAppointmentTimes();
     }
 
@@ -195,8 +194,8 @@ public class AppointmentEditDialog extends EditDialog {
         Act act = getAppointment();
         return !ObjectUtils.equals(getDate(startTime),
                                    getDate(act.getActivityStartTime()))
-               || !ObjectUtils.equals(getDate(endTime),
-                                      getDate(act.getActivityEndTime()));
+                || !ObjectUtils.equals(getDate(endTime),
+                                       getDate(act.getActivityEndTime()));
     }
 
     /**

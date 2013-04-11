@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.subsystem;
@@ -35,15 +33,13 @@ import org.openvpms.web.resource.util.Messages;
  * Provides an {@link IMObjectSelector selector} to select objects and
  * {@link CRUDWindow CRUD window}. The selector is optional.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class BasicCRUDWorkspace<T extends IMObject>
         extends AbstractCRUDWorkspace<T, T> {
 
     /**
-     * Constructs a new <tt>BasicCRUDWorkspace</tt>, with a selector for
-     * the object.
+     * Constructs a{@code BasicCRUDWorkspace}, with a selector for  the object.
      * <p/>
      * The {@link #setArchetypes} method must be invoked to set the archetypes
      * that the workspace supports, before performing any operations.
@@ -56,13 +52,13 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
     }
 
     /**
-     * Constructs a new <tt>BasicCRUDWorkspace</tt>, with a selector for
+     * Constructs a new {@code BasicCRUDWorkspace}, with a selector for
      * the object.
      *
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
      * @param archetypes  the archetypes that this operates on.
-     *                    If <tt>null</tt>, the {@link #setArchetypes}
+     *                    If {@code null}, the {@link #setArchetypes}
      *                    method must be invoked to set a non-null value
      *                    before performing any operation
      */
@@ -72,15 +68,15 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
     }
 
     /**
-     * Constructs a new <tt>BasicCRUDWorkspace</tt>.
+     * Constructs a {@code BasicCRUDWorkspace}.
      *
      * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
+     * @param workspaceId  the workspace localisation identifier
      * @param archetypes   the archetypes that this operates on.
-     *                     If <tt>null</tt>, the {@link #setArchetypes}
+     *                     If {@code null}, the {@link #setArchetypes}
      *                     method must be invoked to set a non-null value
      *                     before performing any operation
-     * @param showSelector if <tt>true</tt>, show a selector to select the
+     * @param showSelector if {@code true}, show a selector to select the
      *                     object
      */
     public BasicCRUDWorkspace(String subsystemId, String workspaceId,
@@ -91,7 +87,7 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(T object) {
@@ -110,7 +106,7 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
     @Override
     protected BrowserDialog<T> createBrowserDialog(Browser<T> browser) {
         String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
-        return new BrowserDialog<T>(title, browser, true);
+        return new BrowserDialog<T>(title, browser, true, getHelpContext());
     }
 
     /**

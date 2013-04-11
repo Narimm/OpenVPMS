@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.app.admin.organisation.SubscriptionHelper;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -114,6 +115,19 @@ public class HelpDialog extends PopupDialog {
         SplitPane header = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, "HelpDialog.header",
                                                    getHeader(), footer);
         getLayout().add(header);
+    }
+
+    /**
+     * Displays a help dialog for the specified help context.
+     *
+     * @param context the help context. May be {@code null}
+     */
+    public static void show(HelpContext context) {
+        if (context == null) {
+            new HelpDialog().show();
+        } else {
+            show(context.getTopic());
+        }
     }
 
     /**

@@ -31,8 +31,7 @@ import org.openvpms.web.component.print.PrinterListener;
 /**
  * Prints an {@link IMObject}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PrintIMObjectTask extends AbstractTask {
 
@@ -47,40 +46,40 @@ public class PrintIMObjectTask extends AbstractTask {
     private String shortName;
 
     /**
-     * The mail context. May be <tt>null</tt>
+     * The mail context. May be {@code null}
      */
     private final MailContext mailContext;
 
     /**
      * Determines if objects should be printed interactively.
-     * If <tt>false</tt>, indicates to try and print in the background unless
+     * If {@code false}, indicates to try and print in the background unless
      * printing requires user intervention.
      */
     private final boolean interactive;
 
     /**
      * Determines if the skip button should be displayed if
-     * {@link #isRequired()} is <tt>false</tt>.
+     * {@link #isRequired()} is {@code false}.
      */
     private boolean enableSkip = true;
 
 
     /**
-     * Creates a new <tt>PrintIMObjectTask</tt>.
+     * Creates a new {@code PrintIMObjectTask}.
      *
      * @param object  the object to print
-     * @param context the mail context. May be <tt>null</tt>
+     * @param context the mail context. May be {@code null}
      */
     public PrintIMObjectTask(IMObject object, MailContext context) {
         this(object, context, true);
     }
 
     /**
-     * Creates a new <tt>PrintIMObjectTask</tt>.
+     * Creates a new {@code PrintIMObjectTask}.
      *
      * @param object      the object to print
-     * @param context     the mail context. May be <tt>null</tt>
-     * @param interactive if <tt>true</tt> print interactively, otherwise attempt to print in the background
+     * @param context     the mail context. May be {@code null}
+     * @param interactive if {@code true} print interactively, otherwise attempt to print in the background
      */
     public PrintIMObjectTask(IMObject object, MailContext context, boolean interactive) {
         this.object = object;
@@ -89,21 +88,21 @@ public class PrintIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Creates a new <tt>PrintIMObjectTask</tt>.
+     * Creates a new {@code PrintIMObjectTask}.
      *
      * @param shortName the short name of the object to print
-     * @param context   the mail context. May be <tt>null</tt>
+     * @param context   the mail context. May be {@code null}
      */
     public PrintIMObjectTask(String shortName, MailContext context) {
         this(shortName, context, true);
     }
 
     /**
-     * Creates a new <tt>PrintIMObjectTask</tt>.
+     * Creates a new {@code PrintIMObjectTask}.
      *
      * @param shortName   the short name of the object to print
-     * @param context     the mail context. May be <tt>null</tt>
-     * @param interactive if <tt>true</tt> print interactively, otherwise attempt to print in the background
+     * @param context     the mail context. May be {@code null}
+     * @param interactive if {@code true} print interactively, otherwise attempt to print in the background
      */
     public PrintIMObjectTask(String shortName, MailContext context, boolean interactive) {
         this.shortName = shortName;
@@ -113,9 +112,9 @@ public class PrintIMObjectTask extends AbstractTask {
 
     /**
      * Determines if printing may be skipped. This only applies when the task
-     * is not required. Defaults to <tt>true</tt>.
+     * is not required. Defaults to {@code true}.
      *
-     * @param skip if <tt>true</tt> and the task is not required, displays a
+     * @param skip if {@code true} and the task is not required, displays a
      *             skip button to skip printing.
      */
     public void setEnableSkip(boolean skip) {
@@ -140,7 +139,7 @@ public class PrintIMObjectTask extends AbstractTask {
                 IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator);
                 boolean skip = !isRequired() && enableSkip;
                 InteractiveIMPrinter<IMObject> iPrinter
-                        = new InteractiveIMPrinter<IMObject>(printer, skip);
+                        = new InteractiveIMPrinter<IMObject>(printer, skip, context.getHelpContext());
                 iPrinter.setInteractive(interactive);
                 iPrinter.setMailContext(mailContext);
 

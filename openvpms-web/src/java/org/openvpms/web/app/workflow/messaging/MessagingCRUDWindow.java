@@ -31,6 +31,7 @@ import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -74,12 +75,13 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
 
     /**
-     * Constructs a <tt>MessagingCRUDWindow</tt>.
+     * Constructs a {@code MessagingCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public MessagingCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, DefaultIMObjectActions.<Act>getInstance());
+    public MessagingCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), help);
     }
 
     /**
@@ -95,13 +97,13 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
     /**
      * Returns the mail context.
      *
-     * @return the mail context. May be <tt>null</tt>
+     * @return the mail context. May be {@code null}
      */
     @Override
     public MailContext getMailContext() {
         MailContext context = null;
         if (getObject() != null) {
-            context = CustomerMailContext.create(getObject(), GlobalContext.getInstance());
+            context = CustomerMailContext.create(getObject(), GlobalContext.getInstance(), getHelpContext());
         }
         if (context == null) {
             context = super.getMailContext();

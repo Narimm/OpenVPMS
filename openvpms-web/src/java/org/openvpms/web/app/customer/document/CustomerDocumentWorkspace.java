@@ -12,33 +12,32 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.document;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Workspace for <em>act.customerDocument*</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class CustomerDocumentWorkspace
-        extends CustomerActWorkspace<DocumentAct> {
+public class CustomerDocumentWorkspace extends CustomerActWorkspace<DocumentAct> {
 
     /**
-     * Constructs a <tt>CustomerDocumentWorkspace</tt>.
+     * Constructs a {@code CustomerDocumentWorkspace}.
+     *
+     * @param context the context
      */
-    public CustomerDocumentWorkspace() {
-        super("customer", "document");
+    public CustomerDocumentWorkspace(Context context) {
+        super("customer", "document", context);
         setChildArchetypes(DocumentAct.class, CustomerDocumentQuery.SHORT_NAMES);
     }
 
@@ -48,7 +47,7 @@ public class CustomerDocumentWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<DocumentAct> createCRUDWindow() {
-        return new DocumentCRUDWindow(getChildArchetypes());
+        return new DocumentCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**

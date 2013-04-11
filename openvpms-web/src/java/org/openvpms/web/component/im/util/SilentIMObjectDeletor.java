@@ -12,21 +12,19 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.im.util;
 
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.help.HelpContext;
 
 
 /**
  * Implementation of {@link IMObjectDeletor} that doesn't prompt for confirmation.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SilentIMObjectDeletor extends IMObjectDeletor {
 
@@ -35,19 +33,22 @@ public class SilentIMObjectDeletor extends IMObjectDeletor {
      *
      * @param object   the object to remove
      * @param listener the listener to notify
+     * @param help the help context
      */
-    protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener) {
-        doRemove(object, listener);
+    protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
+        doRemove(object, listener, help);
     }
 
     /**
-     * Invoked to remove anobject that has {@link EntityRelationship}s to other objects.
+     * Invoked to remove an object that has {@link EntityRelationship}s to other objects.
      *
      * @param object   the object to remove
      * @param listener the listener to notify
+     * @param help  the help context
      */
-    protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener) {
-        doRemove(object, listener);
+    protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener,
+                                                                HelpContext help) {
+        doRemove(object, listener, help);
     }
 
     /**

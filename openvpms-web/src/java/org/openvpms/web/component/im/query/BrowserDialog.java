@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
@@ -25,6 +23,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -33,8 +32,7 @@ import org.openvpms.web.component.util.RowFactory;
 /**
  * Displays a {@link Browser} in a popup dialog.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class BrowserDialog<T> extends PopupDialog {
 
@@ -71,49 +69,53 @@ public class BrowserDialog<T> extends PopupDialog {
 
 
     /**
-     * Construct a new <tt>BrowserDialog</tt>.
+     * Constructs a {@code BrowserDialog}.
      *
      * @param title   the dialog title
      * @param browser the browser
+     * @param help    the help context
      */
-    public BrowserDialog(String title, Browser<T> browser) {
-        this(title, browser, false);
+    public BrowserDialog(String title, Browser<T> browser, HelpContext help) {
+        this(title, browser, false, help);
     }
 
     /**
-     * Constructs a new <tt>BrowserDialog</tt>.
+     * Constructs a {@code BrowserDialog}.
      *
      * @param title   the dialog title
      * @param buttons the buttons to display
      * @param browser the browser
+     * @param help    the help context
      */
-    public BrowserDialog(String title, String[] buttons, Browser<T> browser) {
-        this(title, null, buttons, browser, false);
+    public BrowserDialog(String title, String[] buttons, Browser<T> browser, HelpContext help) {
+        this(title, null, buttons, browser, false, help);
     }
 
     /**
-     * Construct a new <tt>BrowserDialog</tt>.
+     * Constructs a {@code BrowserDialog}.
      *
      * @param title   the dialog title
      * @param browser the browser
-     * @param addNew  if <tt>true</tt> add a 'new' button
+     * @param addNew  if {@code true} add a 'new' button
+     * @param help    the help context
      */
-    public BrowserDialog(String title, Browser<T> browser, boolean addNew) {
-        this(title, null, CANCEL, browser, addNew);
+    public BrowserDialog(String title, Browser<T> browser, boolean addNew, HelpContext help) {
+        this(title, null, CANCEL, browser, addNew, help);
     }
 
     /**
-     * Construct a new <tt>BrowserDialog</tt>.
+     * Constructs a {@code BrowserDialog}.
      *
      * @param title   the dialog title
-     * @param message the dialog message. May be <tt>null</tt>
+     * @param message the dialog message. May be {@code null}
      * @param buttons the buttons to display
      * @param browser the browser
-     * @param addNew  if <tt>true</tt> add a 'new' button
+     * @param addNew  if {@code true} add a 'new' button
+     * @param help    the help context
      */
     public BrowserDialog(String title, String message, String[] buttons,
-                         Browser<T> browser, boolean addNew) {
-        super(title, STYLE, buttons, browser.getFocusGroup());
+                         Browser<T> browser, boolean addNew, HelpContext help) {
+        super(title, STYLE, buttons, help, browser.getFocusGroup());
         setModal(true);
 
         Component component = browser.getComponent();
@@ -153,9 +155,9 @@ public class BrowserDialog<T> extends PopupDialog {
     /**
      * Determines if the dialog should close on selection.
      * <p/>
-     * Defaults to <tt>true</tt>.
+     * Defaults to {@code true}.
      *
-     * @param close if <tt>true</tt>, close the dialog when an object is selected
+     * @param close if {@code true}, close the dialog when an object is selected
      */
     public void setCloseOnSelection(boolean close) {
         closeOnSelection = close;
@@ -173,7 +175,7 @@ public class BrowserDialog<T> extends PopupDialog {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <tt>null</tt> if none was selected
+     * @return the selected object, or {@code null} if none was selected
      */
     public T getSelected() {
         return selected;
@@ -182,7 +184,7 @@ public class BrowserDialog<T> extends PopupDialog {
     /**
      * Determines if an object has been selected.
      *
-     * @return <tt>true</tt> if an object has been selected, otherwise <tt>false</tt>
+     * @return {@code true} if an object has been selected, otherwise {@code false}
      */
     public boolean isSelected() {
         return getSelected() != null;
@@ -192,7 +194,7 @@ public class BrowserDialog<T> extends PopupDialog {
      * Determines if the 'New' button was selected, indicating that a new object
      * should be created.
      *
-     * @return <tt>true</tt> if 'New' was selected
+     * @return {@code true} if 'New' was selected
      */
     public boolean createNew() {
         return createNew;
@@ -230,14 +232,14 @@ public class BrowserDialog<T> extends PopupDialog {
     /**
      * Sets the selected object.
      *
-     * @param object the selected object. May be <tt>null</tt>
+     * @param object the selected object. May be {@code null}
      */
     protected void setSelected(T object) {
         selected = object;
     }
 
     /**
-     * Select the current object using {@link #setSelected}, and if <tt>closeOnSelection</tt> is <tt>true</tt>,
+     * Select the current object using {@link #setSelected}, and if {@code closeOnSelection} is {@code true},
      * invokes {@link #onOK} to close the browser.
      *
      * @param object the selected object

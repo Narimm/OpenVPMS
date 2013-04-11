@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.checkout;
@@ -36,8 +34,7 @@ import java.math.BigDecimal;
  * Task to edit {@link Act}s which have an archetype of
  * <em>act.customerAccountPayment</em> or <em>act.customerAccountRefund</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PaymentEditTask extends EditIMObjectTask {
 
@@ -48,11 +45,10 @@ public class PaymentEditTask extends EditIMObjectTask {
 
 
     /**
-     * Constructs a new <tt>PaymentEditTask</tt> to edit an object
-     * in the {@link TaskContext}.
+     * Constructs a {@code PaymentEditTask} to edit an object in the {@link TaskContext}.
      *
      * @param chargeAmount the charge amount that triggered the payment
-     *                     workflow. If <tt>0</tt>, the context will be examined
+     *                     workflow. If {@code 0}, the context will be examined
      *                     for an invoice to determine the amount
      */
     public PaymentEditTask(BigDecimal chargeAmount) {
@@ -70,7 +66,7 @@ public class PaymentEditTask extends EditIMObjectTask {
     @Override
     protected IMObjectEditor createEditor(IMObject object,
                                           TaskContext context) {
-        LayoutContext layout = new DefaultLayoutContext(true);
+        LayoutContext layout = new DefaultLayoutContext(true, context.getHelpContext());
         layout.setContext(context);
         BigDecimal amount = chargeAmount;
         if (amount.compareTo(BigDecimal.ZERO) == 0) {

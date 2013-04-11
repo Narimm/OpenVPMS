@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.wip;
@@ -36,22 +34,20 @@ import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Workspace to detail customer charges that are works-in-progress, i.e not
- * POSTED.
+ * Workspace to detail customer charges that are works-in-progress, i.e not POSTED.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-19 07:20:38Z $
+ * @author Tim Anderson
  */
 public class IncompleteChargesWorkspace
         extends AbstractReportingWorkspace<Act> {
@@ -77,13 +73,14 @@ public class IncompleteChargesWorkspace
      */
     @Override
     protected void doLayout(Component container, FocusGroup group) {
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(getHelpContext());
         IMObjectComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
 
         query = new IncompleteChargesQuery();
-        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, new IncompleteChargesTableModel(context));
+        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, new IncompleteChargesTableModel(context),
+                                                                    context);
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
@@ -111,7 +108,7 @@ public class IncompleteChargesWorkspace
                                                                                  GlobalContext.getInstance());
             IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(query, locator);
             String title = Messages.get("reporting.wip.print");
-            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer);
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

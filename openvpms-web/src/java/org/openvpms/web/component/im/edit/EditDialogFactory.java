@@ -12,13 +12,12 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.im.edit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
@@ -28,8 +27,7 @@ import java.lang.reflect.Constructor;
 /**
  * A factory for {@link EditDialog} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EditDialogFactory {
 
@@ -53,18 +51,19 @@ public class EditDialogFactory {
      * Creates a new dialog for an editor.
      *
      * @param editor the editor
+     * @param help   the help context
      * @return a new dialog
      */
-    public static EditDialog create(IMObjectEditor editor) {
+    public static EditDialog create(IMObjectEditor editor, HelpContext help) {
         EditDialog result = null;
         String shortName = editor.getArchetypeDescriptor().getShortName();
         ArchetypeHandler handler = getDialogs().getHandler(shortName);
         if (handler != null) {
             Class type = handler.getType();
-            Constructor ctor = getConstructor(type, editor);
+            Constructor ctor = getConstructor(type, editor, help);
             if (ctor != null) {
                 try {
-                    result = (EditDialog) ctor.newInstance(editor);
+                    result = (EditDialog) ctor.newInstance(editor, help);
                 } catch (Throwable throwable) {
                     log.error(throwable, throwable);
                 }
@@ -73,7 +72,7 @@ public class EditDialogFactory {
             }
         }
         if (result == null) {
-            result = new EditDialog(editor);
+            result = new EditDialog(editor, help);
         }
         return result;
     }
@@ -95,16 +94,18 @@ public class EditDialogFactory {
      *
      * @param type   the editor dialog type
      * @param editor the editor
-     * @return a constructor to construct the dialog, or <code>null</code> if none can be found
+     * @param help   the help context
+     * @return a constructor to construct the dialog, or {@code null} if none can be found
      */
-    private static Constructor getConstructor(Class type, IMObjectEditor editor) {
+    private static Constructor getConstructor(Class type, IMObjectEditor editor, HelpContext help) {
         Constructor[] ctors = type.getConstructors();
         for (Constructor ctor : ctors) {
             // check parameters
             Class[] ctorTypes = ctor.getParameterTypes();
-            if (ctorTypes.length == 1) {
+            if (ctorTypes.length == 2) {
                 Class ctorEditor = ctorTypes[0];
-                if (ctorEditor.isAssignableFrom(editor.getClass())) {
+                Class ctorHelp = ctorTypes[1];
+                if (ctorEditor.isAssignableFrom(editor.getClass()) && ctorHelp.isAssignableFrom(help.getClass())) {
                     return ctor;
                 }
             }

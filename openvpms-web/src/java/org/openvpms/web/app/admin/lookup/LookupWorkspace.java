@@ -12,28 +12,25 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin.lookup;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.web.component.subsystem.CRUDWindow;
-import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.im.query.QueryBrowser;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Lookup workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class LookupWorkspace extends ResultSetCRUDWorkspace<Lookup> {
 
     /**
-     * Construct a new <tt>LookupWorkspace</tt>.
+     * Constructs a {@code LookupWorkspace}.
      */
     public LookupWorkspace() {
         super("admin", "lookup");
@@ -48,7 +45,7 @@ public class LookupWorkspace extends ResultSetCRUDWorkspace<Lookup> {
     @Override
     protected CRUDWindow<Lookup> createCRUDWindow() {
         QueryBrowser<Lookup> browser = getBrowser();
-        return new LookupCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet());
+        return new LookupCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getHelpContext());
     }
 
 }

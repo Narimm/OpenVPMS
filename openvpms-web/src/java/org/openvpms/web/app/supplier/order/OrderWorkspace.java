@@ -12,33 +12,33 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.order;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
+import org.openvpms.web.app.supplier.SupplierMailContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Supplier order workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class OrderWorkspace
         extends BrowserCRUDWorkspace<FinancialAct, FinancialAct> {
 
     /**
-     * Constructs a new <tt>OrderWorkspace</tt>.
+     * Constructs an {@code OrderWorkspace}.
      */
-    public OrderWorkspace() {
+    public OrderWorkspace(Context context) {
         super("supplier", "order", false);
         setArchetypes(FinancialAct.class, "act.supplierOrder");
         setChildArchetypes(getArchetypes());
+        setMailContext(new SupplierMailContext(context, getHelpContext()));
     }
 
     /**
@@ -47,14 +47,14 @@ public class OrderWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new OrderCRUDWindow(getArchetypes());
+        return new OrderCRUDWindow(getArchetypes(), getHelpContext());
     }
 
     /**
-     * Determines if the parent object is optional (i.e may be <tt>null</tt>,
+     * Determines if the parent object is optional (i.e may be {@code null},
      * when laying out the workspace.
      *
-     * @return <tt>true</tt>
+     * @return {@code true}
      */
     @Override
     protected boolean isParentOptional() {

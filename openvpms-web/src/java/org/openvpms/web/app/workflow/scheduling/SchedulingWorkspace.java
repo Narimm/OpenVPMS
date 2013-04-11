@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.scheduling;
@@ -27,13 +25,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
-import org.openvpms.web.component.subsystem.CRUDWindow;
-import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
+import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
 import java.util.Date;
@@ -42,8 +40,7 @@ import java.util.Date;
 /**
  * Scheduling workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class SchedulingWorkspace
         extends AbstractViewWorkspace<Entity> {
@@ -117,7 +114,7 @@ public abstract class SchedulingWorkspace
     public Component getSummary() {
         if (window != null) {
             Act act = window.getObject();
-            return new CustomerPatientSummary(GlobalContext.getInstance()).getSummary(act);
+            return new CustomerPatientSummary(GlobalContext.getInstance(), getHelpContext()).getSummary(act);
         }
         return null;
     }

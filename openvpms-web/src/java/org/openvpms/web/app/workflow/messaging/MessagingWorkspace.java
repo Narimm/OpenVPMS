@@ -12,34 +12,32 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.messaging;
 
-import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Messaging workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
 
     /**
-     * Construct a new <tt>MessagingWorkspace</tt>.
+     * Constructs an {@code MessagingWorkspace}.
      */
     public MessagingWorkspace() {
         super("workflow", "messaging", false);
@@ -51,7 +49,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      * Determines if the workspace can be updated with instances of the specified archetype.
      *
      * @param shortName the archetype's short name
-     * @return <tt>true</tt> if <tt>shortName</tt> is one of those in {@link #getChildArchetypes()}
+     * @return {@code true} if {@code shortName} is one of those in {@link #getChildArchetypes()}
      */
     @Override
     public boolean canUpdate(String shortName) {
@@ -78,7 +76,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
     /**
      * Determines if the workspace should be refreshed.
      *
-     * @return <tt>true</tt>
+     * @return {@code true}
      */
     @Override
     protected boolean refreshWorkspace() {
@@ -89,8 +87,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      * Returns the latest version of the user, defaulting to the context user
      * if there is no current user.
      *
-     * @return the latest version of the user, or {@link #getObject()}
-     *         if they are the same
+     * @return the latest version of the user, or {@link #getObject()} if they are the same
      */
     @Override
     protected User getLatest() {
@@ -111,7 +108,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      */
     @Override
     protected Browser<Act> createBrowser(Query<Act> query) {
-        return new MessageBrowser((MessageQuery) query);
+        return new MessageBrowser((MessageQuery) query, new DefaultLayoutContext(getHelpContext()));
     }
 
     /**
@@ -121,7 +118,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      */
     @Override
     protected Query<Act> createQuery() {
-        return new MessageQuery(getObject());
+        return new MessageQuery(getObject(), new DefaultLayoutContext(getHelpContext()));
     }
 
     /**
@@ -131,7 +128,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      */
     @Override
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new MessagingCRUDWindow(getChildArchetypes());
+        return new MessagingCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
 }

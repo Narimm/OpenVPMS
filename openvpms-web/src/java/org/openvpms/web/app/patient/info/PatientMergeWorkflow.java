@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
@@ -45,22 +46,23 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
      * Constructs a new <tt>MergeWorkflow</tt>.
      *
      * @param patient the patient to merge to
+     * @param help    the help context
      */
-    public PatientMergeWorkflow(Party patient) {
-        super(patient);
+    public PatientMergeWorkflow(Party patient, HelpContext help) {
+        super(patient, help);
     }
 
     /**
      * Creates the task context.
      * <p/>
-     * This implementation propagates the current customer from the global
-     * context.
+     * This implementation propagates the current customer from the global context.
      *
+     * @param help the help context
      * @return a new task context
      */
     @Override
-    protected TaskContext createContext() {
-        TaskContext context = super.createContext();
+    protected TaskContext createContext(HelpContext help) {
+        TaskContext context = super.createContext(help);
         context.setCustomer(GlobalContext.getInstance().getCustomer());
         return context;
     }

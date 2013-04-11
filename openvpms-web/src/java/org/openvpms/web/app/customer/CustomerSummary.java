@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: CustomerSummary.java 3487 2009-11-12 01:18:46Z tanderson $
  */
 
 package org.openvpms.web.app.customer;
@@ -44,6 +42,7 @@ import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -64,8 +63,7 @@ import java.util.List;
 /**
  * Renders customer summary information.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2009-11-12 12:18:46 +1100 (Thu, 12 Nov 2009) $
+ * @author Tim Anderson
  */
 public class CustomerSummary extends PartySummary {
 
@@ -84,16 +82,23 @@ public class CustomerSummary extends PartySummary {
      */
     private Context context;
 
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
+
 
     /**
      * Constructs a <tt>CustomerSummary</tt>.
      *
      * @param context the context
+     * @param help    the help context
      */
-    public CustomerSummary(Context context) {
+    public CustomerSummary(Context context, HelpContext help) {
         partyRules = new CustomerRules();
         accountRules = new CustomerAccountRules();
         this.context = context;
+        this.help = help;
     }
 
     /**
@@ -159,7 +164,7 @@ public class CustomerSummary extends PartySummary {
                 local.setCustomer(party);
                 Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
                     public void onAction(ActionEvent event) {
-                        SMSDialog dialog = new SMSDialog(contacts, context);
+                        SMSDialog dialog = new SMSDialog(contacts, context, help);
                         dialog.show();
                     }
                 });
@@ -209,8 +214,8 @@ public class CustomerSummary extends PartySummary {
     private Component getEmail(Contact email) {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
-                MailContext mailContext = new CustomerMailContext(context);
-                MailDialog dialog = new MailDialog(mailContext);
+                MailContext mailContext = new CustomerMailContext(context, help);
+                MailDialog dialog = new MailDialog(mailContext, help);
                 dialog.show();
             }
         });

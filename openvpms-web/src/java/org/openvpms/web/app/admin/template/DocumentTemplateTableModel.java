@@ -12,31 +12,29 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin.template;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.DescriptorTableModel;
 
 
 /**
  * Table model for <em>entity.documentTemplate</em> objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 
 public class DocumentTemplateTableModel extends DescriptorTableModel<Entity> {
 
     /**
-     * Creates a <tt>DocumentTemplateTableModel</tt>.
+     * Creates a {@code DocumentTemplateTableModel}.
      */
-    public DocumentTemplateTableModel() {
-        super(new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE});
+    public DocumentTemplateTableModel(LayoutContext context) {
+        super(new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE}, context);
     }
 
     /**

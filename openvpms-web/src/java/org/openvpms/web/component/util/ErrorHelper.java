@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: ErrorHelper.java 3317 2009-04-16 04:23:11Z tanderson $
  */
 
 package org.openvpms.web.component.util;
@@ -26,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -34,8 +33,7 @@ import java.util.List;
 /**
  * Helper for displaying and logging errors.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2009-04-16 14:23:11 +1000 (Thu, 16 Apr 2009) $
+ * @author Tim Anderson
  */
 public class ErrorHelper {
 
@@ -57,7 +55,7 @@ public class ErrorHelper {
     /**
      * Display an error.
      *
-     * @param title the title. May be <tt>null</tt>
+     * @param title the title. May be {@code null}
      * @param error the error
      */
     public static void show(String title, String error) {
@@ -68,7 +66,7 @@ public class ErrorHelper {
     /**
      * Display an error.
      *
-     * @param title the title. May be <tt>null</tt>
+     * @param title the title. May be {@code null}
      * @param error the error
      */
     public static void show(String title, Throwable error) {
@@ -78,8 +76,8 @@ public class ErrorHelper {
     /**
      * Display an error.
      *
-     * @param title       the title. Maty be <tt>null</tt>
-     * @param displayName the display name to include in the error message. May be <tt>null</tt>
+     * @param title       the title. Maty be {@code null}
+     * @param displayName the display name to include in the error message. May be {@code null}
      * @param error       the error
      */
     public static void show(String title, String displayName, Throwable error) {
@@ -89,9 +87,9 @@ public class ErrorHelper {
     /**
      * Display an error.
      *
-     * @param title       the title. May be <tt>null</tt>
-     * @param displayName the display name to include in the error message. May be <tt>null</tt>
-     * @param context     a context message, for logging purposes. May be <tt>null</tt>
+     * @param title       the title. May be {@code null}
+     * @param displayName the display name to include in the error message. May be {@code null}
+     * @param context     a context message, for logging purposes. May be {@code null}
      * @param error       the error
      */
     public static void show(String title, String displayName, String context, Throwable error) {
@@ -116,17 +114,45 @@ public class ErrorHelper {
     }
 
     /**
+     * Display and log an error. If an error dialog is already displayed,
+     * this method will not pop up a new one, to avoid multiple dialogs
+     * related to the same error.
+     *
+     * @param error the error
+     * @param help  the help context, used to provide context information for the error. May be {@code null}
+     */
+    public static void show(Throwable error, HelpContext help) {
+        show(error, true, help);
+    }
+
+    /**
      * Display and optionally log an error. If an error dialog is already
      * displayed, this method will not pop up a new one, to avoid multiple
      * dialogs related to the same error.
      *
      * @param error the error
-     * @param log   if <tt>true</tt> log the error
+     * @param log   if {@code true} log the error
      */
     public static void show(Throwable error, boolean log) {
+        show(error, log, null);
+    }
+
+    /**
+     * Display and optionally log an error. If an error dialog is already
+     * displayed, this method will not pop up a new one, to avoid multiple
+     * dialogs related to the same error.
+     *
+     * @param error the error
+     * @param log   if {@code true} log the error
+     * @param help  the help context, used to provide context information for the error. May be {@code null}
+     */
+    public static void show(Throwable error, boolean log, HelpContext help) {
         String message = getError(error);
         if (log) {
             ErrorHelper.log.error(message, error);
+            if (help != null) {
+                ErrorHelper.log.error("Called from: " + help);
+            }
         }
         ErrorHandler.getInstance().error(null, message, error, null);
     }
@@ -180,7 +206,7 @@ public class ErrorHelper {
      * Returns the root cause of an exception.
      *
      * @param exception the exception
-     * @return the root cause of the exception, or <tt>exception</tt> if it
+     * @return the root cause of the exception, or {@code exception} if it
      *         is the root
      */
     public static Throwable getRootCause(Throwable exception) {
@@ -191,11 +217,11 @@ public class ErrorHelper {
     }
 
     /**
-     * Returns the preferred exception message from an exception heirarchy.
+     * Returns the preferred exception message from an exception hierarchy.
      *
      * @param exception   the exception
      * @param displayName the display name to include in the message.
-     *                    May be <tt>null</tt>
+     *                    May be {@code null}
      * @return the exception message
      */
     public static String getError(Throwable exception, String displayName) {
@@ -215,7 +241,7 @@ public class ErrorHelper {
      *
      * @param exception   the exception
      * @param displayName the display name
-     * @return the formatted message, or <tt>null</tt> if none is available
+     * @return the formatted message, or {@code null} if none is available
      */
     private static String getFormattedMessage(Throwable exception, String displayName) {
         String result = null;

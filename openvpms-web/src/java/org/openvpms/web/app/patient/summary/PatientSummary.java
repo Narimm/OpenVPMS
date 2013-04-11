@@ -37,6 +37,7 @@ import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.summary.PartySummary;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
@@ -61,10 +62,14 @@ import java.util.List;
 /**
  * Renders Patient Summary Information.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PatientSummary extends PartySummary {
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * The patient rules.
@@ -78,9 +83,12 @@ public class PatientSummary extends PartySummary {
 
 
     /**
-     * Constructs a <tt>PatientSummary</tt>.
+     * Constructs a {@code PatientSummary}.
+     *
+     * @param help the help context
      */
-    public PatientSummary() {
+    public PatientSummary(HelpContext help) {
+        this.help = help;
         rules = (PatientRules) ServiceHelper.getContext().getBean("patientRules");
         reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(), rules);
     }
@@ -198,6 +206,7 @@ public class PatientSummary extends PartySummary {
 
     /**
      * Returns the highest due state of a patient's reminders.
+     *
      * @param patient the patient
      * @return the patient's highest due state
      */
@@ -226,7 +235,7 @@ public class PatientSummary extends PartySummary {
      * @param patient the patient
      */
     private void onShowReminders(Party patient) {
-        PagedIMTable<Act> table = new PagedIMTable<Act>(new ReminderTableModel(), getReminders(patient));
+        PagedIMTable<Act> table = new PagedIMTable<Act>(new ReminderTableModel(help), getReminders(patient));
         table.getTable().setDefaultRenderer(Object.class, new ReminderTableCellRenderer());
         new ViewerDialog(Messages.get("patient.summary.reminders"), "PatientSummary.ReminderDialog", table);
     }
@@ -294,10 +303,11 @@ public class PatientSummary extends PartySummary {
     /**
      * Helper to create a layout context where hyperlinks are disabled.
      *
+     * @param help the help context
      * @return a new layout context
      */
-    private static LayoutContext createLayoutContext() {
-        LayoutContext context = new DefaultLayoutContext();
+    private static LayoutContext createLayoutContext(HelpContext help) {
+        LayoutContext context = new DefaultLayoutContext(help);
         context.setEdit(true); // hack to disable hyerlinks
         TableComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
@@ -306,21 +316,17 @@ public class PatientSummary extends PartySummary {
 
     /**
      * Displays a table in popup window.
-     *
-     * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
-     * @version $LastChangedDate: 2006-04-11 04:09:07Z $
      */
     private static class ViewerDialog extends PopupDialog {
 
         /**
-         * Construct a new <code>ViewerDialog</code>.
+         * Constructs a {@code ViewerDialog}.
          *
          * @param title the dialog title
          * @param style the window style
          * @param table the table to display
          */
-        public ViewerDialog(String title, String style,
-                            PagedIMTable<Act> table) {
+        public ViewerDialog(String title, String style, PagedIMTable<Act> table) {
             super(title, style, OK);
             setModal(true);
             getLayout().add(ColumnFactory.create("Inset", table));
@@ -331,10 +337,10 @@ public class PatientSummary extends PartySummary {
     private static class ReminderTableModel extends AbstractActTableModel {
 
         /**
-         * Creates a new <code>AlertTableModel</code>.
+         * Constructs an {@code ReminderTableModel}.
          */
-        public ReminderTableModel() {
-            super(new String[]{ReminderArchetypes.REMINDER}, createLayoutContext());
+        public ReminderTableModel(HelpContext help) {
+            super(new String[]{ReminderArchetypes.REMINDER}, createLayoutContext(help));
         }
 
         /**

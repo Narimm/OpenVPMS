@@ -12,37 +12,31 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient;
 
-import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.patient.info.InformationWorkspace;
 import org.openvpms.web.app.patient.mr.PatientRecordWorkspace;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 import org.openvpms.web.component.subsystem.Workspace;
 
 
 /**
- * Patient sybsystem.
+ * Patient subsystem.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PatientSubsystem extends AbstractSubsystem {
 
     /**
-     * Constructs a <tt>PatientSubsystem</tt>.
+     * Constructs a {@code PatientSubsystem}.
      */
-    public PatientSubsystem() {
+    public PatientSubsystem(Context context) {
         super("patient");
-        MailContext context = new CustomerMailContext(GlobalContext.getInstance());
-        addWorkspace(new InformationWorkspace(), context);
-        addWorkspace(new PatientRecordWorkspace(), context);
+        addWorkspace(new InformationWorkspace(context));
+        addWorkspace(new PatientRecordWorkspace(context));
     }
 
     /**
@@ -51,8 +45,7 @@ public class PatientSubsystem extends AbstractSubsystem {
      * preference to the {@link InformationWorkspace}.
      *
      * @param shortName the archetype's short name.
-     * @return a workspace that supports the specified archetype or
-     *         <code>null</code> if no workspace supports it
+     * @return a workspace that supports the specified archetype or {@code null} if no workspace supports it
      */
     @Override
     public Workspace getWorkspaceForArchetype(String shortName) {

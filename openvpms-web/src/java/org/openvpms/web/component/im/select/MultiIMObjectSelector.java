@@ -33,6 +33,7 @@ import org.openvpms.web.component.event.DocumentListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusCommand;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -71,6 +72,11 @@ public class MultiIMObjectSelector<T extends IMObject> {
      * Determines if objects may be created.
      */
     private boolean allowCreate;
+
+    /**
+     * The layout context.
+     */
+    private final LayoutContext context;
 
     /**
      * Update listener for the text field.
@@ -114,10 +120,11 @@ public class MultiIMObjectSelector<T extends IMObject> {
      * Constructs a {@code MultiIMObjectSelector}.
      *
      * @param type       display name for the types of objects this may select
+     * @param context    the layout context
      * @param shortNames the archetype short names to query
      */
-    public MultiIMObjectSelector(String type, String... shortNames) {
-        this(type, false, shortNames);
+    public MultiIMObjectSelector(String type, LayoutContext context, String... shortNames) {
+        this(type, false, context, shortNames);
     }
 
     /**
@@ -125,10 +132,12 @@ public class MultiIMObjectSelector<T extends IMObject> {
      *
      * @param type        display name for the types of objects this may select
      * @param allowCreate determines if objects may be created
+     * @param context     the layout context
      * @param shortNames  the archetype short names to query
      */
-    public MultiIMObjectSelector(String type, boolean allowCreate, String... shortNames) {
+    public MultiIMObjectSelector(String type, boolean allowCreate, LayoutContext context, String... shortNames) {
         this.type = type;
+        this.context = context;
         this.shortNames = shortNames;
         this.allowCreate = allowCreate;
         focusGroup = new FocusGroup(getClass().getSimpleName());
@@ -303,8 +312,8 @@ public class MultiIMObjectSelector<T extends IMObject> {
         }
         try {
             final FocusCommand focus = new FocusCommand();
-            final Browser<T> browser = BrowserFactory.create(query);
-            final BrowserDialog<T> popup = new BrowserDialog<T>(type, browser, allowCreate);
+            final Browser<T> browser = BrowserFactory.create(query, context);
+            final BrowserDialog<T> popup = new BrowserDialog<T>(type, browser, allowCreate, context.getHelpContext());
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -372,7 +381,7 @@ public class MultiIMObjectSelector<T extends IMObject> {
      * @return a return a new browser
      */
     protected Browser<IMObject> createBrowser(Query<IMObject> query) {
-        return BrowserFactory.create(query);
+        return BrowserFactory.create(query, context);
     }
 
     /**

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.workflow;
 
@@ -37,8 +35,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Launches a browser to select and edit clinical events and their child acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EditVisitTask extends AbstractTask {
 
@@ -49,8 +46,7 @@ public class EditVisitTask extends AbstractTask {
 
 
     /**
-     * Constructs a <tt>EditClinicalEventTask</tt> to edit an object
-     * in the {@link org.openvpms.web.component.workflow.TaskContext}.
+     * Constructs an {@code EditClinicalEventTask} to edit an object in the {@link TaskContext}.
      */
     public EditVisitTask() {
     }
@@ -78,7 +74,7 @@ public class EditVisitTask extends AbstractTask {
     /**
      * Returns the visit dialog.
      *
-     * @return the visit dialog, or <tt>null</tt> if none is being displayed.
+     * @return the visit dialog, or {@code null} if none is being displayed.
      */
     public VisitEditorDialog getVisitDialog() {
         return dialog;
@@ -105,7 +101,7 @@ public class EditVisitTask extends AbstractTask {
         if (patient != null) {
             VisitEditor editor = createVisitEditor(event, invoice, context, patient);
             String title = Messages.get("workflow.visit.edit.title");
-            dialog = new VisitEditorDialog(title, editor);
+            dialog = new VisitEditorDialog(title, editor, context.getHelpContext());
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {
@@ -139,7 +135,7 @@ public class EditVisitTask extends AbstractTask {
      * @return a new editor
      */
     protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, TaskContext context, Party patient) {
-        return new VisitEditor(patient, event, invoice, context);
+        return new VisitEditor(patient, event, invoice, context, context.getHelpContext());
     }
 
 }

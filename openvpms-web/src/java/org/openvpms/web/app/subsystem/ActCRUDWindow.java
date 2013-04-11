@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.subsystem;
@@ -28,6 +26,7 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -49,8 +48,7 @@ import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 /**
  * CRUD Window for acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindow<T> {
 
@@ -75,9 +73,10 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      *
      * @param archetypes the archetypes that this may create
      * @param actions    determines the operations that may be performed on the selected object
+     * @param help       the help context
      */
-    public ActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions) {
-        super(archetypes, actions);
+    public ActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions, HelpContext help) {
+        super(archetypes, actions, help);
     }
 
     /**

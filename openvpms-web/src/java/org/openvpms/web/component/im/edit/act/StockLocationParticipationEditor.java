@@ -12,13 +12,10 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.act;
 
-import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_XFER_LOCATION_PARTICIPATION;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -34,29 +31,27 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.Property;
 
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_XFER_LOCATION_PARTICIPATION;
+
 
 /**
  * Participation editor for stock locations.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class StockLocationParticipationEditor
-        extends ParticipationEditor<Party> {
+public class StockLocationParticipationEditor extends ParticipationEditor<Party> {
 
     /**
-     * Constructs a new <tt>StockLocationParticipationEditor</tt>.
+     * Constructs a {@code StockLocationParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <tt>null</tt>
+     * @param context       the layout context
      */
-    public StockLocationParticipationEditor(Participation participation,
-                                            Act parent, LayoutContext context) {
+    public StockLocationParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
         if (participation.getEntity() == null && parent.isNew()
-                && !TypeHelper.isA(participation,
-                                   STOCK_XFER_LOCATION_PARTICIPATION)) {
+                && !TypeHelper.isA(participation, STOCK_XFER_LOCATION_PARTICIPATION)) {
             Party location = getLayoutContext().getContext().getStockLocation();
             setEntity(location);
         }
@@ -69,9 +64,8 @@ public class StockLocationParticipationEditor
      * @return a new object reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Party> createEntityEditor(
-            Property property) {
-        return new LocationReferenceEditor(property);
+    protected IMObjectReferenceEditor<Party> createEntityEditor(Property property) {
+        return new LocationReferenceEditor(property, getLayoutContext());
     }
 
     /**
@@ -80,8 +74,8 @@ public class StockLocationParticipationEditor
     private class LocationReferenceEditor
             extends AbstractIMObjectReferenceEditor<Party> {
 
-        public LocationReferenceEditor(Property property) {
-            super(property, getParent(), getLayoutContext());
+        public LocationReferenceEditor(Property property, LayoutContext context) {
+            super(property, getParent(), context);
         }
 
         /**
@@ -92,7 +86,7 @@ public class StockLocationParticipationEditor
          * constrains the stock location to those associated with the current
          * practice location, if any.
          *
-         * @param name a name to filter on. May be <tt>null</tt>
+         * @param name a name to filter on. May be {@code null}
          * @return a new query
          * @throws ArchetypeQueryException if the short names don't match any
          *                                 archetypes

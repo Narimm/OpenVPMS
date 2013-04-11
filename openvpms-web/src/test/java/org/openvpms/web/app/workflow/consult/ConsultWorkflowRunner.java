@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.workflow.consult;
@@ -28,6 +26,7 @@ import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.app.workflow.TestEditVisitTask;
 import org.openvpms.web.app.workflow.TestVisitCRUDWindow;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 
 import java.math.BigDecimal;
 
@@ -39,8 +38,7 @@ import static org.junit.Assert.assertNull;
 /**
  * Runs the {@link ConsultWorkflow}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunner.TestWorkflow> {
 
@@ -50,7 +48,7 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
     private Act act;
 
     /**
-     * Constructs a <tt>ConsultWorkflowRunner</tt> with an appointment/task.
+     * Constructs a {@code ConsultWorkflowRunner} with an appointment/task.
      *
      * @param act      the appointment/task
      * @param practice the practice, used to determine tax rates
@@ -94,7 +92,7 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
      * Verifies that the current task is an EditVisitTask, and adds an invoice item.
      *
      * @param patient   the patient
-     * @param clinician the clinician. May be <tt>null</tt>
+     * @param clinician the clinician. May be {@code null}
      * @return the invoice total
      */
     public BigDecimal addVisitInvoiceItem(Party patient, User clinician) {
@@ -119,9 +117,9 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
      * Verifies the context matches that expected
      *
      * @param context   the context to check
-     * @param customer  the expected context customer. May be <tt>null</tt>
-     * @param patient   the expected context patient. May be <tt>null</tt>
-     * @param clinician the expected clinician. May be <tt>null</tt>
+     * @param customer  the expected context customer. May be {@code null}
+     * @param patient   the expected context patient. May be {@code null}
+     * @param clinician the expected clinician. May be {@code null}
      */
     public void checkContext(Context context, Party customer, Party patient, User clinician) {
         assertEquals(customer, context.getCustomer());
@@ -132,13 +130,13 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
     protected static class TestWorkflow extends ConsultWorkflow {
 
         /**
-         * Constructs a new <tt>TestWorkflow</tt> from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+         * Constructs a new {@code TestWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
          *
          * @param act     the act
          * @param context the external context to access and update
          */
         public TestWorkflow(Act act, Context context) {
-            super(act, context);
+            super(act, context, new HelpContext("foo", null));
         }
 
         /**

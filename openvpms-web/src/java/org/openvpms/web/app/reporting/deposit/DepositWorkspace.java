@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.deposit;
@@ -33,8 +31,7 @@ import org.openvpms.web.component.subsystem.CRUDWindow;
 /**
  * Bank Deposit workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-19 07:20:38Z $
+ * @author Tim Anderson
  */
 public class DepositWorkspace
         extends BrowserCRUDWorkspace<Party, FinancialAct> {
@@ -61,7 +58,7 @@ public class DepositWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new DepositCRUDWindow(getChildArchetypes());
+        return new DepositCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**

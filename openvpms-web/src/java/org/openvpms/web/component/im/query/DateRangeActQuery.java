@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
@@ -30,8 +28,7 @@ import java.util.Date;
 /**
  * An act query that enables acts to be queried for a particular date range.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
 
@@ -47,28 +44,26 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
 
 
     /**
-     * Constructs a new <tt>DateRangeActQuery</tt>.
+     * Constructs a {@code DateRangeActQuery}.
      *
      * @param shortNames the act short names to query
-     * @param statuses   the act status lookups. May be <tt>null</tt>
+     * @param statuses   the act status lookups. May be {@code null}
      * @param type       the type that this query returns
      */
-    public DateRangeActQuery(String[] shortNames, ActStatuses statuses,
-                             Class type) {
+    public DateRangeActQuery(String[] shortNames, ActStatuses statuses, Class type) {
         this(null, null, null, shortNames, statuses, type);
     }
 
     /**
-     * Constructs a new <tt>DateRangeActQuery</tt>.
+     * Constructs a {@code DateRangeActQuery}.
      *
      * @param entity        the entity to search for
-     * @param participant   the partcipant node name
+     * @param participant   the participant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
-     * @param statuses      the act status lookups. May be <tt>null</tt>
+     * @param statuses      the act status lookups. May be {@code null}
      * @param type          the type that this query returns
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public DateRangeActQuery(Entity entity, String participant,
                              String participation, String[] shortNames,
@@ -79,58 +74,48 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     }
 
     /**
-     * Constructs a new <tt>DateRangeActQuery</tt>.
+     * Constructs a {@code DateRangeActQuery}.
      *
      * @param entity        the entity to search for
-     * @param participant   the partcipant node name
+     * @param participant   the participant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
      * @param type          the type that this query returns
      */
-    public DateRangeActQuery(Entity entity, String participant,
-                             String participation, String[] shortNames,
-                             Class type) {
-        this(entity, participant, participation, shortNames, true,
-             new String[0], type);
+    public DateRangeActQuery(Entity entity, String participant, String participation, String[] shortNames, Class type) {
+        this(entity, participant, participation, shortNames, true, new String[0], type);
     }
 
     /**
-     * Constructs a new <tt>DateRangeActQuery</tt>.
+     * Constructs a {@code DateRangeActQuery}.
      *
      * @param entity        the entity to search for
-     * @param participant   the partcipant node name
+     * @param participant   the participant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
      * @param statuses      the act statuses to search on. May be
-     *                      <tt>empty</tt>
+     *                      {@code empty}
      * @param type          the type that this query returns
      */
-    public DateRangeActQuery(Entity entity, String participant,
-                             String participation, String[] shortNames,
+    public DateRangeActQuery(Entity entity, String participant, String participation, String[] shortNames,
                              String[] statuses, Class type) {
-        this(entity, participant, participation, shortNames, true, statuses,
-             type);
+        this(entity, participant, participation, shortNames, true, statuses, type);
     }
 
     /**
-     * Constructs a new <tt>DateRangeActQuery</tt>.
+     * Constructs a {@code DateRangeActQuery}.
      *
      * @param entity        the entity to search for
-     * @param participant   the partcipant node name
+     * @param participant   the participant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
-     * @param primaryOnly   if <tt>true</tt> only primary archetypes will be
-     *                      queried
-     * @param statuses      the act statuses to search on. May be
-     *                      <tt>empty</tt>
+     * @param primaryOnly   if {@code true} only primary archetypes will be queried
+     * @param statuses      the act statuses to search on. May be empty
      * @param type          the type that this query returns
      */
-    public DateRangeActQuery(Entity entity, String participant,
-                             String participation, String[] shortNames,
-                             boolean primaryOnly, String[] statuses,
-                             Class type) {
-        super(entity, participant, participation, shortNames, primaryOnly,
-              statuses, type);
+    public DateRangeActQuery(Entity entity, String participant, String participation, String[] shortNames,
+                             boolean primaryOnly, String[] statuses, Class type) {
+        super(entity, participant, participation, shortNames, primaryOnly, statuses, type);
         selectType = true;
         QueryFactory.initialise(this);
     }
@@ -138,7 +123,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     /**
      * Returns the 'from' date.
      *
-     * @return the 'from' date, or <tt>null</tt> to query all dates
+     * @return the 'from' date, or {@code null} to query all dates
      */
     @Override
     public Date getFrom() {
@@ -157,7 +142,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     /**
      * Returns the 'to' date.
      *
-     * @return the 'to' date, or <tt>null</tt> to query all dates
+     * @return the 'to' date, or {@code null} to query all dates
      */
     @Override
     public Date getTo() {

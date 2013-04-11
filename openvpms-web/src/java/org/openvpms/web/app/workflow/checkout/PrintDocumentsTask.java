@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.checkout;
@@ -65,8 +63,7 @@ import java.util.Map;
  * Task to allow the user to selectively print any unprinted documents
  * from a particular time.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class PrintDocumentsTask extends AbstractTask {
 
@@ -95,7 +92,7 @@ class PrintDocumentsTask extends AbstractTask {
 
 
     /**
-     * Constructs a <tt>PrintDocumentsTask</tt>.
+     * Constructs a {@code PrintDocumentsTask}.
      *
      * @param startTime the act start time.
      */
@@ -149,7 +146,7 @@ class PrintDocumentsTask extends AbstractTask {
     /**
      * Returns the print dialog.
      *
-     * @return the print dialog, or <tt>null</tt> if none is being displayed
+     * @return the print dialog, or {@code null} if none is being displayed
      */
     public BatchPrintDialog getPrintDialog() {
         return dialog;
@@ -195,8 +192,8 @@ class PrintDocumentsTask extends AbstractTask {
     /**
      * Returns a map of unprinted acts for a party.
      * <p/>
-     * The corresponding boolean flag if <tt>true</tt> indicates if the act should be selected for printing.
-     * If <tt>false</tt>, it indicates that the act should be displayed, but not selected.
+     * The corresponding boolean flag if {@code true} indicates if the act should be selected for printing.
+     * If {@code false}, it indicates that the act should be displayed, but not selected.
      *
      * @param shortNames    the act short names to query. May include wildcards
      * @param party         the party to query
@@ -233,8 +230,8 @@ class PrintDocumentsTask extends AbstractTask {
     private void onMail(TaskContext context) {
         List<IMObject> list = dialog.getSelected();
         if (!list.isEmpty()) {
-            MailContext mailContext = new CustomerMailContext(context);
-            MailDialog dialog = new MailDialog(mailContext);
+            MailContext mailContext = new CustomerMailContext(context, context.getHelpContext());
+            MailDialog dialog = new MailDialog(mailContext, context.getHelpContext());
             MailEditor editor = dialog.getMailEditor();
             for (IMObject object : list) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
@@ -250,7 +247,7 @@ class PrintDocumentsTask extends AbstractTask {
      * Returns the print mode of the supplied act.
      *
      * @param act the act
-     * @return the print mode. May be <tt>null</tt>
+     * @return the print mode. May be {@code null}
      */
     private DocumentTemplate.PrintMode getPrintMode(Act act) {
         DocumentTemplate.PrintMode result = null;
@@ -271,13 +268,13 @@ class PrintDocumentsTask extends AbstractTask {
     class Printer extends BatchPrinter<IMObject> {
 
         /**
-         * Constructs a <tt>Printer</tt>.
+         * Constructs a {@code Printer}.
          *
          * @param objects the objects to print
          * @param context the task context
          */
         public Printer(List<IMObject> objects, TaskContext context) {
-            super(objects, context);
+            super(objects, context, context.getHelpContext());
         }
 
         /**

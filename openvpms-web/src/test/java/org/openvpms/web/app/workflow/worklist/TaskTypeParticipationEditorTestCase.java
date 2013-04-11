@@ -12,16 +12,10 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.workflow.worklist;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import org.junit.Test;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
@@ -29,16 +23,21 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.test.AbstractAppTest;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * Tests the {@link TaskTypeParticipationEditor}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class TaskTypeParticipationEditorTestCase extends AbstractAppTest {
 
@@ -49,7 +48,7 @@ public class TaskTypeParticipationEditorTestCase extends AbstractAppTest {
     public void testValidate() {
         Act task = (Act) create(ScheduleArchetypes.TASK);
         Participation type = (Participation) create(ScheduleArchetypes.TASK_TYPE_PARTICIPATION);
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
         TaskTypeParticipationEditor editor = new TaskTypeParticipationEditor(type, task, context);
         assertFalse(editor.isValid());
 

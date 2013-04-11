@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
@@ -28,9 +26,10 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -45,8 +44,7 @@ import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 /**
  * CRUD window for supplier accounts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
@@ -67,12 +65,13 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
 
     /**
-     * Create a new <tt>AccountCRUDWindow</tt>.
+     * Constructs an {@code AccountCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance());
+    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
     }
 
     /**

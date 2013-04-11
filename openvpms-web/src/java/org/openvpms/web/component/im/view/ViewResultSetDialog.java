@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.im.view;
 
@@ -24,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -34,8 +33,7 @@ import org.openvpms.web.component.util.KeyStrokeHelper;
 /**
  * A dialog that allows the results from an {@link ResultSet} to be iterated through and viewed.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
 
@@ -86,15 +84,15 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
 
 
     /**
-     * Constructs a <tt>ViewResultSetDialog</tt>.
+     * Constructs a {@code ViewResultSetDialog}.
      *
      * @param title the window title
      * @param first the first object to view
      * @param set   the set of results to view
-     * @param edit  if <tt>true</tt> display an edit button
+     * @param edit  if {@code true} display an edit button
      */
-    public ViewResultSetDialog(String title, T first, ResultSet<T> set, boolean edit) {
-        super(title, "IMObjectViewerDialog", edit ? EDIT_BUTTONS : VIEW_BUTTONS);
+    public ViewResultSetDialog(String title, T first, ResultSet<T> set, boolean edit, HelpContext help) {
+        super(title, "IMObjectViewerDialog", edit ? EDIT_BUTTONS : VIEW_BUTTONS, help);
         setDefaultButton(OK_ID);
         setDefaultCloseAction(CANCEL_ID);
         iter = new ResultSetIterator<T>(set, first);
@@ -116,7 +114,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     /**
      * Returns the selected object.
      *
-     * @return the selected object. May be <tt>null</tt>
+     * @return the selected object. May be {@code null}
      */
     public T getSelected() {
         return selected;
@@ -183,7 +181,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      */
     private void view(T object) {
         selected = object;
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(getHelpContext());
         context.getContext().setCurrent(object); // TODO - remove requirement for setCurrent()
         context.setContextSwitchListener(listener);
         IMObjectViewer viewer = new IMObjectViewer(object, null, context);
@@ -200,8 +198,8 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      * <p/>
      * This should be invoked <em>after</em> moving the iterator.
      *
-     * @param focusOK   if <tt>true</tt> move the focus to the OK button
-     * @param focusNext if <tt>true</tt> move the focus to the 'next' button, unless its disabled in which case the
+     * @param focusOK   if {@code true} move the focus to the OK button
+     * @param focusNext if {@code true} move the focus to the 'next' button, unless its disabled in which case the
      *                  'previous' button will be used
      */
     private void enableButtons(boolean focusOK, boolean focusNext) {

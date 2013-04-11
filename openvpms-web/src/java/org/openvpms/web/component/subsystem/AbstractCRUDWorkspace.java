@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.subsystem;
@@ -28,8 +26,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Abstract implementation of a CRUD workspace.
  * <p/>
- * Provides a {@link IMObjectSelector selector} and
- * {@link CRUDWindow CRUD window}. The selector is optional.
+ * Provides a {@link IMObjectSelector selector} and {@link CRUDWindow CRUD window}. The selector is optional.
  * <p/>
  * The workspace has two parameters, <em>Parent</em> and <em>Child</em>.
  * The range of archetypes supported by each are specified via {@link #setArchetypes}
@@ -39,8 +36,7 @@ import org.openvpms.web.resource.util.Messages;
  * child objects for editing. For workspaces where there is no child,
  * specify the same values for each.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
         Child extends IMObject> extends AbstractViewWorkspace<Parent> {
@@ -57,7 +53,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
 
 
     /**
-     * Constructs an <tt>AbstractCRUDWorkspace</tt>.
+     * Constructs an {@code AbstractCRUDWorkspace}.
      * <p/>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
      * be invoked to set archetypes that the workspace supports, before
@@ -65,7 +61,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      *
      * @param subsystemId  the subsystem localisation identifier
      * @param workspaceId  the workspace localisation identfifier
-     * @param showSelector if <tt>true</tt>, show the selector
+     * @param showSelector if {@code true}, show the selector
      */
     public AbstractCRUDWorkspace(String subsystemId, String workspaceId,
                                  boolean showSelector) {
@@ -73,16 +69,16 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Constructs an <tt>AbstractCRUDWorkspace</tt>, with a selector for the parent object.
+     * Constructs an {@code AbstractCRUDWorkspace}, with a selector for the parent object.
      *
      * @param subsystemId     the subsystem localisation identifier
      * @param workspaceId     the workspace localisation identfifier
      * @param archetypes      the archetypes that this operates on.
-     *                        If <tt>null</tt>, the {@link #setArchetypes}
+     *                        If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
      * @param childArchetypes the child archetypes that this operates on.
-     *                        If <tt>null</tt>, the {@link #setChildArchetypes}
+     *                        If {@code null}, the {@link #setChildArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
      */
@@ -93,19 +89,19 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Constructs an <tt>AbstractCRUDWorkspace</tt>.
+     * Constructs an {@code AbstractCRUDWorkspace}.
      *
      * @param subsystemId     the subsystem localisation identifier
      * @param workspaceId     the workspace localisation identfifier
      * @param archetypes      the archetypes that this operates on.
-     *                        If <tt>null</tt>, the {@link #setArchetypes}
+     *                        If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
      * @param childArchetypes the child archetypes that this operates on.
-     *                        If <tt>null</tt>, the {@link #setChildArchetypes}
+     *                        If {@code null}, the {@link #setChildArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
-     * @param showSelector    if <tt>true</tt>, show a selector to select the
+     * @param showSelector    if {@code true}, show a selector to select the
      *                        parent object
      */
     public AbstractCRUDWorkspace(String subsystemId, String workspaceId,
@@ -132,7 +128,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
     /**
      * Registers a new CRUD window.
      *
-     * @param newWindow the new window. If <tt>null<tt>, deregisters any
+     * @param newWindow the new window. If {@code null} , deregisters any
      *                  existing window
      */
     protected void setCRUDWindow(CRUDWindow<Child> newWindow) {
@@ -176,13 +172,13 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      * @return a new CRUD window
      */
     protected CRUDWindow<Child> createCRUDWindow() {
-        return new DefaultCRUDWindow<Child>(getChildArchetypes());
+        return new DefaultCRUDWindow<Child>(getChildArchetypes(), getHelpContext());
     }
 
     /**
      * Returns the child archetypes that this operates on.
      *
-     * @return the child archetypes, or <tt>null</tt> if none are set
+     * @return the child archetypes, or {@code null} if none are set
      */
     protected Archetypes<Child> getChildArchetypes() {
         return childArchetypes;
@@ -191,7 +187,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
     /**
      * Sets the child archetypes that this operates on.
      *
-     * @param archetypes the child archetypes. May be <tt>null</tt>
+     * @param archetypes the child archetypes. May be {@code null}
      */
     protected void setChildArchetypes(Archetypes<Child> archetypes) {
         childArchetypes = archetypes;

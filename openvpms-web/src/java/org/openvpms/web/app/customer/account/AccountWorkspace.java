@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.account;
@@ -22,19 +20,18 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Customer account workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class AccountWorkspace
-        extends CustomerActWorkspace<FinancialAct> {
+public class AccountWorkspace extends CustomerActWorkspace<FinancialAct> {
 
     /**
      * The customer archetype short names.
@@ -45,10 +42,12 @@ public class AccountWorkspace
 
 
     /**
-     * Constructs a new <tt>AccountWorkspace</tt>.
+     * Constructs an {@code AccountWorkspace}.
+     *
+     * @param context the context
      */
-    public AccountWorkspace() {
-        super("customer", "account");
+    public AccountWorkspace(Context context) {
+        super("customer", "account", context);
         setArchetypes(Party.class, CUSTOMER_SHORT_NAMES);
         setChildArchetypes(FinancialAct.class, "act.customerAccount*");
     }
@@ -59,7 +58,7 @@ public class AccountWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new AccountCRUDWindow(getChildArchetypes());
+        return new AccountCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**
@@ -69,20 +68,18 @@ public class AccountWorkspace
      */
     protected Query<FinancialAct> createQuery() {
         String[] shortNames = {"act.customerAccountCharges*",
-                               "act.customerAccountPayment",
-                               "act.customerAccountRefund",
-                               "act.customerAccountClosingBalance",
-                               "act.customerAccountOpeningBalance",
-                               "act.customerAccountDebitAdjust",
-                               "act.customerAccountCreditAdjust",
-                               "act.customerAccountInitialBalance",
-                               "act.customerAccountBadDebt"};
+                "act.customerAccountPayment",
+                "act.customerAccountRefund",
+                "act.customerAccountClosingBalance",
+                "act.customerAccountOpeningBalance",
+                "act.customerAccountDebitAdjust",
+                "act.customerAccountCreditAdjust",
+                "act.customerAccountInitialBalance",
+                "act.customerAccountBadDebt"};
         String[] statuses = {FinancialActStatus.POSTED};
 
         Party customer = getObject();
-        return new DefaultActQuery<FinancialAct>(customer, "customer",
-                                                 "participation.customer",
-                                                 shortNames, statuses);
+        return new DefaultActQuery<FinancialAct>(customer, "customer", "participation.customer", shortNames, statuses);
     }
 
 }

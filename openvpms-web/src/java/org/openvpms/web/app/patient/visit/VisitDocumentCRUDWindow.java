@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.web.app.patient.mr.PatientDocumentCRUDWindow;
 import org.openvpms.web.app.patient.mr.PatientDocumentQuery;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.resource.util.Messages;
@@ -39,10 +40,13 @@ public class VisitDocumentCRUDWindow extends PatientDocumentCRUDWindow {
 
     /**
      * Constructs a {@code VisitDocumentCRUDWindow}.
+     *
+     * @param context the context
+     * @param help    the help context
      */
-    public VisitDocumentCRUDWindow(Context context) {
+    public VisitDocumentCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
-                                Messages.get("patient.document.createtype")));
+                                Messages.get("patient.document.createtype")), help);
         this.context = context;
     }
 

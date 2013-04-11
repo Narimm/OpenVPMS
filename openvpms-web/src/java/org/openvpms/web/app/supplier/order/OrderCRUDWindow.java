@@ -36,6 +36,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.processor.BatchProcessorDialog;
@@ -67,12 +68,13 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
 
 
     /**
-     * Create a new {@code OrderCRUDWindow}.
+     * Constructs an {@code OrderCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public OrderCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, OrderActions.INSTANCE);
+    public OrderCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+        super(archetypes, OrderActions.INSTANCE, help);
     }
 
     /**
@@ -135,7 +137,8 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
     @Override
     protected void onCreated(final FinancialAct act) {
         String title = Messages.get("supplier.order.selectdetails.title", DescriptorHelper.getDisplayName(act));
-        final SelectStockDetailsDialog dialog = new SelectStockDetailsDialog(title, GlobalContext.getInstance());
+        final SelectStockDetailsDialog dialog = new SelectStockDetailsDialog(title, GlobalContext.getInstance(),
+                                                                             getHelpContext());
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.product.stock;
@@ -28,13 +26,12 @@ import org.openvpms.web.component.subsystem.CRUDWindow;
 /**
  * Stock management workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-05-07 06:50:24Z $
+ * @author Tim Anderson
  */
 public class StockWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
-     * Constructs a new <tt>StockWorkspace</tt>.
+     * Constructs a new {@code StockWorkspace}.
      */
     public StockWorkspace() {
         super("product", "stock", false);
@@ -49,14 +46,14 @@ public class StockWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new StockCRUDWindow(getChildArchetypes());
+        return new StockCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**
-     * Determines if the parent object is optional (i.e may be <tt>null</tt>,
+     * Determines if the parent object is optional (i.e may be {@code null},
      * when laying out the workspace.
      *
-     * @return <tt>true</tt>
+     * @return {@code true}
      */
     @Override
     protected boolean isParentOptional() {

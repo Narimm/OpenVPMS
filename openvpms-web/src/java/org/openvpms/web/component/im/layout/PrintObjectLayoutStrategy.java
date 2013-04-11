@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -46,8 +47,7 @@ import java.util.List;
 /**
  * Layout strategy that provides a button to print the object.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
 
@@ -91,7 +91,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
             button = ButtonFactory.create(buttonId);
             button.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    onPrint(object, context.getContext());
+                    onPrint(object, context.getContext(), context.getHelpContext());
                 }
             });
         }
@@ -134,12 +134,13 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object  the object to print
      * @param context the context
+     * @param help    the help context
      */
-    protected void onPrint(IMObject object, Context context) {
+    protected void onPrint(IMObject object, Context context, HelpContext help) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
             IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator);
-            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer);
+            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, help);
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

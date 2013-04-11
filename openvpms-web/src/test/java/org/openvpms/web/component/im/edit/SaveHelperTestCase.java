@@ -12,20 +12,17 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.event.WindowPaneListener;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.util.ErrorHandler;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.test.AbstractAppTest;
@@ -33,12 +30,15 @@ import org.openvpms.web.test.AbstractAppTest;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link SaveHelper} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SaveHelperTestCase extends AbstractAppTest {
 
@@ -59,7 +59,8 @@ public class SaveHelperTestCase extends AbstractAppTest {
         bean.setValue("lastName", null);
 
         // create an editor for the customer
-        IMObjectEditor editor = IMObjectEditorFactory.create(customer, null);
+        IMObjectEditor editor = IMObjectEditorFactory.create(customer,
+                                                             new DefaultLayoutContext(new HelpContext("foo", null)));
 
         // verify save fails. The id should by -1
         assertFalse(SaveHelper.save(editor));

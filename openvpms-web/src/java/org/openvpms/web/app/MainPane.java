@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app;
@@ -59,6 +57,8 @@ import org.openvpms.web.component.dialog.HelpDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.subsystem.Refreshable;
@@ -81,8 +81,7 @@ import java.util.List;
 /**
  * Main application pane.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class MainPane extends SplitPane implements ContextChangeListener, ContextListener {
 
@@ -226,20 +225,21 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         menu = new ButtonRow(ButtonRow.STYLE, BUTTON_STYLE);
         SplitPaneLayoutData layout = new SplitPaneLayoutData();
         layout.setAlignment(new Alignment(Alignment.CENTER,
-                Alignment.DEFAULT));
+                                          Alignment.DEFAULT));
         menu.setLayoutData(layout);
         subMenu = new ButtonColumn(BUTTON_COLUMN_STYLE, BUTTON_STYLE);
         leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
         currentSubsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
 
-        Button button = addSubsystem(new CustomerSubsystem());
-        addSubsystem(new PatientSubsystem());
-        addSubsystem(new SupplierSubsystem());
+        GlobalContext context = GlobalContext.getInstance();
+
+        Button button = addSubsystem(new CustomerSubsystem(context));
+        addSubsystem(new PatientSubsystem(context));
+        addSubsystem(new SupplierSubsystem(context));
         addSubsystem(new WorkflowSubsystem());
         addSubsystem(new ProductSubsystem());
         addSubsystem(new ReportingSubsystem());
 
-        GlobalContext context = GlobalContext.getInstance();
         context.addListener(this);
 
         // if the current user is an admin, show the administration subsystem
@@ -566,9 +566,10 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      * Displays the customer/patient history browser.
      */
     private void showHistory() {
-        final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser();
+        LayoutContext context = new DefaultLayoutContext(currentWorkspace.getHelpContext());
+        final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser(context);
         BrowserDialog<CustomerPatient> dialog
-                = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser);
+                = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser, context.getHelpContext());
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 CustomerPatient selected = browser.getSelected();

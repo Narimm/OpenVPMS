@@ -86,8 +86,7 @@ import java.util.Set;
 /**
  * Abstract implementation of the {@link IMObjectEditor} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractIMObjectEditor extends AbstractModifiable
         implements IMObjectEditor {
@@ -98,7 +97,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     private final IMObject object;
 
     /**
-     * The parent object. May be <tt>null</tt>.
+     * The parent object. May be {@code null}.
      */
     private final IMObject parent;
 
@@ -164,23 +163,19 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
 
     /**
-     * Constructs an <tt>AbstractIMObjectEditor</tt>.
+     * Constructs an {@code AbstractIMObjectEditor}.
      *
      * @param object        the object to edit
-     * @param parent        the parent object. May be <tt>null</tt>
-     * @param layoutContext the layout context. May be <tt>null</tt>.
+     * @param parent        the parent object. May be {@code null}
+     * @param layoutContext the layout context
      */
     public AbstractIMObjectEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
         this.object = object;
         this.parent = parent;
 
-        if (layoutContext == null) {
-            context = new DefaultLayoutContext(true);
-        } else {
-            context = new DefaultLayoutContext(layoutContext);
-            // don't increase the layout depth.
-            context.setLayoutDepth(layoutContext.getLayoutDepth());
-        }
+        context = new DefaultLayoutContext(layoutContext);
+        // don't increase the layout depth.
+        context.setLayoutDepth(layoutContext.getLayoutDepth());
 
         archetype = context.getArchetypeDescriptor(object);
         properties = new PropertySet(object, archetype);
@@ -257,7 +252,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Returns the parent object.
      *
-     * @return the parent object. May be <tt>null</tt>
+     * @return the parent object. May be {@code null}
      */
     public IMObject getParent() {
         return parent;
@@ -275,7 +270,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Save any edits.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     public boolean save() {
         if (cancelled) {
@@ -302,7 +297,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Determines if any edits have been saved.
      *
-     * @return <tt>true</tt> if edits have been saved.
+     * @return {@code true} if edits have been saved.
      */
     public boolean isSaved() {
         return saved;
@@ -311,7 +306,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Delete the current object.
      *
-     * @return <tt>true</tt> if the object was deleted successfully
+     * @return {@code true} if the object was deleted successfully
      */
     public boolean delete() {
         if (cancelled) {
@@ -325,7 +320,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Determines if the object has been deleted.
      *
-     * @return <tt>true</tt> if the object has been deleted
+     * @return {@code true} if the object has been deleted
      */
     public boolean isDeleted() {
         return deleted;
@@ -334,7 +329,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Determines if the object has been changed.
      *
-     * @return <tt>true</tt> if the object has been changed
+     * @return {@code true} if the object has been changed
      */
     public boolean isModified() {
         return object.isNew() || editors.isModified();
@@ -392,7 +387,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Determines if editing was cancelled.
      *
-     * @return <tt>true</tt> if editing was cancelled
+     * @return {@code true} if editing was cancelled
      */
     public boolean isCancelled() {
         return cancelled;
@@ -410,7 +405,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <tt>null</tt> if the editor hasn't been
+     * @return the focus group, or {@code null} if the editor hasn't been
      *         rendered
      */
     public FocusGroup getFocusGroup() {
@@ -449,7 +444,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Returns a property, given its node descriptor's name.
      *
      * @param name the descriptor's name
-     * @return the property corresponding to <tt>name</tt> or <tt>null</tt> if
+     * @return the property corresponding to {@code name} or {@code null} if
      *         none exists
      */
     public Property getProperty(String name) {
@@ -459,7 +454,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Resets the cached validity state of the object.
      *
-     * @param elements if <tt>true</tt> reset the validity state of the elements as well
+     * @param elements if {@code true} reset the validity state of the elements as well
      */
     protected void resetValid(boolean elements) {
         super.resetValid(elements);
@@ -472,7 +467,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         boolean result;
@@ -495,7 +490,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * This uses {@link #saveChildren()} to save the children prior to
      * invoking {@link #saveObject()}.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     protected boolean doSave() {
         boolean saved = saveChildren();
@@ -508,7 +503,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Saves the object.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     protected boolean saveObject() {
         IMObject object = getObject();
@@ -518,7 +513,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Save any modified child Saveable instances.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     protected boolean saveChildren() {
         for (Saveable saveable : editors.getModifiedSaveable()) {
@@ -535,7 +530,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * This uses {@link #deleteChildren()} to delete the children prior to
      * invoking {@link #deleteObject()}.
      *
-     * @return <tt>true</tt> if the delete was successful
+     * @return {@code true} if the delete was successful
      */
     protected boolean doDelete() {
         boolean result = deleteChildren();
@@ -548,7 +543,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Deletes the object.
      *
-     * @return <tt>true</tt> if the delete was successfule
+     * @return {@code true} if the delete was successfule
      */
     protected boolean deleteObject() {
         IMObject object = getObject();
@@ -558,7 +553,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Deletes any child Deletable instances.
      *
-     * @return <tt>true</tt> if the delete was successful
+     * @return {@code true} if the delete was successful
      */
     protected boolean deleteChildren() {
         for (Deletable deletable : editors.getDeletable()) {
@@ -704,7 +699,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Invoked by {@link #onLayout} to dispose of existing editors.
      * <p/>
-     * This implementation disposes each editor for which {@link #disposeOnChangeLayout(Editor)} returns <tt>true</tt>.
+     * This implementation disposes each editor for which {@link #disposeOnChangeLayout(Editor)} returns {@code true}.
      */
     protected void disposeOnChangeLayout() {
         Set<Editor> set = editors.getEditors();
@@ -721,7 +716,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * This implementation always returns true.
      *
      * @param editor the editor
-     * @return <tt>true</tt>
+     * @return {@code true}
      */
     protected boolean disposeOnChangeLayout(Editor editor) {
         return true;
@@ -780,7 +775,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Helper to return a node descriptor from the archetype, given its name.
      *
      * @param name the node descriptor's name
-     * @return the corresponding node descriptor, or <tt>null</tt> if it
+     * @return the corresponding node descriptor, or {@code null} if it
      *         doesn't exist
      */
     protected NodeDescriptor getDescriptor(String name) {
@@ -795,7 +790,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * to ensure the editors are created
      *
      * @param name the property name
-     * @return the editor corresponding to <tt>name</tt> or </tt>null</tt> if
+     * @return the editor corresponding to {@code name} or }null} if
      *         none exists
      */
     protected Editor getEditor(String name) {
@@ -807,9 +802,9 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * name.
      *
      * @param name   the property name
-     * @param create if <tt>true</tt> force creation of the edit components if
+     * @param create if {@code true} force creation of the edit components if
      *               it hasn't already been done
-     * @return the editor corresponding to <tt>name</tt> or </tt>null</tt> if
+     * @return the editor corresponding to {@code name} or }null} if
      *         none exists or hasn't been created
      */
     protected Editor getEditor(String name, boolean create) {
@@ -835,8 +830,8 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * <p/>
      * This implementation uses the cache associated with the layout context.
      *
-     * @param reference the reference. May be <tt>null</tt>
-     * @return the object corresponding to <tt>reference</tt> or <tt>null</tt> if none exists
+     * @param reference the reference. May be {@code null}
+     * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
     protected IMObject getObject(IMObjectReference reference) {
         return getLayoutContext().getCache().get(reference);
@@ -845,7 +840,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     private class ComponentFactory extends NodeEditorFactory {
 
         /**
-         * Construct a new <tt>ComponentFactory</tt>.
+         * Construct a new {@code ComponentFactory}.
          *
          * @param context the layout context
          */

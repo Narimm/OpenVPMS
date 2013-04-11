@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.print;
 
@@ -21,6 +19,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -33,8 +32,7 @@ import java.util.List;
 /**
  * Prints a batch of objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class BatchPrinter<T extends IMObject> implements PrinterListener {
 
@@ -49,20 +47,27 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
     private T object;
 
     /**
-     * The context, used to locate document templates
+     * The context, used to locate document templates.
      */
     private final Context context;
 
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
+
 
     /**
-     * Constructs a <tt>BatchPrinter</tt>.
+     * Constructs a {@code BatchPrinter}.
      *
      * @param objects the objects to print
      * @param context the context, used to locate document templates
+     * @param help    the help context
      */
-    public BatchPrinter(List<T> objects, Context context) {
+    public BatchPrinter(List<T> objects, Context context, HelpContext help) {
         setObjects(objects);
         this.context = context;
+        this.help = help;
     }
 
     /**
@@ -96,7 +101,7 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
     /**
      * Creates a new interactive printer.
      * <p/>
-     * When printing interactively (i.e for those templates that specify interactive=<tt>true</tt>),
+     * When printing interactively (i.e for those templates that specify interactive={@code true}),
      * objects may be skipped.
      * <p/>
      * 'This' is registered as a listener.
@@ -105,7 +110,7 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
      * @return a new interactive printer
      */
     protected InteractiveIMPrinter<T> createInteractivePrinter(IMPrinter<T> printer) {
-        InteractiveIMPrinter<T> result = new InteractiveIMPrinter<T>(printer, true);
+        InteractiveIMPrinter<T> result = new InteractiveIMPrinter<T>(printer, true, help);
         result.setListener(this);
         return result;
     }
@@ -115,7 +120,7 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
      * <p/>
      * This updates the state of the <em>printed</em> flag, if the object has one, and prints the next object, if any.
      *
-     * @param printer the printer that was used. May be <tt>null</tt>
+     * @param printer the printer that was used. May be {@code null}
      */
     public void printed(String printer) {
         boolean next = false;

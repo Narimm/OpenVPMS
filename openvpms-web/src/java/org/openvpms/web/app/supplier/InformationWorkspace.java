@@ -12,14 +12,13 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.resource.util.Messages;
@@ -28,24 +27,23 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Supplier information workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
-     * Construct a new <tt>InformationWorkspace</tt>.
+     * Constructs an {@code InformationWorkspace}.
      */
-    public InformationWorkspace() {
+    public InformationWorkspace(Context context) {
         super("supplier", "info",
-              Archetypes.create("party.supplier*", Party.class,
-                                Messages.get("supplier.info.type")));
+              Archetypes.create("party.supplier*", Party.class, Messages.get("supplier.info.type")));
+        setMailContext(new SupplierMailContext(context, getHelpContext()));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Party object) {

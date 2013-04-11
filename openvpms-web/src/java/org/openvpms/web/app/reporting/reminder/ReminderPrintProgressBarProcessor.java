@@ -12,14 +12,13 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.reporting.reminder;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.resource.util.Messages;
@@ -30,8 +29,7 @@ import java.util.List;
 /**
  * Prints reminders, updating a progress bar as it goes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProcessor {
 
@@ -46,20 +44,21 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
     private List<ReminderEvent> events;
 
     /**
-     * The mail context, used when printing interactively. May be <tt>null</tt>
+     * The mail context, used when printing interactively. May be {@code null}
      */
     private MailContext mailContext;
 
 
     /**
-     * Constructs a <tt>ReminderPrintProgressBarProcessor</tt>.
+     * Constructs a {@code ReminderPrintProgressBarProcessor}.
      *
      * @param reminders     the reminders
      * @param groupTemplate the grouped reminder document template
      * @param statistics    the statistics
+     * @param help          the help context
      */
     public ReminderPrintProgressBarProcessor(List<List<ReminderEvent>> reminders, DocumentTemplate groupTemplate,
-                                             Statistics statistics) {
+                                             Statistics statistics, HelpContext help) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.print"));
 
         PrinterListener listener = new PrinterListener() {
@@ -86,13 +85,13 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
             }
         };
 
-        processor = new ReminderPrintProcessor(groupTemplate, listener, mailContext);
+        processor = new ReminderPrintProcessor(groupTemplate, listener, mailContext, help);
     }
 
     /**
      * Determines if reminders should always be printed interactively.
      *
-     * @param interactive if <tt>true</tt>, reminders should always be printed interactively. If <tt>false</tt>,
+     * @param interactive if {@code true}, reminders should always be printed interactively. If {@code false},
      *                    reminders will only be printed interactively if a printer needs to be selected
      */
     public void setInteractiveAlways(boolean interactive) {
@@ -102,7 +101,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
     /**
      * Sets the mail context, used for mailing from print dialogs.
      *
-     * @param context the mail context. May be <tt>null</tt>
+     * @param context the mail context. May be {@code null}
      */
     public void setMailContext(MailContext context) {
         mailContext = context;

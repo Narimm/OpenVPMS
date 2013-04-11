@@ -12,14 +12,10 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.supplier.delivery;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
@@ -28,15 +24,18 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.test.AbstractAppTest;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * Tests the {@link DeliveryItemEditor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class DeliveryItemEditorTestCase extends AbstractAppTest {
 
@@ -45,7 +44,7 @@ public class DeliveryItemEditorTestCase extends AbstractAppTest {
      */
     @Test
     public void testValidation() {
-        DefaultLayoutContext context = new DefaultLayoutContext();
+        DefaultLayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
         Lookup each = TestHelper.getLookup("lookup.uom", "EACH");
 
         Act delivery = (Act) create(SupplierArchetypes.DELIVERY);

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -21,6 +19,7 @@ package org.openvpms.web.component.im.edit.act;
 import nextapp.echo2.app.Button;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.property.Modifiable;
@@ -32,8 +31,7 @@ import org.openvpms.web.component.property.Property;
  * A edit dialog for acts that disables the Apply button for
  * <em>POSTED<em> acts, as a workaround for OVPMS-733.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ActEditDialog extends EditDialog {
 
@@ -43,39 +41,40 @@ public class ActEditDialog extends EditDialog {
     private boolean posted;
 
     /**
-     * Constructs a new <tt>ActEditDialog</tt>.
+     * Constructs a new {@code ActEditDialog}.
      *
      * @param editor the editor
+     * @param help   the help context
      */
-    public ActEditDialog(IMObjectEditor editor) {
-        super(editor);
+    public ActEditDialog(IMObjectEditor editor, HelpContext help) {
+        super(editor, help);
         init(editor);
     }
 
     /**
-     * Constructs a new <tt>ActEditDialog</tt>.
+     * Constructs a new {@code ActEditDialog}.
      *
      * @param editor the editor
-     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or
-     *               'Apply' buttons are pressed.
+     * @param save   if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param help   the help context
      */
-    public ActEditDialog(IMObjectEditor editor, boolean save) {
-        super(editor, save);
+    public ActEditDialog(IMObjectEditor editor, boolean save, HelpContext help) {
+        super(editor, save, help);
         init(editor);
     }
 
     /**
-     * Constructs a new <tt>EditDialog</tt>.
+     * Constructs a new {@code EditDialog}.
      *
      * @param editor the editor
-     * @param save   if <tt>true</tt>, saves the editor when the 'OK' or
+     * @param save   if {@code true}, saves the editor when the 'OK' or
      *               'Apply' buttons are pressed.
-     * @param skip   if <tt>true</tt> display a 'Skip' button that simply
+     * @param skip   if {@code true} display a 'Skip' button that simply
      *               closes the dialog
+     * @param help   the help context
      */
-    public ActEditDialog(IMObjectEditor editor, boolean save,
-                         boolean skip) {
-        super(editor, save, skip);
+    public ActEditDialog(IMObjectEditor editor, boolean save, boolean skip, HelpContext help) {
+        super(editor, save, skip, help);
         init(editor);
 
         posted = getPosted();
@@ -84,7 +83,7 @@ public class ActEditDialog extends EditDialog {
     /**
      * Determines if the act has been saved with POSTED status.
      *
-     * @return <tt>true</tt> if the act has been saved
+     * @return {@code true} if the act has been saved
      */
     protected boolean isPosted() {
         return posted;
@@ -93,7 +92,7 @@ public class ActEditDialog extends EditDialog {
     /**
      * Saves the current object.
      *
-     * @return <tt>true</tt> if the object was saved
+     * @return {@code true} if the object was saved
      */
     @Override
     protected boolean doSave() {
@@ -141,7 +140,7 @@ public class ActEditDialog extends EditDialog {
     /**
      * Determines if the act is posted.
      *
-     * @return <tt>true</tt> if the act is posted
+     * @return {@code true} if the act is posted
      */
     private boolean getPosted() {
         Act act = (Act) getEditor().getObject();

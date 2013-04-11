@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.payment;
@@ -22,28 +20,29 @@ package org.openvpms.web.app.customer.payment;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultActActions;
 
 
 /**
  * CRUD window for payments.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new <tt>PaymentCRUDWindow</tt>.
+     * Constructs a {@code PaymentCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance());
+    public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
     }
 
     /**
@@ -79,7 +78,7 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new ActEditDialog(editor);
+        return new ActEditDialog(editor, getHelpContext());
     }
 
 }

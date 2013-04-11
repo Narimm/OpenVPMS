@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
@@ -31,64 +29,67 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
 /**
  * Table browser for {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class IMObjectTableBrowser<T extends IMObject>
         extends TableBrowser<T> {
 
     /**
-     * Construct a new <tt>IMObjectTableBrowser</tt> that queries IMObjects
-     * using the specified query.
+     * Constructs an {@code IMObjectTableBrowser} that queries IMObjects using the specified query.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      */
-    public IMObjectTableBrowser(Query<T> query) {
-        this(query, (SortConstraint[]) null);
+    public IMObjectTableBrowser(Query<T> query, LayoutContext context) {
+        this(query, (SortConstraint[]) null, context);
     }
 
     /**
-     * Construct a new <tt>IMObjectTableBrowser</tt> that queries IMObjects
+     * Constructs an {@code IMObjectTableBrowser} that queries IMObjects
      * using the specified query, displaying them in the table.
      *
      * @param query the query
-     * @param sort  the sort criteria. May be <tt>null</tt>
+     * @param sort  the sort criteria. May be {@code null}
+     * @param context the layout context
      */
-    public IMObjectTableBrowser(Query<T> query, SortConstraint[] sort) {
-        super(query, sort, null);
+    public IMObjectTableBrowser(Query<T> query, SortConstraint[] sort, LayoutContext context) {
+        super(query, sort, null, context);
     }
 
     /**
-     * Construct a new <tt>IMObjectTableBrowser</tt> that queries IMObjects
+     * Constructs an {@code IMObjectTableBrowser} that queries IMObjects
      * using the specified query, displaying them in the table.
      *
      * @param query the query
      * @param model the table model
+     * @param context the layout context
      */
-    public IMObjectTableBrowser(Query<T> query, IMTableModel<T> model) {
-        super(query, null, model);
+    public IMObjectTableBrowser(Query<T> query, IMTableModel<T> model, LayoutContext context) {
+        super(query, null, model, context);
     }
 
     /**
-     * Construct a new <tt>IMObjectTableBrowser</tt> that queries IMObjects
+     * Constructs an {@code IMObjectTableBrowser} that queries IMObjects
      * using the specified query, displaying them in the table.
      *
-     * @param query the query
-     * @param sort  the sort criteria. May be <tt>null</tt>
-     * @param model the table model
+     * @param query   the query
+     * @param sort    the sort criteria. May be {@code null}
+     * @param model   the table model
+     * @param context the layout context
      */
-    public IMObjectTableBrowser(Query<T> query, SortConstraint[] sort,
-                                IMTableModel<T> model) {
-        super(query, sort, model);
+    public IMObjectTableBrowser(Query<T> query, SortConstraint[] sort, IMTableModel<T> model, LayoutContext context) {
+        super(query, sort, model, context);
     }
 
     /**
      * Creates a new table model.
      *
+     * @param context the layout context
      * @return a new table model
      */
-    protected IMTableModel<T> createTableModel() {
-        LayoutContext context = new DefaultLayoutContext();
+    @Override
+    protected IMTableModel<T> createTableModel(LayoutContext context) {
+        context = new DefaultLayoutContext(context.getHelpContext());
         IMObjectComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         Query<T> query = getQuery();

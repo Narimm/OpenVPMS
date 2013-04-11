@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.view;
@@ -48,8 +46,7 @@ import java.util.List;
  * in a table. When an item is selected, a viewer containing it is displayed
  * in a box beneath the table.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class IMTableCollectionViewer<T>
         implements IMObjectCollectionViewer {
@@ -91,20 +88,16 @@ public abstract class IMTableCollectionViewer<T>
 
 
     /**
-     * Constructs a new <tt>AbstractIMObjectCollectionViewer</tt>.
+     * Constructs an {@code AbstractIMObjectCollectionViewer}.
      *
      * @param property the collection to view
      * @param parent   the parent object
-     * @param layout   the layout context. May be <tt>null</tt>
+     * @param layout   the layout context
      */
     public IMTableCollectionViewer(CollectionProperty property,
                                    IMObject parent,
                                    LayoutContext layout) {
-        if (layout == null) {
-            context = new DefaultLayoutContext();
-        } else {
-            context = new DefaultLayoutContext(layout);
-        }
+        context = new DefaultLayoutContext(layout);
         context.setComponentFactory(new TableComponentFactory(context));
 
         // filter out the id field
@@ -165,7 +158,7 @@ public abstract class IMTableCollectionViewer<T>
     /**
      * Returns the selected object.
      *
-     * @return the selected object. May be <tt>null</tt>
+     * @return the selected object. May be {@code null}
      */
     protected abstract IMObject getSelected();
 
@@ -279,8 +272,7 @@ public abstract class IMTableCollectionViewer<T>
         if (model instanceof SortableTableModel) {
             // if no column is currently sorted, sort on the default (if any)
             SortableTableModel sortable = ((SortableTableModel) model);
-            if (sortable.getSortColumn() == -1
-                && sortable.getDefaultSortColumn() != -1) {
+            if (sortable.getSortColumn() == -1 && sortable.getDefaultSortColumn() != -1) {
                 sortable.sort(sortable.getDefaultSortColumn(), true);
             }
         }

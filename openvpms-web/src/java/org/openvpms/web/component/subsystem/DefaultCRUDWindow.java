@@ -19,6 +19,7 @@
 package org.openvpms.web.component.subsystem;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.util.Archetypes;
 
@@ -26,18 +27,18 @@ import org.openvpms.web.component.im.util.Archetypes;
 /**
  * Default implementation of the {@link CRUDWindow} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DefaultCRUDWindow<T extends IMObject>
         extends AbstractViewCRUDWindow<T> {
 
     /**
-     * Create a new <tt>DefaultCRUDWindow</tt>.
+     * Constructs a {@code DefaultCRUDWindow}.
      *
-     * @param archetypes the archetypes that this may create.
+     * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public DefaultCRUDWindow(Archetypes<T> archetypes) {
-        super(archetypes, DefaultIMObjectActions.<T>getInstance());
+    public DefaultCRUDWindow(Archetypes<T> archetypes, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<T>getInstance(), help);
     }
 }

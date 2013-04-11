@@ -12,34 +12,35 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.delivery;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
+import org.openvpms.web.app.supplier.SupplierMailContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Supplier delivery workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2008-03-19 10:19:58 +1100 (Wed, 19 Mar 2008) $
+ * @author Tim Anderson
  */
 public class DeliveryWorkspace
         extends BrowserCRUDWorkspace<FinancialAct, FinancialAct> {
 
     /**
-     * Constructs a new <tt>DeliveryWorkspace</tt>.
+     * Constructs a {@code DeliveryWorkspace}.
+     *
+     * @param context the context
      */
-    public DeliveryWorkspace() {
+    public DeliveryWorkspace(Context context) {
         super("supplier", "delivery", false);
-        setArchetypes(FinancialAct.class, "act.supplierDelivery",
-                      "act.supplierReturn");
+        setArchetypes(FinancialAct.class, "act.supplierDelivery", "act.supplierReturn");
         setChildArchetypes(getArchetypes());
+        setMailContext(new SupplierMailContext(context, getHelpContext()));
     }
 
     /**
@@ -48,14 +49,14 @@ public class DeliveryWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new DeliveryCRUDWindow(getArchetypes());
+        return new DeliveryCRUDWindow(getArchetypes(), getHelpContext());
     }
 
     /**
-     * Determines if the parent object is optional (i.e may be <tt>null</tt>,
+     * Determines if the parent object is optional (i.e may be {@code null},
      * when laying out the workspace.
      *
-     * @return <tt>true</tt>
+     * @return {@code true}
      */
     @Override
     protected boolean isParentOptional() {
