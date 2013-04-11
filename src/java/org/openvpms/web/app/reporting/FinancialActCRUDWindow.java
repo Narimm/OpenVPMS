@@ -12,16 +12,14 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
-import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -30,27 +28,27 @@ import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 
 
 /**
  * CRUD window for the financial workspace. This provides selection and event
  * notification for child acts and print support.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class FinancialActCRUDWindow
         extends AbstractViewCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new <tt>FinancialActCRUDWindow</tt>.
+     * Create a new {@code FinancialActCRUDWindow}.
      *
-     * @param archetypes the archetypes that this may create.
-     *                   If <tt>null</tt>, the subclass must override
+     * @param archetypes the archetypes that this may create. If {@code null}, the subclass must override
      *                   {@link #getArchetypes}
+     * @param help       the help context
      */
-    public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultIMObjectActions.<FinancialAct>getInstance());
+    public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<FinancialAct>getInstance(), help);
     }
 
     /**
@@ -67,7 +65,7 @@ public class FinancialActCRUDWindow
     /**
      * Invoked when a child act is selected/deselected.
      *
-     * @param child the child act. May be <tt>null</tt>
+     * @param child the child act. May be {@code null}
      */
     protected void onChildActSelected(FinancialAct child) {
     }
@@ -83,7 +81,7 @@ public class FinancialActCRUDWindow
          * @param property the property
          * @param parent   the parent object
          * @param context  the layout context
-         * @return a component to display <tt>property</tt>
+         * @return a component to display {@code property}
          */
         @Override
         protected ComponentState createItems(Property property, IMObject parent,
@@ -101,11 +99,11 @@ public class FinancialActCRUDWindow
     private class Viewer extends ActRelationshipCollectionViewer {
 
         /**
-         * Construct a new <tt>Viewer</tt>.
+         * Construct a new {@code Viewer}.
          *
          * @param property the collection to view
          * @param parent   the parent object
-         * @param context  the layout context. May be <tt>null</tt>
+         * @param context  the layout context. May be {@code null}
          */
         public Viewer(CollectionProperty property, IMObject parent,
                       LayoutContext context) {

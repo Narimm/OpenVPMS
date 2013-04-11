@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.product.stock;
@@ -26,6 +24,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -39,8 +39,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Query for <em>act.stock*</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StockQuery extends DateRangeActQuery<Act> {
 
@@ -57,19 +56,19 @@ public class StockQuery extends DateRangeActQuery<Act> {
 
 
     /**
-     * Constructs a new <tt>StockQuery</tt>.
+     * Constructs a new {@code StockQuery}.
      *
      * @param shortNames the act short names to query
+     * @param help       the help context
      */
-    public StockQuery(String[] shortNames) {
+    public StockQuery(String[] shortNames, HelpContext help) {
         super(shortNames, STATUSES, Act.class);
 
         setParticipantConstraint(null, "stockLocation",
                                  StockArchetypes.STOCK_LOCATION_PARTICIPATION);
 
-        stockLocation = new IMObjectSelector<Party>(
-                Messages.get("product.stockLocation"),
-                "party.organisationStockLocation");
+        stockLocation = new IMObjectSelector<Party>(Messages.get("product.stockLocation"),
+                                                    new DefaultLayoutContext(help), "party.organisationStockLocation");
         stockLocation.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 setEntity(object);
@@ -86,7 +85,7 @@ public class StockQuery extends DateRangeActQuery<Act> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
      * @return the query result set
      * @throws ArchetypeServiceException if the query fails
      */

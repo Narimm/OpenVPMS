@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.workflow;
@@ -21,42 +19,61 @@ package org.openvpms.web.component.workflow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.help.HelpContext;
 
 
 /**
  * Default implementation of the {@link TaskContext} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DefaultTaskContext extends LocalContext implements TaskContext {
 
     /**
-     * Constructs a new <tt>TaskContext</tt> that inherits values from the
-     * global context.
+     * The help context.
      */
-    public DefaultTaskContext() {
-        this(true);
+    private final HelpContext help;
+
+    /**
+     * Constructs a new {@code TaskContext} that inherits values from the
+     * global context.
+     *
+     * @param help the help context
+     */
+    public DefaultTaskContext(HelpContext help) {
+        this(help, true);
     }
 
     /**
-     * Constructs a new <tt>DefaultTaskContext</tt> that inherits values
-     * from the specified context. If the specified context is <tt>null</tt>
+     * Constructs a new {@code DefaultTaskContext} that inherits values
+     * from the specified context. If the specified context is {@code null}
      * then no inheritance occurs.
      *
-     * @param parent the parent context. May be <tt>null</tt>
+     * @param help   the help context
+     * @param parent the parent context. May be {@code null}
      */
-    public DefaultTaskContext(Context parent) {
+    public DefaultTaskContext(HelpContext help, Context parent) {
         super(parent);
+        this.help = help;
     }
 
     /**
-     * Constructs a new <tt>DefaultTaskContext</tt> that inherits values
-     * from the global context if inherit is <tt>true</tt>.
+     * Constructs a new {@code DefaultTaskContext} that inherits values
+     * from the global context if inherit is {@code true}.
      *
-     * @param inherit if <tt>true</tt> inherit values from the global context
+     * @param inherit if {@code true} inherit values from the global context
      */
-    public DefaultTaskContext(boolean inherit) {
+    public DefaultTaskContext(HelpContext help, boolean inherit) {
         super((inherit) ? GlobalContext.getInstance() : null);
+        this.help = help;
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    public HelpContext getHelpContext() {
+        return help;
     }
 }

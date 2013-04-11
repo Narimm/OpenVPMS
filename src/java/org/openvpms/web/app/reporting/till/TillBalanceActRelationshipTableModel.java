@@ -12,13 +12,12 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.till;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
 
 
@@ -26,16 +25,17 @@ import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel
  * Table model for <em>actRelationship.tillBalanceItems</em>.
  * This displays all related acts in a {@link TillActTableModel}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TillBalanceActRelationshipTableModel
         extends AbstractActRelationshipTableModel<FinancialAct> {
 
     /**
-     * Constructs a new <code>TillBalanceActRelationshipTableModel</code>
+     * Constructs a new {@code TillBalanceActRelationshipTableModel}
+     *
+     * @param help the help context
      */
-    public TillBalanceActRelationshipTableModel() {
-        setModel(new TillActTableModel());
+    public TillBalanceActRelationshipTableModel(HelpContext help) {
+        setModel(new TillActTableModel(help));
     }
 }

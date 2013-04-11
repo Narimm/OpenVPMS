@@ -12,26 +12,22 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.mr;
 
-import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
+import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 
 /**
- * Table model for <em>act.patientReminder</em> and <em>act.patientAlert</em>
- * acts.
+ * Table model for <em>act.patientReminder</em> and <em>act.patientAlert</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderActTableModel extends PatientRecordActTableModel {
 
@@ -47,20 +43,21 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
 
 
     /**
-     * Constructs a <tt>ReminderActTableModel</tt>.
+     * Constructs a {@code ReminderActTableModel}.
      *
      * @param shortNames the act archetype short names
+     * @param context    the layout context
      */
-    public ReminderActTableModel(String[] shortNames) {
-        super(shortNames);
+    public ReminderActTableModel(String[] shortNames, LayoutContext context) {
+        super(shortNames, context);
     }
 
     /**
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     @Override
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {

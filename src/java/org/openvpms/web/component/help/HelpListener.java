@@ -11,27 +11,16 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-
-package org.openvpms.web.component.workflow;
-
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
-
+package org.openvpms.web.component.help;
 
 /**
- * Workflow task context.
+ * Enter description.
  *
  * @author Tim Anderson
  */
-public interface TaskContext extends Context {
+public interface HelpListener {
 
-    /**
-     * Returns the help context.
-     *
-     * @return the help context
-     */
-    HelpContext getHelpContext();
-
+    void show(HelpContext context);
 }

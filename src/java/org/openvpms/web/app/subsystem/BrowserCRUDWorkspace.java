@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.subsystem;
@@ -23,6 +21,7 @@ import nextapp.echo2.app.SplitPane;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
@@ -45,11 +44,9 @@ import java.util.List;
  * <p/>
  * The selector is optional.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
-        Child extends IMObject>
+public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extends IMObject>
         extends AbstractCRUDWorkspace<Parent, Child> {
 
     /**
@@ -69,8 +66,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
 
 
     /**
-     * Constructs a new <tt>BrowserCRUDWorkspace</tt>, with a selector to
-     * select the parent object.
+     * Constructs a {@code BrowserCRUDWorkspace}, with a selector to select the parent object.
      * <p/>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
      * be invoked to set archetypes that the workspace supports, before
@@ -84,7 +80,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Constructs a <tt>BrowserCRUDWorkspace</tt>.
+     * Constructs a {@code BrowserCRUDWorkspace}.
      * <p/>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
      * be invoked to set archetypes that the workspace supports, before
@@ -92,7 +88,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
      *
      * @param subsystemId  the subsystem localisation identifier
      * @param workspaceId  the workspace localisation identfifier
-     * @param showSelector if <tt>true</tt>, show the selector
+     * @param showSelector if {@code true}, show the selector
      */
     public BrowserCRUDWorkspace(String subsystemId, String workspaceId,
                                 boolean showSelector) {
@@ -100,7 +96,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Constructs a new <tt>BrowserCRUDWorkspace</tt>, with a selector for
+     * Constructs a new {@code BrowserCRUDWorkspace}, with a selector for
      * the parent object.
      * <p/>
      * The {@link #setChildArchetypes} method must be invoked to set archetypes
@@ -109,7 +105,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identfifier
      * @param archetypes  the archetypes that this operates on.
-     *                    If <tt>null</tt>, the {@link #setArchetypes}
+     *                    If {@code null}, the {@link #setArchetypes}
      *                    method must be invoked to set a non-null value
      *                    before performing any operation
      */
@@ -119,17 +115,17 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Constructs a new <tt>BrowserCRUDWorkspace</tt>, with a selector for
+     * Constructs a new {@code BrowserCRUDWorkspace}, with a selector for
      * the parent object.
      *
      * @param subsystemId     the subsystem localisation identifier
      * @param workspaceId     the workspace localisation identfifier
      * @param archetypes      the archetypes that this operates on.
-     *                        If <tt>null</tt>, the {@link #setArchetypes}
+     *                        If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
      * @param childArchetypes the child archetypes that this operates on.
-     *                        If <tt>null</tt>, the {@link #setChildArchetypes}
+     *                        If {@code null}, the {@link #setChildArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
      */
@@ -140,19 +136,19 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     }
 
     /**
-     * Constructs a new <tt>BrowserCRUDWorkspace</tt>.
+     * Constructs a new {@code BrowserCRUDWorkspace}.
      *
      * @param subsystemId     the subsystem localisation identifier
      * @param workspaceId     the workspace localisation identfifier
      * @param archetypes      the archetypes that this operates on.
-     *                        If <tt>null</tt>, the {@link #setArchetypes}
+     *                        If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
      * @param childArchetypes the child archetypes that this operates on.
-     *                        If <tt>null</tt>, the {@link #setChildArchetypes}
+     *                        If {@code null}, the {@link #setChildArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
-     * @param showSelector    if <tt>true</tt>, show a selector to select the
+     * @param showSelector    if {@code true}, show a selector to select the
      *                        parent object
      */
     public BrowserCRUDWorkspace(String subsystemId, String workspaceId,
@@ -166,7 +162,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Parent object) {
@@ -177,7 +173,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     /**
      * Returns the browser.
      *
-     * @return the browser, or <tt>null</tt> if none has been registered
+     * @return the browser, or {@code null} if none has been registered
      */
     protected Browser<Child> getBrowser() {
         return browser;
@@ -186,7 +182,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     /**
      * Registers a browser.
      *
-     * @param browser the browser. If <tt>null</tt>, deregisters any existing
+     * @param browser the browser. If {@code null}, deregisters any existing
      *                browser
      */
     protected void setBrowser(Browser<Child> browser) {
@@ -215,13 +211,13 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
      * @return a new browser
      */
     protected Browser<Child> createBrowser(Query<Child> query) {
-        return BrowserFactory.create(query);
+        return BrowserFactory.create(query, new DefaultLayoutContext(getHelpContext()));
     }
 
     /**
      * Returns the query used to populate the browser.
      *
-     * @return the query, or <tt>null</tt> if none is registered
+     * @return the query, or {@code null} if none is registered
      */
     protected Query<Child> getQuery() {
         return query;
@@ -230,7 +226,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     /**
      * Registers a browser query.
      *
-     * @param query the browser query. May be <tt>null</tt>
+     * @param query the browser query. May be {@code null}
      */
     protected void setQuery(Query<Child> query) {
         this.query = query;
@@ -352,7 +348,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     /**
      * Lays out the workspace.
      *
-     * @param refresh if <tt>true</tt> and the workspace exists, refresh the workspace, otherwise recreate it
+     * @param refresh if {@code true} and the workspace exists, refresh the workspace, otherwise recreate it
      */
     protected void layoutWorkspace(boolean refresh) {
         Parent parent = getObject();
@@ -401,7 +397,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
     /**
      * Returns the workspace.
      *
-     * @return the workspace. May be <tt>null</tt>
+     * @return the workspace. May be {@code null}
      */
     protected Component getWorkspace() {
         return workspace;
@@ -423,27 +419,27 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject,
      * Determines if the a property change notification containing
      * {@link #SUMMARY_PROPERTY} should be made when a child updates.
      * <p/>
-     * This implementation always returns <tt>true</tt>.
+     * This implementation always returns {@code true}.
      *
-     * @return <tt>true</tt> if a notification should be made, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if a notification should be made, otherwise
+     *         {@code false}
      */
     protected boolean updateSummaryOnChildUpdate() {
         return true;
     }
 
     /**
-     * Determines if the parent object is optional (i.e may be <tt>null</tt>,
+     * Determines if the parent object is optional (i.e may be {@code null},
      * when laying out the workspace.
      * <p/>
      * If the parent object is optional, the browser and CRUD window will be
      * displayed if there is no parent object. If it is mandatory, the
      * browser and CRUD window will only be displayed if it is present.
      * <p/>
-     * This implementation always returns <tt>false</tt>.
+     * This implementation always returns {@code false}.
      *
-     * @return <tt>true</tt> if the parent object is optional, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the parent object is optional, otherwise
+     *         {@code false}
      */
     protected boolean isParentOptional() {
         return false;

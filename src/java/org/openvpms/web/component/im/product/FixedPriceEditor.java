@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.product;
@@ -22,13 +20,13 @@ import echopointng.DropDown;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
@@ -42,13 +40,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Set;
 
+import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
+
 
 /**
  * An editor for fixed prices that displays a drop-down of available prices
  * associated with the product.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class FixedPriceEditor extends AbstractPropertyEditor {
 
@@ -74,7 +73,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private TextField field;
 
     /**
-     * The price drop down component. May be <tt>null</tt>
+     * The price drop down component. May be {@code null}
      */
     private DropDown priceDropDown;
 
@@ -93,14 +92,20 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      */
     private ProductPrice price;
 
+    /**
+     * The layout context.
+     */
+    private final LayoutContext context;
 
     /**
-     * Creates a new <tt>FixedPriceEditor</tt>.
+     * Creates a new {@code FixedPriceEditor}.
      *
      * @param property the fixed price property
+     * @param context  the layout context
      */
-    public FixedPriceEditor(Property property) {
+    public FixedPriceEditor(Property property, LayoutContext context) {
         super(property);
+        this.context = context;
 
         date = new Date();
 
@@ -113,7 +118,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     /**
      * Sets the product, used to select the fixed price.
      *
-     * @param product the product. MAy be <tt>null</tt>
+     * @param product the product. MAy be {@code null}
      */
     public void setProduct(Product product) {
         this.product = product;
@@ -160,7 +165,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     /**
      * Returns the selected product price.
      *
-     * @return the product price, or <tt>null</tt> if none is selected
+     * @return the product price, or {@code null} if none is selected
      */
     public ProductPrice getProductPrice() {
         return price;
@@ -169,7 +174,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     /**
      * Sets the product price.
      *
-     * @param price the product price. May be <tt>null</tt>
+     * @param price the product price. May be {@code null}
      */
     public void setProductPrice(ProductPrice price) {
         this.price = price;
@@ -178,7 +183,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     /**
      * Invoked when a price is selected.
      *
-     * @param price the selected price. May be <tt>null</tt>
+     * @param price the selected price. May be {@code null}
      */
     private void onSelected(ProductPrice price) {
         this.price = price;
@@ -228,12 +233,10 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * @param prices the prices
      * @return a new price table
      */
-    private PagedIMTable<ProductPrice> createPriceTable(
-            Set<ProductPrice> prices) {
+    private PagedIMTable<ProductPrice> createPriceTable(Set<ProductPrice> prices) {
         ResultSet<ProductPrice> set = new IMObjectListResultSet<ProductPrice>(
                 new ArrayList<ProductPrice>(prices), 20);
-        final PagedIMTable<ProductPrice> table
-                = new PagedIMTable<ProductPrice>(new PriceTableModel(), set);
+        final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(context), set);
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelected(table.getTable().getSelected());
@@ -254,10 +257,12 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
         private static final String[] NODES = new String[]{"name", "price"};
 
         /**
-         * Creates a new <tt>PriceTableModel</tt>.
+         * Constructs a {@code PriceTableModel}.
+         *
+         * @param context the layout context
          */
-        public PriceTableModel() {
-            super(new String[]{FIXED_PRICE});
+        public PriceTableModel(LayoutContext context) {
+            super(new String[]{FIXED_PRICE}, context);
         }
 
         /**

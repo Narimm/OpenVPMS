@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -48,8 +49,7 @@ import java.util.Set;
  * Processor for {@link ReminderEvent.Action#PHONE} and {@link ReminderEvent.Action#LIST} events.
  * Prints all of the reminders to a report.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBatchProcessor {
 
@@ -62,6 +62,11 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
      * The statistics.
      */
     private final Statistics statistics;
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * The component layout row.
@@ -80,27 +85,30 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
 
 
     /**
-     * Creates a new <tt>ReminderListProcessor</tt>.
+     * Constructs an {@code ReminderListProcessor}.
      *
      * @param reminders  the reminders
      * @param statistics the reminder statistics
+     * @param help       the help context
      */
-    public ReminderListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics) {
+    public ReminderListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics,
+                                 HelpContext help) {
         for (List<ReminderEvent> list : reminders) {
             for (ReminderEvent reminder : list) {
                 this.reminders.add(reminder);
             }
         }
         this.statistics = statistics;
+        this.help = help;
         row = RowFactory.create();
     }
 
     /**
      * Determines if reminders should be updated on completion.
      * <p/>
-     * If set, the <tt>reminderCount</tt> is incremented the <tt>lastSent</tt> timestamp set on completed reminders.
+     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
      *
-     * @param update if <tt>true</tt> update reminders on completion
+     * @param update if {@code true} update reminders on completion
      */
     public void setUpdateOnCompletion(boolean update) {
         this.update = update;
@@ -139,8 +147,7 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
                                                                                      GlobalContext.getInstance());
                 IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator);
                 final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(
-                        Messages.get("reporting.reminder.list.print.title"),
-                        printer, true);
+                        Messages.get("reporting.reminder.list.print.title"), printer, true, help);
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed(String printer) {

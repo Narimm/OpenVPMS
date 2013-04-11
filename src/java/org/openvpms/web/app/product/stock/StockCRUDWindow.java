@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.product.stock;
@@ -22,6 +20,7 @@ import org.openvpms.archetype.rules.stock.StockUpdater;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -36,18 +35,18 @@ import org.openvpms.web.system.ServiceHelper;
 /**
  * Stock CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StockCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
-     * Create a new <tt>StockCRUDWindow</tt>.
+     * Constructs a {@code StockCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public StockCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, DefaultActActions.getInstance());
+    public StockCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
+        super(archetypes, DefaultActActions.getInstance(), help);
     }
 
     /**
@@ -92,7 +91,7 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new ActEditDialog(editor);
+        return new ActEditDialog(editor, getHelpContext());
     }
 
     /**

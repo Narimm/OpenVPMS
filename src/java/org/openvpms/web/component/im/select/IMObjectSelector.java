@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.select;
@@ -34,6 +32,7 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.DocumentListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -50,8 +49,7 @@ import java.util.List;
 /**
  * Selector that provides query support for partial/incorrect names.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IMObjectSelector<T extends IMObject> extends Selector<T> {
 
@@ -81,7 +79,12 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     private final DocumentListener textListener;
 
     /**
-     * The listener. May be <tt>null</tt>
+     * The layout context.
+     */
+    private final LayoutContext context;
+
+    /**
+     * The listener. May be {@code null}
      */
     private IMObjectSelectorListener<T> listener;
 
@@ -97,57 +100,64 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
 
 
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
+     * Constructs an {@code IMObjectSelector}.
      *
      * @param property the property
+     * @param context  the layout context
      */
-    public IMObjectSelector(Property property) {
-        this(property, false);
+    public IMObjectSelector(Property property, LayoutContext context) {
+        this(property, false, context);
     }
 
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
+     * Constructs an {@code IMObjectSelector}.
      *
      * @param property    the property
      * @param allowCreate determines if objects may be created
+     * @param context     the layout context
      */
-    public IMObjectSelector(Property property, boolean allowCreate) {
-        this(property.getDisplayName(), allowCreate);
+    public IMObjectSelector(Property property, boolean allowCreate, LayoutContext context) {
+        this(property.getDisplayName(), allowCreate, context);
     }
 
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
+     * Constructs an {@code IMObjectSelector}.
      *
      * @param type       display name for the types of objects this may select
+     * @param context    the layout context
      * @param shortNames the archetype short names to query
      */
-    public IMObjectSelector(String type, String... shortNames) {
-        this(type, false, shortNames);
+    public IMObjectSelector(String type, LayoutContext context, String... shortNames) {
+        this(type, false, context, shortNames);
     }
 
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
+     * Constructs an {@code IMObjectSelector}.
      *
      * @param type        display name for the types of objects this may select
      * @param allowCreate determines if objects may be created
+     * @param context     the layout context
      * @param shortNames  the archetype short names to query
      */
-    public IMObjectSelector(String type, boolean allowCreate, String... shortNames) {
-        this(type, allowCreate, ButtonStyle.RIGHT, shortNames);
+    public IMObjectSelector(String type, boolean allowCreate, LayoutContext context, String... shortNames) {
+        this(type, allowCreate, ButtonStyle.RIGHT, context, shortNames);
     }
 
     /**
-     * Constructs a new <tt>IMObjectSelector</tt>.
+     * Constructs an {@code IMObjectSelector}.
      *
      * @param type        display name for the types of objects this may select
      * @param allowCreate determines if objects may be created
      * @param style       the button style
+     * @param context     the layout context
      * @param shortNames  the archetype short names to query
      */
-    public IMObjectSelector(String type, boolean allowCreate, ButtonStyle style, String... shortNames) {
+    public IMObjectSelector(String type, boolean allowCreate, ButtonStyle style, LayoutContext context,
+                            String... shortNames) {
         super(style, true);
         setFormat(Format.NAME);
         this.type = type;
+        this.context = context;
         this.shortNames = shortNames;
         this.allowCreate = allowCreate;
         getSelect().addActionListener(new ActionListener() {
@@ -176,7 +186,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(T object) {
@@ -191,7 +201,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Returns the current object.
      *
-     * @return the current object. May be <tt>null</tt>
+     * @return the current object. May be {@code null}
      */
     public T getObject() {
         return object;
@@ -200,7 +210,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Sets the listener.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setListener(IMObjectSelectorListener<T> listener) {
         this.listener = listener;
@@ -214,7 +224,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * <li>no object is present and no text is input
      * </ul>
      *
-     * @return <tt>true</tt> if the selector is valid, otherwise <tt>false</tt>
+     * @return {@code true} if the selector is valid, otherwise {@code false}
      */
     public boolean isValid() {
         boolean valid = !inSelect;
@@ -232,8 +242,8 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Determines if a selection dialog has been popped up.
      *
-     * @return <tt>true</tt> if a selection dialog has been popped up
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if a selection dialog has been popped up
+     *         otherwise {@code false}
      */
     public boolean inSelect() {
         return inSelect;
@@ -242,7 +252,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Determines if objects may be created.
      *
-     * @param create if <tt>true</tt>, objects may be created
+     * @param create if {@code true}, objects may be created
      */
     public void setAllowCreate(boolean create) {
         allowCreate = create;
@@ -251,7 +261,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Determines if objects may be created.
      *
-     * @return <tt>true</tt> if objects may be created
+     * @return {@code true} if objects may be created
      */
     public boolean allowCreate() {
         return allowCreate;
@@ -281,7 +291,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * Pop up a dialog to select an object.
      *
      * @param query    the query
-     * @param runQuery if <tt>true</tt> run the query
+     * @param runQuery if {@code true} run the query
      */
     protected void onSelect(Query<T> query, boolean runQuery) {
         if (runQuery) {
@@ -289,9 +299,8 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
         }
         try {
             final FocusCommand focus = new FocusCommand();
-            final Browser<T> browser = BrowserFactory.create(query);
-            final BrowserDialog<T> popup = new BrowserDialog<T>(
-                    type, browser, allowCreate);
+            final Browser<T> browser = BrowserFactory.create(query, context);
+            final BrowserDialog<T> popup = new BrowserDialog<T>(type, browser, allowCreate, context.getHelpContext());
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -352,7 +361,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Creates a query to select objects.
      *
-     * @param value a value to filter on. May be <tt>null</tt>
+     * @param value a value to filter on. May be {@code null}
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
@@ -369,13 +378,13 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * @return a return a new browser
      */
     protected Browser<IMObject> createBrowser(Query<IMObject> query) {
-        return BrowserFactory.create(query);
+        return BrowserFactory.create(query, context);
     }
 
     /**
      * Determines if a selection dialog has been popped up.
      *
-     * @param select if <tt>true</tt> denotes that a selection dialog has
+     * @param select if {@code true} denotes that a selection dialog has
      *               been popped up
      */
     protected void setInSelect(boolean select) {
@@ -390,6 +399,15 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      */
     protected Button createSelectButton(String buttonId) {
         return ButtonFactory.create(null, "select");
+    }
+
+    /**
+     * Returns the layout context.
+     *
+     * @return the layout context
+     */
+    protected LayoutContext getContext() {
+        return context;
     }
 
     /**

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.admin.archetype;
 
@@ -25,6 +23,7 @@ import org.openvpms.component.business.service.archetype.IMObjectFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -42,8 +41,7 @@ import java.util.Arrays;
 /**
  * An {@link EditDialog} for archetype descriptors, that provides the facility to test the archetype descriptor.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor> {
 
@@ -54,14 +52,16 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
 
 
     /**
-     * Constructs an <tt>ArchetypeEditDialog</tt>.
+     * Constructs an {@code ArchetypeEditDialog}.
      *
      * @param title the window title
      * @param first the first object to edit
      * @param set   the set of results to edit
+     * @param help  the help context
      */
-    public ArchetypeEditDialog(String title, ArchetypeDescriptor first, ResultSet<ArchetypeDescriptor> set) {
-        super(title, first, set);
+    public ArchetypeEditDialog(String title, ArchetypeDescriptor first, ResultSet<ArchetypeDescriptor> set,
+                               HelpContext help) {
+        super(title, first, set, help);
         factory = new ObjectFactory();
         addButton("test", new ActionListener() {
             public void onAction(ActionEvent e) {
@@ -73,7 +73,7 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
     /**
      * Saves the current object.
      *
-     * @return <tt>true</tt> if the object was saved
+     * @return {@code true} if the object was saved
      */
     @Override
     protected boolean doSave() {
@@ -106,8 +106,8 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
                 ArchetypeDescriptor descriptor = (ArchetypeDescriptor) getEditor().getObject();
                 String shortName = descriptor.getShortName();
                 IMObject object = factory.create(shortName);
-                IMObjectEditor editor = IMObjectEditorFactory.create(object, new TestLayoutContext());
-                EditDialog dialog = new TestEditDialog(editor);
+                IMObjectEditor editor = IMObjectEditorFactory.create(object, new TestLayoutContext(getHelpContext()));
+                EditDialog dialog = new TestEditDialog(editor, getHelpContext());
                 dialog.show();
             } else {
                 ValidationHelper.showError(validator);
@@ -139,7 +139,7 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
          *
          * @param shortName the archetype short name
          * @return the archetype descriptor or null if there is no corresponding archetype descriptor for
-         *         <tt>shortName</tt>
+         *         {@code shortName}
          */
         protected ArchetypeDescriptor getArchetypeDescriptor(String shortName) {
             ArchetypeDescriptor descriptor = getArchetype();
@@ -151,15 +151,24 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
     }
 
     /**
-     * Layout context that uses the archeype descriptor being edited, where applicable.
+     * Layout context that uses the archetype descriptor being edited, where applicable.
      */
     private class TestLayoutContext extends AbstractLayoutContext {
+
+        /**
+         * Constructs a {@code TestLayoutContext}.
+         *
+         * @param help the help context
+         */
+        public TestLayoutContext(HelpContext help) {
+            super(help);
+        }
 
         /**
          * Returns an archetype descriptor for an object.
          *
          * @param object the object
-         * @return an archetype descriptor for the object, or <tt>null</tt> if none can be found
+         * @return an archetype descriptor for the object, or {@code null} if none can be found
          */
         @Override
         public ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
@@ -177,12 +186,13 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
     private class TestEditDialog extends EditDialog {
 
         /**
-         * Creates a new <tt>TestEditDialog</tt>.
+         * Creates a new {@code TestEditDialog}.
          *
          * @param editor the editor
+         * @param help   the help context
          */
-        public TestEditDialog(IMObjectEditor editor) {
-            super(editor, false, false, false, false);
+        public TestEditDialog(IMObjectEditor editor, HelpContext help) {
+            super(editor, false, false, false, false, help);
             addButton("validate", new ActionListener() {
                 public void onAction(ActionEvent e) {
                     onCheck();

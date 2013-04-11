@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.subsystem;
@@ -29,8 +27,10 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.dialog.HelpDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectActions;
@@ -59,8 +59,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Abstract implementation of the {@link CRUDWindow} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
 
@@ -100,6 +99,11 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     private MailContext context;
 
     /**
+     * Help context.
+     */
+    private final HelpContext help;
+
+    /**
      * Edit button identifier.
      */
     protected static final String EDIT_ID = "edit";
@@ -121,14 +125,16 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
 
     /**
-     * Constructs a new <tt>AbstractCRUDWindow</tt>.
+     * Constructs an {@code AbstractCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param actions    determines the operations that may be performed on the selected object
+     * @param help       the help context
      */
-    public AbstractCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions) {
+    public AbstractCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions, HelpContext help) {
         this.archetypes = archetypes;
         this.actions = actions;
+        this.help = help;
     }
 
     /**
@@ -164,7 +170,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Sets the object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     public void setObject(T object) {
         this.object = object;
@@ -183,7 +189,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Returns the object.
      *
-     * @return the object, or <tt>null</tt> if there is none set
+     * @return the object, or {@code null} if there is none set
      */
     public T getObject() {
         return object;
@@ -192,7 +198,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Returns the object's archetype descriptor.
      *
-     * @return the object's archetype descriptor or <tt>null</tt> if there
+     * @return the object's archetype descriptor or {@code null} if there
      *         is no object set
      */
     public ArchetypeDescriptor getArchetypeDescriptor() {
@@ -214,7 +220,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Determines if the current object can be edited.
      *
-     * @return <tt>true</tt> if an object exists and the edit button is enabled
+     * @return {@code true} if an object exists and the edit button is enabled
      */
     public boolean canEdit() {
         boolean edit = false;
@@ -270,7 +276,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
                 public void deactivated(T object) {
                     onSaved(object, false);
                 }
-            });
+            }, help);
         }
     }
 
@@ -279,7 +285,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * <p/>
      * This is used to determine email addresses when mailing.
      *
-     * @param context the mail context. May be <tt>null</tt>
+     * @param context the mail context. May be {@code null}
      */
     public void setMailContext(MailContext context) {
         this.context = context;
@@ -288,10 +294,19 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Returns the mail context.
      *
-     * @return the mail context. May be <tt>null</tt>
+     * @return the mail context. May be {@code null}
      */
     public MailContext getMailContext() {
         return context;
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    public HelpContext getHelpContext() {
+        return help;
     }
 
     /**
@@ -361,7 +376,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
     /**
      * Helper to create a new button with id {@link #EDIT_ID} linked to {@link #edit()}.
-     * Editing will only be invoked if {@link #canEdit} is <tt>true</tt>
+     * Editing will only be invoked if {@link #canEdit} is {@code true}
      *
      * @return a new button
      */
@@ -439,7 +454,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Invoked when the help key is pressed.
      */
     protected void onHelp() {
-
+        HelpDialog.show(getHelpContext());
     }
 
     /**
@@ -459,7 +474,8 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             }
         };
 
-        IMObjectCreator.create(archetypes, listener);
+        HelpContext help = getHelpContext().createSubtopic("new");
+        IMObjectCreator.create(archetypes, listener, help);
     }
 
     /**
@@ -535,7 +551,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return a new edit dialog
      */
     protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return EditDialogFactory.create(editor);
+        return EditDialogFactory.create(editor, getHelpContext());
     }
 
     /**
@@ -592,7 +608,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         ContextDocumentTemplateLocator locator
                 = new ContextDocumentTemplateLocator(object, GlobalContext.getInstance());
         IMPrinter<T> printer = IMPrinterFactory.create(object, locator);
-        InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer);
+        InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer, getHelpContext());
         interactive.setMailContext(getMailContext());
         return interactive;
     }
@@ -615,7 +631,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return a new layout context.
      */
     protected LayoutContext createLayoutContext() {
-        return new DefaultLayoutContext(true);
+        return new DefaultLayoutContext(true, getHelpContext());
     }
 
     /**

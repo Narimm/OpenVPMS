@@ -24,7 +24,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.supplier.document.SupplierDocumentQuery;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
@@ -40,17 +42,17 @@ import java.util.Map;
  * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practice location and
  * practice, and 'to' addresses from the current supplier.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SupplierMailContext extends ContextMailContext {
 
     /**
-     * Constructs a <tt>SupplierMailContext</tt>
+     * Constructs a {@code SupplierMailContext}
      *
      * @param context the context
+     * @param help    the help context
      */
-    public SupplierMailContext(Context context) {
+    public SupplierMailContext(Context context, final HelpContext help) {
         super(context);
         setAttachmentBrowserFactory(new AttachmentBrowserFactory() {
             public Browser<Act> createBrowser(MailContext context) {
@@ -58,7 +60,8 @@ public class SupplierMailContext extends ContextMailContext {
                 Party supplier = getContext().getSupplier();
                 if (supplier != null) {
                     Query<Act> query = new SupplierDocumentQuery<Act>(supplier);
-                    browser = BrowserFactory.create(query);
+                    DefaultLayoutContext layout = new DefaultLayoutContext(getContext(), help);
+                    browser = BrowserFactory.create(query, layout);
                 }
                 return browser;
             }

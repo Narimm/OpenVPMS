@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
@@ -34,24 +32,21 @@ import org.openvpms.web.component.im.util.Archetypes;
 /**
  * Task workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskWorkspace extends SchedulingWorkspace {
 
     /**
-     * Creates a new <tt>TaskWorkspace</tt>.
+     * Constructs an {@code TaskWorkspace}.
      */
     public TaskWorkspace() {
-        super("workflow", "worklist",
-              Archetypes.create("entity.organisationWorkListView",
-                                Entity.class));
+        super("workflow", "worklist", Archetypes.create("entity.organisationWorkListView", Entity.class));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Entity object) {
@@ -74,7 +69,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * @return a new CRUD window
      */
     protected ScheduleCRUDWindow createCRUDWindow() {
-        return new TaskCRUDWindow();
+        return new TaskCRUDWindow(getHelpContext());
     }
 
     /**
@@ -134,7 +129,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
     /**
      * Invoked when an event is selected.
      *
-     * @param event the event. May be <tt>null</tt>
+     * @param event the event. May be {@code null}
      */
     @Override
     protected void eventSelected(PropertySet event) {
@@ -169,7 +164,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * Returns the default schedule view for the specified practice location.
      *
      * @param location the practice location
-     * @return the default schedule view, or <tt>null</tt> if there is no
+     * @return the default schedule view, or {@code null} if there is no
      *         default
      */
     protected Entity getDefaultView(Party location) {

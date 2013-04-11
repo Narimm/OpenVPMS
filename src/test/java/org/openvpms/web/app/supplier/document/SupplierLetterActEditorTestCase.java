@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.supplier.document;
@@ -23,6 +21,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.doc.TemplatedVersionedDocumentActEditorTest;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -31,8 +30,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 /**
  * Tests the {@link SupplierDocumentActEditor} class for <em>act.supplierDocumentLetter</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SupplierLetterActEditorTestCase extends TemplatedVersionedDocumentActEditorTest {
 
@@ -52,7 +50,7 @@ public class SupplierLetterActEditorTestCase extends TemplatedVersionedDocumentA
      * @return a new editor
      */
     protected DocumentActEditor createEditor(DocumentAct act) {
-        DefaultLayoutContext layout = new DefaultLayoutContext();
+        DefaultLayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
         Context context = layout.getContext();
         context.setSupplier(TestHelper.createSupplier());
         context.setUser(TestHelper.createUser());

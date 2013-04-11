@@ -21,6 +21,7 @@ package org.openvpms.web.app.workflow.payment;
 import org.openvpms.web.app.workflow.checkout.PaymentEditTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -38,8 +39,7 @@ import java.math.BigDecimal;
  * A workflow that prompts the user to pay the account. If selected, it
  * displays an editor for an <em>act.customerAccountPayment</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PaymentWorkflow extends WorkflowImpl {
 
@@ -55,18 +55,19 @@ public class PaymentWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs a <tt>PaymentWorkflow</tt>.
+     * Constructs a {@code PaymentWorkflow}.
      *
-     * @param chargeAmount the charge amount that triggered the payment workflow. If <tt>0</tt>, the context will be
+     * @param chargeAmount the charge amount that triggered the payment workflow. If {@code 0}, the context will be
      *                     examined for an invoice to determine the amount
      * @param context      the context
+     * @param help         the help context
      */
-    public PaymentWorkflow(BigDecimal chargeAmount, Context context) {
-        this(new DefaultTaskContext(false), chargeAmount, context);
+    public PaymentWorkflow(BigDecimal chargeAmount, Context context, HelpContext help) {
+        this(new DefaultTaskContext(help, false), chargeAmount, context);
     }
 
     /**
-     * Constructs a <tt>PaymentWorkflow</tt>.
+     * Constructs a {@code PaymentWorkflow}.
      *
      * @param context         the task context
      * @param fallbackContext the context to fall back on if an object isn't in the task context
@@ -76,13 +77,14 @@ public class PaymentWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Constructs a <tt>PaymentWorkflow</tt>.
+     * Constructs a {@code PaymentWorkflow}.
      *
      * @param context         the task context
      * @param chargeAmount    the charge amount that triggered the payment workflow
      * @param fallbackContext the context to fall back on if an object isn't in the task context
      */
     public PaymentWorkflow(TaskContext context, BigDecimal chargeAmount, Context fallbackContext) {
+        super(context.getHelpContext());
         initial = context;
         this.chargeAmount = chargeAmount;
 
@@ -132,7 +134,7 @@ public class PaymentWorkflow extends WorkflowImpl {
         String payTitle = Messages.get("workflow.payment.payaccount.title");
         String payMsg = Messages.get("workflow.payment.payaccount.message");
 
-        Tasks tasks = new Tasks();
+        Tasks tasks = new Tasks(context.getHelpContext());
         tasks.addTask(new PaymentEditTask(chargeAmount));
 
         // add a task to update the global context at the end of the workflow

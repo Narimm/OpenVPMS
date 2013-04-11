@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.mr;
@@ -31,6 +29,7 @@ import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -41,8 +40,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * CRUD Window for Reminders and Alerts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
 
@@ -63,13 +61,14 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
 
 
     /**
-     * Constructs a <tt>ReminderCRUDWindow</tt>.
+     * Constructs a {@code ReminderCRUDWindow}.
      *
      * @param patient the patient
+     * @param help    the help context
      */
-    public ReminderCRUDWindow(Party patient) {
+    public ReminderCRUDWindow(Party patient, HelpContext help) {
         super(Archetypes.create(SHORT_NAMES, Act.class, Messages.get("patient.reminder.createtype")),
-              DefaultActActions.getInstance());
+              DefaultActActions.getInstance(), help);
         this.patient = patient;
     }
 
@@ -126,7 +125,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      */
     private void onResend() {
         try {
-            ResendReminderDialog dialog = ResendReminderDialog.create(getObject());
+            ResendReminderDialog dialog = ResendReminderDialog.create(getObject(), getHelpContext());
             if (dialog != null) {
                 dialog.addWindowPaneListener(new WindowPaneListener() {
                     public void onClose(WindowPaneEvent event) {

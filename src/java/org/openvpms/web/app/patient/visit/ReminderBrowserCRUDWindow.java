@@ -21,6 +21,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -50,13 +52,14 @@ public class ReminderBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      * Constructs a {@code ReminderBrowserCRUDWindow}.
      *
      * @param patient the patient
+     * @param help    the help context
      */
-    public ReminderBrowserCRUDWindow(Party patient) {
+    public ReminderBrowserCRUDWindow(Party patient, HelpContext help) {
         Query<Act> query = createReminderAlertQuery(patient);
-        Browser<Act> browser = BrowserFactory.create(query);
+        Browser<Act> browser = BrowserFactory.create(query, new DefaultLayoutContext(help));
         setBrowser(browser);
 
-        VisitReminderCRUDWindow window = new VisitReminderCRUDWindow(patient);
+        VisitReminderCRUDWindow window = new VisitReminderCRUDWindow(patient, help);
         setWindow(window);
     }
 

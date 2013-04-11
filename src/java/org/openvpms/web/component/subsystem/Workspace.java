@@ -12,14 +12,13 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.subsystem;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.help.HelpContext;
 
 import java.beans.PropertyChangeListener;
 
@@ -28,8 +27,7 @@ import java.beans.PropertyChangeListener;
  * Manages the user interface for a set of related actions. Each action
  * typically corresponds to a use case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public interface Workspace<T extends IMObject> {
 
@@ -66,21 +64,21 @@ public interface Workspace<T extends IMObject> {
     /**
      * Renders the workspace summary.
      *
-     * @return the component representing the workspace summary, or <tt>null</tt> if there is no summary
+     * @return the component representing the workspace summary, or {@code null} if there is no summary
      */
     Component getSummary();
 
     /**
      * Sets the object to be viewed/edited by the workspace.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     void setObject(T object);
 
     /**
      * Returns the object to to be viewed/edited by the workspace.
      *
-     * @return the the object. May be <oode>null</tt>
+     * @return the the object. May be {@code null}
      */
     T getObject();
 
@@ -89,7 +87,7 @@ public interface Workspace<T extends IMObject> {
      * <p/>
      * This is analagous to {@link #setObject} but performs a safe cast to the required type.
      *
-     * @param object the current object. May be <tt>null</tt>
+     * @param object the current object. May be {@code null}
      */
     void setIMObject(IMObject object);
 
@@ -97,7 +95,7 @@ public interface Workspace<T extends IMObject> {
      * Determines if the workspace can be updated with instances of the specified archetype.
      *
      * @param shortName the archetype's short name
-     * @return <tt>true</tt> if the workspace can be updated by the archetype; otherwise <tt>false</tt>
+     * @return {@code true} if the workspace can be updated by the archetype; otherwise {@code false}
      * @see #update
      */
     boolean canUpdate(String shortName);
@@ -134,4 +132,10 @@ public interface Workspace<T extends IMObject> {
      */
     void removePropertyChangeListener(String name, PropertyChangeListener listener);
 
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    HelpContext getHelpContext();
 }

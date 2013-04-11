@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.dialog;
@@ -22,6 +20,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
@@ -30,8 +29,7 @@ import org.openvpms.web.component.util.Vetoable;
 /**
  * Generic popup dialog, providing OK and Cancel buttons.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class PopupDialog extends PopupWindow {
 
@@ -128,12 +126,12 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String[] RETRY_CANCEL = {RETRY_ID, CANCEL_ID};
 
     /**
-     * The dialog action. May be <tt>null</tt>
+     * The dialog action. May be {@code null}
      */
     private String action;
 
     /**
-     * The listener to veto cancel events. May be <tt>null</tt>
+     * The listener to veto cancel events. May be {@code null}
      */
     private VetoListener cancelListener;
 
@@ -142,9 +140,14 @@ public abstract class PopupDialog extends PopupWindow {
      */
     private String defaultCloseAction;
 
+    /**
+     * The help context. May be {@code null}
+     */
+    private final HelpContext help;
+
 
     /**
-     * Construct a new <tt>PopupDialog</tt>.
+     * Constructs a {@code PopupDialog}.
      *
      * @param title   the window title
      * @param buttons the buttons to display
@@ -154,10 +157,21 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Construct a new <tt>PopupDialog</tt>.
+     * Constructs a {@code PopupDialog}.
      *
      * @param title   the window title
-     * @param style   the window style. May be <tt>null</tt>
+     * @param buttons the buttons to display
+     * @param help    the help context. May be {@code null}
+     */
+    public PopupDialog(String title, String[] buttons, HelpContext help) {
+        this(title, null, buttons, help);
+    }
+
+    /**
+     * Constructs a {@code PopupDialog}.
+     *
+     * @param title   the window title
+     * @param style   the window style. May be {@code null}
      * @param buttons the buttons to display
      */
     public PopupDialog(String title, String style, String[] buttons) {
@@ -165,22 +179,43 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Construct a new <tt>PopupDialog</tt>.
+     * Constructs a {@code PopupDialog}.
      *
-     * @param title   the window title. May be <tt>null</tt>
-     * @param style   the window style. May be <tt>null</tt>
+     * @param title   the window title
+     * @param style   the window style. May be {@code null}
      * @param buttons the buttons to display
-     * @param focus   the focus group. May be <tt>null</tt>
+     * @param help    the help context. May be {@code null}
      */
-    public PopupDialog(String title, String style, String[] buttons,
-                       FocusGroup focus) {
+    public PopupDialog(String title, String style, String[] buttons, HelpContext help) {
+        this(title, style, buttons, help, null);
+    }
+
+    /**
+     * Constructs a {@code PopupDialog}.
+     *
+     * @param title   the window title. May be {@code null}
+     * @param style   the window style. May be {@code null}
+     * @param buttons the buttons to display
+     * @param help    the help context. May be {@code null}
+     * @param focus   the focus group. May be {@code null}
+     */
+    public PopupDialog(String title, String style, String[] buttons, HelpContext help, FocusGroup focus) {
         super(title, style, focus);
 
+        this.help = help;
         for (String button : buttons) {
             addButton(button, false);
         }
         if (buttons.length != 0) {
             defaultCloseAction = buttons[buttons.length - 1];
+        }
+        if (help != null) {
+            getButtons().addKeyListener(help.getKeyCode(), new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onHelp();
+                }
+            });
         }
     }
 
@@ -196,7 +231,7 @@ public abstract class PopupDialog extends PopupWindow {
     /**
      * Sets a listener to veto cancel events.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setCancelListener(VetoListener listener) {
         cancelListener = listener;
@@ -207,7 +242,7 @@ public abstract class PopupDialog extends PopupWindow {
      * <p/>
      * Defaults to the last button displayed.
      *
-     * @param action the default action. May be <tt>null</tt>
+     * @param action the default action. May be {@code null}
      */
     public void setDefaultCloseAction(String action) {
         defaultCloseAction = action;
@@ -226,6 +261,15 @@ public abstract class PopupDialog extends PopupWindow {
             onClosing();
             super.userClose();
         }
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context. May be {@code null}
+     */
+    public HelpContext getHelpContext() {
+        return help;
     }
 
     /**
@@ -354,6 +398,15 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
+     * Invoked when the help button is pressed.
+     */
+    protected void onHelp() {
+        if (help != null) {
+            help.show();
+        }
+    }
+
+    /**
      * Sets the action and closes the window.
      *
      * @param action the action
@@ -385,7 +438,7 @@ public abstract class PopupDialog extends PopupWindow {
      * Adds a new button.
      *
      * @param id              the button identifier
-     * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
+     * @param disableShortcut if {@code true} disable any keyboard shortcut
      * @return the new button
      */
     protected Button addButton(final String id, boolean disableShortcut) {

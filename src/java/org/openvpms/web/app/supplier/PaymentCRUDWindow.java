@@ -12,14 +12,13 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 
@@ -27,8 +26,7 @@ import org.openvpms.web.component.im.util.Archetypes;
 /**
  * CRUD window for supplier payments.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PaymentCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
@@ -36,9 +34,10 @@ public class PaymentCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * Create a new <tt>PaymentCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       context the help context
      */
-    public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance());
+    public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
     }
 
     /**

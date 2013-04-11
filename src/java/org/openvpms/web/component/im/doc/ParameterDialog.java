@@ -12,30 +12,27 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
 
+import echopointng.KeyStrokes;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.macro.MacroDialog;
 
 import java.util.Map;
 import java.util.Set;
 
-import echopointng.KeyStrokes;
-import nextapp.echo2.app.event.ActionEvent;
-
 
 /**
  * Dialog to prompt for report parameters.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ParameterDialog extends PopupDialog {
 
@@ -56,14 +53,15 @@ public class ParameterDialog extends PopupDialog {
 
 
     /**
-     * Constructs a <tt>ParameterDialog</tt>.
+     * Constructs a {@code ParameterDialog}.
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
-     * @param context    context object for evaluating macros against. If <tt>null</tt> macro expansion is disabled
+     * @param context    context object for evaluating macros against. If {@code null} macro expansion is disabled
+     * @param help       the help context
      */
-    public ParameterDialog(String title, Set<ParameterType> parameters, IMObject context) {
-        super(title, null, OK_CANCEL);
+    public ParameterDialog(String title, Set<ParameterType> parameters, IMObject context, HelpContext help) {
+        super(title, null, OK_CANCEL, help);
         setModal(true);
         this.parameters = new ReportParameters(parameters, context);
         String style = (parameters.size() >= 4) ? WIDE_STYLE : NARROW_STYLE;
@@ -103,7 +101,7 @@ public class ParameterDialog extends PopupDialog {
      * Displays the macros.
      */
     protected void onMacro() {
-        MacroDialog dialog = new MacroDialog();
+        MacroDialog dialog = new MacroDialog(getHelpContext());
         dialog.show();
     }
 

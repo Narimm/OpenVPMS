@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.customer.charge;
 
@@ -21,6 +19,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 
 import java.util.List;
@@ -29,11 +28,10 @@ import java.util.List;
 /**
  * An edit dialog for {@link CustomerChargeActEditor} editors.
  * <p/>
- * This performs printing of unprinted documents that have their <em>interactive</em> flag set to <tt>true</tt>
+ * This performs printing of unprinted documents that have their <em>interactive</em> flag set to {@code true}
  * when <em>Apply</em> or <em>OK</em> is pressed.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerChargeActEditDialog extends ActEditDialog {
 
@@ -49,12 +47,13 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
 
 
     /**
-     * Constructs a <tt>CustomerChargeActEditDialog</tt>.
+     * Constructs a {@code CustomerChargeActEditDialog}.
      *
      * @param editor the editor
+     * @param help   the help context
      */
-    public CustomerChargeActEditDialog(CustomerChargeActEditor editor) {
-        super(editor);
+    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, HelpContext help) {
+        super(editor, help);
         addButton(COMPLETED_ID, false);
         addButton(IN_PROGRESS_ID, false);
         setDefaultCloseAction(CANCEL_ID);
@@ -67,7 +66,8 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     @Override
     protected void onOK() {
-        CustomerChargeDocuments docs = new CustomerChargeDocuments((CustomerChargeActEditor) getEditor());
+        CustomerChargeDocuments docs = new CustomerChargeDocuments((CustomerChargeActEditor) getEditor(),
+                                                                   getHelpContext());
         List<Act> existing = docs.getUnprinted();
         if (save()) {
             ActionListener printListener = new ActionListener() {
@@ -90,7 +90,8 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      */
     @Override
     protected void onApply() {
-        CustomerChargeDocuments docs = new CustomerChargeDocuments((CustomerChargeActEditor) getEditor());
+        CustomerChargeDocuments docs = new CustomerChargeDocuments((CustomerChargeActEditor) getEditor(),
+                                                                   getHelpContext());
         List<Act> existing = docs.getUnprinted();
         if (save()) {
             docs.printNew(existing, null);

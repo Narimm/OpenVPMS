@@ -31,6 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentActLayoutStrategy;
 import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -143,7 +144,7 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
             Button print = ButtonFactory.create("button.printform");
             print.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent e) {
-                    onPrint(object, context.getContext());
+                    onPrint(object, context.getContext(), context.getHelpContext());
                 }
             });
             RowLayoutData rowLayout = new RowLayoutData();
@@ -165,12 +166,13 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
      *
      * @param object  the object to print
      * @param context the context
+     * @param help    the help context
      */
-    private void onPrint(IMObject object, Context context) {
+    private void onPrint(IMObject object, Context context, HelpContext help) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
             IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator);
-            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer);
+            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, help);
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

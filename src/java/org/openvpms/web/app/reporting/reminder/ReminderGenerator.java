@@ -42,6 +42,7 @@ import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.processor.BatchProcessorTask;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
@@ -73,7 +74,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private List<ReminderBatchProcessor> processors = new ArrayList<ReminderBatchProcessor>();
 
     /**
-     * If <tt>true</tt>, pop up a dialog to perform generation.
+     * If {@code true}, pop up a dialog to perform generation.
      */
     private boolean popup = true;
 
@@ -92,16 +93,21 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     private final DocumentTemplate groupTemplate;
 
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
-     * Constructs a new <tt>ReminderGenerator</tt> to process a single reminder.
+     * Constructs a {@code ReminderGenerator} to process a single reminder.
      *
      * @param event       the reminder event
      * @param context     the context
-     * @param mailContext the mail context, used when printing reminders interactively. May be <tt>null</tt>
+     * @param mailContext the mail context, used when printing reminders interactively. May be {@code null}
+     * @param help        the help context
      */
-    public ReminderGenerator(ReminderEvent event, Context context, MailContext mailContext) {
-        this(context);
+    public ReminderGenerator(ReminderEvent event, Context context, MailContext mailContext, HelpContext help) {
+        this(context, help);
         List<List<ReminderEvent>> reminders = new ArrayList<List<ReminderEvent>>();
         List<ReminderEvent> group = new ArrayList<ReminderEvent>();
         group.add(event);
@@ -125,17 +131,19 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
-     * Constructs a new <tt>ReminderGenerator</tt> for reminders returned by a
+     * Constructs a new {@code ReminderGenerator} for reminders returned by a
      * query.
      *
      * @param query       the query
      * @param context     the context
-     * @param mailContext the mail context, used when printing reminders interactively. May be <tt>null</tt>
+     * @param mailContext the mail context, used when printing reminders interactively. May be {@code null}
+     * @param help        the help context
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator(DueReminderQuery query, Context context, MailContext mailContext) {
-        this(getReminders(query), query.getFrom(), query.getTo(), context, mailContext);
+    public ReminderGenerator(DueReminderQuery query, Context context, MailContext mailContext,
+                             HelpContext help) {
+        this(getReminders(query), query.getFrom(), query.getTo(), context, mailContext, help);
         // TODO: all of the reminders are cached in memory, as the reminder
         // processing affects the paging of the reminder query. A better
         // approach to reduce memory requirements would be
@@ -143,23 +151,25 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
-     * Creates a new <tt>ReminderGenerator</tt>.
+     * Creates a new {@code ReminderGenerator}.
      *
      * @param reminders   the reminders to process
      * @param from        only process reminder if its next due date &gt;= from
      * @param to          only process reminder if its next due date &lt;= to
      * @param context     the context
-     * @param mailContext the mail context, used when printing reminders interactively. May be <tt>null</tt>
+     * @param mailContext the mail context, used when printing reminders interactively. May be {@code null}
+     * @param help        the help context
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReportingException         for any configuration error
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator(Iterator<Act> reminders, Date from, Date to, Context context, MailContext mailContext) {
-        this(context);
+    public ReminderGenerator(Iterator<Act> reminders, Date from, Date to, Context context, MailContext mailContext,
+                             HelpContext help) {
+        this(context, help);
 
         ReminderProcessor processor = new ReminderProcessor(from, to, new Date(), ServiceHelper.getArchetypeService(),
                                                             new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                              ServiceHelper.getLookupService()));
+                                                                             ServiceHelper.getLookupService()));
 
         ReminderCollector cancelCollector = new ReminderCollector();
         ReminderCollector listCollector = new ReminderCollector();
@@ -199,15 +209,17 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     }
 
     /**
-     * Creates a new <tt>ReminderGenerator</tt>.
+     * Creates a new {@code ReminderGenerator}.
      *
      * @param context the context
+     * @param help    the help context
      */
-    private ReminderGenerator(Context context) {
+    private ReminderGenerator(Context context, HelpContext help) {
         practice = context.getPractice();
         if (practice == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoPractice);
         }
+        this.help = help;
         TemplateHelper helper = new TemplateHelper();
         groupTemplate = helper.getDocumentTemplate("GROUPED_REMINDERS");
         if (groupTemplate == null) {
@@ -221,7 +233,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     public void process() {
         if (!processors.isEmpty()) {
             if (popup) {
-                GenerationDialog dialog = new GenerationDialog();
+                GenerationDialog dialog = new GenerationDialog(help);
                 dialog.show();
             } else {
                 // only processing a single reminder
@@ -247,11 +259,11 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     /**
      * Determines if reminders should be updated on completion.
      * <p/>
-     * If set, the <tt>reminderCount</tt> is incremented and the <tt>lastSent</tt> timestamp set on completed reminders.
+     * If set, the {@code reminderCount} is incremented and the {@code lastSent} timestamp set on completed reminders.
      * <p/>
-     * Defaults to <tt>true</tt>.
+     * Defaults to {@code true}.
      *
-     * @param update if <tt>true</tt> update reminders on completion
+     * @param update if {@code true} update reminders on completion
      */
     public void setUpdateOnCompletion(boolean update) {
         for (ReminderBatchProcessor processor : processors) {
@@ -313,15 +325,15 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * Creates a new print processor.
      *
      * @param reminders   the print reminders
-     * @param interactive if <tt>true</tt>, reminders should always be printed interactively. If <tt>false</tt>,
+     * @param interactive if {@code true}, reminders should always be printed interactively. If {@code false},
      *                    reminders will only be printed interactively if a printer needs to be selected
-     * @param mailContext the mail context. May be <tt>null</tt>
+     * @param mailContext the mail context. May be {@code null}
      * @return a new processor
      */
     private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders, boolean interactive,
                                                         MailContext mailContext) {
         ReminderPrintProgressBarProcessor result
-                = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics);
+                = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics, help);
         result.setInteractiveAlways(interactive);
         result.setMailContext(mailContext);
         return result;
@@ -334,7 +346,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     private ReminderBatchProcessor createListProcessor(List<List<ReminderEvent>> reminders) {
-        return new ReminderListProcessor(reminders, statistics);
+        return new ReminderListProcessor(reminders, statistics, help);
     }
 
     /**
@@ -385,12 +397,12 @@ public class ReminderGenerator extends AbstractBatchProcessor {
 
 
         /**
-         * Creates a new <tt>GenerationDialog</tt>.
+         * Constructs a {@code GenerationDialog}.
          */
-        public GenerationDialog() {
-            super(Messages.get("reporting.reminder.run.title"), OK_CANCEL);
+        public GenerationDialog(HelpContext help) {
+            super(Messages.get("reporting.reminder.run.title"), OK_CANCEL, help);
             setModal(true);
-            workflow = new WorkflowImpl();
+            workflow = new WorkflowImpl(help);
             workflow.setBreakOnCancel(false);
             Grid grid = GridFactory.create(3);
             for (ReminderBatchProcessor processor : processors) {
@@ -402,7 +414,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
                 grid.add(title);
                 grid.add(processor.getComponent());
                 if (processor instanceof ReminderListProcessor
-                    || processor instanceof ReminderPrintProgressBarProcessor) {
+                        || processor instanceof ReminderPrintProgressBarProcessor) {
                     Button button = addReprintButton(processor);
                     grid.add(button);
                 } else {
@@ -489,7 +501,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         /**
          * Returns the current batch processor.
          *
-         * @return the current batch processor, or <tt>null</tt> if there
+         * @return the current batch processor, or {@code null} if there
          *         is none
          */
         private ReminderBatchProcessor getCurrent() {
@@ -518,7 +530,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             enableButtons(false);
             statistics.clear();
             processor.restart();
-            workflow = new WorkflowImpl();
+            workflow = new WorkflowImpl(help);
             workflow.addTask(new BatchProcessorTask(processor));
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
@@ -537,7 +549,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
          * When the restart buttons are enabled, the OK button is present. When the buttons are disabled,
          * the cancel button is present.
          *
-         * @param enable if <tt>true</tt> enable the buttons; otherwise disable them
+         * @param enable if {@code true} enable the buttons; otherwise disable them
          */
         private void enableButtons(boolean enable) {
             for (Button button : restartButtons) {

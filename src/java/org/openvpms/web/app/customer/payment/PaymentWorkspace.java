@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.payment;
@@ -22,20 +20,21 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Payment workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
 
@@ -48,10 +47,12 @@ public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
 
 
     /**
-     * Constructs a new <tt>PaymentWorkspace</tt>.
+     * Constructs a {@code PaymentWorkspace}.
+     *
+     * @param context the context
      */
-    public PaymentWorkspace() {
-        super("customer", "payment");
+    public PaymentWorkspace(Context context) {
+        super("customer", "payment", context);
         setChildArchetypes(FinancialAct.class, SHORT_NAMES);
     }
 
@@ -61,7 +62,7 @@ public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new PaymentCRUDWindow(getChildArchetypes());
+        return new PaymentCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**
@@ -70,11 +71,9 @@ public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @return a new query
      */
     protected Query<FinancialAct> createQuery() {
-        String[] statuses = {FinancialActStatus.IN_PROGRESS,
-                             FinancialActStatus.ON_HOLD};
-        return new DefaultActQuery<FinancialAct>(getObject(), "customer",
-                                                 "participation.customer",
-                                                 SHORT_NAMES, statuses);
+        String[] statuses = {FinancialActStatus.IN_PROGRESS, FinancialActStatus.ON_HOLD};
+        return new DefaultActQuery<FinancialAct>(getObject(), "customer", "participation.customer", SHORT_NAMES,
+                                                 statuses);
     }
 
     /**
@@ -99,9 +98,8 @@ public class PaymentWorkspace extends CustomerActWorkspace<FinancialAct> {
      */
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
-        IMObjectTableModel<FinancialAct> model
-                = new ActAmountTableModel<FinancialAct>(true, true);
-        return BrowserFactory.create(query, null, model);
+        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
+        return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getHelpContext()));
     }
 
 }

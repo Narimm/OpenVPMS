@@ -17,7 +17,6 @@
  */
 package org.openvpms.web.component.im.edit.act;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -27,13 +26,20 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -42,8 +48,7 @@ import java.util.List;
  * <p/>
  * TODO - perhaps author information should be populated on save by a rule.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ActEditorInitAuthorTestCase extends AbstractAppTest {
 
@@ -74,7 +79,8 @@ public class ActEditorInitAuthorTestCase extends AbstractAppTest {
                 assertTrue(object instanceof Act);
 
                 // create an editor for the act
-                IMObjectEditor editor = IMObjectEditorFactory.create(object, new DefaultLayoutContext());
+                LayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
+                IMObjectEditor editor = IMObjectEditorFactory.create(object, layout);
                 ActBean bean = new ActBean((Act) editor.getObject(), service);
 
                 // verify the author node has been populated

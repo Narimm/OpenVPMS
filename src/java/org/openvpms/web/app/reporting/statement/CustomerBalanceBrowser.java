@@ -12,31 +12,30 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.statement;
 
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.TableBrowser;
 
 
 /**
  * Browser for customer balance summaries.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerBalanceBrowser extends TableBrowser<ObjectSet> {
 
     /**
-     * Construct a new <tt>CustomerBalanceBrowser</tt> that queries objects and
-     * displays them in a table.
+     * Construct a new {@code CustomerBalanceBrowser} that queries objects and displays them in a table.
+     *
+     * @param query   the customer balanne query
+     * @param context the layout context
      */
-    public CustomerBalanceBrowser(CustomerBalanceQuery query) {
-        super(query, null,
-              new CustomerBalanceSummaryTableModel());
+    public CustomerBalanceBrowser(CustomerBalanceQuery query, LayoutContext context) {
+        super(query, null, new CustomerBalanceSummaryTableModel(), context);
     }
 
 }

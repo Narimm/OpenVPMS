@@ -26,6 +26,7 @@ import org.openvpms.web.app.patient.visit.VisitCRUDWindow;
 import org.openvpms.web.app.patient.visit.VisitChargeCRUDWindow;
 import org.openvpms.web.app.patient.visit.VisitEditor;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.workflow.TaskContext;
 
@@ -62,7 +63,7 @@ public class TestEditVisitTask extends EditVisitTask {
      */
     @Override
     protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, TaskContext context, Party patient) {
-        return new VisitEditor(patient, event, invoice, context) {
+        return new VisitEditor(patient, event, invoice, context, context.getHelpContext()) {
             @Override
             protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
                 return new TestVisitBrowserCRUDWindow(getQuery(), context);
@@ -70,7 +71,7 @@ public class TestEditVisitTask extends EditVisitTask {
 
             @Override
             protected VisitChargeCRUDWindow createVisitChargeCRUDWindow(Act event, Context context) {
-                return new VisitChargeCRUDWindow(event, context) {
+                return new VisitChargeCRUDWindow(event, context, getHelpContext()) {
                     @Override
                     protected VisitChargeEditor createVisitChargeEditor(FinancialAct charge, Act event,
                                                                         LayoutContext context) {
@@ -89,7 +90,7 @@ public class TestEditVisitTask extends EditVisitTask {
          * @param context the context
          */
         public TestVisitBrowserCRUDWindow(PatientHistoryQuery query, Context context) {
-            super(query, context);
+            super(query, context, new HelpContext("foo", null));
         }
 
         protected VisitCRUDWindow createWindow(Context context) {

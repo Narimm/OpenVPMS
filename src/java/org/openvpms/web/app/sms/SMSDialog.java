@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.sms;
@@ -25,6 +23,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -36,8 +35,7 @@ import java.util.List;
 /**
  * Dialog to edit and send SMS messages.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SMSDialog extends PopupDialog {
 
@@ -48,23 +46,25 @@ public class SMSDialog extends PopupDialog {
 
 
     /**
-     * Constructs an <tt>SMSDialog</tt>.
+     * Constructs an {@code SMSDialog}.
      *
      * @param phone   the phone contact to send to
      * @param context the context
+     * @param help    the help context
      */
-    public SMSDialog(Contact phone, Context context) {
-        this(Arrays.asList(phone), context);
+    public SMSDialog(Contact phone, Context context, HelpContext help) {
+        this(Arrays.asList(phone), context, help);
     }
 
     /**
-     * Constructs an <tt>SMSDialog</tt>.
+     * Constructs an {@code SMSDialog}.
      *
-     * @param phones  the phone numbers to select from. May be <tt>null</tt>
+     * @param phones  the phone numbers to select from. May be {@code null}
      * @param context the context
+     * @param help    the help context
      */
-    public SMSDialog(List<Contact> phones, Context context) {
-        super(Messages.get("sms.send.title"), "SMSDialog", OK_CANCEL);
+    public SMSDialog(List<Contact> phones, Context context, HelpContext help) {
+        super(Messages.get("sms.send.title"), "SMSDialog", OK_CANCEL, help);
         setModal(true);
 
         editor = new SMSEditor(phones);
@@ -97,14 +97,14 @@ public class SMSDialog extends PopupDialog {
      * Displays the macros.
      */
     protected void onMacro() {
-        MacroDialog dialog = new MacroDialog();
+        MacroDialog dialog = new MacroDialog(getHelpContext());
         dialog.show();
     }
 
     /**
      * Sends the message.
      *
-     * @return <tt>true</tt> if the message was sent
+     * @return {@code true} if the message was sent
      */
     private boolean send() {
         boolean result = false;

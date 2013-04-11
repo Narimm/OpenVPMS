@@ -70,7 +70,7 @@ public class UserMessageEditor extends ActEditor {
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("patient", context.getContext().getPatient());
 
-        toAddressEditor = new ToAddressEditor(act, getProperty("to"));
+        toAddressEditor = new ToAddressEditor(act, getProperty("to"), context);
         getEditors().add(toAddressEditor);
     }
 

@@ -18,16 +18,26 @@
 package org.openvpms.web.component.event;
 
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
  * An <em>nextapp.echo2.app.event.ActionListener</em> that catches any unhandled exceptions.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class ActionListener implements nextapp.echo2.app.event.ActionListener {
+
+    private final HelpContext help;
+
+    public ActionListener() {
+        this(null);
+    }
+
+    public ActionListener(HelpContext help) {
+        this.help = help;
+    }
 
     /**
      * Invoked when an action occurs.

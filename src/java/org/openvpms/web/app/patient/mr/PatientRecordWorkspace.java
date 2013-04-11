@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.mr;
@@ -29,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
@@ -36,6 +35,7 @@ import org.openvpms.web.app.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.app.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -57,8 +57,7 @@ import java.util.List;
 /**
  * Patient medical record workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
@@ -90,26 +89,26 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     /**
      * The reminder statuses to query.
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses(ReminderArchetypes.REMINDER);
+    private static final ActStatuses STATUSES = new ActStatuses(ReminderArchetypes.REMINDER);
 
 
     /**
-     * Constructs a new <tt>PatientRecordWorkspace</tt>.
+     * Constructs a {@code PatientRecordWorkspace}.
      */
-    public PatientRecordWorkspace() {
+    public PatientRecordWorkspace(Context context) {
         super("patient", "record");
         setArchetypes(Party.class, "party.patient*");
         setChildArchetypes(Act.class, "act.patientClinicalEvent");
 
         docArchetypes = Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
                                           Messages.get("patient.document.createtype"));
+        setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Party object) {
@@ -126,7 +125,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     @Override
     public Component getSummary() {
-        return new CustomerPatientSummary(GlobalContext.getInstance()).getSummary(getObject());
+        return new CustomerPatientSummary(GlobalContext.getInstance(), getHelpContext()).getSummary(getObject());
     }
 
     /**
@@ -185,7 +184,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        PatientHistoryCRUDWindow window = new PatientHistoryCRUDWindow(getChildArchetypes());
+        PatientHistoryCRUDWindow window = new PatientHistoryCRUDWindow(getChildArchetypes(), getHelpContext());
         window.setQuery((PatientHistoryQuery) getQuery());
         return window;
     }
@@ -211,7 +210,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
                                                   createProblemsQuery(),
                                                   createReminderAlertQuery(),
                                                   new PatientDocumentQuery<Act>(getObject()),
-                                                  createChargesQuery());
+                                                  createChargesQuery(), getHelpContext());
         browser.setListener(new TabbedBrowserListener() {
             public void onBrowserChanged() {
                 changeCRUDWindow();
@@ -327,18 +326,18 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
             if (view == RecordBrowser.View.SUMMARY) {
                 w = (PatientRecordCRUDWindow) createCRUDWindow();
             } else {
-                w = new ProblemRecordCRUDWindow();
+                w = new ProblemRecordCRUDWindow(getHelpContext());
             }
             Act event = getEvent(null);
             w.setEvent(event);
             window = (CRUDWindow<Act>) w;
         } else if (view == RecordBrowser.View.DOCUMENTS) {
-            CRUDWindow w = new PatientDocumentCRUDWindow(docArchetypes);
+            CRUDWindow w = new PatientDocumentCRUDWindow(docArchetypes, getHelpContext());
             window = (CRUDWindow<Act>) w;  // todo
         } else if (view == RecordBrowser.View.REMINDER_ALERT) {
-            window = new ReminderCRUDWindow(getObject());
+            window = new ReminderCRUDWindow(getObject(), getHelpContext());
         } else {
-            window = new ChargesCRUDWindow();
+            window = new ChargesCRUDWindow(getHelpContext());
         }
 
         Act selected = browser.getSelected();
@@ -392,9 +391,9 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     /**
      * Returns the event associated with the current selected act.
      *
-     * @param act the current selected act. May be <tt>null</tt>
+     * @param act the current selected act. May be {@code null}
      * @return the event associated with the current selected act, or
-     *         <tt>null</tt> if none is found
+     *         {@code null} if none is found
      */
     private Act getEvent(Act act) {
         RecordBrowser browser = ((RecordBrowser) getBrowser());

@@ -23,6 +23,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.HelpDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.help.HelpListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 
@@ -39,7 +41,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
         implements Workspace<T> {
 
     /**
-     * The current object. May be <tt>null</tt>.
+     * The current object. May be {@code null}.
      */
     private T object;
 
@@ -68,12 +70,17 @@ public abstract class AbstractWorkspace<T extends IMObject>
      */
     private MailContext context;
 
+    /**
+     * The help context.
+     */
+    private HelpContext help;
+
 
     /**
-     * Construct a new <code>AbstractWorkspace</code>.
+     * Constructs an {@code AbstractWorkspace}.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
+     * @param workspaceId the workspace localisation identifier
      */
     public AbstractWorkspace(String subsystemId, String workspaceId) {
         this.subsystemId = subsystemId;
@@ -122,7 +129,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Renders the workspace summary.
      *
      * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
+     *         {@code null} if there is no summary
      */
     public Component getSummary() {
         return null;
@@ -131,7 +138,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
     /**
      * Sets the object to be viewed/edited by the workspace.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     public void setObject(T object) {
         this.object = object;
@@ -140,7 +147,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
     /**
      * Returns the object to to be viewed/edited by the workspace.
      *
-     * @return the the object. May be <oode>null</tt>
+     * @return the the object. May be <oode>null}
      */
     public T getObject() {
         return object;
@@ -150,7 +157,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Determines if the workspace can be updated with instances of the specified archetype.
      *
      * @param shortName the archetype's short name
-     * @return <tt>false</tt>
+     * @return {@code false}
      */
     public boolean canUpdate(String shortName) {
         return false;
@@ -164,7 +171,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * <p/>
      * If the current object is the same instance as that supplied, no changes will be made.
      *
-     * @param object the current object. May be <tt>null</tt>
+     * @param object the current object. May be {@code null}
      */
     public void setIMObject(IMObject object) {
         Class<T> type = getType();
@@ -191,7 +198,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
     /**
      * Sets the mail context.
      *
-     * @param context the mail context. May be <tt>null</tt>
+     * @param context the mail context. May be {@code null}
      */
     public void setMailContext(MailContext context) {
         this.context = context;
@@ -200,10 +207,26 @@ public abstract class AbstractWorkspace<T extends IMObject>
     /**
      * Returns the mail context.
      *
-     * @return the mail context. May be <tt>null</tt>
+     * @return the mail context. May be {@code null}
      */
     public MailContext getMailContext() {
         return context;
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    public HelpContext getHelpContext() {
+        if (help == null) {
+            help = new HelpContext(getHelpTopic(), new HelpListener() {
+                public void show(HelpContext context) {
+                    HelpDialog.show(context);
+                }
+            });
+        }
+        return help;
     }
 
     /**
@@ -297,7 +320,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
     /**
      * Determines if the workspace should be refreshed.
      *
-     * @return <code>true</code> if a later version of {@link #getObject()}
+     * @return {@code true} if a later version of {@link #getObject()}
      *         exists, or it has been deleted
      */
     protected boolean refreshWorkspace() {
@@ -308,7 +331,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Returns the latest version of the current context object.
      *
      * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same, or <tt>null</tt> if the context object is
+     *         if they are the same, or {@code null} if the context object is
      *         not supported by the workspace
      */
     protected T getLatest() {
@@ -320,7 +343,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      *
      * @param context the current context object
      * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same, or <tt>null</tt> if the context object is
+     *         if they are the same, or {@code null} if the context object is
      *         not supported by the workspace
      */
     protected T getLatest(T context) {
@@ -338,8 +361,16 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Launches help for the workspace.
      */
     protected void onHelp() {
-        String topic = "workspace/" + subsystemId + "/" + workspaceId;
-        HelpDialog.show(topic);
+        getHelpContext().show();
+    }
+
+    /**
+     * Returns the help topic for this workspace.
+     *
+     * @return the help topic
+     */
+    protected String getHelpTopic() {
+        return "workspace/" + subsystemId + "/" + workspaceId;
     }
 
 }

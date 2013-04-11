@@ -12,16 +12,14 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.charge;
 
-import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.app.supplier.SupplierActWorkspace;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
@@ -30,28 +28,31 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.subsystem.CRUDWindow;
+
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 
 
 /**
  * Supplier invoice workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ChargeWorkspace extends SupplierActWorkspace<FinancialAct> {
 
     /**
      * The act statuses to query, excluding POSTED.
      */
-    private static final ActStatuses STATUSES = new ActStatuses(
-            "act.supplierAccountChargesInvoice", POSTED);
+    private static final ActStatuses STATUSES = new ActStatuses("act.supplierAccountChargesInvoice", POSTED);
 
 
     /**
-     * Constructs a new <tt>ChargeWorkspace</tt>.
+     * Constructs a {@code ChargeWorkspace}.
+     *
+     * @param context the context
      */
-    public ChargeWorkspace() {
-        super("supplier", "invoice");
+    public ChargeWorkspace(Context context) {
+        super("supplier", "invoice", context);
         setChildArchetypes(FinancialAct.class, "act.supplierAccountCharges*");
     }
 
@@ -61,7 +62,7 @@ public class ChargeWorkspace extends SupplierActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new ChargeCRUDWindow(getChildArchetypes());
+        return new ChargeCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**
@@ -97,9 +98,8 @@ public class ChargeWorkspace extends SupplierActWorkspace<FinancialAct> {
      */
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
-        IMObjectTableModel<FinancialAct> model
-                = new ActAmountTableModel<FinancialAct>(true, true);
-        return BrowserFactory.create(query, null, model);
+        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
+        return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getHelpContext()));
     }
 
 }

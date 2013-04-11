@@ -12,16 +12,10 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.workflow.checkout;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -34,23 +28,28 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
 import org.openvpms.web.component.print.BatchPrintDialog;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.system.ServiceHelper;
-import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
  * Runs the {@link CheckOutWorkflow}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRunner.TestWorkflow> {
 
@@ -71,7 +70,7 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
 
 
     /**
-     * Constructs a <tt>CheckoutWorkflowRunner</tt>.
+     * Constructs a {@code CheckoutWorkflowRunner}.
      *
      * @param act      the act
      * @param practice the practice, used to determine tax rates
@@ -88,7 +87,7 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
     /**
      * Returns the payment.
      *
-     * @return the payment. May be <tt>null</tt>
+     * @return the payment. May be {@code null}
      */
     public FinancialAct getPayment() {
         return (FinancialAct) getContext().getObject(CustomerAccountArchetypes.PAYMENT);
@@ -144,10 +143,10 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
      * Verifies that the items in the context match that expected.
      *
      * @param context   the context to check
-     * @param customer  the expected customer. May be <tt>null</tt>
-     * @param patient   the expected patient. May be <tt>null</tt>
-     * @param till      the expected till. May be <tt>null</tt>
-     * @param clinician the expected clinician. May be <tt>null</tt>
+     * @param customer  the expected customer. May be {@code null}
+     * @param patient   the expected patient. May be {@code null}
+     * @param till      the expected till. May be {@code null}
+     * @param clinician the expected clinician. May be {@code null}
      */
     public void checkContext(Context context, Party customer, Party patient, Party till, User clinician) {
         assertEquals(patient, context.getPatient());
@@ -159,7 +158,7 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
     /**
      * Verifies that the workflow is complete.
      *
-     * @param statusUpdated if <tt>true</tt> expect the appointment/task status to be COMPLETE
+     * @param statusUpdated if {@code true} expect the appointment/task status to be COMPLETE
      */
     public void checkComplete(boolean statusUpdated) {
         assertNull(getTask());
@@ -199,13 +198,13 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
     protected static class TestWorkflow extends CheckOutWorkflow {
 
         /**
-         * Constructs a new <tt>TestWorkflow</tt> from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+         * Constructs a new {@code TestWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
          *
          * @param act     the act
          * @param context the external context to access and update
          */
         public TestWorkflow(Act act, Context context) {
-            super(act, context);
+            super(act, context, new HelpContext("foo", null));
         }
 
         /**

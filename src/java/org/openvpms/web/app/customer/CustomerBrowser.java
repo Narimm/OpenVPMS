@@ -12,14 +12,13 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserState;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserState;
@@ -35,8 +34,7 @@ import org.openvpms.web.component.im.query.TableBrowser;
 /**
  * Customer browser.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
 
@@ -46,13 +44,14 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
     private final CustomerQuery query;
 
     /**
-     * Creates a new <tt>CustomerBrowser</tt>.
+     * Constructs a {@code CustomerBrowser}.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      */
-    public CustomerBrowser(CustomerQuery query) {
+    public CustomerBrowser(CustomerQuery query, LayoutContext context) {
         this.query = query;
-        setBrowser(createBrowser(query));
+        setBrowser(createBrowser(query, context));
     }
 
     /**
@@ -67,7 +66,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
     /**
      * Returns the selected patient.
      *
-     * @return the patient, or <tt>null</tt> if no patient is selected
+     * @return the patient, or {@code null} if no patient is selected
      */
     public Party getPatient() {
         Party result = null;
@@ -83,7 +82,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
      * <p/>
      * Note that this is a snapshot of the browser's result set. Iterating over it will not affect the browser.
      *
-     * @return the result set, or <tt>null</tt> if the query hasn't been executed
+     * @return the result set, or {@code null} if the query hasn't been executed
      */
     public ResultSet<Party> getResultSet() {
         return new CustomerResultSetAdapter((CustomerResultSet) getBrowser().getResultSet());
@@ -125,13 +124,14 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
     /**
      * Creates a table browser that changes the model depending on what columns have been queried on.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      * @return a new browser
      */
-    private static Browser<ObjectSet> createBrowser(final CustomerQuery query) {
+    private static Browser<ObjectSet> createBrowser(final CustomerQuery query, LayoutContext context) {
         final CustomerTableModel model = new CustomerTableModel();
         Query<ObjectSet> delegate = query.getQuery();
-        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model) {
+        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
             /**
              * Performs the query.
              *
@@ -158,7 +158,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
         private final BrowserState browserState;
 
         /**
-         * Constructs a <tt>Memento</tt>.
+         * Constructs a {@code Memento}.
          *
          * @param browser the customer browser
          */
@@ -170,7 +170,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
         /**
          * Returns the underlying browser's state.
          *
-         * @return the underlying browser's state. May be <tt>null</tt>
+         * @return the underlying browser's state. May be {@code null}
          */
         public BrowserState getBrowserState() {
             return browserState;
@@ -180,7 +180,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
          * Determines if this state is supported by the specified browser.
          *
          * @param browser the browser
-         * @return <tt>true</tt> if the state is supported by the browser; otherwise <tt>false</tt>
+         * @return {@code true} if the state is supported by the browser; otherwise {@code false}
          */
         public boolean supports(Browser browser) {
             return browser instanceof CustomerBrowser;
@@ -191,7 +191,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
          *
          * @param shortNames the archetype short names
          * @param type       the type returned by the underlying query
-         * @return <tt>true</tt> if the state supports the specified archetypes and type
+         * @return {@code true} if the state supports the specified archetypes and type
          */
         @Override
         public boolean supports(String[] shortNames, Class type) {

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.admin.lookup;
 
@@ -21,6 +19,7 @@ import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.util.ColourHelper;
@@ -29,28 +28,31 @@ import org.openvpms.web.component.util.ColourHelper;
 /**
  * Table model for <em>lookup.customerAlertType</em> and <em>lookup.patientAlertType</em> objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class AlertTypeTableModel extends DescriptorTableModel<Lookup> {
 
     /**
-     * Constructs an <tt>AlertTypeTableModel</tt>.
+     * Constructs an {@code AlertTypeTableModel}.
      * <p/>
      * The column model must be set using {@link #setTableColumnModel}.
+     *
+     * @param context the layout context
      */
-    public AlertTypeTableModel() {
+    public AlertTypeTableModel(LayoutContext context) {
+        super(context);
     }
 
     /**
-     * Constructs a <tt>AlertTypeTableModel</tt>.
+     * Constructs a {@code AlertTypeTableModel}.
      * <p/>
      * This displays the archetype column if the short names reference multiple archetypes.
      *
      * @param shortNames the archetype short names
+     * @param context    the layout context
      */
-    public AlertTypeTableModel(String[] shortNames) {
-        super(shortNames);
+    public AlertTypeTableModel(String[] shortNames, LayoutContext context) {
+        super(shortNames, context);
     }
 
     /**

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.im.edit;
 
@@ -25,6 +23,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
@@ -38,8 +37,7 @@ import java.beans.PropertyChangeListener;
 /**
  * A popup dialog that displays an {@link IMObjectEditor}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractEditDialog extends PopupDialog {
 
@@ -65,46 +63,50 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
 
     /**
-     * Constructs an <tt>AbstractEditDialog</tt>.
+     * Constructs an {@code AbstractEditDialog}.
      *
      * @param editor the editor
+     * @param help    the help context
      */
-    public AbstractEditDialog(IMObjectEditor editor) {
-        this(editor.getTitle(), getButtons(true, true, false), true);
+    public AbstractEditDialog(IMObjectEditor editor, HelpContext help) {
+        this(editor.getTitle(), getButtons(true, true, false), true, help);
     }
 
     /**
-     * Constructs an <tt>AbstractEditDialog</tt>.
+     * Constructs an {@code AbstractEditDialog}.
      *
      * @param title   the dialog title
      * @param buttons the buttons to display
-     * @param save    if <tt>true</tt>, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param help    the help context
      */
-    public AbstractEditDialog(String title, String[] buttons, boolean save) {
-        this(null, title, buttons, save);
+    public AbstractEditDialog(String title, String[] buttons, boolean save, HelpContext help) {
+        this(null, title, buttons, save, help);
     }
 
     /**
-     * Constructs an <tt>AbstractEditDialog</tt>.
+     * Constructs an {@code AbstractEditDialog}.
      *
      * @param editor  the editor
      * @param buttons the buttons to display
-     * @param save    if <tt>true</tt>, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param help    the help context
      */
-    public AbstractEditDialog(IMObjectEditor editor, String[] buttons, boolean save) {
-        this(editor, editor.getTitle(), buttons, save);
+    public AbstractEditDialog(IMObjectEditor editor, String[] buttons, boolean save, HelpContext help) {
+        this(editor, editor.getTitle(), buttons, save, help);
     }
 
     /**
-     * Constructs an <tt>AbstractEditDialog</tt>.
+     * Constructs an {@code AbstractEditDialog}.
      *
-     * @param editor  the editor. May be <tt>null</tt>
+     * @param editor  the editor. May be {@code null}
      * @param title   the dialog title
      * @param buttons the buttons to display
-     * @param save    if <tt>true</tt>, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param help    the help context
      */
-    public AbstractEditDialog(IMObjectEditor editor, String title, String[] buttons, boolean save) {
-        super(title, STYLE, buttons);
+    public AbstractEditDialog(IMObjectEditor editor, String title, String[] buttons, boolean save, HelpContext help) {
+        super(title, STYLE, buttons, help);
         setModal(true);
         setEditor(editor);
         this.save = save;
@@ -123,7 +125,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
     /**
      * Returns the editor.
      *
-     * @return the editor, or <tt>null</tt> if none has been set
+     * @return the editor, or {@code null} if none has been set
      */
     public IMObjectEditor getEditor() {
         return editor;
@@ -134,7 +136,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * <p/>
      * If the the save fails, the dialog will remain open.
      *
-     * @param close if <tt>true</tt> close the dialog
+     * @param close if {@code true} close the dialog
      */
     public void save(boolean close) {
         if (!close) {
@@ -147,7 +149,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
     /**
      * Determines if a skip button should be added.
      *
-     * @param skip if <tt>true</tt> add a skip button, otherwise remove it
+     * @param skip if {@code true} add a skip button, otherwise remove it
      */
     public void addSkip(boolean skip) {
         ButtonSet buttons = getButtons();
@@ -213,7 +215,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
     /**
      * Sets the editor.
      *
-     * @param editor the editor. May be <tt>null</tt>
+     * @param editor the editor. May be {@code null}
      */
     protected void setEditor(IMObjectEditor editor) {
         IMObjectEditor previous = this.editor;
@@ -240,9 +242,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Saves the current object, if saving is enabled.
      * <p/>
      * If it is, and the object is valid, then {@link #doSave()} is called. If {@link #doSave()} fails
-     * (i.e returns <tt>false</tt>), then {@link #saveFailed()} is called.
+     * (i.e returns {@code false}), then {@link #saveFailed()} is called.
      *
-     * @return <tt>true</tt> if the object was saved
+     * @return {@code true} if the object was saved
      */
     protected boolean save() {
         boolean result = false;
@@ -265,7 +267,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
     /**
      * Saves the current object.
      *
-     * @return <tt>true</tt> if the object was saved
+     * @return {@code true} if the object was saved
      */
     protected boolean doSave() {
         return (editor != null && save(editor));
@@ -275,7 +277,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Saves the editor in a transaction.
      *
      * @param editor the editor
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     protected boolean save(IMObjectEditor editor) {
         return SaveHelper.save(editor);
@@ -351,14 +353,14 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Displays the macros.
      */
     protected void onMacro() {
-        MacroDialog dialog = new MacroDialog();
+        MacroDialog dialog = new MacroDialog(getHelpContext());
         dialog.show();
     }
 
     /**
      * Determines if saving has been disabled.
      *
-     * @return <tt>true</tt> if saves are disabled
+     * @return {@code true} if saves are disabled
      */
     protected boolean isSaveDisabled() {
         return savedDisabled;
@@ -367,9 +369,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
     /**
      * Helper to determine which buttons should be displayed.
      *
-     * @param apply  if <tt>true</tt> provide apply and OK buttons
-     * @param cancel if <tt>true</tt> provide a cancel button
-     * @param skip   if <tt>true</tt> provide a skip button
+     * @param apply  if {@code true} provide apply and OK buttons
+     * @param cancel if {@code true} provide a cancel button
+     * @param skip   if {@code true} provide a skip button
      * @return the button identifiers
      */
     protected static String[] getButtons(boolean apply, boolean cancel, boolean skip) {

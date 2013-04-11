@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.view;
@@ -30,8 +28,7 @@ import org.openvpms.web.component.property.PropertySet;
 /**
  * {@link IMObject} viewer.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class IMObjectViewer extends AbstractIMObjectView {
 
@@ -42,10 +39,10 @@ public class IMObjectViewer extends AbstractIMObjectView {
 
 
     /**
-     * Constructs a new <code>IMObjectViewer</code>.
+     * Constructs an {@code IMObjectViewer}.
      *
      * @param object the object to view.
-     * @param parent the parent object. May be <code>null</code>
+     * @param parent the parent object. May be {@code null}
      */
     public IMObjectViewer(IMObject object, IMObject parent) {
         this(object, parent, new ViewLayoutStrategyFactory().create(object),
@@ -53,39 +50,30 @@ public class IMObjectViewer extends AbstractIMObjectView {
     }
 
     /**
-     * Construct a new <code>IMObjectViewer</code>.
+     * Constructs an {@code IMObjectViewer}.
      *
      * @param object  the object to view.
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context
      */
-    public IMObjectViewer(IMObject object, IMObject parent,
-                          LayoutContext context) {
-        this(object, parent, new ViewLayoutStrategyFactory().create(object),
-             context);
+    public IMObjectViewer(IMObject object, IMObject parent, LayoutContext context) {
+        this(object, parent, new ViewLayoutStrategyFactory().create(object), context);
     }
 
     /**
-     * Construct a new <code>IMObjectViewer</code>.
+     * Constructs an {@code IMObjectViewer}.
      *
      * @param object  the object to view.
-     * @param parent  the parent object. May be <code>null</code>
-     * @param layout  the layout strategy. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param parent  the parent object. May be {@code null}
+     * @param layout  the layout strategy. May be {@code null}
+     * @param context the layout context
      */
-    public IMObjectViewer(IMObject object, IMObject parent,
-                          IMObjectLayoutStrategy layout,
-                          LayoutContext context) {
+    public IMObjectViewer(IMObject object, IMObject parent, IMObjectLayoutStrategy layout, LayoutContext context) {
         super(object, new PropertySet(object, context), parent, layout);
-        if (context == null) {
-            this.context = new DefaultLayoutContext();
-        } else {
-            this.context = new DefaultLayoutContext(context);
-            // don't increase the layout depth
-            this.context.setLayoutDepth(context.getLayoutDepth()); 
-        }
-        IMObjectComponentFactory factory
-                = new ReadOnlyComponentFactory(this.context);
+        this.context = new DefaultLayoutContext(context);
+        // don't increase the layout depth
+        this.context.setLayoutDepth(context.getLayoutDepth());
+        IMObjectComponentFactory factory = new ReadOnlyComponentFactory(this.context);
         this.context.setComponentFactory(factory);
     }
 

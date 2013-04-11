@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.statement;
@@ -34,6 +32,7 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
@@ -49,8 +48,7 @@ import java.util.Date;
 /**
  * Statement workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
 
@@ -105,7 +103,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
         query = new CustomerBalanceQuery();
         query.getComponent();
         query.setDate(getYesterday()); // default statement date to yesterday
-        browser = new CustomerBalanceBrowser(query);
+        browser = new CustomerBalanceBrowser(query, new DefaultLayoutContext(getHelpContext()));
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
@@ -167,7 +165,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
     private void doSendAll(boolean reprint) {
         try {
             GlobalContext context = GlobalContext.getInstance();
-            StatementGenerator generator = new StatementGenerator(query, context);
+            StatementGenerator generator = new StatementGenerator(query, context, getHelpContext());
             generator.setReprint(reprint);
             generateStatements(generator, true);
         } catch (OpenVPMSException exception) {
@@ -188,7 +186,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
                     if (ref != null) {
                         GlobalContext context = GlobalContext.getInstance();
                         StatementGenerator generator = new StatementGenerator(
-                                ref, query.getDate(), true, context);
+                                ref, query.getDate(), true, context, getHelpContext());
                         generator.setReprint(true);
                         generateStatements(generator, false);
                     }
@@ -311,8 +309,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
                 type = Messages.get("reporting.statements.print.nonOverdue");
             }
             String title = Messages.get("imobject.print.title", type);
-            InteractiveIMPrinter<ObjectSet> iPrinter
-                    = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

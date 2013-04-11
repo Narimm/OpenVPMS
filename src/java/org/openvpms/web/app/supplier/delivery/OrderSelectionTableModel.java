@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.delivery;
@@ -37,14 +35,11 @@ import java.util.List;
 
 
 /**
- * Supplier order table model that supports the selection of multiple orders and
- * their items via a checkbox column.
+ * Supplier order table model that supports the selection of multiple orders and their items via a checkbox column.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class OrderSelectionTableModel
-        extends DescriptorTableModel<FinancialAct> {
+public class OrderSelectionTableModel extends DescriptorTableModel<FinancialAct> {
 
     /**
      * Listener for order/order item selection events
@@ -56,7 +51,7 @@ public class OrderSelectionTableModel
          *
          * @param act      the order/order item
          * @param row      the selected row
-         * @param selected if <tt>true</tt> indicates the act was selected; if <tt>false</tt> indicates deselection
+         * @param selected if {@code true} indicates the act was selected; if {@code false} indicates deselection
          */
         void onSelected(FinancialAct act, int row, boolean selected);
     }
@@ -88,10 +83,10 @@ public class OrderSelectionTableModel
 
 
     /**
-     * Constructs an <tt>OrderSelectionTableModel</tt>.
+     * Constructs an {@code OrderSelectionTableModel}.
      */
-    public OrderSelectionTableModel() {
-        super(new String[]{"act.supplierOrderItem"});
+    public OrderSelectionTableModel(LayoutContext context) {
+        super(new String[]{"act.supplierOrderItem"}, context);
     }
 
     /**
@@ -112,7 +107,7 @@ public class OrderSelectionTableModel
      * Selects/deselects an act.
      *
      * @param index    the row of the object to select
-     * @param selected if <tt>true</tt>, select the act, otherwise deselect it
+     * @param selected if {@code true}, select the act, otherwise deselect it
      */
     public void setSelected(int index, boolean selected) {
         this.selected.get(index).setSelected(selected);
@@ -148,7 +143,7 @@ public class OrderSelectionTableModel
     /**
      * Listener to be notified when a item is selected.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setSelectionListener(OrderSelectionListener listener) {
         this.listener = listener;

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer;
@@ -25,34 +23,32 @@ import org.openvpms.web.app.customer.estimation.EstimationWorkspace;
 import org.openvpms.web.app.customer.info.InformationWorkspace;
 import org.openvpms.web.app.customer.note.NoteAlertWorkspace;
 import org.openvpms.web.app.customer.payment.PaymentWorkspace;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
 /**
  * Customer subsystem.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class CustomerSubsystem extends AbstractSubsystem {
 
     /**
-     * Construct a new <tt>CustomerSubsystem</tt>.
+     * Constructs a {@code CustomerSubsystem}.
+     *
+     * @param context the context
      */
-    public CustomerSubsystem() {
+    public CustomerSubsystem(Context context) {
         super("customer");
 
-        MailContext context = new CustomerMailContext(GlobalContext.getInstance());
-
-        addWorkspace(new InformationWorkspace(), context);
-        addWorkspace(new CustomerDocumentWorkspace(), context);
-        addWorkspace(new EstimationWorkspace(), context);
-        addWorkspace(new ChargeWorkspace(), context);
-        addWorkspace(new PaymentWorkspace(), context);
-        addWorkspace(new AccountWorkspace(), context);
-        addWorkspace(new NoteAlertWorkspace(), context);
+        addWorkspace(new InformationWorkspace(context));
+        addWorkspace(new CustomerDocumentWorkspace(context));
+        addWorkspace(new EstimationWorkspace(context));
+        addWorkspace(new ChargeWorkspace(context));
+        addWorkspace(new PaymentWorkspace(context));
+        addWorkspace(new AccountWorkspace(context));
+        addWorkspace(new NoteAlertWorkspace(context));
     }
 
 }

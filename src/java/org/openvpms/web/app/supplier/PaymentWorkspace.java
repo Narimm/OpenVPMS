@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
@@ -22,7 +20,8 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -30,28 +29,27 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Supplier payment workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PaymentWorkspace extends SupplierActWorkspace<FinancialAct> {
 
     /**
      * Payment and refund shortnames supported by the workspace.
      */
-    private static final String[] SHORT_NAMES = {"act.supplierAccountPayment",
-                                                 "act.supplierAccountRefund"};
+    private static final String[] SHORT_NAMES = {"act.supplierAccountPayment", "act.supplierAccountRefund"};
 
 
     /**
-     * Constructs a new <tt>InvoiceWorkspace</tt>.
+     * Constructs a {@code PaymentWorkspace}.
      */
-    public PaymentWorkspace() {
-        super("supplier", "payment");
+    public PaymentWorkspace(Context context) {
+        super("supplier", "payment", context);
         setChildArchetypes(FinancialAct.class, SHORT_NAMES);
     }
 
@@ -61,7 +59,7 @@ public class PaymentWorkspace extends SupplierActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new PaymentCRUDWindow(getChildArchetypes());
+        return new PaymentCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**
@@ -104,7 +102,7 @@ public class PaymentWorkspace extends SupplierActWorkspace<FinancialAct> {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         IMObjectTableModel<FinancialAct> model
                 = new ActAmountTableModel<FinancialAct>(true, true);
-        return BrowserFactory.create(query, sort, model);
+        return BrowserFactory.create(query, sort, model, new DefaultLayoutContext(getHelpContext()));
     }
 
 }

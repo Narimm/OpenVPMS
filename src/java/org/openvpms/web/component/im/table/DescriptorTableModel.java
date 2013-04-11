@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.table;
@@ -26,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -41,11 +40,9 @@ import java.util.List;
  * Table model created from an {@link ArchetypeDescriptor} or {@link
  * NodeDescriptor}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public abstract class DescriptorTableModel<T extends IMObject>
-        extends BaseIMObjectTableModel<T> {
+public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObjectTableModel<T> {
 
     /**
      * The layout context.
@@ -54,45 +51,23 @@ public abstract class DescriptorTableModel<T extends IMObject>
 
 
     /**
-     * Creates a new <tt>DescriptorTableModel</tt>.
-     * The column model must be set using {@link #setTableColumnModel}.
-     */
-    public DescriptorTableModel() {
-        this((LayoutContext) null);
-    }
-
-    /**
-     * Creates a new <tt>DescriptorTableModel</tt>.
+     * Constructs a {@code DescriptorTableModel}.
+     * <p/>
      * The column model must be set using {@link #setTableColumnModel}.
      *
-     * @param context the layout context. May be <tt>null</tt>
+     * @param context the layout context
      */
     public DescriptorTableModel(LayoutContext context) {
-        if (context == null) {
-            context = createDefaultLayoutContext();
-        }
         this.context = context;
     }
 
     /**
-     * Creates a new <tt>DescriptorTableModel</tt>.
+     * Creates a new {@code DescriptorTableModel}.
      *
      * @param shortNames the archetype short names
-     */
-    public DescriptorTableModel(String[] shortNames) {
-        this(shortNames, null);
-    }
-
-    /**
-     * Creates a new <tt>DescriptorTableModel</tt>.
-     *
-     * @param shortNames the archetype short names
-     * @param context    the layout context. May be <tt>null</tt>
+     * @param context    the layout context
      */
     public DescriptorTableModel(String[] shortNames, LayoutContext context) {
-        if (context == null) {
-            context = createDefaultLayoutContext();
-        }
         this.context = context;
         setTableColumnModel(createColumnModel(shortNames, context));
     }
@@ -101,9 +76,9 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-     *                  sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't
+     * @param ascending if {@code true} sort in ascending order; otherwise
+     *                  sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't
      *         sortable
      */
     @Override
@@ -242,7 +217,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * @param archetype the archetypes
      * @param name      the node name
      * @param columns   the columns to add to
-     * @return the new column, or <tt>null</tt> if the node is not found in
+     * @return the new column, or {@code null} if the node is not found in
      *         the archetypes
      */
     protected TableColumn addColumn(ArchetypeDescriptor archetype,
@@ -314,7 +289,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
 
     /**
      * Returns a list of node descriptor names to include in the table.
-     * This implementation returns <tt>null</tt> to indicate that the
+     * This implementation returns {@code null} to indicate that the
      * intersection should be calculated from all descriptors.
      *
      * @return the list of node descriptor names to include in the table
@@ -347,7 +322,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
      * This implementation returns true if there is more than one archetype.
      *
      * @param archetypes the archetypes
-     * @return <tt>true</tt> if the archetype column should be displayed
+     * @return {@code true} if the archetype column should be displayed
      */
     protected boolean showArchetypeColumn(
             List<ArchetypeDescriptor> archetypes) {
@@ -366,10 +341,11 @@ public abstract class DescriptorTableModel<T extends IMObject>
     /**
      * Helper to create a default layout context.
      *
+     * @param help the help context
      * @return a new layout context
      */
-    protected LayoutContext createDefaultLayoutContext() {
-        LayoutContext context = new DefaultLayoutContext();
+    protected LayoutContext createDefaultLayoutContext(HelpContext help) {
+        LayoutContext context = new DefaultLayoutContext(help);
         TableComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         return context;

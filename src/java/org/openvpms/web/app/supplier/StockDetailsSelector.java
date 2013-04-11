@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
@@ -21,8 +19,8 @@ package org.openvpms.web.app.supplier;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -61,11 +59,9 @@ public class StockDetailsSelector {
      *
      * @param context the context
      */
-    public StockDetailsSelector(Context context) {
-        supplier = new IMObjectSelector<Party>(
-                Messages.get("supplier.type"), "party.supplier*");
-        location = new StockLocationSelector(
-                Messages.get("product.stockLocation"), context);
+    public StockDetailsSelector(LayoutContext context) {
+        supplier = new IMObjectSelector<Party>(Messages.get("supplier.type"), context, "party.supplier*");
+        location = new StockLocationSelector(Messages.get("product.stockLocation"), context);
 
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("supplier.type"));

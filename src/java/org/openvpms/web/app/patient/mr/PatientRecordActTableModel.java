@@ -26,28 +26,17 @@ import org.openvpms.web.component.im.table.act.AbstractActTableModel;
  * Table model for patient record acts. Displays the archetype in the second
  * column.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientRecordActTableModel extends AbstractActTableModel {
 
     /**
-     * Constructs a new <code>PatientRecordActTableModel</code>.
-     *
-     * @param shortNames the act archetype short names
-     */
-    public PatientRecordActTableModel(String[] shortNames) {
-        super(shortNames);
-    }
-
-    /**
-     * Constructs a new <code>PatientRecordActTableModel</code>.
+     * Constructs a {@code PatientRecordActTableModel}.
      *
      * @param shortNames the act archetype short names
      * @param context    the layout context
      */
-    public PatientRecordActTableModel(String[] shortNames,
-                                      LayoutContext context) {
+    public PatientRecordActTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
     }
 

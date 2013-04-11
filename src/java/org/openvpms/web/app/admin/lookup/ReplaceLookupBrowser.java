@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.admin.lookup;
 
@@ -23,6 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
@@ -40,8 +39,7 @@ import java.util.List;
 /**
  * A browser that prompts for a replacement to a lookup.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class ReplaceLookupBrowser extends IMObjectTableBrowser<Lookup> {
 
@@ -67,13 +65,14 @@ class ReplaceLookupBrowser extends IMObjectTableBrowser<Lookup> {
 
 
     /**
-     * Constructs a <tt>ReplaceLookupBrowser</tt>.
+     * Constructs a {@code ReplaceLookupBrowser}.
      *
-     * @param query  the query
-     * @param lookup the lookup to replace
+     * @param query   the query
+     * @param lookup  the lookup to replace
+     * @param context the layout context
      */
-    public ReplaceLookupBrowser(Query<Lookup> query, Lookup lookup) {
-        super(query);
+    public ReplaceLookupBrowser(Query<Lookup> query, Lookup lookup, LayoutContext context) {
+        super(query, context);
         query.setMaxResults(15);
         this.replace = lookup;
         deleteSource = CheckBoxFactory.create("lookup.replace.delete", false);
@@ -84,7 +83,7 @@ class ReplaceLookupBrowser extends IMObjectTableBrowser<Lookup> {
     /**
      * Determines if the source lookup should be deleted.
      *
-     * @return <tt>true</tt> if the source lookup should be deleted
+     * @return {@code true} if the source lookup should be deleted
      */
     public boolean deleteLookup() {
         return deleteSource.isSelected();

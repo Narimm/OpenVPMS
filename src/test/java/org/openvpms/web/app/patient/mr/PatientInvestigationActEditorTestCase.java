@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.patient.mr;
@@ -26,6 +24,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.patient.history.PatientInvestigationActEditor;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.doc.VersionedDocumentActEditorTest;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -34,8 +33,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 /**
  * Tests the {@link org.openvpms.web.app.patient.history.PatientInvestigationActEditor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class PatientInvestigationActEditorTestCase extends VersionedDocumentActEditorTest {
 
@@ -61,7 +59,7 @@ public class PatientInvestigationActEditorTestCase extends VersionedDocumentActE
      * @return a new editor
      */
     protected DocumentActEditor createEditor(DocumentAct act) {
-        DefaultLayoutContext layout = new DefaultLayoutContext();
+        DefaultLayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
         Context context = layout.getContext();
         context.setPatient(TestHelper.createPatient());
         context.setUser(TestHelper.createUser());

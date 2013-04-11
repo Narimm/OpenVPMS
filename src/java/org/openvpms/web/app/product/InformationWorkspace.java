@@ -19,22 +19,21 @@
 package org.openvpms.web.app.product;
 
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.QueryBrowser;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Product information workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
 
     /**
-     * Constructs an <tt>InformationWorkspace</tt>.
+     * Constructs an {@code InformationWorkspace}.
      */
     public InformationWorkspace() {
         super("product", "info");
@@ -44,7 +43,7 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Product object) {
@@ -55,9 +54,8 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
     /**
      * Returns the latest version of the current context object.
      *
-     * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same, or <tt>null</tt> if the context object is
-     *         not supported by the workspace
+     * @return the latest version of the context object, or {@link #getObject()} if they are the same, or {@code null}
+     *         if the context object is not supported by the workspace
      */
     @Override
     protected Product getLatest() {
@@ -71,7 +69,7 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
      */
     protected CRUDWindow<Product> createCRUDWindow() {
         QueryBrowser<Product> browser = getBrowser();
-        return new ProductCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet());
+        return new ProductCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getHelpContext());
     }
 
 }

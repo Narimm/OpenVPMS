@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -40,8 +41,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Prints statements.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class StatementPrintProcessor extends AbstractStatementProcessorListener {
 
@@ -67,8 +67,12 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     private final MailContext mailContext;
 
     /**
-     * The name of the selected printer. Once a printer has been selected,
-     * printing will occur in the background.
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
+     * The name of the selected printer. Once a printer has been selected, printing will occur in the background.
      */
     private String printerName;
 
@@ -85,28 +89,29 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
 
 
     /**
-     * Constructs a new <tt>StatementPrintProcessor</tt>.
+     * Constructs a {@code StatementPrintProcessor}.
      *
      * @param processor      the batch processor to invoke to process the next
      *                       statement, when printing interactively.
      * @param cancelListener the listener to cancel processing
      * @param practice       the practice
-     * @param mailContext    the mail context. May be <tt>null</tt>
+     * @param mailContext    the mail context. May be {@code null}
      */
     public StatementPrintProcessor(StatementProgressBarProcessor processor, VetoListener cancelListener,
-                                   Party practice, Context context, MailContext mailContext) {
+                                   Party practice, Context context, MailContext mailContext, HelpContext help) {
         super(practice);
         this.processor = processor;
         this.cancelListener = cancelListener;
         this.context = context;
         this.mailContext = mailContext;
+        this.help = help;
     }
 
     /**
      * Determines if statements should have their print flag updated.
-     * Only applies to non-preview statements. Defaults to <tt>true</tt>.
+     * Only applies to non-preview statements. Defaults to {@code true}.
      *
-     * @param update if <tt>true</tt> update the statements print flag
+     * @param update if {@code true} update the statements print flag
      */
     public void setUpdatePrinted(boolean update) {
         updatePrinted = update;
@@ -135,7 +140,7 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      */
     protected void print(IMObjectReportPrinter<Act> printer, final Statement statement) {
         String title = Messages.get("reporting.statements.print.customer");
-        final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer);
+        final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, help);
         if (printerName != null) {
             iPrinter.setInteractive(false);
         }

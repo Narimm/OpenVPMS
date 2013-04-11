@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.subsystem;
@@ -22,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -34,8 +33,7 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 /**
  * Abstract implementation of the {@link CRUDWindow} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractViewCRUDWindow<T extends IMObject>
         extends AbstractCRUDWindow<T> {
@@ -52,21 +50,23 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
 
 
     /**
-     * Constructs a new <tt>AbstractViewCRUDWindow</tt>.
+     * Constructs an {@code AbstractViewCRUDWindow}.
      *
-     * @param archetypes the archetypes that this may create. If <tt>null</tt>
+     * @param archetypes the archetypes that this may create. If {@code null}
      *                   the subclass must override {@link #getArchetypes}
-     * @param actions determines the operations that may be performed on the selected object
+     * @param actions    determines the operations that may be performed on the selected object
+     * @param help       the help context
      */
-    public AbstractViewCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions) {
-        super(archetypes, actions);
+    public AbstractViewCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions,
+                                  HelpContext help) {
+        super(archetypes, actions, help);
         objectContainer = ColumnFactory.create();
     }
 
     /**
      * Sets the object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     public void setObject(T object) {
         super.setObject(object);
@@ -94,7 +94,7 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
      * @return a new layout context
      */
     protected LayoutContext createViewLayoutContext() {
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(getHelpContext());
         context.setMailContext(getMailContext());
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
         return context;

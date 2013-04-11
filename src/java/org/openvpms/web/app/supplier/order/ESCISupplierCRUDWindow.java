@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.supplier.order;
@@ -24,8 +22,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.esci.adapter.dispatcher.DefaultESCIDispatcher;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
@@ -38,8 +37,7 @@ import java.util.Date;
 /**
  * Supplier CRUD window that adds support to check ESCI inboxes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
@@ -49,13 +47,15 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
     protected static final String CHECK_INBOX_ID = "checkInbox";
 
     /**
-     * Creates a new <tt>ESCISupplierCRUDWindow</tt>.
+     * Constructs an {@code ESCISupplierCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param operations determines the operations that may be performed on the selected object
+     * @param help       the help context
      */
-    public ESCISupplierCRUDWindow(Archetypes<FinancialAct> archetypes, ActActions<FinancialAct> operations) {
-        super(archetypes, operations);
+    public ESCISupplierCRUDWindow(Archetypes<FinancialAct> archetypes, ActActions<FinancialAct> operations,
+                                  HelpContext help) {
+        super(archetypes, operations, help);
     }
 
     /**
@@ -87,7 +87,7 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
     /**
      * Schedule a poll of the ESCI inboxes to pick up messages.
      *
-     * @param delay if <tt>true</tt> add a 30 second delay
+     * @param delay if {@code true} add a 30 second delay
      */
     protected void scheduleCheckInbox(boolean delay) {
         try {

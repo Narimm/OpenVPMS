@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.table.act;
@@ -26,41 +24,35 @@ import org.openvpms.web.component.im.table.DescriptorTableModel;
 /**
  * Table model for displaying {@link Act}s. Any "items" nodes are filtered..
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
 
     /**
-     * Constructs a <tt>AbstractActTableModel</tt>.
+     * Constructs a {@code AbstractActTableModel}.
      * The column model must be set using {@link #setTableColumnModel}.
+     *
+     * @param context the layout context
      */
-    public AbstractActTableModel() {
+    public AbstractActTableModel(LayoutContext context) {
+        super(context);
     }
 
     /**
-     * Constructs a <tt>AbstractActTableModel</tt>.
+     * Constructs a {@code AbstractActTableModel}.
      *
      * @param shortName the act archetype short names
+     * @param context   the layout context
      */
-    public AbstractActTableModel(String shortName) {
-        this(new String[]{shortName});
+    public AbstractActTableModel(String shortName, LayoutContext context) {
+        this(new String[]{shortName}, context);
     }
 
     /**
-     * Constructs a <tt>AbstractActTableModel</tt>.
+     * Constructs a {@code AbstractActTableModel}.
      *
      * @param shortNames the act archetype short names
-     */
-    public AbstractActTableModel(String[] shortNames) {
-        this(shortNames, null);
-    }
-
-    /**
-     * Constructs a <tt>AbstractActTableModel</tt>.
-     *
-     * @param shortNames the act archetype short names
-     * @param context    the layout context. May be <tt>null</tt>
+     * @param context    the layout context
      */
     public AbstractActTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);

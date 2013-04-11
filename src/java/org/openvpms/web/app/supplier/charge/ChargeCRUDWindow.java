@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.charge;
@@ -21,6 +19,7 @@ package org.openvpms.web.app.supplier.charge;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
 import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 
@@ -28,18 +27,18 @@ import org.openvpms.web.component.im.util.Archetypes;
 /**
  * CRUD window for supplier invoices.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new <tt>ChargeCRUDWindow</tt>.
+     * Constructs an {@code ChargeCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance());
+    public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
     }
 
     /**

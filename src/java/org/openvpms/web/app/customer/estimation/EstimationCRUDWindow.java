@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.estimation;
@@ -38,6 +36,7 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -57,8 +56,7 @@ import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
 /**
  * CRUD window for estimation acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
 
@@ -79,12 +77,13 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
 
 
     /**
-     * Constructs an <tt>EstimationCRUDWindow</tt>.
+     * Constructs an {@code EstimationCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public EstimationCRUDWindow(Archetypes<Act> archetypes) {
-        super(archetypes, new EstimateActions());
+    public EstimationCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
+        super(archetypes, new EstimateActions(), help);
         rules = new EstimationRules();
     }
 
@@ -241,7 +240,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     private void invoice(final Act estimation, FinancialAct invoice) {
         try {
             EstimationInvoicer invoicer = new EstimationInvoicer();
-            CustomerChargeActEditDialog editor = invoicer.invoice(estimation, invoice, new DefaultLayoutContext(true));
+            CustomerChargeActEditDialog editor = invoicer.invoice(estimation, invoice,
+                                                                  new DefaultLayoutContext(true, getHelpContext()));
             editor.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     onRefresh(estimation);
@@ -257,7 +257,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         ActBean bean = new ActBean(estimation);
         Party customer = (Party) bean.getNodeParticipant("customer");
         if (customer != null) {
-            TaskContext context = new DefaultTaskContext();
+            TaskContext context = new DefaultTaskContext(getHelpContext());
             context.setCustomer(customer);
             GetInvoiceTask task = new GetInvoiceTask();
             task.execute(context);

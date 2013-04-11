@@ -12,39 +12,35 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.delivery;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 
 
 /**
  * Order selection dialog.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OrderSelectionBrowserDialog extends BrowserDialog<FinancialAct> {
 
     /**
-     * Construct a new <tt>BrowserDialog</tt>.
+     * Construct a new {@code BrowserDialog}.
      *
      * @param title   the dialog title
-     * @param message the dialog message. May be <tt>null</tt>
+     * @param message the dialog message. May be {@code null}
      * @param browser the browser
      */
-    public OrderSelectionBrowserDialog(String title, String message,
-                                       OrderTableBrowser browser) {
-        super(title, message, OK_CANCEL, browser, false);
+    public OrderSelectionBrowserDialog(String title, String message, OrderTableBrowser browser, HelpContext help) {
+        super(title, message, OK_CANCEL, browser, false, help);
     }
 
     /**
-     * Invoked when the 'OK' button is pressed. This sets the action and closes
-     * the window.
+     * Invoked when the 'OK' button is pressed. This sets the action and closes the window.
      */
     @Override
     protected void onOK() {
@@ -57,10 +53,10 @@ public class OrderSelectionBrowserDialog extends BrowserDialog<FinancialAct> {
     /**
      * Determines if an object has been selected.
      *
-     * @return <tt>true</tt> if an object has been selected, otherwise <tt>false</tt>
+     * @return {@code true} if an object has been selected, otherwise {@code false}
      */
     @Override
     public boolean isSelected() {
-      return true;
+        return true;
     }
 }

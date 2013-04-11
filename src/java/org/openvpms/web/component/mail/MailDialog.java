@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.mail;
@@ -34,6 +32,7 @@ import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;
 import org.openvpms.web.component.im.doc.UploadDialog;
@@ -55,8 +54,7 @@ import java.util.Map;
 /**
  * Dialog to send emails.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class MailDialog extends PopupDialog {
 
@@ -76,7 +74,7 @@ public class MailDialog extends PopupDialog {
     private final MailEditor editor;
 
     /**
-     * The document browser. May be <tt>null</tt>
+     * The document browser. May be {@code null}
      */
     private final Browser<Act> documents;
 
@@ -117,60 +115,66 @@ public class MailDialog extends PopupDialog {
 
 
     /**
-     * Constructs a <tt>MailDialog</tt>.
+     * Constructs a {@code MailDialog}.
      *
      * @param context the mail context
+     * @param help    the help context
      */
-    public MailDialog(MailContext context) {
-        this(context, (Contact) null);
+    public MailDialog(MailContext context, HelpContext help) {
+        this(context, (Contact) null, help);
     }
 
     /**
-     * Constructs a <tt>MailDialog</tt>.
+     * Constructs a {@code MailDialog}.
      *
      * @param context   the mail context
-     * @param preferred the preferred contact. May be <tt>null</tt>
+     * @param preferred the preferred contact. May be {@code null}
+     * @param help      the help context
      */
-    public MailDialog(MailContext context, Contact preferred) {
-        this(context, preferred, context.createAttachmentBrowser());
+    public MailDialog(MailContext context, Contact preferred, HelpContext help) {
+        this(context, preferred, context.createAttachmentBrowser(), help);
     }
 
     /**
-     * Constructs a <tt>MailDialog</tt>.
+     * Constructs a {@code MailDialog}.
      *
      * @param context   the mail context
-     * @param documents the document browser. May be <tt>null</tt>
+     * @param documents the document browser. May be {@code null}
+     * @param help      the help context
      */
-    public MailDialog(MailContext context, Browser<Act> documents) {
-        this(context, null, documents);
+    public MailDialog(MailContext context, Browser<Act> documents, HelpContext help) {
+        this(context, null, documents, help);
     }
 
     /**
-     * Constructs a <tt>MailDialog</tt>.
+     * Constructs a {@code MailDialog}.
      *
      * @param context   the mail context
-     * @param preferred the preferred contact. May be <tt>null</tt>
-     * @param documents the document browser. May be <tt>null</tt>
+     * @param preferred the preferred contact. May be {@code null}
+     * @param documents the document browser. May be {@code null}
+     * @param help      the help context
      */
-    public MailDialog(MailContext context, Contact preferred, Browser<Act> documents) {
-        this(Messages.get("mail.write"), context, preferred, documents);
+    public MailDialog(MailContext context, Contact preferred, Browser<Act> documents, HelpContext help) {
+        this(Messages.get("mail.write"), context, preferred, documents, help);
     }
 
     /**
-     * Constructs a <tt>MailDialog</tt>.
+     * Constructs a {@code MailDialog}.
      *
      * @param title     the window title
      * @param context   the mail context
-     * @param preferred the preferred contact to display. May be <tt>null</tt>
-     * @param documents the document browser. May be <tt>null</tt>
+     * @param preferred the preferred contact to display. May be {@code null}
+     * @param documents the document browser. May be {@code null}
+     * @param help      the help context
      */
-    public MailDialog(String title, MailContext context, Contact preferred, Browser<Act> documents) {
-        super(title, "MailDialog", documents != null ? SEND_ATTACH_ALL_CANCEL : SEND_ATTACH_FILE_CANCEL);
+    public MailDialog(String title, MailContext context, Contact preferred, Browser<Act> documents,
+                      HelpContext help) {
+        super(title, "MailDialog", documents != null ? SEND_ATTACH_ALL_CANCEL : SEND_ATTACH_FILE_CANCEL, help);
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);
         this.mailer = new DefaultMailer();
         this.documents = documents;
-        editor = new MailEditor(context.getFromAddresses(), context.getToAddresses(), preferred);
+        editor = new MailEditor(context.getFromAddresses(), context.getToAddresses(), preferred, help);
         Map<String, Object> variables = context.getVariables();
         if (variables != null) {
             editor.declareVariables(variables);
@@ -249,7 +253,8 @@ public class MailDialog extends PopupDialog {
      */
     private void attach() {
         final FocusCommand focus = new FocusCommand();
-        final BrowserDialog<Act> dialog = new BrowserDialog<Act>(Messages.get("mail.attach.title"), documents);
+        final BrowserDialog<Act> dialog = new BrowserDialog<Act>(Messages.get("mail.attach.title"), documents,
+                                                                 getHelpContext());
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 focus.restore();
@@ -283,7 +288,7 @@ public class MailDialog extends PopupDialog {
     /**
      * Sends the email.
      *
-     * @return <tt>true</tt> if the mail was sent
+     * @return {@code true} if the mail was sent
      */
     private boolean send() {
         boolean result = false;
@@ -322,7 +327,8 @@ public class MailDialog extends PopupDialog {
         if (document != null) {
             editor.addAttachment(document);
         } else {
-            DocumentGenerator generator = new DocumentGenerator(act, new DocumentGenerator.Listener() {
+            HelpContext help = getHelpContext();
+            DocumentGenerator generator = new DocumentGenerator(act, help, new DocumentGenerator.Listener() {
                 public void generated(Document document) {
                     editor.addAttachment(document);
                 }
@@ -361,7 +367,7 @@ public class MailDialog extends PopupDialog {
      * Displays the macros.
      */
     protected void onMacro() {
-        MacroDialog dialog = new MacroDialog();
+        MacroDialog dialog = new MacroDialog(getHelpContext());
         dialog.show();
     }
 

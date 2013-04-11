@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.print.BatchPrinter;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -40,12 +41,20 @@ public class CustomerChargeDocuments {
     private final AbstractCustomerChargeActEditor editor;
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+
+    /**
      * Constructs a {@code CustomerChargeDocuments}.
      *
      * @param editor the charge editor
+     * @param help   the help context
      */
-    public CustomerChargeDocuments(AbstractCustomerChargeActEditor editor) {
+    public CustomerChargeDocuments(AbstractCustomerChargeActEditor editor, HelpContext help) {
         this.editor = editor;
+        this.help = help;
     }
 
     /**
@@ -93,7 +102,7 @@ public class CustomerChargeDocuments {
         LocalContext context = new LocalContext();
         context.setCustomer(editor.getCustomer());
         context.setLocation(editor.getLocation());
-        BatchPrinter printer = new BatchPrinter<Act>(documents, context) {
+        BatchPrinter printer = new BatchPrinter<Act>(documents, context, help) {
 
             public void failed(Throwable cause) {
                 ErrorHelper.show(cause, new WindowPaneListener() {

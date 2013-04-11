@@ -38,6 +38,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ChangeListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
@@ -72,6 +74,11 @@ public class VisitEditor {
      * The patient history query.
      */
     private final PatientHistoryQuery query;
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * The invoice CRUD window.
@@ -145,16 +152,18 @@ public class VisitEditor {
 
 
     /**
-     * Constructs a <tt>VisitEditor</tt>.
+     * Constructs a {@code VisitEditor}.
      *
      * @param patient the patient
      * @param event   the <em>act.patientClinicalEvent</em>
      * @param invoice the invoice
      * @param context the context
+     * @param help    the help context
      */
-    public VisitEditor(Party patient, Act event, FinancialAct invoice, Context context) {
+    public VisitEditor(Party patient, Act event, FinancialAct invoice, Context context, HelpContext help) {
         this.patient = patient;
         this.event = event;
+        this.help = help;
 
         query = PatientHistoryQueryFactory.create(patient, context.getPractice());
         query.setAllDates(true);
@@ -167,9 +176,9 @@ public class VisitEditor {
         chargeWindow = createVisitChargeCRUDWindow(event, context);
         chargeWindow.setObject(invoice);
 
-        reminderWindow = new ReminderBrowserCRUDWindow(patient);
+        reminderWindow = new ReminderBrowserCRUDWindow(patient, help);
 
-        documentWindow = new VisitDocumentCRUDWindow(context);
+        documentWindow = new VisitDocumentCRUDWindow(context, help);
     }
 
     /**
@@ -304,7 +313,7 @@ public class VisitEditor {
      * @return a new visit browser CRUD window
      */
     protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
-        return new VisitBrowserCRUDWindow(query, context);
+        return new VisitBrowserCRUDWindow(query, context, help);
     }
 
     /**
@@ -315,7 +324,16 @@ public class VisitEditor {
      * @return a new visit charge CRUD window
      */
     protected VisitChargeCRUDWindow createVisitChargeCRUDWindow(Act event, Context context) {
-        return new VisitChargeCRUDWindow(event, context);
+        return new VisitChargeCRUDWindow(event, context, help);
+    }
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    protected HelpContext getHelpContext() {
+        return help;
     }
 
     /**
@@ -358,7 +376,7 @@ public class VisitEditor {
      */
     private void addDocumentsTab(TabPaneModel model) {
         Query<DocumentAct> query = new PatientDocumentQuery<DocumentAct>(patient);
-        documentBrowser = BrowserFactory.create(query);
+        documentBrowser = BrowserFactory.create(query, new DefaultLayoutContext(help));
         BrowserCRUDWindow<DocumentAct> window = new BrowserCRUDWindow<DocumentAct>(documentBrowser, documentWindow);
         addTab(4, "button.document", model, window.getComponent());
     }

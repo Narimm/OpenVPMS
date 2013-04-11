@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.util;
@@ -27,6 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.list.KeyListBox;
@@ -40,8 +39,7 @@ import java.util.List;
 /**
  * {@link IMObject} creator.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public final class IMObjectCreator {
 
@@ -55,8 +53,7 @@ public final class IMObjectCreator {
      * Create a new object of the specified archetype.
      *
      * @param shortName the archetype shortname
-     * @return a new object, or <code>null</code> if the short name is not
-     *         known
+     * @return a new object, or {@code null} if the short name is not known
      */
     public static IMObject create(String shortName) {
         IMObject result = null;
@@ -65,8 +62,7 @@ public final class IMObjectCreator {
             result = service.create(shortName);
             if (result == null) {
                 String title = Messages.get("imobject.create.failed.title");
-                String message = Messages.get("imobject.create.noarchetype",
-                                              shortName);
+                String message = Messages.get("imobject.create.noarchetype", shortName);
                 ErrorHelper.show(title, message);
             }
         } catch (OpenVPMSException exception) {
@@ -97,9 +93,8 @@ public final class IMObjectCreator {
      * @param shortNames the archetype shortnames
      * @param listener   the listener to notify
      */
-    public static void create(String type, String[] shortNames,
-                              final IMObjectCreatorListener listener) {
-        create(type, shortNames, null, listener);
+    public static void create(String type, String[] shortNames, final IMObjectCreatorListener listener) {
+        create(type, shortNames, null, listener, null);
     }
 
     /**
@@ -107,9 +102,11 @@ public final class IMObjectCreator {
      *
      * @param archetypes the set of possible archetypes to create
      * @param listener   the listener to notify
+     * @param help       the help context. May be {@code null}
      */
-    public static void create(Archetypes archetypes, IMObjectCreatorListener listener) {
-        create(archetypes.getDisplayName(), archetypes.getShortNames(), archetypes.getDefaultShortName(), listener);
+    public static void create(Archetypes archetypes, IMObjectCreatorListener listener, HelpContext help) {
+        create(archetypes.getDisplayName(), archetypes.getShortNames(), archetypes.getDefaultShortName(), listener,
+               help);
     }
 
     /**
@@ -118,11 +115,12 @@ public final class IMObjectCreator {
      *
      * @param type             the type of object being created, for display purposes
      * @param shortNames       the archetype shortnames
-     * @param defaultShortName the default short name. May be <tt>null</tt>
+     * @param defaultShortName the default short name. May be {@code null}
      * @param listener         the listener to notify
+     * @param help             the help context. May be {@code null}
      */
     public static void create(String type, String[] shortNames, String defaultShortName,
-                              final IMObjectCreatorListener listener) {
+                              final IMObjectCreatorListener listener, HelpContext help) {
         shortNames = DescriptorHelper.getShortNames(shortNames);
         if (shortNames.length == 0) {
             String title = Messages.get("imobject.create.noshortnames");

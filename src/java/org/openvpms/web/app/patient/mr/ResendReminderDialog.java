@@ -38,6 +38,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -92,17 +93,18 @@ class ResendReminderDialog extends PopupDialog {
 
 
     /**
-     * Creates a new <tt>ResendReminderDialog</tt>.
+     * Constructs a {@code ResendReminderDialog}.
      *
      * @param reminder       the reminder
      * @param contacts       the customer's email and location contacts
      * @param reminderCounts the reminder counts that may be (re)sent
      * @param reminderCount  the current reminder count
      * @param processor      the reminder processor
+     * @param help           the help context
      */
     private ResendReminderDialog(Act reminder, List<Contact> contacts, List<Integer> reminderCounts,
-                                 int reminderCount, ReminderProcessor processor) {
-        super(Messages.get("patient.reminder.resend.title"), OK_CANCEL);
+                                 int reminderCount, ReminderProcessor processor, HelpContext help) {
+        super(Messages.get("patient.reminder.resend.title"), OK_CANCEL, help);
         this.reminder = reminder;
         this.reminderCount = reminderCount;
         this.processor = processor;
@@ -126,12 +128,13 @@ class ResendReminderDialog extends PopupDialog {
     }
 
     /**
-     * Creates a new <tt>ResendReminderDialog</tt> for the supplied reminder.
+     * Creates a new {@code ResendReminderDialog} for the supplied reminder.
      *
      * @param reminder the reminder
-     * @return a new resend dialog, or <tt>null</tt> if the reminder can't be resent
+     * @param help     the help context
+     * @return a new resend dialog, or {@code null} if the reminder can't be resent
      */
-    public static ResendReminderDialog create(Act reminder) {
+    public static ResendReminderDialog create(Act reminder, HelpContext help) {
         ResendReminderDialog result = null;
         IMObjectBean bean = new IMObjectBean(reminder);
         int reminderCount = bean.getInt("reminderCount");
@@ -149,7 +152,7 @@ class ResendReminderDialog extends PopupDialog {
             if (contacts != null && !contacts.isEmpty()) {
                 List<Integer> counts = getReminderCounts(event.getReminderType(), reminderCount);
                 if (!counts.isEmpty()) {
-                    result = new ResendReminderDialog(reminder, contacts, counts, reminderCount, processor);
+                    result = new ResendReminderDialog(reminder, contacts, counts, reminderCount, processor, help);
                 } else {
                     ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.get("patient.reminder.resend.notemplates",
                                                                              event.getReminderType().getName(),
@@ -200,8 +203,9 @@ class ResendReminderDialog extends PopupDialog {
                 }
                 GlobalContext context = GlobalContext.getInstance();
                 CustomerMailContext mailContext = CustomerMailContext.create(event.getCustomer(), event.getPatient(),
-                                                                             context);
-                final ReminderGenerator generator = new ReminderGenerator(event, context, mailContext);
+                                                                             context, getHelpContext());
+                final ReminderGenerator generator = new ReminderGenerator(event, context, mailContext,
+                                                                          getHelpContext());
                 generator.setUpdateOnCompletion(false);
                 generator.setListener(new BatchProcessorListener() {
                     public void completed() {

@@ -21,6 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.openvpms.web.app.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -39,8 +40,10 @@ public class VisitCRUDWindow extends PatientHistoryCRUDWindow {
      * Constructs a {@code VisitCRUDWindow}.
      *
      * @param context the context
+     * @param help    the help context
      */
-    public VisitCRUDWindow(Context context) {
+    public VisitCRUDWindow(Context context, HelpContext help) {
+        super(help);
         this.context = context;
     }
 

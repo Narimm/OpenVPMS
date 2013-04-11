@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.note;
@@ -22,21 +20,22 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
-import org.openvpms.web.component.subsystem.DefaultCRUDWindow;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.subsystem.DefaultCRUDWindow;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
 
 /**
  * Customer note workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class NoteAlertWorkspace extends CustomerActWorkspace<Act> {
 
@@ -57,10 +56,10 @@ public class NoteAlertWorkspace extends CustomerActWorkspace<Act> {
 
 
     /**
-     * Constructs a new <tt>NoteAlertWorkspace</tt>.
+     * Constructs a new {@code NoteAlertWorkspace}.
      */
-    public NoteAlertWorkspace() {
-        super("customer", "note");
+    public NoteAlertWorkspace(Context context) {
+        super("customer", "note", context);
         setChildArchetypes(Act.class, SHORT_NAMES);
         alertArchetypes = Archetypes.create(CustomerAlertQuery.CUSTOMER_ALERT, Act.class);
         noteArchetypes = Archetypes.create(NoteQuery.CUSTOMER_NOTE, Act.class);
@@ -72,7 +71,7 @@ public class NoteAlertWorkspace extends CustomerActWorkspace<Act> {
      * @return a {@link NoteCRUDWindow}, as this is the first view.
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new NoteCRUDWindow(noteArchetypes);
+        return new NoteCRUDWindow(noteArchetypes, getHelpContext());
     }
 
     /**
@@ -93,7 +92,7 @@ public class NoteAlertWorkspace extends CustomerActWorkspace<Act> {
     @Override
     protected Browser<Act> createBrowser(Query<Act> query) {
         Query<Act> alertsQuery = new CustomerAlertQuery(getObject());
-        NoteAlertBrowser browser = new NoteAlertBrowser(query, alertsQuery);
+        NoteAlertBrowser browser = new NoteAlertBrowser(query, alertsQuery, new DefaultLayoutContext(getHelpContext()));
         browser.setListener(new TabbedBrowserListener() {
             public void onBrowserChanged() {
                 changeCRUDWindow();
@@ -121,9 +120,9 @@ public class NoteAlertWorkspace extends CustomerActWorkspace<Act> {
         NoteAlertBrowser browser = (NoteAlertBrowser) getBrowser();
         CRUDWindow<Act> window;
         if (browser.isAlertsBrowser()) {
-            window = new DefaultCRUDWindow<Act>(alertArchetypes);
+            window = new DefaultCRUDWindow<Act>(alertArchetypes, getHelpContext());
         } else {
-            window = new DefaultCRUDWindow<Act>(noteArchetypes);
+            window = new DefaultCRUDWindow<Act>(noteArchetypes, getHelpContext());
         }
 
         Act selected = browser.getSelected();

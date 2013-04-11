@@ -34,6 +34,7 @@ import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.app.workflow.TestEditVisitTask;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.DefaultActEditor;
@@ -74,7 +75,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
 
 
     /**
-     * Constructs a <tt>WorkflowRunner</tt>.
+     * Constructs a {@code WorkflowRunner}.
      *
      * @param appointment the appointment
      * @param practice    the practice
@@ -83,13 +84,13 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
     public CheckInWorkflowRunner(Act appointment, Party practice, Context context) {
         super(practice);
         this.appointment = appointment;
-        setWorkflow(new TestCheckInWorkflow(appointment, context));
+        setWorkflow(new TestCheckInWorkflow(appointment, context, new HelpContext("foo", null)));
     }
 
     /**
      * Sets the patient used for patient selection.
      *
-     * @param patient the patient. May be <tt>null</tt>
+     * @param patient the patient. May be {@code null}
      */
     public void setPatient(Party patient) {
         getWorkflow().setPatient(patient);
@@ -98,7 +99,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
     /**
      * Sets the work list used for work list selection.
      *
-     * @param workList the work list. May be <tt>null</tt>
+     * @param workList the work list. May be {@code null}
      */
     public void setWorkList(Party workList) {
         getWorkflow().setWorkList(workList);
@@ -231,8 +232,8 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
     /**
      * Verifies the context has an <em>act.patientClinicalEvent</em> for the specified patient.
      *
-     * @param patient   the expected patient. May be <tt>null</tt>
-     * @param clinician the expected clinician. May be <tt>null</tt>
+     * @param patient   the expected patient. May be {@code null}
+     * @param clinician the expected clinician. May be {@code null}
      * @param status    the expected status
      */
     public void checkEvent(Party patient, User clinician, String status) {
@@ -248,7 +249,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
     /**
      * Verifies the context has an <em>act.customerAccountChargesInvoice</em>.
      *
-     * @param clinician the expected clinician. May be <tt>null</tt>
+     * @param clinician the expected clinician. May be {@code null}
      * @param amount    the expected amount
      * @param status    the expected status
      * @param saved     if {@code} true, indicates that the invoice as been saved
@@ -301,9 +302,9 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
     /**
      * Verifies that the workflow is completed.
      *
-     * @param appointmentUpdated if <tt>true</tt> expect the appointment to be <em>CHECKED_IN</em>
-     * @param customer           the expected context customer. May be <tt>null</tt>
-     * @param patient            the expected context patient. May be <tt>null</tt>
+     * @param appointmentUpdated if {@code true} expect the appointment to be <em>CHECKED_IN</em>
+     * @param customer           the expected context customer. May be {@code null}
+     * @param patient            the expected context patient. May be {@code null}
      * @param context            the context to check
      */
     public void checkComplete(boolean appointmentUpdated, Party customer, Party patient, Context context) {
@@ -343,12 +344,13 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
         private Party workList;
 
         /**
-         * Constructs a <tt>TestCheckInWorkflow</tt> from an appointment.
+         * Constructs a {@code TestCheckInWorkflow} from an appointment.
          *
          * @param appointment the appointment
          * @param context     the context
          */
-        public TestCheckInWorkflow(Act appointment, Context context) {
+        public TestCheckInWorkflow(Act appointment, Context context, HelpContext help) {
+            super(help);
             this.appointment = appointment;
             this.context = context;
         }
@@ -356,7 +358,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
         /**
          * Sets the patient to pre-populate the patient selection browser with.
          *
-         * @param patient the patient. May be <tt>null</tt>
+         * @param patient the patient. May be {@code null}
          */
         public void setPatient(Party patient) {
             this.patient = patient;
@@ -365,7 +367,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
         /**
          * Sets the work-list to pre-populate the work-list selection browser with.
          *
-         * @param workList the work-list. May be <tt>null</tt>
+         * @param workList the work-list. May be {@code null}
          */
         public void setWorkList(Party workList) {
             this.workList = workList;
@@ -376,7 +378,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
          */
         @Override
         public void start() {
-            initialise(appointment, context);
+            initialise(appointment, context, new HelpContext("foo", null));
             super.start();
         }
 

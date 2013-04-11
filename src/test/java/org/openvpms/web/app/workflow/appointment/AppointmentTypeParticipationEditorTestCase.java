@@ -12,30 +12,29 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.workflow.appointment;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.test.AbstractAppTest;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * Tests the {@link AppointmentTypeParticipationEditor}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class AppointmentTypeParticipationEditorTestCase extends AbstractAppTest {
 
@@ -46,7 +45,7 @@ public class AppointmentTypeParticipationEditorTestCase extends AbstractAppTest 
     public void testValidate() {
         Act appointment = (Act) create(ScheduleArchetypes.APPOINTMENT);
         Participation type = (Participation) create(ScheduleArchetypes.APPOINTMENT_TYPE_PARTICIPATION);
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
         AppointmentTypeParticipationEditor editor = new AppointmentTypeParticipationEditor(type, appointment, context);
         assertFalse(editor.isValid());
 

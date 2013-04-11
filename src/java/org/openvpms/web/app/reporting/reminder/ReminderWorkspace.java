@@ -73,7 +73,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
 
 
     /**
-     * Construct a new <tt>ReminderWorkspace</tt>.
+     * Constructs a {@code ReminderWorkspace}.
      */
     public ReminderWorkspace() {
         super("reporting", "reminder", Act.class);
@@ -89,13 +89,13 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         query = new PatientReminderQuery();
 
         // create a layout context, with hyperlinks enabled
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(getHelpContext());
         TableComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
 
         PatientReminderTableModel model = new PatientReminderTableModel(context);
-        browser = new DefaultIMObjectTableBrowser<Act>(query, model);
+        browser = new DefaultIMObjectTableBrowser<Act>(query, model, context);
 
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
@@ -141,7 +141,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
                 ReminderEvent event = processor.process(reminder, reminderCount);
                 if (event.getDocumentTemplate() != null) {
                     GlobalContext context = GlobalContext.getInstance();
-                    CustomerMailContext mailContext = CustomerMailContext.create(reminder, context);
+                    CustomerMailContext mailContext = CustomerMailContext.create(reminder, context, getHelpContext());
                     if (mailContext != null) {
 
                         DocumentTemplate template = new DocumentTemplate(event.getDocumentTemplate(),
@@ -149,7 +149,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
                         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, reminder,
                                                                                              context);
                         InteractivePrinter printer = new InteractivePrinter(
-                                new IMObjectReportPrinter<Act>(reminder, locator));
+                                new IMObjectReportPrinter<Act>(reminder, locator), getHelpContext());
                         printer.setMailContext(mailContext);
                         printer.print();
                     }
@@ -190,8 +190,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(objects, ReminderArchetypes.REMINDER);
         String title = Messages.get("reporting.reminder.print.title");
         try {
-            InteractiveIMPrinter<Act> iPrinter
-                    = new InteractiveIMPrinter<Act>(title, printer);
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
@@ -205,7 +204,8 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
     private void generateReminders() {
         try {
             GlobalContext context = GlobalContext.getInstance();
-            ReminderGenerator generator = new ReminderGenerator(query.createReminderQuery(), context, getMailContext());
+            ReminderGenerator generator = new ReminderGenerator(query.createReminderQuery(), context, getMailContext(),
+                                                                getHelpContext());
             generateReminders(generator);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

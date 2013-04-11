@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.account;
@@ -36,6 +34,7 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -53,8 +52,7 @@ import java.util.Date;
 /**
  * CRUD window for invoices.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
@@ -90,9 +88,10 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Create a new <tt>AccountCRUDWindow</tt>.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance());
+    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
     }
 
     /**
@@ -107,6 +106,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                 onReverse();
             }
         });
+
         Button adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onAdjust();

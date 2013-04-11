@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.order;
@@ -28,7 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.supplier.SupplierActQuery;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
@@ -48,8 +46,7 @@ import java.util.List;
 /**
  * Query for <em>act.supplierOrder</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class OrderQuery extends SupplierActQuery<FinancialAct> {
 
@@ -61,27 +58,26 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
     /**
      * The act statuses.
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses("act.supplierOrder");
+    private static final ActStatuses STATUSES = new ActStatuses("act.supplierOrder");
 
 
     /**
-     * Constructs a new <tt>OrderQuery</tt>.
+     * Constructs an {@code OrderQuery}.
      *
      * @param shortNames the act short names to query
-     * @param context    the context. May be <tt>null</tt>
+     * @param context    the context
      */
-    public OrderQuery(String[] shortNames, Context context) {
+    public OrderQuery(String[] shortNames, LayoutContext context) {
         super(shortNames, STATUSES, FinancialAct.class, context);
     }
 
     /**
      * Performs the query.
      * If constraining acts to a particular entity, the entity must be non-null
-     * or a <tt>null</tt> will be returned.
+     * or a {@code null} will be returned.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
+     * @return the query result set. May be {@code null}
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
@@ -139,8 +135,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
     /**
      * Returns the selected delivery status.
      *
-     * @return the selected delivery status, or <tt>null</tt> if no status is
-     *         selected
+     * @return the selected delivery status, or {@code null} if no status is selected
      */
     private String getDeliveryStatus() {
         return deliveryStatus.getSelectedCode();
@@ -156,8 +151,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
         String displayName = DescriptorHelper.getDisplayName(
                 "act.supplierOrder", "deliveryStatus");
         label.setText(displayName);
-        NodeLookupQuery source = new NodeLookupQuery("act.supplierOrder",
-                "deliveryStatus");
+        NodeLookupQuery source = new NodeLookupQuery("act.supplierOrder", "deliveryStatus");
         deliveryStatus = LookupFieldFactory.create(source, true);
         getFocusGroup().add(deliveryStatus);
         container.add(label);
@@ -171,13 +165,12 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
      * @param sort         the sort criteria
      * @return a new result set
      */
-    protected ResultSet<FinancialAct> createResultSet(
-            ParticipantConstraint[] participants, SortConstraint[] sort) {
+    protected ResultSet<FinancialAct> createResultSet(ParticipantConstraint[] participants, SortConstraint[] sort) {
         return new ActResultSet<FinancialAct>(getArchetypeConstraint(),
-                participants, getFrom(), getTo(),
-                getStatuses(), excludeStatuses(),
-                getConstraints(), getMaxResults(),
-                sort);
+                                              participants, getFrom(), getTo(),
+                                              getStatuses(), excludeStatuses(),
+                                              getConstraints(), getMaxResults(),
+                                              sort);
     }
 
 }

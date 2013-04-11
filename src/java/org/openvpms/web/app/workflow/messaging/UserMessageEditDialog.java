@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.ValidationHelper;
@@ -32,8 +33,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+
 /**
- * Enter description.
+ * A dialog for editing user messages.
  *
  * @author Tim Anderson
  */
@@ -53,9 +55,10 @@ public class UserMessageEditDialog extends EditDialog {
      * Constructs a {@code UserMessageEditDialog}.
      *
      * @param editor the editor
+     * @param help   the help context
      */
-    public UserMessageEditDialog(UserMessageEditor editor) {
-        super(editor, SEND_CANCEL, false);
+    public UserMessageEditDialog(UserMessageEditor editor, HelpContext help) {
+        super(editor, SEND_CANCEL, false, help);
         setStyleName("UserMessageEditDialog");
     }
 

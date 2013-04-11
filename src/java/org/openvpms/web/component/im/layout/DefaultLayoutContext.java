@@ -12,50 +12,64 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.layout;
 
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
 /**
- * Default implmentation of the {@link LayoutContext} interface.
+ * Default implementation of the {@link LayoutContext} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DefaultLayoutContext extends AbstractLayoutContext {
 
     /**
-     * Construct a new <tt>DefaultLayoutContext</tt>.
-     */
-    public DefaultLayoutContext() {
-    }
-
-    /**
-     * Construct a new <tt>DefaultLayoutContext</tt>.
+     * Constructs a {@code DefaultLayoutContext}.
      *
-     * @param edit if <tt>true</tt> this is an edit context; if
-     *             <tt>false</tt> it is a view context.
+     * @param help the help context
      */
-    public DefaultLayoutContext(boolean edit) {
-        super(edit);
+    public DefaultLayoutContext(HelpContext help) {
+        super(help);
     }
 
     /**
-     * Construct a new <tt>DefaultLayoutContext</tt>.
+     * Constructs a {@code DefaultLayoutContext}.
      *
-     * @param factory the component factory. May  be <tt>null</tt>
+     * @param context the context
+     * @param help    the help context
      */
-    public DefaultLayoutContext(IMObjectComponentFactory factory) {
-        super(factory);
+    public DefaultLayoutContext(Context context, HelpContext help) {
+        super(help);
+        setContext(context);
     }
 
     /**
-     * Construct a new <tt>DefaultLayoutContext</tt> from an existing
+     * Constructs a new {@code DefaultLayoutContext}.
+     *
+     * @param edit if {@code true} this is an edit context; if {@code false} it is a view context.
+     * @param help the help context
+     */
+    public DefaultLayoutContext(boolean edit, HelpContext help) {
+        super(edit, help);
+    }
+
+    /**
+     * Construct a new {@code DefaultLayoutContext}.
+     *
+     * @param factory the component factory. May  be {@code null}
+     * @param help    the help context
+     */
+    public DefaultLayoutContext(IMObjectComponentFactory factory, HelpContext help) {
+        super(factory, help);
+    }
+
+    /**
+     * Construct a new {@code DefaultLayoutContext} from an existing
      * layout context. Increases the layout depth by 1.
      *
      * @param context the context

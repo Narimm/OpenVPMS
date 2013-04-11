@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.util;
@@ -29,6 +27,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -42,8 +41,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Handles deletion of {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public abstract class IMObjectDeletor {
 
@@ -52,8 +50,9 @@ public abstract class IMObjectDeletor {
      *
      * @param object   the object to delete
      * @param listener the listener to notify
+     * @param help     the help context
      */
-    public <T extends IMObject> void delete(T object, IMObjectDeletionListener<T> listener) {
+    public <T extends IMObject> void delete(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
         try {
             if (object instanceof Entity) {
                 Entity entity = (Entity) object;
@@ -70,12 +69,12 @@ public abstract class IMObjectDeletor {
                         deactivated(object);
                     }
                 } else if (hasRelationships(entity)) {
-                    removeWithRelationships(object, listener);
+                    removeWithRelationships(object, listener, help);
                 } else {
-                    remove(object, listener);
+                    remove(object, listener, help);
                 }
             } else {
-                remove(object, listener);
+                remove(object, listener, help);
             }
         } catch (Throwable exception) {
             listener.failed(object, exception);
@@ -87,17 +86,20 @@ public abstract class IMObjectDeletor {
      *
      * @param object   the object to remove
      * @param listener the listener to notify
+     * @param help     the help context
      */
-    protected abstract <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener);
+    protected abstract <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener,
+                                                        HelpContext help);
 
     /**
-     * Invoked to remove anobject that has {@link EntityRelationship}s to other objects.
+     * Invoked to remove an object that has {@link EntityRelationship}s to other objects.
      *
      * @param object   the object to remove
      * @param listener the listener to notify
+     * @param help     the help context
      */
-    protected abstract <T extends IMObject> void removeWithRelationships(T object,
-                                                                         IMObjectDeletionListener<T> listener);
+    protected abstract <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener,
+                                                                         HelpContext help);
 
     /**
      * Invoked to deactivate an object.
@@ -120,12 +122,14 @@ public abstract class IMObjectDeletor {
      *
      * @param object   the object to delete
      * @param listener the listener to notify
+     * @param help     the help context
      * @return <tt>true</tt> if the object was deleted successfully
      */
-    protected <T extends IMObject> boolean doRemove(final T object, final IMObjectDeletionListener<T> listener) {
+    protected <T extends IMObject> boolean doRemove(final T object, final IMObjectDeletionListener<T> listener,
+                                                    HelpContext help) {
         boolean removed = false;
         try {
-            DefaultLayoutContext context = new DefaultLayoutContext(true);
+            DefaultLayoutContext context = new DefaultLayoutContext(true, help);
             context.setDeletionListener(new DeletionListenerAdapter<T>(object, listener));
             final IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
             TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());

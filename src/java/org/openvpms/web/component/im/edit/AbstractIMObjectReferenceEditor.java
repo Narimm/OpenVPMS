@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit;
@@ -31,6 +29,7 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
@@ -52,14 +51,13 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Abstract implementation of the {@link IMObjectReferenceEditor} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         extends AbstractPropertyEditor implements IMObjectReferenceEditor<T> {
 
     /**
-     * The parent object. May be <tt>null</tt>
+     * The parent object. May be {@code null}
      */
     private final IMObject parent;
 
@@ -81,39 +79,37 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     private final ModifiableListener propertyListener;
 
     /**
-     * The context.
+     * The layout context.
      */
-    private final Context context;
+    private final LayoutContext context;
 
 
     /**
-     * Constructs a new <tt>AbstractIMObjectReferenceEditor</tt>.
+     * Constructs an {@code AbstractIMObjectReferenceEditor}.
      *
      * @param property the reference property
-     * @param parent   the parent object. May be <tt>null</tt>
+     * @param parent   the parent object. May be {@code null}
      * @param context  the layout context
      */
-    public AbstractIMObjectReferenceEditor(Property property,
-                                           IMObject parent,
-                                           LayoutContext context) {
+    public AbstractIMObjectReferenceEditor(Property property, IMObject parent, LayoutContext context) {
         this(property, parent, context, false);
     }
 
     /**
-     * Constructs a new <tt>AbstractIMObjectReferenceEditor</tt>.
+     * Constructs an {@code AbstractIMObjectReferenceEditor}.
      *
      * @param property    the reference property
-     * @param parent      the parent object. May be <tt>null</tt>
+     * @param parent      the parent object. May be {@code null}
      * @param context     the layout context
      * @param allowCreate determines if objects may be created
      */
-    public AbstractIMObjectReferenceEditor(Property property,
-                                           IMObject parent,
-                                           LayoutContext context,
+    public AbstractIMObjectReferenceEditor(Property property, IMObject parent, LayoutContext context,
                                            boolean allowCreate) {
         super(property);
         this.parent = parent;
-        selector = new IMObjectSelector<T>(property, allowCreate) {
+        this.context = context;
+
+        selector = new IMObjectSelector<T>(property, allowCreate, context) {
             @Override
             protected Query<T> createQuery(String name) {
                 return AbstractIMObjectReferenceEditor.this.createQuery(name);
@@ -146,8 +142,6 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         // For OVPMS-967, don't allow focus traversal
         selector.getSelect().setFocusTraversalParticipant(false);
 
-        this.context = context.getContext();
-
         updateSelector();
 
         propertyListener = new ModifiableListener() {
@@ -171,7 +165,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Sets the value of the reference to the supplied object.
      *
-     * @param object the object. May  be <tt>null</tt>
+     * @param object the object. May  be {@code null}
      */
     public boolean setObject(T object) {
         if (!inListener) {
@@ -202,8 +196,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Determines if the reference is null.
      * This treats an entered but incorrect name as being non-null.
      *
-     * @return <tt>true</tt>  if the reference is null; otherwise
-     *         <tt>false</tt>
+     * @return {@code true}  if the reference is null; otherwise
+     *         {@code false}
      */
     public boolean isNull() {
         boolean result = false;
@@ -216,7 +210,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Determines if objects may be created.
      *
-     * @param create if <tt>true</tt>, objects may be created
+     * @param create if {@code true}, objects may be created
      */
     public void setAllowCreate(boolean create) {
         selector.setAllowCreate(create);
@@ -225,7 +219,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Determines if objects may be created.
      *
-     * @return <tt>true</tt> if objects may be created
+     * @return {@code true} if objects may be created
      */
     public boolean allowCreate() {
         return selector.allowCreate();
@@ -235,7 +229,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         boolean result = false;
@@ -256,7 +250,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * <p/>
      * This implementation simply invokes {@link #setObject}.
      *
-     * @param object the selected object. May be <tt>null</tt>
+     * @param object the selected object. May be {@code null}
      */
     protected void onSelected(T object) {
         setObject(object);
@@ -267,7 +261,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * <p/>
      * This implementation delegates to {@link #onSelected(IMObject)}.
      *
-     * @param object  the selected object. May be <tt>null</tt>
+     * @param object  the selected object. May be {@code null}
      * @param browser the browser
      */
     protected void onSelected(T object, Browser<T> browser) {
@@ -279,7 +273,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * <p/>
      * This implementation is a no-op.
      *
-     * @param object the updated object. May be <tt>null</tt>
+     * @param object the updated object. May be {@code null}
      */
     protected void onUpdated(T object) {
     }
@@ -309,12 +303,13 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * @param object the object to edit
      */
     protected void onCreated(IMObject object) {
-        Context context = new LocalContext(this.context);
+        Context context = new LocalContext(this.context.getContext());
         context.setCurrent(object);
-        LayoutContext layoutContext = new DefaultLayoutContext(true);
+        HelpContext help = this.context.getHelpContext();
+        LayoutContext layoutContext = new DefaultLayoutContext(true, help);
         layoutContext.setContext(context);
         final IMObjectEditor editor = IMObjectEditorFactory.create(object, parent, layoutContext);
-        final EditDialog dialog = EditDialogFactory.create(editor);
+        final EditDialog dialog = EditDialogFactory.create(editor, help);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 getFocusGroup().setFocus(); // restore focus
@@ -340,14 +335,13 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Creates a query to select objects.
      *
-     * @param name the name to filter on. May be <tt>null</tt>
+     * @param name the name to filter on. May be {@code null}
      * @return a new query
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     protected Query<T> createQuery(String name) {
         String[] shortNames = getProperty().getArchetypeRange();
-        Query<T> query = QueryFactory.create(shortNames, context);
+        Query<T> query = QueryFactory.create(shortNames, context.getContext());
         query.setValue(name);
         return query;
     }
@@ -358,6 +352,15 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * @return the context
      */
     protected Context getContext() {
+        return context.getContext();
+    }
+
+    /**
+     * Returns the layout context.
+     *
+     * @return the layout context
+     */
+    protected LayoutContext getLayoutContext() {
         return context;
     }
 
@@ -374,7 +377,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Updates the selector from the property.
      *
-     * @return the current object, or <tt>null</tt> if there is none
+     * @return the current object, or {@code null} if there is none
      */
     private T updateSelector() {
         T object = getObject();
@@ -385,7 +388,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Returns the object corresponding to the reference.
      *
-     * @return the object, or <tt>null</tt> if the reference is <tt>null</tt> or the object no
+     * @return the object, or {@code null} if the reference is {@code null} or the object no
      *         longer exists
      */
     @SuppressWarnings("unchecked")
@@ -394,9 +397,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         IMObjectReference reference = (IMObjectReference) property.getValue();
         T object = null;
         if (reference != null) {
-            object = (T) IMObjectHelper.getObject(reference,
-                                                  property.getArchetypeRange(),
-                                                  context);
+            object = (T) IMObjectHelper.getObject(reference, property.getArchetypeRange(), context.getContext());
         }
         return object;
     }
@@ -404,8 +405,8 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     /**
      * Updates the underlying property, notifying any registered listeners.
      *
-     * @param object the object. May be <tt>null</tt>
-     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it cannot be set due to error, or is the same as
+     * @param object the object. May be {@code null}
+     * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
      *         the existing value
      */
     private boolean updateProperty(IMObject object) {
@@ -431,7 +432,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * Determines if the reference is valid.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the reference is valid, otherwise <tt>false</tt>
+     * @return {@code true} if the reference is valid, otherwise {@code false}
      */
     protected boolean isValidReference(Validator validator) {
         IMObjectReference reference = (IMObjectReference) getProperty().getValue();
@@ -454,7 +455,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      * This implementation determines if the query returned by {#link #createQuery} selects the reference.
      *
      * @param reference the reference to check
-     * @return <tt>true</tt> if the query selects the reference
+     * @return {@code true} if the query selects the reference
      */
     protected boolean isValidReference(IMObjectReference reference) {
         Query<T> query = createQuery(null);

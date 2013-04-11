@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.subsystem;
@@ -29,6 +27,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -44,11 +43,9 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Workspace that provides an optional selector to select the object for
- * viewing.
+ * Workspace that provides an optional selector to select the object for viewing.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractViewWorkspace<T extends IMObject> extends AbstractWorkspace<T> {
 
@@ -69,48 +66,43 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
 
 
     /**
-     * Constructs a new <tt>AbstractViewWorkspace</tt>.
+     * Constructs an {@code AbstractViewWorkspace}.
      * <p/>
-     * The {@link #setArchetypes} method must be invoked to set archetypes
-     * that the workspace supports, before performing any operations.
+     * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
+     * performing any operations.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
+     * @param workspaceId the workspace localisation identifier
      */
     public AbstractViewWorkspace(String subsystemId, String workspaceId) {
         this(subsystemId, workspaceId, null);
     }
 
     /**
-     * Constructs a new <tt>AbstractViewWorkspace</tt>.
+     * Constructs a new {@code AbstractViewWorkspace}.
      * <p/>
      * If no archetypes are supplied, the {@link #setArchetypes} method must
      * before performing any operations.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
-     * @param archetypes  the archetype that this operates on.
-     *                    May be <tt>null</tt>
+     * @param workspaceId the workspace localisation identifier
+     * @param archetypes  the archetype that this operates on. May be {@code null}
      */
-    public AbstractViewWorkspace(String subsystemId, String workspaceId,
-                                 Archetypes<T> archetypes) {
+    public AbstractViewWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes) {
         this(subsystemId, workspaceId, archetypes, true);
     }
 
     /**
-     * Constructs a new <tt>AbstractViewWorkspace</tt>.
+     * Constructs an {@code AbstractViewWorkspace}.
      * <p/>
-     * If no archetypes are supplied, the {@link #setArchetypes} method must
-     * before performing any operations.
+     * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
      * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param archetypes   the archetype that this operates on.
-     *                     May be <tt>null</tt>
-     * @param showSelector if <tt>true</tt>, show the selector
+     * @param workspaceId  the workspace localisation identifier
+     * @param archetypes   the archetype that this operates on. May be {@code null}
+     * @param showSelector if {@code true}, show the selector
      */
-    public AbstractViewWorkspace(String subsystemId, String workspaceId,
-                                 Archetypes<T> archetypes,
+    public AbstractViewWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes,
                                  boolean showSelector) {
         super(subsystemId, workspaceId);
         this.archetypes = archetypes;
@@ -122,7 +114,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
     /**
      * Sets the current object, updating the selector if present.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     public void setObject(T object) {
         super.setObject(object);
@@ -136,7 +128,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * Determines if the workspace can be updated with instances of the specified archetype.
      *
      * @param shortName the archetype's short name
-     * @return <tt>true</tt> if <tt>shortName</tt> is one of those in {@link #getArchetypes()}
+     * @return {@code true} if {@code shortName} is one of those in {@link #getArchetypes()}
      */
     public boolean canUpdate(String shortName) {
         return archetypes.contains(shortName);
@@ -187,7 +179,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
     /**
      * Returns the archetype this operates on.
      *
-     * @return the archetypes, or <tt>null</tt> if none has been set
+     * @return the archetypes, or {@code null} if none has been set
      */
     protected Archetypes<T> getArchetypes() {
         return archetypes;
@@ -235,8 +227,8 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
     protected SplitPane createRootComponent() {
         int orientation = SplitPane.ORIENTATION_VERTICAL;
         String style = (selector != null)
-                       ? "AbstractViewWorkspace.Layout"
-                       : "AbstractViewWorkspace.LayoutNoSelector";
+                ? "AbstractViewWorkspace.Layout"
+                : "AbstractViewWorkspace.LayoutNoSelector";
         return SplitPaneFactory.create(orientation, style);
     }
 
@@ -294,7 +286,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      */
     protected BrowserDialog<T> createBrowserDialog(Browser<T> browser) {
         String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
-        return new BrowserDialog<T>(title, browser);
+        return new BrowserDialog<T>(title, browser, getHelpContext());
     }
 
     /**
@@ -305,7 +297,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      *                                 archetypes
      */
     protected Browser<T> createSelectBrowser() {
-        return BrowserFactory.create(createSelectQuery());
+        return BrowserFactory.create(createSelectQuery(), new DefaultLayoutContext(getHelpContext()));
     }
 
     /**

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer;
@@ -43,8 +41,7 @@ import java.util.Date;
 /**
  * An editor for {@link Act}s that have fixed and unit prices.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public abstract class PriceActItemEditor extends ActItemEditor {
 
@@ -65,18 +62,18 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
 
     /**
-     * Creates a new <tt>PriceActItemEditor</tt>.
+     * Creates a new {@code PriceActItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act.
-     * @param context the layout context. May be <tt>null</tt>
+     * @param context the layout context. May be {@code null}
      */
     public PriceActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         Property fixedPrice = getProperty("fixedPrice");
 
         Product product = getProduct();
-        fixedEditor = new FixedPriceEditor(fixedPrice);
+        fixedEditor = new FixedPriceEditor(fixedPrice, context);
         fixedEditor.setProduct(product);
     }
 
@@ -90,7 +87,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      * @throws IllegalStateException if the product is a template
      */
     @Override
@@ -110,7 +107,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     /**
      * Invoked when the product is changed.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     @Override
     protected void productModified(Product product) {
@@ -171,7 +168,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     /**
      * Calculates the discount.
      *
-     * @return the discount, or <tt>BigDecimal.ZERO</tt> if the discount can't
+     * @return the discount, or {@code BigDecimal.ZERO} if the discount can't
      *         be calculated
      */
     protected BigDecimal calculateDiscpount() {
@@ -204,7 +201,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     /**
      * Returns the maximum discount for a product price, expressed as a percentage.
      *
-     * @param price the price. May be <tt>null</tt>
+     * @param price the price. May be {@code null}
      * @return the maximum discount for the product price, or {@link #DEFAULT_MAX_DISCOUNT} if there is no price or no
      *         discount associated with the price.
      */
@@ -221,7 +218,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * Returns the default fixed product price for the specified product.
      *
      * @param product the product
-     * @return the product price, or <tt>null</tt> if none is found
+     * @return the product price, or {@code null} if none is found
      */
     protected ProductPrice getDefaultFixedProductPrice(Product product) {
         return getProductPrice(ProductArchetypes.FIXED_PRICE, product);
@@ -231,7 +228,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * Returns the fixed product price for the specified product.
      *
      * @param product the product
-     * @return the product price, or <tt>null</tt> if none is found
+     * @return the product price, or {@code null} if none is found
      */
     protected ProductPrice getFixedProductPrice(Product product) {
         ProductPrice result = fixedEditor.getProductPrice();
@@ -245,7 +242,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * Returns the default unit product price for the specified product.
      *
      * @param product the product
-     * @return the product price, or <tt>null</tt> if none is found
+     * @return the product price, or {@code null} if none is found
      */
     protected ProductPrice getDefaultUnitProductPrice(Product product) {
         return getProductPrice(ProductArchetypes.UNIT_PRICE, product);
@@ -255,7 +252,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * Returns the unit product price for the specified product.
      *
      * @param product the product
-     * @return the product price, or <tt>null</tt> if none is found
+     * @return the product price, or {@code null} if none is found
      */
     protected ProductPrice getUnitProductPrice(Product product) {
         unitProductPrice = getProductPrice(product,
@@ -269,11 +266,11 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      *
      * @param product   the product
      * @param shortName the product price archetype short name
-     * @param current   the current product price. May be <tt>null</tt>
+     * @param current   the current product price. May be {@code null}
      * @param price     the current price
-     * @return <tt>current</tt> if it matches the specified product and price;
+     * @return {@code current} if it matches the specified product and price;
      *         or the first matching product price associated with the product,
-     *         or <tt>null</tt> if none is found
+     *         or {@code null} if none is found
      */
     private ProductPrice getProductPrice(Product product,
                                          String shortName,

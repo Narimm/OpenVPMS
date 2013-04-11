@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.subsystem;
 
@@ -22,18 +20,17 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * A CRUD workspace that provides a {@link QueryBrowser} to display objects, and a {@link ResultSetCRUDWindow}
  * to view/edit the objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends BrowserCRUDWorkspace<T, T> {
 
@@ -127,7 +124,8 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     @Override
     protected CRUDWindow<T> createCRUDWindow() {
         QueryBrowser<T> browser = getBrowser();
-        return new ResultSetCRUDWindow<T>(getArchetypes(), browser.getQuery(), browser.getResultSet());
+        return new ResultSetCRUDWindow<T>(getArchetypes(), browser.getQuery(), browser.getResultSet(),
+                                          getHelpContext());
     }
 
     /**

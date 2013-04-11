@@ -12,34 +12,34 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.app.patient.mr.PatientClinicalEventEditDialog;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
+import org.openvpms.web.app.patient.mr.PatientClinicalEventEditDialog;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.help.HelpListener;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 
 /**
- * {@link org.openvpms.web.component.im.edit.EditDialogFactory} test case.
+ * {@link EditDialogFactory} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class EditDialogFactoryTestCase extends AbstractAppTest {
 
@@ -95,20 +95,23 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that the editor returned by {@link org.openvpms.web.component.im.edit.IMObjectEditorFactory#create}
-     * matches that expected.
+     * Verifies that the dialog returned by {@link EditDialogFactory#create} matches that expected.
      *
      * @param shortName name the archetype short name
      * @param type      the expected editor class
      */
     private void checkCreate(String shortName, Class type) {
-        LayoutContext context = new DefaultLayoutContext();
+        HelpContext help = new HelpContext("dummy", new HelpListener() {
+            public void show(HelpContext context) {
+            }
+        });
+        LayoutContext context = new DefaultLayoutContext(help);
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName, object);
         IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
-        EditDialog dialog = EditDialogFactory.create(editor);
-        assertNotNull("Failed to create editor", editor);
-        assertEquals(type, dialog.getClass());
+        assertNotNull("Failed to create editor for shortname=" + shortName, editor);
+        EditDialog dialog = EditDialogFactory.create(editor, help);
+        assertEquals("Incorrect dialog type for shortname=" + shortName, type, dialog.getClass());
     }
 
 }

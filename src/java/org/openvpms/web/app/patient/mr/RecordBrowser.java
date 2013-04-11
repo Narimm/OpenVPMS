@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.mr;
@@ -26,6 +24,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
@@ -47,11 +48,10 @@ import java.util.List;
 
 /**
  * Patient record browser.
- * <p>
+ * <p/>
  * TODO - refactor to use TabbedBrowser.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class RecordBrowser implements Browser<Act> {
 
@@ -129,25 +129,23 @@ public class RecordBrowser implements Browser<Act> {
      * @param reminderAlert query for reminders/alerts
      * @param document      query for documents
      * @param charges       query for charges
+     * @param help          the help context
      */
     public RecordBrowser(PatientHistoryQuery history, Query<Act> problems,
                          Query<Act> reminderAlert, Query<Act> document,
-                         Query<Act> charges) {
-        this.summary = new PatientHistoryBrowser(history);
-        this.problems = BrowserFactory.create(problems);
+                         Query<Act> charges, HelpContext help) {
+        LayoutContext context = new DefaultLayoutContext(help);
+        this.summary = new PatientHistoryBrowser(history, context);
+        this.problems = BrowserFactory.create(problems, context);
 
         // todo - should be able to register ReminderActTableModel in
         // IMObjectTableFactory.properties for act.patientReminder and
         // act.patientAlert
-        IMObjectTableModel<Act> model = new ReminderActTableModel(
-                reminderAlert.getShortNames());
-        this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert,
-                                                                  model);
-        this.document = BrowserFactory.create(document);
-        IMObjectTableModel<Act> chargeModel = new ChargesActTableModel(
-                charges.getShortNames());
-        this.charges = new DefaultIMObjectTableBrowser<Act>(charges,
-                                                            chargeModel);
+        IMObjectTableModel<Act> model = new ReminderActTableModel(reminderAlert.getShortNames(), context);
+        this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert, model, context);
+        this.document = BrowserFactory.create(document, context);
+        IMObjectTableModel<Act> chargeModel = new ChargesActTableModel(charges.getShortNames(), context);
+        this.charges = new DefaultIMObjectTableBrowser<Act>(charges, chargeModel, context);
     }
 
     /**

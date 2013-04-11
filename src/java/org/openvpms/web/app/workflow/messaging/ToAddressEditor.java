@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.act.ParticipationHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.AbstractIMObjectSelectorListener;
 import org.openvpms.web.component.im.select.MultiIMObjectSelector;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -78,13 +79,14 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
      *
      * @param act      the <em>act.userMessage</em>.
      * @param property the "to" participation property
+     * @param context  the layout context
      */
-    public ToAddressEditor(Act act, Property property) {
+    public ToAddressEditor(Act act, Property property, LayoutContext context) {
         participation = ParticipationHelper.getParticipation(property);
         if (participation != null) {
             participation.setAct(act.getObjectReference());
         }
-        selector = new MultiIMObjectSelector<Entity>(property.getDisplayName(), SHORT_NAMES);
+        selector = new MultiIMObjectSelector<Entity>(property.getDisplayName(), context, SHORT_NAMES);
         selector.setListener(new AbstractIMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
                 onSelected(object);

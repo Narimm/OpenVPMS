@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.admin.lookup;
 
@@ -29,28 +27,31 @@ import java.util.List;
 /**
  * Table model for <em>lookup.*</em> objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class LookupTableModel extends DescriptorTableModel<Lookup> {
 
     /**
-     * Constructs a <tt>LookupTableModel</tt>.
+     * Constructs a {@code LookupTableModel}.
      * <p/>
      * The column model must be set using {@link #setTableColumnModel}.
+     *
+     * @param context the layout context
      */
-    public LookupTableModel() {
+    public LookupTableModel(LayoutContext context) {
+        super(context);
     }
 
     /**
-     * Constructs a <tt>LookupTableModel</tt>.
+     * Constructs a {@code LookupTableModel}.
      * <p/>
      * This displays the archetype column if the short names reference multiple archetypes.
      *
      * @param shortNames the archetype short names
+     * @param context    the layout context
      */
-    public LookupTableModel(String[] shortNames) {
-        super(shortNames);
+    public LookupTableModel(String[] shortNames, LayoutContext context) {
+        super(shortNames, context);
     }
 
     /**
@@ -85,11 +86,10 @@ public class LookupTableModel extends DescriptorTableModel<Lookup> {
      * Helper to include a node name in a list of names.
      *
      * @param name     the name to include
-     * @param target   the names to include <tt>name</tt> in
+     * @param target   the names to include {@code name} in
      * @param source   the list of names to check. If the name exists, it will be removed
-     * @param required if <tt>true</tt>, add the name to <tt>names</tt> even if its not present in <tt>source</tt>.
-     *                 If <tt>false</tt>
-     *                 only add it if its present.
+     * @param required if {@code true}, add the name to {@code names} even if its not present in {@code source}.
+     *                 If {@code false} only add it if its present.
      */
     private void include(String name, List<String> target, List<String> source, boolean required) {
         if (source.contains(name)) {

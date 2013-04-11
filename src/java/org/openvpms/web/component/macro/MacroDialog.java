@@ -25,6 +25,8 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
@@ -36,8 +38,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * A dialog to browse and select active macros.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MacroDialog extends PopupDialog {
 
@@ -48,16 +49,17 @@ public class MacroDialog extends PopupDialog {
 
 
     /**
-     * Constructs a <tt>MacroDialog</tt>.
+     * Constructs a {@code MacroDialog}.
      */
-    public MacroDialog() {
-        super(Messages.get("macros.title"), "MacroDialog", CLOSE);
+    public MacroDialog(HelpContext help) {
+        super(Messages.get("macros.title"), "MacroDialog", CLOSE, help);
         focus = new FocusCommand();
         MacroQuery query = new MacroQuery();
         QueryFactory.initialise(query);
         query.setShowInactive(false);
-        MacroTableModel model = new MacroTableModel(false);
-        Browser<Lookup> browser = BrowserFactory.create(query, query.getDefaultSortConstraint(), model);
+        DefaultLayoutContext context = new DefaultLayoutContext(help);
+        MacroTableModel model = new MacroTableModel(false, context);
+        Browser<Lookup> browser = BrowserFactory.create(query, query.getDefaultSortConstraint(), model, context);
         browser.addBrowserListener(new BrowserListener<Lookup>() {
 
             public void selected(Lookup object) {

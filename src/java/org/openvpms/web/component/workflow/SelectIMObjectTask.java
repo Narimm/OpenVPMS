@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.workflow;
@@ -22,6 +20,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -33,8 +33,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Task to select an {@link IMObject}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
 
@@ -163,13 +162,14 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      * @param context the task context
      */
     public void start(final TaskContext context) {
-        Browser<T> browser = BrowserFactory.create(query);
+        LayoutContext layout = new DefaultLayoutContext(context, context.getHelpContext());
+        Browser<T> browser = BrowserFactory.create(query, layout);
         if (title == null) {
             title = Messages.get("imobject.select.title", type);
         }
         String[] buttons = isRequired() ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);
-        dialog = new BrowserDialog<T>(title, message, buttons, browser, addNew);
+        dialog = new BrowserDialog<T>(title, message, buttons, browser, addNew, context.getHelpContext());
         dialog.addWindowPaneListener(new PopupDialogListener() {
 
             @Override

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting;
@@ -29,6 +27,7 @@ import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
@@ -44,13 +43,12 @@ import java.util.List;
 /**
  * Reporting workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
 
     /**
-     * The current user. May be <tt>null</tt>.
+     * The current user. May be {@code null}.
      */
     private User user;
 
@@ -66,7 +64,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
 
 
     /**
-     * Construct a new <tt>ReportingWorkspace</tt>.
+     * Construct a new {@code ReportingWorkspace}.
      */
     public ReportingWorkspace() {
         super("reporting", "reports", Entity.class);
@@ -90,8 +88,8 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      * Determines if the workspace should be refreshed. This implementation
      * returns true if the current user has changed.
      *
-     * @return <tt>true</tt> if the workspace should be refreshed, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the workspace should be refreshed, otherwise
+     *         {@code false}
      */
     @Override
     protected boolean refreshWorkspace() {
@@ -165,7 +163,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
             try {
                 DocumentTemplate template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
                 SQLReportPrinter printer = new SQLReportPrinter(template);
-                InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(printer);
+                InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(printer, getHelpContext());
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (Throwable exception) {
@@ -181,7 +179,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      * @return a new act browser
      */
     private Browser<Entity> createBrowser(ReportQuery query) {
-        return BrowserFactory.create(query);
+        return BrowserFactory.create(query, new DefaultLayoutContext(getHelpContext()));
     }
 
     /**

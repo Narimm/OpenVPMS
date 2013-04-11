@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.subsystem;
@@ -32,6 +30,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -45,8 +44,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Document CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
@@ -57,12 +55,13 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
 
     /**
-     * Constructs a <tt>DocumentCRUDWindow</tt>.
+     * Constructs a {@code DocumentCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes) {
-        super(archetypes, new DocumentActActions());
+    public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes, HelpContext help) {
+        super(archetypes, new DocumentActActions(), help);
     }
 
     /**
@@ -135,12 +134,12 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     /**
      * Refreshes the current document act, optionally printing it.
      *
-     * @param print   if <tt>true</tt> print it
-     * @param version if <tt>true</tt> version the document
+     * @param print   if {@code true} print it
+     * @param version if {@code true} version the document
      */
     private void refresh(final boolean print, boolean version) {
         final DocumentAct act = getObject();
-        DocumentGenerator generator = new DocumentGenerator(act, new DocumentGenerator.Listener() {
+        DocumentGenerator generator = new DocumentGenerator(act, getHelpContext(), new DocumentGenerator.Listener() {
             public void generated(Document document) {
                 onSaved(act, false);
                 if (print) {
@@ -154,8 +153,8 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     /**
      * Determines if a document can be refreshed.
      *
-     * @return <tt>true</tt> if the document can be refreshed, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the document can be refreshed, otherwise
+     *         {@code false}
      */
     private boolean canRefresh() {
         DocumentAct act = getObject();
@@ -171,7 +170,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
 
         /**
-         * Constructs a new <tt>RefreshDialog</tt>.
+         * Constructs a new {@code RefreshDialog}.
          *
          * @param act the document act
          */
@@ -186,7 +185,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         /**
          * Determines if the existing version of the document should be retained.
          *
-         * @return <tt>true</tt> if the existing version should be kept
+         * @return {@code true} if the existing version should be kept
          */
         public boolean version() {
             return (version != null) && version.isSelected();

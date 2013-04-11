@@ -26,6 +26,7 @@ import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -49,15 +50,22 @@ public class CustomerPatientSummary {
      */
     private final Context context;
 
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
+
 
     /**
-     * Constructs a <tt>CustomerPatientSummary</tt>.
+     * Constructs a {@code CustomerPatientSummary}.
      *
      * @param context the context
+     * @param help    the help context
      */
-    public CustomerPatientSummary(Context context) {
+    public CustomerPatientSummary(Context context, HelpContext help) {
         rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
         this.context = context;
+        this.help = help;
     }
 
     /**
@@ -67,8 +75,8 @@ public class CustomerPatientSummary {
      * customer summary above the patient summary. If the patient has no owner,
      * ony the patient summary will be returned.
      *
-     * @param patient the patient. May be <tt>null</tt>
-     * @return the component, or <tt>null</tt> if the patient is <tt>null</tt>
+     * @param patient the patient. May be {@code null}
+     * @return the component, or {@code null} if the patient is {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Component getSummary(Party patient) {
@@ -87,8 +95,8 @@ public class CustomerPatientSummary {
      * If the act has both customer and patient, the returned component will
      * display the customer summary above the patient summary.
      *
-     * @param act the act. May be <tt>null</tt>
-     * @return a summary component, or <tt>null</codett> if there is no summary
+     * @param act the act. May be {@code null}
+     * @return a summary component, or {@code null</codett> if there is no summary
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Component getSummary(Act act) {
@@ -109,7 +117,7 @@ public class CustomerPatientSummary {
      *
      * @param customer the customer
      * @param patient  the patient
-     * @return the summary, or <tt>null</tt> if the customer and patient are both <tt>null</tt>
+     * @return the summary, or {@code null} if the customer and patient are both {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Component getSummary(Party customer, Party patient) {
@@ -119,10 +127,9 @@ public class CustomerPatientSummary {
             Context local = new LocalContext(context);
             local.setCustomer(customer);
             local.setPatient(patient);
-            customerSummary = new CustomerSummary(local).getSummary(customer);
+            customerSummary = new CustomerSummary(local, help).getSummary(customer);
         }
-        Component patientSummary = (patient != null) ?
-                new PatientSummary().getSummary(patient) : null;
+        Component patientSummary = (patient != null) ? new PatientSummary(help).getSummary(patient) : null;
         if (customerSummary != null || patientSummary != null) {
             result = ColumnFactory.create("CellSpacing");
             if (customerSummary != null) {

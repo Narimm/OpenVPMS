@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.view;
@@ -24,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -34,8 +33,7 @@ import java.util.Stack;
 /**
  * Displays an {@link IMObjectViewer} in a popup window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class IMObjectViewerDialog extends PopupDialog {
 
@@ -66,12 +64,13 @@ public class IMObjectViewerDialog extends PopupDialog {
 
 
     /**
-     * Constructs an <tt>IMObjectViewerDialog</tt>.
+     * Constructs an {@code IMObjectViewerDialog}.
      *
-     * @param viewer the viewer to display. May be <tt>null</tt>
+     * @param viewer the viewer to display. May be {@code null}
+     * @param help   the help context
      */
-    public IMObjectViewerDialog(IMObjectViewer viewer) {
-        super(null, STYLE, BUTTONS);
+    public IMObjectViewerDialog(IMObjectViewer viewer, HelpContext help) {
+        super(null, STYLE, BUTTONS, help);
         setModal(true);
         if (viewer != null) {
             setViewer(viewer);
@@ -81,9 +80,9 @@ public class IMObjectViewerDialog extends PopupDialog {
     }
 
     /**
-     * Constructs an <tt>IMObjectViewerDialog</tt>.
+     * Constructs an {@code IMObjectViewerDialog}.
      *
-     * @param object the object to display. May be <tt>null</tt>
+     * @param object the object to display. May be {@code null}
      */
     public IMObjectViewerDialog(IMObject object) {
         super(null, STYLE, BUTTONS);
@@ -101,7 +100,7 @@ public class IMObjectViewerDialog extends PopupDialog {
      * @param object the object to display
      */
     public void setObject(IMObject object) {
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(getHelpContext());
         context.setContextSwitchListener(new ContextSwitchListener() {
             public void switchTo(IMObject child) {
                 setObject(child);

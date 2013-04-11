@@ -23,8 +23,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.supplier.SupplierHelper;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -54,36 +54,29 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
 
 
     /**
-     * Determines the types of order to query. If <tt>true</tt> query orders
+     * Determines the types of order to query. If {@code true} query orders
      * suitable for a delivery (i.e have a delivery status that is not
      * {@link DeliveryStatus#FULL}. Otherwise query orders for a return,
      * (i.e have delivery status of {@link DeliveryStatus#FULL}</em>
      */
     private final boolean delivery;
 
-    /**
-     * The context.
-     */
-    private final Context context;
-
 
     /**
      * Constructs an {@code OrderTableBrowser}.
      *
-     * @param delivery if <tt>true</tt> query orders for a delivery, otherwise
-     *                 query orders for a return
-     * @param context  the context. May be <tt>null</tt>
+     * @param delivery if {@code true} query orders for a delivery, otherwise query orders for a return
+     * @param context  the layout context
      */
-    public OrderTableBrowser(boolean delivery, Context context) {
-        super(new PostedOrderQuery(!delivery, context), new OrderSelectionTableModel());
+    public OrderTableBrowser(boolean delivery, LayoutContext context) {
+        super(new PostedOrderQuery(!delivery, context), new OrderSelectionTableModel(context), context);
         this.delivery = delivery;
-        this.context = context;
     }
 
     /**
      * Returns the supplier.
      *
-     * @return the supplier, or <tt>null</tt> if none is selected
+     * @return the supplier, or {@code null} if none is selected
      */
     public Party getSupplier() {
         return ((PostedOrderQuery) getQuery()).getSupplier();
@@ -92,7 +85,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
     /**
      * Returns the stock location.
      *
-     * @return the stock location, or <tt>null</tt> if none is selected
+     * @return the stock location, or {@code null} if none is selected
      */
     public Party getStockLocation() {
         return ((PostedOrderQuery) getQuery()).getStockLocation();
@@ -178,7 +171,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         private Map<FinancialAct, Order> actsToOrders = new HashMap<FinancialAct, Order>();
 
         /**
-         * Constructs a <tt>PagedModel</tt>.
+         * Constructs a {@code PagedModel}.
          *
          * @param model the underlying table model
          */
@@ -260,8 +253,8 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         /**
          * Invoked when an act is selected/deselected.
          *
-         * @param act the act
-         * @param selected if <tt>true</tt> indicates the act was selected; if <tt>false</tt> indicates deselection
+         * @param act      the act
+         * @param selected if {@code true} indicates the act was selected; if {@code false} indicates deselection
          */
         private void onSelected(FinancialAct act, boolean selected) {
             OrderSelectionTableModel model = (OrderSelectionTableModel) getModel();
@@ -307,7 +300,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             /**
              * Flags the order as selected/deselected. All of the items selection statuses are updated.
              *
-             * @param selected if <tt>true</tt> selects the order and its items, otherwise deselects them
+             * @param selected if {@code true} selects the order and its items, otherwise deselects them
              */
             public void setSelected(boolean selected) {
                 this.selected = selected;
@@ -319,7 +312,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             /**
              * Determines if the order is selected.
              *
-             * @return <tt>true</tt> if the order is selected
+             * @return {@code true} if the order is selected
              */
             public boolean isSelected() {
                 return selected;
@@ -328,8 +321,8 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             /**
              * Flags an order item as selected/deselected.
              *
-             * @param item the order item
-             * @param selected if <tt>true</tt> selects the items, otherwise deselects it
+             * @param item     the order item
+             * @param selected if {@code true} selects the items, otherwise deselects it
              */
             public void setSelected(FinancialAct item, boolean selected) {
                 items.put(item, selected);
@@ -339,7 +332,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
              * Determines if an order item is selected.
              *
              * @param item the order item
-             * @return <tt>true</tt> if the order item is selected
+             * @return {@code true} if the order item is selected
              */
             public boolean isSelected(FinancialAct item) {
                 Boolean result = items.get(item);
@@ -371,11 +364,11 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
 
 
         /**
-         * Creates a new <tt>Filter</tt>.
+         * Creates a new {@code Filter}.
          */
         public Filter() {
             super(null);
-            rules = SupplierHelper.createOrderRules(context.getPractice());
+            rules = SupplierHelper.createOrderRules(getContext().getContext().getPractice());
         }
 
         /**
@@ -384,7 +377,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
          *
          * @param parent   the top level act
          * @param children the child acts
-         * @return <tt>true</tt> if there are child acts
+         * @return {@code true} if there are child acts
          */
         @Override
         protected boolean include(FinancialAct parent, List<FinancialAct> children) {
@@ -401,8 +394,8 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         protected boolean include(FinancialAct child, FinancialAct parent) {
             DeliveryStatus status = rules.getDeliveryStatus(child);
             return (delivery)
-                   ? status != DeliveryStatus.FULL
-                   : status == DeliveryStatus.FULL;
+                    ? status != DeliveryStatus.FULL
+                    : status == DeliveryStatus.FULL;
         }
     }
 }

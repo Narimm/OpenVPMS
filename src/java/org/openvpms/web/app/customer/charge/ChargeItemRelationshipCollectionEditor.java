@@ -49,11 +49,11 @@ public class ChargeItemRelationshipCollectionEditor
     /**
      * The popup editor manager.
      */
-    private PopupEditorManager popupEditorMgr = new DefaultPopupEditorManager();
+    private PopupEditorManager popupEditorMgr;
 
 
     /**
-     * Constructs a <tt>ChargeItemRelationshipCollectionEditor</tt>.
+     * Constructs a {@code ChargeItemRelationshipCollectionEditor}.
      *
      * @param property the collection property
      * @param act      the parent act
@@ -61,6 +61,7 @@ public class ChargeItemRelationshipCollectionEditor
      */
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
+       popupEditorMgr = new DefaultPopupEditorManager(context.getHelpContext());
     }
 
     /**
@@ -77,7 +78,7 @@ public class ChargeItemRelationshipCollectionEditor
      *
      * @param object  the object to edit
      * @param context the layout context
-     * @return an editor to edit <tt>object</tt>
+     * @return an editor to edit {@code object}
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {

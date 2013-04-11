@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.history;
@@ -23,7 +21,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -37,8 +35,7 @@ import java.util.List;
 /**
  * Patient history record browser.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
 
@@ -49,13 +46,13 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
 
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects using the
-     * specified query.
+     * Constructs a {@code Browser} that queries IMObjects using the specified query.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      */
-    public PatientHistoryBrowser(PatientHistoryQuery query) {
-        super(query, newTableModel());
+    public PatientHistoryBrowser(PatientHistoryQuery query, LayoutContext context) {
+        super(query, newTableModel(context), context);
     }
 
     /**
@@ -139,10 +136,11 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     /**
      * Creates a new table model.
      *
+     * @param context the layout context
      * @return a new table model
      */
-    private static IMObjectTableModel<Act> newTableModel() {
-        return IMObjectTableModelFactory.create(PatientHistoryTableModel.class, new DefaultLayoutContext());
+    private static IMObjectTableModel<Act> newTableModel(LayoutContext context) {
+        return IMObjectTableModelFactory.create(PatientHistoryTableModel.class, context);
     }
 
     /**

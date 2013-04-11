@@ -12,33 +12,33 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier.document;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
 import org.openvpms.web.app.supplier.SupplierActWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Supplier document workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class SupplierDocumentWorkspace
         extends SupplierActWorkspace<DocumentAct> {
 
     /**
-     * Constructs a <tt>SupplierDocumentWorkspace</tt>.
+     * Constructs a {@code SupplierDocumentWorkspace}.
+     *
+     * @param context the context
      */
-    public SupplierDocumentWorkspace() {
-        super("supplier", "document");
+    public SupplierDocumentWorkspace(Context context) {
+        super("supplier", "document", context);
         setChildArchetypes(DocumentAct.class, SupplierDocumentQuery.SHORT_NAMES);
     }
 
@@ -48,7 +48,7 @@ public class SupplierDocumentWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<DocumentAct> createCRUDWindow() {
-        return new DocumentCRUDWindow(getChildArchetypes());
+        return new DocumentCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**

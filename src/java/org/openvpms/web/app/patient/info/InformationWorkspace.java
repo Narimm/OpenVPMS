@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.info;
@@ -21,35 +19,39 @@ package org.openvpms.web.app.patient.info;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Patient information workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
-     * Constructs a new <tt>InformationWorkspace</tt>.
+     * Constructs an {@code InformationWorkspace}.
+     *
+     * @param context the context
      */
-    public InformationWorkspace() {
+    public InformationWorkspace(Context context) {
         super("patient", "info");
         setArchetypes(Party.class, "party.patient*");
+        setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Party object) {
@@ -67,7 +69,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     @Override
     public Component getSummary() {
         GlobalContext context = GlobalContext.getInstance();
-        return new CustomerPatientSummary(context).getSummary(getObject());
+        return new CustomerPatientSummary(context, getHelpContext()).getSummary(getObject());
     }
 
     /**
@@ -102,7 +104,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
-        return new InformationCRUDWindow(getArchetypes());
+        return new InformationCRUDWindow(getArchetypes(), getHelpContext());
     }
 
     /**

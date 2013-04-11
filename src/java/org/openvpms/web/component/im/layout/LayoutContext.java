@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.layout;
@@ -23,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
@@ -33,8 +32,7 @@ import org.openvpms.web.component.mail.MailContext;
 /**
  * Layout context.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public interface LayoutContext {
 
@@ -212,5 +210,12 @@ public interface LayoutContext {
      * @return the context switch listener, or <tt>null</tt> if none is registered
      */
     ContextSwitchListener getContextSwitchListener();
+
+    /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    HelpContext getHelpContext();
 
 }

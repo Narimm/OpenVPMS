@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.im.util;
@@ -24,14 +22,14 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
  * An {@link IMObjectDeletor} that prompts for confirmation to delete objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class DefaultIMObjectDeletor extends IMObjectDeletor {
 
@@ -40,19 +38,23 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
      *
      * @param object   the object to remove
      * @param listener the listener to notify
+     * @param help     the help context
      */
-    protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener) {
-        confirmDelete(object, listener, "imobject.delete.message");
+    protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
+        confirmDelete(object, listener, "imobject.delete.message", help);
     }
 
     /**
-     * Invoked to remove anobject that has {@link EntityRelationship}s to other objects.
+     * Invoked to remove an object that has {@link EntityRelationship}s to other objects.
      *
      * @param object   the object to remove
      * @param listener the listener to notify
+     * @param help     the help context
      */
-    protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener) {
-        confirmDelete(object, listener, "imobject.delete.withrelationships.message");
+    @Override
+    protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener,
+                                                                HelpContext help) {
+        confirmDelete(object, listener, "imobject.delete.withrelationships.message", help);
     }
 
     /**
@@ -63,6 +65,7 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
      * @param object   the object
      * @param listener the listener
      */
+    @Override
     protected <T extends IMObject> void deactivate(final T object, final IMObjectDeletionListener<T> listener) {
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("imobject.deactivate.title", type);
@@ -97,7 +100,7 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
      * @param messageKey the message resource bundle key
      */
     private <T extends IMObject> void confirmDelete(final T object, final IMObjectDeletionListener<T> listener,
-                                                    String messageKey) {
+                                                    String messageKey, final HelpContext help) {
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("imobject.delete.title", type);
         String name = (object.getName() != null) ? object.getName() : type;
@@ -106,7 +109,7 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                doRemove(object, listener);
+                doRemove(object, listener, help);
             }
         });
         dialog.show();

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
@@ -24,6 +22,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -32,8 +31,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 /**
  * CRUD Window for supplier acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class SupplierActCRUDWindow<T extends Act> extends ActCRUDWindow<T> {
 
@@ -42,9 +40,10 @@ public abstract class SupplierActCRUDWindow<T extends Act> extends ActCRUDWindow
      *
      * @param archetypes the archetypes that this may create
      * @param actions    determines the operations that may be performed on the selected object
+     * @param help       the help context
      */
-    public SupplierActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions) {
-        super(archetypes, actions);
+    public SupplierActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions, HelpContext help) {
+        super(archetypes, actions, help);
     }
 
     /**

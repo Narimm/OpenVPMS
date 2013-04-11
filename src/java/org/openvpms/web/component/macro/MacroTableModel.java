@@ -12,25 +12,23 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.macro;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 
 
 /**
  * Table model for <em>lookup.macro</em> lookups.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MacroTableModel extends DescriptorTableModel<Lookup> {
 
     /**
-     * The node names to display. If <tt>null</tt> indicates to display all non-hidden nodes.
+     * The node names to display. If {@code null} indicates to display all non-hidden nodes.
      */
     private final String[] nodeNames;
 
@@ -39,24 +37,28 @@ public class MacroTableModel extends DescriptorTableModel<Lookup> {
      */
     private static final String[] SUMMARY_NODES = {"code", "name", "description"};
 
-    
+
     /**
-     * Constructs a <tt>MacroTablelModel</tt> that displays all non-hidden nodes.
+     * Constructs a {@code MacroTableModel} that displays all non-hidden nodes.
+     *
+     * @param context the layout context
      */
-    public MacroTableModel() {
-        this(true);
+    public MacroTableModel(LayoutContext context) {
+        this(true, context);
     }
 
     /**
-     * Constructs a <tt>MacroTablelModel</tt>.
+     * Constructs a {@code MacroTableModel}.
      *
-     * @param all if <tt>true</tt> display all non-hidden nodes, otherwise display the code, name and description
-     *            nodes
+     * @param all     if {@code true} display all non-hidden nodes, otherwise display the code, name and description
+     *                nodes
+     * @param context the layout context
      */
-    public MacroTableModel(boolean all) {
-        super(MacroQuery.SHORT_NAMES);
+    public MacroTableModel(boolean all, LayoutContext context) {
+        super(MacroQuery.SHORT_NAMES, context);
         nodeNames = (all) ? null : SUMMARY_NODES;
-        setTableColumnModel(createColumnModel(MacroQuery.SHORT_NAMES, createDefaultLayoutContext()));
+        setTableColumnModel(createColumnModel(MacroQuery.SHORT_NAMES,
+                                              createDefaultLayoutContext(context.getHelpContext())));
     }
 
     /**

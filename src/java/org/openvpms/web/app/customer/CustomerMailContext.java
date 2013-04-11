@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.customer;
@@ -28,7 +26,9 @@ import org.openvpms.web.app.customer.document.CustomerPatientDocumentBrowser;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.AttachmentBrowserFactory;
@@ -41,20 +41,20 @@ import java.util.Map;
 
 
 /**
- * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practic location or
+ * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practice location or
  * practice, and 'to' addresses from the current customer.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class CustomerMailContext extends ContextMailContext {
 
     /**
-     * Constructs a <tt>CustomerMailContext</tt>
+     * Constructs a {@code CustomerMailContext}.
      *
      * @param context the context
+     * @param help    the help context
      */
-    public CustomerMailContext(Context context) {
+    public CustomerMailContext(Context context, final HelpContext help) {
         super(context);
         setAttachmentBrowserFactory(new AttachmentBrowserFactory() {
             public Browser<Act> createBrowser(MailContext context) {
@@ -62,7 +62,7 @@ public class CustomerMailContext extends ContextMailContext {
                 Party customer = getContext().getCustomer();
                 Party patient = getContext().getPatient();
                 if (customer != null || patient != null) {
-                    result = new CustomerPatientDocumentBrowser(customer, patient);
+                    result = new CustomerPatientDocumentBrowser(customer, patient, new DefaultLayoutContext(help));
                 }
                 return result;
             }
@@ -74,24 +74,27 @@ public class CustomerMailContext extends ContextMailContext {
      *
      * @param act     the act
      * @param context the context source the practice and location
-     * @return a new mail context, or <tt>null</tt> if the act has no customer no patient participation
+     * @param help    the help context
+     * @return a new mail context, or {@code null} if the act has no customer no patient participation
      */
-    public static CustomerMailContext create(Act act, Context context) {
+    public static CustomerMailContext create(Act act, Context context, HelpContext help) {
         ActBean bean = new ActBean(act);
         Party customer = getParty(bean, "customer");
         Party patient = getParty(bean, "patient");
-        return create(customer, patient, context);
+        return create(customer, patient, context, help);
     }
 
     /**
      * Creates a new mail context if either the customer or patient is non-null.
      *
-     * @param customer the customer. May be <tt>null</tt>
-     * @param patient  the patient. May be <tt>null</tt>
+     * @param customer the customer. May be {@code null}
+     * @param patient  the patient. May be {@code null}
      * @param context  the context source the practice and location
-     * @return a new mail context, or <tt>null</tt> if both customer and patient are null
+     * @param help     the help context
+     * @return a new mail context, or {@code null} if both customer and patient are null
      */
-    public static CustomerMailContext create(Party customer, Party patient, Context context) {
+    public static CustomerMailContext create(Party customer, Party patient, Context context,
+                                             HelpContext help) {
         CustomerMailContext result = null;
         if (customer != null || patient != null) {
             Context local = new LocalContext();
@@ -99,7 +102,7 @@ public class CustomerMailContext extends ContextMailContext {
             local.setLocation(context.getLocation());
             local.setCustomer(customer);
             local.setPatient(patient);
-            result = new CustomerMailContext(local);
+            result = new CustomerMailContext(local, help);
         }
         return result;
     }
@@ -155,7 +158,7 @@ public class CustomerMailContext extends ContextMailContext {
      *
      * @param bean the bean
      * @param node the node
-     * @return the associated party, or <tt>null</tt> if none exists
+     * @return the associated party, or {@code null} if none exists
      */
     private static Party getParty(ActBean bean, String node) {
         if (bean.hasNode(node)) {

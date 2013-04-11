@@ -22,33 +22,32 @@ import org.openvpms.web.app.supplier.charge.ChargeWorkspace;
 import org.openvpms.web.app.supplier.delivery.DeliveryWorkspace;
 import org.openvpms.web.app.supplier.document.SupplierDocumentWorkspace;
 import org.openvpms.web.app.supplier.order.OrderWorkspace;
-import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
 /**
  * Supplier subsystem.
+ * `
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class SupplierSubsystem extends AbstractSubsystem {
 
     /**
-     * Construct a new <tt>SupplierSubsystem</tt>.
+     * Constructs a {@code SupplierSubsystem|.
+     *
+     * @param context the context
      */
-    public SupplierSubsystem() {
+    public SupplierSubsystem(Context context) {
         super("supplier");
-        MailContext context = new SupplierMailContext(GlobalContext.getInstance());
-
-        addWorkspace(new InformationWorkspace(), context);
-        addWorkspace(new SupplierDocumentWorkspace(), context);
-        addWorkspace(new OrderWorkspace(), context);
-        addWorkspace(new DeliveryWorkspace(), context);
-        addWorkspace(new ChargeWorkspace(), context);
-        addWorkspace(new PaymentWorkspace(), context);
-        addWorkspace(new AccountWorkspace(), context);
+        addWorkspace(new InformationWorkspace(context));
+        addWorkspace(new SupplierDocumentWorkspace(context));
+        addWorkspace(new OrderWorkspace(context));
+        addWorkspace(new DeliveryWorkspace(context));
+        addWorkspace(new ChargeWorkspace(context));
+        addWorkspace(new PaymentWorkspace(context));
+        addWorkspace(new AccountWorkspace(context));
     }
 
 }

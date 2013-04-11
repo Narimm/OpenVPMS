@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
@@ -23,7 +21,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
@@ -40,11 +38,9 @@ import java.util.List;
 /**
  * Query for supplier acts. Adds filters for supplier and stock location.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public abstract class SupplierActQuery<T extends Act>
-        extends DateRangeActQuery<T> {
+public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<T> {
 
     /**
      * The supplier selector.
@@ -58,18 +54,17 @@ public abstract class SupplierActQuery<T extends Act>
 
 
     /**
-     * Constructs a new <tt>SupplierActQuery</tt>.
+     * Constructs a {@code SupplierActQuery}.
      *
      * @param shortNames the act short names to query
-     * @param statuses   the act statuses. May be <tt>null</tt>
+     * @param statuses   the act statuses. May be {@code null}
      * @param type       the type that this query returns
-     * @param context    the context. May be <tt>null</tt>
+     * @param context    the layout context
      */
-    public SupplierActQuery(String[] shortNames, ActStatuses statuses, Class type, Context context) {
+    public SupplierActQuery(String[] shortNames, ActStatuses statuses, Class type, LayoutContext context) {
         super(shortNames, statuses, type);
 
-        supplier = new IMObjectSelector<Party>(
-                Messages.get("supplier.type"), "party.supplier*");
+        supplier = new IMObjectSelector<Party>(Messages.get("supplier.type"), context, "party.supplier*");
         supplier.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 if (object == null) {
@@ -83,25 +78,22 @@ public abstract class SupplierActQuery<T extends Act>
             }
         });
 
-        stockLocation = new IMObjectSelector<Party>(
-                Messages.get("product.stockLocation"),
-                "party.organisationStockLocation");
+        stockLocation = new IMObjectSelector<Party>(Messages.get("product.stockLocation"), context,
+                                                    "party.organisationStockLocation");
         stockLocation.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 onQuery();
             }
         });
 
-        if (context != null) {
-            setSupplier(context.getSupplier());
-            setStockLocation(context.getStockLocation());
-        }
+        setSupplier(context.getContext().getSupplier());
+        setStockLocation(context.getContext().getStockLocation());
     }
 
     /**
      * Sets the supplier.
      *
-     * @param supplier the supplier. May be <tt>null</tt>
+     * @param supplier the supplier. May be {@code null}
      */
     public void setSupplier(Party supplier) {
         this.supplier.setObject(supplier);
@@ -110,7 +102,7 @@ public abstract class SupplierActQuery<T extends Act>
     /**
      * Returns the supplier.
      *
-     * @return the supplier, or <tt>null</tt> if none is selected
+     * @return the supplier, or {@code null} if none is selected
      */
     public Party getSupplier() {
         return supplier.getObject();
@@ -119,7 +111,7 @@ public abstract class SupplierActQuery<T extends Act>
     /**
      * Sets the stock location.
      *
-     * @param stockLocation the stock location. May be <tt>null</tt>
+     * @param stockLocation the stock location. May be {@code null}
      */
     public void setStockLocation(Party stockLocation) {
         this.stockLocation.setObject(stockLocation);
@@ -128,7 +120,7 @@ public abstract class SupplierActQuery<T extends Act>
     /**
      * Returns the stock location.
      *
-     * @return the stock location, or <tt>null</tt> if none is selected
+     * @return the stock location, or {@code null} if none is selected
      */
     public Party getStockLocation() {
         return stockLocation.getObject();

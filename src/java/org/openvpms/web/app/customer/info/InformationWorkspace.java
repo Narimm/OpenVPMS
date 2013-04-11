@@ -12,43 +12,48 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.info;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.customer.CustomerBrowser;
+import org.openvpms.web.app.customer.CustomerMailContext;
+import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Customer information workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
-     * Construct a new <tt>InformationWorkspace</tt>.
+     * The context.
      */
-    public InformationWorkspace() {
+    private final Context context;
+
+    /**
+     * Constructs an {@code InformationWorkspace}.
+     */
+    public InformationWorkspace(Context context) {
         super("customer", "info");
+        this.context = context;
         setArchetypes(Party.class, "party.customer*");
+        setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Party object) {
@@ -60,24 +65,22 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     /**
      * Renders the workspace summary.
      *
-     * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
+     * @return the component representing the workspace summary, or {@code null} if there is no summary
      */
     @Override
     public Component getSummary() {
-        CustomerSummary summarizer = new CustomerSummary(GlobalContext.getInstance());
+        CustomerSummary summarizer = new CustomerSummary(context, getHelpContext());
         return summarizer.getSummary(getObject());
     }
 
     /**
      * Returns the latest version of the current customer context object.
      *
-     * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same
+     * @return the latest version of the context object, or {@link #getObject()} if they are the same
      */
     @Override
     protected Party getLatest() {
-        return getLatest(GlobalContext.getInstance().getCustomer());
+        return getLatest(context.getCustomer());
     }
 
     /**
@@ -101,10 +104,10 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
-        return new InformationCRUDWindow(getArchetypes());
+        return new InformationCRUDWindow(getArchetypes(), getHelpContext());
     }
 
-       /**
+    /**
      * Invoked when the selection browser is closed.
      *
      * @param dialog the browser dialog

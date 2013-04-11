@@ -12,32 +12,32 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Supplier account workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class AccountWorkspace extends SupplierActWorkspace<FinancialAct> {
 
     /**
-     * Constructs a new <tt>AccountWorkspace</tt>.
+     * Constructs an {@code AccountWorkspace}.
+     *
+     * @param context the context
      */
-    public AccountWorkspace() {
-        super("supplier", "account");
+    public AccountWorkspace(Context context) {
+        super("supplier", "account", context);
         setChildArchetypes(FinancialAct.class, "act.supplierAccount*");
     }
 
@@ -47,7 +47,7 @@ public class AccountWorkspace extends SupplierActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new AccountCRUDWindow(getChildArchetypes());
+        return new AccountCRUDWindow(getChildArchetypes(), getHelpContext());
     }
 
     /**
@@ -57,8 +57,8 @@ public class AccountWorkspace extends SupplierActWorkspace<FinancialAct> {
      */
     protected ActQuery<FinancialAct> createQuery() {
         String[] shortNames = {"act.supplierAccountCharges*",
-                               "act.supplierAccountPayment",
-                               "act.supplierAccountRefund"};
+                "act.supplierAccountPayment",
+                "act.supplierAccountRefund"};
         String[] statuses = {FinancialActStatus.POSTED};
         return new DefaultActQuery<FinancialAct>(getObject(), "supplier",
                                                  "participation.supplier",

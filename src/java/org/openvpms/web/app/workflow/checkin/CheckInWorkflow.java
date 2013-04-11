@@ -30,6 +30,7 @@ import org.openvpms.web.app.workflow.EditVisitTask;
 import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -70,34 +71,40 @@ public class CheckInWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs a new <tt>CheckInWorkflow</tt>.
+     * Constructs a {@code CheckInWorkflow}.
      *
      * @param customer  the customer
      * @param patient   the patient
-     * @param clinician the user. May be <tt>null</tt>
+     * @param clinician the user. May be {@code null}
      * @param context   the external context to access and update
+     * @param help      the help context
      */
-    public CheckInWorkflow(Party customer, Party patient, User clinician, Context context) {
-        initialise(null, customer, patient, clinician, null, null, context);
+    public CheckInWorkflow(Party customer, Party patient, User clinician, Context context, HelpContext help) {
+        super(help);
+        initialise(null, customer, patient, clinician, null, null, context, help);
     }
 
     /**
-     * Constructs a new <tt>CheckInWorkflow</tt> from an appointment.
+     * Constructs a {@code CheckInWorkflow} from an appointment.
      *
      * @param appointment the appointment
      * @param context     the external context to access and update
+     * @param help        the help context
      */
-    public CheckInWorkflow(Act appointment, Context context) {
-        initialise(appointment, context);
+    public CheckInWorkflow(Act appointment, Context context, HelpContext help) {
+        super(help);
+        initialise(appointment, context, help);
     }
 
     /**
-     * Default constructor.
+     * Constructs a {@code CheckInWorkflow}.
      * <p/>
      * The workflow must be initialised via {@link #initialise} prior to use.
+     *
+     * @param help the help context
      */
-    protected CheckInWorkflow() {
-
+    protected CheckInWorkflow(HelpContext help) {
+        super(help);
     }
 
     /**
@@ -113,8 +120,9 @@ public class CheckInWorkflow extends WorkflowImpl {
      *
      * @param appointment the appointment
      * @param context     the external context to access and update
+     * @param help        the help context
      */
-    protected void initialise(Act appointment, Context context) {
+    protected void initialise(Act appointment, Context context, HelpContext help) {
         ActBean bean = new ActBean(appointment);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
@@ -124,24 +132,24 @@ public class CheckInWorkflow extends WorkflowImpl {
         String notes = bean.getString("description", "");
         String description = Messages.get("workflow.checkin.task.description", reason, notes);
 
-        initialise(appointment, customer, patient, clinician, description, reason, context);
+        initialise(appointment, customer, patient, clinician, description, reason, context, help);
     }
 
     /**
      * Initialise the workflow.
      *
-     * @param appointment     the appointment. May be <tt>null</tt>
+     * @param appointment     the appointment. May be {@code null}
      * @param customer        the customer
      * @param patient         the patient
-     * @param clinician       the clinician. May be <tt>null</tt>
-     * @param taskDescription the description to assign to the <em>act.customerTask</em>. May be <tt>null</tt>
-     * @param reason          the description to assign to the <em>act.patientClinicalEvent</em>. May be <tt>null</tt>
+     * @param clinician       the clinician. May be {@code null}
+     * @param taskDescription the description to assign to the <em>act.customerTask</em>. May be {@code null}
+     * @param reason          the description to assign to the <em>act.patientClinicalEvent</em>. May be {@code null}
      * @param context         the external context to access and update
      */
     private void initialise(Act appointment, Party customer, Party patient, User clinician, String taskDescription,
-                            String reason, Context context) {
+                            String reason, Context context, HelpContext help) {
         external = context;
-        initial = new DefaultTaskContext(false);
+        initial = new DefaultTaskContext(help, false);
         initial.setCustomer(customer);
         initial.setPatient(patient);
 
@@ -163,7 +171,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         }
 
         // optionally select a worklist and edit a customer task
-        addTask(new CustomerTaskWorkflow(taskDescription));
+        addTask(new CustomerTaskWorkflow(taskDescription, help));
 
         // get the act.patientClinicalEvent.
         TaskProperties eventProps = new TaskProperties();
@@ -172,7 +180,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new GetClinicalEventTask(date, eventProps));
 
         // prompt for a patient weight.
-        addTask(new PatientWeightTask());
+        addTask(new PatientWeightTask(help));
 
         // optionally select and print an act.patientDocumentForm
         addTask(new PrintDocumentFormTask(initial));
@@ -236,11 +244,13 @@ public class CheckInWorkflow extends WorkflowImpl {
     private class CustomerTaskWorkflow extends WorkflowImpl {
 
         /**
-         * Constructs a new <tt>CustomerTaskWorkflow</tt>.
+         * Constructs a {@code CustomerTaskWorkflow}.
          *
          * @param taskDescription the task description
+         * @param help            the help context
          */
-        public CustomerTaskWorkflow(String taskDescription) {
+        public CustomerTaskWorkflow(String taskDescription, HelpContext help) {
+            super(help);
             // select a worklist
             SelectIMObjectTask<Party> selectWorkList = createSelectWorkListTask(initial);
             selectWorkList.setRequired(false);
@@ -261,13 +271,12 @@ public class CheckInWorkflow extends WorkflowImpl {
     private class UpdateAppointmentTask extends UpdateIMObjectTask {
 
         /**
-         * Creates a new <tt>UpdateAppointmentTask</tt>.
+         * Constructs an {@code UpdateAppointmentTask}.
          *
          * @param object     the object to update
          * @param properties properties to populate the object with
          */
-        public UpdateAppointmentTask(IMObject object,
-                                     TaskProperties properties) {
+        public UpdateAppointmentTask(IMObject object, TaskProperties properties) {
             super(object, properties);
         }
 
@@ -290,8 +299,7 @@ public class CheckInWorkflow extends WorkflowImpl {
             }
             Act act = (Act) context.getObject("act.customerTask");
             if (act != null) {
-                bean.addRelationship("actRelationship.customerAppointmentTask",
-                                     act);
+                bean.addRelationship("actRelationship.customerAppointmentTask", act);
             }
         }
     }

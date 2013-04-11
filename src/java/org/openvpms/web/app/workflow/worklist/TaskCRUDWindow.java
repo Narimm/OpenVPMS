@@ -28,19 +28,19 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
+import org.openvpms.web.component.workflow.TaskEvent;
 
 
 /**
  * Task CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskCRUDWindow extends ScheduleCRUDWindow {
 
@@ -51,10 +51,10 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
 
 
     /**
-     * Creates a new <tt>TaskCRUDWindow</tt>.
+     * Constructs an {@code TaskCRUDWindow}.
      */
-    public TaskCRUDWindow() {
-        super(Archetypes.create("act.customerTask", Act.class));
+    public TaskCRUDWindow(HelpContext help) {
+        super(Archetypes.create("act.customerTask", Act.class), help);
     }
 
     /**
@@ -125,7 +125,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
      * Determines if a consulation or checkout can be performed on an act.
      *
      * @param act the act
-     * @return <tt>true</tt> if consultation can be performed
+     * @return {@code true} if consultation can be performed
      */
     protected boolean canCheckoutOrConsult(Act act) {
         String status = act.getStatus();
@@ -141,7 +141,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
         final Act act = IMObjectHelper.reload(getObject());
         // make sure the act is still available
         if (act != null) {
-            TransferWorkflow transfer = new TransferWorkflow(act);
+            TransferWorkflow transfer = new TransferWorkflow(act, getHelpContext());
             transfer.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(act);

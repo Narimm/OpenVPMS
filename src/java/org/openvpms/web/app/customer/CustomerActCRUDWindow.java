@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer;
@@ -27,28 +25,29 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ErrorHelper;
 
 
 /**
  * CRUD Window for customer acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class CustomerActCRUDWindow<T extends Act>
         extends ActCRUDWindow<T> {
 
     /**
-     * Constructs a <tt>CustomerActCRUDWindow</tt>.
+     * Constructs a {@code CustomerActCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param object     the CRUD object
+     * @param help       the help context
      */
-    public CustomerActCRUDWindow(Archetypes<T> archetypes, ActActions<T> object) {
-        super(archetypes, object);
+    public CustomerActCRUDWindow(Archetypes<T> archetypes, ActActions<T> object, HelpContext help) {
+        super(archetypes, object, help);
     }
 
     /**

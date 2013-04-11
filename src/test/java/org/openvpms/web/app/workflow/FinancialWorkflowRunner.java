@@ -35,6 +35,7 @@ import org.openvpms.web.app.patient.charge.VisitChargeItemEditor;
 import org.openvpms.web.app.patient.visit.VisitEditor;
 import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -238,7 +239,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
          */
         @Override
         protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
-            LayoutContext layout = new DefaultLayoutContext(true);
+            LayoutContext layout = new DefaultLayoutContext(true, new HelpContext("foo", null));
             layout.setContext(context);
             return new CustomerChargeActEditor((FinancialAct) object, null, layout, false) {
                 @Override

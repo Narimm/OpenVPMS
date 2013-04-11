@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.im.contact;
@@ -34,10 +32,9 @@ import org.openvpms.web.component.util.ButtonFactory;
 
 
 /**
- * A {@link IMObjectLayoutStrategy} for <em>contact.emailAddress</em> that enables mail messages to be sent.
+ * An {@link IMObjectLayoutStrategy} for <em>contact.emailAddress</em> that enables mail messages to be sent.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class EmailContactViewLayout extends AbstractLayoutStrategy {
 
@@ -49,7 +46,7 @@ public class EmailContactViewLayout extends AbstractLayoutStrategy {
      * @param property the property
      * @param parent   the parent object
      * @param context  the layout context
-     * @return a component to display <code>property</code>
+     * @return a component to display {@code property}
      */
     @Override
     protected ComponentState createComponent(Property property, IMObject parent, final LayoutContext context) {
@@ -60,7 +57,7 @@ public class EmailContactViewLayout extends AbstractLayoutStrategy {
             if (!StringUtils.isEmpty(mail) && context.getMailContext() != null) {
                 Button link = ButtonFactory.create(null, "hyperlink", new ActionListener() {
                     public void onAction(ActionEvent event) {
-                        MailDialog dialog = new MailDialog(context.getMailContext(), contact);
+                        MailDialog dialog = new MailDialog(context.getMailContext(), contact, context.getHelpContext());
                         dialog.show();
                     }
                 });

@@ -12,23 +12,20 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin.archetype;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.im.query.QueryBrowser;
 
 
 /**
  * Archetype workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ArchetypeWorkspace extends ResultSetCRUDWorkspace<ArchetypeDescriptor> {
 
@@ -48,7 +45,7 @@ public class ArchetypeWorkspace extends ResultSetCRUDWorkspace<ArchetypeDescript
     @Override
     protected ResultSetCRUDWindow<ArchetypeDescriptor> createCRUDWindow() {
         QueryBrowser<ArchetypeDescriptor> browser = getBrowser();
-        return new ArchetypeCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet());
+        return new ArchetypeCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getHelpContext());
     }
 
 }

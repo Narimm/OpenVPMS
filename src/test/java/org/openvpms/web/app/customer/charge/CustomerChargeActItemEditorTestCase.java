@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -37,6 +35,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -62,8 +61,7 @@ import static org.openvpms.web.app.customer.charge.CustomerChargeTestHelper.chec
 /**
  * Tests the {@link CustomerChargeActItemEditor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeActEditorTest {
 
@@ -206,7 +204,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      */
     @Test
     public void testClearClinician() {
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
         User clinician = TestHelper.createUser();
@@ -310,7 +308,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      * @param productShortName the product archetype short name
      */
     private void checkItem(FinancialAct charge, FinancialAct item, String productShortName) {
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
         Party patient1 = TestHelper.createPatient();
         Party patient2 = TestHelper.createPatient();
         User author1 = TestHelper.createUser();
@@ -489,7 +487,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      * @param item   the charge item
      */
     private void checkItemWithTemplate(FinancialAct charge, FinancialAct item) {
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);

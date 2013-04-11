@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.till;
@@ -48,6 +46,7 @@ import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -70,8 +69,7 @@ import java.util.List;
 /**
  * CRUD window for till balances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-07-03 23:56:49Z $
+ * @author Tim Anderson
  */
 public class TillCRUDWindow extends FinancialActCRUDWindow {
 
@@ -102,11 +100,12 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
 
 
     /**
-     * Creates a new <tt>TillCRUDWindow</tt>.
+     * Constructs a {@code TillCRUDWindow}.
+     *
+     * @param help the help context
      */
-    public TillCRUDWindow() {
-        super(new Archetypes<FinancialAct>("act.tillBalanceAdjustment",
-                                           FinancialAct.class));
+    public TillCRUDWindow(HelpContext help) {
+        super(new Archetypes<FinancialAct>("act.tillBalanceAdjustment", FinancialAct.class), help);
     }
 
     /**
@@ -127,9 +126,9 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     @Override
     public void edit() {
         if (TypeHelper.isA(childAct, "act.tillBalanceAdjustment")) {
-            LayoutContext context = new DefaultLayoutContext(true);
+            LayoutContext context = new DefaultLayoutContext(true, getHelpContext());
             final IMObjectEditor editor = createEditor(childAct, context);
-            EditDialog dialog = new EditDialog(editor);
+            EditDialog dialog = new EditDialog(editor, getHelpContext());
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     onEditCompleted(editor, false);
@@ -240,7 +239,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                     set.getResults(), TILL_BALANCE);
             String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
             String title = Messages.get("imobject.print.title", displayName);
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer);
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

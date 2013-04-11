@@ -12,25 +12,34 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.workflow;
 
 
+import org.openvpms.web.component.help.HelpContext;
+
 /**
  * A collection of {@link Task}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class Tasks extends AbstractTask {
 
     /**
      * The workflow.
      */
-    private WorkflowImpl workflow = new WorkflowImpl();
+    private final WorkflowImpl workflow;
+
+    /**
+     * Constructs a {@code Tasks}.
+     *
+     * @param help the help context
+     */
+    public Tasks(HelpContext help) {
+
+        workflow = new WorkflowImpl(help);
+    }
 
     /**
      * Adds a task to execute.
@@ -52,18 +61,9 @@ public class Tasks extends AbstractTask {
     }
 
     /**
-     * Starts the task, using a {@link DefaultTaskContext} that inherits
-     * from the global context.
-     */
-    public void start() {
-        start(new DefaultTaskContext());
-    }
-
-    /**
      * Starts the task.
      * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
      */

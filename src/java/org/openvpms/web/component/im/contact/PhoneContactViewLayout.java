@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.im.contact;
@@ -32,7 +30,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.app.sms.SMSDialog;
 import org.openvpms.web.app.sms.SMSHelper;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -49,8 +46,7 @@ import java.util.List;
 /**
  * A {@link IMObjectLayoutStrategy} for <em>contact.phoneNumber</em> that enables SMS messages to be sent to mobiles.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class PhoneContactViewLayout extends AbstractLayoutStrategy {
 
@@ -73,7 +69,7 @@ public class PhoneContactViewLayout extends AbstractLayoutStrategy {
             Button send = ButtonFactory.create("button.sms.send");
             send.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent e) {
-                    onSend((Contact) object, context.getContext());
+                    onSend((Contact) object, context);
                 }
             });
             RowLayoutData rowLayout = new RowLayoutData();
@@ -94,10 +90,10 @@ public class PhoneContactViewLayout extends AbstractLayoutStrategy {
      * Displays an SMS dialog to send a message to the specified phone.
      *
      * @param contact the phone contact
-     * @param context the context
+     * @param context the layout context
      */
-    private void onSend(Contact contact, Context context) {
-        SMSDialog dialog = new SMSDialog(contact, context);
+    private void onSend(Contact contact, LayoutContext context) {
+        SMSDialog dialog = new SMSDialog(contact, context.getContext(), context.getHelpContext());
         dialog.show();
     }
 }

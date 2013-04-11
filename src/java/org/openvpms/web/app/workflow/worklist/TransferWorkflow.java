@@ -12,28 +12,26 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.WorkflowImpl;
-import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
  * Transfers a task from one worklist to another.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TransferWorkflow extends WorkflowImpl {
 
@@ -44,12 +42,14 @@ public class TransferWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs a new <tt>TransferWorkflow</tt>.
+     * Constructs a {@code TransferWorkflow}.
      *
      * @param task the task
+     * @param help the help context
      */
-    public TransferWorkflow(Act task) {
-        initial = new DefaultTaskContext(false);
+    public TransferWorkflow(Act task, HelpContext help) {
+        super(help);
+        initial = new DefaultTaskContext(help, false);
 
         // make sure there is a user, to populate empty author nodes
         initial.setUser(GlobalContext.getInstance().getUser());
@@ -72,7 +72,7 @@ public class TransferWorkflow extends WorkflowImpl {
     private static class UpdateWorkListTask extends EditIMObjectTask {
 
         /**
-         * Creates a new <tt>UpdateWorkListTask</tt>.
+         * Creates a new {@code UpdateWorkListTask}.
          * The object is saved on update.
          *
          * @param act the task to update

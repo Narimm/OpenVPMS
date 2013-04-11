@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit;
@@ -53,6 +51,7 @@ import org.openvpms.web.app.supplier.delivery.DeliveryItemEditor;
 import org.openvpms.web.app.supplier.order.OrderEditor;
 import org.openvpms.web.app.supplier.order.OrderItemEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageEditor;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.contact.LocationEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
@@ -76,8 +75,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * {@link IMObjectEditorFactory} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
 
@@ -534,7 +532,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * @param type      the expected editor class
      */
     private void checkCreate(String shortName, Class type) {
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName,
                       object);
@@ -553,7 +551,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     private void checkCreate(String shortName, String parentShortName,
                              Class type) {
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName,
                       object);

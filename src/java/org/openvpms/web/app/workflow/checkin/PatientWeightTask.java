@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.checkin;
@@ -29,6 +27,7 @@ import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
 import org.openvpms.web.component.app.ContextException;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.workflow.AddActRelationshipTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DeleteIMObjectTask;
@@ -45,8 +44,7 @@ import java.math.BigDecimal;
 /**
  * Task to create an <em>act.patientWeight</em> for a patient.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class PatientWeightTask extends WorkflowImpl {
 
@@ -67,11 +65,13 @@ class PatientWeightTask extends WorkflowImpl {
 
 
     /**
-     * Constructs a new <code>PatientWeightTask</code>.
+     * Constructs a {@code PatientWeightTask}.
      *
+     * @param help the help context
      * @throws OpenVPMSException for any error
      */
-    public PatientWeightTask() {
+    public PatientWeightTask(HelpContext help) {
+        super(help);
         final String event = "act.patientClinicalEvent";
         TaskProperties properties = new TaskProperties();
         properties.add(new Variable("weight") {
@@ -86,24 +86,18 @@ class PatientWeightTask extends WorkflowImpl {
                 return units;
             }
         });
-        EditIMObjectTask editWeightTask
-                = new EditIMObjectTask(PATIENT_WEIGHT, properties, true);
+        EditIMObjectTask editWeightTask = new EditIMObjectTask(PATIENT_WEIGHT, properties, true);
         editWeightTask.setRequired(false);
         editWeightTask.setSkip(true);
         editWeightTask.setDeleteOnCancelOrSkip(true);
         addTask(editWeightTask);
 
         NodeConditionTask<BigDecimal> weightZero
-                = new NodeConditionTask<BigDecimal>(PATIENT_WEIGHT, "weight",
-                                                    false, BigDecimal.ZERO);
-        AddActRelationshipTask relationshipTask = new AddActRelationshipTask(
-                event, PATIENT_WEIGHT,
-                "actRelationship.patientClinicalEventItem");
-        DeleteIMObjectTask deleteWeightTask
-                = new DeleteIMObjectTask(PATIENT_WEIGHT);
-        ConditionalTask condition = new ConditionalTask(weightZero,
-                                                        relationshipTask,
-                                                        deleteWeightTask);
+                = new NodeConditionTask<BigDecimal>(PATIENT_WEIGHT, "weight", false, BigDecimal.ZERO);
+        AddActRelationshipTask relationshipTask
+                = new AddActRelationshipTask(event, PATIENT_WEIGHT, "actRelationship.patientClinicalEventItem");
+        DeleteIMObjectTask deleteWeightTask = new DeleteIMObjectTask(PATIENT_WEIGHT);
+        ConditionalTask condition = new ConditionalTask(weightZero, relationshipTask, deleteWeightTask);
         addTask(condition);
         setRequired(false);
         setBreakOnSkip(true);
@@ -134,7 +128,7 @@ class PatientWeightTask extends WorkflowImpl {
      * Queries the most recent <em>act.patientWeight</em>.
      *
      * @param context the task context
-     * @return the most recent <em>act.patientWeight</em>, or <code>null</code>
+     * @return the most recent <em>act.patientWeight</em>, or {@code null}
      *         if none is found
      * @throws OpenVPMSException for any error
      */

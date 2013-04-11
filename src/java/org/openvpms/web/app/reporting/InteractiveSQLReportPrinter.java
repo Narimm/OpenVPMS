@@ -21,6 +21,7 @@ package org.openvpms.web.app.reporting;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.print.InteractivePrinter;
@@ -33,18 +34,18 @@ import org.openvpms.web.servlet.DownloadServlet;
  * Interactive printer for {@link SQLReportPrinter}. Pops up a dialog with
  * options to print, preview, or cancel, and supply the report with parameters.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InteractiveSQLReportPrinter extends InteractivePrinter {
 
     /**
-     * Constructs a new <tt>InteractiveSQLReportPrinter</tt>.
+     * Constructs a new {@code InteractiveSQLReportPrinter}.
      *
      * @param printer the printer to delegate to
+     * @param help    the help context
      */
-    public InteractiveSQLReportPrinter(SQLReportPrinter printer) {
-        super(printer);
+    public InteractiveSQLReportPrinter(SQLReportPrinter printer, HelpContext help) {
+        super(printer, help);
     }
 
     /**
@@ -128,7 +129,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
      * @param document the document to mail
      */
     private void mail(Document document) {
-        MailDialog dialog = new MailDialog(getMailContext());
+        MailDialog dialog = new MailDialog(getMailContext(), getHelpContext());
         MailEditor editor = dialog.getMailEditor();
         editor.addAttachment(document);
         editor.setSubject(getDisplayName());

@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.query;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.NameDescObjectSetTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -32,8 +33,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * The archetype column is only displayed if more than one archetype is being
  * queried.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
 
@@ -45,18 +45,18 @@ public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
     /**
      * The table model.
      */
-    private final NameDescObjectSetTableModel model
-            = new NameDescObjectSetTableModel("entity", true);
+    private final NameDescObjectSetTableModel model = new NameDescObjectSetTableModel("entity", true);
 
 
     /**
-     * Creates a new <tt>EntityBrowser</tt>.
+     * Constructs an {@code EntityBrowser}.
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      */
-    public EntityBrowser(EntityQuery query) {
+    public EntityBrowser(EntityQuery query, LayoutContext context) {
         this.query = query;
-        setBrowser(createBrowser(query));
+        setBrowser(createBrowser(query, context));
     }
 
     /**
@@ -91,17 +91,15 @@ public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
     }
 
     /**
-     * Creates a table browser that changes the model depending on how
-     * many archetypes are being queried
+     * Creates a table browser that changes the model depending on how many archetypes are being queried
      *
-     * @param query the query
+     * @param query   the query
+     * @param context the layout context
      * @return a new browser
      */
-    private Browser<ObjectSet> createBrowser(final EntityQuery query) {
+    private Browser<ObjectSet> createBrowser(final EntityQuery query, LayoutContext context) {
         Query<ObjectSet> delegate = query.getQuery();
-        return new TableBrowser<ObjectSet>(delegate,
-                                           delegate.getDefaultSortConstraint(),
-                                           model) {
+        return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
             /**
              * Performs the query.
              *

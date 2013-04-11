@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.patient.info;
@@ -22,27 +20,27 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
-import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
+import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
  * Information CRUD window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
 
@@ -58,12 +56,13 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
 
 
     /**
-     * Creates a new <tt>InformationCRUDWindow</tt>.
+     * Constructs an {@code InformationCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param help       the help context
      */
-    public InformationCRUDWindow(Archetypes<Party> archetypes) {
-        super(archetypes, DefaultIMObjectActions.<Party>getInstance());
+    public InformationCRUDWindow(Archetypes<Party> archetypes, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Party>getInstance(), help);
     }
 
     /**
@@ -113,7 +112,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
         Party patient = context.getPatient();
         User clinician = context.getClinician();
         if (customer != null && patient != null) {
-            CheckInWorkflow workflow = new CheckInWorkflow(customer, patient, clinician, context);
+            CheckInWorkflow workflow = new CheckInWorkflow(customer, patient, clinician, context, getHelpContext());
             workflow.start();
         } else {
             String title = Messages.get("patient.checkin.title");
@@ -126,7 +125,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Merges the current patient with another.
      */
     private void onMerge() {
-        final MergeWorkflow workflow = new PatientMergeWorkflow(getObject());
+        final MergeWorkflow workflow = new PatientMergeWorkflow(getObject(), getHelpContext());
         workflow.addTaskListener(new DefaultTaskListener() {
             /**
              * Invoked when a task event occurs.

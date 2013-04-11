@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.customer.note;
 
@@ -43,8 +41,7 @@ import java.util.Map;
 /**
  * Table model for <em>act.customerAlert</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerAlertTableModel extends AbstractActTableModel {
 
@@ -54,7 +51,7 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
     private int priorityIndex;
 
     /**
-     * The alert colunm index.
+     * The alert column index.
      */
     private int alertIndex;
 
@@ -65,12 +62,13 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
 
 
     /**
-     * Constructs a <tt>CustomerAlertTableModel</tt>.
+     * Constructs a {@code CustomerAlertTableModel}.
      *
      * @param shortNames the act archetype short names
+     * @param context    the layout context
      */
-    public CustomerAlertTableModel(String[] shortNames) {
-        super(shortNames);
+    public CustomerAlertTableModel(String[] shortNames, LayoutContext context) {
+        super(shortNames, context);
     }
 
     /**
@@ -79,8 +77,8 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
      * This implementation returns {@link VirtualNodeSortConstraint}s for the priority and alert columns.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     @Override
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -188,7 +186,7 @@ public class CustomerAlertTableModel extends AbstractActTableModel {
      * Returns a priority name given its code.
      *
      * @param code the priority code.
-     * @return the priority name, or <tt>code</tt> if none is found
+     * @return the priority name, or {@code code} if none is found
      */
     private String getPriorityName(String code) {
         if (priorities == null) {

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.messaging;
@@ -27,6 +25,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
@@ -43,8 +42,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Query for <em>act.userMessage</em> and <em>act.systemMessage</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MessageQuery extends DateRangeActQuery<Act> {
 
@@ -71,14 +69,15 @@ public class MessageQuery extends DateRangeActQuery<Act> {
 
 
     /**
-     * Constructs a <tt>MessageQuery</tt>.
+     * Constructs a {@code MessageQuery}.
      *
-     * @param user the user to query messages for. May be <tt>null</tt>
+     * @param user    the user to query messages for. May be {@code null}
+     * @param context the layout context
      */
-    public MessageQuery(Entity user) {
+    public MessageQuery(Entity user, LayoutContext context) {
         super(user, "to", "participation.user", ARCHETYPES, STATUSES, Act.class);
 
-        this.user = new IMObjectSelector<Entity>(Messages.get("messaging.user"), UserArchetypes.USER);
+        this.user = new IMObjectSelector<Entity>(Messages.get("messaging.user"), context, UserArchetypes.USER);
         this.user.setListener(new AbstractIMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
                 setEntity(object);
@@ -91,8 +90,8 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
+     * @return the query result set. May be {@code null}
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
@@ -118,7 +117,7 @@ public class MessageQuery extends DateRangeActQuery<Act> {
     /**
      * Returns the user that messages are being queried for.
      *
-     * @return the user. May be <tt>null</tt>
+     * @return the user. May be {@code null}
      */
     public Entity getUser() {
         return user.getObject();
