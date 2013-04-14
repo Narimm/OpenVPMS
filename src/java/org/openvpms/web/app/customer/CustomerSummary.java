@@ -83,22 +83,16 @@ public class CustomerSummary extends PartySummary {
     private Context context;
 
     /**
-     * The help context.
-     */
-    private final HelpContext help;
-
-
-    /**
-     * Constructs a <tt>CustomerSummary</tt>.
+     * Constructs a {@code CustomerSummary}.
      *
      * @param context the context
      * @param help    the help context
      */
     public CustomerSummary(Context context, HelpContext help) {
+        super(help.createTopic("customer/summary"));
         partyRules = new CustomerRules();
         accountRules = new CustomerAccountRules();
         this.context = context;
-        this.help = help;
     }
 
     /**
@@ -164,7 +158,7 @@ public class CustomerSummary extends PartySummary {
                 local.setCustomer(party);
                 Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
                     public void onAction(ActionEvent event) {
-                        SMSDialog dialog = new SMSDialog(contacts, context, help);
+                        SMSDialog dialog = new SMSDialog(contacts, context, getHelpContext().createSubtopic("sms"));
                         dialog.show();
                     }
                 });
@@ -214,8 +208,9 @@ public class CustomerSummary extends PartySummary {
     private Component getEmail(Contact email) {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
-                MailContext mailContext = new CustomerMailContext(context, help);
-                MailDialog dialog = new MailDialog(mailContext, help);
+                HelpContext mail = getHelpContext().createSubtopic("email");
+                MailContext mailContext = new CustomerMailContext(context, mail);
+                MailDialog dialog = new MailDialog(mailContext, mail);
                 dialog.show();
             }
         });

@@ -36,6 +36,7 @@ import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -230,8 +231,9 @@ class PrintDocumentsTask extends AbstractTask {
     private void onMail(TaskContext context) {
         List<IMObject> list = dialog.getSelected();
         if (!list.isEmpty()) {
-            MailContext mailContext = new CustomerMailContext(context, context.getHelpContext());
-            MailDialog dialog = new MailDialog(mailContext, context.getHelpContext());
+            HelpContext email = context.getHelpContext().createSubtopic("email");
+            MailContext mailContext = new CustomerMailContext(context, email);
+            MailDialog dialog = new MailDialog(mailContext, email);
             MailEditor editor = dialog.getMailEditor();
             for (IMObject object : list) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);

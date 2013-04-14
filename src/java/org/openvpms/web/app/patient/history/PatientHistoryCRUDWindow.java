@@ -234,7 +234,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
         if (event == null) {
             throw new IllegalStateException("Failed to create " + PatientArchetypes.CLINICAL_EVENT);
         }
-        LayoutContext layoutContext = createLayoutContext();
+        LayoutContext layoutContext = createLayoutContext(getHelpContext());
         IMObjectEditor editor = IMObjectEditorFactory.create(event, layoutContext);
         editor.getComponent();
         if (editor instanceof AbstractActEditor) {

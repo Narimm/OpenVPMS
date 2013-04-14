@@ -27,6 +27,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -197,8 +198,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
         Column top = ColumnFactory.create(heading);
         if (selector != null) {
             Component select = selector.getComponent();
-            Row wrapper = RowFactory.create("AbstractViewWorkspace.Selector",
-                                            select);
+            Row wrapper = RowFactory.create("AbstractViewWorkspace.Selector", select);
             top.add(wrapper);
         }
 
@@ -243,18 +243,20 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * Invoked when the 'select' button is pressed. This pops up an {@link Browser} to select an object.
      */
     protected void onSelect() {
-        Browser<T> browser = createSelectBrowser();
-        onSelect(browser);
+        HelpContext select = getHelpContext().createSubtopic("select");
+        Browser<T> browser = createSelectBrowser(select);
+        onSelect(browser, select);
     }
 
     /**
      * Invoked when the 'select again' button is pressed. This pops up an {@link Browser} to select an object.
      */
     protected void onSelectAgain() {
-        Browser<T> browser = createSelectBrowser();
+        HelpContext select = getHelpContext().createSubtopic("select");
+        Browser<T> browser = createSelectBrowser(select);
         BrowserStates states = BrowserStates.getInstance();
         states.setBrowserState(browser);
-        onSelect(browser);
+        onSelect(browser, select);
     }
 
     /**
@@ -282,34 +284,33 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * Creates a new dialog to select an object.
      *
      * @param browser the browser
+     * @param help    the help context
      * @return a new dialog
      */
-    protected BrowserDialog<T> createBrowserDialog(Browser<T> browser) {
+    protected BrowserDialog<T> createBrowserDialog(Browser<T> browser, HelpContext help) {
         String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
-        return new BrowserDialog<T>(title, browser, getHelpContext());
+        return new BrowserDialog<T>(title, browser, help);
     }
 
     /**
      * Creates a new browser to select an object.
      *
+     * @param help the help context
      * @return a new browser
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    protected Browser<T> createSelectBrowser() {
-        return BrowserFactory.create(createSelectQuery(), new DefaultLayoutContext(getHelpContext()));
+    protected Browser<T> createSelectBrowser(HelpContext help) {
+        return BrowserFactory.create(createSelectQuery(), new DefaultLayoutContext(help));
     }
 
     /**
      * Creates a new query to select an object.
      *
      * @return a new query
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     protected Query<T> createSelectQuery() {
-        return QueryFactory.create(getArchetypes().getShortNames(),
-                                   GlobalContext.getInstance(), getType());
+        return QueryFactory.create(getArchetypes().getShortNames(), GlobalContext.getInstance(), getType());
     }
 
     /**
@@ -349,9 +350,10 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * Creates a dialog to display the browser.
      *
      * @param browser the browser
+     * @param help    the help context
      */
-    private void onSelect(Browser<T> browser) {
-        final BrowserDialog<T> popup = createBrowserDialog(browser);
+    private void onSelect(Browser<T> browser, HelpContext help) {
+        final BrowserDialog<T> popup = createBrowserDialog(browser, help);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {

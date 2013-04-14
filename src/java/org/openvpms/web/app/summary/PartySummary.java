@@ -12,38 +12,53 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.summary;
 
-import nextapp.echo2.app.*;
-import org.openvpms.component.business.domain.im.act.*;
-import org.openvpms.component.business.domain.im.lookup.*;
-import org.openvpms.component.business.domain.im.party.*;
-import org.openvpms.web.app.alert.*;
-import org.openvpms.web.component.im.query.*;
-import org.openvpms.web.system.*;
+import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.alert.Alert;
+import org.openvpms.web.app.alert.AlertSummary;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.ResultSetIterator;
+import org.openvpms.web.system.ServiceHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
  * Creates summary components for a given party.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class PartySummary {
 
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
+     * Constructs a {@code PartySummary}.
+     *
+     * @param help the help context
+     */
+    public PartySummary(HelpContext help) {
+        this.help = help;
+    }
 
     /**
      * Returns summary information for a party.
      * <p/>
      * The summary includes any alerts.
      *
-     * @param party the party. May be <tt>null</tt>
-     * @return a summary component, or <tt>null</tt> if there is no summary
+     * @param party the party. May be {@code null}
+     * @return a summary component, or {@code null} if there is no summary
      */
     public Component getSummary(Party party) {
         Component result = null;
@@ -51,6 +66,13 @@ public abstract class PartySummary {
             result = createSummary(party);
         }
         return result;
+    }
+
+    /**
+     * Returns the help context.
+     */
+    protected HelpContext getHelpContext() {
+        return help;
     }
 
     /**
@@ -67,14 +89,14 @@ public abstract class PartySummary {
      * Creates an alert summary for the specified party.
      *
      * @param party the party
-     * @return the party's alerts, or <tt>null</tt> if the party has no alerts
+     * @return the party's alerts, or {@code null} if the party has no alerts
      */
     public AlertSummary getAlertSummary(Party party) {
         AlertSummary result = null;
         List<Alert> alerts = getAlerts(party);
         if (!alerts.isEmpty()) {
             Collections.sort(alerts);
-            result = new AlertSummary(alerts);
+            result = new AlertSummary(alerts, help);
         }
         return result;
     }

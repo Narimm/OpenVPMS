@@ -69,7 +69,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
 
 
     /**
-     * Constructs an <tt>ActCRUDWindow</tt>.
+     * Constructs an {@code ActCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param actions    determines the operations that may be performed on the selected object
@@ -82,7 +82,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     /**
      * Sets the object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(T object) {
@@ -137,10 +137,11 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
         final T act = getObject();
         if (act != null && getActions().canPost(act)) {
             try {
+                HelpContext help = getHelpContext().createSubtopic("post");
                 String displayName = getArchetypes().getDisplayName();
                 String title = Messages.get("act.post.title", displayName);
                 String message = Messages.get("act.post.message", displayName);
-                final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+                final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -285,7 +286,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      * Posts the act. This changes the act's status to POSTED, and saves it.
      *
      * @param act the act to post
-     * @return <tt>true</tt> if the act was saved
+     * @return {@code true} if the act was saved
      */
     protected boolean post(T act) {
         ActActions<T> operations = getActions();

@@ -167,21 +167,20 @@ public final class BrowserFactory {
     }
 
     /**
-     * Attempts to create a new browser, using the BrowserImpl(Query<T>)
+     * Attempts to create a new browser, using the BrowserImpl(Query<T>, LayoutContext)
      * constructor.
      *
-     * @param handler the {@link Browser} implementation
+     * @param handler the {@link org.openvpms.web.component.im.query.Browser} implementation
      * @param query   the query
-     * @return a new browser, or {@code null} if no appropriate constructor
-     *         can be found or construction fails
+     * @param context the layout context
+     * @return a new browser, or {@code null} if no appropriate constructor can be found or construction fails
      */
     @SuppressWarnings("unchecked")
-    private static <T> Browser<T> create(
-            ArchetypeHandler<Browser> handler, Query<T> query) {
+    private static <T> Browser<T> create(ArchetypeHandler<Browser> handler, Query<T> query, LayoutContext context) {
         Browser<T> result = null;
         try {
-            Object[] args = {query};
-            Class[] types = {query.getClass()};
+            Object[] args = {query, context};
+            Class[] types = {query.getClass(), LayoutContext.class};
             result = (Browser<T>) handler.create(args, types);
         } catch (Throwable exception) {
             log.error(exception, exception);
@@ -209,7 +208,7 @@ public final class BrowserFactory {
             Class[] types = {query.getClass(), SortConstraint[].class, LayoutContext.class};
             result = (Browser<T>) handler.create(args, types);
         } catch (NoSuchMethodException ignore) {
-            result = create(handler, query);
+            result = create(handler, query, context);
         } catch (Throwable exception) {
             log.error(exception, exception);
         }

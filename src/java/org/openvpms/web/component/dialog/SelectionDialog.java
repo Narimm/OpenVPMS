@@ -109,7 +109,7 @@ public class SelectionDialog extends PopupDialog {
      * @param help    the help context. May be {@code null}
      */
     public SelectionDialog(String title, String message, ListBox list, HelpContext help) {
-        super(title, STYLE, OK_CANCEL);
+        super(title, STYLE, OK_CANCEL, help);
         setModal(true);
         focus = new FocusCommand();
 

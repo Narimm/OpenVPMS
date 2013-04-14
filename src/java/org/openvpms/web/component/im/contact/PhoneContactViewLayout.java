@@ -32,6 +32,7 @@ import org.openvpms.web.app.sms.SMSDialog;
 import org.openvpms.web.app.sms.SMSHelper;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -93,7 +94,8 @@ public class PhoneContactViewLayout extends AbstractLayoutStrategy {
      * @param context the layout context
      */
     private void onSend(Contact contact, LayoutContext context) {
-        SMSDialog dialog = new SMSDialog(contact, context.getContext(), context.getHelpContext());
+        HelpContext help = context.getHelpContext().createSubtopic("sms");
+        SMSDialog dialog = new SMSDialog(contact, context.getContext(), help);
         dialog.show();
     }
 }

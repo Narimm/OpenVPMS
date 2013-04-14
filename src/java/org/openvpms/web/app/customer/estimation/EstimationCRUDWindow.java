@@ -151,7 +151,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     protected void onCopy() {
         Act object = getObject();
         try {
-            String title = Messages.get("customer.estimation.copy.title",
+            String title = Messages.get("customer.estimate.copy.title",
                                         object.getTitle());
             Act copy = rules.copy(object, title);
             setObject(copy);
@@ -160,7 +160,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
                 listener.saved(copy, true);
             }
         } catch (OpenVPMSException exception) {
-            String title = Messages.get("customer.estimation.copy.failed");
+            String title = Messages.get("customer.estimate.copy.failed");
             ErrorHelper.show(title, exception);
         }
     }
@@ -173,14 +173,14 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         if (act != null) {
             String status = act.getStatus();
             if (CANCELLED.equals(status) || INVOICED.equals(status)) {
-                showStatusError(act, "customer.estimation.noinvoice.title",
-                                "customer.estimation.noinvoice.message");
+                showStatusError(act, "customer.estimate.noinvoice.title", "customer.estimate.noinvoice.message");
             } else if (expired(act)) {
-                showStatusError(act, "customer.estimation.expired.title", "customer.estimation.expired.message");
+                showStatusError(act, "customer.estimate.expired.title", "customer.estimate.expired.message");
             } else {
-                String title = Messages.get("customer.estimation.invoice.title");
-                String message = Messages.get("customer.estimation.invoice.message");
-                ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+                String title = Messages.get("customer.estimate.invoice.title");
+                String message = Messages.get("customer.estimate.invoice.message");
+                HelpContext help = getHelpContext().createSubtopic("invoice");
+                ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -218,8 +218,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         try {
             final FinancialAct invoice = getInvoice(estimation);
             if (invoice != null) {
-                String title = Messages.get("customer.estimation.existinginvoice.title");
-                String message = Messages.get("customer.estimation.existinginvoice.message");
+                String title = Messages.get("customer.estimate.existinginvoice.title");
+                String message = Messages.get("customer.estimate.existinginvoice.message");
                 ConfirmationDialog dialog = new ConfirmationDialog(title, message);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
@@ -232,7 +232,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
                 invoice(estimation, invoice);
             }
         } catch (OpenVPMSException exception) {
-            String title = Messages.get("customer.estimation.invoice.failed");
+            String title = Messages.get("customer.estimate.invoice.failed");
             ErrorHelper.show(title, exception);
         }
     }
@@ -248,7 +248,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
                 }
             });
         } catch (OpenVPMSException exception) {
-            String title = Messages.get("customer.estimation.invoice.failed");
+            String title = Messages.get("customer.estimate.invoice.failed");
             ErrorHelper.show(title, exception);
         }
     }

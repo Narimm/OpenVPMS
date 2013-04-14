@@ -93,7 +93,8 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Merges the current customer with another.
      */
     private void onMerge() {
-        final MergeWorkflow workflow = new CustomerMergeWorkflow(getObject(), getHelpContext());
+        HelpContext help = getHelpContext().createSubtopic("merge");
+        final MergeWorkflow workflow = new CustomerMergeWorkflow(getObject(), help);
         workflow.addTaskListener(new DefaultTaskListener() {
             /**
              * Invoked when a task event occurs.

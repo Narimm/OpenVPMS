@@ -48,9 +48,7 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
     /**
      * The customer archetype short names.
      */
-    private static final String[] CUSTOMER_SHORT_NAMES = {
-            "party.customer*", "party.organisationOTC"
-    };
+    private static final String[] CUSTOMER_SHORT_NAMES = {"party.customer*", "party.organisationOTC"};
 
 
     /**
@@ -59,7 +57,7 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @param context the context
      */
     public ChargeWorkspace(Context context) {
-        super("customer", "invoice", context);
+        super("customer", "charge", context);
         setArchetypes(Party.class, CUSTOMER_SHORT_NAMES);
         setChildArchetypes(FinancialAct.class, "act.customerAccountCharges*");
     }

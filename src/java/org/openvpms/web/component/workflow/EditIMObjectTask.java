@@ -428,7 +428,7 @@ public class EditIMObjectTask extends AbstractTask {
                     // make sure the the last saved instance is being deleted
                     // to avoid validation errors
                     IMObjectDeletor deletor = new SilentIMObjectDeletor();
-                    deletor.delete(object, new DefaultIMObjectDeletionListener(), context.getHelpContext());
+                    deletor.delete(object, context.getHelpContext(), new DefaultIMObjectDeletionListener());
                 }
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

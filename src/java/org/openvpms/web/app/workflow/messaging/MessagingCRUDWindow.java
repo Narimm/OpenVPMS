@@ -174,7 +174,8 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     private void onReply() {
         Act reply = copyObject();
-        LayoutContext layoutContext = createLayoutContext();
+        HelpContext help = getHelpContext().createSubtopic("reply");
+        LayoutContext layoutContext = createLayoutContext(help);
         UserMessageEditor editor = new UserMessageEditor(reply, null, layoutContext);
         Message message = new Message(getObject());
 
@@ -185,7 +186,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
                                    message.getMessage());
         editor.setSubject(subject);
         editor.setMessage(text);
-        edit(editor, Messages.get("workflow.messaging.reply.title"));
+        edit(editor, Messages.get("workflow.messaging.reply.title"), help);
     }
 
     /**
@@ -193,7 +194,8 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     private void onForward() {
         Act forward = copyObject();
-        LayoutContext layoutContext = createLayoutContext();
+        HelpContext help = getHelpContext().createSubtopic("forward");
+        LayoutContext layoutContext = createLayoutContext(help);
         UserMessageEditor editor = new UserMessageEditor(forward, null, layoutContext);
         Message message = new Message(getObject());
 
@@ -203,7 +205,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
         editor.setTo(null);
         editor.setSubject(subject);
         editor.setMessage(text);
-        edit(editor, Messages.get("workflow.messaging.forward.title"));
+        edit(editor, Messages.get("workflow.messaging.forward.title"), help);
     }
 
     /**
@@ -211,9 +213,10 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      *
      * @param editor the editor
      * @param title  the dialog title
+     * @param help   the help context
      */
-    private void edit(IMObjectEditor editor, String title) {
-        EditDialog dialog = edit(editor);
+    private void edit(IMObjectEditor editor, String title, HelpContext help) {
+        EditDialog dialog = edit(editor, help);
         if (dialog != null) {
             dialog.setTitle(title);
         }

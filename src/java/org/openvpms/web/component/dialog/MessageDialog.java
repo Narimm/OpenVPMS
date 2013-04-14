@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.dialog;
@@ -21,6 +19,7 @@ package org.openvpms.web.component.dialog;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
@@ -28,8 +27,7 @@ import org.openvpms.web.component.util.RowFactory;
 /**
  * A generic modal dialog that displays a message.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class MessageDialog extends PopupDialog {
 
@@ -50,7 +48,7 @@ public abstract class MessageDialog extends PopupDialog {
 
 
     /**
-     * Creates a new <code>MessageDialog</code>.
+     * Constructs a {@code MessageDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
@@ -61,16 +59,40 @@ public abstract class MessageDialog extends PopupDialog {
     }
 
     /**
-     * Creates a new <code>MessageDialog</code>.
+     * Constructs a {@code MessageDialog}.
+     *
+     * @param title   the dialog title
+     * @param message the message to display
+     * @param buttons the buttons to display
+     * @param help    the help context. May be {@code null}
+     */
+    public MessageDialog(String title, String message, String[] buttons, HelpContext help) {
+        this(title, message, STYLE, buttons, help);
+    }
+
+    /**
+     * Constructs a {@code MessageDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
      * @param style   the dialog style
      * @param buttons the buttons to display
      */
-    public MessageDialog(String title, String message, String style,
-                         String[] buttons) {
-        super(title, style, buttons);
+    public MessageDialog(String title, String message, String style, String[] buttons) {
+        this(title, message, style, buttons, null);
+    }
+
+    /**
+     * Constructs a {@code MessageDialog}.
+     *
+     * @param title   the dialog title
+     * @param message the message to display
+     * @param style   the dialog style
+     * @param buttons the buttons to display
+     * @param help    the help context. May be {@code null}
+     */
+    public MessageDialog(String title, String message, String style, String[] buttons, HelpContext help) {
+        super(title, style, buttons, help);
         this.message = message;
         setModal(true);
         focus = new FocusCommand();

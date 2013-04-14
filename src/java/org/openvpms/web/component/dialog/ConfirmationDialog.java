@@ -12,18 +12,17 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.dialog;
 
 
+import org.openvpms.web.component.help.HelpContext;
+
 /**
  * A modal dialog that prompts the user to select an OK or Cancel button.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ConfirmationDialog extends MessageDialog {
 
@@ -34,7 +33,7 @@ public class ConfirmationDialog extends MessageDialog {
 
 
     /**
-     * Constructs a new <code>ConfirmationDialog</code>.
+     * Constructs a {@code ConfirmationDialog}.
      *
      * @param title   the window title
      * @param message the message
@@ -44,7 +43,18 @@ public class ConfirmationDialog extends MessageDialog {
     }
 
     /**
-     * Constructs a new <code>ConfirmationDialog</code>.
+     * Constructs a {@code ConfirmationDialog}.
+     *
+     * @param title   the window title
+     * @param message the message
+     * @param help    the help context. May be {@code null}
+     */
+    public ConfirmationDialog(String title, String message, HelpContext help) {
+        this(title, message, OK_CANCEL, help);
+    }
+
+    /**
+     * Constructs a {@code ConfirmationDialog}.
      *
      * @param title   the window title
      * @param message the message
@@ -55,16 +65,41 @@ public class ConfirmationDialog extends MessageDialog {
     }
 
     /**
-     * Constructs a new <code>ConfirmationDialog</code>.
+     * Constructs a {@code ConfirmationDialog}.
+     *
+     * @param title   the window title
+     * @param message the message
+     * @param buttons the buttons to display
+     * @param help    the help context. May be {@code null}
+     */
+    public ConfirmationDialog(String title, String message, String[] buttons, HelpContext help) {
+        super(title, message, STYLE, buttons, help);
+    }
+
+    /**
+     * Constructs a {@code ConfirmationDialog}.
      *
      * @param title             the window title
      * @param message           the message
-     * @param disableOKShortcut if <code>true</code> disable any shortcut on the
-     *                          OK button
+     * @param disableOKShortcut if {@code true} disable any shortcut on the OK button
      */
-    public ConfirmationDialog(String title, String message,
-                              boolean disableOKShortcut) {
+    public ConfirmationDialog(String title, String message, boolean disableOKShortcut) {
         super(title, message, new String[0]);
+        addButton(OK_ID, disableOKShortcut);
+        addButton(CANCEL_ID, false);
+        setDefaultButton(CANCEL_ID);
+    }
+
+    /**
+     * Constructs a {@code ConfirmationDialog}.
+     *
+     * @param title             the window title
+     * @param message           the message
+     * @param disableOKShortcut if {@code true} disable any shortcut on the OK button
+     * @param help              the help context. May be {@code null}
+     */
+    public ConfirmationDialog(String title, String message, boolean disableOKShortcut, HelpContext help) {
+        super(title, message, new String[0], help);
         addButton(OK_ID, disableOKShortcut);
         addButton(CANCEL_ID, false);
         setDefaultButton(CANCEL_ID);

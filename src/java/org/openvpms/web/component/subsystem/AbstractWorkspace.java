@@ -51,7 +51,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
     private Component component;
 
     /**
-     * The subsystem localistion id.
+     * The subsystem localisation id.
      */
     private final String subsystemId;
 
@@ -370,7 +370,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the help topic
      */
     protected String getHelpTopic() {
-        return "workspace/" + subsystemId + "/" + workspaceId;
+        return subsystemId + "/" + workspaceId;
     }
 
 }

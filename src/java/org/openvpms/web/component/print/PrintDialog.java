@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.print;
@@ -27,6 +25,7 @@ import nextapp.echo2.app.list.DefaultListModel;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -38,8 +37,7 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Print dialog.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PrintDialog extends PopupDialog {
 
@@ -75,14 +73,14 @@ public class PrintDialog extends PopupDialog {
 
 
     /**
-     * Constructs a <tt>PrintDialog</tt>.
+     * Constructs a {@code PrintDialog}.
      */
     public PrintDialog() {
         this(Messages.get("printdialog.title"));
     }
 
     /**
-     * Constructs a new <tt>PrintDialog</tt>.
+     * Constructs a {@code PrintDialog}.
      *
      * @param title the window title
      */
@@ -91,26 +89,38 @@ public class PrintDialog extends PopupDialog {
     }
 
     /**
-     * Constructs a new <tt>PrintDialog</tt>.
+     * Constructs a {@code PrintDialog}.
      *
      * @param title   the window title
-     * @param preview if <tt>true</tt> add a 'preview' button
+     * @param preview if {@code true} add a 'preview' button
      */
     public PrintDialog(String title, boolean preview) {
         this(title, preview, true, false);
     }
 
     /**
-     * Constructs a new <tt>PrintDialog</tt>.
+     * Constructs a {@code PrintDialog}.
      *
      * @param title   the window title
-     * @param preview if <tt>true</tt> add a 'preview' button
-     * @param mail    if <tt>true</tt> add a 'mail' button
-     * @param skip    if <tt>triue</tt> display a 'skip' button that simply
-     *                closes the dialog
+     * @param preview if {@code true} add a 'preview' button
+     * @param mail    if {@code true} add a 'mail' button
+     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
      */
     public PrintDialog(String title, boolean preview, boolean mail, boolean skip) {
-        super(title, "PrintDialog", (skip) ? OK_SKIP_CANCEL : OK_CANCEL);
+        this(title, preview, mail, skip, null);
+    }
+
+    /**
+     * Constructs a {@code PrintDialog}.
+     *
+     * @param title   the window title
+     * @param preview if {@code true} add a 'preview' button
+     * @param mail    if {@code true} add a 'mail' button
+     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param help    the help context. May be {@code null}
+     */
+    public PrintDialog(String title, boolean preview, boolean mail, boolean skip, HelpContext help) {
+        super(title, "PrintDialog", (skip) ? OK_SKIP_CANCEL : OK_CANCEL, help);
         setModal(true);
         copies = new SpinBox(1, 99);
         DefaultListModel model = new DefaultListModel(
@@ -123,7 +133,7 @@ public class PrintDialog extends PopupDialog {
     /**
      * Sets the default printer.
      *
-     * @param name the default printer name. May be <tt>null</tt>
+     * @param name the default printer name. May be {@code null}
      */
     public void setDefaultPrinter(String name) {
         DefaultListModel model = (DefaultListModel) printers.getModel();
@@ -136,7 +146,7 @@ public class PrintDialog extends PopupDialog {
     /**
      * Returns the selected printer.
      *
-     * @return the selected printer, or <tt>null</tt> if none is selected
+     * @return the selected printer, or {@code null} if none is selected
      */
     public String getPrinter() {
         return (String) printers.getSelectedItem();

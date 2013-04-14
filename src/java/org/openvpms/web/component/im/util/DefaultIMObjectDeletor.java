@@ -64,13 +64,15 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
      *
      * @param object   the object
      * @param listener the listener
+     * @param help     the help context
      */
     @Override
-    protected <T extends IMObject> void deactivate(final T object, final IMObjectDeletionListener<T> listener) {
+    protected <T extends IMObject> void deactivate(final T object, final IMObjectDeletionListener<T> listener,
+                                                   HelpContext help) {
         String type = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("imobject.deactivate.title", type);
         String message = Messages.get("imobject.deactivate.message", object.getName());
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, true);
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, true, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -84,20 +86,21 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
      * Invoked when an object cannot be de deleted, and has already been deactivated.
      *
      * @param object the object
+     * @param help   the help context
      */
-    protected <T extends IMObject> void deactivated(T object) {
+    protected <T extends IMObject> void deactivated(T object, HelpContext help) {
         String message = Messages.get("imobject.delete.deactivated", DescriptorHelper.getDisplayName(object),
                                       object.getName());
-        ErrorDialog.show(message);
+        ErrorDialog.show(message, help);
     }
 
     /**
-     * Pops up a dialog prompting if deletion of an object should proceed,
-     * deleting it if OK is selected.
+     * Pops up a dialog prompting if deletion of an object should proceed, deleting it if OK is selected.
      *
      * @param object     the object to delete
      * @param listener   the listener to notify
      * @param messageKey the message resource bundle key
+     * @param help       the help context
      */
     private <T extends IMObject> void confirmDelete(final T object, final IMObjectDeletionListener<T> listener,
                                                     String messageKey, final HelpContext help) {
@@ -105,7 +108,7 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
         String title = Messages.get("imobject.delete.title", type);
         String name = (object.getName() != null) ? object.getName() : type;
         String message = Messages.get(messageKey, name);
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, true);
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, true, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

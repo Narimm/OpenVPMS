@@ -141,7 +141,7 @@ public final class IMObjectCreator {
                 }
             }
 
-            final SelectionDialog dialog = new SelectionDialog(title, message, list);
+            final SelectionDialog dialog = new SelectionDialog(title, message, list, help);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     int selected = dialog.getSelectedIndex();

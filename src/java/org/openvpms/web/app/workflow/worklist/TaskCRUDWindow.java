@@ -110,10 +110,11 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
      * Creates a layout context for editing an object.
      *
      * @return a new layout context.
+     * @param help
      */
     @Override
-    protected LayoutContext createLayoutContext() {
-        LayoutContext context = super.createLayoutContext();
+    protected LayoutContext createLayoutContext(HelpContext help) {
+        LayoutContext context = super.createLayoutContext(help);
 
         // create a local context - don't want don't want to pick up the current clinician
         Context local = new LocalClinicianContext(GlobalContext.getInstance());

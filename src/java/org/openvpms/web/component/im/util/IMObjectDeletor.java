@@ -49,10 +49,10 @@ public abstract class IMObjectDeletor {
      * Attempts to delete an object.
      *
      * @param object   the object to delete
-     * @param listener the listener to notify
      * @param help     the help context
+     * @param listener the listener to notify
      */
-    public <T extends IMObject> void delete(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
+    public <T extends IMObject> void delete(T object, HelpContext help, IMObjectDeletionListener<T> listener) {
         try {
             if (object instanceof Entity) {
                 Entity entity = (Entity) object;
@@ -64,9 +64,9 @@ public abstract class IMObjectDeletor {
                 }
                 if (hasParticipations(entity, participations)) {
                     if (object.isActive()) {
-                        deactivate(object, listener);
+                        deactivate(object, listener, help);
                     } else {
-                        deactivated(object);
+                        deactivated(object, help);
                     }
                 } else if (hasRelationships(entity)) {
                     removeWithRelationships(object, listener, help);
@@ -106,15 +106,18 @@ public abstract class IMObjectDeletor {
      *
      * @param object   the object to deactivate
      * @param listener the listener
+     * @param help     the help context
      */
-    protected abstract <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener);
+    protected abstract <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener, 
+                                                            HelpContext help);
 
     /**
      * Invoked when an object cannot be de deleted, and has already been deactivated.
      *
      * @param object the object
+     * @param help   the help context
      */
-    protected abstract <T extends IMObject> void deactivated(T object);
+    protected abstract <T extends IMObject> void deactivated(T object, HelpContext help);
 
 
     /**
@@ -123,7 +126,7 @@ public abstract class IMObjectDeletor {
      * @param object   the object to delete
      * @param listener the listener to notify
      * @param help     the help context
-     * @return <tt>true</tt> if the object was deleted successfully
+     * @return {@code true} if the object was deleted successfully
      */
     protected <T extends IMObject> boolean doRemove(final T object, final IMObjectDeletionListener<T> listener,
                                                     HelpContext help) {
@@ -153,7 +156,7 @@ public abstract class IMObjectDeletor {
      *
      * @param object   the object to deactivate
      * @param listener the listener to notify
-     * @return <tt>true</tt> if the object was deactivated successfully
+     * @return {@code true} if the object was deactivated successfully
      */
     protected <T extends IMObject> boolean doDeactivate(T object, IMObjectDeletionListener<T> listener) {
         boolean deactivated = false;
@@ -175,7 +178,7 @@ public abstract class IMObjectDeletor {
      *
      * @param entity    the entity
      * @param shortName the participation archetype short name.
-     * @return <tt>true</tt> if the entity has participations, otherwise <tt>false</tt>
+     * @return {@code true} if the entity has participations, otherwise {@code false}
      * @throws ArchetypeServiceException for any error
      */
     protected boolean hasParticipations(Entity entity, String shortName) {
@@ -190,7 +193,7 @@ public abstract class IMObjectDeletor {
      * Determines if an entity has any relationships where it is the source
      *
      * @param entity the entity
-     * @return <tt>true</tt> if the entity has relationships where it is the source, ortherwise <tt>false</tt>
+     * @return {@code true} if the entity has relationships where it is the source, ortherwise {@code false}
      */
     protected boolean hasRelationships(Entity entity) {
         IMObjectReference ref = entity.getObjectReference();
@@ -219,7 +222,7 @@ public abstract class IMObjectDeletor {
         private IMObjectDeletionListener<T> listener;
 
         /**
-         * Constructs a <tt>DeletionListenerAdapter</tt>.
+         * Constructs a {@code DeletionListenerAdapter}.
          *
          * @param object   the object to pass to the listener
          * @param listener the listener to delegate to

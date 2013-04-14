@@ -99,16 +99,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Edits an object.
      *
      * @param editor the object editor
+     * @param help   the help context
      * @return the edit dialog
      */
     @Override
-    protected EditDialog edit(IMObjectEditor editor) {
+    protected EditDialog edit(IMObjectEditor editor, HelpContext help) {
         Date startTime = browser.getSelectedTime();
-        if (startTime != null && editor.getObject().isNew()
-                && editor instanceof AppointmentActEditor) {
+        if (startTime != null && editor.getObject().isNew() && editor instanceof AppointmentActEditor) {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
-        return super.edit(editor);
+        return super.edit(editor, help);
     }
 
     /**
@@ -175,11 +175,12 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     /**
      * Creates a layout context for editing an object.
      *
+     * @param help the help context
      * @return a new layout context.
      */
     @Override
-    protected LayoutContext createLayoutContext() {
-        LayoutContext context = super.createLayoutContext();
+    protected LayoutContext createLayoutContext(HelpContext help) {
+        LayoutContext context = super.createLayoutContext(help);
 
         // create a local context - don't want to pick up the current clinician
         Context local = new LocalClinicianContext(GlobalContext.getInstance());
@@ -191,10 +192,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Creates a new edit dialog.
      *
      * @param editor the editor
+     * @param help   the help context
      */
     @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new AppointmentEditDialog(editor, getHelpContext());
+    protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
+        return new AppointmentEditDialog(editor, help);
     }
 
     /**
@@ -341,9 +343,10 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * @param startTime   the new start time
      */
     private void paste(Act appointment, Entity schedule, Date startTime) {
-        DefaultLayoutContext context = new DefaultLayoutContext(getHelpContext());
+        HelpContext edit = createEditTopic(appointment);
+        DefaultLayoutContext context = new DefaultLayoutContext(edit);
         AppointmentActEditor editor = new AppointmentActEditor(appointment, null, context);
-        EditDialog dialog = edit(editor);  // NOTE: need to update the start time after dialog is created
+        EditDialog dialog = edit(editor, edit);  // NOTE: need to update the start time after dialog is created
         editor.setSchedule(schedule);      //       See AppointmentEditDialog.timesModified().
         editor.setStartTime(startTime); // will recalc end time
         dialog.save(true);              // checks for overlapping appointments
