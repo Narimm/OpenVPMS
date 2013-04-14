@@ -33,7 +33,7 @@ public class SilentIMObjectDeletor extends IMObjectDeletor {
      *
      * @param object   the object to remove
      * @param listener the listener to notify
-     * @param help the help context
+     * @param help     the help context
      */
     protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
         doRemove(object, listener, help);
@@ -44,7 +44,7 @@ public class SilentIMObjectDeletor extends IMObjectDeletor {
      *
      * @param object   the object to remove
      * @param listener the listener to notify
-     * @param help  the help context
+     * @param help     the help context
      */
     protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener,
                                                                 HelpContext help) {
@@ -56,8 +56,9 @@ public class SilentIMObjectDeletor extends IMObjectDeletor {
      *
      * @param object   the object to deactivate
      * @param listener the listener
+     * @param help     the help context
      */
-    protected <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener) {
+    protected <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
         doDeactivate(object, listener);
     }
 
@@ -65,7 +66,8 @@ public class SilentIMObjectDeletor extends IMObjectDeletor {
      * Invoked when an object cannot be de deleted, and has already been deactivated.
      *
      * @param object the object
+     * @param help   the help context
      */
-    protected <T extends IMObject> void deactivated(T object) {
+    protected <T extends IMObject> void deactivated(T object, HelpContext help) {
     }
 }

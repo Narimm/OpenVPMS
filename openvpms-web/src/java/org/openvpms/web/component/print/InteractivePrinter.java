@@ -315,7 +315,7 @@ public class InteractivePrinter implements Printer {
             title = Messages.get("printdialog.title");
         }
         boolean mail = context != null;
-        return new PrintDialog(title, true, mail, skip) {
+        return new PrintDialog(title, true, mail, skip, help) {
             @Override
             protected void onPreview() {
                 doPrintPreview();
@@ -411,7 +411,7 @@ public class InteractivePrinter implements Printer {
     protected void doMail(final PrintDialog parent) {
         try {
             Document document = getDocument(DocFormats.PDF_TYPE, true);
-            final MailDialog dialog = new MailDialog(context, help);
+            final MailDialog dialog = new MailDialog(context, help.createSubtopic("email"));
             MailEditor editor = dialog.getMailEditor();
             editor.setSubject(getDisplayName());
             editor.addAttachment(document);

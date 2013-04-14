@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.alert;
 
@@ -34,6 +32,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
@@ -53,8 +53,7 @@ import java.util.Map;
 /**
  * Displays alerts in a popup dialog.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AlertsViewer extends PopupDialog {
 
@@ -79,12 +78,13 @@ public class AlertsViewer extends PopupDialog {
     private Component viewer;
 
     /**
-     * Constructs an <tt>AlertsViewer</tt> to display alerts for a single alert type.
+     * Constructs an {@code AlertsViewer} to display alerts for a single alert type.
      *
      * @param alert the alerts
+     * @param help  the help context
      */
-    public AlertsViewer(Alert alert) {
-        this(Arrays.asList(alert));
+    public AlertsViewer(Alert alert, HelpContext help) {
+        this(Arrays.asList(alert), help);
         if (alert.getAlert() != null) {
             setTitle(DescriptorHelper.getDisplayName(alert.getAlert()));
         } else {
@@ -93,12 +93,13 @@ public class AlertsViewer extends PopupDialog {
     }
 
     /**
-     * Constructs an <tt>AlertsViewer</tt> to display alerts for multiple alert types.
+     * Constructs an {@code AlertsViewer} to display alerts for multiple alert types.
      *
      * @param alerts the alerts
+     * @param help   the help context
      */
-    public AlertsViewer(List<Alert> alerts) {
-        super(Messages.get("alerts.title"), "AlertsViewer", CLOSE);
+    public AlertsViewer(List<Alert> alerts, HelpContext help) {
+        super(Messages.get("alerts.title"), "AlertsViewer", CLOSE, help);
         setModal(true);
         this.alerts = alerts;
     }
@@ -146,7 +147,7 @@ public class AlertsViewer extends PopupDialog {
     /**
      * Shows an alert.
      *
-     * @param alert the alert to show. May be <tt>null</tt>
+     * @param alert the alert to show. May be {@code null}
      */
     private void show(Alert alert) {
         if (alert != null) {
@@ -154,7 +155,8 @@ public class AlertsViewer extends PopupDialog {
                 column.remove(viewer);
             }
             if (alert.getAlert() != null) {
-                viewer = new IMObjectViewer(alert.getAlert(), null).getComponent();
+                DefaultLayoutContext context = new DefaultLayoutContext(getHelpContext());
+                viewer = new IMObjectViewer(alert.getAlert(), context).getComponent();
             } else {
                 viewer = LabelFactory.create("alert.nodetail", "bold");
                 ColumnLayoutData layout = new ColumnLayoutData();
@@ -188,7 +190,7 @@ public class AlertsViewer extends PopupDialog {
         private Map<String, String> priorities;
 
         /**
-         * Constructs a new <tt>Model</tt>.
+         * Constructs a new {@code Model}.
          */
         public Model() {
             DefaultTableColumnModel model = new DefaultTableColumnModel();
@@ -202,9 +204,9 @@ public class AlertsViewer extends PopupDialog {
          * Returns the sort criteria.
          *
          * @param column    the primary sort column
-         * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-         *                  sort in <tt>descending</tt> order
-         * @return the sort criteria, or <tt>null</tt> if the column isn't
+         * @param ascending if {@code true} sort in ascending order; otherwise
+         *                  sort in {@code descending} order
+         * @return the sort criteria, or {@code null} if the column isn't
          *         sortable
          */
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -279,7 +281,7 @@ public class AlertsViewer extends PopupDialog {
          * Returns a priority name given its code.
          *
          * @param code the priority code.
-         * @return the priority name, or <tt>code</tt> if none is found
+         * @return the priority name, or {@code code} if none is found
          */
         private String getPriorityName(String code) {
             if (priorities == null) {

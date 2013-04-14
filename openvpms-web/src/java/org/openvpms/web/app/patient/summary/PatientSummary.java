@@ -67,11 +67,6 @@ import java.util.List;
 public class PatientSummary extends PartySummary {
 
     /**
-     * The help context.
-     */
-    private final HelpContext help;
-
-    /**
      * The patient rules.
      */
     private final PatientRules rules;
@@ -88,7 +83,7 @@ public class PatientSummary extends PartySummary {
      * @param help the help context
      */
     public PatientSummary(HelpContext help) {
-        this.help = help;
+        super(help);
         rules = (PatientRules) ServiceHelper.getContext().getBean("patientRules");
         reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(), rules);
     }
@@ -235,7 +230,8 @@ public class PatientSummary extends PartySummary {
      * @param patient the patient
      */
     private void onShowReminders(Party patient) {
-        PagedIMTable<Act> table = new PagedIMTable<Act>(new ReminderTableModel(help), getReminders(patient));
+        PagedIMTable<Act> table = new PagedIMTable<Act>(new ReminderTableModel(getHelpContext()),
+                                                        getReminders(patient));
         table.getTable().setDefaultRenderer(Object.class, new ReminderTableCellRenderer());
         new ViewerDialog(Messages.get("patient.summary.reminders"), "PatientSummary.ReminderDialog", table);
     }

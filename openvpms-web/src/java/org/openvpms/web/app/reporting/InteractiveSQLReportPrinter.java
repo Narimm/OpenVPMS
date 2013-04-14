@@ -129,7 +129,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
      * @param document the document to mail
      */
     private void mail(Document document) {
-        MailDialog dialog = new MailDialog(getMailContext(), getHelpContext());
+        MailDialog dialog = new MailDialog(getMailContext(), getHelpContext().createSubtopic("email"));
         MailEditor editor = dialog.getMailEditor();
         editor.addAttachment(document);
         editor.setSubject(getDisplayName());

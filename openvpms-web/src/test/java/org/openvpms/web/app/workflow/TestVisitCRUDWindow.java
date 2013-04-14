@@ -68,20 +68,21 @@ public class TestVisitCRUDWindow extends VisitCRUDWindow {
     public void addNote() {
         Act act = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_NOTE);
         assertNotNull(act);
-        LayoutContext context = createLayoutContext();
+        LayoutContext context = createLayoutContext(getHelpContext());
         IMObjectEditor editor = createEditor(act, context);
-        edit(editor);
+        edit(editor, getHelpContext());
     }
 
     /**
      * Edits an object.
      *
      * @param editor the object editor
+     * @param help   the help context
      * @return the edit dialog
      */
     @Override
-    protected EditDialog edit(IMObjectEditor editor) {
-        EditDialog dialog = super.edit(editor);
+    protected EditDialog edit(IMObjectEditor editor, HelpContext help) {
+        EditDialog dialog = super.edit(editor, help);
         fireDialogButton(dialog, PopupDialog.OK_ID);
         return dialog;
     }

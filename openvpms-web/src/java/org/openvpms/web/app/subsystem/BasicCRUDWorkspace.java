@@ -17,6 +17,7 @@
 package org.openvpms.web.app.subsystem;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.select.IMObjectSelector;
@@ -101,12 +102,13 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
      * This implementation adds a 'New' button.
      *
      * @param browser the browser
+     * @param help    the help context
      * @return a new dialog
      */
     @Override
-    protected BrowserDialog<T> createBrowserDialog(Browser<T> browser) {
+    protected BrowserDialog<T> createBrowserDialog(Browser<T> browser, HelpContext help) {
         String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
-        return new BrowserDialog<T>(title, browser, true, getHelpContext());
+        return new BrowserDialog<T>(title, browser, true, help);
     }
 
     /**

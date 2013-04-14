@@ -254,7 +254,7 @@ public class MailDialog extends PopupDialog {
     private void attach() {
         final FocusCommand focus = new FocusCommand();
         final BrowserDialog<Act> dialog = new BrowserDialog<Act>(Messages.get("mail.attach.title"), documents,
-                                                                 getHelpContext());
+                                                                 getHelpContext().createSubtopic("attach"));
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 focus.restore();
@@ -281,7 +281,7 @@ public class MailDialog extends PopupDialog {
                 editor.addAttachment(document);
             }
         };
-        UploadDialog dialog = new UploadDialog(listener);
+        UploadDialog dialog = new UploadDialog(listener, getHelpContext().createSubtopic("attachFile"));
         dialog.show();
     }
 

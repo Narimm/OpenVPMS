@@ -92,8 +92,7 @@ public abstract class CustomerActWorkspace<T extends Act>
     /**
      * Renders the workspace summary.
      *
-     * @return the component representing the workspace summary, or
-     *         {@code null} if there is no summary
+     * @return the component representing the workspace summary, or {@code null} if there is no summary
      */
     @Override
     public Component getSummary() {

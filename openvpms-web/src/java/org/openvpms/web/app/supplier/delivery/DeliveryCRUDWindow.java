@@ -92,7 +92,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     @Override
     protected void onCreated(final FinancialAct act) {
         boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
-        LayoutContext context = new DefaultLayoutContext(GlobalContext.getInstance(),getHelpContext());
+        LayoutContext context = new DefaultLayoutContext(GlobalContext.getInstance(), getHelpContext());
         final OrderTableBrowser browser = new OrderTableBrowser(delivery, context);
         String displayName = DescriptorHelper.getDisplayName(act);
         String title = Messages.get("supplier.delivery.selectorders.title",
@@ -178,14 +178,14 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     }
 
     /**
-     * Creates a new edit dialog with Apply button disabled for <em>POSTED</em>
-     * acts, to workaround OVPMS-733.
+     * Creates a new edit dialog with Apply button disabled for <em>POSTED</em> acts, to workaround OVPMS-733.
      *
      * @param editor the editor
+     * @param help   the help context
      */
     @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor) {
-        return new ActEditDialog(editor, getHelpContext());
+    protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
+        return new ActEditDialog(editor, help);
     }
 
     /**
@@ -197,12 +197,13 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     protected boolean post(FinancialAct act) {
         boolean result = false;
         // use the editor to ensure that the validation rules are invoked
-        DeliveryEditor editor = new DeliveryEditor(getObject(), null, createLayoutContext());
+        HelpContext context = getHelpContext().createSubtopic("finalise");
+        DeliveryEditor editor = new DeliveryEditor(getObject(), null, createLayoutContext(context));
         editor.setStatus(ActStatus.POSTED);
         Validator validator = new Validator();
         if (!editor.validate(validator)) {
             // pop up an editor for the delivery and display the errors
-            edit(editor);
+            edit(editor, context);
             ValidationHelper.showError(validator);
         } else {
             result = SaveHelper.save(editor);
@@ -222,12 +223,13 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         addParticipations(act, browser.getSupplier(),
                           browser.getStockLocation());
         boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
-        DeliveryEditor editor = new DeliveryEditor(act, null, createLayoutContext());
+        HelpContext edit = createEditTopic(act);
+        DeliveryEditor editor = new DeliveryEditor(act, null, createLayoutContext(edit));
         for (FinancialAct orderItem : browser.getSelectedOrderItems()) {
             FinancialAct item = (delivery) ? rules.createDeliveryItem(orderItem) : rules.createReturnItem(orderItem);
             editor.addItem(item, orderItem);
         }
-        edit(editor);
+        edit(editor, edit);
     }
 
     private void onInvoice(final Act act) {

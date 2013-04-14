@@ -48,7 +48,7 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      * @param context the context
      */
     public EstimationWorkspace(Context context) {
-        super("customer", "estimation", context);
+        super("customer", "estimate", context);
         setChildArchetypes(Act.class, "act.customerEstimation");
     }
 

@@ -41,12 +41,11 @@ public class IMObjectViewer extends AbstractIMObjectView {
     /**
      * Constructs an {@code IMObjectViewer}.
      *
-     * @param object the object to view.
-     * @param parent the parent object. May be {@code null}
+     * @param object  the object to view.
+     * @param context the layout context
      */
-    public IMObjectViewer(IMObject object, IMObject parent) {
-        this(object, parent, new ViewLayoutStrategyFactory().create(object),
-             null);
+    public IMObjectViewer(IMObject object, LayoutContext context) {
+        this(object, null, context);
     }
 
     /**
@@ -87,9 +86,9 @@ public class IMObjectViewer extends AbstractIMObjectView {
     }
 
     /**
-     * Returns the factory for creating components for displaying the object.
+     * Returns the layout context
      *
-     * @return the component factory
+     * @return the layout context
      */
     protected LayoutContext getLayoutContext() {
         return context;

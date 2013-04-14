@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -22,6 +20,7 @@ import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.TooManyListenersException;
@@ -30,16 +29,17 @@ import java.util.TooManyListenersException;
 /**
  * File upload dialog.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UploadDialog extends PopupDialog {
 
     /**
-     * Construct a new <code>UploadDialog</code>.
+     * Constructs a {@code UploadDialog}.
+     *
+     * @param help the help context
      */
-    public UploadDialog(final UploadListener listener) {
-        super(Messages.get("file.upload.title"), CANCEL);
+    public UploadDialog(final UploadListener listener, HelpContext help) {
+        super(Messages.get("file.upload.title"), CANCEL, help);
         setModal(true);
         UploadSelect select = new UploadSelect();
 

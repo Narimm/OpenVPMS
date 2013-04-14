@@ -27,6 +27,7 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.IMObjectViewer;
@@ -102,10 +103,11 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
         if (object != null) {
             posted = ActStatus.POSTED.equals(object.getStatus());
             if (posted) {
-                viewer = new IMObjectViewer(object, null);
+                viewer = new IMObjectViewer(object, new DefaultLayoutContext(getHelpContext()));
                 editor = null;
             } else {
-                editor = createVisitChargeEditor(object, event, createLayoutContext());
+                HelpContext edit = createEditTopic(object);
+                editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
                 viewer = null;
             }
         } else {
@@ -227,11 +229,12 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     /**
      * Creates a layout context for editing an object.
      *
+     * @param help the help context
      * @return a new layout context.
      */
     @Override
-    protected LayoutContext createLayoutContext() {
-        LayoutContext layoutContext = super.createLayoutContext();
+    protected LayoutContext createLayoutContext(HelpContext help) {
+        LayoutContext layoutContext = super.createLayoutContext(help);
         layoutContext.setContext(context);
         return layoutContext;
     }

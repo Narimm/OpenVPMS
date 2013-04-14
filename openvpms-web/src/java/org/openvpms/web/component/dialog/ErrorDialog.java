@@ -12,26 +12,24 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.dialog;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
  * Modal error dialog box.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ErrorDialog extends MessageDialog {
 
     /**
-     * Construct a new <code>ErrorDialog</code>.
+     * Constructs an {@code ErrorDialog}.
      *
      * @param message the message to display
      */
@@ -40,7 +38,17 @@ public class ErrorDialog extends MessageDialog {
     }
 
     /**
-     * Construct a new <code>ErrorDialog</code>.
+     * Constructs an {@code ErrorDialog}.
+     *
+     * @param message the message to display
+     * @param help    the help context
+     */
+    public ErrorDialog(String message, HelpContext help) {
+        this(Messages.get("errordialog.title"), message, help);
+    }
+
+    /**
+     * Constructs an {@code ErrorDialog}.
      *
      * @param exception the exception to display
      */
@@ -49,18 +57,29 @@ public class ErrorDialog extends MessageDialog {
     }
 
     /**
-     * Construct a new <code>ErrorDialog</code>.
+     * Constructs an {@code ErrorDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
      */
     public ErrorDialog(String title, String message) {
-        super(title, message, "ErrorDialog", OK);
+        this(title, message, (HelpContext) null);
+    }
+
+    /**
+     * Constructs an {@code ErrorDialog}.
+     *
+     * @param title   the dialog title
+     * @param message the message to display
+     * @param help    the help context. May be {@code null}
+     */
+    public ErrorDialog(String title, String message, HelpContext help) {
+        super(title, message, "ErrorDialog", OK, help);
         setDefaultButton(OK_ID);
     }
 
     /**
-     * Construct a new <code>ErrorDialog</code>.
+     * Constructs an {@code ErrorDialog}.
      *
      * @param title   the dialog title
      * @param message the message to display
@@ -68,6 +87,18 @@ public class ErrorDialog extends MessageDialog {
      */
     public ErrorDialog(String title, String message, String[] buttons) {
         super(title, message, "ErrorDialog", buttons);
+    }
+
+    /**
+     * Constructs an {@code ErrorDialog}.
+     *
+     * @param title   the dialog title
+     * @param message the message to display
+     * @param buttons the buttons to display
+     * @param help    the help context
+     */
+    public ErrorDialog(String title, String message, String[] buttons, HelpContext help) {
+        super(title, message, "ErrorDialog", buttons, help);
     }
 
     /**
@@ -87,6 +118,17 @@ public class ErrorDialog extends MessageDialog {
      */
     public static void show(String message) {
         ErrorDialog dialog = new ErrorDialog(message);
+        dialog.show();
+    }
+
+    /**
+     * Helper to show a new error dialog.
+     *
+     * @param message dialog message
+     * @param help    the help context
+     */
+    public static void show(String message, HelpContext help) {
+        ErrorDialog dialog = new ErrorDialog(message, help);
         dialog.show();
     }
 

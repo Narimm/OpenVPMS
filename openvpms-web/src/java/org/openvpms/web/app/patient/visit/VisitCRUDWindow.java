@@ -73,10 +73,11 @@ public class VisitCRUDWindow extends PatientHistoryCRUDWindow {
      * Creates a layout context for editing an object.
      *
      * @return a new layout context.
+     * @param help
      */
     @Override
-    protected LayoutContext createLayoutContext() {
-        LayoutContext context = super.createLayoutContext();
+    protected LayoutContext createLayoutContext(HelpContext help) {
+        LayoutContext context = super.createLayoutContext(help);
         context.setContext(this.context);
         return context;
     }

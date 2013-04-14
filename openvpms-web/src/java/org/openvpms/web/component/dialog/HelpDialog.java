@@ -77,8 +77,15 @@ public class HelpDialog extends PopupDialog {
         this(null, null);
     }
 
+    /**
+     * Constructs a {@code HelpDialog}.
+     *
+     * @param topic    the topic. May be {@code null}
+     * @param topicURL the topic URL. May be {@code null}
+     */
     protected HelpDialog(String topic, final String topicURL) {
         super(Messages.get("helpdialog.title"), "HelpDialog", OK);
+        setModal(true);
 
         Component component = null;
 
@@ -86,7 +93,7 @@ public class HelpDialog extends PopupDialog {
             if (topicURL == null) {
                 Label label = LabelFactory.create(true, true);
                 label.setStyleName(BOLD);
-                label.setText(Messages.get("helpdialog.nohelp", topic));
+                label.setText(Messages.get("helpdialog.nohelp.topic", topic));
                 component = label;
             } else {
                 String content = "<p xmlns='http://www.w3.org/1999/xhtml'>"

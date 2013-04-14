@@ -79,7 +79,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
             ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
             IMObjectDeletor deletor = new DefaultIMObjectDeletor();
-            deletor.delete(object, new LookupDeletorListener(), getHelpContext());
+            deletor.delete(object, getHelpContext(), new LookupDeletorListener());
         }
     }
 

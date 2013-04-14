@@ -88,9 +88,10 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
      * acts, to workaround OVPMS-733.
      *
      * @param editor the editor
+     * @param help
      */
     @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor) {
+    protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
         return new ActEditDialog(editor, getHelpContext());
     }
 

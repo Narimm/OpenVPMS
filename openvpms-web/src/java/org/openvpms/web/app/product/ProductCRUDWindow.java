@@ -140,9 +140,10 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
 
             // NOTE: can't use the parent edit(IMObject) method as it relies on the object being edited
             // being in the current result set.
-            LayoutContext context = createLayoutContext();
+            HelpContext edit = createEditTopic(product);
+            LayoutContext context = createLayoutContext(edit);
             IMObjectEditor editor = createEditor(copy, context);
-            edit(editor);
+            edit(editor, edit);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("product.information.copy.failed", getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);

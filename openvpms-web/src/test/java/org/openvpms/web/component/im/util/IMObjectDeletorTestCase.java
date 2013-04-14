@@ -71,7 +71,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
 
         TestDeletor deletor = new TestDeletor();
         TestListener listener = new TestListener();
-        deletor.delete(customer, listener, help);
+        deletor.delete(customer, help, listener);
 
         // verify the customer has been deactivated rather than deleted
         checkDeletor(deletor, false, false, true, false);
@@ -84,7 +84,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         // now attempt deletion again. The deactivated() method should be invoked
         deletor = new TestDeletor();
         listener = new TestListener();
-        deletor.delete(customer, listener, help);
+        deletor.delete(customer, help, listener);
         checkDeletor(deletor, false, false, false, true);
         checkListener(listener, false);
     }
@@ -100,7 +100,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
 
         TestDeletor deletor = new TestDeletor();
         TestListener listener = new TestListener();
-        deletor.delete(customer, listener, help);
+        deletor.delete(customer, help, listener);
 
         // verify the customer has been deleted
         checkDeletor(deletor, false, true, false, false);
@@ -121,7 +121,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
 
         TestDeletor deletor = new TestDeletor();
         TestListener listener = new TestListener();
-        deletor.delete(pet, listener, help);
+        deletor.delete(pet, help, listener);
 
         // verify the customer has been deleted
         checkDeletor(deletor, true, false, false, false);
@@ -142,7 +142,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         // create a template with associated act.documentTemplate
         Entity template = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
         TestListener listener = new TestListener();
-        deletor.delete(template, listener, help);
+        deletor.delete(template, help, listener);
 
         // verify the template has been deleted
         checkDeletor(deletor, true, false, false, false);
@@ -168,7 +168,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         save(act);
 
         TestListener listener = new TestListener();
-        deletor.delete(template, listener, help);
+        deletor.delete(template, help, listener);
 
         // verify the template has been deactivated
         checkDeletor(deletor, false, false, true, false);
@@ -181,7 +181,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         // now attempt deletion again. The deactivated() method should be invoked
         deletor = new TestDeletor();
         listener = new TestListener();
-        deletor.delete(template, listener, help);
+        deletor.delete(template, help, listener);
         checkDeletor(deletor, false, false, false, true);
         checkListener(listener, false);
     }
@@ -301,8 +301,9 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
          *
          * @param object   the object to deactivate
          * @param listener the listener
+         * @param help
          */
-        protected <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener) {
+        protected <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
             deactivate = true;
             doDeactivate(object, listener);
         }
@@ -311,8 +312,9 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
          * Invoked when an object cannot be de deleted, and has already been deactivated.
          *
          * @param object the object
+         * @param help
          */
-        protected <T extends IMObject> void deactivated(T object) {
+        protected <T extends IMObject> void deactivated(T object, HelpContext help) {
             deactivated = true;
         }
     }
