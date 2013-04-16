@@ -35,8 +35,7 @@ public class DefaultTaskContext extends LocalContext implements TaskContext {
     private final HelpContext help;
 
     /**
-     * Constructs a new {@code TaskContext} that inherits values from the
-     * global context.
+     * Constructs a new {@code TaskContext} that inherits values from the global context.
      *
      * @param help the help context
      */
@@ -45,15 +44,27 @@ public class DefaultTaskContext extends LocalContext implements TaskContext {
     }
 
     /**
-     * Constructs a new {@code DefaultTaskContext} that inherits values
-     * from the specified context. If the specified context is {@code null}
-     * then no inheritance occurs.
+     * Constructs a {@code DefaultTaskContext} that inherits values from the specified context. If the specified context
+     * is {@code null} then no inheritance occurs.
      *
-     * @param help   the help context
      * @param parent the parent context. May be {@code null}
+     * @param help   the help context
      */
-    public DefaultTaskContext(HelpContext help, Context parent) {
+    public DefaultTaskContext(Context parent, HelpContext help) {
         super(parent);
+        this.help = help;
+    }
+
+    /**
+     * Constructs a {@code DefaultTaskContext} that populates the specified context, and optionally inherits values
+     * from a parent context.
+     *
+     * @param context the context
+     * @param parent  the parent context. May be {@code null}
+     * @param help   the help context
+     */
+    public DefaultTaskContext(Context context, Context parent, HelpContext help) {
+        super(context, parent);
         this.help = help;
     }
 

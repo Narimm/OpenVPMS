@@ -160,11 +160,21 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     }
 
     /**
-     * Construct a new  {@code AbstractLayoutContext} from an existing layout context. Increases the layout depth by 1.
+     * Constructs an {@code AbstractLayoutContext} from an existing layout context. Increases the layout depth by 1.
      *
      * @param context the context
      */
     public AbstractLayoutContext(LayoutContext context) {
+        this(context, context.getHelpContext());
+    }
+
+    /**
+     * Constructs an {@code AbstractLayoutContext} from an existing layout context. Increases the layout depth by 1.
+     *
+     * @param context the context
+     * @param help    the help context
+     */
+    public AbstractLayoutContext(LayoutContext context, HelpContext help) {
         this.parent = context;
         this.context = context.getContext();
         cache = context.getCache();
@@ -176,7 +186,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         deletionListener = context.getDeletionListener();
         mailContext = context.getMailContext();
         contextSwitchListener = context.getContextSwitchListener();
-        help = context.getHelpContext();
+        this.help = help;
     }
 
     /**

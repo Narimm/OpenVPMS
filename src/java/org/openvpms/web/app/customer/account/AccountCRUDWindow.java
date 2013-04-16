@@ -158,7 +158,8 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
             String title = Messages.get("customer.account.reverse.title", name);
             String message = Messages.get("customer.account.reverse.message",
                                           name);
-            final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+            HelpContext reverse = getHelpContext().createSubtopic("reverse");
+            final ConfirmationDialog dialog = new ConfirmationDialog(title, message, reverse);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -255,10 +256,9 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * @param customer the customer
      */
     private void confirmRegenerate(String message, final Party customer) {
-        String title = Messages.get(
-                "customer.account.balancecheck.title");
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
+        String title = Messages.get("customer.account.balancecheck.title");
+        HelpContext check = getHelpContext().createSubtopic("check");
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, check);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

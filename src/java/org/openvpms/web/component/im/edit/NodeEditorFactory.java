@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit;
@@ -53,8 +51,7 @@ import java.util.List;
 /**
  * Factory for editors of {@link IMObject} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
 
@@ -277,10 +274,9 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         String[] range = property.getArchetypeRange();
         Editor editor;
         if (TypeHelper.matches(range, "document.*")) {
-            editor = new DocumentEditor(property);
+            editor = new DocumentEditor(property, getLayoutContext().getHelpContext());
         } else {
-            editor = IMObjectReferenceEditorFactory.create(property, object,
-                                                           getLayoutContext());
+            editor = IMObjectReferenceEditorFactory.create(property, object, getLayoutContext());
         }
         editors.add(editor);
         return editor;

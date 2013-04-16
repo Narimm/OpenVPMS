@@ -20,6 +20,7 @@ package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -138,8 +139,8 @@ public class PrintIMObjectTask extends AbstractTask {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
                 IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator);
                 boolean skip = !isRequired() && enableSkip;
-                InteractiveIMPrinter<IMObject> iPrinter
-                        = new InteractiveIMPrinter<IMObject>(printer, skip, context.getHelpContext());
+                HelpContext help = context.getHelpContext().createTopic(object, "print");
+                InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, skip, help);
                 iPrinter.setInteractive(interactive);
                 iPrinter.setMailContext(mailContext);
 

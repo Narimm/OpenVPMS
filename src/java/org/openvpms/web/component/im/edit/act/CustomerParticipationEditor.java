@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -28,6 +26,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.property.Property;
@@ -37,23 +36,22 @@ import org.openvpms.web.component.property.Property;
  * Participation editor for customer. This updates the context with the selected
  * customer.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-07-03 00:50:52Z $
+ * @author Tim Anderson
  */
 public class CustomerParticipationEditor extends ParticipationEditor<Party> {
 
     /**
-     * The associated patient participation editor. May be <tt>null</tt>.
+     * The associated patient participation editor. May be {@code null}.
      */
     private PatientParticipationEditor patientEditor;
 
 
     /**
-     * Constructs a <tt>CustomerParticipationEditor</tt>.
+     * Constructs a {@code CustomerParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param layout        the layout context. May be <tt>null</tt>
+     * @param layout        the layout context. May be {@code null}
      */
     public CustomerParticipationEditor(Participation participation,
                                        Act parent, LayoutContext layout) {
@@ -86,7 +84,7 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
      * {@link PatientParticipationEditor#setCustomerParticipationEditor setCustomerParticipationEditor} method will be
      * invoked, passing this instance. 
      *
-     * @param editor the patient participation editor. May be <tt>null</tt>
+     * @param editor the patient participation editor. May be {@code null}
      */
     public void setPatientParticipationEditor(PatientParticipationEditor editor) {
         patientEditor = editor;
@@ -104,8 +102,9 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
     @Override
     protected IMObjectReferenceEditor<Party> createEntityEditor(
             Property property) {
-        return new AbstractIMObjectReferenceEditor<Party>(
-                property, getParent(), getLayoutContext(), true) {
+        LayoutContext context = getLayoutContext();
+        LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().createTopic("customer"));
+        return new AbstractIMObjectReferenceEditor<Party>(property, getParent(), subContext, true) {
 
             @Override
             public boolean setObject(Party object) {
@@ -116,7 +115,7 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
             /**
              * Invoked when an object is selected from a brwoser.
              *
-             * @param object  the selected object. May be <tt>null</tt>
+             * @param object  the selected object. May be {@code null}
              * @param browser the browser
              */
             @Override

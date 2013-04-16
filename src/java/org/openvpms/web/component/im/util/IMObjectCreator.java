@@ -79,10 +79,11 @@ public final class IMObjectCreator {
      * @param type       the type of object being created, for display purposes
      * @param shortNames the archetype shortnames
      * @param listener   the listener to notify
+     * @param help       the help context
      */
-    public static void create(String type, List<String> shortNames,
-                              final IMObjectCreatorListener listener) {
-        create(type, shortNames.toArray(new String[shortNames.size()]), listener);
+    public static void create(String type, List<String> shortNames, IMObjectCreatorListener listener,
+                              HelpContext help) {
+        create(type, shortNames.toArray(new String[shortNames.size()]), listener, help);
     }
 
     /**
@@ -92,9 +93,11 @@ public final class IMObjectCreator {
      * @param type       the type of object being created, for display purposes
      * @param shortNames the archetype shortnames
      * @param listener   the listener to notify
+     * @param help       the help context
      */
-    public static void create(String type, String[] shortNames, final IMObjectCreatorListener listener) {
-        create(type, shortNames, null, listener, null);
+    public static void create(String type, String[] shortNames, final IMObjectCreatorListener listener,
+                              HelpContext help) {
+        create(type, shortNames, null, listener, help);
     }
 
     /**

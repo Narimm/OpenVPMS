@@ -270,7 +270,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
                 onUpload(doc);
             }
         };
-        UploadDialog dialog = new UploadDialog(listener);
+        UploadDialog dialog = new UploadDialog(listener, getLayoutContext().getHelpContext());
         dialog.show();
     }
 

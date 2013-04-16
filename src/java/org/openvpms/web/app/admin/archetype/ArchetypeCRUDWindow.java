@@ -147,7 +147,7 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
                 upload(stream, event.getFileName());
             }
         };
-        UploadDialog dialog = new UploadDialog(listener);
+        UploadDialog dialog = new UploadDialog(listener, getHelpContext());
         dialog.show();
     }
 

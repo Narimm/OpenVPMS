@@ -54,12 +54,12 @@ public class DocumentActEditor extends AbstractActEditor {
     private IMObjectReference lastTemplate;
 
     /**
-     * The document editor. May be <tt>null</tt>.
+     * The document editor. May be {@code null}.
      */
     private DocumentEditor docEditor;
 
     /**
-     * The document versions editor. May be <tt>null</tt>.
+     * The document versions editor. May be {@code null}.
      */
     private ActRelationshipCollectionEditor versionsEditor;
 
@@ -70,17 +70,17 @@ public class DocumentActEditor extends AbstractActEditor {
 
 
     /**
-     * Construct a new <tt>DocumentActEditor</tt>.
+     * Construct a {@code DocumentActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
-     * @param context the layout context. May be <tt>null</tt>.
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}.
      */
     public DocumentActEditor(DocumentAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         Property document = getProperty(DOCUMENT);
         if (document != null) {
-            docEditor = new VersioningDocumentEditor(document);
+            docEditor = new VersioningDocumentEditor(document, context.getHelpContext().createTopic("document"));
             ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     onDocumentUpdate();
@@ -108,7 +108,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Sets the document template, an instance of <em>entity.documentTemplate<em>.
      *
-     * @param template the template. May be <tt>null</tt>
+     * @param template the template. May be {@code null}
      */
     public void setTemplate(Entity template) {
         setParticipant(DOC_TEMPLATE, template);
@@ -117,7 +117,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Returns the document template, an instance of <em>entity.documentTemplate</em>.
      *
-     * @return the document template. May be <tt>null</tt>
+     * @return the document template. May be {@code null}
      */
     public Entity getTemplate() {
         return (Entity) getParticipant(DOC_TEMPLATE);
@@ -126,7 +126,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Sets a document template via its reference.
      *
-     * @param template the template reference. May be <tt>null</tt>
+     * @param template the template reference. May be {@code null}
      */
     public void setTemplateRef(IMObjectReference template) {
         setParticipant(DOC_TEMPLATE, template);
@@ -135,7 +135,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Returns a reference to the current template, an instance of <em>entity.documentTemplate</em>.
      *
-     * @return a reference to the current template. May be <tt>null</tt>
+     * @return a reference to the current template. May be {@code null}
      */
     public IMObjectReference getTemplateRef() {
         return getParticipantRef(DOC_TEMPLATE);
@@ -144,7 +144,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Sets the document.
      *
-     * @param document the document. May be <tt>null</tt>
+     * @param document the document. May be {@code null}
      * @throws IllegalStateException if the archetype doesn't support documents
      */
     public void setDocument(Document document) {
@@ -157,7 +157,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Returns the document.
      *
-     * @return the document. May be <tt>null</tt>
+     * @return the document. May be {@code null}
      * @throws IllegalStateException if the archetype doesn't support documents
      */
     public Document getDocument() {
@@ -167,7 +167,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Returns the document reference.
      *
-     * @return the document reference. May be <tt>null</tt>
+     * @return the document reference. May be {@code null}
      * @throws IllegalStateException if the archetype doesn't support documents
      */
     public IMObjectReference getDocumentRef() {
@@ -180,7 +180,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Save any edits.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     @Override
     protected boolean doSave() {
@@ -194,7 +194,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Deletes the object.
      *
-     * @return <tt>true</tt> if the delete was successful
+     * @return {@code true} if the delete was successful
      */
     @Override
     protected boolean doDelete() {
@@ -235,7 +235,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Returns the document editor.
      *
-     * @return the document editor. May be <tt>null</tt>
+     * @return the document editor. May be {@code null}
      */
     protected DocumentEditor getDocumentEditor() {
         return docEditor;
@@ -244,7 +244,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Returns the document versions editor.
      *
-     * @return the document versions editor. May be <tt>null</tt>
+     * @return the document versions editor. May be {@code null}
      */
     protected ActRelationshipCollectionEditor getVersionsEditor() {
         return versionsEditor;
@@ -253,7 +253,7 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Returns the document template participation editor.
      *
-     * @return document template participation editor. May be <tt>null</tt>
+     * @return document template participation editor. May be {@code null}
      */
     protected DocumentTemplateParticipationEditor getDocumentTemplateEditor() {
         ParticipationEditor editor = getParticipationEditor(DOC_TEMPLATE, true);
@@ -307,8 +307,8 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Versions the existing document if necessary.
      *
-     * @param reference the old document reference. May be <tt>null</tt>
-     * @return <tt>true</tt> if it the document was versioned
+     * @param reference the old document reference. May be {@code null}
+     * @return {@code true} if it the document was versioned
      */
     private boolean versionOldDocument(IMObjectReference reference) {
         boolean versioned = false;
@@ -327,14 +327,12 @@ public class DocumentActEditor extends AbstractActEditor {
     private class VersioningDocumentEditor extends DocumentEditor {
 
         /**
-         * Creates a new <tt>VersioningDocumentEditor</tt>.
+         * Creates a new {@code VersioningDocumentEditor}.
          *
          * @param property the property being edited
-         * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-         *          for any archetype service error
          */
-        public VersioningDocumentEditor(Property property) {
-            super(property);
+        public VersioningDocumentEditor(Property property, HelpContext help) {
+            super(property, help);
         }
 
         /**

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -29,6 +27,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.PatientObjectSetQuery;
@@ -42,32 +41,28 @@ import org.openvpms.web.component.property.Property;
  * contained in the context if the none is selected, and the parent object
  * is new.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PatientParticipationEditor extends ParticipationEditor<Party> {
 
     /**
-     * The associated customer participation editor. May be <tt>null</tt>.
+     * The associated customer participation editor. May be {@code null}.
      */
     private CustomerParticipationEditor customerEditor;
 
 
     /**
-     * Constructs a <tt>PatientParticipationEditor</tt>.
+     * Constructs a {@code PatientParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param layout        the layout context. May be <tt>null</tt>
+     * @param layout        the layout context
      */
-    public PatientParticipationEditor(Participation participation,
-                                      Act parent,
-                                      LayoutContext layout) {
+    public PatientParticipationEditor(Participation participation, Act parent, LayoutContext layout) {
         super(participation, parent, layout);
         if (!TypeHelper.isA(participation, "participation.patient")) {
             throw new IllegalArgumentException(
-                    "Invalid participation type:"
-                    + participation.getArchetypeId().getShortName());
+                    "Invalid participation type:" + participation.getArchetypeId().getShortName());
         }
         Context context = getLayoutContext().getContext();
         IMObjectReference patientRef = participation.getEntity();
@@ -87,7 +82,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
      * <p/>
      * If non-null, the customer will be updated when a patient is selected in the browser.
      *
-     * @param editor the editor. May be <tt>null</tt>
+     * @param editor the editor. May be {@code null}
      */
     public void setCustomerParticipationEditor(CustomerParticipationEditor editor) {
         customerEditor = editor;
@@ -101,7 +96,9 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
      */
     @Override
     protected IMObjectReferenceEditor<Party> createEntityEditor(Property property) {
-        return new AbstractIMObjectReferenceEditor<Party>(property, getParent(), getLayoutContext(), true) {
+        LayoutContext context = getLayoutContext();
+        LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().createTopic("patient"));
+        return new AbstractIMObjectReferenceEditor<Party>(property, getParent(), subContext, true) {
 
             @Override
             public boolean setObject(Party object) {
@@ -110,11 +107,11 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
             }
 
             /**
-             * Invoked when an object is selected from a brwoser.
+             * Invoked when an object is selected from a browser.
              * <p/>
              * This updates the patient, and if specified, the associated customer participation editor's customer.
              *
-             * @param object  the selected object. May be <tt>null</tt>
+             * @param object  the selected object. May be {@code null}
              * @param browser the browser
              */
             @Override
@@ -134,12 +131,13 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
              * This implementation allows both active and inactive patients.
              *
              * @param reference the reference to check
-             * @return <tt>true</tt> if the query selects the reference
+             * @return {@code true} if the query selects the reference
              */
             @Override
             protected boolean isValidReference(IMObjectReference reference) {
                 Query<Party> query = createQuery(null);
-                if (query instanceof QueryAdapter && ((QueryAdapter) query).getQuery() instanceof PatientObjectSetQuery) {
+                if (query instanceof QueryAdapter
+                        && ((QueryAdapter) query).getQuery() instanceof PatientObjectSetQuery) {
                     PatientObjectSetQuery q = (PatientObjectSetQuery) ((QueryAdapter) query).getQuery();
                     q.setActiveOnly(false);
                 }

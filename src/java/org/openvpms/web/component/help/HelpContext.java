@@ -16,6 +16,7 @@
 package org.openvpms.web.component.help;
 
 import echopointng.KeyStrokeListener;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -107,6 +108,10 @@ public class HelpContext {
      */
     public HelpContext createTopic(String topic) {
         return new HelpContext(this, topic, listener);
+    }
+
+    public HelpContext createTopic(IMObject object, String topic) {
+        return createTopic(object.getArchetypeId().getShortName() + "/" + topic);
     }
 
     /**

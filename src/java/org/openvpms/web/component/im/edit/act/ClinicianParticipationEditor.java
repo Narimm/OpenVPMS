@@ -12,15 +12,12 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 /**
- * Add description here.
+ * Clinician participation editor.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 package org.openvpms.web.component.im.edit.act;
 
@@ -35,6 +32,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.Property;
@@ -44,25 +42,23 @@ import org.openvpms.web.component.property.Property;
  * Participation editor for clinicians.
  * This updates the context with the selected clinician.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-24 01:44:28Z $
+ * @author Tim Anderson
  */
 public class ClinicianParticipationEditor extends ParticipationEditor<User> {
 
     /**
-     * Constructs a new <tt>ClinicianParticipationEditor</tt>.
+     * Constructs a {@code ClinicianParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <tt>null</tt>
+     * @param context       the layout context. May be {@code null}
      */
     public ClinicianParticipationEditor(Participation participation,
                                         Act parent,
                                         LayoutContext context) {
         super(participation, parent, context);
         if (!TypeHelper.isA(participation, "participation.clinician")) {
-            throw new IllegalArgumentException(
-                    "Invalid participation type:"
+            throw new IllegalArgumentException("Invalid participation type:"
                     + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
@@ -78,10 +74,10 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
     * @return a new object reference editor
     */
     @Override
-    protected IMObjectReferenceEditor<User> createEntityEditor(
-            Property property) {
-        return new AbstractIMObjectReferenceEditor<User>(
-                property, getParent(), getLayoutContext()) {
+    protected IMObjectReferenceEditor<User> createEntityEditor(Property property) {
+        LayoutContext context = getLayoutContext();
+        LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().createTopic("clinician"));
+        return new AbstractIMObjectReferenceEditor<User>(property, getParent(), subContext) {
 
             @Override
             protected Query<User> createQuery(String name) {
@@ -99,19 +95,15 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
     }
 
     /**
-     * Adds contraints to the query to restrict it to return users with
-     * a 'Clinician' classification.
+     * Adds constraints to the query to restrict it to return users with a 'Clinician' classification.
      *
      * @param query the query
      */
     private void addConstraints(Query query) {
-        IConstraint hasClinicianClassification = new ArchetypeNodeConstraint(
-                RelationalOp.EQ, "lookup.userType");
+        IConstraint hasClinicianClassification = new ArchetypeNodeConstraint(RelationalOp.EQ, "lookup.userType");
 
-        IConstraint isClinician = new NodeConstraint("code", RelationalOp.EQ,
-                                                     "CLINICIAN");
-        CollectionNodeConstraint constraint
-                = new CollectionNodeConstraint("classifications", true);
+        IConstraint isClinician = new NodeConstraint("code", RelationalOp.EQ, "CLINICIAN");
+        CollectionNodeConstraint constraint = new CollectionNodeConstraint("classifications", true);
         constraint.add(hasClinicianClassification);
         constraint.add(isClinician);
         query.setConstraints(constraint);

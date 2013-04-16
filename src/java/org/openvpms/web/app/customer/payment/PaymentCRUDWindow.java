@@ -75,11 +75,11 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * acts, to workaround OVPMS-733.
      *
      * @param editor the editor
-     * @param help
+     * @param help   the help context
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
-        return new ActEditDialog(editor, getHelpContext());
+        return new ActEditDialog(editor, help);
     }
 
 }
