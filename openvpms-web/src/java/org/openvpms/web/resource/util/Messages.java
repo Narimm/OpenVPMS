@@ -19,6 +19,7 @@ package org.openvpms.web.resource.util;
 import nextapp.echo2.app.ApplicationInstance;
 
 import java.text.MessageFormat;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -137,5 +138,16 @@ public final class Messages {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the keys for the specified bundle.
+     *
+     * @param bundleName the resource bundle name
+     * @return the keys
+     */
+    public static Enumeration<String> getKeys(String bundleName) {
+        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, getLocale());
+        return bundle.getKeys();
     }
 }

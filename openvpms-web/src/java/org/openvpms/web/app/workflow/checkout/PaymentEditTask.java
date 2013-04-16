@@ -31,8 +31,8 @@ import java.math.BigDecimal;
 
 
 /**
- * Task to edit {@link Act}s which have an archetype of
- * <em>act.customerAccountPayment</em> or <em>act.customerAccountRefund</em>.
+ * Task to edit {@link Act}s which have an archetype of <em>act.customerAccountPayment</em> or
+ * <em>act.customerAccountRefund</em>.
  *
  * @author Tim Anderson
  */
@@ -47,9 +47,8 @@ public class PaymentEditTask extends EditIMObjectTask {
     /**
      * Constructs a {@code PaymentEditTask} to edit an object in the {@link TaskContext}.
      *
-     * @param chargeAmount the charge amount that triggered the payment
-     *                     workflow. If {@code 0}, the context will be examined
-     *                     for an invoice to determine the amount
+     * @param chargeAmount the charge amount that triggered the payment workflow. If {@code 0}, the context will be
+     *                     examined for an invoice to determine the amount
      */
     public PaymentEditTask(BigDecimal chargeAmount) {
         super(CustomerAccountArchetypes.PAYMENT, true);
@@ -64,14 +63,11 @@ public class PaymentEditTask extends EditIMObjectTask {
      * @return a new editor
      */
     @Override
-    protected IMObjectEditor createEditor(IMObject object,
-                                          TaskContext context) {
-        LayoutContext layout = new DefaultLayoutContext(true, context.getHelpContext());
-        layout.setContext(context);
+    protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
+        LayoutContext layout = new DefaultLayoutContext(true, context, context.getHelpContext());
         BigDecimal amount = chargeAmount;
         if (amount.compareTo(BigDecimal.ZERO) == 0) {
-            FinancialAct invoice = (FinancialAct) context.getObject(
-                    CustomerAccountArchetypes.INVOICE);
+            FinancialAct invoice = (FinancialAct) context.getObject(CustomerAccountArchetypes.INVOICE);
             if (invoice != null) {
                 amount = invoice.getTotal();
             }

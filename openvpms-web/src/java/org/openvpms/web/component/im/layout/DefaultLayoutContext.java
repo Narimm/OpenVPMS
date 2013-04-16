@@ -44,12 +44,11 @@ public class DefaultLayoutContext extends AbstractLayoutContext {
      * @param help    the help context
      */
     public DefaultLayoutContext(Context context, HelpContext help) {
-        super(help);
-        setContext(context);
+        this(false, context, help);
     }
 
     /**
-     * Constructs a new {@code DefaultLayoutContext}.
+     * Constructs a {@code DefaultLayoutContext}.
      *
      * @param edit if {@code true} this is an edit context; if {@code false} it is a view context.
      * @param help the help context
@@ -59,7 +58,19 @@ public class DefaultLayoutContext extends AbstractLayoutContext {
     }
 
     /**
-     * Construct a new {@code DefaultLayoutContext}.
+     * Constructs a {@code DefaultLayoutContext}.
+     *
+     * @param edit    if {@code true} this is an edit context; if {@code false} it is a view context.
+     * @param context the context
+     * @param help    the help context
+     */
+    public DefaultLayoutContext(boolean edit, Context context, HelpContext help) {
+        super(edit, help);
+        setContext(context);
+    }
+
+    /**
+     * Constructs a {@code DefaultLayoutContext}.
      *
      * @param factory the component factory. May  be {@code null}
      * @param help    the help context
@@ -69,8 +80,7 @@ public class DefaultLayoutContext extends AbstractLayoutContext {
     }
 
     /**
-     * Construct a new {@code DefaultLayoutContext} from an existing
-     * layout context. Increases the layout depth by 1.
+     * Constructs a {@code DefaultLayoutContext} from an existing layout context. Increases the layout depth by 1.
      *
      * @param context the context
      */
@@ -78,4 +88,13 @@ public class DefaultLayoutContext extends AbstractLayoutContext {
         super(context);
     }
 
+    /**
+     * Constructs a {@code DefaultLayoutContext} from an existing layout context. Increases the layout depth by 1.
+     *
+     * @param context the context
+     * @param help    the help context
+     */
+    public DefaultLayoutContext(LayoutContext context, HelpContext help) {
+        super(context, help);
+    }
 }

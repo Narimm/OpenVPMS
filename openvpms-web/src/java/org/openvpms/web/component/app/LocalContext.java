@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.app;
@@ -21,35 +19,43 @@ package org.openvpms.web.component.app;
 /**
  * Local context.
  * <p/>
- * This can inherit context information from a parent context, but any changes are kept lcoally.
+ * This can inherit context information from a parent context, but any changes are kept locally.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LocalContext extends DelegatingContext {
 
     /**
-     * Constructs a <tt>LocalContext</tt>, with no inheritance.
+     * Constructs a {@code LocalContext}, with no inheritance.
      */
     public LocalContext() {
         this(null);
     }
 
     /**
-     * Constructs a new <tt>LocalContext</tt> that inherits values
-     * from the specified context. If the specified context is <tt>null</tt>
-     * then no inheritance occurs.
+     * Constructs a {@code LocalContext} that inherits values from the specified context. If the specified context is
+     * {@code null} then no inheritance occurs.
      *
-     * @param parent the parent context. May be <tt>null</tt>
+     * @param parent the parent context. May be {@code null}
      */
     public LocalContext(Context parent) {
-        super(new DefaultContext(), parent);
+        this(new DefaultContext(), parent);
+    }
+
+    /**
+     * Constructs a {@code LocalContext}
+     *
+     * @param context the context
+     * @param parent  the parent context. May be {@code null}
+     */
+    public LocalContext(Context context, Context parent) {
+        super(context, parent);
     }
 
     /**
      * Returns the parent context.
      *
-     * @return the parent context. May be <tt>null</tt>
+     * @return the parent context. May be {@code null}
      */
     public Context getParent() {
         return getFallback();

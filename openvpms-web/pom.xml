@@ -213,6 +213,16 @@
     </repositories>
     <dependencies>
         <dependency>
+            <groupId>org.apache.felix.karaf</groupId>
+            <artifactId>org.apache.felix.karaf.main</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>4.2.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
             <version>${pom.version}</version>

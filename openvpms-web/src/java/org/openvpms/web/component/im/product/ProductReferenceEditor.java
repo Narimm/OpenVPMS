@@ -35,6 +35,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -72,7 +73,8 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      */
     public ProductReferenceEditor(ProductParticipationEditor editor,
                                   Property property, LayoutContext context) {
-        super(property, editor.getParent(), context);
+        super(property, editor.getParent(), new DefaultLayoutContext(context,
+                                                                     context.getHelpContext().createTopic("product")));
         this.editor = editor;
     }
 

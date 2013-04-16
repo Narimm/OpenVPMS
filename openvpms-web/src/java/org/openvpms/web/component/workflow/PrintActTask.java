@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.workflow;
@@ -26,29 +24,27 @@ import org.openvpms.web.component.mail.MailContext;
 
 
 /**
- * Prints an {@link Act}. On successful printing, updates the <tt>printed</tt>
- * flag, if the act has one.
+ * Prints an {@link Act}. On successful printing, updates the {@code printed} flag, if the act has one.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PrintActTask extends PrintIMObjectTask {
 
     /**
-     * Creates a new <tt>PrintActTask</tt>.
+     * Constructs a {@code PrintActTask}.
      *
      * @param act the act to print
-     * @param context the mail context. May be <tt>null</tt>
+     * @param context the mail context. May be {@code null}
      */
     public PrintActTask(Act act, MailContext context) {
         super(act, context);
     }
 
     /**
-     * Creates a new <tt>PrintActTask</tt>.
+     * Creates a new {@code PrintActTask}.
      *
      * @param shortName the short name of the act to print
-     * @param context the mail context. May be <tt>null</tt>
+     * @param context the mail context. May be {@code null}
      */
     public PrintActTask(String shortName, MailContext context) {
         super(shortName, context);

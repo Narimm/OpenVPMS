@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -38,6 +36,7 @@ import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.select.BasicSelector;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -48,11 +47,14 @@ import java.util.Iterator;
 /**
  * Editor for {@link IMObjectReference}s of type <em>document.*</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class DocumentEditor extends AbstractPropertyEditor
-        implements Saveable, Cancellable, Deletable {
+public class DocumentEditor extends AbstractPropertyEditor implements Saveable, Cancellable, Deletable {
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * The upload selector.
@@ -81,13 +83,14 @@ public class DocumentEditor extends AbstractPropertyEditor
 
 
     /**
-     * Construct a new <tt>DocumentEditor</tt>.
+     * Construct a new {@code DocumentEditor}.
      *
      * @param property the property being edited
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public DocumentEditor(Property property) {
+    public DocumentEditor(Property property, HelpContext help) {
         super(property);
+        this.help = help;
 
         selector = new BasicSelector<Document>();
         selector.getSelect().addActionListener(new ActionListener() {
@@ -134,7 +137,7 @@ public class DocumentEditor extends AbstractPropertyEditor
      * Sets the document.
      *
      * @param document the new document
-     * @param keepOld  if <tt>true</tt> any existing document won't be deleted at commit
+     * @param keepOld  if {@code true} any existing document won't be deleted at commit
      * @throws ArchetypeServiceException for any error
      */
     protected void setDocument(Document document, boolean keepOld) {
@@ -164,7 +167,7 @@ public class DocumentEditor extends AbstractPropertyEditor
     /**
      * Returns the document file name.
      *
-     * @return the file name. May be <tt>null</tt>
+     * @return the file name. May be {@code null}
      */
     public String getName() {
         return name;
@@ -173,7 +176,7 @@ public class DocumentEditor extends AbstractPropertyEditor
     /**
      * Returns the document mime type.
      *
-     * @return the mime type. May be <tt>null</tt>
+     * @return the mime type. May be {@code null}
      */
     public String getMimeType() {
         return mimeType;
@@ -182,7 +185,7 @@ public class DocumentEditor extends AbstractPropertyEditor
     /**
      * Returns the document reference.
      *
-     * @return the document reference. May be <tt>null</tt>
+     * @return the document reference. May be {@code null}
      */
     public IMObjectReference getReference() {
         return (IMObjectReference) getProperty().getValue();
@@ -191,7 +194,7 @@ public class DocumentEditor extends AbstractPropertyEditor
     /**
      * Save any edits.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     public boolean save() {
         boolean result;
@@ -209,7 +212,7 @@ public class DocumentEditor extends AbstractPropertyEditor
     /**
      * Determines if any edits have been saved.
      *
-     * @return <tt>true</tt> if edits have been saved.
+     * @return {@code true} if edits have been saved.
      */
     public boolean isSaved() {
         return saved;
@@ -229,7 +232,7 @@ public class DocumentEditor extends AbstractPropertyEditor
     /**
      * Perform deletion.
      *
-     * @return <tt>true</tt> if deletion was successful
+     * @return {@code true} if deletion was successful
      */
     public boolean delete() {
         boolean result;
@@ -252,7 +255,7 @@ public class DocumentEditor extends AbstractPropertyEditor
                 setDocument(document);
             }
         };
-        UploadDialog dialog = new UploadDialog(listener);
+        UploadDialog dialog = new UploadDialog(listener, help.createSubtopic("upload"));
         dialog.show();
     }
 

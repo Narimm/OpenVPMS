@@ -496,8 +496,24 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         }
     }
 
+    /**
+     * Creates a topic for editing.
+     *
+     * @param object the object to edit
+     * @return the edit topic
+     */
     protected HelpContext createEditTopic(T object) {
-        return help.createTopic(object.getArchetypeId().getShortName() + "/edit");
+        return help.createTopic(object, "edit");
+    }
+
+    /**
+     * Creates a topic for printing.
+     *
+     * @param object the object to print
+     * @return the print topic
+     */
+    protected HelpContext createPrintTopic(T object) {
+        return help.createTopic(object, "print");
     }
 
     /**
@@ -605,10 +621,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @throws OpenVPMSException for any error
      */
     protected IMPrinter<T> createPrinter(T object) {
-        ContextDocumentTemplateLocator locator
-                = new ContextDocumentTemplateLocator(object, GlobalContext.getInstance());
+        ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, GlobalContext.getInstance());
         IMPrinter<T> printer = IMPrinterFactory.create(object, locator);
-        HelpContext help = getHelpContext().createSubtopic("print");
+        HelpContext help = createPrintTopic(object);
         InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer, help);
         interactive.setMailContext(getMailContext());
         return interactive;

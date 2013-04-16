@@ -22,6 +22,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -265,13 +266,15 @@ public class EditIMObjectTask extends AbstractTask {
      * Edits an object.
      * <p/>
      * Creates a new editor via {@link #createEditor} before delegating
-     * to {@link #interactiveEdit}, if editing is interactive, or {@link #backgroundEdit} if
-     * not.
+     * to {@link #interactiveEdit}, if editing is interactive, or {@link #backgroundEdit} if not.
      *
      * @param object  the object to edit
      * @param context the task context
      */
-    protected void edit(final IMObject object, TaskContext context) {
+    protected void edit(IMObject object, TaskContext context) {
+        HelpContext help = context.getHelpContext().createTopic(object, "edit");
+        context = new DefaultTaskContext(context, null, help);
+
         try {
             final IMObjectEditor editor = createEditor(object, context);
             if (interactive) {
@@ -295,8 +298,7 @@ public class EditIMObjectTask extends AbstractTask {
      * @return a new editor
      */
     protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
-        LayoutContext layout = new DefaultLayoutContext(true, context.getHelpContext());
-        layout.setContext(context);
+        LayoutContext layout = new DefaultLayoutContext(true, context, context.getHelpContext());
         return IMObjectEditorFactory.create(object, layout);
     }
 

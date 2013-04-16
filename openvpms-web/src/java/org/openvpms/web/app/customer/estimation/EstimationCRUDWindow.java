@@ -240,8 +240,9 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     private void invoice(final Act estimation, FinancialAct invoice) {
         try {
             EstimationInvoicer invoicer = new EstimationInvoicer();
+            HelpContext edit = getHelpContext().createTopic(invoice, "edit");
             CustomerChargeActEditDialog editor = invoicer.invoice(estimation, invoice,
-                                                                  new DefaultLayoutContext(true, getHelpContext()));
+                                                                  new DefaultLayoutContext(true, edit));
             editor.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     onRefresh(estimation);

@@ -208,7 +208,7 @@ public class CustomerSummary extends PartySummary {
     private Component getEmail(Contact email) {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
-                HelpContext mail = getHelpContext().createSubtopic("email");
+                HelpContext mail = getHelpContext().createTopic("customer/email");
                 MailContext mailContext = new CustomerMailContext(context, mail);
                 MailDialog dialog = new MailDialog(mailContext, mail);
                 dialog.show();

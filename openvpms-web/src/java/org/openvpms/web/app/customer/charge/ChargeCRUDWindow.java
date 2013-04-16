@@ -95,7 +95,7 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void onPosted(final FinancialAct act) {
-        HelpContext help = getHelpContext();
+        HelpContext help = getHelpContext().createSubtopic("post");
         Tasks tasks = new Tasks(help);
         TaskContext context = new DefaultTaskContext(help);
         context.addObject(act);

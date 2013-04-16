@@ -107,9 +107,9 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                                            boolean allowCreate) {
         super(property);
         this.parent = parent;
-        this.context = context;
+        this.context = new DefaultLayoutContext(context, context.getHelpContext().createSubtopic("select"));
 
-        selector = new IMObjectSelector<T>(property, allowCreate, context) {
+        selector = new IMObjectSelector<T>(property, allowCreate, this.context) {
             @Override
             protected Query<T> createQuery(String name) {
                 return AbstractIMObjectReferenceEditor.this.createQuery(name);
@@ -294,7 +294,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
 
         IMObjectCreator.create(getProperty().getDisplayName(),
                                getProperty().getArchetypeRange(),
-                               listener);
+                               listener, getLayoutContext().getHelpContext());
     }
 
     /**
@@ -305,7 +305,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     protected void onCreated(IMObject object) {
         Context context = new LocalContext(this.context.getContext());
         context.setCurrent(object);
-        HelpContext help = this.context.getHelpContext();
+        HelpContext help = this.context.getHelpContext().createTopic(object, "edit");
         LayoutContext layoutContext = new DefaultLayoutContext(true, help);
         layoutContext.setContext(context);
         final IMObjectEditor editor = IMObjectEditorFactory.create(object, parent, layoutContext);

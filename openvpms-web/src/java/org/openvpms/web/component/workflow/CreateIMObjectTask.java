@@ -108,7 +108,7 @@ public class CreateIMObjectTask extends AbstractTask {
             }
         };
 
-        IMObjectCreator.create(getType(shortNames), shortNames, listener);
+        IMObjectCreator.create(getType(shortNames), shortNames, listener, context.getHelpContext());
     }
 
     /**

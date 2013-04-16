@@ -34,6 +34,7 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.system.common.util.StringUtilities;
 import org.openvpms.web.app.admin.organisation.SubscriptionHelper;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -48,6 +49,7 @@ import org.openvpms.web.system.Version;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Enumeration;
 
 import static org.openvpms.web.resource.util.Styles.BOLD;
 import static org.openvpms.web.resource.util.Styles.INSET;
@@ -202,9 +204,21 @@ public class HelpDialog extends PopupDialog {
     private static String getTopicURL(String topic) {
         String result = null;
         String baseURL = Messages.get("help.url", Messages.HELP, true);
-        String fragment = Messages.get(topic, Messages.HELP, true);
-        if (baseURL != null && fragment != null) {
-            result = baseURL + "/" + fragment;
+        if (baseURL != null) {
+            String fragment = Messages.get(topic, Messages.HELP, true);
+            if (fragment == null) {
+                Enumeration<String> iter = Messages.getKeys(Messages.HELP);
+                while (iter.hasMoreElements()) {
+                    String key = iter.nextElement();
+                    if (StringUtilities.matches(topic, key)) {
+                        fragment = Messages.get(key, Messages.HELP, true);
+                        break;
+                    }
+                }
+            }
+            if (fragment != null) {
+                result = baseURL + "/" + fragment;
+            }
         }
         return result;
     }
