@@ -21,6 +21,7 @@ import echopointng.KeyStrokes;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.HelpDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -66,9 +67,14 @@ public abstract class AbstractWorkspace<T extends IMObject>
     private PropertyChangeSupport propertyChangeNotifier;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The email context.
      */
-    private MailContext context;
+    private MailContext mailContext;
 
     /**
      * The help context.
@@ -81,10 +87,12 @@ public abstract class AbstractWorkspace<T extends IMObject>
      *
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identifier
+     * @param context     the context
      */
-    public AbstractWorkspace(String subsystemId, String workspaceId) {
+    public AbstractWorkspace(String subsystemId, String workspaceId, Context context) {
         this.subsystemId = subsystemId;
         this.workspaceId = workspaceId;
+        this.context = context;
     }
 
     /**
@@ -196,12 +204,21 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    public Context getContext() {
+        return context;
+    }
+
+    /**
      * Sets the mail context.
      *
      * @param context the mail context. May be {@code null}
      */
     public void setMailContext(MailContext context) {
-        this.context = context;
+        this.mailContext = context;
     }
 
     /**
@@ -210,7 +227,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the mail context. May be {@code null}
      */
     public MailContext getMailContext() {
-        return context;
+        return mailContext;
     }
 
     /**
@@ -221,8 +238,8 @@ public abstract class AbstractWorkspace<T extends IMObject>
     public HelpContext getHelpContext() {
         if (help == null) {
             help = new HelpContext(getHelpTopic(), new HelpListener() {
-                public void show(HelpContext context) {
-                    HelpDialog.show(context);
+                public void show(HelpContext help) {
+                    HelpDialog.show(help, context);
                 }
             });
         }

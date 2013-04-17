@@ -22,7 +22,7 @@ import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -52,9 +52,11 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Constructs an {@code InformationCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
+     * @param help       the help context
      */
-    public InformationCRUDWindow(Archetypes<Party> archetypes, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<Party>getInstance(), help);
+    public InformationCRUDWindow(Archetypes<Party> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Party>getInstance(), context, help);
     }
 
     /**
@@ -65,7 +67,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+        if (UserHelper.isAdmin(getContext().getUser())) {
             // only provide merging for admin users
             Button merge = ButtonFactory.create(MERGE_ID, new ActionListener() {
                 public void onAction(ActionEvent event) {

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.workflow.appointment;
 
@@ -21,14 +19,14 @@ import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.ScheduleTypeQueryTest;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.query.Query;
 
 
 /**
  * Tests the {@link AppointmentTypeQuery} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentTypeQueryTestCase extends ScheduleTypeQueryTest {
 
@@ -38,7 +36,7 @@ public class AppointmentTypeQueryTestCase extends ScheduleTypeQueryTest {
      * @return a new query
      */
     protected Query<Entity> createQuery() {
-        return new AppointmentTypeQuery(null);
+        return new AppointmentTypeQuery(null, new LocalContext());
     }
 
     /**

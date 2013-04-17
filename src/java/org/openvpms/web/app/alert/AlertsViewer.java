@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -63,6 +64,11 @@ public class AlertsViewer extends PopupDialog {
     private final List<Alert> alerts;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The alerts table.
      */
     private PagedIMTable<Alert> table;
@@ -80,11 +86,12 @@ public class AlertsViewer extends PopupDialog {
     /**
      * Constructs an {@code AlertsViewer} to display alerts for a single alert type.
      *
-     * @param alert the alerts
-     * @param help  the help context
+     * @param alert   the alerts
+     * @param context the context
+     * @param help    the help context
      */
-    public AlertsViewer(Alert alert, HelpContext help) {
-        this(Arrays.asList(alert), help);
+    public AlertsViewer(Alert alert, Context context, HelpContext help) {
+        this(Arrays.asList(alert), context, help);
         if (alert.getAlert() != null) {
             setTitle(DescriptorHelper.getDisplayName(alert.getAlert()));
         } else {
@@ -95,13 +102,15 @@ public class AlertsViewer extends PopupDialog {
     /**
      * Constructs an {@code AlertsViewer} to display alerts for multiple alert types.
      *
-     * @param alerts the alerts
-     * @param help   the help context
+     * @param alerts  the alerts
+     * @param context the context
+     * @param help    the help context
      */
-    public AlertsViewer(List<Alert> alerts, HelpContext help) {
+    public AlertsViewer(List<Alert> alerts, Context context, HelpContext help) {
         super(Messages.get("alerts.title"), "AlertsViewer", CLOSE, help);
-        setModal(true);
+        this.context = context;
         this.alerts = alerts;
+        setModal(true);
     }
 
     /**
@@ -155,8 +164,8 @@ public class AlertsViewer extends PopupDialog {
                 column.remove(viewer);
             }
             if (alert.getAlert() != null) {
-                DefaultLayoutContext context = new DefaultLayoutContext(getHelpContext());
-                viewer = new IMObjectViewer(alert.getAlert(), context).getComponent();
+                DefaultLayoutContext layout = new DefaultLayoutContext(context, getHelpContext());
+                viewer = new IMObjectViewer(alert.getAlert(), layout).getComponent();
             } else {
                 viewer = LabelFactory.create("alert.nodetail", "bold");
                 ColumnLayoutData layout = new ColumnLayoutData();

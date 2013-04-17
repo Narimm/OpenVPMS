@@ -12,26 +12,29 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app;
 
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.SplitPane;
+import org.openvpms.web.app.workflow.messaging.MessageMonitor;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.app.workflow.messaging.MessageMonitor;
 
 
 /**
  * Content pane that displays the {@link TitlePane} and {@link MainPane}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ApplicationContentPane extends ContentPane {
+
+    /**
+     * The context.
+     */
+    private final GlobalContext context;
 
     /**
      * The layout pane style name.
@@ -40,9 +43,12 @@ public class ApplicationContentPane extends ContentPane {
 
 
     /**
-     * Constructs a <tt>ApplicationContentPane</tt>.
+     * Constructs an {@code ApplicationContentPane}.
+     *
+     * @param context the context
      */
-    public ApplicationContentPane() {
+    public ApplicationContentPane(GlobalContext context) {
+        this.context = context;
     }
 
     /**
@@ -59,8 +65,8 @@ public class ApplicationContentPane extends ContentPane {
     protected void doLayout() {
         SplitPane layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, LAYOUT_STYLE);
         MessageMonitor messageMonitor = (MessageMonitor) ServiceHelper.getContext().getBean("messageMonitor");
-        layout.add(new TitlePane());
-        layout.add(new MainPane(messageMonitor));
+        layout.add(new TitlePane(context));
+        layout.add(new MainPane(messageMonitor, context));
         add(layout);
     }
 

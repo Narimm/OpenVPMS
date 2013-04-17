@@ -31,7 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.web.app.supplier.SelectStockDetailsDialog;
 import org.openvpms.web.app.supplier.SupplierHelper;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -71,10 +71,11 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      * Constructs an {@code OrderCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public OrderCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
-        super(archetypes, OrderActions.INSTANCE, help);
+    public OrderCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, OrderActions.INSTANCE, context, help);
     }
 
     /**
@@ -129,16 +130,16 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
     /**
      * Invoked when a new order has been created.
      * <p/>
-     * This implementation pops up a dialog to select the supplier and stock
-     * location, then displays an edit dialog for the act.
+     * This implementation pops up a dialog to select the supplier and stock location, then displays an edit dialog for
+     * the act.
      *
      * @param act the new act
      */
     @Override
     protected void onCreated(final FinancialAct act) {
         String title = Messages.get("supplier.order.selectdetails.title", DescriptorHelper.getDisplayName(act));
-        final SelectStockDetailsDialog dialog = new SelectStockDetailsDialog(title, GlobalContext.getInstance(),
-                                                                             getHelpContext());
+        final SelectStockDetailsDialog dialog = new SelectStockDetailsDialog(title, getContext(),
+                                                                             getHelpContext().createSubtopic("new"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -156,11 +157,10 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     protected void onCopy() {
         try {
-            OrderRules rules = SupplierHelper.createOrderRules(GlobalContext.getInstance().getPractice());
+            OrderRules rules = SupplierHelper.createOrderRules(getContext().getPractice());
             FinancialAct object = getObject();
             FinancialAct copy = rules.copyOrder(object);
-            String notes = Messages.get("supplier.order.copy.notes",
-                                        object.getTitle());
+            String notes = Messages.get("supplier.order.copy.notes", object.getTitle());
             copy.setTitle(notes);
             edit(copy);
         } catch (OpenVPMSException exception) {
@@ -206,8 +206,8 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     private void onGenerate() {
         String title = Messages.get("supplier.order.generate.title");
-        final StockLocationSupplierDialog dialog
-                = new StockLocationSupplierDialog(title, GlobalContext.getInstance());
+        HelpContext help = getHelpContext().createSubtopic("generate");
+        final StockLocationSupplierDialog dialog = new StockLocationSupplierDialog(title, getContext(), help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -237,7 +237,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             suppliers = Arrays.asList((IMObject) supplier);
         }
         final OrderProgressBarProcessor processor = new OrderProgressBarProcessor(
-                GlobalContext.getInstance().getPractice(), locations, suppliers, title);
+                getContext().getPractice(), locations, suppliers, title);
         final BatchProcessorDialog dialog = new BatchProcessorDialog(processor.getTitle(), processor);
         processor.setListener(new BatchProcessorListener() {
             public void completed() {

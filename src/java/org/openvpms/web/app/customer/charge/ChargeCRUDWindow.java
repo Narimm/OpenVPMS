@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
@@ -54,11 +54,12 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * This makes the default archetype {@link CustomerAccountArchetypes#INVOICE}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
+    public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
         super(Archetypes.create(archetypes.getShortNames(), archetypes.getType(), INVOICE, archetypes.getDisplayName()),
-              DefaultActActions.<FinancialAct>getInstance(), help);
+              DefaultActActions.<FinancialAct>getInstance(), context, help);
     }
 
     /**
@@ -97,12 +98,12 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     protected void onPosted(final FinancialAct act) {
         HelpContext help = getHelpContext().createSubtopic("post");
         Tasks tasks = new Tasks(help);
-        TaskContext context = new DefaultTaskContext(help);
+        TaskContext context = new DefaultTaskContext(getContext(), help);
         context.addObject(act);
         String shortName = act.getArchetypeId().getShortName();
         BigDecimal total = act.getTotal();
         if (TypeHelper.isA(act, INVOICE, COUNTER)) {
-            PaymentWorkflow payment = new PaymentWorkflow(total, GlobalContext.getInstance(), help);
+            PaymentWorkflow payment = new PaymentWorkflow(total, getContext(), help);
             payment.setRequired(false);
             tasks.addTask(payment);
             // need to reload the act as it may be changed via the payment

@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.app.patient.mr.PatientClinicalEventEditDialog;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.help.HelpListener;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
@@ -105,12 +106,12 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
             public void show(HelpContext context) {
             }
         });
-        LayoutContext context = new DefaultLayoutContext(help);
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), help);
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName, object);
         IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
         assertNotNull("Failed to create editor for shortname=" + shortName, editor);
-        EditDialog dialog = EditDialogFactory.create(editor, help);
+        EditDialog dialog = EditDialogFactory.create(editor, context.getContext(), help);
         assertEquals("Incorrect dialog type for shortname=" + shortName, type, dialog.getClass());
     }
 

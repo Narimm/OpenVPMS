@@ -306,10 +306,9 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         Context context = new LocalContext(this.context.getContext());
         context.setCurrent(object);
         HelpContext help = this.context.getHelpContext().createTopic(object, "edit");
-        LayoutContext layoutContext = new DefaultLayoutContext(true, help);
-        layoutContext.setContext(context);
+        LayoutContext layoutContext = new DefaultLayoutContext(true, context, help);
         final IMObjectEditor editor = IMObjectEditorFactory.create(object, parent, layoutContext);
-        final EditDialog dialog = EditDialogFactory.create(editor, help);
+        final EditDialog dialog = EditDialogFactory.create(editor, context, help);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 getFocusGroup().setFocus(); // restore focus

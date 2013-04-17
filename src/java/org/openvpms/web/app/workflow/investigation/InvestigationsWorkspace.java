@@ -20,6 +20,7 @@ import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -40,9 +41,11 @@ public class InvestigationsWorkspace extends AbstractReportingWorkspace<Act> {
 
     /**
      * Constructs an {@code InvestigationsWorkspace}.
+     *
+     * @param context the context
      */
-    public InvestigationsWorkspace() {
-        super("workflow", "investigation", Act.class);
+    public InvestigationsWorkspace(Context context) {
+        super("workflow", "investigation", Act.class, context);
     }
 
     /**
@@ -56,7 +59,7 @@ public class InvestigationsWorkspace extends AbstractReportingWorkspace<Act> {
         Query<Act> query = new InvestigationsQuery();
 
         // create a layout context, with hyperlinks enabled
-        LayoutContext context = new DefaultLayoutContext(getHelpContext());
+        LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
         TableComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);

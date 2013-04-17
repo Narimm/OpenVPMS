@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.DocumentListener;
 import org.openvpms.web.component.event.WindowPaneListener;
@@ -369,7 +368,7 @@ public class MultiIMObjectSelector<T extends IMObject> {
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     protected Query<T> createQuery(String value) {
-        Query<T> query = QueryFactory.create(shortNames, GlobalContext.getInstance());
+        Query<T> query = QueryFactory.create(shortNames, context.getContext());
         query.setValue(value);
         return query;
     }

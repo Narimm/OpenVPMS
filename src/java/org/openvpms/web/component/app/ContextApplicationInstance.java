@@ -43,12 +43,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Resource;
-import java.awt.Dimension;
+import java.awt.*;
 import java.util.Map;
 
 
 /**
- * An <tt>ApplicationInstance</tt> associated with a {@link GlobalContext}.
+ * An {@code ApplicationInstance} associated with a {@link GlobalContext}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -57,9 +57,9 @@ public abstract class ContextApplicationInstance
         extends SpringApplicationInstance {
 
     /**
-     * Application context.
+     * The context.
      */
-    private GlobalContext context = new GlobalContext();
+    private final GlobalContext context;
 
     /**
      * The client screen resolution.
@@ -73,9 +73,12 @@ public abstract class ContextApplicationInstance
 
 
     /**
-     * Constructs a <tt>ContextApplicationInstance</tt>.
+     * Constructs a {@code ContextApplicationInstance}.
+     *
+     * @param context the context
      */
-    public ContextApplicationInstance() {
+    public ContextApplicationInstance(GlobalContext context) {
+        this.context = context;
         initUser();
         initPractice();
         initLocation();
@@ -91,7 +94,7 @@ public abstract class ContextApplicationInstance
     /**
      * Returns the instance associated with the current thread.
      *
-     * @return the current instance, or <tt>null</tt>
+     * @return the current instance, or {@code null}
      */
     public static ContextApplicationInstance getInstance() {
         return (ContextApplicationInstance) ApplicationInstance.getActive();
@@ -124,7 +127,9 @@ public abstract class ContextApplicationInstance
      * Clears the current context.
      */
     protected void clearContext() {
-        context = new GlobalContext();
+        for (IMObject object : context.getObjects()) {
+            context.removeObject(object);
+        }
     }
 
     /**
@@ -304,7 +309,7 @@ public abstract class ContextApplicationInstance
     /**
      * Updates the context when the location changes.
      *
-     * @param location the location. May be <tt>null</tt>
+     * @param location the location. May be {@code null}
      */
     private void updateLocation(Party location) {
         Party deposit = null;
@@ -337,12 +342,12 @@ public abstract class ContextApplicationInstance
      * NOTE: this implementation returns a partially populated object, as
      * stock locations may have a large no. of product relationships.
      * <p/>
-     * The version of the object is set to <tt>-1</tt> so that it cannot
+     * The version of the object is set to {@code -1} so that it cannot
      * be used to overwrite the actual stock location.
      *
      * @param rules    the location rules
      * @param location the location
-     * @return the stock location, or <tt>null</tt> if none is found
+     * @return the stock location, or {@code null} if none is found
      */
     private Party getStockLocation(LocationRules rules, Party location) {
         Party result = null;

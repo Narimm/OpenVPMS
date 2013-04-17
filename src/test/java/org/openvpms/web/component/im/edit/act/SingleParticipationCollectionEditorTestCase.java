@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -59,7 +60,7 @@ public class SingleParticipationCollectionEditorTestCase extends AbstractAppTest
         // create a SingleParticipationCollectionEditor for a clinician participation
         CollectionProperty property = createCollectionProperty(act, "clinician");
         SingleParticipationCollectionEditor editor = new SingleParticipationCollectionEditor(property, act,
-                new DefaultLayoutContext(new HelpContext("foo", null)));
+                new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null)));
         editor.getComponent();
         assertTrue(editor.isEmpty());
         assertTrue(editor.isValid());

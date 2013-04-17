@@ -29,13 +29,13 @@ import org.openvpms.web.component.im.query.TableBrowser;
 public class CustomerBalanceBrowser extends TableBrowser<ObjectSet> {
 
     /**
-     * Construct a new {@code CustomerBalanceBrowser} that queries objects and displays them in a table.
+     * Constructs a {@code CustomerBalanceBrowser} that queries objects and displays them in a table.
      *
-     * @param query   the customer balanne query
+     * @param query   the customer balance query
      * @param context the layout context
      */
     public CustomerBalanceBrowser(CustomerBalanceQuery query, LayoutContext context) {
-        super(query, null, new CustomerBalanceSummaryTableModel(), context);
+        super(query, null, new CustomerBalanceSummaryTableModel(context.getContext()), context);
     }
 
 }

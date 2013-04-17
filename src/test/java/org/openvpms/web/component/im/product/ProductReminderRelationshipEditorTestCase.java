@@ -24,10 +24,12 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -49,7 +51,7 @@ public class ProductReminderRelationshipEditorTestCase extends ArchetypeServiceT
 
         EntityRelationship rel = (EntityRelationship) create("entityRelationship.productReminder");
         ProductReminderRelationshipEditor editor = new ProductReminderRelationshipEditor(
-                rel, null, new DefaultLayoutContext(new HelpContext("foo", null)));
+                rel, null, new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null)));
         checkValues(rel, 1, DateUnits.YEARS, false);
 
         editor.getProperty("target").setValue(type1.getObjectReference());
@@ -69,7 +71,8 @@ public class ProductReminderRelationshipEditorTestCase extends ArchetypeServiceT
     @Test
     public void testFactory() {
         EntityRelationship rel = (EntityRelationship) create("entityRelationship.productReminder");
-        IMObjectEditor editor = IMObjectEditorFactory.create(rel, new DefaultLayoutContext(new HelpContext("foo", null)));
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        IMObjectEditor editor = IMObjectEditorFactory.create(rel, context);
         assertTrue(editor instanceof ProductReminderRelationshipEditor);
     }
 

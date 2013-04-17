@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 
 
@@ -53,7 +52,7 @@ public abstract class SupplierActWorkspace<T extends Act>
      * @param context     the context
      */
     public SupplierActWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes, Context context) {
-        super(subsystemId, workspaceId, null, archetypes);
+        super(subsystemId, workspaceId, null, archetypes, context);
         setArchetypes(Party.class, "party.supplier*");
         setMailContext(new SupplierMailContext(context, getHelpContext()));
     }
@@ -66,7 +65,7 @@ public abstract class SupplierActWorkspace<T extends Act>
     @Override
     public void setObject(Party object) {
         super.setObject(object);
-        GlobalContext.getInstance().setSupplier(object);
+        getContext().setSupplier(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -87,7 +86,7 @@ public abstract class SupplierActWorkspace<T extends Act>
      */
     @Override
     protected Party getLatest() {
-        return getLatest(GlobalContext.getInstance().getSupplier());
+        return getLatest(getContext().getSupplier());
     }
 
 }

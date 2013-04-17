@@ -23,6 +23,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -133,19 +134,19 @@ public class RecordBrowser implements Browser<Act> {
      */
     public RecordBrowser(PatientHistoryQuery history, Query<Act> problems,
                          Query<Act> reminderAlert, Query<Act> document,
-                         Query<Act> charges, HelpContext help) {
-        LayoutContext context = new DefaultLayoutContext(help);
-        this.summary = new PatientHistoryBrowser(history, context);
-        this.problems = BrowserFactory.create(problems, context);
+                         Query<Act> charges, Context context, HelpContext help) {
+        LayoutContext layout = new DefaultLayoutContext(context, help);
+        this.summary = new PatientHistoryBrowser(history, layout);
+        this.problems = BrowserFactory.create(problems, layout);
 
         // todo - should be able to register ReminderActTableModel in
         // IMObjectTableFactory.properties for act.patientReminder and
         // act.patientAlert
-        IMObjectTableModel<Act> model = new ReminderActTableModel(reminderAlert.getShortNames(), context);
-        this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert, model, context);
-        this.document = BrowserFactory.create(document, context);
-        IMObjectTableModel<Act> chargeModel = new ChargesActTableModel(charges.getShortNames(), context);
-        this.charges = new DefaultIMObjectTableBrowser<Act>(charges, chargeModel, context);
+        IMObjectTableModel<Act> model = new ReminderActTableModel(reminderAlert.getShortNames(), layout);
+        this.reminderAlert = new DefaultIMObjectTableBrowser<Act>(reminderAlert, model, layout);
+        this.document = BrowserFactory.create(document, layout);
+        IMObjectTableModel<Act> chargeModel = new ChargesActTableModel(charges.getShortNames(), layout);
+        this.charges = new DefaultIMObjectTableBrowser<Act>(charges, chargeModel, layout);
     }
 
     /**

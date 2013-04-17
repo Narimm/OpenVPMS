@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.admin;
 
@@ -26,6 +24,7 @@ import org.openvpms.web.app.admin.style.ChangeResolutionDialog;
 import org.openvpms.web.app.admin.style.StyleBrowser;
 import org.openvpms.web.app.admin.style.StyleEditor;
 import org.openvpms.web.app.admin.style.StyleHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
@@ -38,7 +37,7 @@ import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -46,8 +45,7 @@ import java.util.Map;
 /**
  * An experimental workspace for testing changes to style sheets.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StyleSheetWorkspace extends AbstractWorkspace {
 
@@ -63,10 +61,10 @@ public class StyleSheetWorkspace extends AbstractWorkspace {
 
 
     /**
-     * Constructs a <tt>StyleSheetWorkspace</tt>.
+     * Constructs a {@code StyleSheetWorkspace}.
      */
-    public StyleSheetWorkspace() {
-        super("admin", "stylesheet");
+    public StyleSheetWorkspace(Context context) {
+        super("admin", "stylesheet", context);
         ContextApplicationInstance app = ContextApplicationInstance.getInstance();
         styles = app.getStyleSheets();
         browser = new StyleBrowser(styles, app.getResolution());

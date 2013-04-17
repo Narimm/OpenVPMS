@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.im.report;
@@ -25,15 +23,14 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 /**
  * Locates an <em>entity.documentTemplate</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public interface DocumentTemplateLocator {
 
     /**
      * Returns the document template.
      *
-     * @return the document template, or <tt>null</tt> if the template cannot be located
+     * @return the document template, or {@code null} if the template cannot be located
      * @throws ArchetypeServiceException for any archetype service error
      */
     DocumentTemplate getTemplate();

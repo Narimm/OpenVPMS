@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
@@ -85,13 +85,14 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
 
 
     /**
-     * Create a new <tt>AccountCRUDWindow</tt>.
+     * Constructs an {@code AccountCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
+    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), context, help);
     }
 
     /**
@@ -114,7 +115,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         });
         // If the logged in user is an administrator, show the Check button
         Button check = null;
-        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+        if (UserHelper.isAdmin(getContext().getUser())) {
             check = ButtonFactory.create(CHECK_ID, new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onCheck();
@@ -191,7 +192,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Invoked when the 'check' button is pressed.
      */
     protected void onCheck() {
-        final Party customer = GlobalContext.getInstance().getCustomer();
+        final Party customer = getContext().getCustomer();
         if (customer != null) {
             CustomerAccountRules rules = new CustomerAccountRules();
             try {

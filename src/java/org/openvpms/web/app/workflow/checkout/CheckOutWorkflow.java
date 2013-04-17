@@ -125,7 +125,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         Party patient = (Party) bean.getParticipant("participation.patient");
         User clinician = external.getClinician();
 
-        initial = new DefaultTaskContext(help, false);
+        initial = new DefaultTaskContext(help);
         initial.setCustomer(customer);
         initial.setPatient(patient);
         initial.setClinician(clinician);

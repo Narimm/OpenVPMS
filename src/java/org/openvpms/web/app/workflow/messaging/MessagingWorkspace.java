@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
@@ -37,10 +37,12 @@ import org.openvpms.web.component.subsystem.CRUDWindow;
 public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
 
     /**
-     * Constructs an {@code MessagingWorkspace}.
+     * Constructs a {@code MessagingWorkspace}.
+     *
+     * @param context the context
      */
-    public MessagingWorkspace() {
-        super("workflow", "messaging", false);
+    public MessagingWorkspace(Context context) {
+        super("workflow", "messaging", context, false);
         setArchetypes(User.class, UserArchetypes.USER);
         setChildArchetypes(Act.class, MessageArchetypes.USER, MessageArchetypes.SYSTEM);
     }
@@ -93,7 +95,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
     protected User getLatest() {
         User result;
         if (getObject() == null) {
-            result = getLatest(GlobalContext.getInstance().getUser());
+            result = getLatest(getContext().getUser());
         } else {
             result = super.getLatest();
         }
@@ -108,7 +110,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      */
     @Override
     protected Browser<Act> createBrowser(Query<Act> query) {
-        return new MessageBrowser((MessageQuery) query, new DefaultLayoutContext(getHelpContext()));
+        return new MessageBrowser((MessageQuery) query, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**
@@ -118,7 +120,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      */
     @Override
     protected Query<Act> createQuery() {
-        return new MessageQuery(getObject(), new DefaultLayoutContext(getHelpContext()));
+        return new MessageQuery(getObject(), new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**
@@ -128,7 +130,7 @@ public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
      */
     @Override
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new MessagingCRUDWindow(getChildArchetypes(), getHelpContext());
+        return new MessagingCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
 }

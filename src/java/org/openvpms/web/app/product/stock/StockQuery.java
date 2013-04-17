@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActStatuses;
@@ -59,16 +59,18 @@ public class StockQuery extends DateRangeActQuery<Act> {
      * Constructs a new {@code StockQuery}.
      *
      * @param shortNames the act short names to query
+     * @param context    the context
      * @param help       the help context
      */
-    public StockQuery(String[] shortNames, HelpContext help) {
+    public StockQuery(String[] shortNames, Context context, HelpContext help) {
         super(shortNames, STATUSES, Act.class);
 
         setParticipantConstraint(null, "stockLocation",
                                  StockArchetypes.STOCK_LOCATION_PARTICIPATION);
 
         stockLocation = new IMObjectSelector<Party>(Messages.get("product.stockLocation"),
-                                                    new DefaultLayoutContext(help), "party.organisationStockLocation");
+                                                    new DefaultLayoutContext(context, help),
+                                                    "party.organisationStockLocation");
         stockLocation.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 setEntity(object);
@@ -76,7 +78,6 @@ public class StockQuery extends DateRangeActQuery<Act> {
             }
         });
 
-        GlobalContext context = GlobalContext.getInstance();
         Party location = context.getStockLocation();
         stockLocation.setObject(location);
         setEntity(location);

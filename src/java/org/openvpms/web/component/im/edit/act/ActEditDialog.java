@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit.act;
 import nextapp.echo2.app.Button;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -41,40 +42,43 @@ public class ActEditDialog extends EditDialog {
     private boolean posted;
 
     /**
-     * Constructs a new {@code ActEditDialog}.
+     * Constructs an {@code ActEditDialog}.
      *
-     * @param editor the editor
-     * @param help   the help context
+     * @param editor  the editor
+     * @param context the context
+     * @param help    the help context
      */
-    public ActEditDialog(IMObjectEditor editor, HelpContext help) {
-        super(editor, help);
+    public ActEditDialog(IMObjectEditor editor, Context context, HelpContext help) {
+        super(editor, context, help);
         init(editor);
     }
 
     /**
-     * Constructs a new {@code ActEditDialog}.
+     * Constructs an {@code ActEditDialog}.
      *
-     * @param editor the editor
-     * @param save   if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
-     * @param help   the help context
+     * @param editor  the editor
+     * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param context the context
+     * @param help    the help context
      */
-    public ActEditDialog(IMObjectEditor editor, boolean save, HelpContext help) {
-        super(editor, save, help);
+    public ActEditDialog(IMObjectEditor editor, boolean save, Context context, HelpContext help) {
+        super(editor, save, context, help);
         init(editor);
     }
 
     /**
-     * Constructs a new {@code EditDialog}.
+     * Constructs an {@code EditDialog}.
      *
-     * @param editor the editor
-     * @param save   if {@code true}, saves the editor when the 'OK' or
-     *               'Apply' buttons are pressed.
-     * @param skip   if {@code true} display a 'Skip' button that simply
-     *               closes the dialog
-     * @param help   the help context
+     * @param editor  the editor
+     * @param save    if {@code true}, saves the editor when the 'OK' or
+     *                'Apply' buttons are pressed.
+     * @param skip    if {@code true} display a 'Skip' button that simply
+     *                closes the dialog
+     * @param context the context
+     * @param help    the help context
      */
-    public ActEditDialog(IMObjectEditor editor, boolean save, boolean skip, HelpContext help) {
-        super(editor, save, skip, help);
+    public ActEditDialog(IMObjectEditor editor, boolean save, boolean skip, Context context, HelpContext help) {
+        super(editor, save, skip, context, help);
         init(editor);
 
         posted = getPosted();

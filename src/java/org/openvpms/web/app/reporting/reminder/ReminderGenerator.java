@@ -94,6 +94,11 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private final DocumentTemplate groupTemplate;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The help context.
      */
     private final HelpContext help;
@@ -219,6 +224,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         if (practice == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoPractice);
         }
+        this.context = context;
         this.help = help;
         TemplateHelper helper = new TemplateHelper();
         groupTemplate = helper.getDocumentTemplate("GROUPED_REMINDERS");
@@ -318,7 +324,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      */
     private ReminderBatchProcessor createEmailProcessor(List<List<ReminderEvent>> reminders) {
         return new ReminderEmailProgressBarProcessor(reminders, ServiceHelper.getMailSender(),
-                                                     practice, groupTemplate, statistics);
+                                                     practice, groupTemplate, statistics, context);
     }
 
     /**
@@ -333,7 +339,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders, boolean interactive,
                                                         MailContext mailContext) {
         ReminderPrintProgressBarProcessor result
-                = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics, help);
+                = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics, context, help);
         result.setInteractiveAlways(interactive);
         result.setMailContext(mailContext);
         return result;
@@ -346,7 +352,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
      * @return a new processor
      */
     private ReminderBatchProcessor createListProcessor(List<List<ReminderEvent>> reminders) {
-        return new ReminderListProcessor(reminders, statistics, help);
+        return new ReminderListProcessor(reminders, statistics, context, help);
     }
 
     /**

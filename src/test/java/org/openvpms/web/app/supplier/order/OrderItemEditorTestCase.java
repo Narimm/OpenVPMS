@@ -22,6 +22,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.test.AbstractAppTest;
@@ -44,7 +45,7 @@ public class OrderItemEditorTestCase extends AbstractAppTest {
      */
     @Test
     public void testValidation() {
-        DefaultLayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
 
         Act order = (Act) create(SupplierArchetypes.ORDER);
         FinancialAct item = (FinancialAct) create(SupplierArchetypes.ORDER_ITEM);

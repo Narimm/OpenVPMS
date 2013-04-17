@@ -171,8 +171,8 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     private void onPrint(IMObject object, Context context, HelpContext help) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator);
-            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, help);
+            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
+            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, context, help);
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

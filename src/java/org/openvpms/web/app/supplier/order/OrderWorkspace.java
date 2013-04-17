@@ -20,6 +20,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.supplier.SupplierMailContext;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
@@ -35,7 +38,7 @@ public class OrderWorkspace
      * Constructs an {@code OrderWorkspace}.
      */
     public OrderWorkspace(Context context) {
-        super("supplier", "order", false);
+        super("supplier", "order", context, false);
         setArchetypes(FinancialAct.class, "act.supplierOrder");
         setChildArchetypes(getArchetypes());
         setMailContext(new SupplierMailContext(context, getHelpContext()));
@@ -47,7 +50,18 @@ public class OrderWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new OrderCRUDWindow(getArchetypes(), getHelpContext());
+        return new OrderCRUDWindow(getArchetypes(), getContext(), getHelpContext());
+    }
+
+    /**
+     * Creates a new query to populate the browser.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<FinancialAct> createQuery() {
+        Archetypes shortNames = getChildArchetypes();
+        return new OrderQuery(shortNames.getShortNames(), new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**

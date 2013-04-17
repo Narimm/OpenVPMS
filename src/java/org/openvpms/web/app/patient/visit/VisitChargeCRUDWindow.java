@@ -49,11 +49,6 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     private final Act event;
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * The charge editor.
      */
     private VisitChargeEditor editor;
@@ -88,9 +83,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
      */
     public VisitChargeCRUDWindow(Act event, Context context, HelpContext help) {
         super(Archetypes.create(CustomerAccountArchetypes.INVOICE, FinancialAct.class),
-              DefaultActActions.<FinancialAct>getInstance(), help);
+              DefaultActActions.<FinancialAct>getInstance(), context, help);
         this.event = event;
-        this.context = context;
     }
 
     /**
@@ -103,7 +97,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
         if (object != null) {
             posted = ActStatus.POSTED.equals(object.getStatus());
             if (posted) {
-                viewer = new IMObjectViewer(object, new DefaultLayoutContext(getHelpContext()));
+                viewer = new IMObjectViewer(object, new DefaultLayoutContext(getContext(), getHelpContext()));
                 editor = null;
             } else {
                 HelpContext edit = createEditTopic(object);
@@ -235,7 +229,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     @Override
     protected LayoutContext createLayoutContext(HelpContext help) {
         LayoutContext layoutContext = super.createLayoutContext(help);
-        layoutContext.setContext(context);
+        layoutContext.setContext(getContext());
         return layoutContext;
     }
 }

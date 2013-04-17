@@ -20,7 +20,6 @@ package org.openvpms.web.app.workflow.payment;
 
 import org.openvpms.web.app.workflow.checkout.PaymentEditTask;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
@@ -53,6 +52,11 @@ public class PaymentWorkflow extends WorkflowImpl {
      */
     private BigDecimal chargeAmount;
 
+    /**
+     * The context to update at the end of the workflow.
+     */
+    private final Context parent;
+
 
     /**
      * Constructs a {@code PaymentWorkflow}.
@@ -63,53 +67,54 @@ public class PaymentWorkflow extends WorkflowImpl {
      * @param help         the help context
      */
     public PaymentWorkflow(BigDecimal chargeAmount, Context context, HelpContext help) {
-        this(new DefaultTaskContext(help, false), chargeAmount, context);
+        this(new DefaultTaskContext(null, help), chargeAmount, context);
     }
 
     /**
      * Constructs a {@code PaymentWorkflow}.
      *
-     * @param context         the task context
-     * @param fallbackContext the context to fall back on if an object isn't in the task context
+     * @param context the task context
+     * @param parent  the context to fall back on if an object isn't in the task context
      */
-    public PaymentWorkflow(TaskContext context, Context fallbackContext) {
-        this(context, BigDecimal.ZERO, fallbackContext);
+    public PaymentWorkflow(TaskContext context, Context parent) {
+        this(context, BigDecimal.ZERO, parent);
     }
 
     /**
      * Constructs a {@code PaymentWorkflow}.
      *
-     * @param context         the task context
-     * @param chargeAmount    the charge amount that triggered the payment workflow
-     * @param fallbackContext the context to fall back on if an object isn't in the task context
+     * @param initial      the initial task context
+     * @param chargeAmount the charge amount that triggered the payment workflow
+     * @param parent       the parent context to fall back on if an object isn't in the task context
      */
-    public PaymentWorkflow(TaskContext context, BigDecimal chargeAmount, Context fallbackContext) {
-        super(context.getHelpContext());
-        initial = context;
+    public PaymentWorkflow(TaskContext initial, BigDecimal chargeAmount, Context parent) {
+        super(initial.getHelpContext());
+        this.initial = initial;
         this.chargeAmount = chargeAmount;
+        this.parent = parent;
 
-        if (initial.getCustomer() == null) {
-            initial.setCustomer(fallbackContext.getCustomer());
+        if (this.initial.getCustomer() == null) {
+            this.initial.setCustomer(parent.getCustomer());
         }
-        if (initial.getPatient() == null) {
-            initial.setPatient(fallbackContext.getPatient());
+        if (this.initial.getPatient() == null) {
+            this.initial.setPatient(parent.getPatient());
         }
-        if (initial.getClinician() == null) {
-            initial.setClinician(fallbackContext.getClinician());
+        if (this.initial.getClinician() == null) {
+            this.initial.setClinician(parent.getClinician());
         }
-        if (initial.getUser() == null) {
-            initial.setUser(fallbackContext.getUser());
+        if (this.initial.getUser() == null) {
+            this.initial.setUser(parent.getUser());
         }
-        if (initial.getTill() == null) {
-            initial.setTill(fallbackContext.getTill());
+        if (this.initial.getTill() == null) {
+            this.initial.setTill(parent.getTill());
         }
 
-        if (initial.getPractice() == null) {
-            initial.setPractice(fallbackContext.getPractice());
+        if (this.initial.getPractice() == null) {
+            this.initial.setPractice(parent.getPractice());
         }
-        if (initial.getLocation() == null) {
+        if (this.initial.getLocation() == null) {
             // need to set location for cash rounding purposes during payments
-            initial.setLocation(fallbackContext.getLocation());
+            this.initial.setLocation(parent.getLocation());
         }
     }
 
@@ -137,14 +142,13 @@ public class PaymentWorkflow extends WorkflowImpl {
         Tasks tasks = new Tasks(context.getHelpContext());
         tasks.addTask(new PaymentEditTask(chargeAmount));
 
-        // add a task to update the global context at the end of the workflow
+        // add a task to update the parent context at the end of the workflow
         tasks.addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
-                Context global = GlobalContext.getInstance();
-                global.setCustomer(context.getCustomer());
-                global.setPatient(context.getPatient());
-                global.setTill(context.getTill());
-                global.setClinician(context.getClinician());
+                parent.setCustomer(context.getCustomer());
+                parent.setPatient(context.getPatient());
+                parent.setTill(context.getTill());
+                parent.setClinician(context.getClinician());
             }
         });
 

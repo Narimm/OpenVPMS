@@ -56,13 +56,15 @@ public class CustomerMailContext extends ContextMailContext {
      */
     public CustomerMailContext(Context context, final HelpContext help) {
         super(context);
+        final DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
+
         setAttachmentBrowserFactory(new AttachmentBrowserFactory() {
             public Browser<Act> createBrowser(MailContext context) {
                 Browser<Act> result = null;
                 Party customer = getContext().getCustomer();
                 Party patient = getContext().getPatient();
                 if (customer != null || patient != null) {
-                    result = new CustomerPatientDocumentBrowser(customer, patient, new DefaultLayoutContext(help));
+                    result = new CustomerPatientDocumentBrowser(customer, patient, layout);
                 }
                 return result;
             }
@@ -79,8 +81,8 @@ public class CustomerMailContext extends ContextMailContext {
      */
     public static CustomerMailContext create(Act act, Context context, HelpContext help) {
         ActBean bean = new ActBean(act);
-        Party customer = getParty(bean, "customer");
-        Party patient = getParty(bean, "patient");
+        Party customer = getParty(bean, "customer", context);
+        Party patient = getParty(bean, "patient", context);
         return create(customer, patient, context, help);
     }
 
@@ -156,13 +158,14 @@ public class CustomerMailContext extends ContextMailContext {
     /**
      * Returns the party associated with a node.
      *
-     * @param bean the bean
-     * @param node the node
+     * @param bean    the bean
+     * @param node    the node
+     * @param context the context
      * @return the associated party, or {@code null} if none exists
      */
-    private static Party getParty(ActBean bean, String node) {
+    private static Party getParty(ActBean bean, String node, Context context) {
         if (bean.hasNode(node)) {
-            return (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef(node));
+            return (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef(node), context);
         }
         return null;
     }

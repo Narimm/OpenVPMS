@@ -17,6 +17,7 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -38,6 +39,11 @@ import org.openvpms.web.resource.util.Messages;
 public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> {
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The edit button id.
      */
     private static final String EDIT_ID = "edit";
@@ -54,14 +60,16 @@ public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> 
 
 
     /**
-     * Constructs an {@code EditBrowserDialog}.
+     * Constructs an {@code EditListBrowserDialog}.
      *
      * @param title   the dialog title
      * @param browser the browser
+     * @param context the context
      * @param help    the help context
      */
-    public EditListBrowserDialog(String title, Browser<T> browser, HelpContext help) {
+    public EditListBrowserDialog(String title, Browser<T> browser, Context context, HelpContext help) {
         super(title, null, BUTTONS, browser, true, help);
+        this.context = context;
     }
 
     /**
@@ -100,9 +108,9 @@ public class EditListBrowserDialog<T extends IMObject> extends BrowserDialog<T> 
             ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(object)));
         } else {
             final FocusCommand focus = new FocusCommand();
-            LayoutContext context = new DefaultLayoutContext(true, getHelpContext());
+            LayoutContext context = new DefaultLayoutContext(true, this.context, getHelpContext());
             IMObjectEditor editor = IMObjectEditorFactory.create(current, context);
-            EditDialog dialog = EditDialogFactory.create(editor, getHelpContext());
+            EditDialog dialog = EditDialogFactory.create(editor, this.context, getHelpContext());
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {

@@ -25,6 +25,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.app.workflow.scheduling.SchedulingWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 
@@ -37,10 +38,12 @@ import org.openvpms.web.component.im.util.Archetypes;
 public class TaskWorkspace extends SchedulingWorkspace {
 
     /**
-     * Constructs an {@code TaskWorkspace}.
+     * Constructs a {@code TaskWorkspace}.
+     *
+     * @param context the context
      */
-    public TaskWorkspace() {
-        super("workflow", "worklist", Archetypes.create("entity.organisationWorkListView", Entity.class));
+    public TaskWorkspace(GlobalContext context) {
+        super("workflow", "worklist", Archetypes.create("entity.organisationWorkListView", Entity.class), context);
     }
 
     /**
@@ -50,7 +53,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
      */
     @Override
     public void setObject(Entity object) {
-        GlobalContext.getInstance().setWorkListView(object);
+        getContext().setWorkListView(object);
         super.setObject(object);
     }
 
@@ -60,7 +63,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * @return a new browser
      */
     protected ScheduleBrowser createBrowser() {
-        return new TaskBrowser();
+        return new TaskBrowser(getContext());
     }
 
     /**
@@ -69,18 +72,17 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * @return a new CRUD window
      */
     protected ScheduleCRUDWindow createCRUDWindow() {
-        return new TaskCRUDWindow(getHelpContext());
+        return new TaskCRUDWindow(getContext(), getHelpContext());
     }
 
     /**
      * Invoked when events are queried.
      * <p/>
-     * This implementation updates the global context with the selected work
-     * list date and work list
+     * This implementation updates the context with the selected work list date and work list
      */
     @Override
     protected void onQuery() {
-        GlobalContext context = GlobalContext.getInstance();
+        Context context = getContext();
         ScheduleBrowser browser = getBrowser();
         context.setWorkListDate(browser.getDate());
         context.setWorkList((Party) browser.getSelectedSchedule());
@@ -152,12 +154,11 @@ public class TaskWorkspace extends SchedulingWorkspace {
     /**
      * Returns the latest version of the current schedule view context object.
      *
-     * @return the latest version of the schedule view context object, or
-     *         {@link #getObject()} if they are the same
+     * @return the latest version of the schedule view context object, or {@link #getObject()} if they are the same
      */
     @Override
     protected Entity getLatest() {
-        return getLatest(GlobalContext.getInstance().getWorkListView());
+        return getLatest(getContext().getWorkListView());
     }
 
     /**
@@ -177,7 +178,7 @@ public class TaskWorkspace extends SchedulingWorkspace {
      */
     private void updateContext() {
         Party workList = (Party) getBrowser().getSelectedSchedule();
-        GlobalContext.getInstance().setWorkList(workList);
+        getContext().setWorkList(workList);
     }
 
 }

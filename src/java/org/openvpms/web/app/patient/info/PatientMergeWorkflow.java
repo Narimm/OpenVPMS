@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
@@ -43,19 +42,24 @@ import org.springframework.transaction.support.TransactionTemplate;
 class PatientMergeWorkflow extends MergeWorkflow<Party> {
 
     /**
-     * Constructs a new <tt>MergeWorkflow</tt>.
-     *
-     * @param patient the patient to merge to
-     * @param help    the help context
+     * The customer.
      */
-    public PatientMergeWorkflow(Party patient, HelpContext help) {
+    private final Party customer;
+
+    /**
+     * Constructs a {@code PatientMergeWorkflow}.
+     *
+     * @param patient  the patient to merge to
+     * @param customer the customer
+     * @param help     the help context
+     */
+    public PatientMergeWorkflow(Party patient, Party customer, HelpContext help) {
         super(patient, help);
+        this.customer = customer;
     }
 
     /**
      * Creates the task context.
-     * <p/>
-     * This implementation propagates the current customer from the global context.
      *
      * @param help the help context
      * @return a new task context
@@ -63,7 +67,7 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
     @Override
     protected TaskContext createContext(HelpContext help) {
         TaskContext context = super.createContext(help);
-        context.setCustomer(GlobalContext.getInstance().getCustomer());
+        context.setCustomer(customer);
         return context;
     }
 
@@ -76,8 +80,7 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
     @Override
     protected SelectIMObjectTask<Party> createSelectTask(Context context) {
         String[] shortNames = {getObject().getArchetypeId().getShortName()};
-        Query<Party> query = QueryFactory.create(shortNames, context,
-                                                 Party.class);
+        Query<Party> query = QueryFactory.create(shortNames, context, Party.class);
         if (query instanceof PatientQuery) {
             ((PatientQuery) query).setShowAllPatients(true);
         }
@@ -104,8 +107,7 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
      * @param from the patient to merge from
      */
     private void merge(final Party from) {
-        TransactionTemplate template = new TransactionTemplate(
-                ServiceHelper.getTransactionManager());
+        TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),

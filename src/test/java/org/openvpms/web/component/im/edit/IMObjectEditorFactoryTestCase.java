@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit;
 import org.junit.Test;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -51,6 +52,7 @@ import org.openvpms.web.app.supplier.delivery.DeliveryItemEditor;
 import org.openvpms.web.app.supplier.order.OrderEditor;
 import org.openvpms.web.app.supplier.order.OrderItemEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageEditor;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.contact.LocationEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
@@ -418,8 +420,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateCustomerEditor() {
-        String[] shortNames
-                = DescriptorHelper.getShortNames("party.customer*");
+        String[] shortNames = DescriptorHelper.getShortNames("party.customer*");
         for (String shortName : shortNames) {
             checkCreate(shortName, CustomerEditor.class);
         }
@@ -525,18 +526,19 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that the editor returned by {@link IMObjectEditorFactory#create}
-     * matches that expected.
+     * Verifies that the editor returned by {@link IMObjectEditorFactory#create} matches that expected.
      *
      * @param shortName name the archetype short name
      * @param type      the expected editor class
      */
     private void checkCreate(String shortName, Class type) {
-        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+        LocalContext context = new LocalContext();
+        context.setPractice(TestHelper.getPractice());
+
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         IMObject object = service.create(shortName);
-        assertNotNull("Failed to create object with shortname=" + shortName,
-                      object);
-        IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
+        assertNotNull("Failed to create object with shortname=" + shortName, object);
+        IMObjectEditor editor = IMObjectEditorFactory.create(object, layout);
         assertNotNull("Failed to create editor", editor);
         assertEquals(type, editor.getClass());
     }
@@ -549,17 +551,13 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * @param parentShortName the parent archetype short name
      * @param type            the expected editor class
      */
-    private void checkCreate(String shortName, String parentShortName,
-                             Class type) {
-        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+    private void checkCreate(String shortName, String parentShortName, Class type) {
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         IMObject object = service.create(shortName);
-        assertNotNull("Failed to create object with shortname=" + shortName,
-                      object);
+        assertNotNull("Failed to create object with shortname=" + shortName, object);
         IMObject parent = service.create(parentShortName);
-        assertNotNull("Failed to create object with shortname="
-                              + parentShortName, parent);
-        IMObjectEditor editor = IMObjectEditorFactory.create(object, parent,
-                                                             context);
+        assertNotNull("Failed to create object with shortname=" + parentShortName, parent);
+        IMObjectEditor editor = IMObjectEditorFactory.create(object, parent, context);
         assertNotNull("Failed to create editor", editor);
         assertEquals(type, editor.getClass());
     }

@@ -76,6 +76,11 @@ public class VisitEditor {
     private final PatientHistoryQuery query;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The help context.
      */
     private final HelpContext help;
@@ -163,6 +168,7 @@ public class VisitEditor {
     public VisitEditor(Party patient, Act event, FinancialAct invoice, Context context, HelpContext help) {
         this.patient = patient;
         this.event = event;
+        this.context = context;
         this.help = help;
 
         query = PatientHistoryQueryFactory.create(patient, context.getPractice());
@@ -176,7 +182,7 @@ public class VisitEditor {
         chargeWindow = createVisitChargeCRUDWindow(event, context);
         chargeWindow.setObject(invoice);
 
-        reminderWindow = new ReminderBrowserCRUDWindow(patient, help);
+        reminderWindow = new ReminderBrowserCRUDWindow(patient, context, help);
 
         documentWindow = new VisitDocumentCRUDWindow(context, help);
     }
@@ -376,7 +382,7 @@ public class VisitEditor {
      */
     private void addDocumentsTab(TabPaneModel model) {
         Query<DocumentAct> query = new PatientDocumentQuery<DocumentAct>(patient);
-        documentBrowser = BrowserFactory.create(query, new DefaultLayoutContext(help));
+        documentBrowser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         BrowserCRUDWindow<DocumentAct> window = new BrowserCRUDWindow<DocumentAct>(documentBrowser, documentWindow);
         addTab(4, "button.document", model, window.getComponent());
     }

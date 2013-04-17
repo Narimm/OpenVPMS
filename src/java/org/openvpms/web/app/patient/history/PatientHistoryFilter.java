@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -58,14 +59,21 @@ class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     private final boolean invoice;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * Constructs a {@code PatientHistoryFilter}.
      *
      * @param shortNames the history item short names to include
+     * @param context    the context
      */
-    public PatientHistoryFilter(String[] shortNames) {
-        super();
+    public PatientHistoryFilter(String[] shortNames, Context context) {
+        super(context);
         this.shortNames = new ArrayList<String>(Arrays.asList(shortNames));
         invoice = this.shortNames.remove(CustomerAccountArchetypes.INVOICE_ITEM);
+        this.context = context;
     }
 
     /**
@@ -101,7 +109,7 @@ class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     /**
      * Excludes invoice items if there is a medication act that links to it.
      *
-     * @param event the <em>act.patientClinicalEvent</em>
+     * @param event    the <em>act.patientClinicalEvent</em>
      * @param children the included child acts
      * @return the child acts with invoice items added where there is no corresponding medication linking to it
      */
@@ -126,7 +134,7 @@ class PatientHistoryFilter extends ActHierarchyFilter<Act> {
             }
         }
         for (IMObjectReference chargeItemRef : chargeItemRefs) {
-            Act chargeItem = (Act) IMObjectHelper.getObject(chargeItemRef);
+            Act chargeItem = (Act) IMObjectHelper.getObject(chargeItemRef, context);
             if (chargeItem != null) {
                 result.add(chargeItem);
             }

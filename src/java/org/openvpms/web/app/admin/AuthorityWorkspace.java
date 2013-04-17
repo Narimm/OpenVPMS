@@ -12,29 +12,27 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin;
 
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 
 
 /**
  * Archetype authority workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class AuthorityWorkspace extends ResultSetCRUDWorkspace<ArchetypeAwareGrantedAuthority> {
 
     /**
-     * Constructs an <tt>AuthorityWorkspace</tt>.
+     * Constructs an {@code AuthorityWorkspace}.
      */
-    public AuthorityWorkspace() {
-        super("admin", "authority");
+    public AuthorityWorkspace(Context context) {
+        super("admin", "authority", context);
         setArchetypes(ArchetypeAwareGrantedAuthority.class, "security.archetypeAuthority");
     }
 

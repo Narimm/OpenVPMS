@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
@@ -21,7 +19,6 @@ package org.openvpms.web.app.workflow.worklist;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
@@ -31,7 +28,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DateHelper;
@@ -50,10 +48,14 @@ import java.util.List;
 /**
  * Queries <em>act.customerTask</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskQuery extends ScheduleQuery {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The status range selector.
@@ -76,10 +78,13 @@ public class TaskQuery extends ScheduleQuery {
 
 
     /**
-     * Creates a new <tt>TaskQuery</tt>.
+     * Constructs {@code TaskQuery}.
+     *
+     * @param context the context
      */
-    public TaskQuery() {
+    public TaskQuery(Context context) {
         super(ServiceHelper.getTaskService(), "entity.organisationWorkListView");
+        this.context = context;
         statusRangeListener = new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();
@@ -131,13 +136,12 @@ public class TaskQuery extends ScheduleQuery {
     /**
      * Returns the schedule views.
      * <p/>
-     * This returns the <em>entity.organisationWorkListView</em> entities for
-     * the current location.
+     * This returns the <em>entity.organisationWorkListView</em> entities for the current location.
      *
      * @return the schedule views
      */
     protected List<Entity> getScheduleViews() {
-        Party location = GlobalContext.getInstance().getLocation();
+        Party location = context.getLocation();
         List<Entity> views;
         if (location != null) {
             LocationRules locationRules = new LocationRules();
@@ -151,10 +155,10 @@ public class TaskQuery extends ScheduleQuery {
     /**
      * Returns the default schedule view.
      *
-     * @return the default schedule view. May be <tt>null</tt>
+     * @return the default schedule view. May be {@code null}
      */
     protected Entity getDefaultScheduleView() {
-        Party location = GlobalContext.getInstance().getLocation();
+        Party location = context.getLocation();
         if (location != null) {
             LocationRules locationRules = new LocationRules();
             return locationRules.getDefaultWorkListView(location);
@@ -179,8 +183,7 @@ public class TaskQuery extends ScheduleQuery {
             }
         });
         for (EntityRelationship relationship : relationships) {
-            Entity schedule = (Entity) IMObjectHelper.getObject(
-                    relationship.getTarget());
+            Entity schedule = (Entity) IMObjectHelper.getObject(relationship.getTarget(), context);
             if (schedule != null) {
                 result.add(schedule);
             }
@@ -247,7 +250,7 @@ public class TaskQuery extends ScheduleQuery {
 
 
         /**
-         * Constructs a new <tt>StatusRangeListCellRenderer</tt>.
+         * Constructs a new {@code StatusRangeListCellRenderer}.
          */
         public StatusRangeListCellRenderer() {
             super(StatusRange.class);
@@ -257,21 +260,21 @@ public class TaskQuery extends ScheduleQuery {
          * Renders an object.
          *
          * @param list   the list component
-         * @param object the object to render. May be <tt>null</tt>
+         * @param object the object to render. May be {@code null}
          * @param index  the object index
          * @return the rendered object
          */
         protected Object getComponent(Component list, StatusRange object,
                                       int index) {
             return Messages.get("workflow.scheduling.statusrange."
-                    + object.name());
+                                        + object.name());
         }
 
         /**
          * Determines if an object represents 'All'.
          *
          * @param list   the list component
-         * @param object the object. May be <tt>null</tt>
+         * @param object the object. May be {@code null}
          * @param index  the object index
          * @return <code>true</code> if the object represents 'All'.
          */
@@ -283,7 +286,7 @@ public class TaskQuery extends ScheduleQuery {
          * Determines if an object represents 'None'.
          *
          * @param list   the list component
-         * @param object the object. May be <tt>null</tt>
+         * @param object the object. May be {@code null}
          * @param index  the object index
          * @return <code>true</code> if the object represents 'None'.
          */

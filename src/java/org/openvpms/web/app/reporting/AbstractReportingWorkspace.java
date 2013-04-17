@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting;
@@ -21,6 +19,7 @@ package org.openvpms.web.app.reporting;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
@@ -31,8 +30,7 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 /**
  * Workspace for reporting purposes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractReportingWorkspace<T extends IMObject>
         extends AbstractWorkspace<T> {
@@ -49,21 +47,22 @@ public abstract class AbstractReportingWorkspace<T extends IMObject>
 
 
     /**
-     * Construct a new <tt>AbstractReportingWorkspace</tt>.
+     * Construct a new {@code AbstractReportingWorkspace}.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
+     * @param workspaceId the workspace localisation identifier
      * @param type        the supported workspace type
+     * @param context     the context
      */
-    public AbstractReportingWorkspace(String subsystemId, String workspaceId, Class<T> type) {
-        super(subsystemId, workspaceId);
+    public AbstractReportingWorkspace(String subsystemId, String workspaceId, Class<T> type, Context context) {
+        super(subsystemId, workspaceId, context);
         this.type = type;
     }
 
     /**
      * Sets the object to be viewed/edited by the workspace.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     public void setObject(T object) {
         super.setObject(object);

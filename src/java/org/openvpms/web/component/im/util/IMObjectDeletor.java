@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -44,6 +45,20 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @author Tim Anderson
  */
 public abstract class IMObjectDeletor {
+
+    /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
+     * Constructs an {@code IMObjectDeletor}.
+     *
+     * @param context the context
+     */
+    public IMObjectDeletor(Context context) {
+        this.context = context;
+    }
 
     /**
      * Attempts to delete an object.
@@ -108,7 +123,7 @@ public abstract class IMObjectDeletor {
      * @param listener the listener
      * @param help     the help context
      */
-    protected abstract <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener, 
+    protected abstract <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener,
                                                             HelpContext help);
 
     /**
@@ -132,9 +147,9 @@ public abstract class IMObjectDeletor {
                                                     HelpContext help) {
         boolean removed = false;
         try {
-            DefaultLayoutContext context = new DefaultLayoutContext(true, help);
-            context.setDeletionListener(new DeletionListenerAdapter<T>(object, listener));
-            final IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
+            DefaultLayoutContext layout = new DefaultLayoutContext(true, context, help);
+            layout.setDeletionListener(new DeletionListenerAdapter<T>(object, listener));
+            final IMObjectEditor editor = IMObjectEditorFactory.create(object, layout);
             TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
             Boolean result = template.execute(new TransactionCallback<Boolean>() {
                 public Boolean doInTransaction(TransactionStatus status) {

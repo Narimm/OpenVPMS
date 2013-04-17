@@ -20,7 +20,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -62,11 +62,12 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
      * @param archetypes the archetypes that this may create
      * @param query      the query
      * @param lookups    the lookups
+     * @param context    the context
      * @param help       the help context
      */
     public LookupCRUDWindow(Archetypes<Lookup> archetypes, Query<Lookup> query, ResultSet<Lookup> lookups,
-                            HelpContext help) {
-        super(archetypes, query, lookups, help);
+                            Context context, HelpContext help) {
+        super(archetypes, query, lookups, context, help);
     }
 
     /**
@@ -78,7 +79,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
         if (object == null) {
             ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
-            IMObjectDeletor deletor = new DefaultIMObjectDeletor();
+            IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
             deletor.delete(object, getHelpContext(), new LookupDeletorListener());
         }
     }
@@ -120,13 +121,13 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
         final Lookup lookup = getObject();
         if (lookup != null) {
             String shortName = lookup.getArchetypeId().getShortName();
-            Query<Lookup> query = QueryFactory.create(shortName, GlobalContext.getInstance(), Lookup.class);
+            Query<Lookup> query = QueryFactory.create(shortName, getContext(), Lookup.class);
             query.setAuto(true);
-            final ReplaceLookupBrowser browser = new ReplaceLookupBrowser(query, lookup,
-                                                                          new DefaultLayoutContext(getHelpContext()));
+            HelpContext help = getHelpContext();
+            DefaultLayoutContext context = new DefaultLayoutContext(getContext(), help);
+            final ReplaceLookupBrowser browser = new ReplaceLookupBrowser(query, lookup, context);
             String title = Messages.get("lookup.replace.title");
-            BrowserDialog<Lookup> dialog = new BrowserDialog<Lookup>(
-                    title, BrowserDialog.OK_CANCEL, browser, getHelpContext());
+            BrowserDialog<Lookup> dialog = new BrowserDialog<Lookup>(title, BrowserDialog.OK_CANCEL, browser, help);
             dialog.setCloseOnSelection(false);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin;
@@ -23,32 +21,34 @@ import org.openvpms.web.app.admin.group.GroupWorkspace;
 import org.openvpms.web.app.admin.lookup.LookupWorkspace;
 import org.openvpms.web.app.admin.template.DocumentTemplateWorkspace;
 import org.openvpms.web.app.admin.user.UserWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
 /**
  * Administration subsystem.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class AdminSubsystem extends AbstractSubsystem {
 
     /**
-     * Creates a new <tt>AdminSubsystem</tt>.
+     * Constructs an {@code AdminSubsystem}.
+     *
+     * @param context the context
      */
-    public AdminSubsystem() {
+    public AdminSubsystem(Context context) {
         super("admin");
 
-        addWorkspace(new OrganisationWorkspace());
-        addWorkspace(new TypeWorkspace());
-        addWorkspace(new DocumentTemplateWorkspace());
-        addWorkspace(new LookupWorkspace());
-        addWorkspace(new UserWorkspace());
-        addWorkspace(new GroupWorkspace());
-        addWorkspace(new RoleWorkspace());
-        addWorkspace(new AuthorityWorkspace());
-        addWorkspace(new ArchetypeWorkspace());
-        addWorkspace(new StyleSheetWorkspace());
+        addWorkspace(new OrganisationWorkspace(context));
+        addWorkspace(new TypeWorkspace(context));
+        addWorkspace(new DocumentTemplateWorkspace(context));
+        addWorkspace(new LookupWorkspace(context));
+        addWorkspace(new UserWorkspace(context));
+        addWorkspace(new GroupWorkspace(context));
+        addWorkspace(new RoleWorkspace(context));
+        addWorkspace(new AuthorityWorkspace(context));
+        addWorkspace(new ArchetypeWorkspace(context));
+        addWorkspace(new StyleSheetWorkspace(context));
     }
 }

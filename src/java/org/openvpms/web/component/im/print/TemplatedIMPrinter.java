@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.print;
@@ -25,6 +23,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.PrintProperties;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.TemplatedReporter;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 
@@ -34,10 +33,14 @@ import java.util.Map;
 /**
  * Base class for printers that print reports using a template.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * Cache of template names, keyed on template archetype short name.
@@ -46,16 +49,17 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
 
 
     /**
-     * Constructs a <tt>TemplatedIMReportPrinter</tt>.
+     * Constructs a {@code TemplatedIMReportPrinter.
      *
      * @param reporter the reporter
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public TemplatedIMPrinter(TemplatedReporter<T> reporter) {
+    public TemplatedIMPrinter(TemplatedReporter<T> reporter, Context context) {
         super(reporter);
+        this.context = context;
         DocumentTemplate template = getTemplate();
         if (template != null) {
-            setInteractive(getInteractive(template, getDefaultPrinter()));
+            setInteractive(getInteractive(template, getDefaultPrinter(), context));
             setCopies(template.getCopies());
         }
     }
@@ -87,12 +91,12 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
     /**
      * Returns the default printer for an object.
      *
-     * @return the default printer, or <tt>null</tt> if there is none defined
+     * @return the default printer, or {@code null} if there is none defined
      * @throws OpenVPMSException for any error
      */
     public String getDefaultPrinter() {
         DocumentTemplate template = getTemplate();
-        return (template != null) ? getDefaultPrinter(template) : null;
+        return (template != null) ? getDefaultPrinter(template, context) : null;
     }
 
     /**
@@ -104,7 +108,7 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      */
     @Override
     protected PrintProperties getProperties(String printer) {
-        return getProperties(printer, getTemplate());
+        return getProperties(printer, getTemplate(), context);
     }
 
     /**
@@ -120,10 +124,19 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
     /**
      * Returns the document template.
      *
-     * @return the document template, or <tt>null</tt> if none can be found
+     * @return the document template, or {@code null} if none can be found
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected DocumentTemplate getTemplate() {
         return getReporter().getTemplate();
+    }
+
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
     }
 }

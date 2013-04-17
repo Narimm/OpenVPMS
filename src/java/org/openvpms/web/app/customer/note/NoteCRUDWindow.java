@@ -17,6 +17,7 @@
 package org.openvpms.web.app.customer.note;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -31,13 +32,14 @@ import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 public class NoteCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
     /**
-     * Constructs a new {@code NoteCRUDWindow}.
+     * Constructs a {@code NoteCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create.
+     * @param context    the context
      * @param help       the help context
      */
-    public NoteCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), help);
+    public NoteCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), context, help);
     }
 
 }

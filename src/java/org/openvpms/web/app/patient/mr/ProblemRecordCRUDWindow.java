@@ -25,6 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
@@ -51,11 +52,12 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
     /**
      * Constructs a {@code ProblemRecordCRUDWindow}.
      *
-     * @param help the help context
+     * @param context the context
+     * @param help    the help context
      */
-    public ProblemRecordCRUDWindow(HelpContext help) {
+    public ProblemRecordCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create(PatientArchetypes.CLINICAL_PROBLEM, Act.class,
-                                Messages.get("patient.record.createtype")), ProblemActions.INSTANCE, help);
+                                Messages.get("patient.record.createtype")), ProblemActions.INSTANCE, context, help);
     }
 
     /**
@@ -129,7 +131,7 @@ public class ProblemRecordCRUDWindow extends ActCRUDWindow<Act>
     private Act getEvent(Act act) {
         for (ActRelationship relationship : act.getTargetActRelationships()) {
             if (TypeHelper.isA(relationship.getSource(), PatientArchetypes.CLINICAL_EVENT)) {
-                return (Act) IMObjectHelper.getObject(relationship.getSource());
+                return (Act) IMObjectHelper.getObject(relationship.getSource(), getContext());
             }
         }
         return getEvent();

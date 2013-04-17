@@ -36,16 +36,10 @@ import org.openvpms.web.component.subsystem.CRUDWindow;
 public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * Constructs an {@code InformationWorkspace}.
      */
     public InformationWorkspace(Context context) {
-        super("customer", "info");
-        this.context = context;
+        super("customer", "info", context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
@@ -58,7 +52,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     @Override
     public void setObject(Party object) {
         super.setObject(object);
-        ContextHelper.setCustomer(object);
+        ContextHelper.setCustomer(getContext(), object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -69,7 +63,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     public Component getSummary() {
-        CustomerSummary summarizer = new CustomerSummary(context, getHelpContext());
+        CustomerSummary summarizer = new CustomerSummary(getContext(), getHelpContext());
         return summarizer.getSummary(getObject());
     }
 
@@ -80,7 +74,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     protected Party getLatest() {
-        return getLatest(context.getCustomer());
+        return getLatest(getContext().getCustomer());
     }
 
     /**
@@ -104,7 +98,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
-        return new InformationCRUDWindow(getArchetypes(), getHelpContext());
+        return new InformationCRUDWindow(getArchetypes(), getContext(), getHelpContext());
     }
 
     /**
@@ -124,7 +118,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
                     CustomerBrowser browser = (CustomerBrowser) dialog.getBrowser();
                     Party patient = browser.getPatient();
                     if (patient != null) {
-                        ContextHelper.setPatient(patient);
+                        ContextHelper.setPatient(getContext(), patient);
                     }
                 }
             }

@@ -20,7 +20,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -77,14 +77,15 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      *
      * @param groupTemplate the grouped reminder document template
      * @param listener      the listener for printer events
-     * @param context       the mail context, used when printing interactively. May be {@code null}
+     * @param context       the context
+     * @param mailContext   the mail context, used when printing interactively. May be {@code null}
      * @param help          the help context
      */
-    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener, MailContext context,
-                                  HelpContext help) {
-        super(groupTemplate);
+    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener, Context context,
+                                  MailContext mailContext, HelpContext help) {
+        super(groupTemplate, context);
         this.listener = listener;
-        this.mailContext = context;
+        this.mailContext = mailContext;
         this.help = help;
     }
 
@@ -116,19 +117,18 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      * @param template  the document template to use. May be {@code null}
      */
     protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate template) {
-        // TODO - fix this so its not dependent on the global context
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, shortName,
-                                                                             GlobalContext.getInstance());
+        Context context = getContext();
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, shortName, context);
         if (events.size() > 1) {
             List<ObjectSet> sets = createObjectSets(events);
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, locator);
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, locator, context);
             print(printer);
         } else {
             List<Act> acts = new ArrayList<Act>();
             for (ReminderEvent event : events) {
                 acts.add(event.getReminder());
             }
-            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator);
+            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);
             print(printer);
         }
     }
@@ -141,7 +141,7 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
      * @param printer the printer
      */
     private <T> void print(IMPrinter<T> printer) {
-        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, help);
+        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, getContext(), help);
         String printerName = printer.getDefaultPrinter();
         if (printerName == null) {
             printerName = fallbackPrinter;

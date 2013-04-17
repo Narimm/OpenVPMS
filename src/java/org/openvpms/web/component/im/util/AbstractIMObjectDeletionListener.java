@@ -21,12 +21,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 
 /**
@@ -106,12 +106,10 @@ public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMO
             log.error(message, cause);
             ErrorHelper.show(title, message);
         } else {
-            User user = GlobalContext.getInstance().getUser();
-            String userName = (user != null) ? user.getUsername() : null;
-            String context = Messages.get("logging.error.editcontext",
-                                          object.getObjectReference(),
-                                          editor.getClass().getName(),
-                                          userName);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String user = (authentication != null) ? authentication.getName() : null;
+            String context = Messages.get("logging.error.editcontext", object.getObjectReference(),
+                                          editor.getClass().getName(), user);
             ErrorHelper.show(title, editor.getDisplayName(), context, cause);
         }
     }

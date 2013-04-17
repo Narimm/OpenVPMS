@@ -47,10 +47,11 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
      * Construct a new {@code TableBrowser} that queries objects using the
      * specified query, displaying them in the table.
      *
-     * @param context the layout context
+     * @param context the context
+     * @param layout  the layout context
      */
-    public CustomerPatientHistoryBrowser(LayoutContext context) {
-        super(createQuery(), null, new HistoryModel(), context);
+    public CustomerPatientHistoryBrowser(GlobalContext context, LayoutContext layout) {
+        super(createQuery(context), null, new HistoryModel(context), layout);
     }
 
     /**
@@ -81,17 +82,21 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
      *
      * @return a new query
      */
-    private static CustomerPatientHistoryQuery createQuery() {
-        GlobalContext context = GlobalContext.getInstance();
+    private static CustomerPatientHistoryQuery createQuery(GlobalContext context) {
         SelectionHistory customers = context.getHistory(Context.CUSTOMER_SHORTNAME);
         SelectionHistory patients = context.getHistory(Context.PATIENT_SHORTNAME);
-        return new CustomerPatientHistoryQuery(customers, patients);
+        return new CustomerPatientHistoryQuery(customers, patients, context);
     }
 
     /**
      * Table model for {@link CustomerPatient} instances.
      */
     private static class HistoryModel extends AbstractIMTableModel<CustomerPatient> {
+
+        /**
+         * The context.
+         */
+        private final Context context;
 
         /**
          * The owning browser.
@@ -115,9 +120,10 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
 
 
         /**
-         * Creates a new {@code HistoryModel}.
+         * Constructs a {@code HistoryModel}.
          */
-        public HistoryModel() {
+        public HistoryModel(Context context) {
+            this.context = context;
             TableColumnModel columns = new DefaultTableColumnModel();
             columns.addColumn(createTableColumn(CUSTOMER_INDEX, "history.customer"));
             columns.addColumn(createTableColumn(PATIENT_INDEX, "history.patient"));
@@ -210,7 +216,7 @@ public class CustomerPatientHistoryBrowser extends TableBrowser<CustomerPatient>
                     }
                 };
                 IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(party.getObjectReference(), text,
-                                                                             listener);
+                                                                             listener, context);
                 return viewer.getComponent();
             }
             return null;

@@ -38,7 +38,7 @@ public class SelectStockDetailsDialog extends PopupDialog {
     private StockDetailsSelector selector;
 
     /**
-     * Creates a new <tt>SelectOrderDetailsDialog</tt>.
+     * Constructs a {@code SelectOrderDetailsDialog}.
      *
      * @param title   the window title
      * @param context the context
@@ -57,7 +57,7 @@ public class SelectStockDetailsDialog extends PopupDialog {
     /**
      * Returns the supplier.
      *
-     * @return the supplier, or <tt>null</tt> if none is selected
+     * @return the supplier, or {@code null} if none is selected
      */
     public Party getSupplier() {
         return selector.getSupplier();
@@ -66,7 +66,7 @@ public class SelectStockDetailsDialog extends PopupDialog {
     /**
      * Returns the stock location.
      *
-     * @return the stock location, or <tt>null</tt> if none is selected
+     * @return the stock location, or {@code null} if none is selected
      */
     public Party getStockLocation() {
         return selector.getStockLocation();

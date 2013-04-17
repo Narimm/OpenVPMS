@@ -19,6 +19,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -66,10 +67,12 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      * @param archetypes the archetypes that this may create instances of
      * @param query      the query. May be {@code null}
      * @param set        the result set. May be {@code null}
+     * @param context    the context
      * @param help       the help context
      */
-    public ResultSetCRUDWindow(Archetypes<T> archetypes, Query<T> query, ResultSet<T> set, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<T>getInstance(), help);
+    public ResultSetCRUDWindow(Archetypes<T> archetypes, Query<T> query, ResultSet<T> set, Context context,
+                               HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<T>getInstance(), context, help);
         setResultSet(set);
         setQuery(query);
     }
@@ -115,7 +118,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
             String title = DescriptorHelper.getDisplayName(object);
             boolean edit = canEdit();      // TODO - says nothing about whether other objects in the set may be edited
             final ViewResultSetDialog<T> dialog = new ViewResultSetDialog<T>(title, object, set, edit,
-                                                                             getHelpContext());
+                                                                             getContext(), getHelpContext());
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {
@@ -189,7 +192,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      * @return a new dialog
      */
     protected EditResultSetDialog<T> createEditResultSetDialog(T object, String title) {
-        return new EditResultSetDialog<T>(title, object, set, getHelpContext());
+        return new EditResultSetDialog<T>(title, object, set, getContext(), getHelpContext());
     }
 
     /**

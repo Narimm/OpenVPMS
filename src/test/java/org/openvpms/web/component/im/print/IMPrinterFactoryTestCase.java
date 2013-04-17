@@ -12,15 +12,10 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.print;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -37,12 +32,15 @@ import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * {@link IMPrinterFactory} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-11-20 00:45:43Z $
+ * @author Tim Anderson
  */
 public class IMPrinterFactoryTestCase extends AbstractAppTest {
 
@@ -134,8 +132,9 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
                                       documentTemplate);
             }
         }
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, new LocalContext());
-        IMPrinter printer = IMPrinterFactory.create(object, locator);
+        LocalContext context = new LocalContext();
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+        IMPrinter printer = IMPrinterFactory.create(object, locator, context);
         assertNotNull(printer);
         assertEquals(type, printer.getClass());
     }

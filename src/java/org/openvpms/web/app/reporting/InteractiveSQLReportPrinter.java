@@ -21,6 +21,7 @@ package org.openvpms.web.app.reporting;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
@@ -39,13 +40,14 @@ import org.openvpms.web.servlet.DownloadServlet;
 public class InteractiveSQLReportPrinter extends InteractivePrinter {
 
     /**
-     * Constructs a new {@code InteractiveSQLReportPrinter}.
+     * Constructs an {@code InteractiveSQLReportPrinter}.
      *
      * @param printer the printer to delegate to
+     * @param context the context
      * @param help    the help context
      */
-    public InteractiveSQLReportPrinter(SQLReportPrinter printer, HelpContext help) {
-        super(printer, help);
+    public InteractiveSQLReportPrinter(SQLReportPrinter printer, Context context, HelpContext help) {
+        super(printer, context, help);
     }
 
     /**
@@ -129,7 +131,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
      * @param document the document to mail
      */
     private void mail(Document document) {
-        MailDialog dialog = new MailDialog(getMailContext(), getHelpContext().createSubtopic("email"));
+        MailDialog dialog = new MailDialog(getMailContext(), getContext(), getHelpContext().createSubtopic("email"));
         MailEditor editor = dialog.getMailEditor();
         editor.addAttachment(document);
         editor.setSubject(getDisplayName());

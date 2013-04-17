@@ -78,21 +78,15 @@ public class CustomerSummary extends PartySummary {
     private CustomerAccountRules accountRules;
 
     /**
-     * The context.
-     */
-    private Context context;
-
-    /**
      * Constructs a {@code CustomerSummary}.
      *
      * @param context the context
      * @param help    the help context
      */
     public CustomerSummary(Context context, HelpContext help) {
-        super(help.createTopic("customer/summary"));
+        super(context, help.createTopic("customer/summary"));
         partyRules = new CustomerRules();
         accountRules = new CustomerAccountRules();
-        this.context = context;
     }
 
     /**
@@ -106,7 +100,7 @@ public class CustomerSummary extends PartySummary {
     protected Component createSummary(Party party) {
         Component column = ColumnFactory.create();
         IMObjectReferenceViewer customerName = new IMObjectReferenceViewer(party.getObjectReference(),
-                                                                           party.getName(), true);
+                                                                           party.getName(), true, getContext());
         customerName.setStyleName("hyperlink-bold");
         column.add(RowFactory.create("Inset.Small",
                                      customerName.getComponent()));
@@ -151,7 +145,8 @@ public class CustomerSummary extends PartySummary {
             column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
-        if (SMSHelper.isSMSEnabled()) {
+        final Context context = getContext();
+        if (SMSHelper.isSMSEnabled(context.getPractice())) {
             final List<Contact> contacts = getSMSContacts(party);
             if (!contacts.isEmpty()) {
                 Context local = new LocalContext(context);
@@ -208,9 +203,10 @@ public class CustomerSummary extends PartySummary {
     private Component getEmail(Contact email) {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
+                Context context = getContext();
                 HelpContext mail = getHelpContext().createTopic("customer/email");
                 MailContext mailContext = new CustomerMailContext(context, mail);
-                MailDialog dialog = new MailDialog(mailContext, mail);
+                MailDialog dialog = new MailDialog(mailContext, context, mail);
                 dialog.show();
             }
         });

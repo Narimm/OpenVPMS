@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin.organisation;
@@ -35,6 +33,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.subscription.core.Subscription;
 import org.openvpms.subscription.core.SubscriptionFactory;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -60,11 +59,12 @@ public class SubscriptionHelper {
     /**
      * Formats the current subscription, if any.
      *
+     * @param context the context
      * @return the subscription message
      */
-    public static String formatSubscription() {
+    public static String formatSubscription(Context context) {
         String result = null;
-        Subscription subscription = getSubscription();
+        Subscription subscription = getSubscription(context);
         if (subscription != null) {
             String user = subscription.getOrganisationName();
             if (user == null) {
@@ -89,15 +89,16 @@ public class SubscriptionHelper {
     /**
      * Returns the current subscription.
      *
-     * @return the subscription, or <tt>null</tt> if there is none
+     * @param context the context
+     * @return the subscription, or {@code null} if there is none
      */
-    public static Subscription getSubscription() {
+    public static Subscription getSubscription(Context context) {
         Subscription result = null;
         try {
             Party practice = new PracticeRules().getPractice();
             if (practice != null) {
-                DocumentAct act = getSubscriptionAct(practice);
-                result = getSubscription(act);
+                DocumentAct act = getSubscriptionAct(practice, context);
+                result = getSubscription(act, context);
             }
         } catch (Throwable exception) {
             log.error(exception);
@@ -108,15 +109,17 @@ public class SubscriptionHelper {
     /**
      * Returns the subscription.
      *
-     * @param act the <em>act.subscription</em>
-     * @return the subscription, or <tt>null</tt> if there is none
+     * @param act     the <em>act.subscription</em>
+     * @param context the context
+     * @return the subscription, or {@code null} if there is none
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public static Subscription getSubscription(DocumentAct act) throws IOException, GeneralSecurityException {
+    public static Subscription getSubscription(DocumentAct act, Context context)
+            throws IOException, GeneralSecurityException {
         Subscription result = null;
         if (act != null) {
-            Document document = (Document) IMObjectHelper.getObject(act.getDocument());
+            Document document = (Document) IMObjectHelper.getObject(act.getDocument(), context);
             if (document != null) {
                 DocumentHandler documentHandler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT);
                 InputStream content = documentHandler.getContent(document);
@@ -130,14 +133,15 @@ public class SubscriptionHelper {
      * Returns the subscription act associated with an  <em>party.organisationPractice</em>.
      *
      * @param practice the practice. A <em>party.organisationPractice</em>
-     * @return the subscription act, or <tt>null</tt> if none exists
+     * @param context  the context
+     * @return the subscription act, or {@code null} if none exists
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static DocumentAct getSubscriptionAct(Party practice) {
+    public static DocumentAct getSubscriptionAct(Party practice, Context context) {
         DocumentAct result = null;
         Participation participation = getSubscriptionParticipation(practice);
         if (participation != null) {
-            result = (DocumentAct) IMObjectHelper.getObject(participation.getAct());
+            result = (DocumentAct) IMObjectHelper.getObject(participation.getAct(), context);
         }
         return result;
     }

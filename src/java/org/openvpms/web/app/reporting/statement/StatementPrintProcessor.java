@@ -126,7 +126,7 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     public void process(final Statement statement) {
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(CustomerAccountArchetypes.OPENING_BALANCE,
                                                                              context);
-        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(statement.getActs(), locator);
+        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(statement.getActs(), locator, context);
         printer.setParameters(getParameters(statement));
 
         print(printer, statement);
@@ -140,7 +140,7 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      */
     protected void print(IMObjectReportPrinter<Act> printer, final Statement statement) {
         String title = Messages.get("reporting.statements.print.customer");
-        final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, help);
+        final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context, help);
         if (printerName != null) {
             iPrinter.setInteractive(false);
         }

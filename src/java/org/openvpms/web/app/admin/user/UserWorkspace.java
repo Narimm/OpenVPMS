@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin.user;
@@ -22,22 +20,22 @@ import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.Archetypes;
 
 
 /**
  * User workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class UserWorkspace extends ResultSetCRUDWorkspace<User> {
 
     /**
-     * Constructs an <tt>UserWorkspace</tt>.
+     * Constructs an {@code UserWorkspace}.
      */
-    public UserWorkspace() {
-        super("admin", "user");
+    public UserWorkspace(Context context) {
+        super("admin", "user", context);
         setArchetypes(Archetypes.create(UserArchetypes.USER_ARCHETYPES, User.class, UserArchetypes.USER,
                                         DescriptorHelper.getDisplayName(UserArchetypes.USER)));
     }

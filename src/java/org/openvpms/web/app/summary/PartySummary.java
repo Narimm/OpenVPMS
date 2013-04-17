@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.ResultSetIterator;
@@ -39,6 +40,11 @@ import java.util.List;
 public abstract class PartySummary {
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The help context.
      */
     private final HelpContext help;
@@ -46,9 +52,11 @@ public abstract class PartySummary {
     /**
      * Constructs a {@code PartySummary}.
      *
-     * @param help the help context
+     * @param context the context
+     * @param help    the help context
      */
-    public PartySummary(HelpContext help) {
+    public PartySummary(Context context, HelpContext help) {
+        this.context = context;
         this.help = help;
     }
 
@@ -69,7 +77,18 @@ public abstract class PartySummary {
     }
 
     /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
+    }
+
+    /**
      * Returns the help context.
+     *
+     * @return the context
      */
     protected HelpContext getHelpContext() {
         return help;
@@ -96,7 +115,7 @@ public abstract class PartySummary {
         List<Alert> alerts = getAlerts(party);
         if (!alerts.isEmpty()) {
             Collections.sort(alerts);
-            result = new AlertSummary(alerts, help);
+            result = new AlertSummary(alerts, context, help);
         }
         return result;
     }

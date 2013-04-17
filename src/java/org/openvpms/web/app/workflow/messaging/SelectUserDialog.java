@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -47,15 +48,16 @@ public class SelectUserDialog extends PopupDialog {
     /**
      * Constructs a {@code SelectUserDialog}.
      *
-     * @param title the window title
-     * @param help  the help context
+     * @param title   the window title
+     * @param context the context
+     * @param help    the help context
      */
-    public SelectUserDialog(String title, HelpContext help) {
+    public SelectUserDialog(String title, Context context, HelpContext help) {
         super(title, "SelectUserDialog", CANCEL);
 
         String shortName = UserArchetypes.USER;
         String type = DescriptorHelper.getDisplayName(shortName);
-        selector = new IMObjectSelector<User>(type, new DefaultLayoutContext(help), shortName);
+        selector = new IMObjectSelector<User>(type, new DefaultLayoutContext(context, help), shortName);
         selector.setListener(new AbstractIMObjectSelectorListener<User>() {
             public void selected(User object) {
                 onSelected(object);

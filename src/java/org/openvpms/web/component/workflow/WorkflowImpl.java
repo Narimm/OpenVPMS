@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.workflow;
 
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -34,6 +35,12 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      * The tasks to execute.
      */
     private final List<Task> tasks = new ArrayList<Task>();
+
+
+    /**
+     * The parent context. May be {@code null}
+     */
+    private final Context parent;
 
     /**
      * The help context.
@@ -79,9 +86,20 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     /**
      * Constructs a {@code WorkflowImpl}.
      *
-     * @param help the help context
+     * @param help    the help context
      */
     public WorkflowImpl(HelpContext help) {
+        this(null, help);
+    }
+
+    /**
+     * Constructs a {@code WorkflowImpl}.
+     *
+     * @param context the parent context. May be {@code null}
+     * @param help    the help context
+     */
+    public WorkflowImpl(Context context, HelpContext help) {
+        this.parent = context;
         this.help = help;
         taskListener = new DefaultTaskListener() {
             @Override
@@ -124,7 +142,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      * Starts the workflow.
      */
     public void start() {
-        start(new DefaultTaskContext(help));
+        start(new DefaultTaskContext(parent, help));
     }
 
     /**

@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.print;
 
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.resource.util.Messages;
@@ -33,45 +34,51 @@ public class InteractiveIMPrinter<T>
 
 
     /**
-     * Constructs a new {@code InteractiveIMPrinter}.
+     * Constructs an {@code InteractiveIMPrinter}.
      *
      * @param printer the printer to delegate to
+     * @param context the context
+     * @param help    the help context
      */
-    public InteractiveIMPrinter(IMPrinter<T> printer, HelpContext help) {
-        this(printer, false, help);
+    public InteractiveIMPrinter(IMPrinter<T> printer, Context context, HelpContext help) {
+        this(printer, false, context, help);
     }
 
     /**
-     * Constructs a new {@code InteractiveIMPrinter}.
+     * Constructs an {@code InteractiveIMPrinter}.
      *
      * @param printer the printer to delegate to
      * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param context the context
+     * @param help    the help context
      */
-    public InteractiveIMPrinter(IMPrinter<T> printer, boolean skip, HelpContext help) {
-        this(null, printer, skip, help);
+    public InteractiveIMPrinter(IMPrinter<T> printer, boolean skip, Context context, HelpContext help) {
+        this(null, printer, skip, context, help);
     }
 
     /**
-     * Constructs a new {@code InteractiveIMPrinter}.
+     * Constructs an {@code InteractiveIMPrinter}.
      *
      * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
+     * @param context the context
      * @param help    the help context
      */
-    public InteractiveIMPrinter(String title, IMPrinter<T> printer, HelpContext help) {
-        this(title, printer, false, help);
+    public InteractiveIMPrinter(String title, IMPrinter<T> printer, Context context, HelpContext help) {
+        this(title, printer, false, context, help);
     }
 
     /**
-     * Constructs a new {@code InteractiveIMPrinter}.
+     * Constructs an {@code InteractiveIMPrinter}.
      *
      * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
      * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param context the context
      * @param help    the help context
      */
-    public InteractiveIMPrinter(String title, IMPrinter<T> printer, boolean skip, HelpContext help) {
-        super(title, printer, skip, help);
+    public InteractiveIMPrinter(String title, IMPrinter<T> printer, boolean skip, Context context, HelpContext help) {
+        super(title, printer, skip, context, help);
     }
 
     /**

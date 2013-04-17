@@ -29,7 +29,9 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.edit.PropertyEditor;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
@@ -72,7 +74,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
 
 
     /**
-     * Construct a new <tt>NodeEditorFactory</tt>.
+     * Constructs an {@code NodeEditorFactory}.
      *
      * @param editors the editors
      * @param context the layout context
@@ -87,7 +89,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      *
      * @param property the property to display
      * @param context  the context object
-     * @return a component to display <tt>object</tt>
+     * @return a component to display {@code object}
      */
     public ComponentState create(Property property, IMObject context) {
         ComponentState result;
@@ -106,14 +108,12 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             } else if (property.isDate()) {
                 editor = createDateEditor(property);
             } else if (property.isCollection()) {
-                editor = createCollectionEditor((CollectionProperty) property,
-                                                context);
+                editor = createCollectionEditor((CollectionProperty) property, context);
             } else if (property.isObjectReference()) {
                 editor = createObjectReferenceEditor(property, context);
             }
             if (editor != null) {
-                result = new ComponentState(editor.getComponent(), property,
-                                            editor.getFocusGroup());
+                result = new ComponentState(editor.getComponent(), property, editor.getFocusGroup());
             } else {
                 Label label = LabelFactory.create();
                 label.setText("No editor for type " + property.getType());
@@ -127,11 +127,11 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Create a component to display an object.
      *
      * @param object  the object to display
-     * @param context the object's parent. May be <tt>null</tt>
+     * @param context the object's parent. May be {@code null}
      */
     public ComponentState create(IMObject object, IMObject context) {
         getLayoutContext().setRendered(object);
-        Editor editor = getObjectEditor(object, context);
+        Editor editor = getObjectEditor(object, context, getLayoutContext());
         editors.add(editor);
         return new ComponentState(editor.getComponent(),
                                   editor.getFocusGroup());
@@ -141,20 +141,18 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Creates an editor for an {@link IMObject}.
      *
      * @param object  the object to edit
-     * @param context the object's parent. May be <tt>null</tt>
-     * @return a new editor for <tt>object</tt>
+     * @param parent the object's parent. May be {@code null}
+     * @return a new editor for {@code object}
      */
-    protected IMObjectEditor getObjectEditor(IMObject object,
-                                             IMObject context) {
-        return IMObjectEditorFactory.create(object, context,
-                                            getLayoutContext());
+    protected IMObjectEditor getObjectEditor(IMObject object, IMObject parent, LayoutContext context) {
+        return IMObjectEditorFactory.create(object, parent, context);
     }
 
     /**
      * Returns an editor for a numeric property.
      *
      * @param property the numeric property
-     * @return a new editor for <tt>property</tt>
+     * @return a new editor for {@code property}
      */
     protected Editor createNumericEditor(Property property) {
         Component component = createNumeric(property);
@@ -165,7 +163,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Returns an editor for a date property.
      *
      * @param property the date property
-     * @return a new editor for <tt>property</tt>
+     * @return a new editor for {@code property}
      */
     protected Editor createDateEditor(Property property) {
         Component date = createDate(property);
@@ -177,7 +175,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      *
      * @param property the lookup property
      * @param context  the parent object
-     * @return a new editor for <tt>property</tt>
+     * @return a new editor for {@code property}
      */
     protected Editor createLookupEditor(Property property, IMObject context) {
         Component component = LookupFieldFactory.create(property, context);
@@ -188,7 +186,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Returns an editor for a boolean property.
      *
      * @param property the boolean property
-     * @return a new editor for <tt>property</tt>
+     * @return a new editor for {@code property}
      */
     protected Editor createBooleanEditor(Property property) {
         Component component = createBoolean(property);
@@ -199,7 +197,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Returns an editor for a text property.
      *
      * @param property the boolean property
-     * @return a new editor for <tt>property</tt>
+     * @return a new editor for {@code property}
      */
     protected Editor createStringEditor(Property property) {
         Component component = createString(property);
@@ -211,14 +209,16 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      *
      * @param property the collection property
      * @param object   the parent object
-     * @return a new editor for <tt>property</tt>
+     * @return a new editor for {@code property}
      */
-    protected Editor createCollectionEditor(CollectionProperty property,
-                                            IMObject object) {
+    protected Editor createCollectionEditor(CollectionProperty property, IMObject object) {
         Editor editor = null;
         if (property.isParentChild()) {
-            if (property.getMinCardinality() == 1
-                    && property.getMaxCardinality() == 1) {
+            LayoutContext context = getLayoutContext();
+            HelpContext help = context.getHelpContext().createSubtopic(property.getName());
+            LayoutContext subContext = new DefaultLayoutContext(context, help);
+
+            if (property.getMinCardinality() == 1 && property.getMaxCardinality() == 1) {
                 // handle the special case of a collection of one element.
                 // This can be edited inline
                 String[] range = property.getArchetypeRange();
@@ -234,14 +234,13 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                         }
                     }
                     if (value != null) {
-                        editor = getObjectEditor(value, object);
+                        editor = getObjectEditor(value, object, subContext);
                         editors.add(editor, property);
                     }
                 }
             }
             if (editor == null) {
-                editor = IMObjectCollectionEditorFactory.create(
-                        property, object, getLayoutContext());
+                editor = IMObjectCollectionEditorFactory.create(property, object, subContext);
                 editors.add(editor);
             }
         } else {
@@ -267,16 +266,16 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      *
      * @param property the object reference properrty
      * @param object   the parent object
-     * @return a new editor for <tt>property</tt>
+     * @return a new editor for {@code property}
      */
-    protected Editor createObjectReferenceEditor(Property property,
-                                                 IMObject object) {
+    protected Editor createObjectReferenceEditor(Property property, IMObject object) {
         String[] range = property.getArchetypeRange();
         Editor editor;
+        LayoutContext context = getLayoutContext();
         if (TypeHelper.matches(range, "document.*")) {
-            editor = new DocumentEditor(property, getLayoutContext().getHelpContext());
+            editor = new DocumentEditor(property, context.getContext(), context.getHelpContext());
         } else {
-            editor = IMObjectReferenceEditorFactory.create(property, object, getLayoutContext());
+            editor = IMObjectReferenceEditorFactory.create(property, object, context);
         }
         editors.add(editor);
         return editor;

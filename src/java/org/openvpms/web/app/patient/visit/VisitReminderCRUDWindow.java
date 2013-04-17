@@ -18,6 +18,7 @@ package org.openvpms.web.app.patient.visit;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.mr.ReminderCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 
 /**
@@ -31,10 +32,11 @@ public class VisitReminderCRUDWindow extends ReminderCRUDWindow {
      * Constructs a {@code VisitReminderCRUDWindow}.
      *
      * @param patient the patient
+     * @param context the context
      * @param help    the help context
      */
-    public VisitReminderCRUDWindow(Party patient, HelpContext help) {
-        super(patient, help);
+    public VisitReminderCRUDWindow(Party patient, Context context, HelpContext help) {
+        super(patient, context, help);
     }
 
     /**

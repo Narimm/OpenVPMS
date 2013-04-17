@@ -25,7 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.app.patient.PatientRecordCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -71,21 +71,23 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     /**
      * Constructs a {@code PatientHistoryCRUDWindow}.
      *
-     * @param help the help context
+     * @param context the context
+     * @param help    the help context
      */
-    public PatientHistoryCRUDWindow(HelpContext help) {
+    public PatientHistoryCRUDWindow(Context context, HelpContext help) {
         this(Archetypes.create(PatientArchetypes.CLINICAL_EVENT, Act.class, Messages.get("patient.record.createtype")),
-             help);
+             context, help);
     }
 
     /**
      * Constructs a {@code PatientHistoryCRUDWindow}.
      *
      * @param archetypes the archetypes
+     * @param context    the context
      * @param help       the help context
      */
-    public PatientHistoryCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
-        super(archetypes, PatientHistoryActions.INSTANCE, help);
+    public PatientHistoryCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
+        super(archetypes, PatientHistoryActions.INSTANCE, context, help);
     }
 
     /**
@@ -100,7 +102,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     /**
      * Returns the current patient clinical event.
      *
-     * @return the current event. May be <tt>null</tt>
+     * @return the current event. May be {@code null}
      */
     public Act getEvent() {
         return event;
@@ -201,14 +203,16 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     protected void onPrint() {
         if (query != null) {
             try {
-                PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
+                Context context = getContext();
+                PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames(), context);
                 // maxDepth = 2 - display the events, and their immediate children
                 Iterable<Act> summary = new ActHierarchyIterator<Act>(query, filter, 2);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
-                                                                                     GlobalContext.getInstance());
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator);
+                                                                                     context);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator, context);
                 String title = Messages.get("patient.record.summary.print");
-                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getHelpContext());
+                HelpContext help = getHelpContext().createTopic(PatientArchetypes.CLINICAL_EVENT + "/print");
+                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context, help);
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (OpenVPMSException exception) {

@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
@@ -64,11 +65,12 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      * Constructs a {@code ReminderCRUDWindow}.
      *
      * @param patient the patient
+     * @param context the context
      * @param help    the help context
      */
-    public ReminderCRUDWindow(Party patient, HelpContext help) {
+    public ReminderCRUDWindow(Party patient, Context context, HelpContext help) {
         super(Archetypes.create(SHORT_NAMES, Act.class, Messages.get("patient.reminder.createtype")),
-              DefaultActActions.getInstance(), help);
+              DefaultActActions.getInstance(), context, help);
         this.patient = patient;
     }
 
@@ -125,7 +127,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      */
     private void onResend() {
         try {
-            ResendReminderDialog dialog = ResendReminderDialog.create(getObject(), getHelpContext());
+            ResendReminderDialog dialog = ResendReminderDialog.create(getObject(), getContext(), getHelpContext());
             if (dialog != null) {
                 dialog.addWindowPaneListener(new WindowPaneListener() {
                     public void onClose(WindowPaneEvent event) {

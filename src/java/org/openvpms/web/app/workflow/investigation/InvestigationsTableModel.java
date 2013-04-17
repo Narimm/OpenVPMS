@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
@@ -154,7 +155,8 @@ class InvestigationsTableModel extends AbstractActTableModel {
             EntityBean entityBean = new EntityBean(investigationType);
             List<IMObjectReference> refs = entityBean.getNodeTargetEntityRefs("supplier");
             if (!refs.isEmpty()) {
-                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(refs.get(0), true);
+                Context context = getLayoutContext().getContext();
+                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(refs.get(0), true, context);
                 result = viewer.getComponent();
             }
         }

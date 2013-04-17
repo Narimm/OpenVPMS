@@ -218,10 +218,8 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
-     *         sortable
+     * @param ascending if {@code true}{ sort in ascending order; otherwise sort in {@code descending}{ order
+     * @return the sort criteria, or {@code null}{ if the column isn't sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         return null;
@@ -258,7 +256,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         clinician = IMObjectHelper.getName(clinicianRef);
         clinician = getValue(clinician, bean, "clinician");
 
-        Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"));
+        Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"), context.getContext());
         String age = (patient != null) ? patientRules.getPatientAge(patient, act.getActivityStartTime()) : "";
 
         String text;

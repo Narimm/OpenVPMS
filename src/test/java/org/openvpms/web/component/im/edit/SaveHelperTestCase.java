@@ -21,8 +21,10 @@ import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.ErrorHandler;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.test.AbstractAppTest;
@@ -59,8 +61,8 @@ public class SaveHelperTestCase extends AbstractAppTest {
         bean.setValue("lastName", null);
 
         // create an editor for the customer
-        IMObjectEditor editor = IMObjectEditorFactory.create(customer,
-                                                             new DefaultLayoutContext(new HelpContext("foo", null)));
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        IMObjectEditor editor = IMObjectEditorFactory.create(customer, context);
 
         // verify save fails. The id should by -1
         assertFalse(SaveHelper.save(editor));
@@ -69,7 +71,8 @@ public class SaveHelperTestCase extends AbstractAppTest {
         // verify the ErrorHandler was called
         String lastName = bean.getDisplayName("lastName");
         String expected = Messages.get("org.openvpms.component.business.service.archetype.ValidationError.formatted",
-                                       bean.getDisplayName(), lastName, Messages.get("property.error.required", lastName));
+                                       bean.getDisplayName(), lastName,
+                                       Messages.get("property.error.required", lastName));
         assertEquals(1, errors.size());
         assertEquals(expected, errors.get(0));
 

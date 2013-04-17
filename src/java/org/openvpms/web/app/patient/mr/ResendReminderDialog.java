@@ -34,7 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.reporting.reminder.ReminderGenerator;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -77,6 +77,11 @@ class ResendReminderDialog extends PopupDialog {
     private ReminderProcessor processor;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The reminder count selector.
      */
     private SelectField countSelector;
@@ -100,14 +105,16 @@ class ResendReminderDialog extends PopupDialog {
      * @param reminderCounts the reminder counts that may be (re)sent
      * @param reminderCount  the current reminder count
      * @param processor      the reminder processor
+     * @param context        the context
      * @param help           the help context
      */
     private ResendReminderDialog(Act reminder, List<Contact> contacts, List<Integer> reminderCounts,
-                                 int reminderCount, ReminderProcessor processor, HelpContext help) {
+                                 int reminderCount, ReminderProcessor processor, Context context, HelpContext help) {
         super(Messages.get("patient.reminder.resend.title"), OK_CANCEL, help);
         this.reminder = reminder;
         this.reminderCount = reminderCount;
         this.processor = processor;
+        this.context = context;
         setModal(true);
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("patient.reminder.resend.contacts"));
@@ -131,10 +138,11 @@ class ResendReminderDialog extends PopupDialog {
      * Creates a new {@code ResendReminderDialog} for the supplied reminder.
      *
      * @param reminder the reminder
+     * @param context  the context
      * @param help     the help context
      * @return a new resend dialog, or {@code null} if the reminder can't be resent
      */
-    public static ResendReminderDialog create(Act reminder, HelpContext help) {
+    public static ResendReminderDialog create(Act reminder, Context context, HelpContext help) {
         ResendReminderDialog result = null;
         IMObjectBean bean = new IMObjectBean(reminder);
         int reminderCount = bean.getInt("reminderCount");
@@ -152,7 +160,8 @@ class ResendReminderDialog extends PopupDialog {
             if (contacts != null && !contacts.isEmpty()) {
                 List<Integer> counts = getReminderCounts(event.getReminderType(), reminderCount);
                 if (!counts.isEmpty()) {
-                    result = new ResendReminderDialog(reminder, contacts, counts, reminderCount, processor, help);
+                    result = new ResendReminderDialog(reminder, contacts, counts, reminderCount, processor, context,
+                                                      help);
                 } else {
                     ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.get("patient.reminder.resend.notemplates",
                                                                              event.getReminderType().getName(),
@@ -201,7 +210,6 @@ class ResendReminderDialog extends PopupDialog {
                     event = new ReminderEvent(action, event.getReminder(), event.getReminderType(), event.getPatient(),
                                               event.getCustomer(), contact, event.getDocumentTemplate());
                 }
-                GlobalContext context = GlobalContext.getInstance();
                 CustomerMailContext mailContext = CustomerMailContext.create(event.getCustomer(), event.getPatient(),
                                                                              context, getHelpContext());
                 final ReminderGenerator generator = new ReminderGenerator(event, context, mailContext,

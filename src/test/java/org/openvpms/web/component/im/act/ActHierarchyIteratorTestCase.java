@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.act;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -26,11 +25,16 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -88,7 +92,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
      * @param shortNames the child act short names
      */
     private void checkIterator(PatientHistoryQuery query, int maxDepth, int expected, String... shortNames) {
-        Iterable<Act> summary = new ActHierarchyIterator<Act>(query, shortNames, maxDepth);
+        Iterable<Act> summary = new ActHierarchyIterator<Act>(query, shortNames, maxDepth, new LocalContext());
         int acts = 0;
         Act event = null;
         for (Act act : summary) {

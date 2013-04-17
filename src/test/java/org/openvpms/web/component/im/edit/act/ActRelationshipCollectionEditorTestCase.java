@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -210,7 +211,7 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
      */
     private ActRelationshipCollectionEditor createActRelationshipCollectionEditor(FinancialAct parent, int minCardinality) {
         User user = TestHelper.createUser();
-        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         context.getContext().setUser(user);
         PropertySet set = new PropertySet(parent, context);
         CollectionProperty items = (CollectionProperty) set.get("items");

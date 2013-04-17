@@ -27,7 +27,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -64,6 +64,11 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
     private final Statistics statistics;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The help context.
      */
     private final HelpContext help;
@@ -89,9 +94,10 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
      *
      * @param reminders  the reminders
      * @param statistics the reminder statistics
+     * @param context    the context
      * @param help       the help context
      */
-    public ReminderListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics,
+    public ReminderListProcessor(List<List<ReminderEvent>> reminders, Statistics statistics, Context context,
                                  HelpContext help) {
         for (List<ReminderEvent> list : reminders) {
             for (ReminderEvent reminder : list) {
@@ -99,6 +105,7 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
             }
         }
         this.statistics = statistics;
+        this.context = context;
         this.help = help;
         row = RowFactory.create();
     }
@@ -144,10 +151,10 @@ class ReminderListProcessor extends AbstractBatchProcessor implements ReminderBa
                     acts.add(event.getReminder());
                 }
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(ReminderArchetypes.REMINDER,
-                                                                                     GlobalContext.getInstance());
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator);
+                                                                                     context);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);
                 final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(
-                        Messages.get("reporting.reminder.list.print.title"), printer, true, help);
+                        Messages.get("reporting.reminder.list.print.title"), printer, true, context, help);
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed(String printer) {

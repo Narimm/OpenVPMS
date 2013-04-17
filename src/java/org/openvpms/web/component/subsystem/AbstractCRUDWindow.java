@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.event.ActionListener;
@@ -93,9 +93,14 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     private ButtonSet buttons;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * Email context.
      */
-    private MailContext context;
+    private MailContext mailContext;
 
     /**
      * Help context.
@@ -128,11 +133,13 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      *
      * @param archetypes the archetypes that this may create
      * @param actions    determines the operations that may be performed on the selected object
+     * @param context    the context
      * @param help       the help context
      */
-    public AbstractCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions, HelpContext help) {
+    public AbstractCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions, Context context, HelpContext help) {
         this.archetypes = archetypes;
         this.actions = actions;
+        this.context = context;
         this.help = help;
     }
 
@@ -173,7 +180,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     public void setObject(T object) {
         this.object = object;
-        GlobalContext.getInstance().setCurrent(object);
+        context.setCurrent(object);
         getComponent();
         ButtonSet buttons = getButtons();
         if (buttons != null) {
@@ -266,7 +273,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         if (object == null) {
             ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
         } else {
-            IMObjectDeletor deletor = new DefaultIMObjectDeletor();
+            IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
             HelpContext delete = getHelpContext().createSubtopic("delete");
             deletor.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
                 public void deleted(T object) {
@@ -281,6 +288,15 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    public Context getContext() {
+        return context;
+    }
+
+    /**
      * Sets the mail context.
      * <p/>
      * This is used to determine email addresses when mailing.
@@ -288,7 +304,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param context the mail context. May be {@code null}
      */
     public void setMailContext(MailContext context) {
-        this.context = context;
+        this.mailContext = context;
     }
 
     /**
@@ -297,7 +313,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return the mail context. May be {@code null}
      */
     public MailContext getMailContext() {
-        return context;
+        return mailContext;
     }
 
     /**
@@ -533,7 +549,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
                 onEditCompleted(editor, isNew);
             }
         });
-        GlobalContext.getInstance().setCurrent(object);
+        context.setCurrent(object);
         dialog.show();
         return dialog;
     }
@@ -567,7 +583,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return a new edit dialog
      */
     protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
-        return EditDialogFactory.create(editor, help);
+        return EditDialogFactory.create(editor, context, help);
     }
 
     /**
@@ -621,10 +637,10 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @throws OpenVPMSException for any error
      */
     protected IMPrinter<T> createPrinter(T object) {
-        ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, GlobalContext.getInstance());
-        IMPrinter<T> printer = IMPrinterFactory.create(object, locator);
+        ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+        IMPrinter<T> printer = IMPrinterFactory.create(object, locator, context);
         HelpContext help = createPrintTopic(object);
-        InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer, help);
+        InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<T>(printer, context, help);
         interactive.setMailContext(getMailContext());
         return interactive;
     }
@@ -648,7 +664,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return a new layout context.
      */
     protected LayoutContext createLayoutContext(HelpContext help) {
-        return new DefaultLayoutContext(true, help);
+        return new DefaultLayoutContext(true, getContext(), help);
     }
 
     /**

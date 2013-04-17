@@ -12,39 +12,38 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.product;
 
 import org.openvpms.web.app.product.stock.StockWorkspace;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
 /**
  * Product subsystem.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ProductSubsystem extends AbstractSubsystem {
 
     /**
-     * Constructs a <tt>ProductSubsystem</tt>.
+     * Constructs a {@code ProductSubsystem}.
+     *
+     * @param context the context
      */
-    public ProductSubsystem() {
+    public ProductSubsystem(Context context) {
         super("product");
-        PracticeMailContext context = new PracticeMailContext(GlobalContext.getInstance());
+        PracticeMailContext mailContext = new PracticeMailContext(context);
 
-        InformationWorkspace informationWorkspace = new InformationWorkspace();
-        informationWorkspace.setMailContext(context);
+        InformationWorkspace informationWorkspace = new InformationWorkspace(context);
+        informationWorkspace.setMailContext(mailContext);
         addWorkspace(informationWorkspace);
 
-        StockWorkspace stockWorkspace = new StockWorkspace();
-        stockWorkspace.setMailContext(context);
+        StockWorkspace stockWorkspace = new StockWorkspace(context);
+        stockWorkspace.setMailContext(mailContext);
         addWorkspace(stockWorkspace);
     }
 }

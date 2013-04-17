@@ -117,7 +117,8 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         PatientHistoryQuery query = (PatientHistoryQuery) getQuery();
-        pagedModel = new PagedPatientHistoryTableModel((IMObjectTableModel<Act>) model, query.getActItemShortNames());
+        pagedModel = new PagedPatientHistoryTableModel((IMObjectTableModel<Act>) model, getContext().getContext(),
+                                                       query.getActItemShortNames());
         pagedModel.setSortAscending(query.isSortAscending());
         PagedIMTable<Act> result = super.createTable(pagedModel);
         IMTable<Act> table = result.getTable();

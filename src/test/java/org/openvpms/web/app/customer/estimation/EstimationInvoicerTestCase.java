@@ -38,6 +38,7 @@ import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEdit
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.app.customer.charge.DefaultPopupEditorManager;
 import org.openvpms.web.app.customer.charge.PopupEditorManager;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -69,11 +70,12 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
     @Test
     public void testInvoice() {
         Party customer = TestHelper.createCustomer();
-        DefaultLayoutContext context = new DefaultLayoutContext(true, new HelpContext("foo", null));
+        DefaultLayoutContext context = new DefaultLayoutContext(true, new LocalContext(), new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createClinician();
         User clinician = TestHelper.createClinician();
 
+        context.getContext().setPractice(getPractice());
         context.getContext().setUser(author);
         context.getContext().setClinician(clinician);
         context.getContext().setLocation(TestHelper.createLocation());
@@ -217,7 +219,8 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
          */
         @Override
         protected ChargeEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-            final PopupEditorManager manager = new DefaultPopupEditorManager(new HelpContext("foo", null)) {
+            final PopupEditorManager manager = new DefaultPopupEditorManager(context.getContext(),
+                                                                             new HelpContext("foo", null)) {
                 @Override
                 protected void edit(EditDialog dialog) {
                     super.edit(dialog);

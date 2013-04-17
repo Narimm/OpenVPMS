@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.util;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -32,6 +33,15 @@ import org.openvpms.web.resource.util.Messages;
  * @author Tim Anderson
  */
 public class DefaultIMObjectDeletor extends IMObjectDeletor {
+
+    /**
+     * Constructs a {@code DefaultIMObjectDeletor}.
+     *
+     * @param context the context
+     */
+    public DefaultIMObjectDeletor(Context context) {
+        super(context);
+    }
 
     /**
      * Invoked to remove an object.

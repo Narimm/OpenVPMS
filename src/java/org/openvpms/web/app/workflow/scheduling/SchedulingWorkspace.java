@@ -72,19 +72,18 @@ public abstract class SchedulingWorkspace
 
 
     /**
-     * Creates a new <tt>SchedulingWorkspace</tt>.
+     * Constructs a {@code SchedulingWorkspace}.
      * <p/>
-     * If no archetypes are supplied, the {@link #setArchetypes} method must
-     * before performing any operations.
+     * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
-     * @param archetypes  the archetype that this operates on.
-     *                    May be <tt>null</tt>
+     * @param workspaceId the workspace localisation identifier
+     * @param archetypes  the archetype that this operates on. May be {@code null}
+     * @param context     the context
      */
-    public SchedulingWorkspace(String subsystemId, String workspaceId,
-                               Archetypes<Entity> archetypes) {
-        super(subsystemId, workspaceId, archetypes, false);
+    public SchedulingWorkspace(String subsystemId, String workspaceId, Archetypes<Entity> archetypes,
+                               GlobalContext context) {
+        super(subsystemId, workspaceId, archetypes, context, false);
         locationListener = new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.LOCATION_SHORTNAME.equals(key)) {
@@ -97,7 +96,7 @@ public abstract class SchedulingWorkspace
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Entity object) {
@@ -107,14 +106,13 @@ public abstract class SchedulingWorkspace
     /**
      * Renders the workspace summary.
      *
-     * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
+     * @return the component representing the workspace summary, or {@code null} if there is no summary
      */
     @Override
     public Component getSummary() {
         if (window != null) {
             Act act = window.getObject();
-            return new CustomerPatientSummary(GlobalContext.getInstance(), getHelpContext()).getSummary(act);
+            return new CustomerPatientSummary(getContext(), getHelpContext()).getSummary(act);
         }
         return null;
     }
@@ -125,7 +123,7 @@ public abstract class SchedulingWorkspace
     @Override
     public void show() {
         // listen for context change events
-        GlobalContext.getInstance().addListener(locationListener);
+        ((GlobalContext) getContext()).addListener(locationListener);
     }
 
     /**
@@ -133,17 +131,17 @@ public abstract class SchedulingWorkspace
      */
     @Override
     public void hide() {
-        GlobalContext.getInstance().removeListener(locationListener);
+        ((GlobalContext) getContext()).removeListener(locationListener);
     }
 
     /**
      * Sets the schedule view and date.
      *
      * @param view the schedule view
-     * @param date   the date to view
+     * @param date the date to view
      */
     protected void setScheduleView(Entity view, Date date) {
-        location = GlobalContext.getInstance().getLocation();
+        location = getContext().getLocation();
         super.setObject(view);
         layoutWorkspace();
         initQuery(view, date);
@@ -167,16 +165,16 @@ public abstract class SchedulingWorkspace
      * Returns the default schedule view for the specified practice location.
      *
      * @param location the practice location
-     * @return the default schedule view, or <tt>null</tt> if there is no
+     * @return the default schedule view, or {@code null} if there is no
      *         default
      */
     protected abstract Entity getDefaultView(Party location);
 
     /**
      * Determines if the workspace should be refreshed.
-     * This implementation always returns <code>true</code>.
+     * This implementation always returns {@code true}.
      *
-     * @return <code>true</code>
+     * @return {@code true}
      */
     @Override
     protected boolean refreshWorkspace() {
@@ -217,7 +215,7 @@ public abstract class SchedulingWorkspace
     /**
      * Invoked when an event is selected.
      *
-     * @param event the event. May be <tt>null</tt>
+     * @param event the event. May be {@code null}
      */
     protected void eventSelected(PropertySet event) {
         Act act = browser.getAct(event);
@@ -361,7 +359,7 @@ public abstract class SchedulingWorkspace
     /**
      * Returns the workspace.
      *
-     * @return the workspace. May be <tt>null</tt>
+     * @return the workspace. May be {@code null}
      */
     protected Component getWorkspace() {
         return workspace;
@@ -405,7 +403,7 @@ public abstract class SchedulingWorkspace
     /**
      * Invoked when the practice location changes. Updates the schedule view.
      *
-     * @param newLocation the new location. May be <tt>null</tt>
+     * @param newLocation the new location. May be {@code null}
      */
     private void locationChanged(Party newLocation) {
         if (newLocation == null) {

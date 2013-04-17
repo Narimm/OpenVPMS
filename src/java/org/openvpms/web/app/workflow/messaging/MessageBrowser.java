@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.workflow.MessageStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 
@@ -65,7 +64,7 @@ public class MessageBrowser extends IMObjectTableBrowser<Act> {
      * @param message the selected object
      */
     private void markRead(Act message) {
-        Entity user = GlobalContext.getInstance().getUser();
+        Entity user = getContext().getContext().getUser();
         if (user != null) {
             if (MessageStatus.PENDING.equals(message.getStatus())) {
                 ActBean bean = new ActBean(message);

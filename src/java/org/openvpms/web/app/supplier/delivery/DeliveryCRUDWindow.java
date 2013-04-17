@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.supplier.SupplierHelper;
 import org.openvpms.web.app.supplier.order.ESCISupplierCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -79,9 +79,9 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      * @param archetypes the archetypes that this may create
      * @param help       the help context
      */
-    public DeliveryCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
-        super(archetypes, DeliveryActions.INSTANCE, help);
-        rules = SupplierHelper.createOrderRules(GlobalContext.getInstance().getPractice());
+    public DeliveryCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, DeliveryActions.INSTANCE, context, help);
+        rules = SupplierHelper.createOrderRules(context.getPractice());
     }
 
     /**
@@ -92,14 +92,13 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     @Override
     protected void onCreated(final FinancialAct act) {
         boolean delivery = TypeHelper.isA(act, SupplierArchetypes.DELIVERY);
-        LayoutContext context = new DefaultLayoutContext(GlobalContext.getInstance(), getHelpContext());
+        LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
         final OrderTableBrowser browser = new OrderTableBrowser(delivery, context);
         String displayName = DescriptorHelper.getDisplayName(act);
-        String title = Messages.get("supplier.delivery.selectorders.title",
-                                    displayName);
-        String message = Messages.get("supplier.delivery.selectorders.message",
-                                      displayName);
-        PopupDialog dialog = new OrderSelectionBrowserDialog(title, message, browser, getHelpContext());
+        String title = Messages.get("supplier.delivery.selectorders.title", displayName);
+        String message = Messages.get("supplier.delivery.selectorders.message", displayName);
+        HelpContext help = getHelpContext().createSubtopic("order");
+        PopupDialog dialog = new OrderSelectionBrowserDialog(title, message, browser, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
                 onCreated(act, browser);
@@ -185,7 +184,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
-        return new ActEditDialog(editor, help);
+        return new ActEditDialog(editor, getContext(), help);
     }
 
     /**
@@ -232,10 +231,15 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         edit(editor, edit);
     }
 
+    /**
+     * Invoked when the "Invoice" button is pressed.
+     *
+     * @param act the delivery act
+     */
     private void onInvoice(final Act act) {
         String title = Messages.get("supplier.delivery.invoice.title");
         String message = Messages.get("supplier.delivery.invoice.message");
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().createSubtopic("invoice"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
                 invoice(act);
@@ -244,10 +248,15 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         dialog.show();
     }
 
+    /**
+     * Invoked when a return is posted.
+     *
+     * @param act the return act
+     */
     private void onCredit(final Act act) {
         String title = Messages.get("supplier.delivery.credit.title");
         String message = Messages.get("supplier.delivery.credit.message");
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().createSubtopic("credit"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
                 credit(act);
@@ -256,6 +265,9 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         dialog.show();
     }
 
+    /**
+     * Reverse a delivery or return.
+     */
     private void onReverse() {
         final Act act = getObject();
         String title;
@@ -267,7 +279,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
             title = Messages.get("supplier.delivery.reverseReturn.title");
             message = Messages.get("supplier.delivery.reverseReturn.message");
         }
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().createSubtopic("reverse"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
                 reverse(act);
@@ -276,6 +288,11 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         dialog.show();
     }
 
+    /**
+     * Invoices a supplier.
+     *
+     * @param act the delivery
+     */
     private void invoice(Act act) {
         try {
             rules.invoiceSupplier(act);
@@ -284,6 +301,11 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         }
     }
 
+    /**
+     * Credits a supplier from a return.
+     *
+     * @param act the return
+     */
     private void credit(Act act) {
         try {
             rules.creditSupplier(act);
@@ -292,6 +314,11 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         }
     }
 
+    /**
+     * Reverse a delivery/return.
+     *
+     * @param act the delivery/return to reverse
+     */
     private void reverse(Act act) {
         try {
             if (TypeHelper.isA(act, SupplierArchetypes.DELIVERY)) {

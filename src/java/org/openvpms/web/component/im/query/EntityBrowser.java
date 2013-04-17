@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.query;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.NameDescObjectSetTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -43,6 +44,11 @@ public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
     private EntityQuery query;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The table model.
      */
     private final NameDescObjectSetTableModel model = new NameDescObjectSetTableModel("entity", true);
@@ -56,6 +62,7 @@ public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
      */
     public EntityBrowser(EntityQuery query, LayoutContext context) {
         this.query = query;
+        this.context = context.getContext();
         setBrowser(createBrowser(query, context));
     }
 
@@ -76,7 +83,7 @@ public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
      * @return the result set
      */
     public ResultSet<Entity> getResultSet() {
-        return new EntityResultSetAdapter((EntityObjectSetResultSet) getBrowser().getResultSet());
+        return new EntityResultSetAdapter((EntityObjectSetResultSet) getBrowser().getResultSet(), context);
     }
 
     /**
@@ -87,7 +94,7 @@ public class EntityBrowser extends QueryBrowserAdapter<ObjectSet, Entity> {
      */
     protected Entity convert(ObjectSet set) {
         IMObjectReference ref = set.getReference("entity.reference");
-        return (Entity) IMObjectHelper.getObject(ref);
+        return (Entity) IMObjectHelper.getObject(ref, context);
     }
 
     /**

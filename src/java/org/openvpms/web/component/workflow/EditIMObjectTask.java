@@ -19,7 +19,6 @@ package org.openvpms.web.component.workflow;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -81,7 +80,7 @@ public class EditIMObjectTask extends AbstractTask {
 
     /**
      * Determines if the UI should be displayed if a the object is invalid.
-     * This only applies when {@link #interactive} is <tt>false</tt>.
+     * This only applies when {@link #interactive} is {@code false}.
      */
     private boolean showEditorOnError = true;
 
@@ -92,7 +91,7 @@ public class EditIMObjectTask extends AbstractTask {
 
 
     /**
-     * Constructs a new <code>EditIMObjectTask</code> to edit an object
+     * Constructs a new {@code EditIMObjectTask} to edit an object
      * in the {@link TaskContext}.
      *
      * @param shortName the short name of the object to edit
@@ -102,23 +101,23 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Constructs a new <code>EditIMObjectTask</code>, to edit an object
+     * Constructs a new {@code EditIMObjectTask}, to edit an object
      * in the {@link TaskContext} or create and edit a new one.
      *
      * @param shortName the object short name
-     * @param create    if <code>true</code>, create the object
+     * @param create    if {@code true}, create the object
      */
     public EditIMObjectTask(String shortName, boolean create) {
         this(shortName, create, true);
     }
 
     /**
-     * Constructs a new <tt>EditIMObjectTask</tt>, to edit an object
+     * Constructs a new {@code EditIMObjectTask}, to edit an object
      * in the {@link TaskContext} or create and edit a new one.
      *
      * @param shortName   the object short name
-     * @param create      if <tt>true</tt>, create the object
-     * @param interactive if <tt>true</tt> create an editor and display it;
+     * @param create      if {@code true}, create the object
+     * @param interactive if {@code true} create an editor and display it;
      *                    otherwise create it but don't display it
      */
     public EditIMObjectTask(String shortName, boolean create,
@@ -129,13 +128,13 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Constructs a new <tt>EditIMObjectTask</tt> to create and edit
-     * a new <tt>IMObject</tt>.
+     * Constructs a new {@code EditIMObjectTask} to create and edit
+     * a new {@code IMObject}.
      *
      * @param shortName        the object short name
      * @param createProperties the properties to create the object with.
-     *                         May be <code>null</code>
-     * @param interactive      if <tt>true</tt> create an editor and display it;
+     *                         May be {@code null}
+     * @param interactive      if {@code true} create an editor and display it;
      *                         otherwise create it but don't display it
      */
     public EditIMObjectTask(String shortName, TaskProperties createProperties,
@@ -147,7 +146,7 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Constructs a new <code>EditIMObjectTask</code>.
+     * Constructs a new {@code EditIMObjectTask}.
      *
      * @param object the object to edit
      */
@@ -156,10 +155,10 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Constructs a new <code>EditIMObjectTask</code>.
+     * Constructs a new {@code EditIMObjectTask}.
      *
      * @param object      the object to edit
-     * @param interactive if <tt>true</tt> create an editor and display it;
+     * @param interactive if {@code true} create an editor and display it;
      *                    otherwise create it but don't display it
      */
     public EditIMObjectTask(IMObject object, boolean interactive) {
@@ -170,9 +169,9 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Determines if editing may be skipped.
      * Note that the object may have changed prior to editing being skipped.
-     * Defaults to <tt>false</tt>.
+     * Defaults to {@code false}.
      *
-     * @param skip if <tt>true</tt> editing may be skipped.
+     * @param skip if {@code true} editing may be skipped.
      */
     public void setSkip(boolean skip) {
         this.skip = skip;
@@ -181,9 +180,9 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Determines if the editor should be displayed if the object is invalid.
      * This only applies when non-interactive editing was specified at
-     * construction. Defaults to <tt>true</tt>.
+     * construction. Defaults to {@code true}.
      *
-     * @param show if <tt>true</tt> display the editor if the object is invalid
+     * @param show if {@code true} display the editor if the object is invalid
      */
     public void setShowEditorOnError(boolean show) {
         showEditorOnError = show;
@@ -191,13 +190,13 @@ public class EditIMObjectTask extends AbstractTask {
 
     /**
      * Determines if the object should be deleted if the task is cancelled
-     * or skipped. Defaults to <code>false</code>.
+     * or skipped. Defaults to {@code false}.
      * Note that no checking is performed to see if the object participates
      * in entity relationships before being deleted. To do this,
      * use {@link IMObjectDeletor} instead.
-     * Defaults to <tt>false</tt>
+     * Defaults to {@code false}
      *
-     * @param delete if <tt>true</tt> delete the object on cancel or skip
+     * @param delete if {@code true} delete the object on cancel or skip
      */
     public void setDeleteOnCancelOrSkip(boolean delete) {
         deleteOnCancelOrSkip = delete;
@@ -242,7 +241,7 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Returns the edit dialog.
      *
-     * @return the edit dialog, or <tt>null</tt> if none is being displayed
+     * @return the edit dialog, or {@code null} if none is being displayed
      */
     public EditDialog getEditDialog() {
         return dialog;
@@ -309,11 +308,11 @@ public class EditIMObjectTask extends AbstractTask {
      * @param context the task context
      */
     protected void interactiveEdit(final IMObjectEditor editor, final TaskContext context) {
-        GlobalContext.getInstance().setCurrent(object);
+        context.setCurrent(object);
         dialog = createEditDialog(editor, skip, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
-                GlobalContext.getInstance().setCurrent(null);
+                context.setCurrent(null);
                 String action = dialog.getAction();
                 dialog = null;
                 if (PopupDialog.OK_ID.equals(action)) {
@@ -334,14 +333,14 @@ public class EditIMObjectTask extends AbstractTask {
      * to {@link #edit(IMObjectEditor, TaskContext)}.
      * <p/>
      * If the editor is valid after editing, the object will be saved.
-     * If not,  and {@link #showEditorOnError} is <tt>true</tt>, an interactive
+     * If not,  and {@link #showEditorOnError} is {@code true}, an interactive
      * edit will occur, otherwise the edit will be cancelled.
      *
      * @param editor  the editor
      * @param context the task context
      */
     protected void backgroundEdit(IMObjectEditor editor, TaskContext context) {
-        GlobalContext.getInstance().setCurrent(null);
+        context.setCurrent(null);
         editor.getComponent();
         edit(editor, context);
         if (editor.isValid() || !showEditorOnError) {
@@ -373,12 +372,12 @@ public class EditIMObjectTask extends AbstractTask {
      * Creates a new edit dialog.
      *
      * @param editor  the editor
-     * @param skip    if <tt>true</tt>, editing may be skipped
+     * @param skip    if {@code true}, editing may be skipped
      * @param context the help context
      * @return a new edit dialog
      */
     protected EditDialog createEditDialog(IMObjectEditor editor, boolean skip, TaskContext context) {
-        EditDialog dialog = EditDialogFactory.create(editor, context.getHelpContext());
+        EditDialog dialog = EditDialogFactory.create(editor, context, context.getHelpContext());
         dialog.addSkip(skip);
         return dialog;
     }
@@ -427,9 +426,8 @@ public class EditIMObjectTask extends AbstractTask {
             try {
                 object = IMObjectHelper.reload(object);
                 if (object != null) {
-                    // make sure the the last saved instance is being deleted
-                    // to avoid validation errors
-                    IMObjectDeletor deletor = new SilentIMObjectDeletor();
+                    // make sure the the last saved instance is being deleted to avoid validation errors
+                    IMObjectDeletor deletor = new SilentIMObjectDeletor(context);
                     deletor.delete(object, context.getHelpContext(), new DefaultIMObjectDeletionListener());
                 }
             } catch (OpenVPMSException exception) {

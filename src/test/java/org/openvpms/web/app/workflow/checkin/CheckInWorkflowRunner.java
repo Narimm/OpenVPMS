@@ -378,7 +378,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
          */
         @Override
         public void start() {
-            initialise(appointment, context, new HelpContext("foo", null));
+            initialise(appointment, context);
             super.start();
         }
 

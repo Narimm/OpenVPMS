@@ -35,6 +35,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.summary.PartySummary;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -80,10 +81,11 @@ public class PatientSummary extends PartySummary {
     /**
      * Constructs a {@code PatientSummary}.
      *
-     * @param help the help context
+     * @param context the context
+     * @param help    the help context
      */
-    public PatientSummary(HelpContext help) {
-        super(help);
+    public PatientSummary(Context context, HelpContext help) {
+        super(context, help);
         rules = (PatientRules) ServiceHelper.getContext().getBean("patientRules");
         reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(), rules);
     }
@@ -104,9 +106,8 @@ public class PatientSummary extends PartySummary {
         } else {
             name += " (" + getPatientSex(party) + " " + Messages.get("patient.entire") + ")";
         }
-        IMObjectReferenceViewer patientName
-                = new IMObjectReferenceViewer(party.getObjectReference(),
-                                              name, true);
+        IMObjectReferenceViewer patientName = new IMObjectReferenceViewer(party.getObjectReference(), name, true,
+                                                                          getContext());
         patientName.setStyleName("hyperlink-bold");
         column.add(RowFactory.create("Inset.Small", patientName.getComponent()));
         if (rules.isDeceased(party)) {
@@ -230,7 +231,7 @@ public class PatientSummary extends PartySummary {
      * @param patient the patient
      */
     private void onShowReminders(Party patient) {
-        PagedIMTable<Act> table = new PagedIMTable<Act>(new ReminderTableModel(getHelpContext()),
+        PagedIMTable<Act> table = new PagedIMTable<Act>(new ReminderTableModel(getContext(), getHelpContext()),
                                                         getReminders(patient));
         table.getTable().setDefaultRenderer(Object.class, new ReminderTableCellRenderer());
         new ViewerDialog(Messages.get("patient.summary.reminders"), "PatientSummary.ReminderDialog", table);
@@ -302,12 +303,12 @@ public class PatientSummary extends PartySummary {
      * @param help the help context
      * @return a new layout context
      */
-    private static LayoutContext createLayoutContext(HelpContext help) {
-        LayoutContext context = new DefaultLayoutContext(help);
-        context.setEdit(true); // hack to disable hyerlinks
-        TableComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
-        return context;
+    private static LayoutContext createLayoutContext(Context context, HelpContext help) {
+        LayoutContext result = new DefaultLayoutContext(context, help);
+        result.setEdit(true); // hack to disable hyperlinks
+        TableComponentFactory factory = new TableComponentFactory(result);
+        result.setComponentFactory(factory);
+        return result;
     }
 
     /**
@@ -333,10 +334,13 @@ public class PatientSummary extends PartySummary {
     private static class ReminderTableModel extends AbstractActTableModel {
 
         /**
-         * Constructs an {@code ReminderTableModel}.
+         * Constructs a {@code ReminderTableModel}.
+         *
+         * @param context the context
+         * @param help    the help context
          */
-        public ReminderTableModel(HelpContext help) {
-            super(new String[]{ReminderArchetypes.REMINDER}, createLayoutContext(help));
+        public ReminderTableModel(Context context, HelpContext help) {
+            super(new String[]{ReminderArchetypes.REMINDER}, createLayoutContext(context, help));
         }
 
         /**

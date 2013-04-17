@@ -26,8 +26,11 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.SelectionHistory;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -64,6 +67,11 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
     private final List<CustomerPatient> history;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The query component.
      */
     private Component component;
@@ -85,17 +93,17 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
 
 
     /**
-     * Construct a new <tt>AbstractQuery</tt> that queries objects with
-     * the specified primary short names.
+     * Construct a new {@code CustomerPatientHistoryQuery} that queries objects with the specified primary short names.
      *
      * @param customers customer selection history
      * @param patients  patient selection history
-     * @throws org.openvpms.component.system.common.query.ArchetypeQueryException
-     *          if the short names don't match any archetypes
+     * @param context   the context
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
-    public CustomerPatientHistoryQuery(SelectionHistory customers, SelectionHistory patients) {
+    public CustomerPatientHistoryQuery(SelectionHistory customers, SelectionHistory patients, Context context) {
         super(SHORT_NAMES, CustomerPatient.class);
         setAuto(true);
+        this.context = context;
         history = getHistory(customers, patients);
         filter = TextComponentFactory.create();
         filter.addActionListener(new ActionListener() {
@@ -124,9 +132,9 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set. May be <tt>null</tt>
-     * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
+     * @param sort the sort constraint. May be {@code null}
+     * @return the query result set. May be {@code null}
+     * @throws ArchetypeServiceException
      *          if the query fails
      */
     public ResultSet<CustomerPatient> query(SortConstraint[] sort) {
@@ -160,7 +168,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
      * Determines if the query selects a particular object reference.
      *
      * @param reference the object reference to check
-     * @return <tt>false</tt>
+     * @return {@code false}
      */
     public boolean selects(IMObjectReference reference) {
         return false;
@@ -186,7 +194,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
             Party patient = (Party) selection.getObject();
             if (patient != null) {
                 IMObjectReference customerRef = rules.getOwnerReference(patient);
-                Party customer = (Party) IMObjectHelper.getObject(customerRef);
+                Party customer = (Party) IMObjectHelper.getObject(customerRef, context);
                 Date patientSelect = selection.getTime();
                 Date customerSelect = (customer != null) ? customers.getSelected(customer) : null;
                 Date selected;
@@ -198,7 +206,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
                 CustomerPatient pair = new CustomerPatient(customer, patient, selected);
                 result.add(pair);
                 if (customer != null) {
-                    allCustomers.remove(new SelectionHistory.Selection(customerRef));
+                    allCustomers.remove(new SelectionHistory.Selection(customerRef, context));
                 }
             }
             allPatients.remove(selection);
@@ -231,14 +239,14 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
     private static class NameTransformer implements Transformer {
 
         /**
-         * If <tt>true</tt> return the customer name, otherwise return the patient name.
+         * If {@code true} return the customer name, otherwise return the patient name.
          */
         private boolean customer;
 
         /**
-         * Creates a new <tt>NameTransformer</tt>.
+         * Creates a new {@code NameTransformer}.
          *
-         * @param customer if <tt>true</tt> return the customer name, otherwise return the patient name.
+         * @param customer if {@code true} return the customer name, otherwise return the patient name.
          */
         public NameTransformer(boolean customer) {
             this.customer = customer;
@@ -267,7 +275,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
     private static class CustomerPatientResultSet extends ListResultSet<CustomerPatient> {
 
         /**
-         * Constructs a new <tt>CustomerPatientResultSet</tt>.
+         * Constructs a new {@code CustomerPatientResultSet}.
          *
          * @param objects  the objects
          * @param pageSize the maximum no. of results per page
@@ -279,7 +287,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         /**
          * Sorts the set. This resets the iterator.
          *
-         * @param sort the sort criteria. May be <tt>null</tt>
+         * @param sort the sort criteria. May be {@code null}
          */
         @Override
         public void sort(SortConstraint[] sort) {
@@ -310,7 +318,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         private final String match;
 
         /**
-         * Creates a new <tt>FilteredResultSet</tt>.
+         * Creates a new {@code FilteredResultSet}.
          *
          * @param set  the result set to filter
          * @param text the text to match on
@@ -335,8 +343,8 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         /**
          * Determines if a party matches the specified text.
          *
-         * @param party the party. May be <tt>null</tt>
-         * @return <tt>true</tt> if there is a match, otherwise <tt>false</tt>
+         * @param party the party. May be {@code null}
+         * @return {@code true} if there is a match, otherwise {@code false}
          */
         private boolean matches(Party party) {
             return party != null && (matches(party.getName()) || (matches(party.getDescription())));
@@ -345,8 +353,8 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
         /**
          * Determines if a string matches the specified text.
          *
-         * @param string the string to check. May be <tt>null</tt>
-         * @return <tt>true</tt> if there is a match, otherwise <tt>false</tt>
+         * @param string the string to check. May be {@code null}
+         * @return {@code true} if there is a match, otherwise {@code false}
          */
         private boolean matches(String string) {
             return string != null && string.toLowerCase().contains(match);

@@ -17,6 +17,7 @@
 package org.openvpms.web.app.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.junit.Before;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
@@ -69,7 +70,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     /**
      * Sets up the test case.
      */
-    @Override
+    @Before
     public void setUp() {
         // NOTE: need to create the practice prior to the application as it caches the practice in the context 
         practice = TestHelper.getPractice();

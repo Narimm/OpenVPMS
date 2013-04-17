@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -38,7 +37,6 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 
 
 /**
@@ -126,7 +124,7 @@ public class FinancialActEditor extends ActEditor {
             validator.add(this, new ValidatorError(message));
             if (log.isWarnEnabled()) {
                 log.warn(message);
-                User user = GlobalContext.getInstance().getUser();
+                User user = getLayoutContext().getContext().getUser();
                 String userName = (user != null) ? user.getUsername() : null;
                 log.warn("username = " + userName + ", act = " + format(act));
                 for (int i = 0; i < acts.size(); ++i) {

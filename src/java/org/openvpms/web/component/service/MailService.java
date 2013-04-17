@@ -21,7 +21,7 @@ package org.openvpms.web.component.service;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import javax.mail.Session;
@@ -30,12 +30,16 @@ import java.util.Properties;
 
 /**
  * Mail service that configures the SMTP details from <em>party.organisationLocation</em> from
- * {@link GlobalContext#getLocation()}, if available.
+ * {@link Context#getLocation()}, if available.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MailService extends JavaMailSenderImpl {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * Property name for STARTTLS flag.
@@ -46,6 +50,15 @@ public class MailService extends JavaMailSenderImpl {
      * Property name for authentication flag.
      */
     private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
+
+    /**
+     * Constructs a {@code MailService}.
+     *
+     * @param context the context
+     */
+    public MailService(Context context) {
+        this.context = context;
+    }
 
     /**
      * Return the mail server host.
@@ -124,7 +137,7 @@ public class MailService extends JavaMailSenderImpl {
      * @return the location, or <tt>null</tt> if none is present.
      */
     private IMObjectBean getLocationBean() {
-        Party location = GlobalContext.getInstance().getLocation();
+        Party location = context.getLocation();
         return (location != null) ? new IMObjectBean(location) : null;
     }
 

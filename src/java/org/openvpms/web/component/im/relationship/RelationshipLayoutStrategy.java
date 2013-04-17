@@ -100,7 +100,8 @@ public class RelationshipLayoutStrategy implements IMObjectLayoutStrategy {
         IMObjectRelationship relationship = (IMObjectRelationship) object;
         IMObjectReference ref = getObject(relationship, parent);
         if (!displayInine) {
-            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, context.getContextSwitchListener());
+            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, context.getContextSwitchListener(),
+                                                                         context.getContext());
             result = new ComponentState(viewer.getComponent());
         } else {
             IMObject entity = context.getCache().get(ref);

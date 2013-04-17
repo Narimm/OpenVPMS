@@ -71,7 +71,7 @@ public class NoteAlertWorkspace extends CustomerActWorkspace<Act> {
      * @return a {@link NoteCRUDWindow}, as this is the first view.
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new NoteCRUDWindow(noteArchetypes, getHelpContext());
+        return new NoteCRUDWindow(noteArchetypes, getContext(), getHelpContext());
     }
 
     /**
@@ -92,7 +92,8 @@ public class NoteAlertWorkspace extends CustomerActWorkspace<Act> {
     @Override
     protected Browser<Act> createBrowser(Query<Act> query) {
         Query<Act> alertsQuery = new CustomerAlertQuery(getObject());
-        NoteAlertBrowser browser = new NoteAlertBrowser(query, alertsQuery, new DefaultLayoutContext(getHelpContext()));
+        DefaultLayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
+        NoteAlertBrowser browser = new NoteAlertBrowser(query, alertsQuery, context);
         browser.setListener(new TabbedBrowserListener() {
             public void onBrowserChanged() {
                 changeCRUDWindow();
@@ -120,9 +121,9 @@ public class NoteAlertWorkspace extends CustomerActWorkspace<Act> {
         NoteAlertBrowser browser = (NoteAlertBrowser) getBrowser();
         CRUDWindow<Act> window;
         if (browser.isAlertsBrowser()) {
-            window = new DefaultCRUDWindow<Act>(alertArchetypes, getHelpContext());
+            window = new DefaultCRUDWindow<Act>(alertArchetypes, getContext(), getHelpContext());
         } else {
-            window = new DefaultCRUDWindow<Act>(noteArchetypes, getHelpContext());
+            window = new DefaultCRUDWindow<Act>(noteArchetypes, getContext(), getHelpContext());
         }
 
         Act selected = browser.getSelected();

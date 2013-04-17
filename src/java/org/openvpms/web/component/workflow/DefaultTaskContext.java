@@ -17,7 +17,6 @@
 package org.openvpms.web.component.workflow;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 
@@ -34,18 +33,18 @@ public class DefaultTaskContext extends LocalContext implements TaskContext {
      */
     private final HelpContext help;
 
+
     /**
-     * Constructs a new {@code TaskContext} that inherits values from the global context.
+     * Constructs a {@code DefaultTaskContext}.
      *
-     * @param help the help context
+     * @param help   the help context
      */
     public DefaultTaskContext(HelpContext help) {
-        this(help, true);
+        this(null, help);
     }
 
     /**
-     * Constructs a {@code DefaultTaskContext} that inherits values from the specified context. If the specified context
-     * is {@code null} then no inheritance occurs.
+     * Constructs a {@code DefaultTaskContext} that inherits values from the specified context.
      *
      * @param parent the parent context. May be {@code null}
      * @param help   the help context
@@ -65,17 +64,6 @@ public class DefaultTaskContext extends LocalContext implements TaskContext {
      */
     public DefaultTaskContext(Context context, Context parent, HelpContext help) {
         super(context, parent);
-        this.help = help;
-    }
-
-    /**
-     * Constructs a new {@code DefaultTaskContext} that inherits values
-     * from the global context if inherit is {@code true}.
-     *
-     * @param inherit if {@code true} inherit values from the global context
-     */
-    public DefaultTaskContext(HelpContext help, boolean inherit) {
-        super((inherit) ? GlobalContext.getInstance() : null);
         this.help = help;
     }
 

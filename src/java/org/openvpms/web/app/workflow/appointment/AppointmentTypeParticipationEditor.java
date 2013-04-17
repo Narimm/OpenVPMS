@@ -12,12 +12,11 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
 
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -28,30 +27,28 @@ import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 
 
 /**
  * Participation editor for appointment types.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-08-15 06:42:15Z $
+ * @author Tim Anderson
  */
 public class AppointmentTypeParticipationEditor
         extends ParticipationEditor<Entity> {
 
     /**
-     * The schedule, used to constrain appointment types. May be <tt>null</tt>.
+     * The schedule, used to constrain appointment types. May be {@code null}.
      */
     private Entity schedule;
 
 
     /**
-     * Constructs an <tt>AppointmentTypeParticipationEditor</tt>.
+     * Constructs an {@code AppointmentTypeParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent act
-     * @param context       the layout context. May be <tt>null</tt>
+     * @param context       the layout context. May be {@code null}
      */
     public AppointmentTypeParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
@@ -64,7 +61,7 @@ public class AppointmentTypeParticipationEditor
     /**
      * Sets the schedule, used to constrain appointment types.
      *
-     * @param schedule the schedule. May be <tt>null</tt>
+     * @param schedule the schedule. May be {@code null}
      */
     public void setSchedule(Entity schedule) {
         this.schedule = schedule;
@@ -83,7 +80,7 @@ public class AppointmentTypeParticipationEditor
 
             @Override
             protected Query<Entity> createQuery(String name) {
-                Query<Entity> query = new AppointmentTypeQuery(schedule);
+                Query<Entity> query = new AppointmentTypeQuery(schedule, getLayoutContext().getContext());
                 query.setValue(name);
                 return query;
             }

@@ -233,7 +233,7 @@ class PrintDocumentsTask extends AbstractTask {
         if (!list.isEmpty()) {
             HelpContext email = context.getHelpContext().createSubtopic("email");
             MailContext mailContext = new CustomerMailContext(context, email);
-            MailDialog dialog = new MailDialog(mailContext, email);
+            MailDialog dialog = new MailDialog(mailContext, context, email);
             MailEditor editor = dialog.getMailEditor();
             for (IMObject object : list) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);

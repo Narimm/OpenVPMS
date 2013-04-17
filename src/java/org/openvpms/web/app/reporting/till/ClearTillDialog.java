@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -43,7 +44,7 @@ import java.util.List;
 /**
  * Clear Till dialog.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @author Tim Anderson
  */
 public class ClearTillDialog extends PopupDialog {
 
@@ -59,16 +60,17 @@ public class ClearTillDialog extends PopupDialog {
 
 
     /**
-     * Constructs a <tt>ClearTillDialog</tt>.
+     * Constructs a {@code ClearTillDialog}.
      *
      * @param location the location to clear the till for
+     * @param context  the context
      */
-    public ClearTillDialog(Party location) {
+    public ClearTillDialog(Party location, Context context) {
         super(Messages.get("till.clear.title"), null, OK_CANCEL);
         setModal(true);
-
         amount = TextComponentFactory.create();
-        account = createAccountSelector(location);
+        account = createAccountSelector(location, context);
+
 
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("till.clear.amount"));
@@ -90,7 +92,7 @@ public class ClearTillDialog extends PopupDialog {
     /**
      * Returns the till float amount.
      *
-     * @return the till float amount. May be <tt>null</tt>
+     * @return the till float amount. May be {@code null}
      */
     public BigDecimal getAmount() {
         BigDecimal result = null;
@@ -125,9 +127,10 @@ public class ClearTillDialog extends PopupDialog {
      * Creates a select field to select a deposit account.
      *
      * @param location the location to use to determine the deposit accounts
+     * @param context  the context
      * @return a new select field
      */
-    private SelectField createAccountSelector(Party location) {
+    private SelectField createAccountSelector(Party location, Context context) {
         SelectField result;
         IMObject selected = null;
         List<IMObject> accounts = new ArrayList<IMObject>();
@@ -135,7 +138,7 @@ public class ClearTillDialog extends PopupDialog {
         List<EntityRelationship> relationships = bean.getValues("depositAccounts", IsActiveRelationship.ACTIVE_NOW,
                                                                 EntityRelationship.class);
         for (EntityRelationship relationship : relationships) {
-            IMObject account = IMObjectHelper.getObject(relationship.getTarget());
+            IMObject account = IMObjectHelper.getObject(relationship.getTarget(), context);
             if (account.isActive()) {
                 accounts.add(account);
                 IMObjectBean defBean = new IMObjectBean(relationship);

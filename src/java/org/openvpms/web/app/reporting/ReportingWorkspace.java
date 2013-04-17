@@ -23,7 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -64,11 +64,13 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
 
 
     /**
-     * Construct a new {@code ReportingWorkspace}.
+     * Constructs a {@code ReportingWorkspace}.
+     *
+     * @param context the context
      */
-    public ReportingWorkspace() {
-        super("reporting", "reports", Entity.class);
-        user = GlobalContext.getInstance().getUser();
+    public ReportingWorkspace(Context context) {
+        super("reporting", "reports", Entity.class, context);
+        user = getContext().getUser();
     }
 
     /**
@@ -88,12 +90,11 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      * Determines if the workspace should be refreshed. This implementation
      * returns true if the current user has changed.
      *
-     * @return {@code true} if the workspace should be refreshed, otherwise
-     *         {@code false}
+     * @return {@code true} if the workspace should be refreshed, otherwise {@code false}
      */
     @Override
     protected boolean refreshWorkspace() {
-        User user = GlobalContext.getInstance().getUser();
+        User user = getContext().getUser();
         user = IMObjectHelper.reload(user);
         return !IMObjectHelper.isSame(this.user, user);
     }
@@ -162,8 +163,10 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
         if (entity != null) {
             try {
                 DocumentTemplate template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
-                SQLReportPrinter printer = new SQLReportPrinter(template);
-                InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(printer, getHelpContext());
+                Context context = getContext();
+                SQLReportPrinter printer = new SQLReportPrinter(template, context);
+                InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(printer, context,
+                                                                                       getHelpContext());
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (Throwable exception) {
@@ -179,7 +182,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      * @return a new act browser
      */
     private Browser<Entity> createBrowser(ReportQuery query) {
-        return BrowserFactory.create(query, new DefaultLayoutContext(getHelpContext()));
+        return BrowserFactory.create(query, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**

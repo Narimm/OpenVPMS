@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -23,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.PrintException;
 import org.openvpms.web.component.im.print.TemplatedIMPrinter;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
@@ -38,30 +37,31 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * Otherwise, any {@link Document} associated with the act will be printed
  * directly.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
-     * Constructs a <tt>DocumentActAttachmentPrinter</tt>.
+     * Constructs a {@code DocumentActAttachmentPrinter}.
      *
      * @param object  the object to print
      * @param locator the document template locator
+     * @param context the context
      * @throws ArchetypeServiceException for any archetype service error
      */
     @SuppressWarnings("unchecked")
-    public DocumentActAttachmentPrinter(DocumentAct object, DocumentTemplateLocator locator) {
-        super(ReporterFactory.<IMObject, TemplatedReporter<IMObject>>create(object, locator, TemplatedReporter.class));
+    public DocumentActAttachmentPrinter(DocumentAct object, DocumentTemplateLocator locator, Context context) {
+        super(ReporterFactory.<IMObject, TemplatedReporter<IMObject>>create(object, locator, TemplatedReporter.class),
+              context);
     }
 
     /**
      * Prints the object.
      *
-     * @param printer the printer name. May be <tt>null</tt>
-     * @throws PrintException    if <tt>printer</tt> is null and
+     * @param printer the printer name. May be {@code null}
+     * @throws PrintException    if {@code printer} is null and
      *                           {@link #getDefaultPrinter()} also returns
-     *                           <tt>null</tt>
+     *                           {@code null}
      * @throws OpenVPMSException for any error
      */
     @Override
@@ -93,8 +93,8 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
     /**
      * Returns a document corresponding to that which would be printed.
      *
-     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
-     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     * @param mimeType the mime type. If {@code null} the default mime type associated with the report will be used.
+     * @param email    if {@code true} indicates that the document will be emailed. Documents generated from templates
      *                 can perform custom formatting
      * @return a document      `
      * @throws OpenVPMSException for any error
@@ -105,7 +105,7 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
         Document result = null;
         if (template == null) {
             DocumentAct act = (DocumentAct) getObject();
-            result = (Document) IMObjectHelper.getObject(act.getDocument());
+            result = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
             if (result != null && mimeType != null && !mimeType.equals(result.getMimeType())) {
                 result = DocumentHelper.convert(result, mimeType);
             }

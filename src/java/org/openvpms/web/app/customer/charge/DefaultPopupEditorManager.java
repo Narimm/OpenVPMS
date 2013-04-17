@@ -19,6 +19,7 @@ package org.openvpms.web.app.customer.charge;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -35,6 +36,11 @@ import java.util.LinkedList;
  * @author Tim Anderson
  */
 public class DefaultPopupEditorManager implements PopupEditorManager {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The help context.
@@ -56,7 +62,8 @@ public class DefaultPopupEditorManager implements PopupEditorManager {
      *
      * @param help the help context
      */
-    public DefaultPopupEditorManager(HelpContext help) {
+    public DefaultPopupEditorManager(Context context, HelpContext help) {
+        this.context = context;
         this.help = help;
     }
 
@@ -86,7 +93,7 @@ public class DefaultPopupEditorManager implements PopupEditorManager {
         final IMObjectEditor editor = state.editor;
         final Listener listener = state.listener;
         // create an edit dialog with OK and (for non-medication acts) Skip buttons
-        EditDialog dialog = new EditDialog(editor, false, false, false, state.skip, help);
+        EditDialog dialog = new EditDialog(editor, false, false, false, state.skip, context, help);
         dialog.setTitle(getTitle(editor));
         dialog.setStyleName("ChildEditDialog");
         dialog.addWindowPaneListener(new PopupDialogListener() {

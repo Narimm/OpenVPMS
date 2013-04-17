@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app;
@@ -26,13 +24,13 @@ import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.util.LabelFactory;
@@ -47,27 +45,36 @@ import java.util.List;
 /**
  * Title pane.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class TitlePane extends ContentPane {
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
+     * The location selector.
+     */
+    private SelectField locationSelector;
+
+    /**
      * The project logo.
      */
-    private final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
+    private static final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
 
     /**
      * The style name.
      */
     private static final String STYLE = "TitlePane";
-    private SelectField locationSelector;
 
 
     /**
-     * Construct a new <code>TitlePane</code>.
+     * Construct a new {@code TitlePane}.
      */
-    public TitlePane() {
+    public TitlePane(Context context) {
+        this.context = context;
         doLayout();
     }
 
@@ -122,7 +129,7 @@ public class TitlePane extends ContentPane {
      * @return the user name
      */
     protected String getUserName() {
-        User user = GlobalContext.getInstance().getUser();
+        User user = context.getUser();
         return (user != null) ? user.getName() : null;
     }
 
@@ -131,7 +138,7 @@ public class TitlePane extends ContentPane {
      */
     private void changeLocation() {
         Party selected = (Party) locationSelector.getSelectedItem();
-        GlobalContext.getInstance().setLocation(selected);
+        context.setLocation(selected);
     }
 
     /**
@@ -141,7 +148,6 @@ public class TitlePane extends ContentPane {
      */
     private List<Party> getLocations() {
         List<Party> locations = Collections.emptyList();
-        GlobalContext context = GlobalContext.getInstance();
         User user = context.getUser();
         if (user != null) {
             UserRules rules = new UserRules();
@@ -160,16 +166,16 @@ public class TitlePane extends ContentPane {
     /**
      * Returns the default location for the current user.
      *
-     * @return the default location, or <tt>null</tt> if none is found
+     * @return the default location, or {@code null} if none is found
      */
     private Party getDefaultLocation() {
         Party location = null;
-        User user = GlobalContext.getInstance().getUser();
+        User user = context.getUser();
         if (user != null) {
             UserRules rules = new UserRules();
             location = rules.getDefaultLocation(user);
             if (location == null) {
-                Party practice = GlobalContext.getInstance().getPractice();
+                Party practice = context.getPractice();
                 if (practice != null) {
                     PracticeRules practiceRules = new PracticeRules();
                     location = practiceRules.getDefaultLocation(practice);

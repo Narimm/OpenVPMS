@@ -17,6 +17,7 @@ package org.openvpms.web.component.im.edit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
@@ -50,20 +51,21 @@ public class EditDialogFactory {
     /**
      * Creates a new dialog for an editor.
      *
-     * @param editor the editor
-     * @param help   the help context
+     * @param editor  the editor
+     * @param context the context
+     * @param help    the help context
      * @return a new dialog
      */
-    public static EditDialog create(IMObjectEditor editor, HelpContext help) {
+    public static EditDialog create(IMObjectEditor editor, Context context, HelpContext help) {
         EditDialog result = null;
         String shortName = editor.getArchetypeDescriptor().getShortName();
         ArchetypeHandler handler = getDialogs().getHandler(shortName);
         if (handler != null) {
             Class type = handler.getType();
-            Constructor ctor = getConstructor(type, editor, help);
+            Constructor ctor = getConstructor(type, editor, context, help);
             if (ctor != null) {
                 try {
-                    result = (EditDialog) ctor.newInstance(editor, help);
+                    result = (EditDialog) ctor.newInstance(editor, context, help);
                 } catch (Throwable throwable) {
                     log.error(throwable, throwable);
                 }
@@ -72,7 +74,7 @@ public class EditDialogFactory {
             }
         }
         if (result == null) {
-            result = new EditDialog(editor, help);
+            result = new EditDialog(editor, context, help);
         }
         return result;
     }
@@ -92,20 +94,23 @@ public class EditDialogFactory {
     /**
      * Returns a constructor to construct a new dialog.
      *
-     * @param type   the editor dialog type
-     * @param editor the editor
-     * @param help   the help context
+     * @param type    the editor dialog type
+     * @param editor  the editor
+     * @param context the context
+     * @param help    the help context
      * @return a constructor to construct the dialog, or {@code null} if none can be found
      */
-    private static Constructor getConstructor(Class type, IMObjectEditor editor, HelpContext help) {
+    private static Constructor getConstructor(Class type, IMObjectEditor editor, Context context, HelpContext help) {
         Constructor[] ctors = type.getConstructors();
         for (Constructor ctor : ctors) {
             // check parameters
-            Class[] ctorTypes = ctor.getParameterTypes();
-            if (ctorTypes.length == 2) {
-                Class ctorEditor = ctorTypes[0];
-                Class ctorHelp = ctorTypes[1];
-                if (ctorEditor.isAssignableFrom(editor.getClass()) && ctorHelp.isAssignableFrom(help.getClass())) {
+            Class<?>[] ctorTypes = ctor.getParameterTypes();
+            if (ctorTypes.length == 3) {
+                Class<?> ctorEditor = ctorTypes[0];
+                Class<?> ctorContext = ctorTypes[1];
+                Class<?> ctorHelp = ctorTypes[2];
+                if (ctorEditor.isAssignableFrom(editor.getClass()) && ctorContext.isAssignableFrom(context.getClass())
+                        && ctorHelp.isAssignableFrom(help.getClass())) {
                     return ctor;
                 }
             }

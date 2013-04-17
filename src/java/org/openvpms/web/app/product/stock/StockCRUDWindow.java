@@ -19,6 +19,7 @@ package org.openvpms.web.app.product.stock;
 import org.openvpms.archetype.rules.stock.StockUpdater;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
@@ -43,10 +44,11 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
      * Constructs a {@code StockCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public StockCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
-        super(archetypes, DefaultActActions.getInstance(), help);
+    public StockCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultActActions.getInstance(), context, help);
     }
 
     /**
@@ -88,11 +90,11 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
      * acts, to workaround OVPMS-733.
      *
      * @param editor the editor
-     * @param help
+     * @param help   the help context
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
-        return new ActEditDialog(editor, getHelpContext());
+        return new ActEditDialog(editor, getContext(), help);
     }
 
     /**

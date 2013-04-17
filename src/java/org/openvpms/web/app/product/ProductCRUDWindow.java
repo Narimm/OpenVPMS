@@ -23,7 +23,7 @@ import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -59,11 +59,12 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * @param archetypes the archetypes that this may create
      * @param query      the query. May be {@code null}
      * @param set        the result set. May be {@code null}
-   ` * @param help       the help context
+     * @param context    the context the context
+     * @param help       the help context
      */
     public ProductCRUDWindow(Archetypes<Product> archetypes, Query<Product> query, ResultSet<Product> set,
-                             HelpContext help) {
-        super(archetypes, query, set, help);
+                             Context context, HelpContext help) {
+        super(archetypes, query, set, context, help);
     }
 
     /**
@@ -76,7 +77,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
         buttons.add(createNewButton());
         buttons.add(createViewButton());
         // If the logged in user is an admin, show the copy, edit and delete buttons
-        boolean admin = UserHelper.isAdmin(GlobalContext.getInstance().getUser());
+        boolean admin = UserHelper.isAdmin(getContext().getUser());
         if (admin) {
             buttons.add(createEditButton());
             buttons.add(createDeleteButton());

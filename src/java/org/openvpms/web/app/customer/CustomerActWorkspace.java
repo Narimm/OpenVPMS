@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 
@@ -48,7 +47,7 @@ public abstract class CustomerActWorkspace<T extends Act>
 
 
     /**
-     * Constructs a new {@code CustomerActWorkspace}.
+     * Constructs a {@code CustomerActWorkspace}.
      *
      * @param subsystemId   the subsystem localisation identifier
      * @param workspaceId   the workspace localisation identifier
@@ -57,23 +56,23 @@ public abstract class CustomerActWorkspace<T extends Act>
      */
     public CustomerActWorkspace(String subsystemId, String workspaceId,
                                 Archetypes<T> actArchetypes, Context context) {
-        super(subsystemId, workspaceId, null, actArchetypes);
+        super(subsystemId, workspaceId, null, actArchetypes, context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 
     /**
-     * Constructs a new {@code CustomerActWorkspace}.
+     * Constructs a {@code CustomerActWorkspace}.
      *
      * @param subsystemId     the subsystem localisation identifier
      * @param workspaceId     the workspace localisation identifier
      * @param partyArchetypes the party archetypes that this operates on
      * @param actArchetypes   the act archetypes that this operates on
+     * @param context         the context
      */
     public CustomerActWorkspace(String subsystemId, String workspaceId,
-                                Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes,
-                                Context context) {
-        super(subsystemId, workspaceId, partyArchetypes, actArchetypes);
+                                Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes, Context context) {
+        super(subsystemId, workspaceId, partyArchetypes, actArchetypes, context);
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 
@@ -85,7 +84,7 @@ public abstract class CustomerActWorkspace<T extends Act>
     @Override
     public void setObject(Party object) {
         super.setObject(object);
-        ContextHelper.setCustomer(object);
+        ContextHelper.setCustomer(getContext(), object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -96,19 +95,18 @@ public abstract class CustomerActWorkspace<T extends Act>
      */
     @Override
     public Component getSummary() {
-        CustomerSummary summarizer = new CustomerSummary(GlobalContext.getInstance(), getHelpContext());
+        CustomerSummary summarizer = new CustomerSummary(getContext(), getHelpContext());
         return summarizer.getSummary(getObject());
     }
 
     /**
      * Returns the latest version of the current customer context object.
      *
-     * @return the latest version of the customer context object, or
-     *         {@link #getObject()} if they are the same
+     * @return the latest version of the customer context object, or {@link #getObject()} if they are the same
      */
     @Override
     protected Party getLatest() {
-        return getLatest(GlobalContext.getInstance().getCustomer());
+        return getLatest(getContext().getCustomer());
     }
 
     /**
@@ -125,7 +123,7 @@ public abstract class CustomerActWorkspace<T extends Act>
                 CustomerBrowser browser = (CustomerBrowser) dialog.getBrowser();
                 Party patient = browser.getPatient();
                 if (patient != null) {
-                    ContextHelper.setPatient(patient);
+                    ContextHelper.setPatient(getContext(), patient);
                 }
             }
         }

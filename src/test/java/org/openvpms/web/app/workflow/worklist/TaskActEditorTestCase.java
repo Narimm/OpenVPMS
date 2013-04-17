@@ -70,9 +70,7 @@ public class TaskActEditorTestCase extends AbstractAppTest {
      */
     @Test
     public void testSave() {
-        Context context = new LocalContext();
-        LayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
-        layout.setContext(context);
+        LayoutContext layout = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         Act act = (Act) create(ScheduleArchetypes.TASK);
 
         TaskActEditor editor = new TaskActEditor(act, null, layout);
@@ -141,7 +139,7 @@ public class TaskActEditorTestCase extends AbstractAppTest {
         context.setWorkList(worklist);
         context.setUser(user);
 
-        LayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         layout.setContext(context);
         Act act = (Act) create(ScheduleArchetypes.TASK);
 

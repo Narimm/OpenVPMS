@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -22,6 +20,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.LinkedList;
@@ -30,8 +29,7 @@ import java.util.LinkedList;
 /**
  * Helper to manage a set of document references.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class DocReferenceMgr {
 
@@ -41,20 +39,27 @@ class DocReferenceMgr {
     private final IMObjectReference original;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The set of references to manage.
      */
     private LinkedList<IMObjectReference> references = new LinkedList<IMObjectReference>();
 
     /**
-     * Constructs a new <tt>DocReferenceMgr</ttt>.
+     * Constructs a {@code DocReferenceMgr}.
      *
-     * @param original the original reference. May be <tt>null</tt>
+     * @param original the original reference. May be {@code null}
+     * @param context  the context
      */
-    public DocReferenceMgr(IMObjectReference original) {
+    public DocReferenceMgr(IMObjectReference original, Context context) {
         if (original != null) {
             references.add(original);
         }
         this.original = original;
+        this.context = context;
     }
 
     /**
@@ -119,7 +124,7 @@ class DocReferenceMgr {
      * @throws ArchetypeServiceException for any error
      */
     private void delete(IMObjectReference reference) {
-        IMObject object = IMObjectHelper.getObject(reference);
+        IMObject object = IMObjectHelper.getObject(reference, context);
         if (object != null) {
             ArchetypeServiceHelper.getArchetypeService().remove(object);
         }

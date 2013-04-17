@@ -68,14 +68,14 @@ class GetConsultInvoiceTask extends GetInvoiceTask {
         if (event != null) {
             ActBean bean = new ActBean(event);
             for (ActRelationship relationship : bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM)) {
-                Act item = (Act) IMObjectHelper.getObject(relationship.getTarget());
+                Act item = (Act) IMObjectHelper.getObject(relationship.getTarget(), context);
                 if (item != null) {
                     ActBean itemBean = new ActBean(item);
                     IMObjectReference invoiceRef = itemBean.getSourceObjectRef(
                             item.getTargetActRelationships(), CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP);
                     if (invoiceRef != null
                             && (invoice == null || !ObjectUtils.equals(invoice.getObjectReference(), invoiceRef))) {
-                        invoice = (Act) IMObjectHelper.getObject(invoiceRef);
+                        invoice = (Act) IMObjectHelper.getObject(invoiceRef, context);
                         if (invoice != null && !ActStatus.POSTED.equals(invoice.getStatus())) {
                             // now if there are multiple non-POSTED invoices, which one to select? TODO
                             break;

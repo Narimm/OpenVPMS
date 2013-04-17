@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.PrintException;
 import org.openvpms.web.component.im.print.TemplatedIMPrinter;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
@@ -40,9 +41,11 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
      *
      * @param object  the object to print
      * @param locator the document template locator
+     * @param context the context
      */
-    public DocumentActPrinter(DocumentAct object, DocumentTemplateLocator locator) {
-        super(ReporterFactory.<IMObject, TemplatedReporter<IMObject>>create(object, locator, TemplatedReporter.class));
+    public DocumentActPrinter(DocumentAct object, DocumentTemplateLocator locator, Context context) {
+        super(ReporterFactory.<IMObject, TemplatedReporter<IMObject>>create(object, locator, TemplatedReporter.class),
+              context);
     }
 
     /**
@@ -61,7 +64,7 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
             throw new PrintException(PrintException.ErrorCode.NoPrinter);
         }
         DocumentAct act = (DocumentAct) getObject();
-        Document doc = (Document) IMObjectHelper.getObject(act.getDocument());
+        Document doc = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
         if (doc == null) {
             super.print(printer);
         } else {
@@ -93,7 +96,7 @@ public class DocumentActPrinter extends TemplatedIMPrinter<IMObject> {
     @Override
     public Document getDocument(String mimeType, boolean email) {
         DocumentAct act = (DocumentAct) getObject();
-        Document result = (Document) IMObjectHelper.getObject(act.getDocument());
+        Document result = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
         if (result != null && mimeType != null && !mimeType.equals(result.getMimeType())) {
             result = DocumentHelper.convert(result, mimeType);
         }

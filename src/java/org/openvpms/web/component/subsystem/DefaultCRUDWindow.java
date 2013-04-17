@@ -12,13 +12,12 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.subsystem;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -36,9 +35,10 @@ public class DefaultCRUDWindow<T extends IMObject>
      * Constructs a {@code DefaultCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public DefaultCRUDWindow(Archetypes<T> archetypes, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<T>getInstance(), help);
+    public DefaultCRUDWindow(Archetypes<T> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<T>getInstance(), context, help);
     }
 }

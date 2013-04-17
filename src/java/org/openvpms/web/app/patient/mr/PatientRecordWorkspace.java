@@ -37,7 +37,6 @@ import org.openvpms.web.app.patient.history.PatientHistoryQueryFactory;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
@@ -94,9 +93,11 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Constructs a {@code PatientRecordWorkspace}.
+     *
+     * @param context the context
      */
     public PatientRecordWorkspace(Context context) {
-        super("patient", "record");
+        super("patient", "record", context);
         setArchetypes(Party.class, "party.patient*");
         setChildArchetypes(Act.class, "act.patientClinicalEvent");
 
@@ -113,30 +114,28 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
     @Override
     public void setObject(Party object) {
         super.setObject(object);
-        ContextHelper.setPatient(object);
+        ContextHelper.setPatient(getContext(), object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
      * Renders the workspace summary.
      *
-     * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
+     * @return the component representing the workspace summary, or {@code null} if there is no summary
      */
     @Override
     public Component getSummary() {
-        return new CustomerPatientSummary(GlobalContext.getInstance(), getHelpContext()).getSummary(getObject());
+        return new CustomerPatientSummary(getContext(), getHelpContext()).getSummary(getObject());
     }
 
     /**
      * Returns the latest version of the current context object.
      *
-     * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same
+     * @return the latest version of the context object, or {@link #getObject()} if they are the same
      */
     @Override
     protected Party getLatest() {
-        return super.getLatest(GlobalContext.getInstance().getPatient());
+        return super.getLatest(getContext().getPatient());
     }
 
     /**
@@ -184,7 +183,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        PatientHistoryCRUDWindow window = new PatientHistoryCRUDWindow(getChildArchetypes(), getHelpContext());
+        PatientHistoryCRUDWindow window = new PatientHistoryCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
         window.setQuery((PatientHistoryQuery) getQuery());
         return window;
     }
@@ -195,7 +194,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        return PatientHistoryQueryFactory.create(getObject(), GlobalContext.getInstance().getPractice());
+        return PatientHistoryQueryFactory.create(getObject(), getContext().getPractice());
     }
 
     /**
@@ -210,7 +209,7 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
                                                   createProblemsQuery(),
                                                   createReminderAlertQuery(),
                                                   new PatientDocumentQuery<Act>(getObject()),
-                                                  createChargesQuery(), getHelpContext());
+                                                  createChargesQuery(), getContext(), getHelpContext());
         browser.setListener(new TabbedBrowserListener() {
             public void onBrowserChanged() {
                 changeCRUDWindow();
@@ -326,18 +325,18 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
             if (view == RecordBrowser.View.SUMMARY) {
                 w = (PatientRecordCRUDWindow) createCRUDWindow();
             } else {
-                w = new ProblemRecordCRUDWindow(getHelpContext());
+                w = new ProblemRecordCRUDWindow(getContext(), getHelpContext());
             }
             Act event = getEvent(null);
             w.setEvent(event);
             window = (CRUDWindow<Act>) w;
         } else if (view == RecordBrowser.View.DOCUMENTS) {
-            CRUDWindow w = new PatientDocumentCRUDWindow(docArchetypes, getHelpContext());
+            CRUDWindow w = new PatientDocumentCRUDWindow(docArchetypes, getContext(), getHelpContext());
             window = (CRUDWindow<Act>) w;  // todo
         } else if (view == RecordBrowser.View.REMINDER_ALERT) {
-            window = new ReminderCRUDWindow(getObject(), getHelpContext());
+            window = new ReminderCRUDWindow(getObject(), getContext(), getHelpContext());
         } else {
-            window = new ChargesCRUDWindow(getHelpContext());
+            window = new ChargesCRUDWindow(getContext(), getHelpContext());
         }
 
         Act selected = browser.getSelected();

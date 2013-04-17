@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -69,10 +69,12 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
 
 
     /**
-     * Construct a new <tt>StatementWorkspace</tt>.
+     * Constructs a {@code StatementWorkspace}.
+     *
+     * @param context the context
      */
-    public StatementWorkspace() {
-        super("reporting", "statement", Act.class);
+    public StatementWorkspace(Context context) {
+        super("reporting", "statement", Act.class, context);
     }
 
     /**
@@ -103,7 +105,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
         query = new CustomerBalanceQuery();
         query.getComponent();
         query.setDate(getYesterday()); // default statement date to yesterday
-        browser = new CustomerBalanceBrowser(query, new DefaultLayoutContext(getHelpContext()));
+        browser = new CustomerBalanceBrowser(query, new DefaultLayoutContext(getContext(), getHelpContext()));
         GroupBox box = GroupBoxFactory.create(browser.getComponent());
         container.add(box);
         group.add(browser.getFocusGroup());
@@ -160,12 +162,11 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
     /**
      * Processes all customers matching the criteria.
      *
-     * @param reprint if <tt>true</tt>, process statements that have been printed.
+     * @param reprint if {@code true}, process statements that have been printed.
      */
     private void doSendAll(boolean reprint) {
         try {
-            GlobalContext context = GlobalContext.getInstance();
-            StatementGenerator generator = new StatementGenerator(query, context, getHelpContext());
+            StatementGenerator generator = new StatementGenerator(query, getContext(), getHelpContext());
             generator.setReprint(reprint);
             generateStatements(generator, true);
         } catch (OpenVPMSException exception) {
@@ -184,9 +185,8 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
                     IMObjectReference ref = selected.getReference(
                             CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
                     if (ref != null) {
-                        GlobalContext context = GlobalContext.getInstance();
                         StatementGenerator generator = new StatementGenerator(
-                                ref, query.getDate(), true, context, getHelpContext());
+                                ref, query.getDate(), true, getContext(), getHelpContext());
                         generator.setReprint(true);
                         generateStatements(generator, false);
                     }
@@ -219,13 +219,12 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
     /**
      * Runs end period.
      *
-     * @param postCompletedInvoices if <tt>true</tt>, post completed invoices
+     * @param postCompletedInvoices if {@code true}, post completed invoices
      */
     private void doEndPeriod(boolean postCompletedInvoices) {
         try {
-            EndOfPeriodGenerator generator = new EndOfPeriodGenerator(
-                    query.getDate(), postCompletedInvoices,
-                    GlobalContext.getInstance());
+            EndOfPeriodGenerator generator = new EndOfPeriodGenerator(query.getDate(), postCompletedInvoices,
+                                                                      getContext());
             generator.setListener(new BatchProcessorListener() {
                 public void completed() {
                     browser.query();
@@ -245,7 +244,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * Generates statements.
      *
      * @param generator the statement generator
-     * @param refresh   if <tt>true</tt>, refresh the browser on completion
+     * @param refresh   if {@code true}, refresh the browser on completion
      */
     private void generateStatements(final StatementGenerator generator,
                                     final boolean refresh) {
@@ -270,7 +269,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * date.
      *
      * @param errorKey the error message key, if the date is invalid
-     * @return <tt>true</tt> if the statement date is less than today
+     * @return {@code true} if the statement date is less than today
      */
     private boolean checkStatementDate(String errorKey) {
         Date statementDate = query.getDate();
@@ -299,7 +298,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
     private void onReport() {
         try {
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
-                    query.getObjects(), "CUSTOMER_BALANCE");
+                    query.getObjects(), "CUSTOMER_BALANCE", getContext());
             String type;
             if (query.queryAllBalances()) {
                 type = Messages.get("reporting.statements.print.all");
@@ -309,7 +308,8 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
                 type = Messages.get("reporting.statements.print.nonOverdue");
             }
             String title = Messages.get("imobject.print.title", type);
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getHelpContext());
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(),
+                                                                                   getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

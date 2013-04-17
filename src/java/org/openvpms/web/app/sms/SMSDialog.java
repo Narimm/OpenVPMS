@@ -63,7 +63,7 @@ public class SMSDialog extends PopupDialog {
      * @param context the context
      * @param help    the help context
      */
-    public SMSDialog(List<Contact> phones, Context context, HelpContext help) {
+    public SMSDialog(List<Contact> phones, final Context context, HelpContext help) {
         super(Messages.get("sms.send.title"), "SMSDialog", OK_CANCEL, help);
         setModal(true);
 
@@ -77,7 +77,7 @@ public class SMSDialog extends PopupDialog {
 
         getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
             public void onAction(ActionEvent event) {
-                onMacro();
+                onMacro(context);
             }
         });
     }
@@ -95,9 +95,11 @@ public class SMSDialog extends PopupDialog {
 
     /**
      * Displays the macros.
+     *
+     * @param context the context
      */
-    protected void onMacro() {
-        MacroDialog dialog = new MacroDialog(getHelpContext());
+    protected void onMacro(Context context) {
+        MacroDialog dialog = new MacroDialog(context, getHelpContext());
         dialog.show();
     }
 

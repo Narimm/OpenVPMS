@@ -24,6 +24,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.AbstractEntityObjectSetTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.LabelFactory;
@@ -37,6 +38,11 @@ import org.openvpms.web.system.ServiceHelper;
  * @author Tim Anderson
  */
 public class PatientTableModel extends AbstractEntityObjectSetTableModel {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The patient rules.
@@ -60,10 +66,11 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
 
 
     /**
-     * Constructs a <tt>PatientTableModel</tt>.
+     * Constructs a {@code PatientTableModel}.
      */
-    public PatientTableModel() {
+    public PatientTableModel(Context context) {
         super("patient", "identity");
+        this.context = context;
         rules = new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService());
         setTableColumnModel(createTableColumnModel());
     }
@@ -72,7 +79,7 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
      * Determines if the patient-owner column should be displayed.
      *
      * @param owner    if <code>true</code> show the patient-owner column
-     * @param identity if <tt>true</tt> show the identity column
+     * @param identity if {@code true} show the identity column
      */
     public void showColumns(boolean owner, boolean identity) {
         if (owner != showOwner || identity != showIdentity) {
@@ -130,7 +137,7 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
      * Returns the patient description.
      *
      * @param set the set
-     * @return the customer description, or <tt>null</tt> if none is found
+     * @return the customer description, or {@code null} if none is found
      */
     protected Component getDescriptionLabel(ObjectSet set) {
         Component result;
@@ -150,7 +157,7 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
      * Returns a component to display the owner of a patient.
      *
      * @param set the object set
-     * @return a component for the patient's owner, or <tt>null</tt> if the patient has no owner
+     * @return a component for the patient's owner, or {@code null} if the patient has no owner
      */
     protected Component getOwner(ObjectSet set) {
         Component result = null;
@@ -158,7 +165,8 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
         if (patient != null) {
             Party owner = rules.getOwner(patient);
             if (owner != null) {
-                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(owner.getObjectReference(), false);
+                IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(owner.getObjectReference(), false, 
+                                                                             context);
                 result = viewer.getComponent();
             }
         }

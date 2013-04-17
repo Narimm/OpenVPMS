@@ -55,10 +55,9 @@ public class MacroTableModel extends DescriptorTableModel<Lookup> {
      * @param context the layout context
      */
     public MacroTableModel(boolean all, LayoutContext context) {
-        super(MacroQuery.SHORT_NAMES, context);
+        super(context);
         nodeNames = (all) ? null : SUMMARY_NODES;
-        setTableColumnModel(createColumnModel(MacroQuery.SHORT_NAMES,
-                                              createDefaultLayoutContext(context.getHelpContext())));
+        setTableColumnModel(createColumnModel(MacroQuery.SHORT_NAMES, getLayoutContext()));
     }
 
     /**

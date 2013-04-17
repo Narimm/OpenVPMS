@@ -20,6 +20,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.supplier.SupplierMailContext;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
@@ -37,7 +40,7 @@ public class DeliveryWorkspace
      * @param context the context
      */
     public DeliveryWorkspace(Context context) {
-        super("supplier", "delivery", false);
+        super("supplier", "delivery", context, false);
         setArchetypes(FinancialAct.class, "act.supplierDelivery", "act.supplierReturn");
         setChildArchetypes(getArchetypes());
         setMailContext(new SupplierMailContext(context, getHelpContext()));
@@ -49,7 +52,7 @@ public class DeliveryWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new DeliveryCRUDWindow(getArchetypes(), getHelpContext());
+        return new DeliveryCRUDWindow(getArchetypes(), getContext(), getHelpContext());
     }
 
     /**
@@ -63,4 +66,14 @@ public class DeliveryWorkspace
         return true;
     }
 
+    /**
+     * Creates a new query to populate the browser.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<FinancialAct> createQuery() {
+        Archetypes shortNames = getChildArchetypes();
+        return new DeliveryQuery(shortNames.getShortNames(), new DefaultLayoutContext(getContext(), getHelpContext()));
+    }
 }

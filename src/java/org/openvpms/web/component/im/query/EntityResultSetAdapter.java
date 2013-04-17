@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.im.query;
 
@@ -22,26 +20,33 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapts an {@link EntityObjectSetResultSet} to one that returns <tt>Entity</tt> instances.
+ * Adapts an {@link EntityObjectSetResultSet} to one that returns {@code Entity} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EntityResultSetAdapter extends ResultSetAdapter<ObjectSet, Entity> {
 
     /**
-     * Constructs an <tt>EntityResultSetAdapter</tt>.
-     *
-     * @param set the result set to adapt
+     * The context.
      */
-    public EntityResultSetAdapter(EntityObjectSetResultSet set) {
+    private final Context context;
+
+    /**
+     * Constructs an {@code EntityResultSetAdapter}.
+     *
+     * @param set     the result set to adapt
+     * @param context the context
+     */
+    public EntityResultSetAdapter(EntityObjectSetResultSet set, Context context) {
         super(set);
+        this.context = context;
     }
 
     /**
@@ -53,9 +58,8 @@ public class EntityResultSetAdapter extends ResultSetAdapter<ObjectSet, Entity> 
     protected IPage<Entity> convert(IPage<ObjectSet> page) {
         List<Entity> objects = new ArrayList<Entity>();
         for (ObjectSet set : page.getResults()) {
-            IMObjectReference ref
-                    = set.getReference("entity.reference");
-            Entity entity = (Entity) IMObjectHelper.getObject(ref);
+            IMObjectReference ref = set.getReference("entity.reference");
+            Entity entity = (Entity) IMObjectHelper.getObject(ref, context);
             objects.add(entity);
         }
         return new Page<Entity>(objects, page.getFirstResult(),

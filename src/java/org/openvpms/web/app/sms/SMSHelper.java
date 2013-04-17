@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.app.sms;
@@ -21,7 +19,6 @@ package org.openvpms.web.app.sms;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.List;
@@ -29,8 +26,7 @@ import java.util.List;
 /**
  * SMS helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SMSHelper {
 
@@ -39,11 +35,10 @@ public class SMSHelper {
      * <p/>
      * TODO - this should be moved into a practice service
      *
-     * @return <tt>true</tt> if SMS is configured, otherwise <tt>false</tt>
+     * @return {@code true} if SMS is configured, otherwise {@code false}
      */
-    public static boolean isSMSEnabled() {
+    public static boolean isSMSEnabled(Party practice) {
         boolean enabled = false;
-        Party practice = GlobalContext.getInstance().getPractice();
         if (practice != null) {
             EntityBean bean = new EntityBean(practice);
             List<IMObjectReference> refs = bean.getNodeTargetEntityRefs("SMS");

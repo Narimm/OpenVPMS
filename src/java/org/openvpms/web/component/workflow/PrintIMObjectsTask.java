@@ -70,8 +70,9 @@ public class PrintIMObjectsTask<T extends IMObject> extends AbstractTask {
         if (!objects.isEmpty()) {
             try {
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(shortName, context);
-                IMObjectReportPrinter<T> printer = new IMObjectReportPrinter<T>(objects, locator);
-                InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, skip, context.getHelpContext());
+                IMObjectReportPrinter<T> printer = new IMObjectReportPrinter<T>(objects, locator, context);
+                InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, skip, context,
+                                                                               context.getHelpContext());
 
                 iPrinter.setListener(new PrinterListener() {
                     public void printed(String printer) {

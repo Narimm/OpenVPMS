@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.app.sms.SMSDialog;
 import org.openvpms.web.app.sms.SMSHelper;
@@ -66,7 +67,8 @@ public class PhoneContactViewLayout extends AbstractLayoutStrategy {
                                   PropertySet properties, Component container, final LayoutContext context) {
         IMObjectBean bean = new IMObjectBean(object);
         final String phone = bean.getString("telephoneNumber");
-        if (bean.getBoolean("sms") && !StringUtils.isEmpty(phone) && SMSHelper.isSMSEnabled()) {
+        Party practice = context.getContext().getPractice();
+        if (bean.getBoolean("sms") && !StringUtils.isEmpty(phone) && SMSHelper.isSMSEnabled(practice)) {
             Button send = ButtonFactory.create("button.sms.send");
             send.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent e) {

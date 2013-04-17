@@ -21,7 +21,6 @@ import org.openvpms.web.app.patient.mr.PatientDocumentCRUDWindow;
 import org.openvpms.web.app.patient.mr.PatientDocumentQuery;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.resource.util.Messages;
 
@@ -34,11 +33,6 @@ import org.openvpms.web.resource.util.Messages;
 public class VisitDocumentCRUDWindow extends PatientDocumentCRUDWindow {
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * Constructs a {@code VisitDocumentCRUDWindow}.
      *
      * @param context the context
@@ -46,8 +40,7 @@ public class VisitDocumentCRUDWindow extends PatientDocumentCRUDWindow {
      */
     public VisitDocumentCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
-                                Messages.get("patient.document.createtype")), help);
-        this.context = context;
+                                Messages.get("patient.document.createtype")), context, help);
     }
 
     /**
@@ -58,16 +51,4 @@ public class VisitDocumentCRUDWindow extends PatientDocumentCRUDWindow {
         return getContainer();
     }
 
-    /**
-     * Creates a layout context for editing an object.
-     *
-     * @return a new layout context.
-     * @param help
-     */
-    @Override
-    protected LayoutContext createLayoutContext(HelpContext help) {
-        LayoutContext result = super.createLayoutContext(help);
-        result.setContext(context);
-        return result;
-    }
 }

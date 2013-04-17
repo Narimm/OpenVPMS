@@ -18,7 +18,7 @@ package org.openvpms.web.app.patient.mr;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -50,11 +50,12 @@ public class PatientClinicalEventEditDialog extends EditDialog {
     /**
      * Constructs a {@code PatientClinicalEventEditDialog}.
      *
-     * @param editor the editor
-     * @param help   the help context
+     * @param editor  the editor
+     * @param context the context
+     * @param help    the help context
      */
-    public PatientClinicalEventEditDialog(IMObjectEditor editor, HelpContext help) {
-        super(editor, help);
+    public PatientClinicalEventEditDialog(IMObjectEditor editor, Context context, HelpContext help) {
+        super(editor, context, help);
         addButton(PRINT_ID, false);
     }
 
@@ -85,11 +86,12 @@ public class PatientClinicalEventEditDialog extends EditDialog {
             try {
                 List<Act> objects = new ArrayList<Act>();
                 objects.add((Act) getEditor().getObject());
-                Iterable<Act> acts = new ActHierarchyIterator<Act>(objects);
+                Context context = getContext();
+                Iterable<Act> acts = new ActHierarchyIterator<Act>(objects, context);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
-                                                                                     GlobalContext.getInstance());
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator);
-                IMPrinter<Act> interactive = new InteractiveIMPrinter<Act>(printer, getHelpContext());
+                                                                                     context);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);
+                IMPrinter<Act> interactive = new InteractiveIMPrinter<Act>(printer, context, getHelpContext());
                 interactive.print();
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -26,7 +24,6 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
@@ -41,8 +38,7 @@ import java.util.List;
 /**
  * Appointment query.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class AppointmentQuery extends ScheduleQuery {
 
@@ -70,6 +66,11 @@ class AppointmentQuery extends ScheduleQuery {
     }
 
     /**
+     * The practice location.
+     */
+    private final Party location;
+
+    /**
      * Appointment rules.
      */
     private AppointmentRules rules;
@@ -81,10 +82,13 @@ class AppointmentQuery extends ScheduleQuery {
 
 
     /**
-     * Creates a new <tt>AppointmentQuery</tt>.
+     * Constructs a {@code AppointmentQuery}.
+     *
+     * @param location the practice location. May be {@code null}
      */
-    public AppointmentQuery() {
+    public AppointmentQuery(Party location) {
         super(ServiceHelper.getAppointmentService(), "entity.organisationScheduleView");
+        this.location = location;
         rules = new AppointmentRules();
     }
 
@@ -130,7 +134,6 @@ class AppointmentQuery extends ScheduleQuery {
      * @return the schedule views
      */
     protected List<Entity> getScheduleViews() {
-        Party location = GlobalContext.getInstance().getLocation();
         List<Entity> views;
         if (location != null) {
             LocationRules locationRules = new LocationRules();
@@ -144,10 +147,9 @@ class AppointmentQuery extends ScheduleQuery {
     /**
      * Returns the default schedule view.
      *
-     * @return the default schedule view. May be <tt>null</tt>
+     * @return the default schedule view. May be {@code null}
      */
     protected Entity getDefaultScheduleView() {
-        Party location = GlobalContext.getInstance().getLocation();
         if (location != null) {
             LocationRules locationRules = new LocationRules();
             return locationRules.getDefaultScheduleView(location);

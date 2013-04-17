@@ -89,7 +89,7 @@ public abstract class IMObjectTableBrowser<T extends IMObject>
      */
     @Override
     protected IMTableModel<T> createTableModel(LayoutContext context) {
-        context = new DefaultLayoutContext(context.getHelpContext());
+        context = new DefaultLayoutContext(context);
         IMObjectComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         Query<T> query = getQuery();

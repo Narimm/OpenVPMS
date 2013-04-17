@@ -16,6 +16,7 @@
 package org.openvpms.web.app.patient.history;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -34,14 +35,16 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
      */
     private boolean sortAscending = true;
 
+
     /**
      * Constructs a {@code PagedPatientHistoryTableModel}.
      *
      * @param model      the underlying table model
+     * @param context    the context
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedPatientHistoryTableModel(IMObjectTableModel<Act> model, String... shortNames) {
-        super(model, shortNames);
+    public PagedPatientHistoryTableModel(IMObjectTableModel<Act> model, Context context, String... shortNames) {
+        super(model, context, shortNames);
     }
 
     /**
@@ -58,11 +61,12 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
      *
      * @param objects    the acts
      * @param shortNames the child archetype short names
+     * @param context    the context
      * @return an iterator to flatten the act hierarchy
      */
     @Override
-    protected ActHierarchyIterator<Act> createFlattener(List<Act> objects, final String[] shortNames) {
-        PatientHistoryFilter filter = new PatientHistoryFilter(shortNames);
+    protected ActHierarchyIterator<Act> createFlattener(List<Act> objects, String[] shortNames, Context context) {
+        PatientHistoryFilter filter = new PatientHistoryFilter(shortNames, context);
         filter.setSortItemsAscending(sortAscending);
         // maxDepth = 2 - display the events, and their immediate children
         return new ActHierarchyIterator<Act>(objects, filter, 2);

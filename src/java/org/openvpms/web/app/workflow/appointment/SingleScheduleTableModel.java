@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -29,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
@@ -40,8 +39,7 @@ import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availab
 /**
  * Appointment table model for a single schedule.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class SingleScheduleTableModel extends AppointmentTableModel {
 
@@ -89,12 +87,13 @@ class SingleScheduleTableModel extends AppointmentTableModel {
 
 
     /**
-     * Constructs a <tt>SingleScheduleTableModel</tt>.
+     * Constructs a {@code SingleScheduleTableModel}.
      *
-     * @param grid the appoingment grid
+     * @param grid    the appointment grid
+     * @param context the context
      */
-    public SingleScheduleTableModel(AppointmentGrid grid) {
-        super(grid);
+    public SingleScheduleTableModel(AppointmentGrid grid, Context context) {
+        super(grid, context);
     }
 
     /**
@@ -105,7 +104,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
      *
      * @param column the column
      * @param row    the row
-     * @return <tt>true</tt> if the cell is cut
+     * @return {@code true} if the cell is cut
      */
     @Override
     public boolean isMarkedCell(int column, int row) {

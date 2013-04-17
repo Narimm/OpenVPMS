@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.report.ParameterType;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -62,6 +63,11 @@ public class DocumentGenerator {
     private final DocumentAct act;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The generated document.
      */
     private Document document;
@@ -80,11 +86,13 @@ public class DocumentGenerator {
      * Constructs a {@code DocumentGenerator}.
      *
      * @param act      the document act
+     * @param context  the context
      * @param help     the help context
      * @param listener the listener to notify when generation completes
      */
-    public DocumentGenerator(DocumentAct act, HelpContext help, Listener listener) {
+    public DocumentGenerator(DocumentAct act, Context context, HelpContext help, Listener listener) {
         this.act = act;
+        this.context = context;
         this.help = help;
         this.listener = listener;
     }
@@ -125,7 +133,7 @@ public class DocumentGenerator {
                 promptParameters(reporter, save, version);
             }
         } else if (act.getDocument() != null) {
-            Document existing = (Document) IMObjectHelper.getObject(act.getDocument());
+            Document existing = (Document) IMObjectHelper.getObject(act.getDocument(), context);
             if (existing == null) {
                 throw new DocumentException(DocumentException.ErrorCode.NotFound);
             }
@@ -166,7 +174,7 @@ public class DocumentGenerator {
     private void promptParameters(final DocumentActReporter reporter, final boolean save, final boolean version) {
         Set<ParameterType> parameters = reporter.getParameterTypes();
         String title = Messages.get("document.input.parameters");
-        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, help);
+        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

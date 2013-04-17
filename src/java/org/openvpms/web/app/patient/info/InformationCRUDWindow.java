@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -59,10 +59,11 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Constructs an {@code InformationCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public InformationCRUDWindow(Archetypes<Party> archetypes, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<Party>getInstance(), help);
+    public InformationCRUDWindow(Archetypes<Party> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Party>getInstance(), context, help);
     }
 
     /**
@@ -79,7 +80,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
             }
         });
         buttons.add(checkIn);
-        if (UserHelper.isAdmin(GlobalContext.getInstance().getUser())) {
+        if (UserHelper.isAdmin(getContext().getUser())) {
             // only provide merge for admin users
             Button merge = ButtonFactory.create("merge", new ActionListener() {
                 public void onAction(ActionEvent event) {
@@ -107,7 +108,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Checks in the current patient.
      */
     private void onCheckIn() {
-        GlobalContext context = GlobalContext.getInstance();
+        Context context = getContext();
         Party customer = context.getCustomer();
         Party patient = context.getPatient();
         User clinician = context.getClinician();
@@ -125,7 +126,9 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
      * Merges the current patient with another.
      */
     private void onMerge() {
-        final MergeWorkflow workflow = new PatientMergeWorkflow(getObject(), getHelpContext());
+        Party customer = getContext().getCustomer();
+        HelpContext help = getHelpContext().createSubtopic("merge");
+        MergeWorkflow workflow = new PatientMergeWorkflow(getObject(), customer, help);
         workflow.addTaskListener(new DefaultTaskListener() {
             /**
              * Invoked when a task event occurs.

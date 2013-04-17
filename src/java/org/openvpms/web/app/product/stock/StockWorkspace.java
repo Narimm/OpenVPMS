@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
@@ -31,10 +32,12 @@ import org.openvpms.web.component.subsystem.CRUDWindow;
 public class StockWorkspace extends BrowserCRUDWorkspace<Party, Act> {
 
     /**
-     * Constructs a new {@code StockWorkspace}.
+     * Constructs a {@code StockWorkspace}.
+     *
+     * @param context the context
      */
-    public StockWorkspace() {
-        super("product", "stock", false);
+    public StockWorkspace(Context context) {
+        super("product", "stock", context, false);
         setArchetypes(Party.class, StockArchetypes.STOCK_LOCATION);
         setChildArchetypes(Act.class, StockArchetypes.STOCK_TRANSFER,
                            StockArchetypes.STOCK_ADJUST);
@@ -46,7 +49,7 @@ public class StockWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new StockCRUDWindow(getChildArchetypes(), getHelpContext());
+        return new StockCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**

@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.ServletHelper;
 
@@ -40,8 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * The entry point to the OpenVPMS application.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class OpenVPMSApp extends ContextApplicationInstance {
 
@@ -67,10 +67,12 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
 
     /**
-     * Constructs an <tt>OpenVPMSApp</tt>.
+     * Constructs an {@code OpenVPMSApp}.
+     *
+     * @param context the context
      */
-    public OpenVPMSApp() {
-        Context context = getContext();
+    public OpenVPMSApp(GlobalContext context) {
+        super(context);
         location = getLocation(context.getLocation());
         customer = getCustomer(context.getCustomer());
     }
@@ -85,7 +87,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         setStyleSheet();
         window = new Window();
         updateTitle();
-        window.setContent(new ApplicationContentPane());
+        window.setContent(new ApplicationContentPane(getContext()));
         getContext().addListener(new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.CUSTOMER_SHORTNAME.equals(key)) {
@@ -119,8 +121,8 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     /**
      * Creates a new browser window.
      *
-     * @param width  the window width. If <tt>-1</tt> the default width will be used
-     * @param height the window height. If <tt>-1</tt> the default height will be used
+     * @param width  the window width. If {@code -1} the default width will be used
+     * @param height the window height. If {@code -1} the default height will be used
      */
     public void createWindow(int width, int height) {
         StringBuilder uri = new StringBuilder(ServletHelper.getRedirectURI("app"));
@@ -221,7 +223,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     /**
      * Returns the location name.
      *
-     * @param location the location or <tt>null</tt>
+     * @param location the location or {@code null}
      * @return the location name
      */
     private String getLocation(IMObject location) {
@@ -231,7 +233,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     /**
      * Returns the location name.
      *
-     * @param customer the customer or <tt>null</tt>
+     * @param customer the customer or {@code null}
      * @return the customer name
      */
     private String getCustomer(IMObject customer) {
@@ -240,9 +242,9 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
     /**
      * Returns the name of an object, or a fallback string if the object is
-     * <tt>null</tt>.
+     * {@code null}.
      *
-     * @param object  the object. May be <tt>null</tt>
+     * @param object  the object. May be {@code null}
      * @param nullKey the message key if the object is null
      * @return the name of the object
      */

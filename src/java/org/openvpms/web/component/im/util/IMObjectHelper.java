@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.util;
@@ -39,7 +37,6 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.util.StringUtilities;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,8 +51,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  * {@link IMObject} helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class IMObjectHelper {
 
@@ -64,19 +60,6 @@ public class IMObjectHelper {
      */
     private static final Log log = LogFactory.getLog(IMObjectHelper.class);
 
-
-    /**
-     * Returns an object given its reference.
-     * This checks the global context first. If not found in the global context,
-     * tries to retrieve it from the archetype service.
-     *
-     * @param reference the object reference. May be <tt>null</tt>
-     * @return the object corresponding to <tt>reference</tt> or <tt>null</tt>
-     *         if none exists
-     */
-    public static IMObject getObject(IMObjectReference reference) {
-        return getObject(reference, GlobalContext.getInstance());
-    }
 
     /**
      * Returns an object given its reference.
@@ -122,7 +105,7 @@ public class IMObjectHelper {
      *         or <tt>null</tt> if none exists
      */
     public static NodeSet getNodes(IMObjectReference reference,
-                                   String ... nodes) {
+                                   String... nodes) {
         NodeSet result = null;
         if (reference != null) {
             try {
@@ -260,7 +243,7 @@ public class IMObjectHelper {
      *         <tt>null</tt> if none exists.
      */
     public static <T extends IMObject> T
-            getObject(String shortName, Collection<T> objects) {
+    getObject(String shortName, Collection<T> objects) {
         T result = null;
         for (T object : objects) {
             if (TypeHelper.isA(object, shortName)) {

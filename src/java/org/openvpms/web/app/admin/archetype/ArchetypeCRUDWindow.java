@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -82,11 +83,12 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
      * @param archetypes the archetypes that this may create
      * @param query      the query. May be {@code null}
      * @param set        the result set. May be {@code null}
+     * @param context    the context
      * @param help       the help context
      */
     public ArchetypeCRUDWindow(Archetypes<ArchetypeDescriptor> archetypes, Query<ArchetypeDescriptor> query,
-                               ResultSet<ArchetypeDescriptor> set, HelpContext help) {
-        super(archetypes, query, set, help);
+                               ResultSet<ArchetypeDescriptor> set, Context context, HelpContext help) {
+        super(archetypes, query, set, context, help);
     }
 
     /**
@@ -99,7 +101,7 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
     @Override
     protected EditResultSetDialog<ArchetypeDescriptor> createEditResultSetDialog(ArchetypeDescriptor object,
                                                                                  String title) {
-        return new ArchetypeEditDialog(title, object, getResultSet(), getHelpContext());
+        return new ArchetypeEditDialog(title, object, getResultSet(), getContext(), getHelpContext());
     }
 
     /**
