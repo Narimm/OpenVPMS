@@ -1,4 +1,20 @@
 /*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
+/*
  *  Version: 1.0
  *
  *  The contents of this file are subject to the OpenVPMS License Version
@@ -34,6 +50,7 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.subscription.core.Subscription;
 import org.openvpms.subscription.core.SubscriptionFactory;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -55,6 +72,15 @@ public class SubscriptionHelper {
      * The logger.
      */
     private static final Log log = LogFactory.getLog(SubscriptionHelper.class.getName());
+
+    /**
+     * Formats the current subscription, if any.
+     *
+     * @return the subscription message
+     */
+    public static String formatSubscription() {
+        return formatSubscription(new LocalContext());
+    }
 
     /**
      * Formats the current subscription, if any.
@@ -116,7 +142,7 @@ public class SubscriptionHelper {
      * @throws GeneralSecurityException
      */
     public static Subscription getSubscription(DocumentAct act, Context context)
-            throws IOException, GeneralSecurityException {
+        throws IOException, GeneralSecurityException {
         Subscription result = null;
         if (act != null) {
             Document document = (Document) IMObjectHelper.getObject(act.getDocument(), context);
