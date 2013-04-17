@@ -1,3 +1,18 @@
+/*
+ * Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.event.ActionEvent;
@@ -59,7 +74,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     /**
      * @param participation the participation to edit
      * @param parent        the parent entity
-     * @param context       the layout context. May be <tt>null</tt>.
+     * @param context       the layout context. May be {@code null}.
      */
     public AbstractDocumentParticipationEditor(Participation participation, Entity parent, LayoutContext context) {
         super(participation, parent, context);
@@ -80,9 +95,9 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
 
     /**
      * Determines if the associated act should be deleted when {@link #delete()} is invoked.
-     * Defaults to <tt>false</tt>.
+     * Defaults to {@code false}.
      *
-     * @param delete if <tt>true</tt> delete the act
+     * @param delete if {@code true} delete the act
      */
     public void setDeleteAct(boolean delete) {
         this.deleteAct = delete;
@@ -91,7 +106,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     /**
      * Determines if the object has been changed.
      *
-     * @return <tt>true</tt> if the object has been changed
+     * @return {@code true} if the object has been changed
      */
     @Override
     public boolean isModified() {
@@ -110,7 +125,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     /**
      * Sets the description of the document act.
      *
-     * @param description the description of the document act. May be <tt>null</tt>
+     * @param description the description of the document act. May be {@code null}
      */
     public void setDescription(String description) {
         act.setDescription(description);
@@ -134,7 +149,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     /**
      * Save any modified child Saveable instances.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     @Override
     protected boolean saveChildren() {
@@ -171,7 +186,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     /**
      * Deletes the object.
      *
-     * @return <tt>true</tt> if the delete was successful
+     * @return {@code true} if the delete was successful
      */
     @Override
     protected boolean doDelete() {
@@ -190,7 +205,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     /**
      * Deletes any child Deletable instances.
      *
-     * @return <tt>true</tt> if the delete was successful
+     * @return {@code true} if the delete was successful
      */
     @Override
     protected boolean deleteChildren() {

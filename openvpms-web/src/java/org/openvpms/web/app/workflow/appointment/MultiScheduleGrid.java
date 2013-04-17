@@ -1,5 +1,5 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
  *  The contents of this file are subject to the OpenVPMS License Version
  *  1.0 (the 'License'); you may not use this file except in compliance with
@@ -11,26 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
- */
-/*
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -54,8 +35,7 @@ import java.util.Map;
  * This handles overlapping and double booked appointments by creating new
  * {@link Schedule} instances to contain them.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class MultiScheduleGrid extends AbstractAppointmentGrid {
 
@@ -66,7 +46,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
 
 
     /**
-     * Creates a new <tt>MultiScheduleGrid</tt>.
+     * Constructs a {@code MultiScheduleGrid}.
      *
      * @param scheduleView the schedule view
      * @param date         the appointment date
@@ -93,7 +73,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param schedule the schedule
      * @param slot     the slot
-     * @return the corresponding appointment, or <tt>null</tt> if none is found
+     * @return the corresponding appointment, or {@code null} if none is found
      */
     public PropertySet getEvent(Schedule schedule, int slot) {
         Date time = getStartTime(schedule, slot);
@@ -109,7 +89,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      * the specified minutes.
      *
      * @param minutes the minutes
-     * @return the first slot that minutes intersects, or <tt>-1</tt> if no
+     * @return the first slot that minutes intersects, or {@code -1} if no
      *         slots intersect
      */
     public int getFirstSlot(int minutes) {
@@ -124,7 +104,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      * the specified minutes.
      *
      * @param minutes the minutes
-     * @return the last slot that minutes intersects, or <tt>-1</tt> if no
+     * @return the last slot that minutes intersects, or {@code -1} if no
      *         slots intersect
      */
     public int getLastSlot(int minutes) {
