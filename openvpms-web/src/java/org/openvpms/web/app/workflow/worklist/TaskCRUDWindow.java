@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
@@ -25,7 +23,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.workflow.LocalClinicianContext;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -51,10 +48,13 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
 
 
     /**
-     * Constructs an {@code TaskCRUDWindow}.
+     * Constructs a {@code TaskCRUDWindow}.
+     *
+     * @param context the context
+     * @param help    the help context
      */
-    public TaskCRUDWindow(HelpContext help) {
-        super(Archetypes.create("act.customerTask", Act.class), help);
+    public TaskCRUDWindow(Context context, HelpContext help) {
+        super(Archetypes.create("act.customerTask", Act.class), context, help);
     }
 
     /**
@@ -62,7 +62,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
      */
     @Override
     public void create() {
-        if (GlobalContext.getInstance().getWorkList() != null) {
+        if (getContext().getWorkList() != null) {
             super.create();
         }
     }
@@ -109,15 +109,15 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
     /**
      * Creates a layout context for editing an object.
      *
-     * @return a new layout context.
-     * @param help
+     * @param help the help context
+     * @return a new layout context
      */
     @Override
     protected LayoutContext createLayoutContext(HelpContext help) {
         LayoutContext context = super.createLayoutContext(help);
 
         // create a local context - don't want don't want to pick up the current clinician
-        Context local = new LocalClinicianContext(GlobalContext.getInstance());
+        Context local = new LocalClinicianContext(getContext());
         context.setContext(local);
         return context;
     }
@@ -142,7 +142,7 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
         final Act act = IMObjectHelper.reload(getObject());
         // make sure the act is still available
         if (act != null) {
-            TransferWorkflow transfer = new TransferWorkflow(act, getHelpContext());
+            TransferWorkflow transfer = new TransferWorkflow(act, getContext(), getHelpContext());
             transfer.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(act);

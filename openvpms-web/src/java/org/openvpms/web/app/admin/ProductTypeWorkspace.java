@@ -12,29 +12,29 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 
 
 /**
  * Product type workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ProductTypeWorkspace extends ResultSetCRUDWorkspace<Entity> {
 
     /**
-     * Constructs an <tt>ProductTypeWorkspace</tt>.
+     * Constructs a {@code ProductTypeWorkspace}.
+     *
+     * @param context the context
      */
-    public ProductTypeWorkspace() {
-        super("admin", "productType");
+    public ProductTypeWorkspace(Context context) {
+        super("admin", "productType", context);
         setArchetypes(Entity.class, "entity.productType");
     }
 

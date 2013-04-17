@@ -22,6 +22,8 @@ import org.openvpms.component.business.service.archetype.AbstractIMObjectFactory
 import org.openvpms.component.business.service.archetype.IMObjectFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -54,14 +56,15 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
     /**
      * Constructs an {@code ArchetypeEditDialog}.
      *
-     * @param title the window title
-     * @param first the first object to edit
-     * @param set   the set of results to edit
-     * @param help  the help context
+     * @param title   the window title
+     * @param first   the first object to edit
+     * @param set     the set of results to edit
+     * @param context the context
+     * @param help    the help context
      */
     public ArchetypeEditDialog(String title, ArchetypeDescriptor first, ResultSet<ArchetypeDescriptor> set,
-                               HelpContext help) {
-        super(title, first, set, help);
+                               Context context, HelpContext help) {
+        super(title, first, set, context, help);
         factory = new ObjectFactory();
         addButton("test", new ActionListener() {
             public void onAction(ActionEvent e) {
@@ -106,8 +109,9 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
                 ArchetypeDescriptor descriptor = (ArchetypeDescriptor) getEditor().getObject();
                 String shortName = descriptor.getShortName();
                 IMObject object = factory.create(shortName);
-                IMObjectEditor editor = IMObjectEditorFactory.create(object, new TestLayoutContext(getHelpContext()));
-                EditDialog dialog = new TestEditDialog(editor, getHelpContext());
+                TestLayoutContext context = new TestLayoutContext(new LocalContext(), getHelpContext());
+                IMObjectEditor editor = IMObjectEditorFactory.create(object, context);
+                EditDialog dialog = new TestEditDialog(editor, context.getContext(), getHelpContext());
                 dialog.show();
             } else {
                 ValidationHelper.showError(validator);
@@ -158,10 +162,11 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
         /**
          * Constructs a {@code TestLayoutContext}.
          *
-         * @param help the help context
+         * @param context the context
+         * @param help    the help context
          */
-        public TestLayoutContext(HelpContext help) {
-            super(help);
+        public TestLayoutContext(Context context, HelpContext help) {
+            super(context, help);
         }
 
         /**
@@ -188,11 +193,12 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
         /**
          * Creates a new {@code TestEditDialog}.
          *
-         * @param editor the editor
-         * @param help   the help context
+         * @param editor  the editor
+         * @param context the context
+         * @param help    the help context
          */
-        public TestEditDialog(IMObjectEditor editor, HelpContext help) {
-            super(editor, false, false, false, false, help);
+        public TestEditDialog(IMObjectEditor editor, Context context, HelpContext help) {
+            super(editor, false, false, false, false, context, help);
             addButton("validate", new ActionListener() {
                 public void onAction(ActionEvent e) {
                     onCheck();

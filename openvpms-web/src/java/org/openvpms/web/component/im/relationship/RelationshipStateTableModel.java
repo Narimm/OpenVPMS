@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -25,6 +23,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
@@ -35,8 +34,7 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
  * A table model for {@link RelationshipState} instances, that renders
  * the source or target name and description, and the relationship description.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class RelationshipStateTableModel
         extends AbstractIMTableModel<RelationshipState> {
@@ -57,8 +55,7 @@ public class RelationshipStateTableModel
     public static final String DETAIL_NODE = "detail";
 
     /**
-     * If <tt>true</tt> displays the target of the relationship; otherwise
-     * displays the source.
+     * If {@code true} displays the target of the relationship; otherwise displays the source.
      */
     private final boolean displayTarget;
 
@@ -66,6 +63,11 @@ public class RelationshipStateTableModel
      * The listener to notify when an object is selected.
      */
     private final ContextSwitchListener listener;
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * Name column index.
@@ -84,29 +86,29 @@ public class RelationshipStateTableModel
 
 
     /**
-     * Construct a new <tt>RelationshipStateTableModel</tt>.
+     * Construct a new {@code RelationshipStateTableModel}.
      * <p/>
      * Enables selection if the context is in edit mode.
      *
      * @param context       layout context
-     * @param displayTarget if <tt>true</tt> display the relationship target,
+     * @param displayTarget if {@code true} display the relationship target,
      *                      otherwise display the source
      */
-    public RelationshipStateTableModel(LayoutContext context,
-                                       boolean displayTarget) {
+    public RelationshipStateTableModel(LayoutContext context, boolean displayTarget) {
         this.displayTarget = displayTarget;
         setTableColumnModel(createTableColumnModel());
         setEnableSelection(context.isEdit());
         this.listener = context.getContextSwitchListener();
+        this.context = context.getContext();
     }
 
     /**
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-     *                  sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't
+     * @param ascending if {@code true} sort in ascending order; otherwise
+     *                  sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't
      *         sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -125,8 +127,8 @@ public class RelationshipStateTableModel
     /**
      * Indicates whether to display the target or source of the relationship.
      *
-     * @return <tt>true</tt> to display the target of the relationship, or
-     *         <tt>false</tt> to display the source.
+     * @return {@code true} to display the target of the relationship, or
+     *         {@code false} to display the source.
      */
     protected boolean displayTarget() {
         return displayTarget;
@@ -176,7 +178,7 @@ public class RelationshipStateTableModel
         }
 
         ContextSwitchListener link = (!getEnableSelection()) ? listener : null;
-        return new IMObjectReferenceViewer(ref, name, link).getComponent();
+        return new IMObjectReferenceViewer(ref, name, link, context).getComponent();
     }
 
     /**
@@ -188,7 +190,7 @@ public class RelationshipStateTableModel
      */
     protected Object getDescription(RelationshipState state) {
         return displayTarget ? state.getTargetDescription()
-                             : state.getSourceDescription();
+                : state.getSourceDescription();
     }
 
     /**

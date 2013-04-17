@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
@@ -88,7 +89,7 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
      * @param property the property being edited
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public DocumentEditor(Property property, HelpContext help) {
+    public DocumentEditor(Property property, Context context, HelpContext help) {
         super(property);
         this.help = help;
 
@@ -102,7 +103,7 @@ public class DocumentEditor extends AbstractPropertyEditor implements Saveable, 
         if (original != null) {
             init(original);
         }
-        refMgr = new DocReferenceMgr(original);
+        refMgr = new DocReferenceMgr(original, context);
     }
 
     /**

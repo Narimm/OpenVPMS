@@ -17,6 +17,7 @@
 package org.openvpms.web.app.customer.charge;
 
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -35,6 +36,8 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -76,8 +79,14 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     private List<String> errors = new ArrayList<String>();
 
     /**
+     * The context.
+     */
+    private Context context;
+
+    /**
      * Sets up the test case.
      */
+    @Before
     @Override
     public void setUp() {
         super.setUp();
@@ -89,6 +98,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
                 errors.add(message);
             }
         });
+        context = new LocalContext();
+        context.setPractice(getPractice());
     }
 
     /**
@@ -200,11 +211,11 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     }
 
     /**
-     * Verifies that the clinician can be cleared, as a test for OVPMS-1104/
+     * Verifies that the clinician can be cleared, as a test for OVPMS-1104.
      */
     @Test
     public void testClearClinician() {
-        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
         User clinician = TestHelper.createUser();
@@ -227,10 +238,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
 
         // set up the context
-        context.getContext().setUser(author); // to propagate to acts
+        layout.getContext().setUser(author); // to propagate to acts
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, context);
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -308,7 +319,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      * @param productShortName the product archetype short name
      */
     private void checkItem(FinancialAct charge, FinancialAct item, String productShortName) {
-        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient1 = TestHelper.createPatient();
         Party patient2 = TestHelper.createPatient();
         User author1 = TestHelper.createUser();
@@ -343,11 +354,11 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Product product2 = createProduct(productShortName, fixedCost2, fixedPrice2, unitCost2, unitPrice2);
 
         // set up the context
-        context.getContext().setUser(author1); // to propagate to acts
-        context.getContext().setClinician(clinician1);
+        layout.getContext().setUser(author1); // to propagate to acts
+        layout.getContext().setClinician(clinician1);
 
         // create the editor
-        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, context);
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -444,7 +455,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
                   fixedPrice2, discount2, tax2, total2);
         itemBean = new ActBean(item);
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)
-                && TypeHelper.isA(product2, ProductArchetypes.MEDICATION)) {
+            && TypeHelper.isA(product2, ProductArchetypes.MEDICATION)) {
             // verify there is a medication act. Note that it retains the original author
             checkMedication(item, patient2, product2, author1, clinician2);
         } else {
@@ -487,7 +498,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      * @param item   the charge item
      */
     private void checkItemWithTemplate(FinancialAct charge, FinancialAct item) {
-        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);

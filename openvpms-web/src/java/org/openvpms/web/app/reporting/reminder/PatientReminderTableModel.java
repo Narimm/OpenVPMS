@@ -349,7 +349,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     private Component createReferenceViewer(IMObject object, boolean link) {
         ContextSwitchListener listener = (link) ? getLayoutContext().getContextSwitchListener() : null;
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(object.getObjectReference(), object.getName(),
-                                                                     listener);
+                                                                     listener, getLayoutContext().getContext());
         return viewer.getComponent();
     }
 

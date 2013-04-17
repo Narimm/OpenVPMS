@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -39,8 +40,8 @@ public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
      * @param archetypes the archetypes that this may create
      * @param help       the help context
      */
-    public PatientDocumentCRUDWindow(Archetypes<DocumentAct> archetypes, HelpContext help) {
-        super(archetypes, help);
+    public PatientDocumentCRUDWindow(Archetypes<DocumentAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, context, help);
     }
 
     /**

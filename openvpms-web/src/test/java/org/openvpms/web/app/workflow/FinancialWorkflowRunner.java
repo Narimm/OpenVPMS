@@ -239,7 +239,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
          */
         @Override
         protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
-            LayoutContext layout = new DefaultLayoutContext(true, new HelpContext("foo", null));
+            LayoutContext layout = new DefaultLayoutContext(true, context, new HelpContext("foo", null));
             layout.setContext(context);
             return new CustomerChargeActEditor((FinancialAct) object, null, layout, false) {
                 @Override

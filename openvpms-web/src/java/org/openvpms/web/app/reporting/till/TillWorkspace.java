@@ -20,7 +20,7 @@ import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
@@ -43,15 +43,14 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
     /**
      * The act statuses to query.
      */
-    private static final ActStatuses STATUSES = new ActStatuses(
-            "act.tillBalance");
+    private static final ActStatuses STATUSES = new ActStatuses("act.tillBalance");
 
 
     /**
-     * Constructs a new <tt>TillWorkspace</tt>.
+     * Constructs a {@code TillWorkspace}.
      */
-    public TillWorkspace() {
-        super("reporting", "till");
+    public TillWorkspace(Context context) {
+        super("reporting", "till", context);
         setArchetypes(Party.class, "party.organisationTill");
         setChildArchetypes(FinancialAct.class, "act.tillBalance");
     }
@@ -59,12 +58,12 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Party object) {
         super.setObject(object);
-        GlobalContext.getInstance().setTill(object);
+        getContext().setTill(object);
     }
 
     /**
@@ -76,7 +75,7 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      */
     @Override
     protected Query<Party> createSelectQuery() {
-        return new TillQuery(GlobalContext.getInstance().getLocation());
+        return new TillQuery(getContext().getLocation());
     }
 
     /**
@@ -85,7 +84,7 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new TillCRUDWindow(getHelpContext());
+        return new TillCRUDWindow(getContext(), getHelpContext());
     }
 
     /**
@@ -110,18 +109,17 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
         IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
-        return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getHelpContext()));
+        return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**
      * Returns the latest version of the current till context object.
      *
-     * @return the latest version of the till context object, or
-     *         {@link #getObject()} if they are the same
+     * @return the latest version of the till context object, or {@link #getObject()} if they are the same
      */
     @Override
     protected Party getLatest() {
-        return getLatest(GlobalContext.getInstance().getTill());
+        return getLatest(getContext().getTill());
     }
 
 }

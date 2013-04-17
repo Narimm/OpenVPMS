@@ -17,6 +17,7 @@
 package org.openvpms.web.app.reporting.till;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
 
@@ -31,11 +32,12 @@ public class TillBalanceActRelationshipTableModel
         extends AbstractActRelationshipTableModel<FinancialAct> {
 
     /**
-     * Constructs a new {@code TillBalanceActRelationshipTableModel}
+     * Constructs a {@code TillBalanceActRelationshipTableModel}
      *
-     * @param help the help context
+     * @param context the context
+     * @param help    the help context
      */
-    public TillBalanceActRelationshipTableModel(HelpContext help) {
-        setModel(new TillActTableModel(help));
+    public TillBalanceActRelationshipTableModel(Context context, HelpContext help) {
+        setModel(new TillActTableModel(context, help));
     }
 }

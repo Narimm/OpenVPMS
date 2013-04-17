@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
@@ -128,20 +127,22 @@ public abstract class AbstractLayoutContext implements LayoutContext {
     /**
      * Constructs an {@code AbstractLayoutContext}.
      *
-     * @param help the help context
+     * @param context the context
+     * @param help    the help context
      */
-    public AbstractLayoutContext(HelpContext help) {
-        this((IMObjectComponentFactory) null, help);
+    public AbstractLayoutContext(Context context, HelpContext help) {
+        this(null, context, help);
     }
 
     /**
      * Constructs an {@code AbstractLayoutContext}.
      *
-     * @param edit if {@code true} this is an edit context; if {@code false} it is a view context.
-     * @param help the help context
+     * @param edit    if {@code true} this is an edit context; if {@code false} it is a view context.
+     * @param context the context
+     * @param help    the help context
      */
-    public AbstractLayoutContext(boolean edit, HelpContext help) {
-        this((IMObjectComponentFactory) null, help);
+    public AbstractLayoutContext(boolean edit, Context context, HelpContext help) {
+        this(null, context, help);
         this.edit = edit;
     }
 
@@ -149,10 +150,12 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * Constructs an {@code AbstractLayoutContext}.
      *
      * @param factory the component factory. May  be {@code null}
+     * @param context the context
      * @param help    the help context
      */
-    public AbstractLayoutContext(IMObjectComponentFactory factory, HelpContext help) {
+    public AbstractLayoutContext(IMObjectComponentFactory factory, Context context, HelpContext help) {
         this.factory = factory;
+        this.context = context;
         this.help = help;
         NodeFilter id = new ValueNodeFilter("id", -1);
         NodeFilter showOptional = new BasicNodeFilter(true);
@@ -195,9 +198,6 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * @return the context
      */
     public Context getContext() {
-        if (context == null) {
-            context = GlobalContext.getInstance();
-        }
         return context;
     }
 

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -42,8 +40,7 @@ import java.util.List;
 /**
  * An editor for relationships.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-17 01:10:40Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor {
 
@@ -69,15 +66,13 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
 
 
     /**
-     * Constructs an <tt>AbstractRelationshipEditor</tt>.
+     * Constructs an {@code AbstractRelationshipEditor}.
      *
      * @param relationship  the relationship
      * @param parent        the parent object
      * @param layoutContext the layout context
      */
-    public AbstractRelationshipEditor(IMObject relationship,
-                                      IMObject parent,
-                                      LayoutContext layoutContext) {
+    public AbstractRelationshipEditor(IMObject relationship, IMObject parent, LayoutContext layoutContext) {
         super(relationship, parent, layoutContext);
         IMObjectCache cache = layoutContext.getCache();
         Property sourceProp = getSource();
@@ -142,8 +137,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @return a new reference editor
      */
     protected IMObjectReferenceEditor<Entity> createReferenceEditor(Property property, LayoutContext context) {
-        IMObjectReferenceEditor<Entity> editor
-                = IMObjectReferenceEditorFactory.create(property, getObject(), context);
+        IMObjectReferenceEditor<Entity> editor = IMObjectReferenceEditorFactory.create(property, getObject(), context);
         editor.setAllowCreate(true);
         return editor;
     }
@@ -154,7 +148,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
     protected class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Constructs a <tt>LayoutStrategy</tt>.
+         * Constructs a {@code LayoutStrategy}.
          */
         public LayoutStrategy() {
         }
@@ -165,7 +159,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
          * @param property the property
          * @param parent   the parent object
          * @param context  the layout context
-         * @return a component to display <code>property</code>
+         * @return a component to display {@code property}
          */
         @Override
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
@@ -217,7 +211,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @param parent         the parent object
      * @param archetypeRange the archetypes that the reference may refer to
      * @param cache          the cache
-     * @return the object, or <tt>null</tt> if the reference is set but refers to an invalid object
+     * @return the object, or {@code null} if the reference is set but refers to an invalid object
      */
     private IMObject getObject(IMObjectReference reference, IMObject parent, String[] archetypeRange,
                                IMObjectCache cache) {

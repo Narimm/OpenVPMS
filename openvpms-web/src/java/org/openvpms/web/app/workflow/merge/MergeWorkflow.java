@@ -94,13 +94,13 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
     /**
      * Creates the task context.
      * <p/>
-     * This implementation creates the an {@link DefaultTaskContext} that doesn't inherit from the global context
+     * This implementation creates an {@link DefaultTaskContext} that doesn't inherit from the parent context
      *
      * @param help the help context
      * @return a new task context
      */
     protected TaskContext createContext(HelpContext help) {
-        return new DefaultTaskContext(help, false);
+        return new DefaultTaskContext(help);
     }
 
     /**

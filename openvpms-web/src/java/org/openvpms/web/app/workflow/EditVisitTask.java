@@ -91,13 +91,13 @@ public class EditVisitTask extends AbstractTask {
      */
     protected void edit(Act event, FinancialAct invoice, TaskContext context) {
         ActBean bean = new ActBean(event);
-        User clinician = (User) IMObjectHelper.getObject(bean.getNodeParticipantRef("clinician"));
+        User clinician = (User) IMObjectHelper.getObject(bean.getNodeParticipantRef("clinician"), context);
         // If clinician is null then populate with current context clinician
         if (clinician == null && context.getClinician() != null) {
             bean.addNodeParticipation("clinician", context.getClinician());
             bean.save();
         }
-        Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"));
+        Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"), context);
         if (patient != null) {
             VisitEditor editor = createVisitEditor(event, invoice, context, patient);
             String title = Messages.get("workflow.visit.edit.title");

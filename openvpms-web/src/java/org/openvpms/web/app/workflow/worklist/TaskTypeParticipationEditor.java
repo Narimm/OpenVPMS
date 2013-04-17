@@ -41,27 +41,25 @@ import java.util.List;
 /**
  * Participation editor for task types.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-08-15 06:42:15Z $
+ * @author Tim Anderson
  */
 public class TaskTypeParticipationEditor
         extends ParticipationEditor<Entity> {
 
     /**
-     * The work list, used to constrain task types types. May be <tt>null</tt>.
+     * The work list, used to constrain task types types. May be {@code null}.
      */
     private Party workList;
 
 
     /**
-     * Constructs a <tt>TaskTypeParticipationEditor</tt>.
+     * Constructs a {@code TaskTypeParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent act
-     * @param context       the layout context. May be <tt>null</tt>
+     * @param context       the layout context. May be {@code null}
      */
-    public TaskTypeParticipationEditor(Participation participation,
-                                       Act parent, LayoutContext context) {
+    public TaskTypeParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
         if (!TypeHelper.isA(participation, ScheduleArchetypes.TASK_TYPE_PARTICIPATION)) {
             throw new IllegalArgumentException("Invalid participation type:"
@@ -76,7 +74,7 @@ public class TaskTypeParticipationEditor
      * This is the default task type associated with the work list, if present.
      * If not, the first available task type.
      *
-     * @param workList the work list. May be <tt>null</tt>
+     * @param workList the work list. May be {@code null}
      */
     public void setWorkList(Party workList) {
         this.workList = workList;
@@ -103,7 +101,7 @@ public class TaskTypeParticipationEditor
 
             @Override
             protected Query<Entity> createQuery(String name) {
-                Query<Entity> query = new TaskTypeQuery(workList);
+                Query<Entity> query = new TaskTypeQuery(workList, getLayoutContext().getContext());
                 query.setValue(name);
                 return query;
 
@@ -116,7 +114,7 @@ public class TaskTypeParticipationEditor
      *
      * @param workList the work list
      * @param taskType a reference to the task type
-     * @return <tt>true</tt> if the work list has the task type
+     * @return {@code true} if the work list has the task type
      */
     private boolean hasTaskType(Party workList, IMObjectReference taskType) {
         EntityBean workListBean = new EntityBean(workList);
@@ -134,7 +132,7 @@ public class TaskTypeParticipationEditor
      * Returns a default task for a work list.
      *
      * @param workList the work list
-     * @return the default task type, or <tt>null</tt> if none is found
+     * @return the default task type, or {@code null} if none is found
      */
     private Entity getDefaultTaskType(Party workList) {
         Entity result = null;

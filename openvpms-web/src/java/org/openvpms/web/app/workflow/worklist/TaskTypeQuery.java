@@ -12,32 +12,31 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.ScheduleTypeQuery;
+import org.openvpms.web.component.app.Context;
 
 
 /**
  * Task type query.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskTypeQuery extends ScheduleTypeQuery {
 
     /**
-     * Constructs a new <tt>TaskTypeQuery</tt> that queries IMObjects with
+     * Constructs a new {@code TaskTypeQuery} that queries IMObjects with
      * the specified criteria.
      *
-     * @param workList the schedule. May be <tt>null</tt>
+     * @param workList the schedule. May be {@code null}
+     * @param context  the context
      */
-    public TaskTypeQuery(Party workList) {
-        super(new String[]{"entity.taskType"}, workList, "taskTypes");
+    public TaskTypeQuery(Party workList, Context context) {
+        super(new String[]{"entity.taskType"}, workList, "taskTypes", context);
     }
 
 }

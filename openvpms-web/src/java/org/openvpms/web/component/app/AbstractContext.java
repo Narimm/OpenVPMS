@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.app;
@@ -39,8 +37,7 @@ import java.util.Set;
 /**
  * Abstract implementation of the {@link Context} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractContext implements Context {
 
@@ -83,7 +80,7 @@ public abstract class AbstractContext implements Context {
      * Sets the current object being viewed/edited.
      *
      * @param object the current object being viewed/edited. May be
-     *               <code>null</code>
+     *               {@code null}
      */
     public void setCurrent(IMObject object) {
         current = object;
@@ -92,7 +89,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current object being viewed/edited.
      *
-     * @return the object being viewed/edited, or <code>null</code> if there is
+     * @return the object being viewed/edited, or {@code null} if there is
      *         no current object
      */
     public IMObject getCurrent() {
@@ -177,7 +174,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Sets the current customer.
      *
-     * @param customer the current customer. May be <code>null</code>
+     * @param customer the current customer. May be {@code null}
      */
     public void setCustomer(Party customer) {
         setObject(CUSTOMER_SHORTNAME, customer);
@@ -186,7 +183,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current customer.
      *
-     * @return the current customer, or <code>null</code> if there is no current
+     * @return the current customer, or {@code null} if there is no current
      *         customer
      */
     public Party getCustomer() {
@@ -196,7 +193,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Sets the current patient.
      *
-     * @param patient the current patient. May be <code>null</code>
+     * @param patient the current patient. May be {@code null}
      */
     public void setPatient(Party patient) {
         setObject(PATIENT_SHORTNAME, patient);
@@ -205,7 +202,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current patient.
      *
-     * @return the current patient, or <code>null</code> if there is no current
+     * @return the current patient, or {@code null} if there is no current
      *         patient
      */
     public Party getPatient() {
@@ -215,7 +212,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Sets the current supplier.
      *
-     * @param supplier the current supplier. May be <code>null</code>
+     * @param supplier the current supplier. May be {@code null}
      */
     public void setSupplier(Party supplier) {
         setObject(SUPPLIER_SHORTNAME, supplier);
@@ -224,7 +221,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current suppller.
      *
-     * @return the current supplier, or <code>null</code> if there is no current
+     * @return the current supplier, or {@code null} if there is no current
      *         supplier
      */
     public Party getSupplier() {
@@ -243,7 +240,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current product.
      *
-     * @return the current product, or <code>null</code> if there is no current
+     * @return the current product, or {@code null} if there is no current
      *         product
      */
     public Product getProduct() {
@@ -262,7 +259,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current till.
      *
-     * @return the current till, or <code>null</code> if there is no current
+     * @return the current till, or {@code null} if there is no current
      *         till
      */
     public Party getTill() {
@@ -281,7 +278,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current deposit account.
      *
-     * @return the current depsoit, or <code>null</code> if there is no current
+     * @return the current depsoit, or {@code null} if there is no current
      *         deposit
      */
     public Party getDeposit() {
@@ -300,7 +297,7 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the current clinician.
      *
-     * @return the current clinician, or <code>null</code> if there is no current
+     * @return the current clinician, or {@code null} if there is no current
      *         clinician
      */
     public User getClinician() {
@@ -407,9 +404,9 @@ public abstract class AbstractContext implements Context {
     }
 
     /**
-     * Returns the current work lsit date.
+     * Returns the current work list date.
      *
-     * @return the current work lsit date
+     * @return the current work list date
      */
     public Date getWorkListDate() {
         return workListDate;
@@ -456,8 +453,7 @@ public abstract class AbstractContext implements Context {
      * Returns an object for the specified key.
      *
      * @param key the context key
-     * @return the object corresponding to <code>key</code> or
-     *         <code>null</code> if none is found
+     * @return the object corresponding to {@code key} or {@code null} if none is found
      */
     public IMObject getObject(String key) {
         for (String shortName : SHORT_NAMES) {
@@ -473,8 +469,7 @@ public abstract class AbstractContext implements Context {
      * Returns a context object that matches the specified archetype range.
      *
      * @param range the archetype range
-     * @return a context object whose short name is in <code>range</code> or
-     *         <code>null</code> if none exists
+     * @return a context object whose short name is in {@code range} or {@code null} if none exists
      */
     public IMObject getObject(String[] range) {
         IMObject result = null;
@@ -496,8 +491,8 @@ public abstract class AbstractContext implements Context {
      * Returns a context object that matches the specified reference.
      *
      * @param reference the object reference
-     * @return the context object whose reference matches <code>reference</code>,
-     *         or <code>null</code> if there is no matches
+     * @return the context object whose reference matches {@code reference},
+     *         or {@code null} if there is no matches
      */
     public IMObject getObject(IMObjectReference reference) {
         IMObject result = null;
@@ -539,7 +534,7 @@ public abstract class AbstractContext implements Context {
         result.addAll(objects.values());
         result.add(current);
         result.add(user);
-        return result.toArray(new IMObject[0]);
+        return result.toArray(new IMObject[result.size()]);
     }
 
 }

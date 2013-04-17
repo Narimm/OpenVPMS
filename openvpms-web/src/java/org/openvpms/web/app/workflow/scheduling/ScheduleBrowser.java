@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.query.AbstractBrowser;
@@ -66,7 +67,12 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * The query.
      */
-    private ScheduleQuery query;
+    private final ScheduleQuery query;
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The schedule events, keyed on schedule.
@@ -117,10 +123,12 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Creates a new <tt>ScheduleBrowser</tt>.
      *
-     * @param query the schedule query
+     * @param query   the schedule query
+     * @param context the context
      */
-    public ScheduleBrowser(ScheduleQuery query) {
+    public ScheduleBrowser(ScheduleQuery query, Context context) {
         this.query = query;
+        this.context = context;
         query.setListener(new QueryListener() {
             public void query() {
                 onQuery();
@@ -312,7 +320,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     public Act getAct(PropertySet event) {
         if (event != null) {
             IMObjectReference actRef = event.getReference(ScheduleEvent.ACT_REFERENCE);
-            return (Act) IMObjectHelper.getObject(actRef);
+            return (Act) IMObjectHelper.getObject(actRef, context);
         }
         return null;
     }
@@ -475,6 +483,15 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             model = null;
             table = null;
         }
+    }
+
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
     }
 
     private void doQueryWithView(boolean reselect) {

@@ -12,14 +12,11 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting;
 
 import org.openvpms.archetype.rules.doc.DocumentException;
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -29,8 +26,7 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.Report;
 import org.openvpms.report.ReportFactory;
-import static org.openvpms.web.app.reporting.SQLReportException.ErrorCode.ConnectionError;
-import static org.openvpms.web.app.reporting.SQLReportException.ErrorCode.NoQuery;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
 import org.openvpms.web.system.ServiceHelper;
@@ -43,12 +39,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
+import static org.openvpms.web.app.reporting.SQLReportException.ErrorCode.ConnectionError;
+import static org.openvpms.web.app.reporting.SQLReportException.ErrorCode.NoQuery;
+
 
 /**
  * Printer for reports that contain embedded SQL queries.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SQLReportPrinter extends AbstractPrinter {
 
@@ -63,6 +62,11 @@ public class SQLReportPrinter extends AbstractPrinter {
     private final Report report;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The report parameters.
      */
     private Map<String, Object> parameters = Collections.emptyMap();
@@ -74,14 +78,15 @@ public class SQLReportPrinter extends AbstractPrinter {
 
 
     /**
-     * Constructs a new <tt>SQLReportPrinter</tt> to print a report.
+     * Constructs a {@code SQLReportPrinter} to print a report.
      *
      * @param template the template
+     * @param context  the context
      * @throws SQLReportException        for any report error
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document template can't be found
      */
-    public SQLReportPrinter(DocumentTemplate template) {
+    public SQLReportPrinter(DocumentTemplate template, Context context) {
         Document document = template.getDocument();
         if (document == null) {
             throw new DocumentException(NotFound);
@@ -89,13 +94,14 @@ public class SQLReportPrinter extends AbstractPrinter {
         report = ReportFactory.createReport(document, ArchetypeServiceHelper.getArchetypeService(),
                                             ServiceHelper.getDocumentHandlers());
         this.template = template;
+        this.context = context;
         ParameterType connectionParam = getConnectionParameter();
         if (connectionParam == null) {
             throw new SQLReportException(NoQuery);
         }
         connectionName = connectionParam.getName();
 
-        setInteractive(getInteractive(template, getDefaultPrinter()));
+        setInteractive(getInteractive(template, getDefaultPrinter(), context));
     }
 
     /**
@@ -110,7 +116,7 @@ public class SQLReportPrinter extends AbstractPrinter {
     /**
      * Sets the report parameters.
      *
-     * @param parameters the parameters. May be <tt>null</tt>
+     * @param parameters the parameters. May be {@code null}
      */
     public void setParameters(Map<String, Object> parameters) {
         if (parameters == null) {
@@ -122,7 +128,7 @@ public class SQLReportPrinter extends AbstractPrinter {
     /**
      * Prints the object.
      *
-     * @param printer the printer name. May be <tt>null</tt>
+     * @param printer the printer name. May be {@code null}
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
@@ -140,12 +146,12 @@ public class SQLReportPrinter extends AbstractPrinter {
     /**
      * Returns the default printer for the object.
      *
-     * @return the default printer for the object, or <tt>null</tt> if none
+     * @return the default printer for the object, or {@code null} if none
      *         is defined
      * @throws OpenVPMSException for any error
      */
     public String getDefaultPrinter() {
-        return getDefaultPrinter(template);
+        return getDefaultPrinter(template, context);
     }
 
     /**
@@ -161,8 +167,8 @@ public class SQLReportPrinter extends AbstractPrinter {
     /**
      * Returns a document for the object, corresponding to that which would be printed.
      *
-     * @param mimeType the mime type. If <tt>null</tt> the default mime type associated with the report will be used.
-     * @param email    if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     * @param mimeType the mime type. If {@code null} the default mime type associated with the report will be used.
+     * @param email    if {@code true} indicates that the document will be emailed. Documents generated from templates
      *                 can perform custom formatting
      * @return a document
      * @throws OpenVPMSException for any error
@@ -191,7 +197,7 @@ public class SQLReportPrinter extends AbstractPrinter {
     /**
      * Returns the connection parameter.
      *
-     * @return the connection parameter, or <tt>null</tt> if none is found
+     * @return the connection parameter, or {@code null} if none is found
      */
     private ParameterType getConnectionParameter() {
         for (ParameterType type : report.getParameterTypes()) {
@@ -220,7 +226,7 @@ public class SQLReportPrinter extends AbstractPrinter {
     /**
      * Helper to close a connection.
      *
-     * @param connection the connection. May be <tt>null</tt>
+     * @param connection the connection. May be {@code null}
      */
     private void closeConnection(Connection connection) {
         try {
@@ -235,7 +241,7 @@ public class SQLReportPrinter extends AbstractPrinter {
     /**
      * Returns the report parameters.
      *
-     * @param email if <tt>true</tt> indicates that the document will be emailed. Documents generated from templates
+     * @param email if {@code true} indicates that the document will be emailed. Documents generated from templates
      *              can perform custom formatting
      * @return the report parameters
      */

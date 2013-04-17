@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -68,10 +69,11 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
      * Constructs an {@code AccountCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
+    public AccountCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), context, help);
     }
 
     /**

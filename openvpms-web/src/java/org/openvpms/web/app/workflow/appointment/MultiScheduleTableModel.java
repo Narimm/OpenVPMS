@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -29,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -38,8 +37,7 @@ import java.util.List;
 /**
  * Appointment table model for multiple schedules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class MultiScheduleTableModel extends AppointmentTableModel {
 
@@ -49,19 +47,19 @@ class MultiScheduleTableModel extends AppointmentTableModel {
     private int rightStartTimeIndex;
 
     /**
-     * Creates a new <tt>MultiScheduleTableModel</tt>.
+     * Constructs a {@code MultiScheduleTableModel}.
      *
      * @param grid the appointment grid
      */
-    public MultiScheduleTableModel(AppointmentGrid grid) {
-        super(grid);
+    public MultiScheduleTableModel(AppointmentGrid grid, Context context) {
+        super(grid, context);
     }
 
     /**
      * Determines if the specified column is a 'start time' column.
      *
      * @param column the column
-     * @return <tt>true</tt> if the column is a 'start time' column
+     * @return {@code true} if the column is a 'start time' column
      */
     @Override
     public boolean isStartTimeColumn(int column) {

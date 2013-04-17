@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -57,8 +58,8 @@ public class UserMessageEditDialog extends EditDialog {
      * @param editor the editor
      * @param help   the help context
      */
-    public UserMessageEditDialog(UserMessageEditor editor, HelpContext help) {
-        super(editor, SEND_CANCEL, false, help);
+    public UserMessageEditDialog(UserMessageEditor editor, Context context, HelpContext help) {
+        super(editor, SEND_CANCEL, false, context, help);
         setStyleName("UserMessageEditDialog");
     }
 

@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.help.HelpContext;
@@ -48,6 +49,11 @@ public class IMObjectViewerDialog extends PopupDialog {
     private Stack<IMObjectReference> history = new Stack<IMObjectReference>();
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * Dialog style name.
      */
     private static final String STYLE = "IMObjectViewerDialog";
@@ -66,11 +72,13 @@ public class IMObjectViewerDialog extends PopupDialog {
     /**
      * Constructs an {@code IMObjectViewerDialog}.
      *
-     * @param viewer the viewer to display. May be {@code null}
-     * @param help   the help context
+     * @param viewer  the viewer to display. May be {@code null}
+     * @param context the context
+     * @param help    the help context
      */
-    public IMObjectViewerDialog(IMObjectViewer viewer, HelpContext help) {
+    public IMObjectViewerDialog(IMObjectViewer viewer, Context context, HelpContext help) {
         super(null, STYLE, BUTTONS, help);
+        this.context = context;
         setModal(true);
         if (viewer != null) {
             setViewer(viewer);
@@ -82,10 +90,12 @@ public class IMObjectViewerDialog extends PopupDialog {
     /**
      * Constructs an {@code IMObjectViewerDialog}.
      *
-     * @param object the object to display. May be {@code null}
+     * @param object  the object to display. May be {@code null}
+     * @param context the context
      */
-    public IMObjectViewerDialog(IMObject object) {
+    public IMObjectViewerDialog(IMObject object, Context context) {
         super(null, STYLE, BUTTONS);
+        this.context = context;
         setModal(true);
         if (object != null) {
             setObject(object);
@@ -100,7 +110,7 @@ public class IMObjectViewerDialog extends PopupDialog {
      * @param object the object to display
      */
     public void setObject(IMObject object) {
-        LayoutContext context = new DefaultLayoutContext(getHelpContext());
+        LayoutContext context = new DefaultLayoutContext(this.context, getHelpContext());
         context.setContextSwitchListener(new ContextSwitchListener() {
             public void switchTo(IMObject child) {
                 setObject(child);
@@ -155,7 +165,7 @@ public class IMObjectViewerDialog extends PopupDialog {
             IMObject object = null;
             while (object == null && !history.isEmpty()) {
                 IMObjectReference previous = history.pop();
-                object = IMObjectHelper.getObject(previous);
+                object = IMObjectHelper.getObject(previous, context);
             }
             if (object != null) {
                 setObject(object);

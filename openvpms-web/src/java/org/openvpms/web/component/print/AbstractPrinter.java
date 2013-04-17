@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.print;
@@ -27,7 +25,6 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.servlet.DownloadServlet;
 
 import javax.print.attribute.standard.MediaTray;
@@ -36,8 +33,7 @@ import javax.print.attribute.standard.MediaTray;
 /**
  * Abstract implementation of the {@link Printer} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractPrinter implements Printer {
 
@@ -53,7 +49,7 @@ public abstract class AbstractPrinter implements Printer {
 
 
     /**
-     * Constructs an <tt>AbstractPrinter</tt>.
+     * Constructs an {@code AbstractPrinter}.
      */
     public AbstractPrinter() {
     }
@@ -70,8 +66,8 @@ public abstract class AbstractPrinter implements Printer {
     /**
      * Determines if printing should occur interactively.
      *
-     * @return <tt>true</tt> if printing should occur interactively,
-     *         <tt>false</tt> if it can be performed non-interactively
+     * @return {@code true} if printing should occur interactively,
+     *         {@code false} if it can be performed non-interactively
      */
     public boolean getInteractive() {
         return interactive;
@@ -112,17 +108,18 @@ public abstract class AbstractPrinter implements Printer {
      * Returns the print properties for an object.
      *
      * @param printer  the printer
-     * @param template the document template. May be <tt>null</tt>
+     * @param template the document template. May be {@code null}
+     * @param context  the context
      * @return the print properties
      * @throws OpenVPMSException for any error
      */
-    protected PrintProperties getProperties(String printer, DocumentTemplate template) {
+    protected PrintProperties getProperties(String printer, DocumentTemplate template, Context context) {
         PrintProperties properties = new PrintProperties(printer);
         properties.setCopies(getCopies());
         if (template != null) {
             properties.setMediaSize(template.getMediaSize());
             properties.setOrientation(template.getOrientationRequested());
-            properties.setMediaTray(getMediaTray(template, printer));
+            properties.setMediaTray(getMediaTray(template, printer, context));
         }
         return properties;
     }
@@ -146,21 +143,21 @@ public abstract class AbstractPrinter implements Printer {
     /**
      * Determines if printing should occur interactively.
      *
-     * @param interactive if <tt>true</tt> print interactively
+     * @param interactive if {@code true} print interactively
      */
     protected void setInteractive(boolean interactive) {
         this.interactive = interactive;
     }
 
     /**
-     * Helper to return the default printer for a template for the current
-     * practice or location.
+     * Helper to return the default printer for a template for the current practice or location.
      *
      * @param template an <em>entity.documentTemplate</em>
+     * @param context  the context
      * @return the default printer
      */
-    protected String getDefaultPrinter(DocumentTemplate template) {
-        return PrintHelper.getDefaultPrinter(template, GlobalContext.getInstance());
+    protected String getDefaultPrinter(DocumentTemplate template, Context context) {
+        return PrintHelper.getDefaultPrinter(template, context);
     }
 
     /**
@@ -169,10 +166,11 @@ public abstract class AbstractPrinter implements Printer {
      *
      * @param template an template
      * @param printer  the printer name
-     * @return the relationship, or <tt>null</tt> if none is found
+     * @param context  the context
+     * @return the relationship, or {@code null} if none is found
      */
-    protected DocumentTemplatePrinter getDocumentTemplatePrinter(DocumentTemplate template, String printer) {
-        Context context = GlobalContext.getInstance();
+    protected DocumentTemplatePrinter getDocumentTemplatePrinter(DocumentTemplate template, String printer,
+                                                                 Context context) {
         DocumentTemplatePrinter relationship = PrintHelper.getDocumentTemplatePrinter(template, context);
         if (relationship != null) {
             // make sure the relationship is for the same printer
@@ -184,29 +182,30 @@ public abstract class AbstractPrinter implements Printer {
     }
 
     /**
-     * Helper to return the media tray for a document template for a particular
-     * printer for the current practice.
+     * Helper to return the media tray for a document template for a particular printer for the current practice.
      *
      * @param template the template
      * @param printer  the printer name
-     * @return the media tray for the template, or <tt>null</tt> if none is defined
+     * @param context  the context
+     * @return the media tray for the template, or {@code null} if none is defined
      */
-    protected MediaTray getMediaTray(DocumentTemplate template, String printer) {
-        DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, printer);
+    protected MediaTray getMediaTray(DocumentTemplate template, String printer, Context context) {
+        DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, printer, context);
         return relationship != null ? relationship.getMediaTray() : null;
     }
 
     /**
      * Helper to determine if printing should occur interactively for a
      * particular document template, printer and the current practice.
-     * If no relationship is defined, defaults to <tt>true</tt>.
+     * If no relationship is defined, defaults to {@code true}.
      *
      * @param template the template
      * @param printer  the printer name
-     * @return <tt>true</tt> if printing should occur interactively
+     * @param context  the context
+     * @return {@code true} if printing should occur interactively
      */
-    protected boolean getInteractive(DocumentTemplate template, String printer) {
-        DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, printer);
+    protected boolean getInteractive(DocumentTemplate template, String printer, Context context) {
+        DocumentTemplatePrinter relationship = getDocumentTemplatePrinter(template, printer, context);
         return relationship == null || relationship.getInteractive();
     }
 

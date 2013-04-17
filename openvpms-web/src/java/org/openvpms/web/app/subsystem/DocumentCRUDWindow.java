@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -58,10 +59,11 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * Constructs a {@code DocumentCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes, HelpContext help) {
-        super(archetypes, new DocumentActActions(), help);
+    public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, new DocumentActActions(), context, help);
     }
 
     /**
@@ -139,7 +141,8 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     private void refresh(final boolean print, boolean version) {
         final DocumentAct act = getObject();
-        DocumentGenerator generator = new DocumentGenerator(act, getHelpContext(), new DocumentGenerator.Listener() {
+        DocumentGenerator generator = new DocumentGenerator(
+                act, getContext(), getHelpContext(), new DocumentGenerator.Listener() {
             public void generated(Document document) {
                 onSaved(act, false);
                 if (print) {

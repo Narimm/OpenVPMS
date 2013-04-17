@@ -22,6 +22,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -43,6 +44,11 @@ import java.util.Date;
 public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The help context.
      */
     private final HelpContext help;
@@ -55,10 +61,12 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
     /**
      * Constructs a {@code TillActTableModel}.
      *
+     * @param context the context
      * @param help the help context
      */
-    public TillActTableModel(HelpContext help) {
+    public TillActTableModel(Context context, HelpContext help) {
         super(true, false, true, true);
+        this.context = context;
         this.help = help;
     }
 
@@ -83,10 +91,10 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
             ActBean bean = new ActBean(act);
             if (bean.hasNode("customer")) {
                 NodeDescriptor descriptor = bean.getDescriptor("customer");
-                LayoutContext context = new DefaultLayoutContext(help);
-                context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
-                TableComponentFactory factory = new TableComponentFactory(context);
-                context.setComponentFactory(factory);
+                LayoutContext layout = new DefaultLayoutContext(context, help);
+                layout.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
+                TableComponentFactory factory = new TableComponentFactory(layout);
+                layout.setComponentFactory(factory);
                 Property property = new IMObjectProperty(act, descriptor);
                 result = factory.create(property, act).getComponent();
             }

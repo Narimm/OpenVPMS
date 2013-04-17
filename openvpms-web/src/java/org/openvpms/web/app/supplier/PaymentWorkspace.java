@@ -59,7 +59,7 @@ public class PaymentWorkspace extends SupplierActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new PaymentCRUDWindow(getChildArchetypes(), getHelpContext());
+        return new PaymentCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**
@@ -102,7 +102,7 @@ public class PaymentWorkspace extends SupplierActWorkspace<FinancialAct> {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         IMObjectTableModel<FinancialAct> model
                 = new ActAmountTableModel<FinancialAct>(true, true);
-        return BrowserFactory.create(query, sort, model, new DefaultLayoutContext(getHelpContext()));
+        return BrowserFactory.create(query, sort, model, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
 }

@@ -378,7 +378,7 @@ public class ActRelationshipCollectionEditor
                 // copy the act, and associate the product
                 List<IMObject> objects = copier.apply(act);
                 copy = (Act) objects.get(0);
-                LayoutContext context = new DefaultLayoutContext(getContext().getHelpContext());
+                LayoutContext context = new DefaultLayoutContext(getContext());
                 context.setComponentFactory(new ReadOnlyComponentFactory(context));
                 context.setCache(getContext().getCache());
                 editor = (ActItemEditor) createEditor(copy, context);

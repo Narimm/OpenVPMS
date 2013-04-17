@@ -80,8 +80,8 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param help      the help context
      */
     public CheckInWorkflow(Party customer, Party patient, User clinician, Context context, HelpContext help) {
-        super(help);
-        initialise(null, customer, patient, clinician, null, null, context, help);
+        super(help.createTopic("workflow/checkin"));
+        initialise(null, customer, patient, clinician, null, null, context);
     }
 
     /**
@@ -92,8 +92,8 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param help        the help context
      */
     public CheckInWorkflow(Act appointment, Context context, HelpContext help) {
-        super(help);
-        initialise(appointment, context, help);
+        super(help.createTopic("workflow/checkin"));
+        initialise(appointment, context);
     }
 
     /**
@@ -120,9 +120,8 @@ public class CheckInWorkflow extends WorkflowImpl {
      *
      * @param appointment the appointment
      * @param context     the external context to access and update
-     * @param help        the help context
      */
-    protected void initialise(Act appointment, Context context, HelpContext help) {
+    protected void initialise(Act appointment, Context context) {
         ActBean bean = new ActBean(appointment);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
@@ -132,7 +131,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         String notes = bean.getString("description", "");
         String description = Messages.get("workflow.checkin.task.description", reason, notes);
 
-        initialise(appointment, customer, patient, clinician, description, reason, context, help);
+        initialise(appointment, customer, patient, clinician, description, reason, context);
     }
 
     /**
@@ -147,9 +146,10 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param context         the external context to access and update
      */
     private void initialise(Act appointment, Party customer, Party patient, User clinician, String taskDescription,
-                            String reason, Context context, HelpContext help) {
+                            String reason, Context context) {
         external = context;
-        initial = new DefaultTaskContext(help, false);
+        HelpContext help = getHelpContext();
+        initial = new DefaultTaskContext(help);
         initial.setCustomer(customer);
         initial.setPatient(patient);
 

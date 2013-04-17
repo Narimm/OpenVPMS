@@ -37,8 +37,12 @@ public class SupplierHelper {
      * @return a new {@code OrderRules}
      */
     public static OrderRules createOrderRules(Party practice) {
+        if (practice == null) {
+            throw new IllegalArgumentException("Argument 'practice' is null");
+        }
         IArchetypeService service = ServiceHelper.getArchetypeService();
         TaxRules taxRules = new TaxRules(practice, service, ServiceHelper.getLookupService());
         return new OrderRules(taxRules, service);
     }
 }
+

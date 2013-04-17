@@ -113,7 +113,7 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
             }
 
             /**
-             * Invoked when an object is selected from a brwoser.
+             * Invoked when an object is selected from a browser.
              *
              * @param object  the selected object. May be {@code null}
              * @param browser the browser

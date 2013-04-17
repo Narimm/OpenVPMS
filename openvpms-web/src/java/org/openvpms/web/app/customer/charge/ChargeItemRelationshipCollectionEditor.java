@@ -61,7 +61,7 @@ public class ChargeItemRelationshipCollectionEditor
      */
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
-       popupEditorMgr = new DefaultPopupEditorManager(context.getHelpContext());
+       popupEditorMgr = new DefaultPopupEditorManager(context.getContext(), context.getHelpContext());
     }
 
     /**

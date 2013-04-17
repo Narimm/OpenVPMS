@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit;
@@ -31,8 +29,7 @@ import org.openvpms.web.component.property.Property;
 /**
  * Editor for <em>party.patientpet</em> references.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientReferenceEditor
         extends AbstractIMObjectReferenceEditor<Party> {
@@ -44,7 +41,7 @@ public class PatientReferenceEditor
 
 
     /**
-     * Constructs a new <code>PatientReferenceEditor</code>.
+     * Constructs a {@code PatientReferenceEditor}.
      *
      * @param property the reference property
      * @param parent   the parent object
@@ -56,12 +53,12 @@ public class PatientReferenceEditor
     }
 
     /**
-     * Constructs a new <code>PatientReferenceEditor</code>.
+     * Constructs a {@code PatientReferenceEditor}.
      *
      * @param property    the reference property
      * @param parent      the parent object
      * @param context     the layout context
-     * @param allPatients if <code>true</code>, enable all patients to be
+     * @param allPatients if {@code true}, enable all patients to be
      *                    selected
      */
     public PatientReferenceEditor(Property property, IMObject parent,
@@ -75,18 +72,18 @@ public class PatientReferenceEditor
      * <p/>
      * This implementation updates the global context.
      *
-     * @param object the object. May  be <code>null</code>
+     * @param object the object. May  be {@code null}
      */
     @Override
     public boolean setObject(Party object) {
-        ContextHelper.setPatient(object);
+        ContextHelper.setPatient(getContext(), object);
         return super.setObject(object);
     }
 
     /**
      * Determines if all patients can be selected.
      *
-     * @param all if <code>true</code> enable all patients to be selected
+     * @param all if {@code true} enable all patients to be selected
      */
     public void setAllPatients(boolean all) {
         allPatients = all;
@@ -95,17 +92,16 @@ public class PatientReferenceEditor
     /**
      * Creates a query to select objects.
      *
-     * @param name a name to filter on. May be <code>null</code>
+     * @param name a name to filter on. May be {@code null}
      * @return a new query
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     @Override
     @SuppressWarnings("unchecked")
     protected Query<Party> createQuery(String name) {
         Query<Party> query = super.createQuery(name);
         if (query instanceof PatientQuery) {
-            // constraint patients to the current customer
+            // constrain patients to the current customer
             ((PatientQuery) query).setShowAllPatients(allPatients);
         }
         return query;

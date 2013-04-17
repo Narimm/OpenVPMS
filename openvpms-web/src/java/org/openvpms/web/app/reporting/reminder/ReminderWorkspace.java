@@ -30,8 +30,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -74,9 +74,11 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
 
     /**
      * Constructs a {@code ReminderWorkspace}.
+     *
+     * @param context the context
      */
-    public ReminderWorkspace() {
-        super("reporting", "reminder", Act.class);
+    public ReminderWorkspace(Context context) {
+        super("reporting", "reminder", Act.class, context);
     }
 
     /**
@@ -89,7 +91,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         query = new PatientReminderQuery();
 
         // create a layout context, with hyperlinks enabled
-        LayoutContext context = new DefaultLayoutContext(getHelpContext());
+        LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
         TableComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
@@ -140,7 +142,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
                 int reminderCount = bean.getInt("reminderCount");
                 ReminderEvent event = processor.process(reminder, reminderCount);
                 if (event.getDocumentTemplate() != null) {
-                    GlobalContext context = GlobalContext.getInstance();
+                    Context context = getContext();
                     CustomerMailContext mailContext = CustomerMailContext.create(reminder, context, getHelpContext());
                     if (mailContext != null) {
 
@@ -149,7 +151,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
                         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, reminder,
                                                                                              context);
                         InteractivePrinter printer = new InteractivePrinter(
-                                new IMObjectReportPrinter<Act>(reminder, locator), getHelpContext());
+                                new IMObjectReportPrinter<Act>(reminder, locator, context), context, getHelpContext());
                         printer.setMailContext(mailContext);
                         printer.print();
                     }
@@ -187,10 +189,11 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
      */
     private void onReport() {
         Iterable<Act> objects = query.createReminderQuery().query();
-        IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(objects, ReminderArchetypes.REMINDER);
+        IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(objects, ReminderArchetypes.REMINDER, getContext());
         String title = Messages.get("reporting.reminder.print.title");
         try {
-            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getHelpContext());
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getContext(),
+                                                                               getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
@@ -203,9 +206,8 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
      */
     private void generateReminders() {
         try {
-            GlobalContext context = GlobalContext.getInstance();
-            ReminderGenerator generator = new ReminderGenerator(query.createReminderQuery(), context, getMailContext(),
-                                                                getHelpContext());
+            ReminderGenerator generator = new ReminderGenerator(query.createReminderQuery(), getContext(),
+                                                                getMailContext(), getHelpContext());
             generateReminders(generator);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

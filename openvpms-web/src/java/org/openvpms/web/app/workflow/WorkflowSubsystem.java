@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow;
@@ -22,25 +20,27 @@ import org.openvpms.web.app.workflow.appointment.AppointmentWorkspace;
 import org.openvpms.web.app.workflow.investigation.InvestigationsWorkspace;
 import org.openvpms.web.app.workflow.messaging.MessagingWorkspace;
 import org.openvpms.web.app.workflow.worklist.TaskWorkspace;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
 /**
  * Workflow subsystem.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class WorkflowSubsystem extends AbstractSubsystem {
 
     /**
-     * Creates a new <tt>WorkflowSubsystem</tt>.
+     * Constructs a {@code WorkflowSubsystem}.
+     *
+     * @param context the context
      */
-    public WorkflowSubsystem() {
+    public WorkflowSubsystem(GlobalContext context) {
         super("workflow");
-        addWorkspace(new AppointmentWorkspace());
-        addWorkspace(new TaskWorkspace());
-        addWorkspace(new MessagingWorkspace());
-        addWorkspace(new InvestigationsWorkspace());
+        addWorkspace(new AppointmentWorkspace(context));
+        addWorkspace(new TaskWorkspace(context));
+        addWorkspace(new MessagingWorkspace(context));
+        addWorkspace(new InvestigationsWorkspace(context));
     }
 }

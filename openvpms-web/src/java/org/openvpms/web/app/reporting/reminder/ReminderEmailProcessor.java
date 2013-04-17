@@ -32,7 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.app.reporting.ReportingException;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.IMObjectReporter;
@@ -81,14 +81,16 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
 
 
     /**
-     * Creates a new <tt>ReminderEmailProcessor</tt>.
+     * Constructs a {@code ReminderEmailProcessor}.
      *
      * @param sender        the mail sender
      * @param practice      the practice
      * @param groupTemplate the template for grouped reminders
+     * @param context       the context
      */
-    public ReminderEmailProcessor(JavaMailSender sender, Party practice, DocumentTemplate groupTemplate) {
-        super(groupTemplate);
+    public ReminderEmailProcessor(JavaMailSender sender, Party practice, DocumentTemplate groupTemplate,
+                                  Context context) {
+        super(groupTemplate, context);
         ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
                                                 new PatientRules(ServiceHelper.getArchetypeService(),
                                                                  ServiceHelper.getLookupService()));
@@ -110,18 +112,15 @@ public class ReminderEmailProcessor extends AbstractReminderProcessor {
 
     /**
      * Processes a list of reminder events.
-     * <p/>
-     * TODO - remove dependency on global context
      *
      * @param events           the events
      * @param shortName        the report archetype short name, used to select the document template if none specified
-     * @param documentTemplate the document template to use. May be <tt>null</tt>
+     * @param documentTemplate the document template to use. May be {@code null}
      */
     protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate documentTemplate) {
         ReminderEvent event = events.get(0);
         Contact contact = event.getContact();
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(documentTemplate, shortName,
-                                                                             GlobalContext.getInstance());
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(documentTemplate, shortName, getContext());
         documentTemplate = locator.getTemplate();
         if (documentTemplate == null) {
             throw new ReportingException(ReminderMissingDocTemplate);

@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -237,6 +238,13 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         private boolean deactivated;
 
         /**
+         * Constructs a {@code TestDeletor}.
+         */
+        public TestDeletor() {
+            super(new LocalContext());
+        }
+
+        /**
          * Determines if remove() has been invoked.
          *
          * @return <tt>true</tt> if remove() was invoked
@@ -291,7 +299,8 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
          * @param listener the listener to notify
          * @param help     the help context
          */
-        protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
+        protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener,
+                                                                    HelpContext help) {
             removeWithRelationships = true;
             doRemove(object, listener, help);
         }
@@ -301,9 +310,10 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
          *
          * @param object   the object to deactivate
          * @param listener the listener
-         * @param help
+         * @param help     the help context
          */
-        protected <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
+        protected <T extends IMObject> void deactivate(T object, IMObjectDeletionListener<T> listener,
+                                                       HelpContext help) {
             deactivate = true;
             doDeactivate(object, listener);
         }
@@ -312,7 +322,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
          * Invoked when an object cannot be de deleted, and has already been deactivated.
          *
          * @param object the object
-         * @param help
+         * @param help   the help context
          */
         protected <T extends IMObject> void deactivated(T object, HelpContext help) {
             deactivated = true;

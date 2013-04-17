@@ -31,6 +31,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -49,8 +50,7 @@ import java.util.Set;
  * Appointment browser. Renders blocks of appointments in different hours a
  * different colour.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentBrowser extends ScheduleBrowser {
 
@@ -66,10 +66,13 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private AppointmentQuery.TimeRange lastTimeRange;
 
     /**
-     * Creates a new <tt>AppointmentBrowser</tt>.
+     * Constructs an {@code AppointmentBrowser}.
+     *
+     * @param location the practice location. May be {@code null}
+     * @param context  the context
      */
-    public AppointmentBrowser() {
-        super(new AppointmentQuery());
+    public AppointmentBrowser(Party location, Context context) {
+        super(new AppointmentQuery(location), context);
     }
 
     /**
@@ -125,9 +128,9 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
         if (grid.getSchedules().size() == 1) {
-            return new SingleScheduleTableModel((AppointmentGrid) grid);
+            return new SingleScheduleTableModel((AppointmentGrid) grid, getContext());
         }
-        return new MultiScheduleTableModel((AppointmentGrid) grid);
+        return new MultiScheduleTableModel((AppointmentGrid) grid, getContext());
     }
 
     /**

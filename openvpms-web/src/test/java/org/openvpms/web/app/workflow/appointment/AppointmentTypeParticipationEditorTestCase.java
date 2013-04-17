@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -45,7 +46,7 @@ public class AppointmentTypeParticipationEditorTestCase extends AbstractAppTest 
     public void testValidate() {
         Act appointment = (Act) create(ScheduleArchetypes.APPOINTMENT);
         Participation type = (Participation) create(ScheduleArchetypes.APPOINTMENT_TYPE_PARTICIPATION);
-        LayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         AppointmentTypeParticipationEditor editor = new AppointmentTypeParticipationEditor(type, appointment, context);
         assertFalse(editor.isValid());
 

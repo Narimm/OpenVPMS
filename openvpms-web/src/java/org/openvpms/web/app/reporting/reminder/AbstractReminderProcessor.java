@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -32,8 +33,7 @@ import java.util.List;
 /**
  * Abstract implementation of the {@link Processor} interface for reminder processing.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractReminderProcessor implements Processor<List<ReminderEvent>> {
 
@@ -42,14 +42,21 @@ public abstract class AbstractReminderProcessor implements Processor<List<Remind
      */
     private final DocumentTemplate groupTemplate;
 
+    /**
+     * The context.
+     */
+    private final Context context;
+
 
     /**
-     * Creates a new <tt>AbstracatReminderProcessor</tt>.
+     * Creates a new {@code AbstractReminderProcessor}.
      *
      * @param groupTemplate the grouped reminder template
+     * @param context       the context
      */
-    public AbstractReminderProcessor(DocumentTemplate groupTemplate) {
+    public AbstractReminderProcessor(DocumentTemplate groupTemplate, Context context) {
         this.groupTemplate = groupTemplate;
+        this.context = context;
     }
 
     /**
@@ -79,7 +86,7 @@ public abstract class AbstractReminderProcessor implements Processor<List<Remind
      *
      * @param events    the events
      * @param shortName the report archetype short name, used to select the document template if none specified
-     * @param template  the document template to use. May be <tt>null</tt>
+     * @param template  the document template to use. May be {@code null}
      */
     protected abstract void process(List<ReminderEvent> events, String shortName, DocumentTemplate template);
 
@@ -106,6 +113,15 @@ public abstract class AbstractReminderProcessor implements Processor<List<Remind
             result.add(set);
         }
         return result;
+    }
+
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
     }
 
 }

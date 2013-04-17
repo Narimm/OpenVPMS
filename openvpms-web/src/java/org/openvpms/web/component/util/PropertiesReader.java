@@ -60,12 +60,13 @@ public abstract class PropertiesReader extends ConfigReader {
             Properties properties = new Properties();
             properties.load(url.openStream());
             Enumeration keys = properties.propertyNames();
+            String path = url.toString();
             while (keys.hasMoreElements()) {
                 String key = (String) keys.nextElement();
                 String value = properties.getProperty(key).trim();
                 // trim required as Properties doesn't seem to remove
                 // trailing whitespace
-                parse(key, value, url.toString());
+                parse(key, value, path);
             }
         } catch (IOException exception) {
             log.error(exception, exception);

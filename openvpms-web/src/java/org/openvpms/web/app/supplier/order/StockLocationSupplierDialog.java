@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 
 import java.util.List;
 
@@ -38,13 +39,14 @@ public class StockLocationSupplierDialog extends PopupDialog {
     private StockLocationSupplierSelector selector;
 
     /**
-     * Creates a new {@code SelectOrderDetailsDialog}.
+     * Constructs a {@code SelectOrderDetailsDialog}.
      *
      * @param title   the window title
      * @param context the context
+     * @param help    the help context
      */
-    public StockLocationSupplierDialog(String title, Context context) {
-        super(title, OK_CANCEL);
+    public StockLocationSupplierDialog(String title, Context context, HelpContext help) {
+        super(title, OK_CANCEL, help);
         setModal(true);
 
         selector = new StockLocationSupplierSelector(context);

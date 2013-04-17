@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -80,10 +81,11 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * Constructs an {@code EstimationCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public EstimationCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
-        super(archetypes, new EstimateActions(), help);
+    public EstimationCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
+        super(archetypes, new EstimateActions(), context, help);
         rules = new EstimationRules();
     }
 
@@ -242,7 +244,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
             EstimationInvoicer invoicer = new EstimationInvoicer();
             HelpContext edit = getHelpContext().createTopic(invoice, "edit");
             CustomerChargeActEditDialog editor = invoicer.invoice(estimation, invoice,
-                                                                  new DefaultLayoutContext(true, edit));
+                                                                  new DefaultLayoutContext(true, getContext(), edit));
             editor.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     onRefresh(estimation);
@@ -258,7 +260,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         ActBean bean = new ActBean(estimation);
         Party customer = (Party) bean.getNodeParticipant("customer");
         if (customer != null) {
-            TaskContext context = new DefaultTaskContext(getHelpContext());
+            TaskContext context = new DefaultTaskContext(getContext(), getHelpContext());
             context.setCustomer(customer);
             GetInvoiceTask task = new GetInvoiceTask();
             task.execute(context);

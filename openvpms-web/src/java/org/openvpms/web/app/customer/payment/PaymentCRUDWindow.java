@@ -19,6 +19,7 @@ package org.openvpms.web.app.customer.payment;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
@@ -39,10 +40,11 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Constructs a {@code PaymentCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
+    public PaymentCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), context, help);
     }
 
     /**
@@ -79,7 +81,7 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
-        return new ActEditDialog(editor, help);
+        return new ActEditDialog(editor, getContext(), help);
     }
 
 }

@@ -40,7 +40,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.reporting.FinancialActCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.dialog.SelectionDialog;
@@ -49,7 +49,6 @@ import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -102,10 +101,11 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     /**
      * Constructs a {@code TillCRUDWindow}.
      *
-     * @param help the help context
+     * @param context the context
+     * @param help    the help context
      */
-    public TillCRUDWindow(HelpContext help) {
-        super(new Archetypes<FinancialAct>("act.tillBalanceAdjustment", FinancialAct.class), help);
+    public TillCRUDWindow(Context context, HelpContext help) {
+        super(new Archetypes<FinancialAct>("act.tillBalanceAdjustment", FinancialAct.class), context, help);
     }
 
     /**
@@ -126,9 +126,9 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     @Override
     public void edit() {
         if (TypeHelper.isA(childAct, "act.tillBalanceAdjustment")) {
-            LayoutContext context = new DefaultLayoutContext(true, getHelpContext());
+            LayoutContext context = createLayoutContext(createEditTopic(childAct));
             final IMObjectEditor editor = createEditor(childAct, context);
-            EditDialog dialog = new EditDialog(editor, getHelpContext());
+            EditDialog dialog = new EditDialog(editor, getContext(), getHelpContext());
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     onEditCompleted(editor, false);
@@ -207,12 +207,11 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         try {
             ActBean actBean = new ActBean(act);
             Party till = (Party) actBean.getParticipant("participation.till");
-            Party location = GlobalContext.getInstance().getLocation();
+            Party location = getContext().getLocation();
             if (till != null && location != null) {
                 IMObjectBean bean = new IMObjectBean(till);
-                BigDecimal lastFloat = bean.getBigDecimal("tillFloat",
-                                                          BigDecimal.ZERO);
-                final ClearTillDialog dialog = new ClearTillDialog(location);
+                BigDecimal lastFloat = bean.getBigDecimal("tillFloat", BigDecimal.ZERO);
+                final ClearTillDialog dialog = new ClearTillDialog(location, getContext());
                 dialog.setAmount(lastFloat);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
@@ -235,11 +234,11 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         try {
             FinancialAct object = getObject();
             IPage<ObjectSet> set = new TillBalanceQuery(object).query();
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
-                    set.getResults(), TILL_BALANCE);
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
             String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
             String title = Messages.get("imobject.print.title", displayName);
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getHelpContext());
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(),
+                                                                                           getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

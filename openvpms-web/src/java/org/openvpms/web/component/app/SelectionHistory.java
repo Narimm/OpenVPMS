@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.app;
 
@@ -29,8 +27,7 @@ import java.util.List;
 /**
  * Maintains a history of object selections.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SelectionHistory {
 
@@ -38,6 +35,11 @@ public class SelectionHistory {
      * The default selection history capacity.
      */
     public static final int DEFAULT_CAPACITY = 25;
+
+    /**
+     * The context.
+     */
+    private Context context;
 
     /**
      * The selection history.
@@ -49,21 +51,24 @@ public class SelectionHistory {
      */
     private final int capacity;
 
-
     /**
-     * Construct a <tt>SelectionHistory</tt> with default capacity.
+     * Construct a {@code SelectionHistory} with default capacity.
+     *
+     * @param context the context
      */
-    public SelectionHistory() {
-        this(DEFAULT_CAPACITY);
+    public SelectionHistory(Context context) {
+        this(DEFAULT_CAPACITY, context);
     }
 
     /**
-     * Construct a <tt>SelectionHistory</tt> with the specified capacity.
+     * Construct a {@code SelectionHistory} with the specified capacity.
      *
      * @param capacity the capacity
+     * @param context  the context
      */
-    public SelectionHistory(int capacity) {
+    public SelectionHistory(int capacity, Context context) {
         this.capacity = capacity;
+        this.context = context;
     }
 
 
@@ -79,7 +84,7 @@ public class SelectionHistory {
      */
     public void add(IMObject object) {
         IMObjectReference ref = object.getObjectReference();
-        Selection selection = new Selection(ref);
+        Selection selection = new Selection(ref, context);
         selections.remove(selection);
         selections.add(0, selection);
 
@@ -101,7 +106,7 @@ public class SelectionHistory {
      * Returns the time when an object was selected.
      *
      * @param object the object
-     * @return the time when the object was selected, or <tt>null</tt> if it can't be found in the history
+     * @return the time when the object was selected, or {@code null} if it can't be found in the history
      */
     public Date getSelected(IMObject object) {
         return getSelected(object.getObjectReference());
@@ -111,10 +116,10 @@ public class SelectionHistory {
      * Returns the time when an object was selected.
      *
      * @param reference the object reference
-     * @return the time when the object was selected, or <tt>null</tt> if it can't be found in the history
+     * @return the time when the object was selected, or {@code null} if it can't be found in the history
      */
     public Date getSelected(IMObjectReference reference) {
-        int index = selections.indexOf(new Selection(reference));
+        int index = selections.indexOf(new Selection(reference, context));
         return (index != -1) ? selections.get(index).getTime() : null;
     }
 
@@ -133,15 +138,22 @@ public class SelectionHistory {
          */
         private final Date time;
 
+        /**
+         * The context.
+         */
+        private final Context context;
+
 
         /**
-         * Constructs a <tt>Selection</tt>.
+         * Constructs a {@code Selection}.
          *
          * @param reference the object reference
+         * @param context   the context
          */
-        public Selection(IMObjectReference reference) {
+        public Selection(IMObjectReference reference, Context context) {
             this.reference = reference;
             this.time = new Date();
+            this.context = context;
         }
 
         /**
@@ -156,10 +168,10 @@ public class SelectionHistory {
         /**
          * Returns the object.
          *
-         * @return the object, or <tt>null</tt> if it no longer exists
+         * @return the object, or {@code null} if it no longer exists
          */
         public IMObject getObject() {
-            return IMObjectHelper.getObject(reference);
+            return IMObjectHelper.getObject(reference, context);
         }
 
         /**
@@ -177,7 +189,7 @@ public class SelectionHistory {
          * Two selections are considerered equal if they have the same reference.
          *
          * @param obj the reference object with which to compare.
-         * @return <tt>true</tt> if this object is the same as the obj argument; <tt>false</tt> otherwise.
+         * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
          */
         @Override
         public boolean equals(Object obj) {

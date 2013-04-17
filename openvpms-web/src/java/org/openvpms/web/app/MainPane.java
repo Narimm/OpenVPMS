@@ -141,6 +141,11 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     private final MessageMonitor.MessageListener listener;
 
     /**
+     * The context.
+     */
+    private final GlobalContext context;
+
+    /**
      * The user the listener was registered for.
      */
     private User user;
@@ -202,17 +207,19 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      * Constructs a <tt>MainPane</tt>.
      *
      * @param monitor the message monitor
+     * @param context the context
      */
-    public MainPane(MessageMonitor monitor) {
+    public MainPane(MessageMonitor monitor, GlobalContext context) {
         super(ORIENTATION_HORIZONTAL);
         setStyleName(STYLE);
         this.monitor = monitor;
+        this.context = context;
         listener = new MessageMonitor.MessageListener() {
             public void onMessage(Act message) {
                 updateMessageStatus(message);
             }
         };
-        user = GlobalContext.getInstance().getUser();
+        user = context.getUser();
 
         summaryRefresher = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
@@ -231,25 +238,23 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
         currentSubsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
 
-        GlobalContext context = GlobalContext.getInstance();
-
         Button button = addSubsystem(new CustomerSubsystem(context));
         addSubsystem(new PatientSubsystem(context));
         addSubsystem(new SupplierSubsystem(context));
-        addSubsystem(new WorkflowSubsystem());
-        addSubsystem(new ProductSubsystem());
-        addSubsystem(new ReportingSubsystem());
+        addSubsystem(new WorkflowSubsystem(context));
+        addSubsystem(new ProductSubsystem(context));
+        addSubsystem(new ReportingSubsystem(context));
 
         context.addListener(this);
 
         // if the current user is an admin, show the administration subsystem
         if (UserHelper.isAdmin(user)) {
-            addSubsystem(new AdminSubsystem());
+            addSubsystem(new AdminSubsystem(context));
         }
 
         menu.addButton("help", new ActionListener() {
             public void onAction(ActionEvent event) {
-                new HelpDialog().show();
+                new HelpDialog(MainPane.this.context).show();
             }
         });
         menu.add(getManagementRow());
@@ -566,15 +571,14 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      * Displays the customer/patient history browser.
      */
     private void showHistory() {
-        LayoutContext context = new DefaultLayoutContext(currentWorkspace.getHelpContext());
-        final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser(context);
+        LayoutContext layout = new DefaultLayoutContext(context, currentWorkspace.getHelpContext());
+        final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser(context, layout);
         BrowserDialog<CustomerPatient> dialog
-                = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser, context.getHelpContext());
+                = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser, layout.getHelpContext());
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 CustomerPatient selected = browser.getSelected();
                 if (selected != null) {
-                    GlobalContext context = GlobalContext.getInstance();
                     context.setCustomer(selected.getCustomer());
                     context.setPatient(selected.getPatient());
                     Party party = browser.getSelectedParty();

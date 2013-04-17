@@ -29,6 +29,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.app.workflow.scheduling.SchedulingWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 
@@ -42,9 +43,12 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
 
     /**
      * Constructs an {@code AppointmentWorkspace}.
+     *
+     * @param context the context
      */
-    public AppointmentWorkspace() {
-        super("workflow", "scheduling", Archetypes.create("entity.organisationScheduleView", Entity.class));
+    public AppointmentWorkspace(GlobalContext context) {
+        super("workflow", "scheduling", Archetypes.create("entity.organisationScheduleView", Entity.class),
+              context);
     }
 
     /**
@@ -61,7 +65,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
             marked = browser.getMarked();
             isCut = browser.isCut();
         }
-        GlobalContext.getInstance().setScheduleView(object);
+        getContext().setScheduleView(object);
         super.setObject(object);
         browser = getBrowser();
         if (browser != null && marked != null) {
@@ -113,7 +117,8 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * @return a new browser
      */
     protected ScheduleBrowser createBrowser() {
-        return new AppointmentBrowser();
+        Context context = getContext();
+        return new AppointmentBrowser(context.getLocation(), context);
     }
 
     /**
@@ -122,18 +127,17 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * @return a new CRUD window
      */
     protected ScheduleCRUDWindow createCRUDWindow() {
-        return new AppointmentCRUDWindow((AppointmentBrowser) getBrowser(), getHelpContext());
+        return new AppointmentCRUDWindow((AppointmentBrowser) getBrowser(), getContext(), getHelpContext());
     }
 
     /**
      * Invoked when events are queried.
      * <p/>
-     * This implementation updates the global context with the selected work
-     * list date and work list
+     * This implementation updates the context with the selected work list date and work list
      */
     @Override
     protected void onQuery() {
-        GlobalContext context = GlobalContext.getInstance();
+        Context context = getContext();
         ScheduleBrowser browser = getBrowser();
         context.setScheduleDate(browser.getDate());
         context.setSchedule((Party) browser.getSelectedSchedule());
@@ -166,20 +170,18 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
     /**
      * Returns the latest version of the current schedule view context object.
      *
-     * @return the latest version of the schedule view context object, or
-     *         {@link #getObject()} if they are the same
+     * @return the latest version of the schedule view context object, or {@link #getObject()} if they are the same
      */
     @Override
     protected Entity getLatest() {
-        return getLatest(GlobalContext.getInstance().getScheduleView());
+        return getLatest(getContext().getScheduleView());
     }
 
     /**
      * Returns the default schedule view for the specified practice location.
      *
      * @param location the practice location
-     * @return the default schedule view, or {@code null} if there is no
-     *         default
+     * @return the default schedule view, or {@code null} if there is no default
      */
     protected Entity getDefaultView(Party location) {
         LocationRules locationRules = new LocationRules();
@@ -187,11 +189,11 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
     }
 
     /**
-     * Updates the global context with the selected schedule.
+     * Updates the context with the selected schedule.
      */
     private void updateContext() {
         Party schedule = (Party) getBrowser().getSelectedSchedule();
-        GlobalContext.getInstance().setSchedule(schedule);
+        getContext().setSchedule(schedule);
     }
 
 }

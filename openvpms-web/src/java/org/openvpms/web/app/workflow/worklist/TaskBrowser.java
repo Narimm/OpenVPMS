@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
@@ -28,6 +26,7 @@ import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.web.component.app.Context;
 
 import java.util.Date;
 import java.util.List;
@@ -37,16 +36,17 @@ import java.util.Map;
 /**
  * Task browser.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskBrowser extends ScheduleBrowser {
 
     /**
-     * Creates a new <tt>TaskBrowser</tt>.
+     * Constructs a {@code TaskBrowser}.
+     *
+     * @param context the context
      */
-    public TaskBrowser() {
-        super(new TaskQuery());
+    public TaskBrowser(Context context) {
+        super(new TaskQuery(context), context);
     }
 
     /**
@@ -61,7 +61,7 @@ public class TaskBrowser extends ScheduleBrowser {
      * Attempts to select a task.
      *
      * @param task the task
-     * @return <tt>true</tt> if the task was selected, <tt>false</tt> if it was
+     * @return {@code true} if the task was selected, {@code false} if it was
      *         not found
      */
     public boolean setSelected(Act task) {
@@ -105,9 +105,9 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
         if (grid.getSchedules().size() == 1) {
-            return new SingleScheduleTaskTableModel((TaskGrid) grid);
+            return new SingleScheduleTaskTableModel((TaskGrid) grid, getContext());
         }
-        return new TaskTableModel((TaskGrid) grid);
+        return new TaskTableModel((TaskGrid) grid, getContext());
     }
 
     /**

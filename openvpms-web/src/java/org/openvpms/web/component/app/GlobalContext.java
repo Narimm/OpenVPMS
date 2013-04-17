@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.app;
@@ -29,8 +27,7 @@ import java.util.Map;
 /**
  * Application context information.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class GlobalContext extends AbstractContext implements ContextHistory {
 
@@ -44,12 +41,6 @@ public class GlobalContext extends AbstractContext implements ContextHistory {
      */
     private Map<String, SelectionHistory> history = new HashMap<String, SelectionHistory>();
 
-
-    /**
-     * Restrict construction.
-     */
-    protected GlobalContext() {
-    }
 
     /**
      * Adds a listener.
@@ -67,17 +58,6 @@ public class GlobalContext extends AbstractContext implements ContextHistory {
      */
     public void removeListener(ContextListener listener) {
         listeners.remove(listener);
-    }
-
-    /**
-     * Returns the context associated with the current thread.
-     *
-     * @return the context associated with the current thread, or <tt>null</tt>
-     */
-    public static GlobalContext getInstance() {
-        ContextApplicationInstance instance
-                = ContextApplicationInstance.getInstance();
-        return (instance != null) ? instance.getContext() : null;
     }
 
     /**
@@ -102,13 +82,13 @@ public class GlobalContext extends AbstractContext implements ContextHistory {
 
     public SelectionHistory getHistory(String shortName) {
         SelectionHistory result = history.get(shortName);
-        return result != null ? result : new SelectionHistory();
+        return result != null ? result : new SelectionHistory(this);
     }
 
     private void updateHistory(String key, IMObject object) {
         SelectionHistory selectionHistory = history.get(key);
         if (selectionHistory == null) {
-            selectionHistory = new SelectionHistory();
+            selectionHistory = new SelectionHistory(this);
             history.put(key, selectionHistory);
         }
         selectionHistory.add(object);

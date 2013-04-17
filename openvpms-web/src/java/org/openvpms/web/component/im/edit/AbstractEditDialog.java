@@ -19,6 +19,7 @@ import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
@@ -52,24 +53,30 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private final boolean save;
 
     /**
-     * Edit dialog style name.
-     */
-    protected static final String STYLE = "EditDialog";
-
-    /**
      * Determines if saves are disabled.
      */
     private boolean savedDisabled;
+
+    /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
+     * Edit dialog style name.
+     */
+    protected static final String STYLE = "EditDialog";
 
 
     /**
      * Constructs an {@code AbstractEditDialog}.
      *
-     * @param editor the editor
+     * @param editor  the editor
+     * @param context the context
      * @param help    the help context
      */
-    public AbstractEditDialog(IMObjectEditor editor, HelpContext help) {
-        this(editor.getTitle(), getButtons(true, true, false), true, help);
+    public AbstractEditDialog(IMObjectEditor editor, Context context, HelpContext help) {
+        this(editor.getTitle(), getButtons(true, true, false), true, context, help);
     }
 
     /**
@@ -78,10 +85,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param title   the dialog title
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param context the context
      * @param help    the help context
      */
-    public AbstractEditDialog(String title, String[] buttons, boolean save, HelpContext help) {
-        this(null, title, buttons, save, help);
+    public AbstractEditDialog(String title, String[] buttons, boolean save, Context context, HelpContext help) {
+        this(null, title, buttons, save, context, help);
     }
 
     /**
@@ -90,10 +98,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param editor  the editor
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param context the context
      * @param help    the help context
      */
-    public AbstractEditDialog(IMObjectEditor editor, String[] buttons, boolean save, HelpContext help) {
-        this(editor, editor.getTitle(), buttons, save, help);
+    public AbstractEditDialog(IMObjectEditor editor, String[] buttons, boolean save, Context context, HelpContext help) {
+        this(editor, editor.getTitle(), buttons, save, context, help);
     }
 
     /**
@@ -103,10 +112,13 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param title   the dialog title
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param context the context
      * @param help    the help context
      */
-    public AbstractEditDialog(IMObjectEditor editor, String title, String[] buttons, boolean save, HelpContext help) {
+    public AbstractEditDialog(IMObjectEditor editor, String title, String[] buttons, boolean save,
+                              Context context, HelpContext help) {
         super(title, STYLE, buttons, help);
+        this.context = context;
         setModal(true);
         setEditor(editor);
         this.save = save;
@@ -328,7 +340,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
-     * Retiurns the component containing the editor.
+     * Returns the component containing the editor.
      * <p/>
      * This implementation returns {@link #getLayout()}.
      *
@@ -336,6 +348,15 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected Component getEditorContainer() {
         return getLayout();
+    }
+
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
     }
 
     /**
@@ -353,7 +374,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Displays the macros.
      */
     protected void onMacro() {
-        MacroDialog dialog = new MacroDialog(getHelpContext());
+        MacroDialog dialog = new MacroDialog(context, getHelpContext());
         dialog.show();
     }
 

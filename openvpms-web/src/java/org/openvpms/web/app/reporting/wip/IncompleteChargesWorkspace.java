@@ -22,8 +22,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -59,10 +59,12 @@ public class IncompleteChargesWorkspace
 
 
     /**
-     * Creates a new <tt>IncompleteChargesWorkspace</tt>.
+     * Constructs an {@code IncompleteChargesWorkspace}.
+     *
+     * @param context the context
      */
-    public IncompleteChargesWorkspace() {
-        super("reporting", "wip", Act.class);
+    public IncompleteChargesWorkspace(Context context) {
+        super("reporting", "wip", Act.class, context);
     }
 
     /**
@@ -73,7 +75,7 @@ public class IncompleteChargesWorkspace
      */
     @Override
     protected void doLayout(Component container, FocusGroup group) {
-        LayoutContext context = new DefaultLayoutContext(getHelpContext());
+        LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
         IMObjectComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
@@ -104,11 +106,12 @@ public class IncompleteChargesWorkspace
      */
     private void onReport() {
         try {
-            DocumentTemplateLocator locator = new ContextDocumentTemplateLocator("WORK_IN_PROGRESS_CHARGES",
-                                                                                 GlobalContext.getInstance());
-            IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(query, locator);
+            Context context = getContext();
+            DocumentTemplateLocator locator = new ContextDocumentTemplateLocator("WORK_IN_PROGRESS_CHARGES", context);
+            IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(query, locator, context);
             String title = Messages.get("reporting.wip.print");
-            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getHelpContext());
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context,
+                                                                               getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

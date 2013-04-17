@@ -18,7 +18,6 @@ package org.openvpms.web.component.im.layout;
 
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
 /**
@@ -27,15 +26,6 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
  * @author Tim Anderson
  */
 public class DefaultLayoutContext extends AbstractLayoutContext {
-
-    /**
-     * Constructs a {@code DefaultLayoutContext}.
-     *
-     * @param help the help context
-     */
-    public DefaultLayoutContext(HelpContext help) {
-        super(help);
-    }
 
     /**
      * Constructs a {@code DefaultLayoutContext}.
@@ -50,33 +40,12 @@ public class DefaultLayoutContext extends AbstractLayoutContext {
     /**
      * Constructs a {@code DefaultLayoutContext}.
      *
-     * @param edit if {@code true} this is an edit context; if {@code false} it is a view context.
-     * @param help the help context
-     */
-    public DefaultLayoutContext(boolean edit, HelpContext help) {
-        super(edit, help);
-    }
-
-    /**
-     * Constructs a {@code DefaultLayoutContext}.
-     *
      * @param edit    if {@code true} this is an edit context; if {@code false} it is a view context.
      * @param context the context
      * @param help    the help context
      */
     public DefaultLayoutContext(boolean edit, Context context, HelpContext help) {
-        super(edit, help);
-        setContext(context);
-    }
-
-    /**
-     * Constructs a {@code DefaultLayoutContext}.
-     *
-     * @param factory the component factory. May  be {@code null}
-     * @param help    the help context
-     */
-    public DefaultLayoutContext(IMObjectComponentFactory factory, HelpContext help) {
-        super(factory, help);
+        super(edit, context, help);
     }
 
     /**

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
@@ -30,6 +28,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -95,12 +94,12 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
 
 
     /**
-     * Creates a new <tt>SingleScheduleTaskTableModel</tt>.
+     * Creates a new {@code SingleScheduleTaskTableModel}.
      *
      * @param grid the task grid
      */
-    public SingleScheduleTaskTableModel(TaskGrid grid) {
-        super(grid);
+    public SingleScheduleTaskTableModel(TaskGrid grid, Context context) {
+        super(grid, context);
     }
 
     /**
@@ -108,7 +107,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
      *
      * @param schedule the schedule
      * @param eventRef the event reference
-     * @return the row, or <tt>-1</tt> if the event is not found
+     * @return the row, or {@code -1} if the event is not found
      */
     public int getRow(Schedule schedule, IMObjectReference eventRef) {
         return schedule.indexOf(eventRef);

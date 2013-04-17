@@ -75,7 +75,7 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
             }
         });
         updateDisplay(act);
-        refMgr = new DocReferenceMgr(act.getDocument());
+        refMgr = new DocReferenceMgr(act.getDocument(), context.getContext());
     }
 
     /**

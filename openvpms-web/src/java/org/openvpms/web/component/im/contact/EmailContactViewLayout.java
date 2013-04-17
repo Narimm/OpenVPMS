@@ -57,7 +57,8 @@ public class EmailContactViewLayout extends AbstractLayoutStrategy {
             if (!StringUtils.isEmpty(mail) && context.getMailContext() != null) {
                 Button link = ButtonFactory.create(null, "hyperlink", new ActionListener() {
                     public void onAction(ActionEvent event) {
-                        MailDialog dialog = new MailDialog(context.getMailContext(), contact, context.getHelpContext());
+                        MailDialog dialog = new MailDialog(context.getMailContext(), contact, context.getContext(),
+                                                           context.getHelpContext());
                         dialog.show();
                     }
                 });

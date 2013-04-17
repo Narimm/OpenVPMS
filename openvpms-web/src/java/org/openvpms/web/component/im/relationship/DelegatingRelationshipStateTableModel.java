@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -22,13 +20,13 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DelegatingIMTableModel;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.app.ContextSwitchListener;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,8 +46,7 @@ import java.util.List;
  * instances in the underlying model. The simplest way to achieve this is to
  * use {@link DescriptorTableModel} which creates these columns.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DelegatingRelationshipStateTableModel
         extends DelegatingIMTableModel<RelationshipState,
@@ -61,12 +58,12 @@ public class DelegatingRelationshipStateTableModel
     private List<RelationshipState> states;
 
     /**
-     * The source node column index, or <tt>-1</tt> if it is not present.
+     * The source node column index, or {@code -1} if it is not present.
      */
     private int sourceColumn = -1;
 
     /**
-     * The target node column index, or <tt>-1</tt> if it is not present.
+     * The target node column index, or {@code -1} if it is not present.
      */
     private int targetColumn = -1;
 
@@ -77,7 +74,7 @@ public class DelegatingRelationshipStateTableModel
 
 
     /**
-     * Creates a new <tt>DelegatingRelationshipStateTableModel</tt>.
+     * Creates a new {@code DelegatingRelationshipStateTableModel}.
      *
      * @param model   the underlying model
      * @param context the layout context
@@ -149,7 +146,7 @@ public class DelegatingRelationshipStateTableModel
      * Returns a component to view the source column.
      *
      * @param row the row
-     * @return a component to view the source column, or <tt>null</tt> if the
+     * @return a component to view the source column, or {@code null} if the
      *         row exceeds the no. of states
      */
     private Component getSource(int row) {
@@ -157,7 +154,7 @@ public class DelegatingRelationshipStateTableModel
             RelationshipState state = states.get(row);
             ContextSwitchListener listener = (context.isEdit()) ? context.getContextSwitchListener() : null;
             IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(state.getSource(), state.getSourceName(),
-                                                                         listener);
+                                                                         listener, context.getContext());
             return viewer.getComponent();
         }
         return null;
@@ -167,7 +164,7 @@ public class DelegatingRelationshipStateTableModel
      * Returns a component to view the target column.
      *
      * @param row the row
-     * @return a component to view the target column, or <tt>null</tt> if the
+     * @return a component to view the target column, or {@code null} if the
      *         row exceeds the no. of states
      */
     private Object getTarget(int row) {
@@ -175,7 +172,7 @@ public class DelegatingRelationshipStateTableModel
             RelationshipState state = states.get(row);
             ContextSwitchListener listener = (context.isEdit()) ? context.getContextSwitchListener() : null;
             IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(state.getTarget(), state.getTargetName(),
-                                                                         listener);
+                                                                         listener, context.getContext());
             return viewer.getComponent();
         }
         return null;
@@ -186,7 +183,7 @@ public class DelegatingRelationshipStateTableModel
      *
      * @param model the column model
      * @param node  the node name
-     * @return the index of the node, or <tt>-1</tt> if it is not found
+     * @return the index of the node, or {@code -1} if it is not found
      */
     private int getModelIndex(TableColumnModel model, String node) {
         Iterator iter = model.getColumns();

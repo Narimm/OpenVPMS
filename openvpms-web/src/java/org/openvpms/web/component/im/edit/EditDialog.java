@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 
 /**
@@ -28,47 +29,52 @@ public class EditDialog extends AbstractEditDialog {
     /**
      * Constructs an {@code EditDialog}.
      *
-     * @param editor the editor
-     * @param help   the help context
+     * @param editor  the editor
+     * @param context the context
+     * @param help    the help context
      */
-    public EditDialog(IMObjectEditor editor, HelpContext help) {
-        this(editor, true, help);
+    public EditDialog(IMObjectEditor editor, Context context, HelpContext help) {
+        this(editor, true, context, help);
     }
 
     /**
      * Constructs an {@code EditDialog}.
      *
-     * @param editor the editor
-     * @param save   if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
-     * @param help   the help context
+     * @param editor  the editor
+     * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param context the context
+     * @param help    the help context
      */
-    public EditDialog(IMObjectEditor editor, boolean save, HelpContext help) {
-        this(editor, save, false, help);
+    public EditDialog(IMObjectEditor editor, boolean save, Context context, HelpContext help) {
+        this(editor, save, false, context, help);
     }
 
     /**
      * Constructs an {@code EditDialog}.
      *
-     * @param editor the editor
-     * @param save   if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
-     * @param skip   if {@code true} display a 'Skip' button that simply closes the dialog
-     * @param help   the help context
+     * @param editor  the editor
+     * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param skip    if {@code true} display a 'Skip' button that simply closes the dialog
+     * @param context the context
+     * @param help    the help context
      */
-    public EditDialog(IMObjectEditor editor, boolean save, boolean skip, HelpContext help) {
-        this(editor, save, true, skip, help);
+    public EditDialog(IMObjectEditor editor, boolean save, boolean skip, Context context, HelpContext help) {
+        this(editor, save, true, skip, context, help);
     }
 
     /**
      * Constructs an {@code EditDialog}.
      *
-     * @param editor the editor
-     * @param save   if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
-     * @param apply  if {@code true}, display an 'Apply' button
-     * @param skip   if {@code true} display a 'Skip' button that simply closes the dialog
-     * @param help   the help context
+     * @param editor  the editor
+     * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param apply   if {@code true}, display an 'Apply' button
+     * @param skip    if {@code true} display a 'Skip' button that simply closes the dialog
+     * @param context the context
+     * @param help    the help context
      */
-    public EditDialog(IMObjectEditor editor, boolean save, boolean apply, boolean skip, HelpContext help) {
-        this(editor, save, apply, true, skip, help);
+    public EditDialog(IMObjectEditor editor, boolean save, boolean apply, boolean skip, Context context,
+                      HelpContext help) {
+        this(editor, save, apply, true, skip, context, help);
     }
 
     /**
@@ -79,11 +85,12 @@ public class EditDialog extends AbstractEditDialog {
      * @param apply  if {@code true}, display an 'Apply' button
      * @param cancel if {@code true}, display a 'Cancel' button
      * @param skip   if {@code true} display a 'Skip' button that simply closes the dialog
+     * @param context the context
      * @param help   the help context
      */
     public EditDialog(IMObjectEditor editor, boolean save, boolean apply, boolean cancel, boolean skip,
-                      HelpContext help) {
-        super(editor, getButtons(apply, cancel, skip), save, help);
+                      Context context, HelpContext help) {
+        super(editor, getButtons(apply, cancel, skip), save, context, help);
     }
 
     /**
@@ -92,10 +99,11 @@ public class EditDialog extends AbstractEditDialog {
      * @param editor  the editor
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
+     * @param context the context
      * @param help    the help context
      */
-    public EditDialog(IMObjectEditor editor, String[] buttons, boolean save, HelpContext help) {
-        super(editor, buttons, save, help);
+    public EditDialog(IMObjectEditor editor, String[] buttons, boolean save, Context context, HelpContext help) {
+        super(editor, buttons, save, context, help);
     }
 
 }

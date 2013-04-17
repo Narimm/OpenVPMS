@@ -18,6 +18,7 @@ package org.openvpms.web.app.customer.charge;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
@@ -49,11 +50,12 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     /**
      * Constructs a {@code CustomerChargeActEditDialog}.
      *
-     * @param editor the editor
-     * @param help   the help context
+     * @param editor  the editor
+     * @param context the context
+     * @param help    the help context
      */
-    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, HelpContext help) {
-        super(editor, help);
+    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, Context context, HelpContext help) {
+        super(editor, context, help);
         addButton(COMPLETED_ID, false);
         addButton(IN_PROGRESS_ID, false);
         setDefaultCloseAction(CANCEL_ID);

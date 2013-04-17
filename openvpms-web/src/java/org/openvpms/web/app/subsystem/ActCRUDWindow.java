@@ -21,7 +21,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -73,10 +73,11 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      *
      * @param archetypes the archetypes that this may create
      * @param actions    determines the operations that may be performed on the selected object
+     * @param context    the context
      * @param help       the help context
      */
-    public ActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions, HelpContext help) {
-        super(archetypes, actions, help);
+    public ActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions, Context context, HelpContext help) {
+        super(archetypes, actions, context, help);
     }
 
     /**
@@ -200,9 +201,8 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     protected void onPreview() {
         try {
             T object = getObject();
-            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object,
-                                                                                        GlobalContext.getInstance());
-            IMPrinter<T> printer = IMPrinterFactory.create(object, locator);
+            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, getContext());
+            IMPrinter<T> printer = IMPrinterFactory.create(object, locator, getContext());
             Document document = printer.getDocument();
             DownloadServlet.startDownload(document);
         } catch (OpenVPMSException exception) {

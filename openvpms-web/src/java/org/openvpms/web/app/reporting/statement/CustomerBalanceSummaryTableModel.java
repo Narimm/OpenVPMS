@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.statement;
@@ -29,6 +27,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.DateHelper;
@@ -43,11 +42,15 @@ import java.util.Date;
 /**
  * Customer balance summary table model.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerBalanceSummaryTableModel
         extends AbstractIMTableModel<ObjectSet> {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The customer name index.
@@ -113,9 +116,12 @@ public class CustomerBalanceSummaryTableModel
 
 
     /**
-     * Creates a new <tt>CustomerBalanceSummaryTableModel</tt>.
+     * Constructs a {@code CustomerBalanceSummaryTableModel}.
+     *
+     * @param context the context
      */
-    public CustomerBalanceSummaryTableModel() {
+    public CustomerBalanceSummaryTableModel(Context context) {
+        this.context = context;
         DefaultTableColumnModel model = new DefaultTableColumnModel();
         for (int i = 0; i < columns.length; ++i) {
             model.addColumn(new TableColumn(i));
@@ -140,7 +146,7 @@ public class CustomerBalanceSummaryTableModel
      * @param column    the primary sort column
      * @param ascending if <code>true</code> sort in ascending order; otherwise
      *                  sort in <code>descending</code> order
-     * @return <tt>null</tt>
+     * @return {@code null}
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         return null;
@@ -197,7 +203,7 @@ public class CustomerBalanceSummaryTableModel
      * @return a component to display the party
      */
     private Component getViewer(IMObjectReference party, String name) {
-        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(party, name, true);
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(party, name, true, context);
         return viewer.getComponent();
     }
 

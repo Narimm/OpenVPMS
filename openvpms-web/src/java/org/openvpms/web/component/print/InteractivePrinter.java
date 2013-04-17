@@ -20,6 +20,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
@@ -66,6 +67,11 @@ public class InteractivePrinter implements Printer {
     private final boolean skip;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The help context.
      */
     private final HelpContext help;
@@ -80,17 +86,18 @@ public class InteractivePrinter implements Printer {
     /**
      * The mail context. If non-null, documents may be mailed.
      */
-    private MailContext context;
+    private MailContext mailContext;
 
 
     /**
      * Constructs an {@code InteractivePrinter}.
      *
      * @param printer the printer to delegate to
+     * @param context the context
      * @param help    the help context
      */
-    public InteractivePrinter(Printer printer, HelpContext help) {
-        this(printer, false, help);
+    public InteractivePrinter(Printer printer, Context context, HelpContext help) {
+        this(printer, false, context, help);
     }
 
     /**
@@ -98,10 +105,11 @@ public class InteractivePrinter implements Printer {
      *
      * @param printer the printer to delegate to
      * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param context the context
      * @param help    the help context
      */
-    public InteractivePrinter(Printer printer, boolean skip, HelpContext help) {
-        this(null, printer, skip, help);
+    public InteractivePrinter(Printer printer, boolean skip, Context context, HelpContext help) {
+        this(null, printer, skip, context, help);
     }
 
     /**
@@ -109,10 +117,11 @@ public class InteractivePrinter implements Printer {
      *
      * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
+     * @param context the context
      * @param help    the help context
      */
-    public InteractivePrinter(String title, Printer printer, HelpContext help) {
-        this(title, printer, false, help);
+    public InteractivePrinter(String title, Printer printer, Context context, HelpContext help) {
+        this(title, printer, false, context, help);
     }
 
     /**
@@ -121,12 +130,14 @@ public class InteractivePrinter implements Printer {
      * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
      * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param context the context
      * @param help    the help context
      */
-    public InteractivePrinter(String title, Printer printer, boolean skip, HelpContext help) {
+    public InteractivePrinter(String title, Printer printer, boolean skip, Context context, HelpContext help) {
         this.title = title;
         this.printer = printer;
         this.skip = skip;
+        this.context = context;
         this.help = help;
         interactive = printer.getInteractive();
     }
@@ -265,7 +276,7 @@ public class InteractivePrinter implements Printer {
      * @param context the mail context. If {@code null}, mailing won't be enabled
      */
     public void setMailContext(MailContext context) {
-        this.context = context;
+        this.mailContext = context;
     }
 
     /**
@@ -274,7 +285,7 @@ public class InteractivePrinter implements Printer {
      * @return the mail context
      */
     public MailContext getMailContext() {
-        return context;
+        return mailContext;
     }
 
     /**
@@ -296,6 +307,15 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
+    }
+
+    /**
      * Returns the help context.
      *
      * @return the help context
@@ -314,7 +334,7 @@ public class InteractivePrinter implements Printer {
         if (title == null) {
             title = Messages.get("printdialog.title");
         }
-        boolean mail = context != null;
+        boolean mail = mailContext != null;
         return new PrintDialog(title, true, mail, skip, help) {
             @Override
             protected void onPreview() {
@@ -411,7 +431,7 @@ public class InteractivePrinter implements Printer {
     protected void doMail(final PrintDialog parent) {
         try {
             Document document = getDocument(DocFormats.PDF_TYPE, true);
-            final MailDialog dialog = new MailDialog(context, help.createSubtopic("email"));
+            final MailDialog dialog = new MailDialog(mailContext, context, help.createSubtopic("email"));
             MailEditor editor = dialog.getMailEditor();
             editor.setSubject(getDisplayName());
             editor.addAttachment(document);

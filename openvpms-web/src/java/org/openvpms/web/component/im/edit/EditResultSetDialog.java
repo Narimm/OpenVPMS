@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -38,6 +39,11 @@ import org.openvpms.web.resource.util.Messages;
  * @author Tim Anderson
  */
 public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The iterator over the results.
@@ -78,13 +84,15 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
     /**
      * Constructs an {@code EditResultSetDialog}.
      *
-     * @param title the window title
-     * @param first the first object to edit
-     * @param set   the set of results to edit
-     * @param help  the help context
+     * @param title   the window title
+     * @param first   the first object to edit
+     * @param set     the set of results to edit
+     * @param context the context
+     * @param help    the help context
      */
-    public EditResultSetDialog(String title, T first, ResultSet<T> set, HelpContext help) {
-        super(title, BUTTONS, true, help);
+    public EditResultSetDialog(String title, T first, ResultSet<T> set, Context context, HelpContext help) {
+        super(title, BUTTONS, true, context, help);
+        this.context = context;
         setDefaultCloseAction(CANCEL_ID);
         iter = new ResultSetIterator<T>(set, first);
         if (iter.hasNext()) {
@@ -203,7 +211,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
         if (current == null) {
             ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(object)));
         } else {
-            LayoutContext context = new DefaultLayoutContext(true, getHelpContext());
+            LayoutContext context = new DefaultLayoutContext(true, this.context, getHelpContext());
             context.getContext().setCurrent(object); // TODO - requirement for setCurrent()
             IMObjectEditor editor = IMObjectEditorFactory.create(current, context);
             setEditor(editor);

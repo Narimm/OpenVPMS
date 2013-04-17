@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.workflow;
 
@@ -23,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -38,14 +37,13 @@ import java.util.List;
  * name, or whether or not they are present in an associated <em>party.organisationSchedule</em> or
  * <em>party.organisationWorkList</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
 
     /**
      * The <em>party.organisationSchedule</em> or <em>party.organisationWorkList</em> to constraint types to.
-     * May be <tt>null</tt>.
+     * May be {@code null}.
      */
     private Entity schedule;
 
@@ -54,25 +52,33 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
      */
     private final String scheduleTypesNode;
 
+    /**
+     * The context.
+     */
+    private final Context context;
+
 
     /**
-     * Constructs a <tt>ScheduleTypeQuery</tt>.
+     * Constructs a {@code ScheduleTypeQuery}.
      *
      * @param shortNames        the short names
      * @param schedule          the <em>party.organisationSchedule</em> or <em>party.organisationWorkList</em>.
-     *                          May be <tt>null</tt>
+     *                          May be {@code null}
      * @param scheduleTypesNode the node to use when retrieving appointment or task types from {@link #schedule}.
+     * @param context           the context
      */
-    public ScheduleTypeQuery(String[] shortNames, Entity schedule, String scheduleTypesNode) {
+    public ScheduleTypeQuery(String[] shortNames, Entity schedule, String scheduleTypesNode,
+                             Context context) {
         super(shortNames, Entity.class);
         this.schedule = schedule;
         this.scheduleTypesNode = scheduleTypesNode;
+        this.context = context;
     }
 
     /**
      * Sets the schedule.
      *
-     * @param schedule the schedule. May be <tt>null</tt>
+     * @param schedule the schedule. May be {@code null}
      */
     public void setSchedule(Entity schedule) {
         this.schedule = schedule;
@@ -81,7 +87,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
      * @return the query result set
      * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
      *          if the query fails
@@ -108,8 +114,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <tt>true</tt> if the query should be run automaticaly;
-     *         otherwie <tt>false</tt>
+     * @return {@code true} if the query should be run automatically; otherwise {@code false}
      */
     @Override
     public boolean isAuto() {
@@ -120,7 +125,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
      * Determines if the query selects a particular object reference.
      *
      * @param reference the object reference to check
-     * @return <tt>true</tt> if the object reference is selected by the query
+     * @return {@code true} if the object reference is selected by the query
      */
     @Override
     public boolean selects(IMObjectReference reference) {
@@ -156,7 +161,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
      * Returns the schedule types associated with a schedule.
      *
      * @param schedule the schedule
-     * @return a list of appointment types associated with <tt>schedule</tt>
+     * @return a list of appointment types associated with {@code schedule}
      */
     private List<Entity> getScheduleTypes(Entity schedule) {
         List<Entity> result = new ArrayList<Entity>();
@@ -164,7 +169,7 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
         List<IMObject> relationships = bean.getValues(scheduleTypesNode);
         for (IMObject object : relationships) {
             EntityRelationship relationship = (EntityRelationship) object;
-            IMObject type = IMObjectHelper.getObject(relationship.getTarget());
+            IMObject type = IMObjectHelper.getObject(relationship.getTarget(), context);
             if (type != null) {
                 result.add((Entity) type);
             }

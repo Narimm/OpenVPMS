@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
@@ -31,10 +29,9 @@ import org.openvpms.web.component.property.PropertySet;
 /**
  * Layout strategy for <em>participation.documentTemplate</em> participation
  * relationships. This navigates the entity and its corresponding
- * <code>DocumentAct</code>, enabling any associated document do be downloaded.
+ * {@code DocumentAct}, enabling any associated document do be downloaded.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentTemplateParticipationLayoutStrategy
         implements IMObjectLayoutStrategy {
@@ -53,20 +50,21 @@ public class DocumentTemplateParticipationLayoutStrategy
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a <code>Component</code>, using a factory to
+     * This renders an object in a {@code Component}, using a factory to
      * create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param context    the layout context
-     * @return the component containing the rendered <code>object</code>
+     * @return the component containing the rendered {@code object}
      */
     public ComponentState apply(IMObject object, PropertySet properties,
                                 IMObject parent, LayoutContext context) {
         Property property = properties.get("entity");
         IMObjectReference ref = (IMObjectReference) property.getValue();
-        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, context.getContextSwitchListener());
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, context.getContextSwitchListener(),
+                                                                     context.getContext());
         return new ComponentState(viewer.getComponent());
     }
 

@@ -12,29 +12,29 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin;
 
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 
 
 /**
  * Role workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class RoleWorkspace extends ResultSetCRUDWorkspace<SecurityRole> {
 
     /**
-     * Constructs a <tt>RoleWorkspace</tt>.
+     * Constructs a {@code RoleWorkspace}.
+     *
+     * @param context the context
      */
-    public RoleWorkspace() {
-        super("admin", "role");
+    public RoleWorkspace(Context context) {
+        super("admin", "role", context);
         setArchetypes(SecurityRole.class, "security.role");
     }
 

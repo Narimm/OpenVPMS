@@ -29,6 +29,7 @@ import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.workflow.scheduling.AbstractScheduleActEditor;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.ComponentSet;
@@ -269,8 +270,10 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     private Component getPatientAlerts(Party patient) {
         Component result = null;
-        HelpContext help = getLayoutContext().getHelpContext();
-        AlertSummary alerts = new PatientSummary(help).getAlertSummary(patient);
+        LayoutContext layout = getLayoutContext();
+        Context context = layout.getContext();
+        HelpContext help = layout.getHelpContext();
+        AlertSummary alerts = new PatientSummary(context, help).getAlertSummary(patient);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", "bold"),
                                           alerts.getComponent());

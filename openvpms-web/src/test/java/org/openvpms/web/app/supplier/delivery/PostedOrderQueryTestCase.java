@@ -23,6 +23,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Query;
@@ -59,7 +60,8 @@ public class PostedOrderQueryTestCase extends AbstractAppTest {
         FinancialAct accepted = createOrder(supplier1, stockLocation, OrderStatus.ACCEPTED);
         FinancialAct rejected = createOrder(supplier1, stockLocation, OrderStatus.REJECTED);
 
-        PostedOrderQuery query = new PostedOrderQuery(true, new DefaultLayoutContext(new HelpContext("foo", null)));
+        PostedOrderQuery query = new PostedOrderQuery(true, new DefaultLayoutContext(new LocalContext(),
+                                                                                     new HelpContext("foo", null)));
         checkEmpty(query);
         checkExists(inProgress, query, false);
         checkExists(completed, query, false);

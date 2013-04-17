@@ -58,7 +58,7 @@ public class AccountWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new AccountCRUDWindow(getChildArchetypes(), getHelpContext());
+        return new AccountCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**

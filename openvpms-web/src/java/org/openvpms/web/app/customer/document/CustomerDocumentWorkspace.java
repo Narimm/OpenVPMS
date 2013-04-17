@@ -47,7 +47,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace<DocumentAct>
      * @return a new CRUD window
      */
     protected CRUDWindow<DocumentAct> createCRUDWindow() {
-        return new DocumentCRUDWindow(getChildArchetypes(), getHelpContext());
+        return new DocumentCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**

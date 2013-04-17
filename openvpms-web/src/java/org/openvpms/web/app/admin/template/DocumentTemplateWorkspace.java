@@ -12,30 +12,28 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin.template;
 
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
-import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.web.component.app.Context;
 
 
 /**
  * Document template workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DocumentTemplateWorkspace extends ResultSetCRUDWorkspace<Entity> {
 
     /**
      * Constructs a <tt>DocumentTemplateWorkspace</tt>.
      */
-    public DocumentTemplateWorkspace() {
-        super("admin", "documentTemplate");
+    public DocumentTemplateWorkspace(Context context) {
+        super("admin", "documentTemplate", context);
         setArchetypes(Entity.class, DocumentArchetypes.DOCUMENT_TEMPLATE);
     }
 

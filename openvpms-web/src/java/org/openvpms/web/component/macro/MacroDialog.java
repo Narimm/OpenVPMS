@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusCommand;
@@ -50,16 +51,19 @@ public class MacroDialog extends PopupDialog {
 
     /**
      * Constructs a {@code MacroDialog}.
+     *
+     * @param context the context
+     * @param help    the help context
      */
-    public MacroDialog(HelpContext help) {
+    public MacroDialog(Context context, HelpContext help) {
         super(Messages.get("macros.title"), "MacroDialog", CLOSE, help);
         focus = new FocusCommand();
         MacroQuery query = new MacroQuery();
         QueryFactory.initialise(query);
         query.setShowInactive(false);
-        DefaultLayoutContext context = new DefaultLayoutContext(help);
-        MacroTableModel model = new MacroTableModel(false, context);
-        Browser<Lookup> browser = BrowserFactory.create(query, query.getDefaultSortConstraint(), model, context);
+        DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
+        MacroTableModel model = new MacroTableModel(false, layout);
+        Browser<Lookup> browser = BrowserFactory.create(query, query.getDefaultSortConstraint(), model, layout);
         browser.addBrowserListener(new BrowserListener<Lookup>() {
 
             public void selected(Lookup object) {

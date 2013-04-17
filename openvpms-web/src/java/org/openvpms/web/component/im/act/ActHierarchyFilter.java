@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.act;
@@ -26,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.sql.Timestamp;
@@ -38,18 +37,22 @@ import java.util.List;
 
 
 /**
- * Filters one level of an act heirarchy.
+ * Filters one level of an act hierarchy.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  * @see ActHierarchyIterator
  */
 public class ActHierarchyFilter<T extends Act> {
 
     /**
-     * The predicate to filter relationships. May be <tt>null</tt>
+     * The predicate to filter relationships. May be {@code null}
      */
-    private Predicate predicate;
+    private final Predicate predicate;
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * Determines if items should be sorted on ascending timestamp.
@@ -58,29 +61,34 @@ public class ActHierarchyFilter<T extends Act> {
 
 
     /**
-     * Constructs an <tt>ActHierarchyFilter</tt>.
+     * Constructs an {@code ActHierarchyFilter}.
+     *
+     * @param context the context
      */
-    public ActHierarchyFilter() {
-        this(null);
+    public ActHierarchyFilter(Context context) {
+        this(null, context);
     }
 
     /**
-     * Constructs an <tt>ActHierarchyFilter</tt>.
+     * Constructs an {@code ActHierarchyFilter}.
      *
      * @param shortNames the act short names
      * @param include    if {@code true} include the acts, otherwise exclude them
+     * @param context    the context
      */
-    public ActHierarchyFilter(String[] shortNames, boolean include) {
-        this(createIsA(shortNames, include));
+    public ActHierarchyFilter(String[] shortNames, boolean include, Context context) {
+        this(createIsA(shortNames, include), context);
     }
 
     /**
-     * Creates a new <tt>ActHierarchyFilter</tt>.
+     * Constructs an {@code ActHierarchyFilter}.
      *
      * @param predicate a predicate to filter relationships. May be {@code null}
+     * @param context   the context
      */
-    public ActHierarchyFilter(Predicate predicate) {
+    public ActHierarchyFilter(Predicate predicate, Context context) {
         this.predicate = predicate;
+        this.context = context;
     }
 
     /**
@@ -154,10 +162,10 @@ public class ActHierarchyFilter<T extends Act> {
     /**
      * Determines if an act should be included.
      * <p/>
-     * This implementation always returns <tt>true</tt>
+     * This implementation always returns {@code true}
      *
      * @param act the act
-     * @return <tt>true</tt> if the act should be included
+     * @return {@code true} if the act should be included
      */
     protected boolean include(T act) {
         return true;
@@ -180,11 +188,11 @@ public class ActHierarchyFilter<T extends Act> {
      * Determines if an act should be included, after the child items have
      * been determined.
      * <p/>
-     * This implementation always returns <tt>true</tt>
+     * This implementation always returns {@code true}
      *
      * @param parent   the top level act
      * @param children the child acts
-     * @return <tt>true</tt> if the act should be included
+     * @return {@code true} if the act should be included
      */
     protected boolean include(T parent, List<T> children) {
         return true;
@@ -193,11 +201,11 @@ public class ActHierarchyFilter<T extends Act> {
     /**
      * Determines if a child act should be included.
      * <p/>
-     * This implementation always returns <tt>true</tt>
+     * This implementation always returns {@code true}
      *
      * @param child  the child act
      * @param parent the parent act
-     * @return <tt>true</tt> if the child act should be included
+     * @return {@code true} if the child act should be included
      */
     protected boolean include(T child, T parent) {
         return true;
@@ -244,11 +252,11 @@ public class ActHierarchyFilter<T extends Act> {
      * Helper to return the target act in a relationship.
      *
      * @param relationship the relationship
-     * @return the target act or <tt>null</tt> if none can be found
+     * @return the target act or {@code null} if none can be found
      */
     @SuppressWarnings("unchecked")
     private T getTarget(ActRelationship relationship) {
-        return (T) IMObjectHelper.getObject(relationship.getTarget());
+        return (T) IMObjectHelper.getObject(relationship.getTarget(), context);
     }
 
 }

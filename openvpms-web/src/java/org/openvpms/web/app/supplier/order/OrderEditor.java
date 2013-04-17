@@ -74,14 +74,13 @@ public class OrderEditor extends FinancialActEditor {
 
 
     /**
-     * Construct a new <tt>OrderEditor</tt>.
+     * Constructs an {@code OrderEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public OrderEditor(FinancialAct act, IMObject parent,
-                       LayoutContext context) {
+    public OrderEditor(FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.supplierOrder")) {
             throw new IllegalArgumentException(
@@ -144,7 +143,7 @@ public class OrderEditor extends FinancialActEditor {
     private class LayoutStrategy extends ActLayoutStrategy {
 
         /**
-         * Creates a new <tt>NonPostedLayoutStrategy</tt>.
+         * Creates a new {@code NonPostedLayoutStrategy}.
          *
          * @param editor the act items editor
          */

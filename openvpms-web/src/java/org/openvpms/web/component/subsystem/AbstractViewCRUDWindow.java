@@ -19,6 +19,7 @@ package org.openvpms.web.component.subsystem;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectActions;
@@ -55,11 +56,12 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
      * @param archetypes the archetypes that this may create. If {@code null}
      *                   the subclass must override {@link #getArchetypes}
      * @param actions    determines the operations that may be performed on the selected object
+     * @param context    the context
      * @param help       the help context
      */
-    public AbstractViewCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions,
+    public AbstractViewCRUDWindow(Archetypes<T> archetypes, IMObjectActions<T> actions, Context context,
                                   HelpContext help) {
-        super(archetypes, actions, help);
+        super(archetypes, actions, context, help);
         objectContainer = ColumnFactory.create();
     }
 
@@ -94,7 +96,7 @@ public abstract class AbstractViewCRUDWindow<T extends IMObject>
      * @return a new layout context
      */
     protected LayoutContext createViewLayoutContext() {
-        LayoutContext context = new DefaultLayoutContext(getHelpContext());
+        LayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
         context.setMailContext(getMailContext());
         context.setContextSwitchListener(DefaultContextSwitchListener.INSTANCE);
         return context;

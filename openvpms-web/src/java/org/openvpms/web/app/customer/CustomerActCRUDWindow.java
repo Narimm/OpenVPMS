@@ -24,7 +24,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -44,10 +44,11 @@ public abstract class CustomerActCRUDWindow<T extends Act>
      *
      * @param archetypes the archetypes that this may create
      * @param object     the CRUD object
+     * @param context    the context
      * @param help       the help context
      */
-    public CustomerActCRUDWindow(Archetypes<T> archetypes, ActActions<T> object, HelpContext help) {
-        super(archetypes, object, help);
+    public CustomerActCRUDWindow(Archetypes<T> archetypes, ActActions<T> object, Context context, HelpContext help) {
+        super(archetypes, object, context, help);
     }
 
     /**
@@ -57,14 +58,11 @@ public abstract class CustomerActCRUDWindow<T extends Act>
      */
     @Override
     protected void onCreated(T act) {
-        Party customer = GlobalContext.getInstance().getCustomer();
+        Party customer = getContext().getCustomer();
         if (customer != null) {
             try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                Participation participation
-                        = (Participation) service.create(
-                        "participation.customer");
+                IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+                Participation participation = (Participation) service.create("participation.customer");
                 participation.setEntity(new IMObjectReference(customer));
                 participation.setAct(new IMObjectReference(act));
                 act.addParticipation(participation);

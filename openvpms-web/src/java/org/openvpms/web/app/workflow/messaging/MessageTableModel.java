@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
@@ -47,10 +48,10 @@ public class MessageTableModel extends AbstractActTableModel {
 
 
     /**
-     * Constructs a <tt>MessageTableModel</tt>.
+     * Constructs a {@code MessageTableModel}.
      *
      * @param shortNames the act archetype short names
-     * @param context    the layout context. May be <tt>null</tt>
+     * @param context    the layout context. May be {@code null}
      */
     public MessageTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
@@ -94,7 +95,7 @@ public class MessageTableModel extends AbstractActTableModel {
      * Determines if the archetype column should be displayed.
      *
      * @param archetypes the archetypes
-     * @return <tt>false</tt>
+     * @return {@code false}
      */
     @Override
     protected boolean showArchetypeColumn(List<ArchetypeDescriptor> archetypes) {
@@ -121,8 +122,10 @@ public class MessageTableModel extends AbstractActTableModel {
                 if (result instanceof ActRelationship) {
                     IMObjectReference ref = ((ActRelationship) result).getTarget();
                     String name = DescriptorHelper.getDisplayName(ref.getArchetypeId().getShortName());
-                    ContextSwitchListener listener = getLayoutContext().getContextSwitchListener();
-                    result = new IMObjectReferenceViewer(ref, name, listener).getComponent();
+                    LayoutContext layout = getLayoutContext();
+                    Context context = layout.getContext();
+                    ContextSwitchListener listener = layout.getContextSwitchListener();
+                    result = new IMObjectReferenceViewer(ref, name, listener, context).getComponent();
                 }
             } else {
                 result = null;

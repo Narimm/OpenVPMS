@@ -20,7 +20,7 @@ import org.openvpms.archetype.rules.finance.deposit.DepositStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
@@ -33,21 +33,21 @@ import org.openvpms.web.component.subsystem.CRUDWindow;
  *
  * @author Tim Anderson
  */
-public class DepositWorkspace
-        extends BrowserCRUDWorkspace<Party, FinancialAct> {
+public class DepositWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
 
     /**
      * The act statuses to query.
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses("act.bankDeposit");
+    private static final ActStatuses STATUSES = new ActStatuses("act.bankDeposit");
 
 
     /**
-     * Construct a new <tt>DepositWorkspace</tt>.
+     * Constructs a {@code DepositWorkspace}.
+     *
+     * @param context the context
      */
-    public DepositWorkspace() {
-        super("reporting", "deposit");
+    public DepositWorkspace(Context context) {
+        super("reporting", "deposit", context);
         setArchetypes(Party.class, "party.organisationDeposit");
         setChildArchetypes(FinancialAct.class, "act.bankDeposit");
     }
@@ -58,7 +58,7 @@ public class DepositWorkspace
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new DepositCRUDWindow(getChildArchetypes(), getHelpContext());
+        return new DepositCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**
@@ -70,7 +70,7 @@ public class DepositWorkspace
      */
     @Override
     protected Query<Party> createSelectQuery() {
-        return new DepositQuery(GlobalContext.getInstance().getLocation());
+        return new DepositQuery(getContext().getLocation());
     }
 
     /**
@@ -93,7 +93,7 @@ public class DepositWorkspace
      */
     @Override
     protected Party getLatest() {
-        return getLatest(GlobalContext.getInstance().getDeposit());
+        return getLatest(getContext().getDeposit());
     }
 
 }

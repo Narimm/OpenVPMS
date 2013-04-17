@@ -26,6 +26,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.app.reporting.FinancialActCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -64,10 +65,11 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
      * Constructs a {@code DepositCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public DepositCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
-        super(archetypes, help);
+    public DepositCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, context, help);
     }
 
     /**
@@ -145,9 +147,11 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
         FinancialAct object = getObject();
         try {
             IPage<ObjectSet> set = new DepositQuery(object).query();
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT);
+            Context context = getContext();
+            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context);
             String title = Messages.get("imobject.print.title", getArchetypes().getDisplayName());
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getHelpContext());
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, context,
+                                                                                           getHelpContext());
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.doc.TemplatedDocumentActEditorTest;
@@ -49,7 +50,7 @@ public class SupplierFormActEditorTestCase extends TemplatedDocumentActEditorTes
      * @return a new editor
      */
     protected DocumentActEditor createEditor(DocumentAct act) {
-        DefaultLayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
+        DefaultLayoutContext layout = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         Context context = layout.getContext();
         context.setSupplier(TestHelper.createSupplier());
         context.setUser(TestHelper.createUser());

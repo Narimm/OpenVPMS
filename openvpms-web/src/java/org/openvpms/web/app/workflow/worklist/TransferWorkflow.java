@@ -18,7 +18,7 @@ package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -47,12 +47,12 @@ public class TransferWorkflow extends WorkflowImpl {
      * @param task the task
      * @param help the help context
      */
-    public TransferWorkflow(Act task, HelpContext help) {
+    public TransferWorkflow(Act task, Context context, HelpContext help) {
         super(help);
-        initial = new DefaultTaskContext(help, false);
+        initial = new DefaultTaskContext(null, help);
 
         // make sure there is a user, to populate empty author nodes
-        initial.setUser(GlobalContext.getInstance().getUser());
+        initial.setUser(context.getUser());
 
         addTask(new SelectIMObjectTask<Party>("party.organisationWorkList", initial));
         addTask(new UpdateWorkListTask(task));

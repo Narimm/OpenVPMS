@@ -18,6 +18,7 @@ package org.openvpms.web.app.admin.lookup;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
@@ -31,9 +32,11 @@ public class LookupWorkspace extends ResultSetCRUDWorkspace<Lookup> {
 
     /**
      * Constructs a {@code LookupWorkspace}.
+     *
+     * @param context the context
      */
-    public LookupWorkspace() {
-        super("admin", "lookup");
+    public LookupWorkspace(Context context) {
+        super("admin", "lookup", context);
         setArchetypes(Lookup.class, "lookup.*");
     }
 
@@ -45,7 +48,8 @@ public class LookupWorkspace extends ResultSetCRUDWorkspace<Lookup> {
     @Override
     protected CRUDWindow<Lookup> createCRUDWindow() {
         QueryBrowser<Lookup> browser = getBrowser();
-        return new LookupCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getHelpContext());
+        return new LookupCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getContext(),
+                                    getHelpContext());
     }
 
 }

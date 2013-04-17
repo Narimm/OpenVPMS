@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.reporting.reminder;
@@ -21,6 +19,7 @@ package org.openvpms.web.app.reporting.reminder;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.util.Messages;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -30,8 +29,7 @@ import java.util.List;
 /**
  * Sends reminder emails, updating a progress bar as it goes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
 
@@ -49,12 +47,13 @@ class ReminderEmailProgressBarProcessor extends ReminderProgressBarProcessor {
      * @param practice      the practice
      * @param groupTemplate the grouped reminder document template
      * @param statistics    the statistics
+     * @param context       the context
      */
     public ReminderEmailProgressBarProcessor(List<List<ReminderEvent>> reminders, JavaMailSender sender,
                                              Party practice, DocumentTemplate groupTemplate,
-                                             Statistics statistics) {
+                                             Statistics statistics, Context context) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.email"));
-        processor = new ReminderEmailProcessor(sender, practice, groupTemplate);
+        processor = new ReminderEmailProcessor(sender, practice, groupTemplate, context);
     }
 
     /**

@@ -18,6 +18,7 @@ package org.openvpms.web.app.admin.group;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.Archetypes;
 
 
@@ -30,9 +31,11 @@ public class GroupWorkspace extends ResultSetCRUDWorkspace<Entity> {
 
     /**
      * Constructs {@code GroupWorkspace}
+     *
+     * @param context the context
      */
-    public GroupWorkspace() {
-        super("admin", "group");
+    public GroupWorkspace(Context context) {
+        super("admin", "group", context);
         setArchetypes(Archetypes.create("entity.userGroup", Entity.class));
     }
 

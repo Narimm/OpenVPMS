@@ -18,6 +18,7 @@ package org.openvpms.web.app.subsystem;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.CRUDWindow;
@@ -41,16 +42,17 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
 
 
     /**
-     * Constructs a <tt>ResultSetCRUDWorkspace</tt>.
+     * Constructs a {@code ResultSetCRUDWorkspace}.
      * <p/>
      * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
+     * @param workspaceId the workspace localisation identifier
+     * @param context     the context
      */
-    public ResultSetCRUDWorkspace(String subsystemId, String workspaceId) {
-        super(subsystemId, workspaceId, false);
+    public ResultSetCRUDWorkspace(String subsystemId, String workspaceId, Context context) {
+        super(subsystemId, workspaceId, context, false);
     }
 
     /**
@@ -60,14 +62,14 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
      * <p/>
      * If the current object is the same instance as that supplied, no changes will be made.
      *
-     * @param object the current object. May be <tt>null</tt>
+     * @param object the current object. May be {@code null}
      */
     @Override
     public void setIMObject(IMObject object) {
         boolean select = object != null && object == getObject();
         super.setIMObject(object);
         if (select) {
-            // object is slready in the workspace, so setObject() not invoked. Select it instead.
+            // object is already in the workspace, so setObject() not invoked. Select it instead.
             select(getType().cast(object));
         }
     }
@@ -75,7 +77,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(T object) {
@@ -86,7 +88,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     /**
      * Selects an object.
      *
-     * @param object the object to select. May be <tt>null</tt>
+     * @param object the object to select. May be {@code null}
      */
     protected void select(T object) {
         ResultSetCRUDWindow<T> window = getCRUDWindow();
@@ -125,7 +127,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     protected CRUDWindow<T> createCRUDWindow() {
         QueryBrowser<T> browser = getBrowser();
         return new ResultSetCRUDWindow<T>(getArchetypes(), browser.getQuery(), browser.getResultSet(),
-                                          getHelpContext());
+                                          getContext(), getHelpContext());
     }
 
     /**
@@ -141,7 +143,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     /**
      * Returns the browser.
      *
-     * @return the browser, or <tt>null</tt> if none has been registered
+     * @return the browser, or {@code null} if none has been registered
      */
     @Override
     protected QueryBrowser<T> getBrowser() {
@@ -230,12 +232,12 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     }
 
     /**
-     * Determines if the parent object is optional (i.e may be <tt>null</tt>,
+     * Determines if the parent object is optional (i.e may be {@code null},
      * when laying out the workspace.
      * <p/>
-     * This implementation always returns <tt>true</tt>.
+     * This implementation always returns {@code true}.
      *
-     * @return <tt>true</tt>
+     * @return {@code true}
      */
     @Override
     protected boolean isParentOptional() {

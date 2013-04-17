@@ -46,8 +46,7 @@ public class VisitBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      */
     public VisitBrowserCRUDWindow(PatientHistoryQuery query, Context context, HelpContext help) {
         this.help = help;
-        DefaultLayoutContext layout = new DefaultLayoutContext(help);
-        layout.setContext(context);
+        DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
         PatientHistoryBrowser browser = new PatientHistoryBrowser(query, layout);
         if (browser.getSelected() == null) {
             browser.query();

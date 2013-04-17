@@ -59,7 +59,7 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new EstimationCRUDWindow(getChildArchetypes(), getHelpContext());
+        return new EstimationCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**

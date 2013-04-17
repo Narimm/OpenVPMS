@@ -82,7 +82,7 @@ public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
      * @return a new browser
      */
     private static Browser<ObjectSet> createBrowser(final PatientQuery query, LayoutContext context) {
-        final PatientTableModel model = new PatientTableModel();
+        final PatientTableModel model = new PatientTableModel(context.getContext());
         Query<ObjectSet> delegate = query.getQuery();
         return new TableBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
             /**

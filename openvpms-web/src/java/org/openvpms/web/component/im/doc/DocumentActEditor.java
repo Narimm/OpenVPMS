@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -80,7 +81,8 @@ public class DocumentActEditor extends AbstractActEditor {
         super(act, parent, context);
         Property document = getProperty(DOCUMENT);
         if (document != null) {
-            docEditor = new VersioningDocumentEditor(document, context.getHelpContext().createTopic("document"));
+            docEditor = new VersioningDocumentEditor(document, context.getContext(),
+                                                     context.getHelpContext().createTopic("document"));
             ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     onDocumentUpdate();
@@ -209,7 +211,7 @@ public class DocumentActEditor extends AbstractActEditor {
                 if (!act.isNew()) {
                     act = IMObjectHelper.reload(act);
                     if (act != null) {
-                        DefaultLayoutContext context = new DefaultLayoutContext(getLayoutContext().getHelpContext());
+                        DefaultLayoutContext context = new DefaultLayoutContext(getLayoutContext());
                         IMObjectEditor editor = versionsEditor.createEditor(act, context);
                         deleted = editor.delete();
                         if (!deleted) {
@@ -258,7 +260,7 @@ public class DocumentActEditor extends AbstractActEditor {
     protected DocumentTemplateParticipationEditor getDocumentTemplateEditor() {
         ParticipationEditor editor = getParticipationEditor(DOC_TEMPLATE, true);
         return (editor instanceof DocumentTemplateParticipationEditor) ?
-               (DocumentTemplateParticipationEditor) editor : null;
+                (DocumentTemplateParticipationEditor) editor : null;
     }
 
     /**
@@ -280,7 +282,7 @@ public class DocumentActEditor extends AbstractActEditor {
     private void onTemplateUpdate() {
         IMObjectReference template = getTemplateRef();
         if ((template != null && lastTemplate != null && !template.equals(lastTemplate))
-            || (template != null && lastTemplate == null)) {
+                || (template != null && lastTemplate == null)) {
             lastTemplate = template;
             if (docEditor != null) {
                 generateDoc();
@@ -295,8 +297,9 @@ public class DocumentActEditor extends AbstractActEditor {
      */
     private void generateDoc() {
         DocumentAct act = (DocumentAct) getObject();
+        Context context = getLayoutContext().getContext();
         HelpContext help = getLayoutContext().getHelpContext();
-        final DocumentGenerator generator = new DocumentGenerator(act, help, new DocumentGenerator.Listener() {
+        final DocumentGenerator generator = new DocumentGenerator(act, context, help, new DocumentGenerator.Listener() {
             public void generated(Document document) {
                 docEditor.setDocument(document);
             }
@@ -327,12 +330,14 @@ public class DocumentActEditor extends AbstractActEditor {
     private class VersioningDocumentEditor extends DocumentEditor {
 
         /**
-         * Creates a new {@code VersioningDocumentEditor}.
+         * Constructs a {@code VersioningDocumentEditor}.
          *
          * @param property the property being edited
+         * @param context  the context
+         * @param help     the help
          */
-        public VersioningDocumentEditor(Property property, HelpContext help) {
-            super(property, help);
+        public VersioningDocumentEditor(Property property, Context context, HelpContext help) {
+            super(property, context, help);
         }
 
         /**

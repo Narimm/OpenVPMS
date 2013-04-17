@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.view;
@@ -37,8 +35,7 @@ import org.openvpms.web.component.util.LabelFactory;
 /**
  * An {@link IMObjectComponentFactory} that returns read-only components.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractReadOnlyComponentFactory
         extends AbstractIMObjectComponentFactory {
@@ -50,7 +47,7 @@ public abstract class AbstractReadOnlyComponentFactory
 
 
     /**
-     * Construct a new <tt>AbstractReadOnlyComponentFactory</tt>.
+     * Construct a new {@code AbstractReadOnlyComponentFactory}.
      *
      * @param context    the layout context
      * @param strategies the layout strategy factory
@@ -68,7 +65,7 @@ public abstract class AbstractReadOnlyComponentFactory
      *
      * @param property the property to display
      * @param context  the context object
-     * @return a component to display <tt>object</tt>
+     * @return a component to display {@code object}
      */
     public ComponentState create(Property property, IMObject context) {
         Component component = null;
@@ -81,8 +78,7 @@ public abstract class AbstractReadOnlyComponentFactory
             if (property.isLookup()) {
                 component = createLookup(property, context);
             } else if (property.isCollection()) {
-                component = getCollectionViewer((CollectionProperty) property,
-                                                context);
+                component = getCollectionViewer((CollectionProperty) property, context);
                 // need to enable this otherwise table selection is disabled
                 enable = true;
             } else if (property.isObjectReference()) {
@@ -107,8 +103,8 @@ public abstract class AbstractReadOnlyComponentFactory
      * Create a component to display an object.
      *
      * @param object  the object to display
-     * @param context the object's parent. May be <tt>null</tt>
-     * @return a component to display <tt>object</tt>
+     * @param context the object's parent. May be {@code null}
+     * @return a component to display {@code object}
      */
     public ComponentState create(IMObject object, IMObject context) {
         IMObjectLayoutStrategy strategy = strategies.create(object, context);
@@ -152,7 +148,7 @@ public abstract class AbstractReadOnlyComponentFactory
             return new DocumentViewer(ref, context, link, false, layout).getComponent();
         }
 
-        return new IMObjectReferenceViewer(ref, listener).getComponent();
+        return new IMObjectReferenceViewer(ref, listener, getLayoutContext().getContext()).getComponent();
     }
 
     /**

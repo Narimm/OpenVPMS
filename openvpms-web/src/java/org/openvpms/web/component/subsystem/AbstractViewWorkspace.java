@@ -24,7 +24,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -74,9 +74,10 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      *
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identifier
+     * @param context     the context
      */
-    public AbstractViewWorkspace(String subsystemId, String workspaceId) {
-        this(subsystemId, workspaceId, null);
+    public AbstractViewWorkspace(String subsystemId, String workspaceId, Context context) {
+        this(subsystemId, workspaceId, null, context);
     }
 
     /**
@@ -88,9 +89,10 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * @param subsystemId the subsystem localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param archetypes  the archetype that this operates on. May be {@code null}
+     * @param context     the context
      */
-    public AbstractViewWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes) {
-        this(subsystemId, workspaceId, archetypes, true);
+    public AbstractViewWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes, Context context) {
+        this(subsystemId, workspaceId, archetypes, context, true);
     }
 
     /**
@@ -101,11 +103,12 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * @param subsystemId  the subsystem localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @param archetypes   the archetype that this operates on. May be {@code null}
+     * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
     public AbstractViewWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes,
-                                 boolean showSelector) {
-        super(subsystemId, workspaceId);
+                                 Context context, boolean showSelector) {
+        super(subsystemId, workspaceId, context);
         this.archetypes = archetypes;
         if (showSelector) {
             selector = createSelector();
@@ -300,7 +303,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     protected Browser<T> createSelectBrowser(HelpContext help) {
-        return BrowserFactory.create(createSelectQuery(), new DefaultLayoutContext(help));
+        return BrowserFactory.create(createSelectQuery(), new DefaultLayoutContext(getContext(), help));
     }
 
     /**
@@ -310,7 +313,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     protected Query<T> createSelectQuery() {
-        return QueryFactory.create(getArchetypes().getShortNames(), GlobalContext.getInstance(), getType());
+        return QueryFactory.create(getArchetypes().getShortNames(), getContext(), getType());
     }
 
     /**

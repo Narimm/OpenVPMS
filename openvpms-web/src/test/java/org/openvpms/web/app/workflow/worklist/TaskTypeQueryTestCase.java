@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.workflow.worklist;
 
@@ -24,14 +22,14 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.app.workflow.ScheduleTypeQueryTest;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.query.Query;
 
 
 /**
  * Tests the {@link TaskTypeQuery} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskTypeQueryTestCase extends ScheduleTypeQueryTest {
 
@@ -41,7 +39,7 @@ public class TaskTypeQueryTestCase extends ScheduleTypeQueryTest {
      * @return a new query
      */
     protected Query<Entity> createQuery() {
-        return new TaskTypeQuery(null);
+        return new TaskTypeQuery(null, new LocalContext());
     }
 
     /**

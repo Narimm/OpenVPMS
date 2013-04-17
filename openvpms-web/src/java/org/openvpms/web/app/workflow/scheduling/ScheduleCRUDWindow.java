@@ -12,8 +12,6 @@
 *  License.
 *
 *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
-*
-*  $Id$
 */
 
 package org.openvpms.web.app.workflow.scheduling;
@@ -26,7 +24,7 @@ import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.app.workflow.consult.ConsultWorkflow;
 import org.openvpms.web.app.workflow.otc.OverTheCounterWorkflow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.event.ActionListener;
@@ -71,10 +69,11 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      * Constructs a {@code ScheduleCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public ScheduleCRUDWindow(Archetypes<Act> archetypes, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), help);
+    public ScheduleCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<Act>getInstance(), context, help);
     }
 
     /**
@@ -114,8 +113,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     public MailContext getMailContext() {
         MailContext context = null;
         if (getObject() != null) {
-            context = CustomerMailContext.create(getObject(), GlobalContext.getInstance(),
-                                                 getHelpContext());
+            context = CustomerMailContext.create(getObject(), getContext(), getHelpContext());
         }
         if (context == null) {
             context = super.getMailContext();
@@ -207,7 +205,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         // make sure the act is still available and has a valid status prior to
         // beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
-            ConsultWorkflow workflow = new ConsultWorkflow(act, GlobalContext.getInstance(), getHelpContext());
+            ConsultWorkflow workflow = new ConsultWorkflow(act, getContext(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
@@ -227,7 +225,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         // make sure the act is still available and has a valid status prior
         // to beginning workflow
         if (act != null && canCheckoutOrConsult(act)) {
-            CheckOutWorkflow workflow = new CheckOutWorkflow(act, GlobalContext.getInstance(), getHelpContext());
+            CheckOutWorkflow workflow = new CheckOutWorkflow(act, getContext(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());
@@ -243,7 +241,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
      * Invoked when the 'over-the-counter' button is pressed.
      */
     private void onOverTheCounter() {
-        Workflow workflow = new OverTheCounterWorkflow(getHelpContext());
+        Workflow workflow = new OverTheCounterWorkflow(getContext(), getHelpContext());
         workflow.start();
     }
 

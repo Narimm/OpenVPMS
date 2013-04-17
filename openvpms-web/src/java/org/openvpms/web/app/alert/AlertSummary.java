@@ -28,6 +28,7 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -53,6 +54,11 @@ public class AlertSummary {
     private final List<Alert> alerts;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The help context.
      */
     private final HelpContext help;
@@ -60,11 +66,13 @@ public class AlertSummary {
     /**
      * Constructs an {@code AlertSummary}.
      *
-     * @param alerts the alerts
-     * @param help   the help context
+     * @param alerts  the alerts
+     * @param context the context
+     * @param help    the help context
      */
-    public AlertSummary(List<Alert> alerts, HelpContext help) {
+    public AlertSummary(List<Alert> alerts, Context context, HelpContext help) {
         this.alerts = alerts;
+        this.context = context;
         this.help = help.createSubtopic("alert");
     }
 
@@ -110,7 +118,7 @@ public class AlertSummary {
      * Displays a dialog with all alerts.
      */
     protected void onShowAll() {
-        AlertsViewer viewer = new AlertsViewer(alerts, help);
+        AlertsViewer viewer = new AlertsViewer(alerts, context, help);
         viewer.show();
     }
 
@@ -133,7 +141,7 @@ public class AlertSummary {
 
         result.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
-                AlertsViewer viewer = new AlertsViewer(alert, help);
+                AlertsViewer viewer = new AlertsViewer(alert, context, help);
                 viewer.show();
             }
         });

@@ -129,7 +129,7 @@ public class CustomerPatientSummary {
             local.setPatient(patient);
             customerSummary = new CustomerSummary(local, help).getSummary(customer);
         }
-        Component patientSummary = (patient != null) ? new PatientSummary(help).getSummary(patient) : null;
+        Component patientSummary = (patient != null) ? new PatientSummary(context, help).getSummary(patient) : null;
         if (customerSummary != null || patientSummary != null) {
             result = ColumnFactory.create("CellSpacing");
             if (customerSummary != null) {

@@ -68,7 +68,7 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new ChargeCRUDWindow(getChildArchetypes(), getHelpContext());
+        return new ChargeCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**
@@ -105,7 +105,7 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
         IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
-        return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getHelpContext()));
+        return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
 }

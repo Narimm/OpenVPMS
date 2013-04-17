@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.scheduling;
@@ -34,6 +32,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.BalloonHelpFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -48,8 +47,7 @@ import java.util.List;
 /**
  * Schedule event table model.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class ScheduleTableModel extends AbstractTableModel {
 
@@ -61,7 +59,12 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Schedule event grid.
      */
-    private ScheduleEventGrid grid;
+    private final ScheduleEventGrid grid;
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The column model.
@@ -70,7 +73,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * The clinician to display svents for.
-     * If <tt>null</tt> indicates to display events for all clinicians.
+     * If {@code null} indicates to display events for all clinicians.
      */
     private IMObjectReference clinician;
 
@@ -105,7 +108,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     private Highlight highlight = Highlight.EVENT_TYPE;
 
     /**
-     * The display expression, from the schedule view. May be <tt>null</tt>
+     * The display expression, from the schedule view. May be {@code null}
      */
     private final String expression;
 
@@ -116,12 +119,14 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
 
     /**
-     * Creates a new <tt>ScheduleTableModel</tt>.
+     * Constructs a {@code ScheduleTableModel}.
      *
-     * @param grid the schedule event grid
+     * @param grid    the schedule event grid
+     * @param context the context
      */
-    public ScheduleTableModel(ScheduleEventGrid grid) {
+    public ScheduleTableModel(ScheduleEventGrid grid, Context context) {
         this.grid = grid;
+        this.context = context;
         IMObjectBean bean = new IMObjectBean(grid.getScheduleView());
         expression = bean.getString("displayExpression");
         displayNotes = bean.getBoolean("displayNotes");
@@ -167,7 +172,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Sets the clinician to display appointments for.
      *
-     * @param clinician the clinician, or <tt>null</tt> to display appointments
+     * @param clinician the clinician, or {@code null} to display appointments
      *                  for all clinicians
      */
     public void setClinician(IMObjectReference clinician) {
@@ -178,7 +183,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Returns the clinician to display appointments for.
      *
-     * @return the clinician, or <tt>null</tt> to display appointments
+     * @return the clinician, or {@code null} to display appointments
      *         for all clinicians
      */
     public IMObjectReference getClinician() {
@@ -227,7 +232,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @param column the column
      * @param row    the row
-     * @return <tt>true</tt> if the cell is selected
+     * @return {@code true} if the cell is selected
      */
     public boolean isSelectedCell(int column, int row) {
         return selectedColumn == column && selectedRow == row;
@@ -278,7 +283,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @param column the column
      * @param row    the row
-     * @return <tt>true</tt> if the cell is cut
+     * @return {@code true} if the cell is cut
      */
     public boolean isMarkedCell(int column, int row) {
         return markedColumn == column && markedColumn != -1 && markedRow == row && markedRow != -1;
@@ -317,7 +322,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     /**
      * Determines if this is a single schedule view.
      *
-     * @return <tt>true</tt> if this is a single schedule view
+     * @return {@code true} if this is a single schedule view
      */
     public boolean isSingleScheduleView() {
         return getSchedules().size() == 1;
@@ -375,7 +380,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @param column the column
      * @param row    the row
-     * @return the event, or <tt>null</tt> if none is found
+     * @return the event, or {@code null} if none is found
      */
     public PropertySet getEvent(int column, int row) {
         return getEvent(getColumn(column), row);
@@ -385,7 +390,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * Returns the schedule at the given column.
      *
      * @param column the column
-     * @return the schedule, or <tt>null</tt> if there is no schedule associated
+     * @return the schedule, or {@code null} if there is no schedule associated
      *         with the column
      */
     public Schedule getSchedule(int column) {
@@ -397,7 +402,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * Returns the schedule entity at the given column.
      *
      * @param column the column
-     * @return the schedule entity, or <tt>null</tt> if there is no schedule
+     * @return the schedule entity, or {@code null} if there is no schedule
      *         associated with the column
      */
     public Entity getScheduleEntity(int column) {
@@ -438,7 +443,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @param schedule the schedule
      * @param row      the row
-     * @return the start time. May be <tt>null</tt>
+     * @return the start time. May be {@code null}
      */
     public Date getStartTime(Schedule schedule, int row) {
         return grid.getStartTime(schedule, row);
@@ -458,7 +463,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @param column the column
      * @param row    the row
-     * @return the event, or <tt>null</tt> if none is found
+     * @return the event, or {@code null} if none is found
      */
     protected PropertySet getEvent(Column column, int row) {
         Schedule schedule = column.getSchedule();
@@ -480,15 +485,14 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * @param set     the set
      * @param refKey  the object reference key
      * @param nameKey the entity name key
-     * @param link    if <tt>true</tt> enable an hyperlink to the object
+     * @param link    if {@code true} enable an hyperlink to the object
      * @return a new component to view the object reference
      */
     protected Component getViewer(PropertySet set, String refKey,
                                   String nameKey, boolean link) {
         IMObjectReference ref = set.getReference(refKey);
         String name = set.getString(nameKey);
-        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(
-                ref, name, link);
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, name, link, context);
         return viewer.getComponent();
     }
 
@@ -523,7 +527,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      *
      * @param archetype the archetype descriptor
      * @param name      the node name
-     * @return the display name, or <tt>null</tt> if the node doesn't exist
+     * @return the display name, or {@code null} if the node doesn't exist
      */
     protected String getDisplayName(ArchetypeDescriptor archetype, String name) {
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
@@ -532,7 +536,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Evaluates the view's displayExpression expression against the supplied
-     * event. If no displayExpression is present, <tt>null</tt> is returned.
+     * event. If no displayExpression is present, {@code null} is returned.
      * <p/>
      * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
      * a formatted string named <em>waiting</em> will be added to the set prior
@@ -540,7 +544,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
      * is the difference between the arrival time and the current time.
      *
      * @param event the event
-     * @return the evaluate result. May be <tt>null</tt>
+     * @return the evaluate result. May be {@code null}
      */
     protected String evaluate(PropertySet event) {
         if (!StringUtils.isEmpty(expression)) {
@@ -551,11 +555,11 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
 
     /**
      * Helper to create a multiline label with optional notes popup,
-     * if the supplied notes are non-null and <tt>displayNotes</tt> is
-     * <tt>true</tt>.
+     * if the supplied notes are non-null and {@code displayNotes} is
+     * {@code true}.
      *
      * @param text  the label text
-     * @param notes the notes. May be <tt>null</tt>
+     * @param notes the notes. May be {@code null}
      * @return a component representing the label with optional popup
      */
     protected Component createLabelWithNotes(String text, String notes) {
@@ -599,13 +603,13 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
     protected static class Column extends TableColumnEx {
 
         /**
-         * The schedule, or <tt>null</tt> if the column isn't associated with
+         * The schedule, or {@code null} if the column isn't associated with
          * a schedule.
          */
         private Schedule schedule;
 
         /**
-         * Creates a new <tt>Column</tt>.
+         * Creates a new {@code Column}.
          *
          * @param modelIndex the model index
          * @param schedule   the schedule
@@ -615,7 +619,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         }
 
         /**
-         * Creates a new <tt>Column</tt>.
+         * Creates a new {@code Column}.
          *
          * @param modelIndex the model index
          * @param schedule   the schedule
@@ -630,7 +634,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         }
 
         /**
-         * Creates a new <tt>Column</tt>.
+         * Creates a new {@code Column}.
          *
          * @param modelIndex the model index
          * @param heading    the column heading
@@ -642,7 +646,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel {
         /**
          * Returns the schedule.
          *
-         * @return the schedule. May be <tt>null</tt>
+         * @return the schedule. May be {@code null}
          */
         public Schedule getSchedule() {
             return schedule;

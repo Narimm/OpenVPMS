@@ -20,6 +20,8 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.util.GridFactory;
@@ -55,13 +57,17 @@ public class StockDetailsSelector {
 
 
     /**
-     * Creates a new <tt>StockDetailsSelector</tt>.
+     * Creates a new {@code StockDetailsSelector}.
      *
      * @param context the context
      */
     public StockDetailsSelector(LayoutContext context) {
-        supplier = new IMObjectSelector<Party>(Messages.get("supplier.type"), context, "party.supplier*");
-        location = new StockLocationSelector(Messages.get("product.stockLocation"), context);
+        HelpContext help = context.getHelpContext();
+        LayoutContext supplierContext = new DefaultLayoutContext(context, help.createTopic("supplier/select"));
+        supplier = new IMObjectSelector<Party>(Messages.get("supplier.type"), supplierContext, "party.supplier*");
+
+        LayoutContext locationContext = new DefaultLayoutContext(context, help.createTopic("stockLocation/select"));
+        location = new StockLocationSelector(Messages.get("product.stockLocation"), locationContext);
 
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("supplier.type"));
@@ -88,7 +94,7 @@ public class StockDetailsSelector {
     /**
      * Returns the supplier.
      *
-     * @return the supplier, or <tt>null</tt> if none is selected
+     * @return the supplier, or {@code null} if none is selected
      */
     public Party getSupplier() {
         return supplier.getObject();
@@ -97,7 +103,7 @@ public class StockDetailsSelector {
     /**
      * Returns the stock location.
      *
-     * @return the stock location, or <tt>null</tt> if none is selected
+     * @return the stock location, or {@code null} if none is selected
      */
     public Party getStockLocation() {
         return location.getObject();

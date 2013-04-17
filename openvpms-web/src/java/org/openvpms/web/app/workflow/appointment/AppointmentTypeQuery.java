@@ -12,34 +12,33 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
 
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.app.workflow.ScheduleTypeQuery;
-import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
+import org.openvpms.web.component.app.Context;
 
 
 /**
  * Appointment type query.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentTypeQuery extends ScheduleTypeQuery {
 
 
     /**
-     * Construct a new <tt>AppointmentTypeQuery</tt> that queries IMObjects
+     * Construct a new {@code AppointmentTypeQuery} that queries IMObjects
      * with the specified criteria.
      *
-     * @param schedule the schedule. May be <tt>null</tt>
+     * @param schedule the schedule. May be {@code null}
+     * @param context  the context
      */
-    public AppointmentTypeQuery(Entity schedule) {
-        super(new String[]{ScheduleArchetypes.APPOINTMENT_TYPE}, schedule, "appointmentTypes");
+    public AppointmentTypeQuery(Entity schedule, Context context) {
+        super(new String[]{ScheduleArchetypes.APPOINTMENT_TYPE}, schedule, "appointmentTypes", context);
     }
 
 }

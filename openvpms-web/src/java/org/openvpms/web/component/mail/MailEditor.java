@@ -49,6 +49,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.echo.DropDown;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
@@ -106,12 +107,17 @@ public class MailEditor extends AbstractModifiable {
     /**
      * The 'from' addresses.
      */
-    private List<Contact> fromAddresses;
+    private final List<Contact> fromAddresses;
 
     /**
      * The 'to' addresses.
      */
-    private List<Contact> toAddresses;
+    private final List<Contact> toAddresses;
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The help context.
@@ -159,7 +165,7 @@ public class MailEditor extends AbstractModifiable {
     private boolean modified;
 
     /**
-     * The attachments table. May be <tt>null</tt>.
+     * The attachments table. May be {@code null}.
      */
     private Table attachments;
 
@@ -215,20 +221,22 @@ public class MailEditor extends AbstractModifiable {
 
 
     /**
-     * Constructs a <tt>MailEditor</tt>.
+     * Constructs a {@code MailEditor}.
      * <p/>
      * If no 'to' addresses are supplied the address will be editable, otherwise it will be read-only.
      * If there are multiple addresses, they will be displayed in a dropdown, with the first no. as the default
      *
      * @param fromAddresses the available 'from' addresses
      * @param toAddresses   the available 'to' addresses
-     * @param preferredTo   the preferred 'to' address. May be <tt>null</tt>
+     * @param preferredTo   the preferred 'to' address. May be {@code null}
+     * @param context       the context
      * @param help          the help context
      */
     public MailEditor(List<Contact> fromAddresses, List<Contact> toAddresses, Contact preferredTo,
-                      HelpContext help) {
+                      Context context, HelpContext help) {
         this.fromAddresses = fromAddresses;
         this.toAddresses = toAddresses;
+        this.context = context;
         this.help = help;
         from = createProperty("from", "mail.from");
         to = createProperty("to", "mail.to");
@@ -304,7 +312,7 @@ public class MailEditor extends AbstractModifiable {
     /**
      * Sets the 'to' address.
      *
-     * @param toAddress the to address. May be <tt>null</tt>
+     * @param toAddress the to address. May be {@code null}
      */
     public void setTo(Contact toAddress) {
         selectedTo = toAddress;
@@ -332,7 +340,7 @@ public class MailEditor extends AbstractModifiable {
     /**
      * Returns the to address.
      *
-     * @return the to address. May be <tt>null</tt>
+     * @return the to address. May be {@code null}
      */
     public String getTo() {
         return getEmailAddress(selectedTo);
@@ -400,7 +408,7 @@ public class MailEditor extends AbstractModifiable {
         final DocRef ref = new DocRef(document, delete);
         documents.add(ref);
         DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true, false,
-                                                           new DefaultLayoutContext(help));
+                                                           new DefaultLayoutContext(context, help));
         documentViewer.setDownloadListener(new DownloaderListener() {
             public void download(Downloader downloader, String mimeType) {
                 onDownload(downloader, mimeType, ref.getReference());
@@ -464,7 +472,7 @@ public class MailEditor extends AbstractModifiable {
     /**
      * Determines if the object has been modified.
      *
-     * @return <tt>true</tt> if the object has been modified
+     * @return {@code true} if the object has been modified
      */
     public boolean isModified() {
         return modified;
@@ -522,7 +530,7 @@ public class MailEditor extends AbstractModifiable {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         return validator.validate(from) && validator.validate(to) && validator.validate(subject)
@@ -788,7 +796,7 @@ public class MailEditor extends AbstractModifiable {
      * Downloads an attachment, if it has been double clicked.
      *
      * @param downloader the downloader to use
-     * @param mimeType   the mime type. May be <tt>null</tt>
+     * @param mimeType   the mime type. May be {@code null}
      * @param reference  the document reference
      */
     private void onDownload(Downloader downloader, String mimeType, IMObjectReference reference) {
@@ -864,8 +872,8 @@ public class MailEditor extends AbstractModifiable {
     /**
      * Helper to return the email address for a contact.
      *
-     * @param contact the contact. May be <tt>null</tt>
-     * @return the email address. May be <tt>null</tt>
+     * @param contact the contact. May be {@code null}
+     * @return the email address. May be {@code null}
      */
     private static String getEmailAddress(Contact contact) {
         if (contact != null) {
@@ -883,7 +891,7 @@ public class MailEditor extends AbstractModifiable {
         public static ListCellRenderer INSTANCE = new EmailCellRenderer();
 
         /**
-         * Constructs an <tt>EmailCellRenderer</tt>.
+         * Constructs an {@code EmailCellRenderer}.
          */
         private EmailCellRenderer() {
             super(Contact.class);
@@ -893,7 +901,7 @@ public class MailEditor extends AbstractModifiable {
          * Renders an object.
          *
          * @param list   the list component
-         * @param object the object to render. May be <tt>null</tt>
+         * @param object the object to render. May be {@code null}
          * @param index  the object index
          * @return the rendered object
          */
@@ -909,9 +917,9 @@ public class MailEditor extends AbstractModifiable {
          * Determines if an object represents 'All'.
          *
          * @param list   the list component
-         * @param object the object. May be <tt>null</tt>
+         * @param object the object. May be {@code null}
          * @param index  the object index
-         * @return <tt>false</tt>
+         * @return {@code false}
          */
         protected boolean isAll(Component list, Contact object, int index) {
             return false;
@@ -921,9 +929,9 @@ public class MailEditor extends AbstractModifiable {
          * Determines if an object represents 'None'.
          *
          * @param list   the list component
-         * @param object the object. May be <tt>null</tt>
+         * @param object the object. May be {@code null}
          * @param index  the object index
-         * @return <tt>false</tt>
+         * @return {@code false}
          */
         protected boolean isNone(Component list, Contact object, int index) {
             return false;
@@ -961,10 +969,10 @@ public class MailEditor extends AbstractModifiable {
         private boolean delete;
 
         /**
-         * Constructs a <tt>DocRef</tt>.
+         * Constructs a {@code DocRef}.
          *
          * @param document the document
-         * @param delete   <tt>true</tt> if the document needs to be deleted
+         * @param delete   {@code true} if the document needs to be deleted
          */
         public DocRef(Document document, boolean delete) {
             ref = document.getObjectReference();
@@ -1004,7 +1012,7 @@ public class MailEditor extends AbstractModifiable {
         /**
          * Determines if the document should be deleted.
          *
-         * @return <tt>true</tt> if the document should be deleted
+         * @return {@code true} if the document should be deleted
          */
         public boolean getDelete() {
             return delete;

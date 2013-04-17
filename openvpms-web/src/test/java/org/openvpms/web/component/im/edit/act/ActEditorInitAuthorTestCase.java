@@ -25,7 +25,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -59,7 +60,7 @@ public class ActEditorInitAuthorTestCase extends AbstractAppTest {
     public void testInitAuthor() {
         // set up the context
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        GlobalContext context = GlobalContext.getInstance();
+        Context context = new LocalContext();
         User user = TestHelper.createUser();
         context.setUser(user);
 
@@ -79,7 +80,7 @@ public class ActEditorInitAuthorTestCase extends AbstractAppTest {
                 assertTrue(object instanceof Act);
 
                 // create an editor for the act
-                LayoutContext layout = new DefaultLayoutContext(new HelpContext("foo", null));
+                LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
                 IMObjectEditor editor = IMObjectEditorFactory.create(object, layout);
                 ActBean bean = new ActBean((Act) editor.getObject(), service);
 

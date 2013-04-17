@@ -12,15 +12,13 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.product;
 
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
@@ -34,9 +32,11 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
 
     /**
      * Constructs an {@code InformationWorkspace}.
+     *
+     * @param context the context
      */
-    public InformationWorkspace() {
-        super("product", "info");
+    public InformationWorkspace(Context context) {
+        super("product", "info", context);
         setArchetypes(Product.class, "product.*");
     }
 
@@ -48,7 +48,7 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
     @Override
     public void setObject(Product object) {
         super.setObject(object);
-        GlobalContext.getInstance().setProduct(object);
+        getContext().setProduct(object);
     }
 
     /**
@@ -59,7 +59,7 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
      */
     @Override
     protected Product getLatest() {
-        return getLatest(GlobalContext.getInstance().getProduct());
+        return getLatest(getContext().getProduct());
     }
 
     /**
@@ -69,7 +69,8 @@ public class InformationWorkspace extends ResultSetCRUDWorkspace<Product> {
      */
     protected CRUDWindow<Product> createCRUDWindow() {
         QueryBrowser<Product> browser = getBrowser();
-        return new ProductCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getHelpContext());
+        return new ProductCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(), getContext(),
+                                     getHelpContext());
     }
 
 }

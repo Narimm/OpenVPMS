@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.table.act;
@@ -23,6 +21,7 @@ import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -32,15 +31,22 @@ import org.openvpms.web.resource.util.Messages;
 /**
  * Table model for {@link Participation}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ParticipationTableModel extends BaseIMObjectTableModel<IMObject> {
 
+
     /**
-     * Construct a new <code>ParticipationTableModel</code>.
+     * The context.
      */
-    public ParticipationTableModel() {
+    private final Context context;
+
+
+    /**
+     * Constructs a {@code ParticipationTableModel}.
+     */
+    public ParticipationTableModel(Context context) {
+        this.context = context;
     }
 
     /**
@@ -54,7 +60,7 @@ public class ParticipationTableModel extends BaseIMObjectTableModel<IMObject> {
     @Override
     protected Object getValue(IMObject object, TableColumn column, int row) {
         Participation p = (Participation) object;
-        Entity entity = (Entity) IMObjectHelper.getObject(p.getEntity());
+        Entity entity = (Entity) IMObjectHelper.getObject(p.getEntity(), context);
         Object result = null;
         if (entity != null) {
             result = super.getValue(entity, column, row);

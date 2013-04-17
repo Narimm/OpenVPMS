@@ -87,7 +87,7 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
             object = iterator.next();
             try {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-                IMPrinter<T> printer = IMPrinterFactory.create(object, locator);
+                IMPrinter<T> printer = IMPrinterFactory.create(object, locator, context);
                 InteractiveIMPrinter<T> iPrinter = createInteractivePrinter(printer);
                 iPrinter.print();
             } catch (OpenVPMSException exception) {
@@ -110,7 +110,7 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
      * @return a new interactive printer
      */
     protected InteractiveIMPrinter<T> createInteractivePrinter(IMPrinter<T> printer) {
-        InteractiveIMPrinter<T> result = new InteractiveIMPrinter<T>(printer, true, help);
+        InteractiveIMPrinter<T> result = new InteractiveIMPrinter<T>(printer, true, context, help);
         result.setListener(this);
         return result;
     }

@@ -492,7 +492,9 @@
     <!-- ================================================================== -->
     <!--                        EMAIL                                       -->
     <!-- ================================================================== -->
-    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="prototype"/>
+    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="prototype">
+        <constructor-arg ref="context"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        PROPER CASING                               -->
@@ -515,7 +517,10 @@
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->
+    <bean id="context" class="org.openvpms.web.component.app.GlobalContext" scope="prototype"/>
+
     <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype">
+        <constructor-arg ref="context"/>
         <property name="styleSheets" ref="userStyleSheets"/>
     </bean>
 
@@ -544,6 +549,7 @@
     </bean>
 
     <bean id="errorReporter" class="org.openvpms.web.component.error.ErrorReporter"/>
+
 
     <!-- ================================================================== -->
     <!--                        PLUGIN                                      -->

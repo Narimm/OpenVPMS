@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.app;
@@ -32,8 +30,7 @@ import org.openvpms.web.system.ServiceHelper;
 /**
  * Context helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ContextHelper {
 
@@ -42,19 +39,9 @@ public class ContextHelper {
      */
     private static final String OWNER = "entityRelationship.patientOwner";
 
-    /**
-     * Sets the current global customer. If the current patient doesn't have a
-     * relationship to it, sets it to <tt>null</tt>.
-     *
-     * @param customer the customer. May be <tt>null</tt>
-     */
-    public static void setCustomer(Party customer) {
-        setCustomer(GlobalContext.getInstance(), customer);
-    }
 
     /**
-     * Sets the context customer. If the context patient doen't have
-     * relationship to it, sets it to <tt>null</tt>.
+     * Sets the context customer. If the context patient doesn't have a relationship to it, sets it to {@code null}.
      *
      * @param context  the context
      * @param customer the customer
@@ -66,8 +53,7 @@ public class ContextHelper {
             if (patient != null) {
                 IMObjectReference ref = patient.getObjectReference();
                 boolean found = false;
-                for (EntityRelationship relationship :
-                        customer.getEntityRelationships()) {
+                for (EntityRelationship relationship : customer.getEntityRelationships()) {
                     IMObjectReference target = relationship.getTarget();
                     if (target != null && target.equals(ref)) {
                         found = true;
@@ -82,22 +68,11 @@ public class ContextHelper {
     }
 
     /**
-     * Sets the current global patient. If the patient doesn't have a
-     * relationship to the current customer, sets the customer to the
-     * patient's owner.
+     * Sets the context patient. If the patient doesn't have a  relationship to the current customer, sets the customer
+     * to the patient's owner.
      *
-     * @param patient the patient. May be <tt>null</tt>
-     */
-    public static void setPatient(Party patient) {
-        setPatient(GlobalContext.getInstance(), patient);
-    }
-
-    /**
-     * Sets the context patient. If the patient doesn't have a
-     * relationship to the current customer, sets the customer to the
-     * patient's owner.
-     *
-     * @param patient the patient. May be <tt>null</tt>
+     * @param context the context
+     * @param patient the patient. May be {@code null}
      */
     public static void setPatient(Context context, Party patient) {
         context.setPatient(patient);
@@ -122,7 +97,7 @@ public class ContextHelper {
                     IMObjectReference source = relationship.getSource();
                     if (TypeHelper.isA(relationship, OWNER)
                             && relationship.isActive()) {
-                        Party owner = (Party) IMObjectHelper.getObject(source);
+                        Party owner = (Party) IMObjectHelper.getObject(source, context);
                         if (owner != null) {
                             context.setCustomer(owner);
                             break;
@@ -136,7 +111,7 @@ public class ContextHelper {
     /**
      * Returns the currency associated with the context's practice.
      *
-     * @return the currency, or <tt>null</tt> if none is found.
+     * @return the currency, or {@code null} if none is found.
      */
     public static Currency getPracticeCurrency(Context context) {
         Currency result = null;

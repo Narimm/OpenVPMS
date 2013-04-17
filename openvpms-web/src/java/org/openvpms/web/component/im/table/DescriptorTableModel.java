@@ -24,11 +24,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.ArrayList;
@@ -37,8 +35,7 @@ import java.util.List;
 
 
 /**
- * Table model created from an {@link ArchetypeDescriptor} or {@link
- * NodeDescriptor}s.
+ * Table model created from an {@link ArchetypeDescriptor} or {@link NodeDescriptor}s.
  *
  * @author Tim Anderson
  */
@@ -58,6 +55,10 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param context the layout context
      */
     public DescriptorTableModel(LayoutContext context) {
+        if (context.getComponentFactory() == null) {
+            context = new DefaultLayoutContext(context);
+            context.setComponentFactory(new TableComponentFactory(context));
+        }
         this.context = context;
     }
 
@@ -68,8 +69,8 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param context    the layout context
      */
     public DescriptorTableModel(String[] shortNames, LayoutContext context) {
-        this.context = context;
-        setTableColumnModel(createColumnModel(shortNames, context));
+        this(context);
+        setTableColumnModel(createColumnModel(shortNames, this.context));
     }
 
     /**
@@ -139,25 +140,14 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
-     * Returns the component factory.
-     *
-     * @return the component factory
-     */
-    protected IMObjectComponentFactory getFactory() {
-        return context.getComponentFactory();
-    }
-
-    /**
      * Creates a column model for a set of archetypes.
      *
      * @param shortNames the archetype short names
      * @param context    the layout context
      * @return a new column model
      */
-    protected TableColumnModel createColumnModel(String[] shortNames,
-                                                 LayoutContext context) {
-        List<ArchetypeDescriptor> archetypes
-                = DescriptorHelper.getArchetypeDescriptors(shortNames);
+    protected TableColumnModel createColumnModel(String[] shortNames, LayoutContext context) {
+        List<ArchetypeDescriptor> archetypes = DescriptorHelper.getArchetypeDescriptors(shortNames);
         if (archetypes.isEmpty()) {
             throw new IllegalArgumentException(
                     "Argument 'shortNames' doesn't refer to a valid archetype");
@@ -174,9 +164,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param context    the layout context
      * @return a new column model
      */
-    protected TableColumnModel createColumnModel(
-            List<ArchetypeDescriptor> archetypes,
-            LayoutContext context) {
+    protected TableColumnModel createColumnModel(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
         List<String> names = getNodeNames(archetypes, context);
         TableColumnModel columns = new DefaultTableColumnModel();
 
@@ -200,8 +188,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param names      the node descriptor names
      * @param columns    the columns to add to
      */
-    protected void addColumns(List<ArchetypeDescriptor> archetypes,
-                              List<String> names, TableColumnModel columns) {
+    protected void addColumns(List<ArchetypeDescriptor> archetypes, List<String> names, TableColumnModel columns) {
         // determine a unique starting index for the columns
         int index = getNextModelIndex(columns);
 
@@ -220,10 +207,8 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @return the new column, or {@code null} if the node is not found in
      *         the archetypes
      */
-    protected TableColumn addColumn(ArchetypeDescriptor archetype,
-                                    String name, TableColumnModel columns) {
-        return addColumn(Arrays.asList(archetype), name,
-                         getNextModelIndex(columns), columns);
+    protected TableColumn addColumn(ArchetypeDescriptor archetype, String name, TableColumnModel columns) {
+        return addColumn(Arrays.asList(archetype), name, getNextModelIndex(columns), columns);
     }
 
     /**
@@ -235,8 +220,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param columns    the columns to add to
      * @return the new column
      */
-    protected TableColumn addColumn(List<ArchetypeDescriptor> archetypes,
-                                    String name, int index,
+    protected TableColumn addColumn(List<ArchetypeDescriptor> archetypes, String name, int index,
                                     TableColumnModel columns) {
         TableColumn column = createColumn(archetypes, name, index);
         columns.addColumn(column);
@@ -251,8 +235,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param index      the index to assign the column
      * @return a new column
      */
-    protected TableColumn createColumn(List<ArchetypeDescriptor> archetypes,
-                                       String name, int index) {
+    protected TableColumn createColumn(List<ArchetypeDescriptor> archetypes, String name, int index) {
         return new DescriptorTableColumn(index, name, archetypes);
     }
 
@@ -268,8 +251,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param context    the layout context
      * @return the node names for the archetypes
      */
-    protected List<String> getNodeNames(
-            List<ArchetypeDescriptor> archetypes, LayoutContext context) {
+    protected List<String> getNodeNames(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
         List<String> result = null;
         String[] names = getNodeNames();
         if (names != null && names.length != 0) {
@@ -305,8 +287,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param context   the layout context
      * @return a filtered list of node descriptor names for the archetype
      */
-    protected List<String> getNodeNames(ArchetypeDescriptor archetype,
-                                        LayoutContext context) {
+    protected List<String> getNodeNames(ArchetypeDescriptor archetype, LayoutContext context) {
         List<String> result = new ArrayList<String>();
         List<NodeDescriptor> descriptors
                 = filter(archetype.getSimpleNodeDescriptors(), context);
@@ -324,8 +305,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param archetypes the archetypes
      * @return {@code true} if the archetype column should be displayed
      */
-    protected boolean showArchetypeColumn(
-            List<ArchetypeDescriptor> archetypes) {
+    protected boolean showArchetypeColumn(List<ArchetypeDescriptor> archetypes) {
         return archetypes.size() > 1;
     }
 
@@ -339,29 +319,14 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
-     * Helper to create a default layout context.
-     *
-     * @param help the help context
-     * @return a new layout context
-     */
-    protected LayoutContext createDefaultLayoutContext(HelpContext help) {
-        LayoutContext context = new DefaultLayoutContext(help);
-        TableComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
-        return context;
-    }
-
-    /**
      * Filters descriptors using the context's default node filter.
      *
      * @param descriptors the column descriptors
      * @param context     the layout context
      * @return the filtered descriptors
      */
-    protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors,
-                                          LayoutContext context) {
-        return FilterHelper.filter(null, context.getDefaultNodeFilter(),
-                                   descriptors);
+    protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors, LayoutContext context) {
+        return FilterHelper.filter(null, context.getDefaultNodeFilter(), descriptors);
     }
 
     /**
@@ -372,8 +337,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param second the second list
      * @return the intersection of the two lists
      */
-    private List<String> getIntersection(List<String> first,
-                                         List<String> second) {
+    private List<String> getIntersection(List<String> first, List<String> second) {
         List<String> result = new ArrayList<String>();
         for (String a : first) {
             for (String b : second) {

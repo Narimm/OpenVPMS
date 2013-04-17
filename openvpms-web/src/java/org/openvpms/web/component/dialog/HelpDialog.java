@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.system.common.util.StringUtilities;
 import org.openvpms.web.app.admin.organisation.SubscriptionHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -63,6 +64,11 @@ import static org.openvpms.web.resource.util.Styles.INSET;
 public class HelpDialog extends PopupDialog {
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The project logo.
      */
     private static final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
@@ -74,9 +80,11 @@ public class HelpDialog extends PopupDialog {
 
     /**
      * Constructs a {@code HelpDialog}.
+     *
+     * @param context the context
      */
-    public HelpDialog() {
-        this(null, null);
+    public HelpDialog(Context context) {
+        this(null, null, context);
     }
 
     /**
@@ -84,10 +92,12 @@ public class HelpDialog extends PopupDialog {
      *
      * @param topic    the topic. May be {@code null}
      * @param topicURL the topic URL. May be {@code null}
+     * @param context  the context
      */
-    protected HelpDialog(String topic, final String topicURL) {
+    protected HelpDialog(String topic, final String topicURL, Context context) {
         super(Messages.get("helpdialog.title"), "HelpDialog", OK);
         setModal(true);
+        this.context = context;
 
         Component component = null;
 
@@ -130,31 +140,33 @@ public class HelpDialog extends PopupDialog {
      * Displays a help dialog for the specified help context.
      *
      * @param context the help context. May be {@code null}
+     * @param context the context
      */
-    public static void show(HelpContext context) {
-        if (context == null) {
-            new HelpDialog().show();
+    public static void show(HelpContext help, Context context) {
+        if (help == null) {
+            new HelpDialog(context).show();
         } else {
-            show(context.getTopic());
+            show(help.getTopic(), context);
         }
     }
 
     /**
      * Displays a help dialog for the specified topic.
      *
-     * @param topic the topic identifier
+     * @param topic   the topic identifier
+     * @param context the context
      */
-    public static void show(String topic) {
+    public static void show(String topic, Context context) {
         String url = getTopicURL(topic);
         if (url != null) {
             if (exists(url)) {
                 ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, null, null));
             } else {
-                HelpDialog dialog = new HelpDialog(topic, url);
+                HelpDialog dialog = new HelpDialog(topic, url, context);
                 dialog.show();
             }
         } else {
-            HelpDialog dialog = new HelpDialog(topic, null);
+            HelpDialog dialog = new HelpDialog(topic, null, context);
             dialog.show();
         }
     }
@@ -193,7 +205,7 @@ public class HelpDialog extends PopupDialog {
     }
 
     private LabelEx getSubscription() {
-        String content = "<p xmlns='http://www.w3.org/1999/xhtml'>" + SubscriptionHelper.formatSubscription() + "</p>";
+        String content = "<p xmlns='http://www.w3.org/1999/xhtml'>" + SubscriptionHelper.formatSubscription(context) + "</p>";
         LabelEx subscription = new LabelEx(new XhtmlFragment(content));
         subscription.setLineWrap(true);
         subscription.setTextAlignment(Alignment.ALIGN_CENTER);

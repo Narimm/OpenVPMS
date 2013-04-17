@@ -18,6 +18,7 @@ package org.openvpms.web.app.supplier.charge;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
@@ -32,13 +33,14 @@ import org.openvpms.web.component.im.util.Archetypes;
 public class ChargeCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
 
     /**
-     * Constructs an {@code ChargeCRUDWindow}.
+     * Constructs a {@code ChargeCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
+     * @param context    the context
      * @param help       the help context
      */
-    public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
-        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), help);
+    public ChargeCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), context, help);
     }
 
     /**

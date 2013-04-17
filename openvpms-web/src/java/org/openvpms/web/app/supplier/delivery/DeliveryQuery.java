@@ -44,7 +44,7 @@ public class DeliveryQuery extends SupplierActQuery<FinancialAct> {
 
 
     /**
-     * Constructs a new {@code DeliveryQuery}.
+     * Constructs a {@code DeliveryQuery}.
      *
      * @param shortNames the act short names to query
      * @param context    the layout context

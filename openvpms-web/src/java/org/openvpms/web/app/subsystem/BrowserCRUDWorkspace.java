@@ -20,7 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
@@ -73,10 +73,10 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * performing any operations.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
+     * @param workspaceId the workspace localisation identifier
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId) {
-        this(subsystemId, workspaceId, true);
+    public BrowserCRUDWorkspace(String subsystemId, String workspaceId, Context context) {
+        this(subsystemId, workspaceId, context, true);
     }
 
     /**
@@ -87,12 +87,12 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * performing any operations.
      *
      * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
+     * @param workspaceId  the workspace localisation identifier
+     * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId,
-                                boolean showSelector) {
-        super(subsystemId, workspaceId, showSelector);
+    public BrowserCRUDWorkspace(String subsystemId, String workspaceId, Context context, boolean showSelector) {
+        super(subsystemId, workspaceId, context, showSelector);
     }
 
     /**
@@ -103,15 +103,14 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * that the workspace supports, before performing any operations.
      *
      * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identfifier
-     * @param archetypes  the archetypes that this operates on.
-     *                    If {@code null}, the {@link #setArchetypes}
-     *                    method must be invoked to set a non-null value
-     *                    before performing any operation
+     * @param workspaceId the workspace localisation identifier
+     * @param archetypes  the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                    method must be invoked to set a non-null value before performing any operation
+     * @param context     the context
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId,
-                                Archetypes<Parent> archetypes) {
-        this(subsystemId, workspaceId, archetypes, null);
+    public BrowserCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<Parent> archetypes,
+                                Context context) {
+        this(subsystemId, workspaceId, archetypes, null, context);
     }
 
     /**
@@ -119,44 +118,39 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * the parent object.
      *
      * @param subsystemId     the subsystem localisation identifier
-     * @param workspaceId     the workspace localisation identfifier
+     * @param workspaceId     the workspace localisation identifier
      * @param archetypes      the archetypes that this operates on.
      *                        If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value
      *                        before performing any operation
-     * @param childArchetypes the child archetypes that this operates on.
-     *                        If {@code null}, the {@link #setChildArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
+     * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
+     *                        {@link #setChildArchetypes} method must be invoked to set a non-null value before
+     *                        performing any operation
+     * @param context         the context
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId,
-                                Archetypes<Parent> archetypes,
-                                Archetypes<Child> childArchetypes) {
-        this(subsystemId, workspaceId, archetypes, childArchetypes, true);
+    public BrowserCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<Parent> archetypes,
+                                Archetypes<Child> childArchetypes, Context context) {
+        this(subsystemId, workspaceId, archetypes, childArchetypes, context, true);
     }
 
     /**
      * Constructs a new {@code BrowserCRUDWorkspace}.
      *
      * @param subsystemId     the subsystem localisation identifier
-     * @param workspaceId     the workspace localisation identfifier
-     * @param archetypes      the archetypes that this operates on.
-     *                        If {@code null}, the {@link #setArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
-     * @param childArchetypes the child archetypes that this operates on.
-     *                        If {@code null}, the {@link #setChildArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
+     * @param workspaceId     the workspace localisation identifier
+     * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                        method must be invoked to set a non-null value before performing any operation
+     * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
+     *                        {@link #setChildArchetypes} method must be invoked to set a non-null value before
+     *                        performing any operation
+     * @param context         the context
      * @param showSelector    if {@code true}, show a selector to select the
      *                        parent object
      */
     public BrowserCRUDWorkspace(String subsystemId, String workspaceId,
-                                Archetypes<Parent> archetypes,
-                                Archetypes<Child> childArchetypes,
-                                boolean showSelector) {
-        super(subsystemId, workspaceId, archetypes, childArchetypes,
-              showSelector);
+                                Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
+                                Context context, boolean showSelector) {
+        super(subsystemId, workspaceId, archetypes, childArchetypes, context, showSelector);
     }
 
     /**
@@ -211,7 +205,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * @return a new browser
      */
     protected Browser<Child> createBrowser(Query<Child> query) {
-        return BrowserFactory.create(query, new DefaultLayoutContext(getHelpContext()));
+        return BrowserFactory.create(query, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
     /**
@@ -239,9 +233,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      */
     protected Query<Child> createQuery() {
         Archetypes shortNames = getChildArchetypes();
-        return QueryFactory.create(shortNames.getShortNames(),
-                                   GlobalContext.getInstance(),
-                                   shortNames.getType());
+        return QueryFactory.create(shortNames.getShortNames(), getContext(), shortNames.getType());
     }
 
     /**

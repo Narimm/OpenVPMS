@@ -18,6 +18,7 @@ package org.openvpms.web.app.reporting;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -41,14 +42,15 @@ public class FinancialActCRUDWindow
         extends AbstractViewCRUDWindow<FinancialAct> {
 
     /**
-     * Create a new {@code FinancialActCRUDWindow}.
+     * Constructs a {@code FinancialActCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create. If {@code null}, the subclass must override
      *                   {@link #getArchetypes}
+     * @param context    the context
      * @param help       the help context
      */
-    public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<FinancialAct>getInstance(), help);
+    public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
+        super(archetypes, DefaultIMObjectActions.<FinancialAct>getInstance(), context, help);
     }
 
     /**

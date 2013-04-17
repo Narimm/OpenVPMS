@@ -38,6 +38,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -113,7 +114,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         clinician = TestHelper.createClinician();
         Party location = TestHelper.createLocation();
 
-        layoutContext = new DefaultLayoutContext(new HelpContext("foo", null));
+        layoutContext = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        layoutContext.getContext().setPractice(getPractice());
         layoutContext.getContext().setCustomer(customer);
         layoutContext.getContext().setUser(author);
         layoutContext.getContext().setClinician(clinician);

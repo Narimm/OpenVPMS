@@ -36,13 +36,12 @@ public class IMObjectEditorFactory {
     /**
      * Editor implementations.
      */
-    private static ShortNamePairArchetypeHandlers _editors;
+    private static ShortNamePairArchetypeHandlers editors;
 
     /**
      * The logger.
      */
-    private static final Log _log
-            = LogFactory.getLog(IMObjectEditorFactory.class);
+    private static final Log log = LogFactory.getLog(IMObjectEditorFactory.class);
 
     /**
      * Prevent construction.
@@ -65,7 +64,7 @@ public class IMObjectEditorFactory {
      * Creates a new editor.
      *
      * @param object  the object to edit
-     * @param context the parent object. May be {@code null}
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      * @return an editor for {@code object}
      */
@@ -87,14 +86,12 @@ public class IMObjectEditorFactory {
             Constructor ctor = getConstructor(type, object, parent, context);
             if (ctor != null) {
                 try {
-                    result = (IMObjectEditor) ctor.newInstance(object, parent,
-                                                               context);
+                    result = (IMObjectEditor) ctor.newInstance(object, parent, context);
                 } catch (Throwable throwable) {
-                    _log.error(throwable, throwable);
+                    log.error(throwable, throwable);
                 }
             } else {
-                _log.error("No valid constructor found for class: "
-                        + type.getName());
+                log.error("No valid constructor found for class: " + type.getName());
             }
         }
         if (result == null) {
@@ -109,11 +106,10 @@ public class IMObjectEditorFactory {
      * @return the editors
      */
     private static synchronized ShortNamePairArchetypeHandlers getEditors() {
-        if (_editors == null) {
-            _editors = new ShortNamePairArchetypeHandlers(
-                    "IMObjectEditorFactory.properties", IMObjectEditor.class);
+        if (editors == null) {
+            editors = new ShortNamePairArchetypeHandlers("IMObjectEditorFactory.properties", IMObjectEditor.class);
         }
-        return _editors;
+        return editors;
     }
 
     /**
@@ -130,16 +126,16 @@ public class IMObjectEditorFactory {
 
         for (Constructor ctor : ctors) {
             // check parameters
-            Class[] ctorTypes = ctor.getParameterTypes();
+            Class<?>[] ctorTypes = ctor.getParameterTypes();
             if (ctorTypes.length == 3) {
-                Class ctorObj = ctorTypes[0];
-                Class ctorParent = ctorTypes[1];
-                Class ctorLayout = ctorTypes[2];
+                Class<?> ctorObj = ctorTypes[0];
+                Class<?> ctorParent = ctorTypes[1];
+                Class<?> ctorLayout = ctorTypes[2];
 
                 if (ctorObj.isAssignableFrom(object.getClass())
-                        && ((parent != null && ctorParent.isAssignableFrom(parent.getClass()))
+                    && ((parent != null && ctorParent.isAssignableFrom(parent.getClass()))
                         || (parent == null && IMObject.class.isAssignableFrom(ctorParent)))
-                        && ((context != null && ctorLayout.isAssignableFrom(context.getClass()))
+                    && ((context != null && ctorLayout.isAssignableFrom(context.getClass()))
                         || (context == null && LayoutContext.class.isAssignableFrom(ctorLayout)))) {
                     return ctor;
                 }

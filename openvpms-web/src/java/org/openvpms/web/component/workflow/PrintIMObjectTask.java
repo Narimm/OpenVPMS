@@ -137,10 +137,10 @@ public class PrintIMObjectTask extends AbstractTask {
         if (object != null) {
             try {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-                IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator);
+                IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
                 boolean skip = !isRequired() && enableSkip;
                 HelpContext help = context.getHelpContext().createTopic(object, "print");
-                InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, skip, help);
+                InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, skip, context, help);
                 iPrinter.setInteractive(interactive);
                 iPrinter.setMailContext(mailContext);
 

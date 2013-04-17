@@ -19,7 +19,6 @@ package org.openvpms.web.app.supplier;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.resource.util.Messages;
 
@@ -33,10 +32,12 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
      * Constructs an {@code InformationWorkspace}.
+     *
+     * @param context the context
      */
     public InformationWorkspace(Context context) {
-        super("supplier", "info",
-              Archetypes.create("party.supplier*", Party.class, Messages.get("supplier.info.type")));
+        super("supplier", "info", Archetypes.create("party.supplier*", Party.class, Messages.get("supplier.info.type")),
+              context);
         setMailContext(new SupplierMailContext(context, getHelpContext()));
     }
 
@@ -48,7 +49,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     @Override
     public void setObject(Party object) {
         super.setObject(object);
-        GlobalContext.getInstance().setSupplier(object);
+        getContext().setSupplier(object);
     }
 
 }

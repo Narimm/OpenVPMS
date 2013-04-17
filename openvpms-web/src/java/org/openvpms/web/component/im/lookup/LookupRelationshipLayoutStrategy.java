@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -36,8 +34,7 @@ import org.openvpms.web.component.util.GridFactory;
 /**
  * {@link LookupRelationship} layout strategy.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LookupRelationshipLayoutStrategy extends AbstractLayoutStrategy {
 
@@ -46,7 +43,7 @@ public class LookupRelationshipLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the object to lay out
      * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param container  the container to use
      * @param context    the layout context
      */
@@ -74,8 +71,10 @@ public class LookupRelationshipLayoutStrategy extends AbstractLayoutStrategy {
         }
 
         ContextSwitchListener listener = context.getContextSwitchListener();
-        IMObjectReferenceViewer sourceView = new IMObjectReferenceViewer(srcRef, (srcLink) ? listener : null);
-        IMObjectReferenceViewer targetView = new IMObjectReferenceViewer(tgtRef, (tgtLink) ? listener : null);
+        IMObjectReferenceViewer sourceView = new IMObjectReferenceViewer(srcRef, (srcLink) ? listener : null,
+                                                                         context.getContext());
+        IMObjectReferenceViewer targetView = new IMObjectReferenceViewer(tgtRef, (tgtLink) ? listener : null,
+                                                                         context.getContext());
 
         Grid grid = GridFactory.create(4);
         add(grid, new ComponentState(sourceView.getComponent(), source));

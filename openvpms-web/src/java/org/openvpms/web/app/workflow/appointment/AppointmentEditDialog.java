@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -54,13 +55,13 @@ public class AppointmentEditDialog extends EditDialog {
 
 
     /**
-     * Constructs a <code>AppointmentEditDialog</code>.
+     * Constructs a {@code AppointmentEditDialog}.
      *
      * @param editor the editor
      * @param help   the help context
      */
-    public AppointmentEditDialog(IMObjectEditor editor, HelpContext help) {
-        super(editor, help);
+    public AppointmentEditDialog(IMObjectEditor editor, Context context, HelpContext help) {
+        super(editor, context, help);
         getAppointmentTimes();
     }
 
@@ -98,8 +99,8 @@ public class AppointmentEditDialog extends EditDialog {
      *
      * @param close determines if the dialog should close if the user OKs
      *              overlapping appointments
-     * @return <code>true</code> if there are overlapping appointments, otherwise
-     *         <code>false</code>
+     * @return {@code true} if there are overlapping appointments, otherwise
+     *         {@code false}
      */
     private boolean checkForOverlappingAppointment(final boolean close) {
         final IMObjectEditor editor = getEditor();
@@ -148,8 +149,8 @@ public class AppointmentEditDialog extends EditDialog {
      * Determines if double booking is allowed.
      *
      * @param appointment the appointment
-     * @return <code>true</code> if double booking is allowed, otherwise
-     *         <code>false</code>
+     * @return {@code true} if double booking is allowed, otherwise
+     *         {@code false}
      */
     private boolean allowDoubleBooking(ActBean appointment) {
         boolean result;
@@ -187,8 +188,8 @@ public class AppointmentEditDialog extends EditDialog {
      * Determines if the appointment times have been modified since the
      * act was saved.
      *
-     * @return <code>true</code> if the appointment times have been modified,
-     *         otherwise <code>false</code>
+     * @return {@code true} if the appointment times have been modified,
+     *         otherwise {@code false}
      */
     private boolean timesModified() {
         Act act = getAppointment();
@@ -210,9 +211,9 @@ public class AppointmentEditDialog extends EditDialog {
     /**
      * Helper to convert a Timestamp to a Date so comparisons work correctly.
      *
-     * @param date the date. May be an instance/subclass of <code>Date</code> or
+     * @param date the date. May be an instance/subclass of {@code Date} or
      *             null
-     * @return the date, or <code>null</code>
+     * @return the date, or {@code null}
      */
     private Date getDate(Date date) {
         return (date instanceof Timestamp) ? new Date(date.getTime()) : date;

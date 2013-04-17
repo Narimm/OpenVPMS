@@ -20,6 +20,7 @@ import echopointng.KeyStrokes;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.report.ParameterType;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -42,6 +43,11 @@ public class ParameterDialog extends PopupDialog {
     private final ReportParameters parameters;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The 2 column dialog style.
      */
     private static final String WIDE_STYLE = "ParameterDialog2Column";
@@ -57,18 +63,21 @@ public class ParameterDialog extends PopupDialog {
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
-     * @param context    context object for evaluating macros against. If {@code null} macro expansion is disabled
+     * @param object     object for evaluating macros against. If {@code null} macro expansion is disabled
+     * @param context    the context
      * @param help       the help context
      */
-    public ParameterDialog(String title, Set<ParameterType> parameters, IMObject context, HelpContext help) {
+    public ParameterDialog(String title, Set<ParameterType> parameters, IMObject object, Context context,
+                           HelpContext help) {
         super(title, null, OK_CANCEL, help);
         setModal(true);
-        this.parameters = new ReportParameters(parameters, context);
+        this.parameters = new ReportParameters(parameters, object);
+        this.context = context;
         String style = (parameters.size() >= 4) ? WIDE_STYLE : NARROW_STYLE;
         setStyleName(style);
         getLayout().add(this.parameters.getComponent());
 
-        if (context != null) {
+        if (object != null) {
             getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onMacro();
@@ -101,7 +110,7 @@ public class ParameterDialog extends PopupDialog {
      * Displays the macros.
      */
     protected void onMacro() {
-        MacroDialog dialog = new MacroDialog(getHelpContext());
+        MacroDialog dialog = new MacroDialog(context, getHelpContext());
         dialog.show();
     }
 

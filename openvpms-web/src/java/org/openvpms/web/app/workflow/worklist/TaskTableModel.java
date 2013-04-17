@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.worklist;
@@ -27,6 +25,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
@@ -35,18 +34,17 @@ import java.util.List;
 /**
  * Table model for display <em>act.customerTask<em>s for multiple schedules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskTableModel extends ScheduleTableModel {
 
     /**
-     * Constructs a <tt>TaskTableModel</tt>.
+     * Constructs a {@code TaskTableModel}.
      *
      * @param grid the task grid
      */
-    public TaskTableModel(TaskGrid grid) {
-        super(grid);
+    public TaskTableModel(TaskGrid grid, Context context) {
+        super(grid, context);
     }
 
     /**
@@ -54,7 +52,7 @@ public class TaskTableModel extends ScheduleTableModel {
      *
      * @param schedule the schedule
      * @param eventRef the event reference
-     * @return the row, or <tt>-1</tt> if the event is not found
+     * @return the row, or {@code -1} if the event is not found
      */
     public int getRow(Schedule schedule, IMObjectReference eventRef) {
         return schedule.indexOf(eventRef);

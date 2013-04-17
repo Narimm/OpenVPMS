@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.util.Archetypes;
@@ -36,14 +36,15 @@ import org.openvpms.web.component.util.ErrorHelper;
 public abstract class SupplierActCRUDWindow<T extends Act> extends ActCRUDWindow<T> {
 
     /**
-     * Create a new <tt>SupplierActCRUDWindow</tt>.
+     * Constructs a {@code SupplierActCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param actions    determines the operations that may be performed on the selected object
+     * @param context    the context
      * @param help       the help context
      */
-    public SupplierActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions, HelpContext help) {
-        super(archetypes, actions, help);
+    public SupplierActCRUDWindow(Archetypes<T> archetypes, ActActions<T> actions, Context context, HelpContext help) {
+        super(archetypes, actions, context, help);
     }
 
     /**
@@ -56,7 +57,7 @@ public abstract class SupplierActCRUDWindow<T extends Act> extends ActCRUDWindow
      */
     @Override
     protected void onCreated(final T act) {
-        Party supplier = GlobalContext.getInstance().getSupplier();
+        Party supplier = getContext().getSupplier();
         addParticipations(act, supplier, null);
         super.onCreated(act);
     }
@@ -65,8 +66,8 @@ public abstract class SupplierActCRUDWindow<T extends Act> extends ActCRUDWindow
      * Helper to add supplier and stock location participations to an act.
      *
      * @param act      the act
-     * @param supplier the supplier. May be <tt>null</tt>
-     * @param location the stock location. May be <tt>null</tt>
+     * @param supplier the supplier. May be {@code null}
+     * @param location the stock location. May be {@code null}
      */
     protected void addParticipations(T act, Party supplier, Party location) {
         try {

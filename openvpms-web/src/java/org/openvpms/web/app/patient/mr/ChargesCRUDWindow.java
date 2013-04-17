@@ -18,6 +18,7 @@ package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
@@ -26,25 +27,26 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
+ * Patient charges.
+ *
  * @author tony
  */
 public class ChargesCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
-     * Reminder and alert shortnames supported by the workspace.
+     * Charge shortnames supported by the workspace.
      */
-    private static final String[] SHORT_NAMES =
-            {"act.customerAccountInvoiceItem",
-                    "act.customerAccountCreditItem"};
+    private static final String[] SHORT_NAMES = {"act.customerAccountInvoiceItem", "act.customerAccountCreditItem"};
 
     /**
-     * Create a new <tt>ChargesCRUDWindow</tt>.
+     * Constructs a {@code ChargesCRUDWindow}.
      *
-     * @param help the help context
+     * @param context the context
+     * @param help    the help context
      */
-    public ChargesCRUDWindow(HelpContext help) {
+    public ChargesCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create(SHORT_NAMES, Act.class, Messages.get("patient.charges.createtype")),
-              DefaultActActions.getInstance(), help);
+              DefaultActActions.getInstance(), context, help);
     }
 
     /**

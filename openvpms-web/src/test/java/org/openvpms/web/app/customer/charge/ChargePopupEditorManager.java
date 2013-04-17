@@ -16,6 +16,7 @@
 
 package org.openvpms.web.app.customer.charge;
 
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 
@@ -36,7 +37,7 @@ public class ChargePopupEditorManager extends DefaultPopupEditorManager {
      * Constructs a {@code ChargePopupEditorManager}.
      */
     public ChargePopupEditorManager() {
-        super(new HelpContext("ChargePopupEditorManager", null));
+        super(new LocalContext(), new HelpContext("ChargePopupEditorManager", null));
     }
 
     /**

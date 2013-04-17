@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.workflow.appointment;
@@ -24,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -33,8 +32,7 @@ import java.util.Date;
 /**
  * Appointment table model.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AppointmentTableModel extends ScheduleTableModel {
 
@@ -44,19 +42,20 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
     protected static final int START_TIME_INDEX = 0;
 
     /**
-     * Creates a new <tt>AppointmentTableModel</tt>.
+     * Constructs an {@code AppointmentTableModel}.
      *
-     * @param grid the appointment grid
+     * @param grid    the appointment grid
+     * @param context the context
      */
-    public AppointmentTableModel(AppointmentGrid grid) {
-        super(grid);
+    public AppointmentTableModel(AppointmentGrid grid, Context context) {
+        super(grid, context);
     }
 
     /**
      * Determines if the specified column is a 'start time' column.
      *
      * @param column the column
-     * @return <tt>true</tt> if the column is a 'start time' column
+     * @return {@code true} if the column is a 'start time' column
      */
     public boolean isStartTimeColumn(int column) {
         return column == START_TIME_INDEX;
@@ -87,7 +86,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      *
      * @param schedule the schedule
      * @param eventRef the event reference
-     * @return the row, or <tt>-1</tt> if the event is not found
+     * @return the row, or {@code -1} if the event is not found
      */
     public int getRow(Schedule schedule, IMObjectReference eventRef) {
         PropertySet event = schedule.getEvent(eventRef);

@@ -19,6 +19,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -41,6 +42,11 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      * The 'edit' button identifier.
      */
     public static final String EDIT_ID = "edit";
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The iterator over the results.
@@ -86,13 +92,17 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     /**
      * Constructs a {@code ViewResultSetDialog}.
      *
-     * @param title the window title
-     * @param first the first object to view
-     * @param set   the set of results to view
-     * @param edit  if {@code true} display an edit button
+     * @param title   the window title
+     * @param first   the first object to view
+     * @param set     the set of results to view
+     * @param edit    if {@code true} display an edit button
+     * @param context the context
+     * @param help    the help context
      */
-    public ViewResultSetDialog(String title, T first, ResultSet<T> set, boolean edit, HelpContext help) {
+    public ViewResultSetDialog(String title, T first, ResultSet<T> set, boolean edit, Context context,
+                               HelpContext help) {
         super(title, "IMObjectViewerDialog", edit ? EDIT_BUTTONS : VIEW_BUTTONS, help);
+        this.context = context;
         setDefaultButton(OK_ID);
         setDefaultCloseAction(CANCEL_ID);
         iter = new ResultSetIterator<T>(set, first);
@@ -181,7 +191,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      */
     private void view(T object) {
         selected = object;
-        LayoutContext context = new DefaultLayoutContext(getHelpContext());
+        LayoutContext context = new DefaultLayoutContext(this.context, getHelpContext());
         context.getContext().setCurrent(object); // TODO - remove requirement for setCurrent()
         context.setContextSwitchListener(listener);
         IMObjectViewer viewer = new IMObjectViewer(object, null, context);
@@ -230,7 +240,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      * @param object the object to view
      */
     private void viewChild(IMObject object) {
-        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object);
+        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object, context);
         dialog.show();
     }
 

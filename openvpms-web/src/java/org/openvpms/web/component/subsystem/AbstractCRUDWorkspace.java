@@ -18,6 +18,7 @@ package org.openvpms.web.component.subsystem;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.resource.util.Messages;
@@ -38,8 +39,8 @@ import org.openvpms.web.resource.util.Messages;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
-        Child extends IMObject> extends AbstractViewWorkspace<Parent> {
+public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child extends IMObject>
+        extends AbstractViewWorkspace<Parent> {
 
     /**
      * The child archetypes.
@@ -60,55 +61,47 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      * performing any operations.
      *
      * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
+     * @param workspaceId  the workspace localisation identifier
+     * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public AbstractCRUDWorkspace(String subsystemId, String workspaceId,
-                                 boolean showSelector) {
-        this(subsystemId, workspaceId, null, null, showSelector);
+    public AbstractCRUDWorkspace(String subsystemId, String workspaceId, Context context, boolean showSelector) {
+        this(subsystemId, workspaceId, null, null, context, showSelector);
     }
 
     /**
      * Constructs an {@code AbstractCRUDWorkspace}, with a selector for the parent object.
      *
      * @param subsystemId     the subsystem localisation identifier
-     * @param workspaceId     the workspace localisation identfifier
-     * @param archetypes      the archetypes that this operates on.
-     *                        If {@code null}, the {@link #setArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
-     * @param childArchetypes the child archetypes that this operates on.
-     *                        If {@code null}, the {@link #setChildArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
+     * @param workspaceId     the workspace localisation identifier
+     * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                        method must be invoked to set a non-null value before performing any operation
+     * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
+     *                        {@link #setChildArchetypes} method must be invoked to set a non-null value before
+     *                        performing any operation
+     * @param context         the context
      */
-    public AbstractCRUDWorkspace(String subsystemId, String workspaceId,
-                                 Archetypes<Parent> archetypes,
-                                 Archetypes<Child> childArchetypes) {
-        this(subsystemId, workspaceId, archetypes, childArchetypes, true);
+    public AbstractCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<Parent> archetypes,
+                                 Archetypes<Child> childArchetypes, Context context) {
+        this(subsystemId, workspaceId, archetypes, childArchetypes, context, true);
     }
 
     /**
      * Constructs an {@code AbstractCRUDWorkspace}.
      *
      * @param subsystemId     the subsystem localisation identifier
-     * @param workspaceId     the workspace localisation identfifier
-     * @param archetypes      the archetypes that this operates on.
-     *                        If {@code null}, the {@link #setArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
-     * @param childArchetypes the child archetypes that this operates on.
-     *                        If {@code null}, the {@link #setChildArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
-     * @param showSelector    if {@code true}, show a selector to select the
-     *                        parent object
+     * @param workspaceId     the workspace localisation identifier
+     * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes} method
+     *                        must be invoked to set a non-null value before performing any operation
+     * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
+     *                        {@link #setChildArchetypes} method must be invoked to set a non-null value before
+     *                        performing any operation
+     * @param context         the context
+     * @param showSelector    if {@code true}, show a selector to select the parent object
      */
-    public AbstractCRUDWorkspace(String subsystemId, String workspaceId,
-                                 Archetypes<Parent> archetypes,
-                                 Archetypes<Child> childArchetypes,
-                                 boolean showSelector) {
-        super(subsystemId, workspaceId, archetypes, showSelector);
+    public AbstractCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<Parent> archetypes,
+                                 Archetypes<Child> childArchetypes, Context context, boolean showSelector) {
+        super(subsystemId, workspaceId, archetypes, context, showSelector);
         this.childArchetypes = childArchetypes;
     }
 
@@ -128,8 +121,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
     /**
      * Registers a new CRUD window.
      *
-     * @param newWindow the new window. If {@code null} , deregisters any
-     *                  existing window
+     * @param newWindow the new window. If {@code null}, deregisters any existing window
      */
     protected void setCRUDWindow(CRUDWindow<Child> newWindow) {
         if (newWindow != null) {
@@ -172,7 +164,7 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject,
      * @return a new CRUD window
      */
     protected CRUDWindow<Child> createCRUDWindow() {
-        return new DefaultCRUDWindow<Child>(getChildArchetypes(), getHelpContext());
+        return new DefaultCRUDWindow<Child>(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**

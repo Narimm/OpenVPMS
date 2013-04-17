@@ -18,22 +18,25 @@
 package org.openvpms.web.app.history;
 
 import org.apache.commons.collections.ComparatorUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import org.junit.Test;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.app.SelectionHistory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.archetype.test.TestHelper;
 
 import java.util.Date;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 
 /**
@@ -52,8 +55,9 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
     @Test
     public void testQuery() throws Exception {
         int count = 10;
-        SelectionHistory patients = new SelectionHistory();
-        SelectionHistory customers = new SelectionHistory();
+        LocalContext context = new LocalContext();
+        SelectionHistory patients = new SelectionHistory(context);
+        SelectionHistory customers = new SelectionHistory(context);
         for (int i = 0; i < count; ++i) {
             Party patient = TestHelper.createPatient(true);
             patients.add(patient);
@@ -69,7 +73,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
 
         // now create a query for the customer and patient selection history, and verify that it returns
         // CustomerPatient instances in the correct order.
-        CustomerPatientHistoryQuery query = new CustomerPatientHistoryQuery(customers, patients);
+        CustomerPatientHistoryQuery query = new CustomerPatientHistoryQuery(customers, patients, context);
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
         ResultSet<CustomerPatient> results = query.query();
         IPage<CustomerPatient> page = results.getPage(0);
@@ -86,7 +90,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
 
         // verify the next 10 selections contain either a customer and patient, but not both (these have no
         // patient-owner relationship).
-        for (int i = 5; i < list.size();) {
+        for (int i = 5; i < list.size(); ) {
             for (int j = 5; j < 10; ++j) {
                 checkCustomer(list.get(i), customerHistory.get(j));
                 ++i;
@@ -101,8 +105,9 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
      */
     @Test
     public void testSort() {
-        SelectionHistory patients = new SelectionHistory();
-        SelectionHistory customers = new SelectionHistory();
+        Context context = new LocalContext();
+        SelectionHistory patients = new SelectionHistory(context);
+        SelectionHistory customers = new SelectionHistory(context);
         Party customer1 = TestHelper.createCustomer("", "XC", true);
         Party customer2 = TestHelper.createCustomer("", "XA", true);
         Party customer3 = TestHelper.createCustomer("", "XB", true);
@@ -119,7 +124,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
 
         // now create a query for the customer and patient selection history, and verify that it returns
         // CustomerPatient instances in the correct order.
-        CustomerPatientHistoryQuery query = new CustomerPatientHistoryQuery(customers, patients);
+        CustomerPatientHistoryQuery query = new CustomerPatientHistoryQuery(customers, patients, context);
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
 
         // check ascending sort on customer. The nulls indicate no corresponding customer for a patient
@@ -142,8 +147,9 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
      */
     @Test
     public void testFilter() throws Exception {
-        SelectionHistory patients = new SelectionHistory();
-        SelectionHistory customers = new SelectionHistory();
+        Context context = new LocalContext();
+        SelectionHistory patients = new SelectionHistory(context);
+        SelectionHistory customers = new SelectionHistory(context);
         Party customer1 = TestHelper.createCustomer("", "XC", true);
         Party customer2 = TestHelper.createCustomer("", "XA", true);
         Party customer3 = TestHelper.createCustomer("", "XB", true);
@@ -160,7 +166,7 @@ public class CustomerPatientHistoryQueryTestCase extends AbstractAppTest {
         patients.add(patient2);
 
         // now create a query for the customer and patient selection history
-        CustomerPatientHistoryQuery query = new CustomerPatientHistoryQuery(customers, patients);
+        CustomerPatientHistoryQuery query = new CustomerPatientHistoryQuery(customers, patients, context);
         query.setMaxResults(IArchetypeQuery.ALL_RESULTS);
 
         // filter results containing "XA" and verify customer2 and patient1 are returned

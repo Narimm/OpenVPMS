@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.print;
@@ -22,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
@@ -45,8 +44,7 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
  * <p/>
  * Multiple <em>IMPrinterFactory.properties</em> may be used.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-08-17 06:51:11Z $
+ * @author Tim Anderson
  */
 public final class IMPrinterFactory {
 
@@ -75,10 +73,12 @@ public final class IMPrinterFactory {
      *
      * @param object  the object to print
      * @param locator the document template locator
+     * @param context the context
      * @return a new printer
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> IMPrinter<T> create(T object, DocumentTemplateLocator locator) {
+    public static <T extends IMObject> IMPrinter<T> create(T object, DocumentTemplateLocator locator,
+                                                           Context context) {
         String[] shortNames = {object.getArchetypeId().getShortName()};
         shortNames = DescriptorHelper.getShortNames(shortNames);
         ArchetypeHandler<IMPrinter> handler = getPrinters().getHandler(shortNames);
@@ -86,7 +86,7 @@ public final class IMPrinterFactory {
         if (handler != null) {
             try {
                 try {
-                    result = handler.create(new Object[]{object, locator});
+                    result = handler.create(new Object[]{object, locator, context});
                 } catch (NoSuchMethodException throwable) {
                     result = handler.create(new Object[]{object});
                 }
@@ -95,7 +95,7 @@ public final class IMPrinterFactory {
             }
         }
         if (result == null) {
-            result = new IMObjectReportPrinter<T>(object, locator);
+            result = new IMObjectReportPrinter<T>(object, locator, context);
         }
         return result;
     }

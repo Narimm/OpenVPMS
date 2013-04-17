@@ -24,7 +24,6 @@ import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.subsystem.CRUDWindow;
@@ -43,7 +42,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      * @param context the context
      */
     public InformationWorkspace(Context context) {
-        super("patient", "info");
+        super("patient", "info", context);
         setArchetypes(Party.class, "party.patient*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
@@ -56,31 +55,28 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     @Override
     public void setObject(Party object) {
         super.setObject(object);
-        ContextHelper.setPatient(object);
+        ContextHelper.setPatient(getContext(), object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
      * Renders the workspace summary.
      *
-     * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
+     * @return the component representing the workspace summary, or {@code null} if there is no summary
      */
     @Override
     public Component getSummary() {
-        GlobalContext context = GlobalContext.getInstance();
-        return new CustomerPatientSummary(context, getHelpContext()).getSummary(getObject());
+        return new CustomerPatientSummary(getContext(), getHelpContext()).getSummary(getObject());
     }
 
     /**
      * Returns the latest version of the current patient context object.
      *
-     * @return the latest version of the context object, or {@link #getObject()}
-     *         if they are the same
+     * @return the latest version of the context object, or {@link #getObject()} if they are the same
      */
     @Override
     protected Party getLatest() {
-        return getLatest(GlobalContext.getInstance().getPatient());
+        return getLatest(getContext().getPatient());
     }
 
     /**
@@ -104,7 +100,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     protected CRUDWindow<Party> createCRUDWindow() {
-        return new InformationCRUDWindow(getArchetypes(), getHelpContext());
+        return new InformationCRUDWindow(getArchetypes(), getContext(), getHelpContext());
     }
 
     /**

@@ -21,6 +21,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.esci.adapter.dispatcher.DefaultESCIDispatcher;
 import org.openvpms.web.app.supplier.SupplierActCRUDWindow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.ActActions;
@@ -51,11 +52,12 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
      *
      * @param archetypes the archetypes that this may create
      * @param operations determines the operations that may be performed on the selected object
+     * @param context    the context
      * @param help       the help context
      */
     public ESCISupplierCRUDWindow(Archetypes<FinancialAct> archetypes, ActActions<FinancialAct> operations,
-                                  HelpContext help) {
-        super(archetypes, operations, help);
+                                  Context context, HelpContext help) {
+        super(archetypes, operations, context, help);
     }
 
     /**

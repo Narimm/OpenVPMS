@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -74,15 +74,15 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
     /**
      * Constructs an {@code OverTheCounterWorkflow}.
      *
-     * @param help the help context
+     * @param parent the parent context
+     * @param help   the help context
      * @throws ArchetypeServiceException for any archetype service error
      * @throws OTCException              for any OTC error
      */
-    public OverTheCounterWorkflow(HelpContext help) {
+    public OverTheCounterWorkflow(final Context parent, HelpContext help) {
         super(help);
-        final GlobalContext global = GlobalContext.getInstance();
-        initial = new DefaultTaskContext(help, false);
-        Party location = global.getLocation();
+        initial = new DefaultTaskContext(null, help);
+        Party location = parent.getLocation();
         if (location == null) {
             throw new OTCException(OTCException.ErrorCode.NoLocation);
         }
@@ -93,10 +93,10 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
                                    location.getName());
         }
         initial.setCustomer(otc);
-        initial.setTill(global.getTill());
-        initial.setLocation(global.getLocation());
-        initial.setPractice(global.getPractice());
-        initial.setUser(global.getUser());
+        initial.setTill(parent.getTill());
+        initial.setLocation(parent.getLocation());
+        initial.setPractice(parent.getPractice());
+        initial.setUser(parent.getUser());
 
         EditIMObjectTask sale = new EditIMObjectTask(CHARGES_COUNTER, true);
         sale.setDeleteOnCancelOrSkip(true);
@@ -128,7 +128,7 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         addTask(postPayment);
 
         // optionally select and print the act.customerAccountChargesCounter
-        PrintIMObjectTask printSale = new PrintIMObjectTask(CHARGES_COUNTER, new PracticeMailContext(global));
+        PrintIMObjectTask printSale = new PrintIMObjectTask(CHARGES_COUNTER, new PracticeMailContext(parent));
         printSale.setRequired(false);
 
         // task to save the act.customerAccountChargesCounter, setting its
@@ -144,8 +144,8 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
         // add a task to update the global context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
-                global.setTill(context.getTill());
-                global.setClinician(context.getClinician());
+                parent.setTill(context.getTill());
+                parent.setClinician(context.getClinician());
             }
         });
 

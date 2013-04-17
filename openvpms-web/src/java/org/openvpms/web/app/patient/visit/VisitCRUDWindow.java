@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.app.patient.visit;
 
@@ -27,14 +25,10 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 /**
  * The CRUD window for editing events and their items.
+ *
+ * @author Tim Anderson
  */
 public class VisitCRUDWindow extends PatientHistoryCRUDWindow {
-
-    /**
-     * The context.
-     */
-    private final Context context;
-
 
     /**
      * Constructs a {@code VisitCRUDWindow}.
@@ -43,17 +37,7 @@ public class VisitCRUDWindow extends PatientHistoryCRUDWindow {
      * @param help    the help context
      */
     public VisitCRUDWindow(Context context, HelpContext help) {
-        super(help);
-        this.context = context;
-    }
-
-    /**
-     * Returns the context.
-     *
-     * @return the context
-     */
-    public Context getContext() {
-        return context;
+        super(context, help);
     }
 
     /**
@@ -72,13 +56,13 @@ public class VisitCRUDWindow extends PatientHistoryCRUDWindow {
     /**
      * Creates a layout context for editing an object.
      *
+     * @param help the help context
      * @return a new layout context.
-     * @param help
      */
     @Override
     protected LayoutContext createLayoutContext(HelpContext help) {
         LayoutContext context = super.createLayoutContext(help);
-        context.setContext(this.context);
+        context.setContext(getContext());
         return context;
     }
 

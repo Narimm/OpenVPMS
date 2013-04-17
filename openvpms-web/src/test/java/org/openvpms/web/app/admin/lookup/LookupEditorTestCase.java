@@ -19,6 +19,7 @@ package org.openvpms.web.app.admin.lookup;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -52,7 +53,7 @@ public class LookupEditorTestCase extends AbstractAppTest {
         TestHelper.getLookup("lookup.bank", duplicate); // make sure the lookup exists
 
         Lookup lookup = (Lookup) create("lookup.bank"); // create a new lookup, and edit it
-        DefaultLayoutContext context = new DefaultLayoutContext(new HelpContext("foo", null));
+        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         IMObjectEditor editor = IMObjectEditorFactory.create(lookup, context);
         assertTrue(editor instanceof LookupEditor);
         Property name = editor.getProperty("name");

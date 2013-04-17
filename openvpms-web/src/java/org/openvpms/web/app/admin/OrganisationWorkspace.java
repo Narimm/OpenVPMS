@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.admin;
@@ -21,44 +19,46 @@ package org.openvpms.web.app.admin;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.app.Context;
 
 
 /**
  * Organisation workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
 
     /**
-     * Constructs an <tt>OrganisationWorkspace</tt>.
+     * Constructs an {@code OrganisationWorkspace}.
+     *
+     * @param context the context
      */
-    public OrganisationWorkspace() {
-        super("admin", "organisation");
+    public OrganisationWorkspace(Context context) {
+        super("admin", "organisation", context);
         setArchetypes(Entity.class, "party.organisation*", "entity.organisation*", "entity.SMSConfig*");
     }
 
     /**
      * Sets the current object.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      */
     @Override
     public void setObject(Entity object) {
         super.setObject(object);
-        // need to update the global context in case organisations have changed.
+        // need to update the context in case organisations have changed.
         // May need to refine this so that the context is only updated if the
         // organisation is a newer version of that currently in the context
         // (i,e don't change for different organisations).
+        Context context = getContext();
         if (TypeHelper.isA(object, "party.organisationSchedule")) {
-            GlobalContext.getInstance().setSchedule((Party) object);
+            context.setSchedule((Party) object);
         } else if (TypeHelper.isA(object, "party.organisationWorkList")) {
-            GlobalContext.getInstance().setWorkList((Party) object);
+            context.setWorkList((Party) object);
         } else if (TypeHelper.isA(object, "party.organisationTill")) {
-            GlobalContext.getInstance().setTill((Party) object);
+            context.setTill((Party) object);
         }
     }
 

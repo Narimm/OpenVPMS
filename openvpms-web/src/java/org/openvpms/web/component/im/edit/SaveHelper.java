@@ -22,15 +22,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -62,8 +62,7 @@ public class SaveHelper {
     public static boolean save(final IMObjectEditor editor) {
         Boolean result = null;
         try {
-            TransactionTemplate template = new TransactionTemplate(
-                    ServiceHelper.getTransactionManager());
+            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
             result = template.execute(new TransactionCallback<Boolean>() {
                 public Boolean doInTransaction(TransactionStatus status) {
                     return editor.save();
@@ -71,12 +70,10 @@ public class SaveHelper {
             });
         } catch (Throwable exception) {
             IMObject object = editor.getObject();
-            User user = GlobalContext.getInstance().getUser();
-            String userName = (user != null) ? user.getUsername() : null;
-            String context = Messages.get("logging.error.editcontext",
-                                          object.getObjectReference(),
-                                          editor.getClass().getName(),
-                                          userName);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String user = (authentication != null) ? authentication.getName() : null;
+            String context = Messages.get("logging.error.editcontext", object.getObjectReference(),
+                                          editor.getClass().getName(), user);
             error(editor.getDisplayName(), context, exception);
         }
         return (result != null) && result;

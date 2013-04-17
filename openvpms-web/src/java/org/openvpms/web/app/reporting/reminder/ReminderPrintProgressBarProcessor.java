@@ -18,6 +18,7 @@ package org.openvpms.web.app.reporting.reminder;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
@@ -39,6 +40,11 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
     private final ReminderPrintProcessor processor;
 
     /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
      * The events currently being printed
      */
     private List<ReminderEvent> events;
@@ -55,11 +61,13 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
      * @param reminders     the reminders
      * @param groupTemplate the grouped reminder document template
      * @param statistics    the statistics
+     * @param context       the context
      * @param help          the help context
      */
     public ReminderPrintProgressBarProcessor(List<List<ReminderEvent>> reminders, DocumentTemplate groupTemplate,
-                                             Statistics statistics, HelpContext help) {
+                                             Statistics statistics, Context context, HelpContext help) {
         super(reminders, statistics, Messages.get("reporting.reminder.run.print"));
+        this.context = context;
 
         PrinterListener listener = new PrinterListener() {
             public void printed(String printer) {
@@ -85,7 +93,7 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
             }
         };
 
-        processor = new ReminderPrintProcessor(groupTemplate, listener, mailContext, help);
+        processor = new ReminderPrintProcessor(groupTemplate, listener, context, mailContext, help);
     }
 
     /**
