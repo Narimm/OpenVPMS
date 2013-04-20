@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -51,13 +67,13 @@
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.openvpms</groupId>
+            <groupId>org.openvpms.plugin</groupId>
             <artifactId>openvpms-test-plugin</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.openvpms</groupId>
+            <groupId>org.openvpms.plugin</groupId>
             <artifactId>openvpms-test-service</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -79,7 +95,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.openvpms</groupId>
+                                    <groupId>org.openvpms.plugin</groupId>
                                     <artifactId>openvpms-felix</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
@@ -99,11 +115,10 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.openvpms.plugin</groupId>
-                                    <artifactId>openvpms-felix</artifactId>
-                                    <type>zip</type>
+                                    <artifactId>openvpms-test-plugin</artifactId>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${project.build.directory}/felix</outputDirectory>
+                            <outputDirectory>${project.build.directory}/felix/deploy</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                         </configuration>

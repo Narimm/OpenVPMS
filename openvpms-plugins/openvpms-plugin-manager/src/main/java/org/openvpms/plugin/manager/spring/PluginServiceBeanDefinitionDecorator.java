@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.plugin.manager.spring;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -18,7 +34,14 @@ import java.util.ArrayList;
  */
 public class PluginServiceBeanDefinitionDecorator implements BeanDefinitionDecorator {
 
-    public static final String HOST_COMPONENT_PROVIDER = "hostComponentProvider";
+    /**
+     * The plugin service provider bean name.
+     */
+    public static final String BEAN_NAME = "pluginServiceProvider";
+
+    /**
+     * The services property name.
+     */
     private static final String SERVICES = "services";
 
     /**
@@ -31,19 +54,19 @@ public class PluginServiceBeanDefinitionDecorator implements BeanDefinitionDecor
      */
     public BeanDefinitionHolder decorate(Node node, BeanDefinitionHolder definition, ParserContext context) {
         BeanDefinitionRegistry registry = context.getRegistry();
-        BeanDefinition factoryBean;
-        if (!registry.containsBeanDefinition(HOST_COMPONENT_PROVIDER)) {
+        BeanDefinition factory;
+        if (!registry.containsBeanDefinition(BEAN_NAME)) {
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(PluginServiceFactoryBean.class);
-            factoryBean = builder.getBeanDefinition();
-            if (!factoryBean.getPropertyValues().contains(SERVICES)) {
-                factoryBean.getPropertyValues().addPropertyValue(SERVICES, new ArrayList<String>());
+            factory = builder.getBeanDefinition();
+            if (!factory.getPropertyValues().contains(SERVICES)) {
+                factory.getPropertyValues().addPropertyValue(SERVICES, new ArrayList<String>());
             }
-            registry.registerBeanDefinition(HOST_COMPONENT_PROVIDER, factoryBean);
+            registry.registerBeanDefinition(BEAN_NAME, factory);
         } else {
-            factoryBean = registry.getBeanDefinition(HOST_COMPONENT_PROVIDER);
+            factory = registry.getBeanDefinition(BEAN_NAME);
         }
 
-        factoryBean.getPropertyValues().getPropertyValue(SERVICES).getValue();
+        factory.getPropertyValues().getPropertyValue(SERVICES).getValue();
         return definition;
     }
 

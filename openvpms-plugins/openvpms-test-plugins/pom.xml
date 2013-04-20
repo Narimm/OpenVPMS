@@ -6,6 +6,7 @@
         <groupId>org.openvpms.plugin</groupId>
         <artifactId>openvpms-plugins</artifactId>
         <version>1.7-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +17,5 @@
         <module>openvpms-test-plugin</module>
         <module>openvpms-test-service</module>
     </modules>
-
 
 </project>

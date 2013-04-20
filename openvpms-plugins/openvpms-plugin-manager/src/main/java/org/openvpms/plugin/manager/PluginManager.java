@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.plugin.manager;
 
@@ -26,11 +26,17 @@ import org.springframework.beans.factory.InitializingBean;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.Manifest;
 
 
 /**
@@ -74,6 +80,7 @@ public class PluginManager implements InitializingBean, DisposableBean {
         File data = getDir(home, "data", true);
         File storage = getDir(data, "cache", true);
 
+        String exports = getExtraSystemPackages();
         // Create a configuration property map.
         Map config = new HashMap();
         config.put("plugin.home", home.getAbsolutePath());
@@ -84,6 +91,7 @@ public class PluginManager implements InitializingBean, DisposableBean {
         config.put(FelixConstants.SYSTEMBUNDLE_ACTIVATORS_PROP, list);
         config.put(FelixConstants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
         config.put(AutoProcessor.AUTO_DEPLOY_DIR_PROPERY, system.getAbsolutePath());
+        config.put(FelixConstants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, exports);
 
         felix = new Felix(config);
         felix.init();
@@ -103,6 +111,63 @@ public class PluginManager implements InitializingBean, DisposableBean {
         // host application.
         felix.stop();
         felix.waitForStop(0);
+    }
+
+    /**
+     * Determines the packages to export via the "org.osgi.framework.system.packages.extra" OSGi property.
+     * <p/>
+     * This uses the Export-Package attribute of each MANIFEST.MF available to the current class loader.
+     * <p/>
+     * It discards packages that don't have a version attribute, or begin with:
+     * <ul>
+     *     <li>org.osgi</li>
+     *     <li>java</li>
+     *     <li>org.springframework</li>
+     * </ul>
+     *
+     * @return the extra packages to export
+     */
+    private String getExtraSystemPackages() {
+        Set<String> exports = new TreeSet<String>();
+        try {
+            Enumeration<URL> resources = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                InputStream stream = null;
+                try {
+                    stream = url.openStream();
+                    Manifest manifest = new Manifest(stream);
+                    String export = manifest.getMainAttributes().getValue("Export-Package");
+                    if (export != null) {
+                        String[] values = export.split(",");
+                        for (String value : values) {
+                            value = value.trim();
+                            if (!value.isEmpty() && !value.startsWith("org.osgi") && !value.startsWith("java")
+                                && !value.startsWith("org.springframework") && value.contains(";version=")) {
+                                exports.add(value);
+                            }
+                        }
+                    }
+                } catch (IOException ignore) {
+                    ignore.printStackTrace();
+                } finally {
+                    if (stream != null) {
+                        stream.close();
+                    }
+                }
+            }
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+        StringBuilder result = new StringBuilder();
+        for (String value : exports) {
+            if (result.length() != 0) {
+                result.append(", ");
+            }
+            result.append(value);
+        }
+
+        return result.toString();
     }
 
     private File getHome() {
@@ -137,10 +202,6 @@ public class PluginManager implements InitializingBean, DisposableBean {
 
         }
         config.putAll(properties);
-    }
-
-    public Bundle[] getBundles() {
-        return felix.getBundleContext().getBundles();
     }
 
     private File getDir(File parent, String path, boolean create) {
