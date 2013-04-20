@@ -25,6 +25,7 @@
     </scm>
 
     <modules>
+        <module>openvpms-felix</module>
         <module>openvpms-plugin-api</module>
         <module>openvpms-plugin-services</module>
         <module>openvpms-docload-plugin</module>

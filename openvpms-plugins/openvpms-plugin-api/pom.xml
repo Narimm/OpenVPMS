@@ -12,7 +12,6 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.openvpms</groupId>
     <artifactId>openvpms-plugin-api</artifactId>
 
     <name>OpenVPMS plugin API</name>

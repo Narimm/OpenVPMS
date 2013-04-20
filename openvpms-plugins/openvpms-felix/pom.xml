@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>org.openvpms</groupId>
+        <artifactId>openvpms-plugins</artifactId>
+        <version>1.7-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>openvpms-felix</artifactId>
+
+    <name>OpenVPMS Felix</name>
+    <description>Packaging of Apache Felix for OpenVPMS plugin framework</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <felix.version>4.2.1</felix.version>
+        <felix.log.version>1.0.1</felix.log.version>
+        <felix.configadmin.version>1.6.0</felix.configadmin.version>
+        <felix.fileinstall.version>3.2.6</felix.fileinstall.version>
+        <aries.util.version>1.1.0</aries.util.version>
+        <aries.proxy.api.version>1.0.0</aries.proxy.api.version>
+        <aries.proxy.impl.version>1.0.1</aries.proxy.impl.version>
+        <blueprint.api.version>1.0.0</blueprint.api.version>
+        <blueprint.core.version>1.1.0</blueprint.core.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.log</artifactId>
+            <version>${felix.log.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.configadmin</artifactId>
+            <version>${felix.configadmin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.fileinstall</artifactId>
+            <version>${felix.fileinstall.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.aries</groupId>
+            <artifactId>org.apache.aries.util</artifactId>
+            <version>${aries.util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.aries.proxy</groupId>
+            <artifactId>org.apache.aries.proxy.api</artifactId>
+            <version>${aries.proxy.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.aries.proxy</groupId>
+            <artifactId>org.apache.aries.proxy.impl</artifactId>
+            <version>${aries.proxy.impl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.aries.blueprint</groupId>
+            <artifactId>org.apache.aries.blueprint.api</artifactId>
+            <version>${blueprint.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.aries.blueprint</groupId>
+            <artifactId>org.apache.aries.blueprint.core</artifactId>
+            <version>${blueprint.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId> <!-- not packaged. Used as a reminder that it needs to be added to org.osgi.framework.system.packages.extra -->
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <includeEmptyDirs>true</includeEmptyDirs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>etc/**</include>
+                    <include>data/**</include>
+                    <include>deploy/**</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
+</project>
