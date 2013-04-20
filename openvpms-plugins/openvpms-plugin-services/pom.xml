@@ -5,14 +5,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>org.openvpms</groupId>
+        <groupId>org.openvpms.plugin</groupId>
         <artifactId>openvpms-plugins</artifactId>
         <version>1.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.openvpms</groupId>
     <artifactId>openvpms-plugin-services</artifactId>
 
     <name>OpenVPMS plugin services</name>
@@ -40,7 +39,7 @@
             <artifactId>openvpms-framework</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.openvpms</groupId>
+            <groupId>org.openvpms.plugin</groupId>
             <artifactId>openvpms-plugin-api</artifactId>
         </dependency>
         <dependency>
