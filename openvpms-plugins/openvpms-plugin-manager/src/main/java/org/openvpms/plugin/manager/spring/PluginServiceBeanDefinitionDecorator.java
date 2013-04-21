@@ -25,6 +25,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -58,9 +59,11 @@ public class PluginServiceBeanDefinitionDecorator implements BeanDefinitionDecor
      * @param beanName the bean name
      * @param registry the bean registry
      */
+    @SuppressWarnings("unchecked")
     private void addService(String beanName, BeanDefinitionRegistry registry) {
         BeanDefinition config = getConfig(registry);
-        config.getPropertyValues().addPropertyValue(SERVICES, beanName);
+        List<String> services = (List<String>) config.getPropertyValues().getPropertyValue(SERVICES).getValue();
+        services.add(beanName);
     }
 
     /**

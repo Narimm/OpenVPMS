@@ -15,6 +15,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-archetypes</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.openvpms.plugin</groupId>
             <artifactId>openvpms-test-service</artifactId>
             <version>${project.version}</version>

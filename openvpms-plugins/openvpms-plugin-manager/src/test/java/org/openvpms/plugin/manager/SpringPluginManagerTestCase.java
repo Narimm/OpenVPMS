@@ -17,6 +17,8 @@
 package org.openvpms.plugin.manager;
 
 import org.junit.Test;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.plugin.test.service.impl.TestServiceImpl;
 import org.openvpms.plugins.test.TestPlugin;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -45,7 +48,8 @@ public class SpringPluginManagerTestCase extends AbstractJUnit4SpringContextTest
      * The test service.
      */
     @Autowired
-    TestServiceImpl service;
+    TestServiceImpl testService;
+
 
     /**
      * Verifies that the {@link TestServiceImpl} defined in the Spring context is exposed to the {@link TestPlugin}.
@@ -54,12 +58,15 @@ public class SpringPluginManagerTestCase extends AbstractJUnit4SpringContextTest
      */
     @Test
     public void testPluginManager() throws Exception {
-        assertNull(service.getValue());
+        assertNull(testService.getValue());
+        String name = TestHelper.getPractice().getName();
+        assertNotNull(name);
         String path = FelixHelper.getFelixDir();
+
         PluginManager pluginManager = new PluginManager(path, provider);
         pluginManager.start();
         Thread.sleep(10000);
         pluginManager.destroy();
-        assertEquals("hello", service.getValue());
+        assertEquals(name, testService.getValue());
     }
 }

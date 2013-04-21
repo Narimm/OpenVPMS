@@ -17,17 +17,21 @@
 package org.openvpms.plugin.manager;
 
 import org.junit.Test;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.plugin.test.service.TestService;
 import org.openvpms.plugin.test.service.impl.TestServiceImpl;
+import org.openvpms.plugins.test.TestPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 
@@ -36,25 +40,45 @@ import static org.junit.Assert.assertNull;
  *
  * @author Tim Anderson
  */
-public class PluginManagerTestCase {
+public class PluginManagerTestCase extends ArchetypeServiceTest {
 
+    /**
+     * Verifies that services can be provided to a plugin, and that the plugin can call them.
+     * <p/>
+     * This provides an {@link TestService} and {@link IArchetypeService} to the {@link TestPlugin} plugin,
+     * which calls the {@link TestService} with the value of the practice name, as determined from
+     * the {@link IArchetypeService}.
+     *
+     * @throws Exception for any error
+     */
     @Test
-    public void test() throws Exception {
+    public void testPluginManager() throws Exception {
         final TestServiceImpl service = new TestServiceImpl();
         assertNull(service.getValue());
 
+        String name = TestHelper.getPractice().getName();
+        assertNotNull(name);
+
+        // provide the TestService and ArchetypeService to the plugin
         PluginServiceProvider provider = new PluginServiceProvider() {
             public List<ServiceRegistration<?>> provide(BundleContext context) {
-                ServiceRegistration<?> result = context.registerService(TestService.class.getName(), service,
-                                                                        new Hashtable<String, Object>());
-                return Arrays.<ServiceRegistration<?>>asList(result);
+                ServiceRegistration<?> testService = context.registerService(TestService.class.getName(), service,
+                                                                             new Hashtable<String, Object>());
+                ServiceRegistration<?> archetypeService = context.registerService(IArchetypeService.class.getName(),
+                                                                                  getArchetypeService(),
+                                                                                  new Hashtable<String, Object>());
+                return Arrays.asList(testService, archetypeService);
             }
         };
+
+        // start the plugin manager
         PluginManager manager = new PluginManager(FelixHelper.getFelixDir(), provider);
         manager.start();
         Thread.sleep(10000);
         manager.destroy();
-        assertEquals("hello", service.getValue());
+
+        // verify the service was called by the plugin, with the practice name
+        assertEquals(name, service.getValue());
     }
 
 }

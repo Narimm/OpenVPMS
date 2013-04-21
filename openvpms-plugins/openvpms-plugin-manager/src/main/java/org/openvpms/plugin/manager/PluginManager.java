@@ -15,10 +15,24 @@
  */
 package org.openvpms.plugin.manager;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.felix.framework.Felix;
+import org.apache.felix.framework.Logger;
 import org.apache.felix.framework.util.FelixConstants;
+import org.apache.felix.framework.util.StringMap;
+import org.apache.felix.framework.util.manifestparser.ManifestParser;
 import org.apache.felix.main.AutoProcessor;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRequirement;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -28,13 +42,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.jar.Manifest;
 
 
@@ -50,6 +64,9 @@ public class PluginManager implements InitializingBean, DisposableBean {
 
     private Felix felix;
 
+    private final Logger logger = new Logger();
+
+    private static final BundleRevision BUNDLE_REVISION = new MockBundleRevision();
 
     public PluginManager(String path, PluginServiceProvider provider) {
         this.path = path;
@@ -70,7 +87,6 @@ public class PluginManager implements InitializingBean, DisposableBean {
         start();
     }
 
-
     /**
      * Starts the plugin manager.
      *
@@ -85,17 +101,19 @@ public class PluginManager implements InitializingBean, DisposableBean {
         File storage = getDir(data, "cache", true);
 
         String exports = getExtraSystemPackages();
-        // Create a configuration property map.
+
         Map config = new HashMap();
         config.put("plugin.home", home.getAbsolutePath());
         getConfiguration(etc, config);
-        // Create host activator;
+
         List list = new ArrayList();
         list.add(new PluginServiceBundleActivator(provider));
         config.put(FelixConstants.SYSTEMBUNDLE_ACTIVATORS_PROP, list);
         config.put(FelixConstants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
         config.put(AutoProcessor.AUTO_DEPLOY_DIR_PROPERY, system.getAbsolutePath());
         config.put(FelixConstants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, exports);
+        config.put(FelixConstants.LOG_LOGGER_PROP, logger);
+        config.put(FelixConstants.LOG_LEVEL_PROP, "3");
 
         felix = new Felix(config);
         felix.init();
@@ -117,60 +135,84 @@ public class PluginManager implements InitializingBean, DisposableBean {
     }
 
     /**
-     * Determines the packages to export via the "org.osgi.framework.system.packages.extra" OSGi property.
-     * <p/>
-     * This uses the Export-Package attribute of each MANIFEST.MF available to the current class loader.
-     * <p/>
-     * It discards packages that don't have a version attribute, or begin with:
-     * <ul>
-     * <li>org.osgi</li>
-     * <li>java</li>
-     * <li>org.springframework</li>
-     * </ul>
+     * Parses OSGi manifest entries to determine the packages that need to be added to the
+     * <em>org.osgi.framework.system.packages.extra</em> property to expose them to plugins.
      *
-     * @return the extra packages to export
+     * @return the extra system packages
      */
     private String getExtraSystemPackages() {
-        Set<String> exports = new TreeSet<String>();
+        Map<String, String> packages = new TreeMap<String, String>();
         try {
             Enumeration<URL> resources = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
             while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                InputStream stream = null;
-                try {
-                    stream = url.openStream();
-                    Manifest manifest = new Manifest(stream);
-                    String export = manifest.getMainAttributes().getValue("Export-Package");
-                    if (export != null) {
-                        String[] values = export.split(",");
-                        for (String value : values) {
-                            value = value.trim();
-                            if (!value.isEmpty() && !value.startsWith("org.osgi") && !value.startsWith("java")
-                                && !value.startsWith("org.springframework") && value.contains(";version=")) {
-                                exports.add(value);
-                            }
-                        }
-                    }
-                } catch (IOException ignore) {
-                    ignore.printStackTrace();
-                } finally {
-                    if (stream != null) {
-                        stream.close();
-                    }
+                Map manifest = getManifest(resources.nextElement());
+                if (manifest != null) {
+                    addExports(packages, manifest);
                 }
             }
-        } catch (IOException exception) {
-            exception.printStackTrace();
+        } catch (IOException ignore) {
+            ignore.printStackTrace();
         }
         StringBuilder result = new StringBuilder();
-        for (String value : exports) {
+        for (Map.Entry<String, String> entry : packages.entrySet()) {
             if (result.length() != 0) {
-                result.append(", ");
+                result.append(",");
             }
-            result.append(value);
+            result.append(entry.getKey());
+            result.append(";version=\"");
+            result.append(entry.getValue());
+            result.append('"');
         }
 
         return result.toString();
+    }
+
+    private void addExports(Map<String, String> packages, Map manifest) {
+        try {
+            ManifestParser parser = new ManifestParser(logger, Collections.emptyMap(), BUNDLE_REVISION, manifest);
+            for (BundleCapability capability : parser.getCapabilities()) {
+                if (BundleRevision.PACKAGE_NAMESPACE.equals(capability.getNamespace())) {
+                    Map<String, Object> attributes = capability.getAttributes();
+                    String pkg = getString(PackageNamespace.PACKAGE_NAMESPACE, attributes);
+                    if (pkg != null && !pkg.startsWith("org.osgi.") && !pkg.startsWith("java")) {
+                        String version = getString(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, attributes);
+                        if (version != null) {
+                            packages.put(pkg, version);
+                        }
+                    }
+                }
+            }
+        } catch (BundleException ignore) {
+            ignore.printStackTrace();
+        }
+    }
+
+    private String getString(String key, Map<String, Object> attributes) {
+        Object result = attributes.get(key);
+        return (result != null) ? result.toString() : null;
+    }
+
+    /**
+     * Parses the manifest at the specified URL, returning the main attributes if it exports packages.
+     *
+     * @param url the manifest URL
+     * @return the manifest's main attributes, or {@code null} if it doesn't export packages
+     */
+    private Map getManifest(URL url) {
+        Map result = null;
+        InputStream stream = null;
+        try {
+            stream = url.openStream();
+            Manifest manifest = new Manifest(stream);
+            if (manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE) != null) {
+                result = new StringMap(manifest.getMainAttributes());
+            }
+        } catch (IOException ignore) {
+            ignore.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(stream);
+        }
+        return result;
     }
 
     private File getHome() {
@@ -336,4 +378,44 @@ public class PluginManager implements InitializingBean, DisposableBean {
         return val;
     }
 
+    /**
+     * Helper to enable the use of {@code ManifestParser}.
+     */
+    private static class MockBundleRevision implements BundleRevision {
+        public String getSymbolicName() {
+            return null;
+        }
+
+        public Version getVersion() {
+            return null;
+        }
+
+        public List<BundleCapability> getDeclaredCapabilities(String namespace) {
+            return null;
+        }
+
+        public List<BundleRequirement> getDeclaredRequirements(String namespace) {
+            return null;
+        }
+
+        public int getTypes() {
+            return 0;
+        }
+
+        public BundleWiring getWiring() {
+            return null;
+        }
+
+        public List<Capability> getCapabilities(String namespace) {
+            return null;
+        }
+
+        public List<Requirement> getRequirements(String namespace) {
+            return null;
+        }
+
+        public Bundle getBundle() {
+            return null;
+        }
+    }
 }
