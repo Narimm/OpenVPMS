@@ -18,7 +18,6 @@ package org.openvpms.plugin.manager;
 import org.apache.felix.framework.Felix;
 import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.main.AutoProcessor;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -69,9 +68,14 @@ public class PluginManager implements InitializingBean, DisposableBean {
      */
     public void afterPropertiesSet() throws Exception {
         start();
-
     }
 
+
+    /**
+     * Starts the plugin manager.
+     *
+     * @throws BundleException for any error
+     */
     public void start() throws BundleException {
         File home = getHome();
         File system = getDir(home, "system", false);
@@ -100,15 +104,14 @@ public class PluginManager implements InitializingBean, DisposableBean {
     }
 
     /**
-     * Invoked by a BeanFactory on destruction of a singleton.
+     * Stops the plugin manager.
+     * <p/>
+     * This method will wait until the manager shuts down.
      *
-     * @throws Exception in case of shutdown errors.
-     *                   Exceptions will get logged but not rethrown to allow
-     *                   other beans to release their resources too.
+     * @throws BundleException      if the plugin manager cannot be stopped
+     * @throws InterruptedException if the thread is interrupted while waiting
      */
-    public void destroy() throws Exception {
-        // Shut down the felix framework when stopping the
-        // host application.
+    public void destroy() throws BundleException, InterruptedException {
         felix.stop();
         felix.waitForStop(0);
     }
@@ -120,9 +123,9 @@ public class PluginManager implements InitializingBean, DisposableBean {
      * <p/>
      * It discards packages that don't have a version attribute, or begin with:
      * <ul>
-     *     <li>org.osgi</li>
-     *     <li>java</li>
-     *     <li>org.springframework</li>
+     * <li>org.osgi</li>
+     * <li>java</li>
+     * <li>org.springframework</li>
      * </ul>
      *
      * @return the extra packages to export

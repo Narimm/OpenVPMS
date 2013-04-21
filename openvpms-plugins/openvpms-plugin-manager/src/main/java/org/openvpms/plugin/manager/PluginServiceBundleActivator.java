@@ -20,30 +20,51 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 
 /**
- * Enter description.
+ * A {@code BundleActivator} that registers services with the {@code BundleContext} on startup, using a
+ * {@link PluginServiceProvider}.
  *
  * @author Tim Anderson
  */
 class PluginServiceBundleActivator implements BundleActivator {
 
-    private List<ServiceRegistration<?>> registrations = null;
-
+    /**
+     * The plugin service provider.
+     */
     private final PluginServiceProvider provider;
 
+    /**
+     * The service registrations.
+     */
+    private List<ServiceRegistration<?>> registrations = null;
+
+
+    /**
+     * Constructs a {@code PluginServiceBundleActivator}.
+     *
+     * @param provider the plugin service provider
+     */
     public PluginServiceBundleActivator(PluginServiceProvider provider) {
         this.provider = provider;
     }
 
+    /**
+     * Provides services to the context.
+     *
+     * @param context the context
+     */
     public void start(BundleContext context) {
         registrations = provider.provide(context);
     }
 
+    /**
+     * Unregisters any provided service from the context.
+     *
+     * @param context the context
+     */
     public void stop(BundleContext context) {
         for (ServiceRegistration<?> registration : registrations) {
             registration.unregister();

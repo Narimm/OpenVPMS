@@ -35,11 +35,6 @@ import java.util.ArrayList;
 public class PluginServiceBeanDefinitionDecorator implements BeanDefinitionDecorator {
 
     /**
-     * The plugin service provider bean name.
-     */
-    public static final String BEAN_NAME = "pluginServiceProvider";
-
-    /**
      * The services property name.
      */
     private static final String SERVICES = "services";
@@ -53,21 +48,40 @@ public class PluginServiceBeanDefinitionDecorator implements BeanDefinitionDecor
      * @return the bean definition holder
      */
     public BeanDefinitionHolder decorate(Node node, BeanDefinitionHolder definition, ParserContext context) {
-        BeanDefinitionRegistry registry = context.getRegistry();
-        BeanDefinition factory;
-        if (!registry.containsBeanDefinition(BEAN_NAME)) {
-            BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(PluginServiceFactoryBean.class);
-            factory = builder.getBeanDefinition();
-            if (!factory.getPropertyValues().contains(SERVICES)) {
-                factory.getPropertyValues().addPropertyValue(SERVICES, new ArrayList<String>());
-            }
-            registry.registerBeanDefinition(BEAN_NAME, factory);
-        } else {
-            factory = registry.getBeanDefinition(BEAN_NAME);
-        }
-
-        factory.getPropertyValues().getPropertyValue(SERVICES).getValue();
+        addService(definition.getBeanName(), context.getRegistry());
         return definition;
+    }
+
+    /**
+     * Registers a bean as a plugin service.
+     *
+     * @param beanName the bean name
+     * @param registry the bean registry
+     */
+    private void addService(String beanName, BeanDefinitionRegistry registry) {
+        BeanDefinition config = getConfig(registry);
+        config.getPropertyValues().addPropertyValue(SERVICES, beanName);
+    }
+
+    /**
+     * Returns the {@link PluginServiceProviderConfig} bean definition, creating it if required.
+     *
+     * @param registry the bean definition registry
+     * @return the configuration bean definition
+     */
+    private BeanDefinition getConfig(BeanDefinitionRegistry registry) {
+        BeanDefinition config;
+        if (!registry.containsBeanDefinition(PluginServiceProviderConfig.BEAN_NAME)) {
+            BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(PluginServiceProviderConfig.class);
+            config = builder.getBeanDefinition();
+            if (!config.getPropertyValues().contains(SERVICES)) {
+                config.getPropertyValues().addPropertyValue(SERVICES, new ArrayList<String>());
+            }
+            registry.registerBeanDefinition(PluginServiceProviderConfig.BEAN_NAME, config);
+        } else {
+            config = registry.getBeanDefinition(PluginServiceProviderConfig.BEAN_NAME);
+        }
+        return config;
     }
 
 }

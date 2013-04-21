@@ -50,16 +50,11 @@ public class PluginManagerTestCase {
                 return Arrays.<ServiceRegistration<?>>asList(result);
             }
         };
-        PluginManager manager = new PluginManager(getFelixDir(), provider);
+        PluginManager manager = new PluginManager(FelixHelper.getFelixDir(), provider);
         manager.start();
         Thread.sleep(10000);
         manager.destroy();
         assertEquals("hello", service.getValue());
     }
 
-    private String getFelixDir() {
-        String relPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
-        File dir = new File(relPath + "../../target/felix");
-        return dir.getPath();
-    }
 }

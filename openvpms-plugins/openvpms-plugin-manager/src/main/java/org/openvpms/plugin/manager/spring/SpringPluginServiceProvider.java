@@ -57,9 +57,16 @@ public class SpringPluginServiceProvider implements PluginServiceProvider {
         List<ServiceRegistration<?>> result = new ArrayList<ServiceRegistration<?>>();
         for (String name : beanNames) {
             if (factory.isSingleton(name)) {
-                ServiceRegistration<?> registration = context.registerService(name, factory.getBean(name),
-                                                                              new Hashtable<String, Object>());
-                result.add(registration);
+                Object bean = factory.getBean(name);
+                Class<?>[] interfaces = bean.getClass().getInterfaces();
+                if (interfaces.length != 0) {
+                    String[] names = new String[interfaces.length];
+                    for (int i = 0; i < interfaces.length; ++i) {
+                        names[i] = interfaces[i].getName();
+                    }
+                    ServiceRegistration<?> registration = context.registerService(names, bean, new Hashtable<String, Object>());
+                    result.add(registration);
+                }
             }
         }
         return result;
