@@ -51,7 +51,7 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="Representatives" path="/entityRelationships"
+		<node name="representatives" path="/entityRelationships"
 			type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
 			filter="entityRelationship.supplierRepresentatives" >
 			<assertion name="archetypeRange">
