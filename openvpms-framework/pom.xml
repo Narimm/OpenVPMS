@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -10,7 +11,7 @@
     </parent>
 
     <artifactId>openvpms-framework</artifactId>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <name>OpenVPMS Framework</name>
 
     <issueManagement>
@@ -99,6 +100,20 @@
         </testResources>
         <plugins>
             <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Export-Package>org.openvpms.component.*,org.openvpms.tools.*;version="${project.version}"
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>castor-maven-plugin</artifactId>
                 <version>1.0</version>
@@ -165,14 +180,15 @@
                 <version>1.2</version>
                 <configuration>
                     <tasks unless="maven.test.skip">
-                        <java classname="org.openvpms.tools.archetype.loader.ArchetypeLoader" failonerror="true" fork="true">
+                        <java classname="org.openvpms.tools.archetype.loader.ArchetypeLoader" failonerror="true"
+                              fork="true">
                             <classpath>
-                                <path refid="maven.test.classpath" />
-                                <pathelement path="${maven.build.dest}" />
-                                <pathelement path="${maven.test.dest}" />
-                                <pathelement path="${maven.build.dir}/hibernate" />
+                                <path refid="maven.test.classpath"/>
+                                <pathelement path="${maven.build.dest}"/>
+                                <pathelement path="${maven.test.dest}"/>
+                                <pathelement path="${maven.build.dir}/hibernate"/>
                             </classpath>
-                            <arg line="-v -s -c --context org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml -o -m test/archetypes/org/openvpms/archetype/assertionTypes.xml -d test/archetypes/org/openvpms/archetype" />
+                            <arg line="-v -s -c --context org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml -o -m test/archetypes/org/openvpms/archetype/assertionTypes.xml -d test/archetypes/org/openvpms/archetype"/>
                         </java>
                     </tasks>
                 </configuration>
@@ -364,11 +380,11 @@
             <version>${hibernate.version}</version>
             <scope>runtime</scope>
             <exclusions>
-               <exclusion>
-                  <!-- want later version of ehcache-core -->
-                  <groupId>net.sf.ehcache</groupId>
-                  <artifactId>ehcache</artifactId>
-               </exclusion>
+                <exclusion>
+                    <!-- want later version of ehcache-core -->
+                    <groupId>net.sf.ehcache</groupId>
+                    <artifactId>ehcache</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
