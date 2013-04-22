@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -38,8 +36,7 @@ import java.util.List;
 /**
  * Helper routines for {@link Contact}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ContactHelper {
 
@@ -49,16 +46,13 @@ public class ContactHelper {
      * The preferred no.s are at the head of the list
      *
      * @param party the party
-     * @return a list of phone numbers
+     * @return a list of phone contacts flagged for SMS messaging
      */
-    public static String[] getPhonesForSMS(Party party) {
-        List<Contact> contacts = getContacts(party, new SMSPredicate(), SMSPredicate.TELEPHONE_NUMBER);
-        List<String> result = new ArrayList<String>();
-        for (Contact contact : contacts) {
-            IMObjectBean bean = new IMObjectBean(contact);
-            result.add(bean.getString(SMSPredicate.TELEPHONE_NUMBER));
+    public static List<Contact> getSMSContacts(Party party) {
+        if (party == null) {
+            return Collections.emptyList();
         }
-        return result.toArray(new String[result.size()]);
+        return getContacts(party, SMSPredicate.INSTANCE, SMSPredicate.TELEPHONE_NUMBER);
     }
 
     /**
@@ -66,21 +60,21 @@ public class ContactHelper {
      * <p/>
      * The preferred email contact is the first element in the returned list, if it exists.
      *
-     * @param party the party. May be <tt>null</tt>
+     * @param party the party. May be {@code null}
      * @return the email contacts
      */
     public static List<Contact> getEmailContacts(Party party) {
         if (party == null) {
             return Collections.emptyList();
         }
-        return getContacts(party, EmailPredicate.INSTANCE, "emailAddress");
+        return getContacts(party, EmailPredicate.INSTANCE, EmailPredicate.EMAIL_ADDRESS);
     }
 
     /**
      * Returns the preferred email address for a party.
      *
-     * @param party the party. May be <tt>null</tt>
-     * @return the party's preferred email address or <tt>null</tt> if the party has no email address
+     * @param party the party. May be {@code null}
+     * @return the party's preferred email address or {@code null} if the party has no email address
      */
     public static Contact getPreferredEmail(Party party) {
         List<Contact> list = getEmailContacts(party);
@@ -90,8 +84,8 @@ public class ContactHelper {
     /**
      * Returns the email address from an email contact.
      *
-     * @param contact the contact. May be <tt>null</tt>
-     * @return the email address. May be <tt>null</tt>
+     * @param contact the contact. May be {@code null}
+     * @return the email address. May be {@code null}
      */
     public static String getEmail(Contact contact) {
         if (contact != null) {
@@ -114,7 +108,7 @@ public class ContactHelper {
         CollectionUtils.select(party.getContacts(), predicate, result);
         if (result.size() > 1) {
             SortConstraint[] sort = {new NodeSortConstraint("preferred", false),
-                    new NodeSortConstraint(sortNode, true)};
+                new NodeSortConstraint(sortNode, true)};
             IMObjectSorter.sort(result, sort);
         }
         return result;
@@ -122,6 +116,11 @@ public class ContactHelper {
 
 
     private static class SMSPredicate implements Predicate {
+
+        /**
+         * The singleton instance.
+         */
+        public static Predicate INSTANCE = new SMSPredicate();
 
         /**
          * The telephone number node.

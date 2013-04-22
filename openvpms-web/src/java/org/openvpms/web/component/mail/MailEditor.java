@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -36,7 +36,6 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.TableLayoutData;
-import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.table.DefaultTableModel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -55,7 +54,6 @@ import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.help.HelpContext;
-import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
@@ -113,6 +111,16 @@ public class MailEditor extends AbstractModifiable {
      * The 'to' addresses.
      */
     private final List<Contact> toAddresses;
+
+    /**
+     * The 'from' address formatter.
+     */
+    private final AddressFormatter fromFormatter;
+
+    /**
+     * The 'to' address formatter.
+     */
+    private final AddressFormatter toFormatter;
 
     /**
      * The context.
@@ -224,18 +232,18 @@ public class MailEditor extends AbstractModifiable {
      * Constructs a {@code MailEditor}.
      * <p/>
      * If no 'to' addresses are supplied the address will be editable, otherwise it will be read-only.
-     * If there are multiple addresses, they will be displayed in a dropdown, with the first no. as the default
+     * If there are multiple addresses, they will be displayed in a dropdown, and the preferred contact selected
      *
-     * @param fromAddresses the available 'from' addresses
-     * @param toAddresses   the available 'to' addresses
-     * @param preferredTo   the preferred 'to' address. May be {@code null}
-     * @param context       the context
-     * @param help          the help context
+     * @param mailContext the mail context
+     * @param preferredTo the preferred 'to' address. May be {@code null}
+     * @param context     the context
+     * @param help        the help context
      */
-    public MailEditor(List<Contact> fromAddresses, List<Contact> toAddresses, Contact preferredTo,
-                      Context context, HelpContext help) {
-        this.fromAddresses = fromAddresses;
-        this.toAddresses = toAddresses;
+    public MailEditor(MailContext mailContext, Contact preferredTo, Context context, HelpContext help) {
+        this.fromAddresses = mailContext.getFromAddresses();
+        this.toAddresses = mailContext.getToAddresses();
+        this.fromFormatter = mailContext.getFromAddressFormatter();
+        this.toFormatter = mailContext.getToAddressFormatter();
         this.context = context;
         this.help = help;
         from = createProperty("from", "mail.from");
@@ -249,8 +257,6 @@ public class MailEditor extends AbstractModifiable {
 
         if (preferredTo != null) {
             setTo(preferredTo);
-        } else if (!toAddresses.isEmpty()) {
-            setTo(toAddresses.get(0));
         }
 
         subject = createProperty("subject", "mail.subject");
@@ -297,7 +303,7 @@ public class MailEditor extends AbstractModifiable {
      */
     public void setFrom(Contact from) {
         this.selectedFrom = from;
-        this.from.setValue(getFormattedAddress(from));
+        this.from.setValue(fromFormatter.format(from));
     }
 
     /**
@@ -306,7 +312,7 @@ public class MailEditor extends AbstractModifiable {
      * @return the from address
      */
     public String getFrom() {
-        return getEmailAddress(selectedFrom);
+        return fromFormatter.getAddress(selectedFrom);
     }
 
     /**
@@ -318,7 +324,7 @@ public class MailEditor extends AbstractModifiable {
         selectedTo = toAddress;
         to.removeModifiableListener(toListener);
         try {
-            to.setValue(getFormattedAddress(toAddress));
+            to.setValue(toFormatter.format(toAddress));
         } finally {
             to.addModifiableListener(toListener);
         }
@@ -343,7 +349,7 @@ public class MailEditor extends AbstractModifiable {
      * @return the to address. May be {@code null}
      */
     public String getTo() {
-        return getEmailAddress(selectedTo);
+        return toFormatter.getAddress(selectedTo);
     }
 
     /**
@@ -397,7 +403,7 @@ public class MailEditor extends AbstractModifiable {
         boolean delete = false;
 
         if (document.getMimeType() != null && !DocFormats.PDF_TYPE.equals(document.getMimeType()) &&
-                Converter.canConvert(document.getName(), document.getMimeType(), DocFormats.PDF_TYPE)) {
+            Converter.canConvert(document.getName(), document.getMimeType(), DocFormats.PDF_TYPE)) {
             document = DocumentHelper.convert(document, DocFormats.PDF_TYPE);
         }
 
@@ -534,7 +540,7 @@ public class MailEditor extends AbstractModifiable {
      */
     protected boolean doValidation(Validator validator) {
         return validator.validate(from) && validator.validate(to) && validator.validate(subject)
-                && validator.validate(message);
+               && validator.validate(message);
     }
 
     /**
@@ -545,7 +551,7 @@ public class MailEditor extends AbstractModifiable {
      */
     protected SelectField createAddressSelector(List<Contact> addresses) {
         SelectField result = SelectFieldFactory.create(addresses);
-        result.setCellRenderer(EmailCellRenderer.INSTANCE);
+        result.setCellRenderer(new EmailCellRenderer(fromFormatter));
         result.setWidth(EXTENT);
         return result;
     }
@@ -583,7 +589,7 @@ public class MailEditor extends AbstractModifiable {
                 text = text.substring(start + 1, end);
             }
             for (Contact contact : toAddresses) {
-                String email = ContactHelper.getEmail(contact);
+                String email = toFormatter.getAddress(contact);
                 if (StringUtils.equals(text, email)) {
                     result = contact;
                     break;
@@ -706,8 +712,9 @@ public class MailEditor extends AbstractModifiable {
         Component toAddress = toText;
         if (!toAddresses.isEmpty()) {
             final ListBox toAddressSelector = ListBoxFactory.create(toAddresses);
+            toAddressSelector.getSelectionModel().clearSelection(); // don't default the selection as per OVPMS-1295
             toAddressSelector.setWidth(EXTENT);
-            toAddressSelector.setCellRenderer(EmailCellRenderer.INSTANCE);
+            toAddressSelector.setCellRenderer(new EmailCellRenderer(toFormatter));
 
             final DropDown toAddressDropDown = new DropDown();
             toAddressDropDown.setWidth(EXTENT);
@@ -859,42 +866,22 @@ public class MailEditor extends AbstractModifiable {
         return Messages.get(key, result);
     }
 
-    /**
-     * Helper to return a formatted email address for an email contact.
-     *
-     * @param contact the email contact
-     * @return the formatted email address
-     */
-    private static String getFormattedAddress(Contact contact) {
-        return Messages.get("mail.contact", contact.getParty().getName(), getEmailAddress(contact));
-    }
-
-    /**
-     * Helper to return the email address for a contact.
-     *
-     * @param contact the contact. May be {@code null}
-     * @return the email address. May be {@code null}
-     */
-    private static String getEmailAddress(Contact contact) {
-        if (contact != null) {
-            IMObjectBean bean = new IMObjectBean(contact);
-            return bean.getString("emailAddress");
-        }
-        return null;
-    }
 
     private static class EmailCellRenderer extends AbstractListCellRenderer<Contact> {
 
         /**
-         * The singleton instance.
+         * The address formatter.
          */
-        public static ListCellRenderer INSTANCE = new EmailCellRenderer();
+        private final AddressFormatter formatter;
 
         /**
          * Constructs an {@code EmailCellRenderer}.
+         *
+         * @param formatter the address formatter
          */
-        private EmailCellRenderer() {
+        private EmailCellRenderer(AddressFormatter formatter) {
             super(Contact.class);
+            this.formatter = formatter;
         }
 
         /**
@@ -906,11 +893,7 @@ public class MailEditor extends AbstractModifiable {
          * @return the rendered object
          */
         protected Object getComponent(Component list, Contact object, int index) {
-            String result = null;
-            if (object != null) {
-                result = getFormattedAddress(object);
-            }
-            return result;
+            return formatter.format(object);
         }
 
         /**
