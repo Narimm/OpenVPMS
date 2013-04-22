@@ -32,8 +32,17 @@ public class SupplierArchetypes {
     /**
      * Supplier organisation short name.
      */
-    public static final String SUPPLIER_ORGANISATION
-            = "party.supplierorganisation";
+    public static final String SUPPLIER_ORGANISATION = "party.supplierorganisation";
+
+    /**
+     * Veterinarian supplier short name.
+     */
+    public static final String SUPPLIER_VET = "party.supplierVeterinarian";
+
+    /**
+     * Veterinary practice supplier short name.
+     */
+    public static final String SUPPLIER_VET_PRACTICE = "party.supplierVeterinaryPractice";
 
     /**
      * Supplier order act short name.
