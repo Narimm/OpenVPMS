@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.service;
@@ -22,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import javax.mail.Session;
@@ -39,7 +38,7 @@ public class MailService extends JavaMailSenderImpl {
     /**
      * The context.
      */
-    private final Context context;
+    private Context context;
 
     /**
      * Property name for STARTTLS flag.
@@ -51,10 +50,18 @@ public class MailService extends JavaMailSenderImpl {
      */
     private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
 
+
+    /**
+     * Constructs a {@code MailService}.
+     */
+    public MailService() {
+        this(null);
+    }
+
     /**
      * Constructs a {@code MailService}.
      *
-     * @param context the context
+     * @param context the context. If {@code null}, the global context will be used
      */
     public MailService(Context context) {
         this.context = context;
@@ -137,6 +144,12 @@ public class MailService extends JavaMailSenderImpl {
      * @return the location, or <tt>null</tt> if none is present.
      */
     private IMObjectBean getLocationBean() {
+        if (context == null) {
+            // need to use the context associated with the current instance. Be nice if the context could be injected
+            // by Spring, but the context is scoped to the application instance, not the session, as there may be
+            // multiple application instances per session.
+            context = ContextApplicationInstance.getInstance().getContext();
+        }
         Party location = context.getLocation();
         return (location != null) ? new IMObjectBean(location) : null;
     }

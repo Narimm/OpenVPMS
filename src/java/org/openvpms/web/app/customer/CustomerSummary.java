@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer;
@@ -25,14 +25,11 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
@@ -55,7 +52,6 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -147,7 +143,7 @@ public class CustomerSummary extends PartySummary {
         Column result = ColumnFactory.create("PartySummary", column);
         final Context context = getContext();
         if (SMSHelper.isSMSEnabled(context.getPractice())) {
-            final List<Contact> contacts = getSMSContacts(party);
+            final List<Contact> contacts = ContactHelper.getSMSContacts(party);
             if (!contacts.isEmpty()) {
                 Context local = new LocalContext(context);
                 local.setCustomer(party);
@@ -200,31 +196,18 @@ public class CustomerSummary extends PartySummary {
      * @param email the preferred email
      * @return a new button to launch the dialog
      */
-    private Component getEmail(Contact email) {
+    private Component getEmail(final Contact email) {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
                 Context context = getContext();
                 HelpContext mail = getHelpContext().createTopic("customer/email");
                 MailContext mailContext = new CustomerMailContext(context, mail);
-                MailDialog dialog = new MailDialog(mailContext, context, mail);
+                MailDialog dialog = new MailDialog(mailContext, email, context, mail);
                 dialog.show();
             }
         });
         mail.setText(ContactHelper.getEmail(email));
         return mail;
-    }
-
-    private List<Contact> getSMSContacts(Party party) {
-        List<Contact> contacts = new ArrayList<Contact>();
-        for (Contact contact : party.getContacts()) {
-            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
-                IMObjectBean bean = new IMObjectBean(contact);
-                if (bean.getBoolean("sms")) {
-                    contacts.add(contact);
-                }
-            }
-        }
-        return contacts;
     }
 
     /**
