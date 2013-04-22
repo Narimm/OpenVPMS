@@ -12,13 +12,11 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
 -->
 <archetypes>
     <archetype name="act.customerEstimation.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.Act"
-               displayName="Estimation">
+               displayName="Estimate">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
@@ -55,7 +53,7 @@
                     <property name="POSTED" value="Finalised"/>
                     <property name="INVOICED" value="Invoiced"/>
                 </propertyList>
-                <errorMessage>Invalid Estimation Status</errorMessage>
+                <errorMessage>Invalid Estimate Status</errorMessage>
             </assertion>
         </node>
         <node name="customer" path="/participations" type="java.util.HashSet"
