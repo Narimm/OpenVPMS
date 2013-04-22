@@ -18,7 +18,7 @@
 <archetypes>
 	<archetype name="actRelationship.customerEstimationItem.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.act.ActRelationship" displayName="Estimation Item Relationship" >
+		type="org.openvpms.component.business.domain.im.act.ActRelationship" displayName="Estimate Item Relationship" >
 		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
@@ -27,7 +27,7 @@
 			path="/description" hidden="true" derived="true"
 			derivedValue="' '" />
 		<node name="parentChild" path="/parentChildRelationship" type="java.lang.Boolean" readOnly="true" hidden="true" defaultValue="true()" />
-		<node name="source" displayName="Estimation" path="/source"
+		<node name="source" displayName="Estimate" path="/source"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
@@ -39,7 +39,7 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="target" displayName="Estimation Item" path="/target"
+		<node name="target" displayName="Estimate Item" path="/target"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
