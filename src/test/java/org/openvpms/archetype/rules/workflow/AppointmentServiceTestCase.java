@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -36,9 +34,9 @@ import org.openvpms.component.system.common.util.PropertySet;
 import java.util.Date;
 import java.util.List;
 
-import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
@@ -46,8 +44,7 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
 /**
  * Tests the {@link AppointmentService}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentServiceTestCase extends ArchetypeServiceTest {
 
@@ -430,7 +427,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
      *
      * @param date     the date to create the appointment on
      * @param schedule the schedule
-     * @param save     if <tt>true</tt> save the appointment
+     * @param save     if {@code true} save the appointment
      * @return a new appointment
      */
     private Act createAppointment(Date date, Party schedule, boolean save) {
@@ -445,7 +442,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
      * @param startTime the start time
      * @param endTime   the end time
      * @param schedule  the schedule
-     * @param save      if <tt>true</tt> save the appointment
+     * @param save      if {@code true} save the appointment
      * @return a new appointment
      */
     private Act createAppointment(Date startTime, Date endTime, Party schedule, boolean save) {

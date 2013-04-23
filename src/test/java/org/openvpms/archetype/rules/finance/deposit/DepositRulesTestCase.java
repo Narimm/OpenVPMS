@@ -1,28 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.deposit;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.InvalidDepositArchetype;
-import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.UndepositedDepositExists;
+import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -35,12 +31,18 @@ import org.openvpms.component.business.service.ruleengine.RuleEngineException;
 
 import java.util.Date;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.InvalidDepositArchetype;
+import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.UndepositedDepositExists;
+
 
 /**
  * Tests the {@link DepositRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DepositRulesTestCase extends ArchetypeServiceTest {
 
@@ -73,7 +75,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
             while (cause != null && !(cause instanceof DepositRuleException)) {
                 cause = cause.getCause();
             }
-            assertTrue(cause instanceof DepositRuleException);
+            assertNotNull(cause);
             DepositRuleException exception = (DepositRuleException) cause;
             assertEquals(UndepositedDepositExists, exception.getErrorCode());
         }
@@ -98,9 +100,8 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testCheckCanSaveBankDepositWithInvalidAct() {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        ActBean bean = createAct("act.tillBalance");
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        ActBean bean = createAct(TillArchetypes.TILL_BALANCE);
         FinancialAct act = (FinancialAct) bean.getAct();
         try {
             DepositRules.checkCanSaveBankDeposit(act, service);
@@ -146,9 +147,9 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     private ActBean createDeposit(String status) {
-        ActBean act = createAct("act.bankDeposit");
+        ActBean act = createAct(DepositArchetypes.BANK_DEPOSIT);
         act.setStatus(status);
-        act.setParticipant("participation.deposit", account);
+        act.setParticipant(DepositArchetypes.DEPOSIT_PARTICIPATION, account);
         return act;
     }
 

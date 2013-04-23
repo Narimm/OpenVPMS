@@ -1,27 +1,33 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
 
-import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
+import org.junit.Assert;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -87,7 +93,7 @@ public class TestHelper extends Assert {
      * @throws ArchetypeServiceException if the service cannot save the object
      * @throws ValidationException       if the object cannot be validated
      */
-    public static void save(IMObject ... objects) {
+    public static void save(IMObject... objects) {
         save(Arrays.asList(objects));
     }
 
@@ -107,13 +113,12 @@ public class TestHelper extends Assert {
      *
      * @param firstName the customer's first name
      * @param lastName  the customer's surname
-     * @param save      if <code>true</code> make the customer persistent
+     * @param save      if {@code true} make the customer persistent
      * @return a new customer
      */
-    public static Party createCustomer(String firstName, String lastName,
-                                       boolean save) {
-        Party customer = (Party) create("party.customerperson");
-        PartyRules rules = new PartyRules();
+    public static Party createCustomer(String firstName, String lastName, boolean save) {
+        Party customer = (Party) create(CustomerArchetypes.PERSON);
+        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService());
         customer.setContacts(rules.getDefaultContacts());
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("firstName", firstName);
@@ -136,7 +141,7 @@ public class TestHelper extends Assert {
     /**
      * Creates a new customer.
      *
-     * @param save if <code>true</code> make the customer persistent
+     * @param save if {@code true} make the customer persistent
      * @return a new customer
      */
     public static Party createCustomer(boolean save) {
@@ -179,11 +184,11 @@ public class TestHelper extends Assert {
     /**
      * Creates a new patient, with species='CANINE'.
      *
-     * @param save if <code>true</code> make the patient persistent
+     * @param save if {@code true} make the patient persistent
      * @return a new patient
      */
     public static Party createPatient(boolean save) {
-        Party patient = (Party) create("party.patientpet");
+        Party patient = (Party) create(PatientArchetypes.PATIENT);
         EntityBean bean = new EntityBean(patient);
         bean.setValue("name", "XPatient-" + System.currentTimeMillis());
         bean.setValue("species", "CANINE");
@@ -208,7 +213,7 @@ public class TestHelper extends Assert {
      * Creates a new patient, owned by the specified customer.
      *
      * @param owner the patient owner
-     * @param save  if <code>true</code>, make the patient persistent
+     * @param save  if {@code true}, make the patient persistent
      * @return a new patient
      */
     public static Party createPatient(Party owner, boolean save) {
@@ -235,11 +240,11 @@ public class TestHelper extends Assert {
      * Creates a new user.
      *
      * @param username the login name
-     * @param save     if <code>true</code> make the user persistent
+     * @param save     if {@code true} make the user persistent
      * @return a new user
      */
     public static User createUser(String username, boolean save) {
-        User user = (User) create("security.user");
+        User user = (User) create(UserArchetypes.USER);
         EntityBean bean = new EntityBean(user);
         bean.setValue("name", username);
         bean.setValue("username", username);
@@ -262,12 +267,12 @@ public class TestHelper extends Assert {
     /**
      * Creates a new clinician.
      *
-     * @param save if <code>true</code> make the user persistent
+     * @param save if {@code true} make the user persistent
      * @return a new user
      */
     public static User createClinician(boolean save) {
-        User user =  createUser("zuser" + Math.abs((int) System.nanoTime()), false);
-        user.addClassification( getLookup("lookup.userType", "CLINICIAN"));
+        User user = createUser("zuser" + Math.abs((int) System.nanoTime()), false);
+        user.addClassification(getLookup("lookup.userType", "CLINICIAN"));
         if (save) {
             save(user);
         }
@@ -288,11 +293,11 @@ public class TestHelper extends Assert {
      * Creates a new <em>product.medicication</em> with an optional species
      * classification. The product name is prefixed with <em>XProduct-</em>.
      *
-     * @param species the species classification. May be <code>null</code>
+     * @param species the species classification. May be {@code null}
      * @return a new product
      */
     public static Product createProduct(String species) {
-        return createProduct("product.medication", species);
+        return createProduct(ProductArchetypes.MEDICATION, species);
     }
 
     /**
@@ -300,7 +305,7 @@ public class TestHelper extends Assert {
      * The product name is prefixed with <em>XProduct-</em>.
      *
      * @param shortName the archetype short name
-     * @param species   the species classification name. May be <code>null</code>
+     * @param species   the species classification name. May be {@code null}
      * @return a new product
      */
     public static Product createProduct(String shortName, String species) {
@@ -312,8 +317,8 @@ public class TestHelper extends Assert {
      * The product name is prefixed with <em>XProduct-</em>.
      *
      * @param shortName the product short name
-     * @param species   the species classification name. May be <tt>null</tt>
-     * @param save      if <tt>true</tt>, save the product
+     * @param species   the species classification name. May be {@code null}
+     * @param save      if {@code true}, save the product
      * @return a new product
      */
     public static Product createProduct(String shortName, String species,
@@ -335,7 +340,7 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates and saves new <code>party.supplierorganisation</em>.
+     * Creates and saves new <em>party.supplierorganisation</em>.
      *
      * @return a new party
      */
@@ -344,13 +349,13 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new <code>party.supplierorganisation</em>.
+     * Creates a new <em>party.supplierorganisation</em>.
      *
-     * @param save if <tt>true</tt> save the supplier
+     * @param save if {@code true} save the supplier
      * @return a new party
      */
     public static Party createSupplier(boolean save) {
-        Party party = (Party) create("party.supplierorganisation");
+        Party party = (Party) create(SupplierArchetypes.SUPPLIER_ORGANISATION);
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("name", "XSupplier");
         if (save) {
@@ -360,17 +365,29 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new <code>party.supplierVeterinarian</em>.
+     * Creates a new <em>party.supplierVeterinarian</em>.
      *
      * @return a new party
      */
     public static Party createSupplierVet() {
-        Party party = (Party) create("party.supplierVeterinarian");
+        Party party = (Party) create(SupplierArchetypes.SUPPLIER_VET);
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("firstName", "J");
         bean.setValue("lastName", "XSupplierVet");
         bean.setValue("title", "MR");
         bean.save();
+        return party;
+    }
+
+    /**
+     * Creates a new <em>party.supplierVeterinaryPractice</em>.
+     *
+     * @return a new party
+     */
+    public static Party createSupplierVetPractice() {
+        Party party = (Party) create(SupplierArchetypes.SUPPLIER_VET_PRACTICE);
+        party.setName("XVetPractice");
+        save(party);
         return party;
     }
 
@@ -388,8 +405,7 @@ public class TestHelper extends Assert {
      */
     public static Party getPractice() {
         Party party;
-        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE,
-                                                  true, true);
+        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
         query.setMaxResults(1);
         QueryIterator<Party> iter = new IMObjectQueryIterator<Party>(query);
         if (iter.hasNext()) {
@@ -408,7 +424,7 @@ public class TestHelper extends Assert {
             party.setName("XPractice");
         }
 
-        PartyRules rules = new PartyRules();
+        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService());
         party.setContacts(rules.getDefaultContacts());
 
         Lookup currency = getCurrency("AUD");
@@ -435,7 +451,7 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new <tt>party.organisationLocation</tt>.
+     * Creates a new <em>party.organisationLocation}.
      *
      * @return a new location
      */
@@ -444,9 +460,9 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Creates a new <tt>party.organisationLocation</tt>.
+     * Creates a new <em>party.organisationLocation}.
      *
-     * @param stockControl if <tt>true</tt>, enable stock control for the location
+     * @param stockControl if {@code true}, enable stock control for the location
      * @return a new location
      */
     public static Party createLocation(boolean stockControl) {
@@ -459,6 +475,21 @@ public class TestHelper extends Assert {
         bean.save();
         return party;
     }
+
+
+    /**
+     * Creates a new till.
+     *
+     * @return the new till
+     */
+    public static Party createTill() {
+        Party till = (Party) TestHelper.create(TillArchetypes.TILL);
+        assertNotNull(till);
+        till.setName("TillRulesTestCase-Till" + till.hashCode());
+        save(till);
+        return till;
+    }
+
 
     /**
      * Returns a lookup, creating and saving it if it doesn't exist.
@@ -476,7 +507,7 @@ public class TestHelper extends Assert {
      *
      * @param shortName the lookup short name
      * @param code      the lookup code
-     * @param save      if <tt>true</tt>, save the lookup
+     * @param save      if {@code true}, save the lookup
      * @return the lookup
      */
     public static Lookup getLookup(String shortName, String code,
@@ -504,7 +535,7 @@ public class TestHelper extends Assert {
      * @param shortName the lookup short name
      * @param code      the lookup code
      * @param name      the lookup name
-     * @param save      if <tt>true</tt>, save the lookup
+     * @param save      if {@code true}, save the lookup
      * @return the lookup
      */
     public static Lookup getLookup(String shortName, String code, String name, boolean save) {
@@ -550,8 +581,7 @@ public class TestHelper extends Assert {
                 return target;
             }
         }
-        LookupRelationship relationship
-                = (LookupRelationship) create(relationshipShortName);
+        LookupRelationship relationship = (LookupRelationship) create(relationshipShortName);
         relationship.setSource(source.getObjectReference());
         relationship.setTarget(target.getObjectReference());
         source.addLookupRelationship(relationship);
@@ -566,7 +596,7 @@ public class TestHelper extends Assert {
      *
      * @param object the object
      * @param node   the lookup node
-     * @return the corresponding lookup's name. May be <tt>null</tt>
+     * @return the corresponding lookup's name. May be {@code null}
      */
     public static String getLookupName(IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object);

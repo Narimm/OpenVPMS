@@ -1,25 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBITS;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -27,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -42,12 +38,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBITS;
+
 
 /**
  * Customer account rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z` $
+ * @author Tim Anderson
  */
 public class CustomerAccountRules {
 
@@ -63,14 +60,7 @@ public class CustomerAccountRules {
 
 
     /**
-     * Creates a new <tt>CustomerBalanceRules</tt>.
-     */
-    public CustomerAccountRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>CustomerBalanceRules</tt>.
+     * Constructs a {@code CustomerAccountRules}.
      *
      * @param service the archetype service
      */
@@ -108,9 +98,9 @@ public class CustomerAccountRules {
      * between two times, inclusive.
      *
      * @param customer       the customer
-     * @param from           the from time. If <tt>null</tt>, indicates that
+     * @param from           the from time. If {@code null}, indicates that
      *                       the time is unbounded
-     * @param to             the to time. If <tt>null</tt>, indicates that the
+     * @param to             the to time. If {@code null}, indicates that the
      *                       time is unbounded
      * @param openingBalance the opening balance
      * @return the balance
@@ -148,8 +138,8 @@ public class CustomerAccountRules {
      *
      * @param customer the customer
      * @param total    the running total
-     * @param payment  if <tt>true</tt> indicates the total is for a payment,
-     *                 if <tt>false</tt> indicates it is for a refund
+     * @param payment  if {@code true} indicates the total is for a payment,
+     *                 if {@code false} indicates it is for a refund
      * @return the new balance
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -213,9 +203,9 @@ public class CustomerAccountRules {
      * @param customer the customer
      * @param date     the date
      * @param from     the from day range
-     * @param to       the to day range. Use <tt>&lt;= 0</tt> to indicate
+     * @param to       the to day range. Use {@code &lt;= 0} to indicate
      *                 all dates
-     * @return <tt>true</tt> if the customer has an overdue balance within
+     * @return {@code true} if the customer has an overdue balance within
      *         the day range past their standard terms.
      */
     public boolean hasOverdueBalance(Party customer, Date date, int from,
@@ -313,7 +303,7 @@ public class CustomerAccountRules {
      *
      * @param act       the act to reverse
      * @param startTime the start time of the reversal
-     * @return the reversal of <tt>act</tt>
+     * @return the reversal of {@code act}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct reverse(FinancialAct act, Date startTime) {
@@ -326,8 +316,8 @@ public class CustomerAccountRules {
      * @param act       the act to reverse
      * @param startTime the start time of the reversal
      * @param notes     notes indicating the reason for the reversal, to set the 'notes' node if the act has one.
-     *                  May be <tt>null</tt>
-     * @return the reversal of <tt>act</tt>
+     *                  May be {@code null}
+     * @return the reversal of {@code act}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct reverse(FinancialAct act, Date startTime, String notes) {

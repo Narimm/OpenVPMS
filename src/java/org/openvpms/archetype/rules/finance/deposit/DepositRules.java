@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.deposit;
 
-import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -30,24 +27,18 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.Date;
 
+import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.DepositAlreadyDeposited;
+import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.InvalidDepositArchetype;
+import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.MissingAccount;
+import static org.openvpms.archetype.rules.finance.deposit.DepositRuleException.ErrorCode.UndepositedDepositExists;
+
 
 /**
  * Deposit rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DepositRules {
-
-    /**
-     * Bank deposit act short name.
-     */
-    public static final String BANK_DEPOSIT = "act.bankDeposit";
-
-    /**
-     * Deposit participation short name.
-     */
-    public static final String DEPOSIT_PARTICIPATION = "participation.deposit";
 
 
     /**
@@ -67,7 +58,7 @@ public class DepositRules {
                                                IArchetypeService service)
             throws DepositRuleException {
         ActBean bean = new ActBean(act);
-        if (!bean.isA(BANK_DEPOSIT)) {
+        if (!bean.isA(DepositArchetypes.BANK_DEPOSIT)) {
             throw new DepositRuleException(InvalidDepositArchetype,
                                            act.getArchetypeId().getShortName());
         }
@@ -83,7 +74,7 @@ public class DepositRules {
             // its a new bank deposit so if status is undeposited
             // check no other undeposited act exists.
             if (DepositStatus.UNDEPOSITED.equals(act.getStatus())) {
-                Entity account = bean.getParticipant(DEPOSIT_PARTICIPATION);
+                Entity account = bean.getParticipant(DepositArchetypes.DEPOSIT_PARTICIPATION);
                 if (account == null) {
                     throw new DepositRuleException(MissingAccount,
                                                    act.getId());
@@ -108,7 +99,7 @@ public class DepositRules {
      */
     public static void deposit(Act act, IArchetypeService service) {
         ActBean bean = new ActBean(act, service);
-        if (!bean.isA(BANK_DEPOSIT)) {
+        if (!bean.isA(DepositArchetypes.BANK_DEPOSIT)) {
             throw new DepositRuleException(InvalidDepositArchetype,
                                            act.getArchetypeId().getShortName());
         }
@@ -118,7 +109,7 @@ public class DepositRules {
         }
         bean.setStatus(DepositStatus.DEPOSITED);
         IMObjectReference accountRef = bean.getParticipantRef(
-                DEPOSIT_PARTICIPATION);
+                DepositArchetypes.DEPOSIT_PARTICIPATION);
         if (accountRef == null) {
             throw new DepositRuleException(MissingAccount,
                                            act.getId());
