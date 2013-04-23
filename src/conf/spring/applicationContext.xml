@@ -43,46 +43,10 @@
                 </prop>
             </props>
         </property>
-        <property name="mappingResources">
+        <property name="mappingLocations">
             <list>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml</value>
+                <value>classpath*:org/openvpms/component/business/dao/**/*.hbm.xml</value>
+                <value>classpath*:org/openvpms/archetype/rules/**/*.hbm.xml</value>
             </list>
         </property>
     </bean>
@@ -149,7 +113,15 @@
             <ref local="lookupService"/>
         </constructor-arg>
     </bean>
-    
+
+    <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg>
+            <null/>
+        </constructor-arg>
+    </bean>
+
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
@@ -159,7 +131,10 @@
                 <entry key="date" value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
                 <entry key="lookup" value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
-                    <bean class="org.openvpms.archetype.function.party.PartyFunctions"/>
+                    <bean class="org.openvpms.archetype.function.party.PartyFunctions">
+                        <constructor-arg index="0" ref="archetypeService"/>
+                        <constructor-arg index="1" ref="patientRules"/>
+                    </bean>
                 </entry>
             </map>
         </constructor-arg>
