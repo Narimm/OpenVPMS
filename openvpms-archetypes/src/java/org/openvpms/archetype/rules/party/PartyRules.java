@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -29,7 +27,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
@@ -48,8 +45,8 @@ import java.util.TreeMap;
 /**
  * Business rules for <em>party.*</em> instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
+ * @author Tony De Keizer
  */
 public class PartyRules {
 
@@ -60,17 +57,7 @@ public class PartyRules {
 
 
     /**
-     * Constructs a new <tt>PartyRules</tt>.
-     *
-     * @throws ArchetypeServiceException if the archetype service is not
-     *                                   configured
-     */
-    public PartyRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Constructs a new <tt>PartyRules</tt>.
+     * Constructs a {@code PartyRules}.
      *
      * @param service the archetype service
      */
@@ -557,8 +544,8 @@ public class PartyRules {
      *
      * @param party   the party
      * @param type    the contact archetype shortname
-     * @param purpose the contact purpose. May be <tt>null</tt>
-     * @return the corresponding contact, or <tt>null</tt>
+     * @param purpose the contact purpose. May be {@code null}
+     * @return the corresponding contact, or {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Contact getContact(Party party, String type, String purpose) {
@@ -570,10 +557,10 @@ public class PartyRules {
      *
      * @param party   the party
      * @param type    the contact type
-     * @param purpose the contact purpose. May be <tt>null</tt>
-     * @param exact   if <tt>true</tt>, the contact must have the specified
+     * @param purpose the contact purpose. May be {@code null}
+     * @param exact   if {@code true}, the contact must have the specified
      *                purpose
-     * @return the matching contact or <tt>null</tt>
+     * @return the matching contact or {@code null}
      */
     private Contact getContact(Party party, String type, String purpose,
                                boolean exact) {
@@ -595,7 +582,7 @@ public class PartyRules {
      * <em>participation.customer</em> participation.
      *
      * @param act the act
-     * @return the customer, or <tt>null</tt> if none is present
+     * @return the customer, or {@code null} if none is present
      */
     public Party getCustomer(Act act) {
         ActBean bean = new ActBean(act, service);
@@ -617,7 +604,7 @@ public class PartyRules {
      * Formats an address from an <em>contact.location</em> contact.
      *
      * @param contact    contact
-     * @param singleLine if <tt>true</tt> formats the address on a single line
+     * @param singleLine if {@code true} formats the address on a single line
      * @return a formatted address
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -767,7 +754,7 @@ public class PartyRules {
      * Returns the patient owner for the patient referenced by an act.
      *
      * @param act the act
-     * @return the patient owner. May be <tt>null</tt>
+     * @return the patient owner. May be {@code null}
      */
     private Party getOwner(Act act) {
         return new PatientRules(service, null, null).getOwner(act);
@@ -778,7 +765,7 @@ public class PartyRules {
      *
      * @param objects the objects
      * @param node    the node name
-     * @return the stringified value of <tt>node</tt> for each object,
+     * @return the stringified value of {@code node} for each object,
      *         separated by ", "
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -815,7 +802,7 @@ public class PartyRules {
                 = new TreeMap<Integer, Contact>();
 
         /**
-         * Constructs a new <tt>ContactMatcher</tt>.
+         * Constructs a new {@code ContactMatcher}.
          *
          * @param shortName the contact archetype short name
          */
@@ -827,8 +814,8 @@ public class PartyRules {
          * Determines if a contact matches the criteria.
          *
          * @param contact the contact
-         * @return <tt>true</tt> if the contact is an exact match; otherwise
-         *         <tt>false</tt>
+         * @return {@code true} if the contact is an exact match; otherwise
+         *         {@code false}
          */
         public boolean matches(Contact contact) {
             return TypeHelper.isA(contact, shortName);
@@ -837,7 +824,7 @@ public class PartyRules {
         /**
          * Returns the contact that best matches the criteria.
          *
-         * @return the contact that best matches the criteria, or <tt>null</tt>
+         * @return the contact that best matches the criteria, or {@code null}
          */
         public Contact getMatch() {
             Integer best = null;
@@ -850,7 +837,7 @@ public class PartyRules {
         /**
          * Registers a contact that matches some/all of the criteria.
          *
-         * @param priority the priority, where <tt>0</tt> is the highest
+         * @param priority the priority, where {@code 0} is the highest
          *                 priority.
          * @param contact  the contact
          */
@@ -862,7 +849,7 @@ public class PartyRules {
          * Determines if a contact has a preferred node with value 'true'.
          *
          * @param contact the contact
-         * @return <tt>true</tt> if the contact is preferred
+         * @return {@code true} if the contact is preferred
          */
         protected boolean isPreferred(Contact contact) {
             IMObjectBean bean = new IMObjectBean(contact, service);
@@ -881,16 +868,16 @@ public class PartyRules {
         private final String purpose;
 
         /**
-         * If <tt>true</tt> the contact must contain the purpose to be returned
+         * If {@code true} the contact must contain the purpose to be returned
          */
         private final boolean exact;
 
         /**
-         * Constructs a new <tt>PurposeMatcher</tt>.
+         * Constructs a new {@code PurposeMatcher}.
          *
          * @param shortName the contact archetype short name
-         * @param purpose   the purpose. May be <tt>null</tt>
-         * @param exact     if <tt>true</tt> the contact must contain the purpose
+         * @param purpose   the purpose. May be {@code null}
+         * @param exact     if {@code true} the contact must contain the purpose
          *                  in order to be considered a match
          */
         public PurposeMatcher(String shortName, String purpose, boolean exact) {
@@ -936,8 +923,8 @@ public class PartyRules {
          *
          * @param contact the contact
          * @param purpose the contact purpose
-         * @return <tt>true</tt> if the contact has the specified purpose,
-         *         otherwise <tt>false</tt>
+         * @return {@code true} if the contact has the specified purpose,
+         *         otherwise {@code false}
          */
         private boolean hasContactPurpose(Contact contact, String purpose) {
             for (Lookup classification : contact.getClassifications()) {

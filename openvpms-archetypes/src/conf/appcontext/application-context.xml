@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
@@ -23,7 +39,7 @@
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
     </bean>
 
-    <!--  The MySQL DataSource -->
+    <!--  The DataSource -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName"
                   value="${hibernate.connection.driver_class}"/>
@@ -46,53 +62,20 @@
                 <prop key="hibernate.jdbc.use_scrollable_resultset">false</prop>
                 <prop key="hibernate.cache.use_query_cache">true</prop>
                 <prop key="hibernate.cache.provider_class">
-                    ${hibernate.cache.provider_class}</prop>
+                    ${hibernate.cache.provider_class}
+                </prop>
                 <prop key="hibernate.cache.use_second_level_cache">
-                    ${hibernate.cache.use_second_level_cache}</prop>
+                    ${hibernate.cache.use_second_level_cache}
+                </prop>
                 <prop key="hibernate.jdbc.batch_size">
-                    ${hibernate.jdbc.batch_size}</prop>
+                    ${hibernate.jdbc.batch_size}
+                </prop>
             </props>
         </property>
-        <property name="mappingResources">
+        <property name="mappingLocations">
             <list>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml</value>
+                <value>classpath*:org/openvpms/component/business/dao/**/*.hbm.xml</value>
+                <value>classpath*:org/openvpms/archetype/rules/**/*.hbm.xml</value>
             </list>
         </property>
     </bean>
@@ -153,7 +136,15 @@
             <ref local="lookupService"/>
         </constructor-arg>
     </bean>
-    
+
+    <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg>
+            <null/>
+        </constructor-arg>
+    </bean>
+
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
@@ -166,7 +157,10 @@
                 <entry key="lookup"
                        value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
-                    <bean class="org.openvpms.archetype.function.party.PartyFunctions"/>
+                    <bean class="org.openvpms.archetype.function.party.PartyFunctions">
+                        <constructor-arg index="0" ref="archetypeService"/>
+                        <constructor-arg index="1" ref="patientRules"/>
+                    </bean>
                 </entry>
                 <entry key="math">
                     <bean class="org.openvpms.archetype.function.math.MathFunctions"/>

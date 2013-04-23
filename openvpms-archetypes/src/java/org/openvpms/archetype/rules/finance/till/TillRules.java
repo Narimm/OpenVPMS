@@ -1,27 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
-import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.deposit.DepositHelper;
-import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -47,46 +44,32 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
+import static org.openvpms.archetype.rules.finance.till.TillArchetypes.TILL_BALANCE;
+import static org.openvpms.archetype.rules.finance.till.TillArchetypes.TILL_BALANCE_ITEM;
+import static org.openvpms.archetype.rules.finance.till.TillArchetypes.TILL_PARTICIPATION;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.BalanceNotFound;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.CantAddActToTill;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.ClearedTill;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.InvalidTillArchetype;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.InvalidTransferTill;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.MissingRelationship;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.MissingTill;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.TillNotFound;
+import static org.openvpms.archetype.rules.finance.till.TillRuleException.ErrorCode.UnclearedTillExists;
+
 
 /**
  * Till business rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TillRules {
-
-    /**
-     * Till balance act short name.
-     */
-    public static final String TILL_BALANCE = "act.tillBalance";
-
-    /**
-     * Till participation short name.
-     */
-    public static final String TILL_PARTICIPATION = "participation.till";
 
     /**
      * The archetype service.
      */
     private final IArchetypeService service;
-
-    /**
-     * Customer account payment act short name.
-     */
-    private static final String ACCOUNT_PAYMENT = "act.customerAccountPayment";
-
-    /**
-     * Customer account refund act short name.
-     */
-    private static final String ACCOUNT_REFUND = "act.customerAccountRefund";
-
-    /**
-     * Till balance item relationship short name.
-     */
-    private static final String TILL_BALANCE_ITEM
-            = "actRelationship.tillBalanceItem";
-
 
     /**
      * Constructs a new <code>TillRules</code>.
@@ -120,8 +103,7 @@ public class TillRules {
     public void checkCanSaveTillBalance(Act act) {
         ActBean bean = new ActBean(act, service);
         if (!bean.isA(TILL_BALANCE)) {
-            throw new TillRuleException(InvalidTillArchetype,
-                                        act.getArchetypeId().getShortName());
+            throw new TillRuleException(InvalidTillArchetype, act.getArchetypeId().getShortName());
         }
 
         Act oldAct = (Act) service.get(act.getObjectReference());
@@ -136,14 +118,11 @@ public class TillRules {
             if (TillBalanceStatus.UNCLEARED.equals(bean.getStatus())) {
                 Entity till = bean.getParticipant(TILL_PARTICIPATION);
                 if (till == null) {
-                    throw new TillRuleException(MissingTill,
-                                                act.getArchetypeId());
+                    throw new TillRuleException(MissingTill, act.getArchetypeId());
                 }
-                Act current = getUnclearedTillBalance(
-                        till.getObjectReference());
+                Act current = getUnclearedTillBalance(till.getObjectReference());
                 if (current != null && current.getId() != act.getId()) {
-                    throw new TillRuleException(UnclearedTillExists,
-                                                till.getName());
+                    throw new TillRuleException(UnclearedTillExists, till.getName());
                 }
             }
         }
@@ -165,7 +144,7 @@ public class TillRules {
     public void addToTill(Act act) {
         ActBean bean = new ActBean(act, service);
         boolean add = true;
-        boolean isAccount = bean.isA(ACCOUNT_PAYMENT, ACCOUNT_REFUND);
+        boolean isAccount = bean.isA(CustomerAccountArchetypes.PAYMENT, CustomerAccountArchetypes.REFUND);
         boolean isAdjust = bean.isA("act.tillBalanceAdjustment");
         if (!isAccount && !isAdjust) {
             throw new TillRuleException(CantAddActToTill,
@@ -265,9 +244,8 @@ public class TillRules {
                     balance.getArchetypeId().getShortName());
         }
         ActBean actBean = new ActBean(act, service);
-        if (!actBean.isA(ACCOUNT_PAYMENT, ACCOUNT_REFUND)) {
-            throw new TillRuleException(CantAddActToTill,
-                                        act.getArchetypeId().getShortName());
+        if (!actBean.isA(CustomerAccountArchetypes.PAYMENT, CustomerAccountArchetypes.REFUND)) {
+            throw new TillRuleException(CantAddActToTill, act.getArchetypeId().getShortName());
         }
         Entity orig = balanceBean.getParticipant(TILL_PARTICIPATION);
         if (orig == null) {
@@ -305,14 +283,14 @@ public class TillRules {
      * @return the uncleared till balance, or <code>null</code> if none exists
      */
     public FinancialAct getUnclearedTillBalance(IMObjectReference till) {
-        ArchetypeQuery query = new ArchetypeQuery(TillRules.TILL_BALANCE,
+        ArchetypeQuery query = new ArchetypeQuery(TILL_BALANCE,
                                                   false,
                                                   true);
         query.add(new NodeConstraint("status", RelationalOp.EQ,
                                      TillBalanceStatus.UNCLEARED));
         CollectionNodeConstraint participations
                 = new CollectionNodeConstraint("till",
-                                               TillRules.TILL_PARTICIPATION,
+                                               TILL_PARTICIPATION,
                                                false, true);
         participations.add(new ObjectRefNodeConstraint("entity", till));
         query.add(participations);
@@ -348,7 +326,7 @@ public class TillRules {
         ActBean bean = new ActBean(act, service);
         bean.setValue("amount", amount);
         bean.setValue("credit", credit);
-        bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
+        bean.setParticipant(TILL_PARTICIPATION, till);
         return act;
     }
 
@@ -390,10 +368,10 @@ public class TillRules {
      */
     private FinancialAct createTillBalance(IMObjectReference till) {
         FinancialAct act = (FinancialAct) service.create(
-                TillRules.TILL_BALANCE);
+                TILL_BALANCE);
         ActBean bean = new ActBean(act, service);
         bean.setStatus(TillBalanceStatus.UNCLEARED);
-        bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
+        bean.setParticipant(TILL_PARTICIPATION, till);
 
         // Get the Till and extract last cash float amount to set balance cash float.  
         Entity theTill = bean.getParticipant(TILL_PARTICIPATION);

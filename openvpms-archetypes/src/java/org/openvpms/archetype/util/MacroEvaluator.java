@@ -1,31 +1,26 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.util;
 
 import org.apache.commons.jxpath.JXPathContext;
-import org.apache.commons.jxpath.Variables;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 
@@ -49,8 +44,7 @@ import java.util.StringTokenizer;
  * The evaluation of the macro '<em>3tid'</em> would evaluate to:
  * <em>Take 3 tablets twice daily</em>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MacroEvaluator {
 
@@ -62,7 +56,7 @@ public class MacroEvaluator {
     /**
      * The variables.
      */
-    private Map<String, Object> variables;
+    private Variables variables;
 
     /**
      * The logger.
@@ -71,13 +65,23 @@ public class MacroEvaluator {
 
 
     /**
-     * Constructs a new <tt>MacroEvaluator</tt>.
+     * Constructs a {@code MacroEvaluator}.
      *
      * @param cache the macro cache
      */
     public MacroEvaluator(MacroCache cache) {
+        this(cache, new DefaultVariables());
+    }
+
+    /**
+     * Constructs a {@code MacroEvaluator}.
+     *
+     * @param cache     the macro cache
+     * @param variables the variables
+     */
+    public MacroEvaluator(MacroCache cache, Variables variables) {
         this.cache = cache;
-        variables = new HashMap<String, Object>();
+        this.variables = variables;
     }
 
     /**
@@ -87,7 +91,7 @@ public class MacroEvaluator {
      * @param value the variable value
      */
     public void declareVariable(String name, Object value) {
-        variables.put(name, value);
+        variables.add(name, value);
     }
 
     /**
@@ -99,7 +103,7 @@ public class MacroEvaluator {
      */
     public String evaluate(String text, Object context) {
         StringTokenizer tokens = new StringTokenizer(text, " \t\n\r", true);
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         JXPathContext ctx = null;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
@@ -143,7 +147,7 @@ public class MacroEvaluator {
      * and fraction format.
      *
      * @param ch the character
-     * @return <tt>true</tt> if <tt>ch</tt> is one of '0'..'9','.' or '/'
+     * @return {@code true} if {@code ch} is one of '0'..'9','.' or '/'
      */
     private boolean isNumeric(char ch) {
         return Character.isDigit(ch) || ch == '.' || ch == '/';
@@ -152,26 +156,26 @@ public class MacroEvaluator {
     /**
      * Variables implementation that evaluates macros.
      */
-    private class MacroVariables implements Variables {
+    private class MacroVariables implements org.apache.commons.jxpath.Variables {
 
         /**
          * The context to evaluate macro based variables with.
          */
-        private Object context;
+        private final Object context;
 
         /**
          * The variables.
          */
-        private Map<String, Object> variables;
+        private final Variables variables;
 
 
-        public MacroVariables(Object context, Map<String, Object> variables) {
+        public MacroVariables(Object context, Variables variables) {
             this.context = context;
-            this.variables = new HashMap<String, Object>(variables);
+            this.variables = variables;
         }
 
         public void declareVariable(String name, Object value) {
-            variables.put(name, value);
+            variables.add(name, value);
         }
 
         public Object getVariable(String name) {
@@ -194,11 +198,11 @@ public class MacroEvaluator {
         }
 
         public boolean isDeclaredVariable(String name) {
-            return cache.getExpression(name) != null || variables.containsKey(name);
+            return cache.getExpression(name) != null || variables.exists(name);
         }
 
         public void undeclareVariable(String name) {
-            variables.remove(name);
+            // no-op
         }
     }
 

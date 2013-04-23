@@ -1,26 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.archetype.function.macro;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.archetype.util.IMObjectVariables;
 import org.openvpms.archetype.util.MacroCache;
 import org.openvpms.archetype.util.MacroEvaluator;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 
 
 /**
@@ -32,10 +33,9 @@ import org.openvpms.archetype.util.MacroEvaluator;
  * <li>macro:eval('displayName', .)
  * <li>macro:eval('displayName', someexpression)
  * <li>macro:eval('displayName', $somevariable)
-  * </ul>
+ * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MacroFunctions {
 
@@ -45,12 +45,14 @@ public class MacroFunctions {
     private final MacroEvaluator evaluator;
 
     /**
-     * Constructs a <tt>MacroFunctions</tt>.
+     * Constructs a {@code MacroFunctions}.
      *
-     * @param cache the macro cache
+     * @param cache         the macro cache
+     * @param service       the archetype service
+     * @param lookupService the lookup service
      */
-    public MacroFunctions(MacroCache cache) {
-        this.evaluator = new MacroEvaluator(cache);
+    public MacroFunctions(MacroCache cache, IArchetypeService service, ILookupService lookupService) {
+        this.evaluator = new MacroEvaluator(cache, new IMObjectVariables(service, lookupService));
     }
 
     /**
@@ -87,7 +89,6 @@ public class MacroFunctions {
      *   macro:eval('displayName', .)
      *   macro:eval('displayName', $customer)
      * </pre>
-     *
      *
      * @param macro   the macro name
      * @param context the macro context

@@ -1,37 +1,41 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.util;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 /**
  * Tests the {@link MacroEvaluator} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
 
@@ -51,6 +55,12 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     private Lookup macro2;
 
     /**
+     * The lookup service.
+     */
+    @Autowired
+    private ILookupService lookupService;
+
+    /**
      * Tests {@link MacroEvaluator#evaluate(String, Object)}.
      */
     @Test
@@ -62,8 +72,7 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
         Object text2 = macros.evaluate("@macro2", person);
         assertEquals("onetwothree", text2);
 
-        Object text3 = macros.evaluate("test macro1 @macro2 endtest",
-                                       person);
+        Object text3 = macros.evaluate("test macro1 @macro2 endtest", person);
         assertEquals("test macro 1 text onetwothree endtest", text3);
 
         Object text4 = macros.evaluate("displayName", person);
@@ -155,13 +164,54 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that declare variable can be access by macros.
+     * Verifies that declared variable can be access by macros.
      */
     @Test
     public void testDeclareVariable() {
         assertEquals("variableTest", macros.evaluate("variableTest", new Object())); // as variable not defined
         macros.declareVariable("variable", "foo");
         assertEquals("foo", macros.evaluate("variableTest", new Object()));
+    }
+
+    /**
+     * Verifies that declared variables can be access by macros, and support the {@link NodeResolver} syntax.
+     */
+    @Test
+    public void testDeclareIMObjectVariable() {
+        // check that the macro doesn't expand if the underlying variable is not defined
+        assertEquals("patientname", macros.evaluate("patientname", new Object()));
+
+        // create a patient
+        IMObject patient = TestHelper.createPatient();
+        assertNotNull(patient.getName());
+
+        // declare the variable
+        macros.declareVariable("patient", patient);
+
+        // verify that the macro expands correctly
+        assertEquals(patient.getName(), macros.evaluate("patientname", new Object()));
+    }
+
+    /**
+     * Verifies that declared variables can be access by macros, and support the {@link NodeResolver} syntax.
+     */
+    @Test
+    public void testDeclareIMObjectVariableForLookup() {
+        // check that the macro doesn't expand if the underlying variable is not defined
+        assertEquals("patientspecies", macros.evaluate("patientspecies", new Object()));
+
+        // create a canine patient
+        IMObject patient = TestHelper.createPatient();
+
+        // verify that the lookup name is not the same as its code
+        Lookup lookup = TestHelper.getLookup("lookup.species", "CANINE");
+        assertNotEquals(lookup.getName(), lookup.getCode());
+
+        // declare the variable
+        macros.declareVariable("patient", patient);
+
+        // verify that the macro expands correctly
+        assertEquals(lookup.getName(), macros.evaluate("patientspecies", new Object()));
     }
 
     /**
@@ -176,7 +226,9 @@ public class MacroEvaluatorTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("nested", "concat('nested test: ', $macro1)");
         MacroTestHelper.createMacro("numbertest", "concat('input number: ', $number)");
         MacroTestHelper.createMacro("variableTest", "$variable");
-        macros = new MacroEvaluator(new MacroCache());
+        MacroTestHelper.createMacro("patientname", "$patient.name");
+        MacroTestHelper.createMacro("patientspecies", "$patient.species");
+        macros = new MacroEvaluator(new MacroCache(), new IMObjectVariables(getArchetypeService(), lookupService));
     }
 
 
