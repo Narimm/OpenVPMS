@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -36,8 +34,7 @@ import java.util.List;
 /**
  * Simple implementation of the {@link Property} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SimpleProperty extends AbstractProperty {
 
@@ -57,12 +54,12 @@ public class SimpleProperty extends AbstractProperty {
     private String displayName;
 
     /**
-     * The property description. May be <tt>null</tt>
+     * The property description. May be {@code null}
      */
     private String description;
 
     /**
-     * The property value. May be <tt>null</tt>
+     * The property value. May be {@code null}
      */
     private Object value;
 
@@ -96,7 +93,9 @@ public class SimpleProperty extends AbstractProperty {
      */
     private boolean required;
 
-
+    /**
+     * Validation errors.
+     */
     private List<ValidatorError> validationErrors;
 
     /**
@@ -106,7 +105,7 @@ public class SimpleProperty extends AbstractProperty {
 
 
     /**
-     * Creates a new <tt>SimpleProperty</tt>.
+     * Constructs a {@code SimpleProperty}.
      *
      * @param name the property name
      * @param type the property type
@@ -116,10 +115,10 @@ public class SimpleProperty extends AbstractProperty {
     }
 
     /**
-     * Creates a new <tt>SimpleProperty</tt>.
+     * Constructs a {@code SimpleProperty}.
      *
      * @param name  the property name
-     * @param value the property value. May be <tt>null</tt>
+     * @param value the property value. May be {@code null}
      * @param type  the property type
      */
     public SimpleProperty(String name, Object value, Class type) {
@@ -161,7 +160,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Returns the property description.
      *
-     * @return the description. May be <tt>null</tt>
+     * @return the description. May be {@code null}
      */
     public String getDescription() {
         return description;
@@ -170,7 +169,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Sets the property description.
      *
-     * @param description the description. May be <tt>null</tt>
+     * @param description the description. May be {@code null}
      */
     public void setDescription(String description) {
         this.description = description;
@@ -182,7 +181,7 @@ public class SimpleProperty extends AbstractProperty {
      * value. If the value is set, any listeners will be notified.
      *
      * @param value the property value
-     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it
+     * @return {@code true} if the value was set, {@code false} if it
      *         cannot be set due to error, or is the same as the existing value
      */
     public boolean setValue(Object value) {
@@ -262,7 +261,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is a boolean.
      *
-     * @return <tt>true</tt> if it is a boolean
+     * @return {@code true} if it is a boolean
      */
     public boolean isBoolean() {
         return Boolean.class == type || boolean.class == type;
@@ -271,7 +270,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is a string.
      *
-     * @return <tt>true</tt> if it is a string
+     * @return {@code true} if it is a string
      */
     public boolean isString() {
         return String.class == type;
@@ -280,7 +279,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is numeric.
      *
-     * @return <tt>true</tt> if it is numeric
+     * @return {@code true} if it is numeric
      */
     public boolean isNumeric() {
         return Number.class.isAssignableFrom(type)
@@ -295,7 +294,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is a date.
      *
-     * @return <tt>true</tt> if it is a date
+     * @return {@code true} if it is a date
      */
     public boolean isDate() {
         return Date.class == type;
@@ -304,7 +303,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is a money property.
      *
-     * @return <tt>true</tt> it is a money property
+     * @return {@code true} it is a money property
      */
     public boolean isMoney() {
         return Money.class == type;
@@ -313,7 +312,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is an object reference.
      *
-     * @return <tt>true</tt> if it is an object reference
+     * @return {@code true} if it is an object reference
      */
     public boolean isObjectReference() {
         return IMObjectReference.class.isAssignableFrom(type);
@@ -322,7 +321,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is a lookup.
      *
-     * @return <tt>true</tt> if it is a lookup
+     * @return {@code true} if it is a lookup
      */
     public boolean isLookup() {
         return false;
@@ -331,7 +330,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is a collection.
      *
-     * @return <tt>true</tt> if it is a collection
+     * @return {@code true} if it is a collection
      */
     public boolean isCollection() {
         return false;
@@ -360,7 +359,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property value is derived from an expression.
      *
-     * @return <tt>true</tt> if the value is derived, otherwise <tt>false</tt>
+     * @return {@code true} if the value is derived, otherwise {@code false}
      */
     public boolean isDerived() {
         return false;
@@ -369,7 +368,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is read-only.
      *
-     * @return <tt>true</tt> if the property is read-only
+     * @return {@code true} if the property is read-only
      */
     public boolean isReadOnly() {
         return readOnly;
@@ -378,7 +377,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Sets if the property is read-only.
      *
-     * @param readOnly <tt>true</tt> if the property is read-only
+     * @param readOnly {@code true} if the property is read-only
      */
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
@@ -387,7 +386,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is hidden.
      *
-     * @return <tt>true</tt> if the property is hidden; otherwise <tt>false</tt>
+     * @return {@code true} if the property is hidden; otherwise {@code false}
      */
     public boolean isHidden() {
         return hidden;
@@ -396,7 +395,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Sets if the property is hidden.
      *
-     * @param hidden <tt>true</tt> if the property is hidden
+     * @param hidden {@code true} if the property is hidden
      */
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
@@ -405,8 +404,8 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is required.
      *
-     * @return <tt>true</tt> if the property is required; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the property is required; otherwise
+     *         {@code false}
      */
     public boolean isRequired() {
         return required;
@@ -415,7 +414,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Determines if the property is required.
      *
-     * @param required if <tt>true</tt> the property is required
+     * @param required if {@code true} the property is required
      */
     public void setRequired(boolean required) {
         this.required = required;
@@ -424,7 +423,7 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Returns the property descriptor.
      *
-     * @return <tt>null</tt>
+     * @return {@code null}
      */
     public NodeDescriptor getDescriptor() {
         return null;
@@ -434,7 +433,7 @@ public class SimpleProperty extends AbstractProperty {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         List<ValidatorError> errors = null;

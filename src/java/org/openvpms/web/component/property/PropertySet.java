@@ -1,23 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id:PropertySet.java 2147 2007-06-21 04:16:11Z tanderson $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,13 +36,12 @@ import java.util.Map;
 /**
  * Set of {@link Property} instances that tracks modification of derived values.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2007-06-21 04:16:11Z $
+ * @author Tim Anderson
  */
 public class PropertySet {
 
     /**
-     * The object that the properties belong to. May be <tt>null</tt>
+     * The object that the properties belong to. May be {@code null}
      */
     private final IMObject object;
 
@@ -59,22 +57,23 @@ public class PropertySet {
 
 
     /**
-     * Constructs a new <tt>PropertySet</tt> from an object.
+     * Constructs a {@code PropertySet} from an object.
      *
      * @param object  the object
-     * @param context the layout context. May be <tt>null</tt>
+     * @param context the layout context. May be {@code null}
      */
     public PropertySet(IMObject object, LayoutContext context) {
-        this(object, getArchetypeDescriptor(object, context));
+        this(object, getArchetypeDescriptor(object, context), context.getVariables());
     }
 
     /**
-     * Constructs a new <tt>PropertySet</tt> for an object and descriptor.
+     * Constructs a {@code PropertySet} for an object and descriptor.
      *
      * @param object    the object
      * @param archetype the archetype descriptor
+     * @param variables the variables for macro expansion. May be {@code null}
      */
-    public PropertySet(IMObject object, ArchetypeDescriptor archetype) {
+    public PropertySet(IMObject object, ArchetypeDescriptor archetype, Variables variables) {
         this.object = object;
 
         List<NodeDescriptor> descriptors = archetype.getAllNodeDescriptors();
@@ -82,11 +81,16 @@ public class PropertySet {
         for (int i = 0; i < descriptors.size(); ++i) {
             list[i] = new IMObjectProperty(object, descriptors.get(i));
         }
+        if (variables != null) {
+            for (Property property : list) {
+                property.setVariables(variables);
+            }
+        }
         setProperties(list);
     }
 
     /**
-     * Constructs a <tt>PropertySet</tt> from a list of properties.
+     * Constructs a {@code PropertySet} from a list of properties.
      *
      * @param properties the properties
      */
@@ -99,8 +103,7 @@ public class PropertySet {
      * Returns the named property.
      *
      * @param name the name
-     * @return the property corresponding to <tt>name</tt>, or <tt>null</tt>
-     *         if none exists
+     * @return the property corresponding to {@code name}, or {@code null} if none exists
      */
     public Property get(String name) {
         return properties.get(name);
@@ -110,8 +113,8 @@ public class PropertySet {
      * Returns a property given its descriptor.
      *
      * @param descriptor the descriptor
-     * @return the property corresponding to <tt>descriptor</tt>, or
-     *         <tt>null</tt> if none exists
+     * @return the property corresponding to {@code descriptor}, or
+     *         {@code null} if none exists
      */
     public Property get(NodeDescriptor descriptor) {
         return get(descriptor.getName());
@@ -129,7 +132,7 @@ public class PropertySet {
     /**
      * Determines if any of the properties have been modified.
      *
-     * @return <tt>true</tt> if at least one property has been modified
+     * @return {@code true} if at least one property has been modified
      */
     public boolean isModified() {
         for (Property property : getProperties()) {
@@ -210,7 +213,7 @@ public class PropertySet {
      * Returns the archetype descriptor for an object.
      *
      * @param object  the object
-     * @param context the layout context. May be <tt>null</tt>
+     * @param context the layout context. May be {@code null}
      * @return the archetype descriptor for the object
      */
     private static ArchetypeDescriptor getArchetypeDescriptor(IMObject object, LayoutContext context) {

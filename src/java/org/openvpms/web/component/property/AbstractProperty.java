@@ -1,29 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
 
+import org.openvpms.archetype.util.Variables;
+
 /**
  * Abstract implementation of the {@link Property} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractProperty extends AbstractModifiable implements Property {
 
@@ -43,9 +42,15 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     private PropertyTransformer transformer;
 
     /**
+     * Variables for macro expansion.
+     */
+    private Variables variables;
+
+
+    /**
      * Determines if the underlying object has been modified.
      *
-     * @return <tt>true</tt> if this has been modified; otherwise <tt>false</tt>
+     * @return {@code true} if this has been modified; otherwise {@code false}
      */
     public boolean isModified() {
         return dirty;
@@ -61,7 +66,7 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     /**
      * Sets the property transformer.
      *
-     * @param transformer the property transformer. May be <tt>null</tt>
+     * @param transformer the property transformer. May be {@code null}
      */
     public void setTransformer(PropertyTransformer transformer) {
         this.transformer = transformer;
@@ -105,6 +110,24 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     }
 
     /**
+     * Sets variables for use in macro expansion.
+     *
+     * @param variables the variables. May be {@code null}
+     */
+    public void setVariables(Variables variables) {
+        this.variables = variables;
+    }
+
+    /**
+     * Returns variables for use in macro expansion.
+     *
+     * @return the variables. May be {@code null}
+     */
+    public Variables getVariables() {
+        return variables;
+    }
+
+    /**
      * Adds a listener to be notified when this changes, specifying the order of the listener.
      *
      * @param listener the listener to add
@@ -142,8 +165,8 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
      * Indicates whether some other object is "equal to" this one.
      *
      * @param obj the reference object with which to compare.
-     * @return <tt>true</tt> if this object is the same as the obj
-     *         argument; <tt>false</tt> otherwise.
+     * @return {@code true} if this object is the same as the obj
+     *         argument; {@code false} otherwise.
      */
     @Override
     public boolean equals(Object obj) {
@@ -191,7 +214,7 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     protected void checkModifiable() {
         if (isDerived()) {
             throw new UnsupportedOperationException(
-                    "Attenpt to modify derived property: " + getDisplayName());
+                "Attenpt to modify derived property: " + getDisplayName());
         }
     }
 

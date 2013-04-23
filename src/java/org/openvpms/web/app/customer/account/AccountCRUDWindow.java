@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.account;
@@ -75,13 +75,13 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Opening Balance type.
      */
     private static final String OPENING_BALANCE_TYPE
-            = "act.customerAccountOpeningBalance";
+        = "act.customerAccountOpeningBalance";
 
     /**
      * Closing Balance type.
      */
     private static final String CLOSING_BALANCE_TYPE
-            = "act.customerAccountClosingBalance";
+        = "act.customerAccountClosingBalance";
 
 
     /**
@@ -154,7 +154,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         final FinancialAct act = getObject();
         String status = act.getStatus();
         if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE, CLOSING_BALANCE_TYPE)
-                && FinancialActStatus.POSTED.equals(status)) {
+            && FinancialActStatus.POSTED.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();
             String title = Messages.get("customer.account.reverse.title", name);
             String message = Messages.get("customer.account.reverse.message",
@@ -179,12 +179,12 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     protected void onAdjust() {
         String[] shortNames = {"act.customerAccountDebitAdjust",
-                "act.customerAccountCreditAdjust",
-                "act.customerAccountInitialBalance",
-                "act.customerAccountBadDebt"};
+            "act.customerAccountCreditAdjust",
+            "act.customerAccountInitialBalance",
+            "act.customerAccountBadDebt"};
         Archetypes<FinancialAct> archetypes = Archetypes.create(
-                shortNames, FinancialAct.class,
-                Messages.get("customer.account.createtype"));
+            shortNames, FinancialAct.class,
+            Messages.get("customer.account.createtype"));
         onCreate(archetypes);
     }
 
@@ -194,26 +194,26 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     protected void onCheck() {
         final Party customer = getContext().getCustomer();
         if (customer != null) {
-            CustomerAccountRules rules = new CustomerAccountRules();
+            CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
             try {
                 BigDecimal expected = rules.getDefinitiveBalance(customer);
                 BigDecimal actual = rules.getBalance(customer);
                 if (expected.compareTo(actual) == 0) {
                     String title = Messages.get(
-                            "customer.account.balancecheck.title");
+                        "customer.account.balancecheck.title");
                     String message = Messages.get(
-                            "customer.account.balancecheck.ok");
+                        "customer.account.balancecheck.ok");
                     InformationDialog.show(title, message);
                 } else {
                     String message = Messages.get(
-                            "customer.account.balancecheck.error",
-                            NumberFormatter.formatCurrency(expected), NumberFormatter.formatCurrency(actual));
+                        "customer.account.balancecheck.error",
+                        NumberFormatter.formatCurrency(expected), NumberFormatter.formatCurrency(actual));
                     confirmRegenerate(message, customer);
                 }
             } catch (CustomerAccountRuleException exception) {
                 String message = Messages.get(
-                        "customer.account.balancecheck.acterror",
-                        exception.getMessage());
+                    "customer.account.balancecheck.acterror",
+                    exception.getMessage());
                 confirmRegenerate(message, customer);
             }
         }
@@ -239,12 +239,12 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     private void reverse(FinancialAct act) {
         try {
-            CustomerAccountRules rules = new CustomerAccountRules();
+            CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
             rules.reverse(act, new Date(), Messages.get("customer.account.reverse.notes"));
         } catch (OpenVPMSException exception) {
             String title = Messages.get(
-                    "customer.account.reverse.failed",
-                    getArchetypeDescriptor().getDisplayName());
+                "customer.account.reverse.failed",
+                getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
         onRefresh(act);
@@ -277,7 +277,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     private void regenerate(Party customer) {
         try {
             IArchetypeService service
-                    = ServiceHelper.getArchetypeService(false);
+                = ServiceHelper.getArchetypeService(false);
             AccountBalanceTool tool = new AccountBalanceTool(service);
             tool.generate(customer);
             onRefresh(getObject());

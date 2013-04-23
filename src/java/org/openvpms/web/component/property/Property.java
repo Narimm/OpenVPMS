@@ -1,23 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id:Property.java 2147 2007-06-21 04:16:11Z tanderson $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
@@ -25,8 +24,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 /**
  * Property that provides notification on modification.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2007-06-21 04:16:11Z $
+ * @author Tim Anderson
  */
 public interface Property extends Modifiable {
 
@@ -47,7 +45,7 @@ public interface Property extends Modifiable {
     /**
      * Returns the property description.
      *
-     * @return the description. May be <tt>null</tt>
+     * @return the description. May be {@code null}
      */
     String getDescription();
 
@@ -57,7 +55,7 @@ public interface Property extends Modifiable {
      * value. If the value is set, any listeners will be notified.
      *
      * @param value the property value
-     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it
+     * @return {@code true} if the value was set, {@code false} if it
      *         cannot be set due to error, or is the same as the existing value
      */
     boolean setValue(Object value);
@@ -93,56 +91,56 @@ public interface Property extends Modifiable {
     /**
      * Determines if the property is a boolean.
      *
-     * @return <tt>true</tt> if it is a boolean
+     * @return {@code true} if it is a boolean
      */
     boolean isBoolean();
 
     /**
      * Determines if the property is a string.
      *
-     * @return <tt>true</tt> if it is a string
+     * @return {@code true} if it is a string
      */
     boolean isString();
 
     /**
      * Determines if the property is numeric.
      *
-     * @return <tt>true</tt> if it is numeric
+     * @return {@code true} if it is numeric
      */
     boolean isNumeric();
 
     /**
      * Determines if the property is a date.
      *
-     * @return <tt>true</tt> if it is a date
+     * @return {@code true} if it is a date
      */
     boolean isDate();
 
     /**
      * Determines if the property is a money property.
      *
-     * @return <tt>true</tt> it is a money property
+     * @return {@code true} it is a money property
      */
     boolean isMoney();
 
     /**
      * Determines if the property is an object reference.
      *
-     * @return <tt>true</tt> if it is an object reference
+     * @return {@code true} if it is an object reference
      */
     boolean isObjectReference();
 
     /**
      * Determines if the property is a lookup.
      *
-     * @return <tt>true</tt> if it is a lookup
+     * @return {@code true} if it is a lookup
      */
     boolean isLookup();
 
     /**
      * Determines if the property is a collection.
      *
-     * @return <tt>true</tt> if it is a collection
+     * @return {@code true} if it is a collection
      */
     boolean isCollection();
 
@@ -159,43 +157,43 @@ public interface Property extends Modifiable {
     /**
      * Determines if the property value is derived from an expression.
      *
-     * @return <tt>true</tt> if the value is derived, otherwise <tt>false</tt>
+     * @return {@code true} if the value is derived, otherwise {@code false}
      */
     boolean isDerived();
 
     /**
      * Determines if the property is read-only.
      *
-     * @return <tt>true</tt> if the property is read-only
+     * @return {@code true} if the property is read-only
      */
     boolean isReadOnly();
 
     /**
      * Determines if the property is hidden.
      *
-     * @return <tt>true</tt> if the property is hidden; otherwise <tt>false</tt>
+     * @return {@code true} if the property is hidden; otherwise {@code false}
      */
     boolean isHidden();
 
     /**
      * Determines if the property is required.
      *
-     * @return <tt>true</tt> if the property is required; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the property is required; otherwise
+     *         {@code false}
      */
     boolean isRequired();
 
     /**
      * Sets the property transformer.
      *
-     * @param transformer the property transformer. May be <tt>null</tt>
+     * @param transformer the property transformer. May be {@code null}
      */
     void setTransformer(PropertyTransformer transformer);
 
     /**
      * Returns the property transformer.
      *
-     * @return the property transfoer. May be <tt>null</tt>
+     * @return the property transfoer. May be {@code null}
      */
     PropertyTransformer getTransformer();
 
@@ -207,9 +205,22 @@ public interface Property extends Modifiable {
     /**
      * Returns the property descriptor.
      *
-     * @return the property descriptor, or <tt>null</tt> if the property has
-     *         no descriptor
+     * @return the property descriptor, or {@code null} if the property has no descriptor
      */
     NodeDescriptor getDescriptor();
+
+    /**
+     * Sets variables for use in macro expansion.
+     *
+     * @param variables the variables. May be {@code null}
+     */
+    void setVariables(Variables variables);
+
+    /**
+     * Returns variables for use in macro expansion.
+     *
+     * @return the variables. May be {@code null}
+     */
+    Variables getVariables();
 
 }

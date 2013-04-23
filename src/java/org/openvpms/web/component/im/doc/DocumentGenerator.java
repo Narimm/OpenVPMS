@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -29,7 +29,9 @@ import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 import java.util.Set;
@@ -174,7 +176,9 @@ public class DocumentGenerator {
     private void promptParameters(final DocumentActReporter reporter, final boolean save, final boolean version) {
         Set<ParameterType> parameters = reporter.getParameterTypes();
         String title = Messages.get("document.input.parameters");
-        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help);
+        MacroVariables variables = new MacroVariables(context, ServiceHelper.getArchetypeService(),
+                                                      ServiceHelper.getLookupService());
+        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help, variables);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

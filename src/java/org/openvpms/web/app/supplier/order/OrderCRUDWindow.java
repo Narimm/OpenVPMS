@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.supplier.order;
@@ -118,7 +118,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             editEnabled = getActions().canEdit(object);
             String status = object.getStatus();
             deletePostEnabled = !OrderStatus.POSTED.equals(status) && !OrderStatus.ACCEPTED.equals(status)
-                    && !OrderStatus.CANCELLED.equals(status);
+                                && !OrderStatus.CANCELLED.equals(status);
         }
         buttons.setEnabled(EDIT_ID, editEnabled);
         buttons.setEnabled(DELETE_ID, deletePostEnabled);
@@ -179,7 +179,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     @Override
     protected void onPosted(FinancialAct act) {
-        SupplierRules rules = new SupplierRules();
+        SupplierRules rules = new SupplierRules(ServiceHelper.getArchetypeService());
         if (rules.getSupplierStockLocation(act) != null) {
             // ESCI is configured for the supplier, so submit the order
             try {
@@ -237,7 +237,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             suppliers = Arrays.asList((IMObject) supplier);
         }
         final OrderProgressBarProcessor processor = new OrderProgressBarProcessor(
-                getContext().getPractice(), locations, suppliers, title);
+            getContext().getPractice(), locations, suppliers, title);
         final BatchProcessorDialog dialog = new BatchProcessorDialog(processor.getTitle(), processor);
         processor.setListener(new BatchProcessorListener() {
             public void completed() {
