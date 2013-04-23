@@ -30,9 +30,9 @@
         <property name="ignoreResourceNotFound" value="true"/>
 
         <!-- Note: Properties defined in later files will override          -->
-	    <!-- properties defined earlier files, in case of overlapping keys. -->
-	    <!-- Hence, make sure that the most specific files are the last     -->
-	    <!-- ones in the given list of locations.                           -->
+        <!-- properties defined earlier files, in case of overlapping keys. -->
+        <!-- Hence, make sure that the most specific files are the last     -->
+        <!-- ones in the given list of locations.                           -->
         <property name="locations">
             <list>
                 <value>classpath:default-openvpms.properties</value>
@@ -113,77 +113,10 @@
             </props>
         </property>
         <property name="schemaUpdate" value="false"/>
-        <property name="mappingResources">
+        <property name="mappingLocations">
             <list>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml
-                </value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml
-                </value>
-                <value>
-                    /org/openvpms/archetype/rules/workflow/Workflow.hbm.xml
-                </value>
-                <value>
-                    /org/openvpms/archetype/rules/patient/reminder/Reminder.hbm.xml
-                </value>
-                <value>
-                    /org/openvpms/archetype/rules/finance/account/Balance.hbm.xml
-                </value>
-                <value>
-                    /org/openvpms/archetype/rules/supplier/Supplier.hbm.xml
-                </value>
+                <value>classpath:org/openvpms/component/business/dao/**/*.hbm.xml</value>
+                <value>classpath:org/openvpms/archetype/rules/**/*.hbm.xml</value>
             </list>
         </property>
     </bean>
@@ -327,7 +260,6 @@
                 <entry key="party">
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions">
                         <constructor-arg ref="archetypeRuleService"/>
-                        <constructor-arg ref="lookupService"/>
                         <constructor-arg ref="patientRules"/>
                     </bean>
                 </entry>
@@ -348,6 +280,8 @@
                 <entry key="macro">
                     <bean class="org.openvpms.archetype.function.macro.MacroFunctions">
                         <constructor-arg index="0" ref="macroCache"/>
+                        <constructor-arg index="1" ref="archetypeRuleService"/>
+                        <constructor-arg index="2" ref="lookupService"/>
                     </bean>
                 </entry>
             </map>

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting;
@@ -23,6 +23,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
@@ -32,6 +34,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -162,11 +165,13 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
         Entity entity = getObject();
         if (entity != null) {
             try {
-                DocumentTemplate template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+                IArchetypeService service = ServiceHelper.getArchetypeService();
+                ILookupService lookups = ServiceHelper.getLookupService();
+                DocumentTemplate template = new DocumentTemplate(entity, service);
                 Context context = getContext();
                 SQLReportPrinter printer = new SQLReportPrinter(template, context);
-                InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(printer, context,
-                                                                                       getHelpContext());
+                InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(
+                    printer, context, getHelpContext(), new MacroVariables(context, service, lookups));
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
             } catch (Throwable exception) {

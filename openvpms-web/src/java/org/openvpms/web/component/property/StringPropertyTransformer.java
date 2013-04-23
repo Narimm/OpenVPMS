@@ -1,25 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.util.MacroEvaluator;
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.web.component.util.TextHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -30,8 +29,7 @@ import org.openvpms.web.system.ServiceHelper;
  * <p/>
  * For macro expansion to occur, the property must be editable (i.e not read-only or derived).
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StringPropertyTransformer extends AbstractPropertyTransformer {
 
@@ -56,9 +54,14 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      */
     private boolean expandMacros;
 
+    /**
+     * Object to supply to the macro evaluator, if one is not supplied at construction.
+     */
+    private static final Object DUMMY_CONTEXT = new Object();
+
 
     /**
-     * Constructs a <tt>StringTransformer</tt>.
+     * Constructs a {@code StringTransformer}.
      *
      * @param property the property
      */
@@ -67,27 +70,33 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     }
 
     /**
-     * Constructs a <tt>StringTransformer</tt>.
+     * Constructs a {@code StringTransformer}.
      *
      * @param property the property
-     * @param trim     if <tt>true</tt> trim the string of leading and trailing spaces, new lines
+     * @param trim     if {@code true} trim the string of leading and trailing spaces, new lines
      */
     public StringPropertyTransformer(Property property, boolean trim) {
         this(property, getContext(property), trim);
     }
 
     /**
-     * Constructs a <tt>StringTransformer</tt>.
+     * Constructs a {@code StringTransformer}.
      *
      * @param property the property
-     * @param context  the context, used for evaluating macros. If <tt>null</tt>, macros won't be evaluated
-     * @param trim     if <tt>true</tt> trim the string of leading and trailing spaces and new lines
+     * @param context  the context, used for evaluating macros against. If {@code null}, and the property has no
+     *                 variables, then macro expansion is disabled
+     * @param trim     if {@code true} trim the string of leading and trailing spaces and new lines
      */
     public StringPropertyTransformer(Property property, Object context, boolean trim) {
         super(property);
-        this.context = context;
-        if (context != null && !property.isReadOnly() && !property.isDerived()) {
-            macros = new MacroEvaluator(ServiceHelper.getMacroCache());
+        this.context = (context == null) ? DUMMY_CONTEXT : context;
+        Variables variables = property.getVariables();
+        if ((context != null || variables != null) && !property.isReadOnly() && !property.isDerived()) {
+            if (variables != null) {
+                macros = new MacroEvaluator(ServiceHelper.getMacroCache(), variables);
+            } else {
+                macros = new MacroEvaluator(ServiceHelper.getMacroCache());
+            }
         } else {
             macros = null;
         }
@@ -98,7 +107,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     /**
      * Determines if macros should be expanded.
      *
-     * @return <tt>true</tt> if macros should be expanded, otherwise <tt>false</tt>
+     * @return {@code true} if macros should be expanded, otherwise {@code false}
      */
     public boolean getExpandMacros() {
         return expandMacros;
@@ -107,7 +116,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     /**
      * Determines if macros should be expanded.
      *
-     * @param expand if <tt>true</tt>, macros should be expanded
+     * @param expand if {@code true}, macros should be expanded
      */
     public void setExpandMacros(boolean expand) {
         expandMacros = expand;
@@ -116,7 +125,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     /**
      * Returns the macro evaluator.
      *
-     * @return the macro evaluator. May be <tt>null</tt>
+     * @return the macro evaluator. May be {@code null}
      */
     public MacroEvaluator getMacroEvaluator() {
         return macros;
@@ -125,7 +134,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     /**
      * Determines if whitespace should be trimmed.
      *
-     * @param trim if <tt>true</tt> trim the string of leading and trailing spaces and new lines
+     * @param trim if {@code true} trim the string of leading and trailing spaces and new lines
      */
     public void setTrim(boolean trim) {
         this.trim = trim;
@@ -135,8 +144,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      * Transform an object to the required type, performing validation.
      *
      * @param object the object to convert
-     * @return the transformed object, or <tt>object</tt> if no transformation
-     *         is required
+     * @return the transformed object, or {@code object} if no transformation is required
      * @throws PropertyException if the object is invalid
      */
     public Object apply(Object object) {
@@ -145,8 +153,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         if (object instanceof String) {
             String str = (String) object;
             if (TextHelper.hasControlChars(str)) {
-                String msg = Messages.get("property.error.invalidchars",
-                                          property.getDisplayName());
+                String msg = Messages.get("property.error.invalidchars", property.getDisplayName());
                 throw new PropertyException(property, msg);
             }
             if (expandMacros && macros != null) {
@@ -179,7 +186,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      * Helper to return the context from a property.
      *
      * @param property the property
-     * @return the context, or <tt>null</tt> if the property has no context
+     * @return the context, or {@code null} if the property has no context
      */
     private static Object getContext(Property property) {
         return (property instanceof IMObjectProperty) ? ((IMObjectProperty) property).getObject() : null;

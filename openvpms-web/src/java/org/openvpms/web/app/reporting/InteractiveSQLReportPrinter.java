@@ -1,23 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting;
 
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
@@ -40,14 +39,22 @@ import org.openvpms.web.servlet.DownloadServlet;
 public class InteractiveSQLReportPrinter extends InteractivePrinter {
 
     /**
+     * Variables for macro expansion.
+     */
+    private final Variables variables;
+
+    /**
      * Constructs an {@code InteractiveSQLReportPrinter}.
      *
-     * @param printer the printer to delegate to
-     * @param context the context
-     * @param help    the help context
+     * @param printer   the printer to delegate to
+     * @param context   the context
+     * @param help      the help context
+     * @param variables variables for macro expansion
      */
-    public InteractiveSQLReportPrinter(SQLReportPrinter printer, Context context, HelpContext help) {
+    public InteractiveSQLReportPrinter(SQLReportPrinter printer, Context context, HelpContext help,
+                                       Variables variables) {
         super(printer, context, help);
+        this.variables = variables;
     }
 
     /**
@@ -58,7 +65,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     @Override
     protected PrintDialog createDialog() {
         final SQLReportPrinter printer = getPrinter();
-        return new SQLReportDialog(getTitle(), printer.getParameterTypes()) {
+        return new SQLReportDialog(getTitle(), printer.getParameterTypes(), variables) {
 
             @Override
             protected void doPrint() {

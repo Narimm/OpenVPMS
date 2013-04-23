@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.alert.Alert;
 import org.openvpms.web.app.alert.AlertSummary;
 import org.openvpms.web.app.customer.note.CustomerAlertQuery;
@@ -50,6 +51,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -81,8 +83,9 @@ public class CustomerSummary extends PartySummary {
      */
     public CustomerSummary(Context context, HelpContext help) {
         super(context, help.createTopic("customer/summary"));
-        partyRules = new CustomerRules();
-        accountRules = new CustomerAccountRules();
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        partyRules = new CustomerRules(service);
+        accountRules = new CustomerAccountRules(service);
     }
 
     /**

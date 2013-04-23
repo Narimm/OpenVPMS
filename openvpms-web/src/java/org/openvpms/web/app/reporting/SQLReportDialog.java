@@ -1,30 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.event.ActionListener;
-
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.report.ParameterType;
-import org.openvpms.web.component.print.PrintDialog;
+import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.doc.ReportParameters;
+import org.openvpms.web.component.print.PrintDialog;
 import org.openvpms.web.component.util.GroupBoxFactory;
 
 import java.util.Map;
@@ -34,8 +32,7 @@ import java.util.Set;
 /**
  * Reporting dialog for SQL reports that accept parameters.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SQLReportDialog extends PrintDialog {
 
@@ -56,15 +53,16 @@ public class SQLReportDialog extends PrintDialog {
 
 
     /**
-     * Constructs an <tt>SQLReportDialog</tt>.
+     * Constructs an {@code SQLReportDialog}.
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
+     * @param variables  variables for macro expansion
      */
-    public SQLReportDialog(String title, Set<ParameterType> parameters) {
+    public SQLReportDialog(String title, Set<ParameterType> parameters, Variables variables) {
         super(title);
         setStyleName("SQLReportDialog");
-        this.parameters = new ReportParameters(parameters);
+        this.parameters = new ReportParameters(parameters, variables);
     }
 
     /**

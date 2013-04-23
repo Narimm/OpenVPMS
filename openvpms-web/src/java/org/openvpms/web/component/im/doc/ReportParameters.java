@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -23,6 +21,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextArea;
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.property.AbstractPropertyComponentFactory;
@@ -46,8 +45,7 @@ import java.util.Set;
 /**
  * Renders a component that enables report parameters to be edited.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReportParameters {
 
@@ -62,22 +60,24 @@ public class ReportParameters {
     private final List<Property> properties;
 
     /**
-     * Constructs a <tt>ReportParameters</tt>.
+     * Constructs a {@code ReportParameters}.
      *
      * @param parameters the parameters
+     * @param variables  the variables for macro expansion
      */
-    public ReportParameters(Set<ParameterType> parameters) {
-        this(parameters, null);
+    public ReportParameters(Set<ParameterType> parameters, Variables variables) {
+        this(parameters, null, variables);
     }
 
     /**
-     * Constructs  a <tt>ReportParameters</tt>.
+     * Constructs  a {@code ReportParameters}.
      *
      * @param parameters the parameters
-     * @param context    the parameter context, used for macro support. May be <tt>null</tt>
+     * @param context    the parameter context, used for macro support. May be {@code null}
+     * @param variables  the variables for macro expansion
      */
-    public ReportParameters(Set<ParameterType> parameters, IMObject context) {
-        properties = createProperties(parameters, context);
+    public ReportParameters(Set<ParameterType> parameters, IMObject context, Variables variables) {
+        properties = createProperties(parameters, context, variables);
         if (properties.size() > 0) {
             Grid grid;
             if (properties.size() <= 4) {
@@ -115,7 +115,7 @@ public class ReportParameters {
      * Validates the parameters, popping up an error dialog if the parameters
      * are invalid.
      *
-     * @return <tt>true</tt> if the parameters are valid
+     * @return {@code true} if the parameters are valid
      */
     public boolean validate() {
         boolean valid = true;
@@ -150,10 +150,11 @@ public class ReportParameters {
      * Creates a list of properties for a set of report parameters.
      *
      * @param parameters the parameters
-     * @param context    the parameter context, used for macro support. May be <tt>null</tt>
+     * @param context    the parameter context, used for macro support. May be {@code null}
+     * @param variables  the variables for macro expansion. May be {@code null}
      * @return the properties
      */
-    private List<Property> createProperties(Set<ParameterType> parameters, Object context) {
+    private List<Property> createProperties(Set<ParameterType> parameters, Object context, Variables variables) {
         List<Property> result = new ArrayList<Property>();
         for (ParameterType type : parameters) {
             if (!type.isSystem()) {
@@ -170,7 +171,9 @@ public class ReportParameters {
                 if (property.isString()) {
                     if (context != null) {
                         // register a transformer that supports macro expansion
+                        property.setVariables(variables);
                         property.setTransformer(new StringPropertyTransformer(property, context, true));
+
                     }
                     // a large value which will force the component factory
                     // to create a TextArea, as opposed to a TextField
@@ -191,14 +194,14 @@ public class ReportParameters {
 
 
         /**
-         * Constructs a <tt>ComponentFactory</tt>.
+         * Constructs a {@code ComponentFactory}.
          */
         private ComponentFactory() {
             super(Styles.DEFAULT);
         }
 
         /**
-         * This implementation ensures that <tt>TextAreas</tt> never display more than 50x5 characters.
+         * This implementation ensures that {@code TextAreas} never display more than 50x5 characters.
          *
          * @param property the property to bind
          * @param columns  the maximum no, of columns to display

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting.statement;
@@ -108,11 +108,11 @@ class StatementGenerator extends AbstractStatementGenerator {
         List<Party> customers = new ArrayList<Party>();
         for (ObjectSet set : balances) {
             BigDecimal balance
-                    = set.getBigDecimal(CustomerBalanceSummaryQuery.BALANCE);
+                = set.getBigDecimal(CustomerBalanceSummaryQuery.BALANCE);
             if (BigDecimal.ZERO.compareTo(balance) != 0) {
                 // only include customers with non-zero balances
                 IMObjectReference ref = set.getReference(
-                        CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+                    CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
                 Party customer = (Party) IMObjectHelper.getObject(ref, context);
                 if (customer != null) {
                     customers.add(customer);
@@ -168,29 +168,29 @@ class StatementGenerator extends AbstractStatementGenerator {
         Party practice = context.getPractice();
         if (practice == null) {
             throw new StatementProcessorException(
-                    StatementProcessorException.ErrorCode.InvalidConfiguration,
-                    "Context has no practice");
+                StatementProcessorException.ErrorCode.InvalidConfiguration,
+                "Context has no practice");
         }
         Contact email = getEmail(practice);
         if (email == null) {
             throw new StatementProcessorException(
-                    StatementProcessorException.ErrorCode.InvalidConfiguration,
-                    "Practice " + practice.getName()
-                            + " has no email contact for statements");
+                StatementProcessorException.ErrorCode.InvalidConfiguration,
+                "Practice " + practice.getName()
+                + " has no email contact for statements");
         }
         IMObjectBean bean = new IMObjectBean(email);
         String address = bean.getString("emailAddress");
         String name = practice.getName();
         if (StringUtils.isEmpty(address)) {
             throw new StatementProcessorException(
-                    StatementProcessorException.ErrorCode.InvalidConfiguration,
-                    "Practice " + practice.getName()
-                            + " email contact address is empty");
+                StatementProcessorException.ErrorCode.InvalidConfiguration,
+                "Practice " + practice.getName()
+                + " email contact address is empty");
         }
 
         processor = new StatementProcessor(date, practice);
         progressBarProcessor = new StatementProgressBarProcessor(
-                processor, customers);
+            processor, customers);
 
         StatementPrintProcessor printer = new StatementPrintProcessor(progressBarProcessor, getCancelListener(),
                                                                       practice, context, mailContext, help);
@@ -199,8 +199,8 @@ class StatementGenerator extends AbstractStatementGenerator {
             printer.setUpdatePrinted(false);
         } else {
             StatementEmailProcessor mailer = new StatementEmailProcessor(
-                    ServiceHelper.getMailSender(), address, name,
-                    practice);
+                ServiceHelper.getMailSender(), address, name,
+                practice);
             processor.addListener(new StatementDelegator(printer, mailer));
         }
     }
@@ -212,7 +212,8 @@ class StatementGenerator extends AbstractStatementGenerator {
      * @return an email contact, or {@code null} if none is configured
      */
     private Contact getEmail(Party practice) {
-        return new PartyRules().getContact(practice, ContactArchetypes.EMAIL, "BILLING");
+        PartyRules rules = new PartyRules(ServiceHelper.getArchetypeService());
+        return rules.getContact(practice, ContactArchetypes.EMAIL, "BILLING");
     }
 
     private class StatementDelegator implements ProcessorListener<Statement> {

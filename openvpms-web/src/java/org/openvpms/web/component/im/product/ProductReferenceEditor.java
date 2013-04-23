@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -47,6 +47,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.CollectionHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -102,7 +103,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
     protected void onUpdated(Product product) {
         if (product != null && hasSuppliers(product)) {
             List<EntityRelationship> relationships
-                    = getSupplierRelationships(product);
+                = getSupplierRelationships(product);
             if (relationships.isEmpty()) {
                 setProductSupplier(null);
             } else if (relationships.size() == 1) {
@@ -141,7 +142,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
             Party patient = editor.getPatient();
             if (patient != null) {
                 String species = (String) IMObjectHelper.getValue(
-                        patient, "species");
+                    patient, "species");
                 if (species != null) {
                     productQuery.setSpecies(species);
                 }
@@ -202,17 +203,17 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      * @param product the product
      */
     private void checkSupplier(final Product product) {
-        SupplierRules rules = new SupplierRules();
+        SupplierRules rules = new SupplierRules(ServiceHelper.getArchetypeService());
         Entity otherSupplier;
 
         if (!rules.isSuppliedBy(editor.getSupplier(), product)
-                && (otherSupplier = getSupplier(product)) != null) {
+            && (otherSupplier = getSupplier(product)) != null) {
             String title = Messages.get("product.othersupplier.title");
             String message = Messages.get("product.othersupplier.message",
                                           product.getName(),
                                           otherSupplier.getName());
             final ConfirmationDialog dialog
-                    = new ConfirmationDialog(title, message);
+                = new ConfirmationDialog(title, message);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
@@ -274,13 +275,13 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
             // preferred one selected
             EntityRelationship preferred = getPreferred(relationships);
             Query<EntityRelationship> query
-                    = new ListQuery<EntityRelationship>(relationships, "entityRelationship.productSupplier",
-                                                        EntityRelationship.class);
+                = new ListQuery<EntityRelationship>(relationships, "entityRelationship.productSupplier",
+                                                    EntityRelationship.class);
             String title = Messages.get("product.supplier.type");
             LayoutContext context = getLayoutContext();
             final Browser<EntityRelationship> browser = new ProductSupplierBrowser(query, context);
             final BrowserDialog<EntityRelationship> dialog
-                    = new BrowserDialog<EntityRelationship>(title, browser, context.getHelpContext());
+                = new BrowserDialog<EntityRelationship>(title, browser, context.getHelpContext());
 
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -307,7 +308,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      *         or {@code null} if there are no relationships
      */
     private EntityRelationship getPreferred(
-            List<EntityRelationship> relationships) {
+        List<EntityRelationship> relationships) {
         EntityRelationship result = null;
         if (!relationships.isEmpty()) {
             Predicate preferred = new NodeEquals("preferred", true);
@@ -337,7 +338,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      * Browser to display a product supplier relationships.
      */
     private static class ProductSupplierBrowser
-            extends TableBrowser<EntityRelationship> {
+        extends TableBrowser<EntityRelationship> {
 
         /**
          * Constructs a TableBrowser} that queries objects using the specified query, displaying them in the table.

@@ -1,23 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
@@ -27,8 +26,7 @@ import java.util.Collection;
 /**
  * A {@link Property} that delegates to another.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class DelegatingProperty implements CollectionProperty {
 
@@ -39,7 +37,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     private final Property property;
 
     /**
-     * Creates a new <tt>DelegatingProperty</tt>
+     * Constructs a {@code DelegatingProperty}
      *
      * @param property the property to delegate to
      */
@@ -95,7 +93,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Returns the maximum cardinality.
      *
-     * @return the maximum cardinality, or <tt>-1</tt> if it is unbounded
+     * @return the maximum cardinality, or {@code -1} if it is unbounded
      */
     public int getMaxCardinality() {
         return ((CollectionProperty) property).getMaxCardinality();
@@ -105,8 +103,8 @@ public abstract class DelegatingProperty implements CollectionProperty {
      * Determines the relationship of the elements of the collection to the
      * object.
      *
-     * @return <tt>true</tt> if the objects are children of the parent object,
-     *         or <tt>false</tt> if they are its peer
+     * @return {@code true} if the objects are children of the parent object,
+     *         or {@code false} if they are its peer
      */
     public boolean isParentChild() {
         return ((CollectionProperty) property).isParentChild();
@@ -133,7 +131,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Returns the property description.
      *
-     * @return the description. May be <tt>null</tt>
+     * @return the description. May be {@code null}
      */
     public String getDescription() {
         return property.getDescription();
@@ -145,7 +143,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
      * value. If the value is set, any listeners will be notified.
      *
      * @param value the property value
-     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it
+     * @return {@code true} if the value was set, {@code false} if it
      *         cannot be set due to error, or is the same as the existing value
      */
     public boolean setValue(Object value) {
@@ -191,7 +189,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is a boolean.
      *
-     * @return <tt>true</tt> if it is a boolean
+     * @return {@code true} if it is a boolean
      */
     public boolean isBoolean() {
         return property.isBoolean();
@@ -200,7 +198,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is a string.
      *
-     * @return <tt>true</tt> if it is a string
+     * @return {@code true} if it is a string
      */
     public boolean isString() {
         return property.isString();
@@ -209,7 +207,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is numeric.
      *
-     * @return <tt>true</tt> if it is numeric
+     * @return {@code true} if it is numeric
      */
     public boolean isNumeric() {
         return property.isNumeric();
@@ -218,7 +216,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is a date.
      *
-     * @return <tt>true</tt> if it is a date
+     * @return {@code true} if it is a date
      */
     public boolean isDate() {
         return property.isDate();
@@ -227,7 +225,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is a money property.
      *
-     * @return <tt>true</tt> it is a money property
+     * @return {@code true} it is a money property
      */
     public boolean isMoney() {
         return property.isMoney();
@@ -236,7 +234,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is an object reference.
      *
-     * @return <tt>true</tt> if it is an object reference
+     * @return {@code true} if it is an object reference
      */
     public boolean isObjectReference() {
         return property.isObjectReference();
@@ -245,7 +243,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is a lookup.
      *
-     * @return <tt>true</tt> if it is a lookup
+     * @return {@code true} if it is a lookup
      */
     public boolean isLookup() {
         return property.isLookup();
@@ -254,7 +252,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is a collection.
      *
-     * @return <tt>true</tt> if it is a collection
+     * @return {@code true} if it is a collection
      */
     public boolean isCollection() {
         return property.isCollection();
@@ -273,7 +271,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property value is derived from an expression.
      *
-     * @return <tt>true</tt> if the value is derived, otherwise <tt>false</tt>
+     * @return {@code true} if the value is derived, otherwise {@code false}
      */
     public boolean isDerived() {
         return property.isDerived();
@@ -282,7 +280,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is read-only.
      *
-     * @return <tt>true</tt> if the property is read-only
+     * @return {@code true} if the property is read-only
      */
     public boolean isReadOnly() {
         return property.isReadOnly();
@@ -291,7 +289,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is hidden.
      *
-     * @return <tt>true</tt> if the property is hidden; otherwise <tt>false</tt>
+     * @return {@code true} if the property is hidden; otherwise {@code false}
      */
     public boolean isHidden() {
         return property.isHidden();
@@ -300,8 +298,8 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is required.
      *
-     * @return <tt>true</tt> if the property is required; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the property is required; otherwise
+     *         {@code false}
      */
     public boolean isRequired() {
         return property.isRequired();
@@ -310,7 +308,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Sets the property transformer.
      *
-     * @param transformer the property transformer. May be <tt>null</tt>
+     * @param transformer the property transformer. May be {@code null}
      */
     public void setTransformer(PropertyTransformer transformer) {
         property.setTransformer(transformer);
@@ -319,7 +317,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Returns the property transformer.
      *
-     * @return the property transfoer. May be <tt>null</tt>
+     * @return the property transfoer. May be {@code null}
      */
     public PropertyTransformer getTransformer() {
         return property.getTransformer();
@@ -335,7 +333,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Returns the property descriptor.
      *
-     * @return the property descriptor, or <tt>null</tt> if the property has
+     * @return the property descriptor, or {@code null} if the property has
      *         no descriptor
      */
     public NodeDescriptor getDescriptor() {
@@ -345,7 +343,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the object has been modified.
      *
-     * @return <tt>true</tt> if the object has been modified
+     * @return {@code true} if the object has been modified
      */
     public boolean isModified() {
         return property.isModified();
@@ -389,8 +387,8 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the object is valid.
      *
-     * @return <tt>true</tt> if the object is valid; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the object is valid; otherwise
+     *         {@code false}
      */
     public boolean isValid() {
         return property.isValid();
@@ -400,17 +398,34 @@ public abstract class DelegatingProperty implements CollectionProperty {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     public boolean validate(Validator validator) {
         return property.validate(validator);
     }
 
     /**
-     * Resets the cached validity state of the object, to force revalidation to of the object and its descendents.
+     * Resets the cached validity state of the object, to force revalidation to of the object and its descendants.
      */
     public void resetValid() {
         property.resetValid();
+    }
+
+    /**
+     * Sets variables for use in macro expansion.
+     *
+     * @param variables the variables. May be {@code null}
+     */
+    public void setVariables(Variables variables) {
+        property.setVariables(variables);
+    }
+
+    /**
+     * Returns variables for use in macro expansion.
+     *
+     * @return the variables. May be {@code null}
+     */
+    public Variables getVariables() {
+        return property.getVariables();
     }
 }
