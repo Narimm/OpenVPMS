@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.help;
 
@@ -76,7 +76,7 @@ public class HelpContext {
      * @param topic    the help topic
      * @param listener the listener to launch help for the current topic
      */
-    public HelpContext(HelpContext parent, String topic, HelpListener listener) {
+    private HelpContext(HelpContext parent, String topic, HelpListener listener) {
         this.parent = parent;
         this.topic = topic;
         this.listener = listener;
@@ -106,12 +106,19 @@ public class HelpContext {
      *
      * @param topic the topic name
      */
-    public HelpContext createTopic(String topic) {
+    public HelpContext topic(String topic) {
         return new HelpContext(this, topic, listener);
     }
 
-    public HelpContext createTopic(IMObject object, String topic) {
-        return createTopic(object.getArchetypeId().getShortName() + "/" + topic);
+    /**
+     * Creates a new topic for an object.
+     *
+     * @param object   the object
+     * @param subtopic the sub-topic
+     * @return a new topic
+     */
+    public HelpContext topic(IMObject object, String subtopic) {
+        return topic(object.getArchetypeId().getShortName() + "/" + subtopic);
     }
 
     /**
@@ -122,7 +129,7 @@ public class HelpContext {
      * @param topic the topic name
      * @return a new sub-topic context
      */
-    public HelpContext createSubtopic(String topic) {
+    public HelpContext subtopic(String topic) {
         return new HelpContext(this, this.topic + "/" + topic, listener);
     }
 

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.messaging;
@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.ValidationHelper;
@@ -55,11 +54,11 @@ public class UserMessageEditDialog extends EditDialog {
     /**
      * Constructs a {@code UserMessageEditDialog}.
      *
-     * @param editor the editor
-     * @param help   the help context
+     * @param editor  the editor
+     * @param context the context
      */
-    public UserMessageEditDialog(UserMessageEditor editor, Context context, HelpContext help) {
-        super(editor, SEND_CANCEL, false, context, help);
+    public UserMessageEditDialog(UserMessageEditor editor, Context context) {
+        super(editor, SEND_CANCEL, false, context);
         setStyleName("UserMessageEditDialog");
     }
 

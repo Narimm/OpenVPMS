@@ -19,7 +19,9 @@ package org.openvpms.web.app.customer.info;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.workflow.merge.MergeWorkflow;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -44,6 +46,18 @@ class CustomerMergeWorkflow extends MergeWorkflow<Party> {
      */
     public CustomerMergeWorkflow(Party customer, HelpContext help) {
         super(customer, help);
+    }
+
+    /**
+     * Creates a task to select the object to merge.
+     *
+     * @param context the context
+     * @return a new select task
+     */
+    @Override
+    protected SelectIMObjectTask<Party> createSelectTask(Context context) {
+        String shortName = getObject().getArchetypeId().getShortName();
+        return new SelectIMObjectTask<Party>(shortName, context, getHelpContext().topic("customer"));
     }
 
     /**

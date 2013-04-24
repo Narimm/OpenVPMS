@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.checkin;
@@ -60,13 +60,12 @@ class PrintDocumentFormTask extends WorkflowImpl {
      * @throws OpenVPMSException for any error
      */
     public PrintDocumentFormTask(TaskContext context) {
-        super(context.getHelpContext());
+        super(context.getHelpContext().topic("template"));
         // create a query for all entity.documentTemplate instances with
         // archetype node='act.patientDocumentForm'.
         DocumentTemplateQuery query = new DocumentTemplateQuery();
         query.setArchetype(DOCUMENT_FORM);
-        SelectIMObjectTask<Entity> docTask
-                = new SelectIMObjectTask<Entity>(query);
+        SelectIMObjectTask<Entity> docTask = new SelectIMObjectTask<Entity>(query, getHelpContext());
         docTask.setRequired(false);
 
         // task to create an an act.patientDocumentForm associating the
@@ -101,7 +100,7 @@ class PrintDocumentFormTask extends WorkflowImpl {
         TaskProperties saveProperties = new TaskProperties();
         saveProperties.add("printed", true);
         UpdateIMObjectTask saveTask
-                = new UpdateIMObjectTask(DOCUMENT_FORM, saveProperties, true);
+            = new UpdateIMObjectTask(DOCUMENT_FORM, saveProperties, true);
         addTask(docTask);
         addTask(createTask);
         addTask(printTask);

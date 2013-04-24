@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting.till;
@@ -128,7 +128,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         if (TypeHelper.isA(childAct, "act.tillBalanceAdjustment")) {
             LayoutContext context = createLayoutContext(createEditTopic(childAct));
             final IMObjectEditor editor = createEditor(childAct, context);
-            EditDialog dialog = new EditDialog(editor, getContext(), getHelpContext());
+            EditDialog dialog = new EditDialog(editor, getContext());
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     onEditCompleted(editor, false);
@@ -260,7 +260,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         final FinancialAct act = getObject();
         IArchetypeService service = ServiceHelper.getArchetypeService();
         ArchetypeQuery query = new ArchetypeQuery("party.organisationTill", true)
-                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
+            .setMaxResults(ArchetypeQuery.ALL_RESULTS);
         List<IMObject> accounts = service.get(query).getResults();
         String title = Messages.get("till.transfer.title");
         String message = Messages.get("till.transfer.message");
@@ -294,7 +294,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         adjustment.setDescription(Messages.get("till.adjustment.description"));
         ActBean actBean = new ActBean(act);
         IMObjectReference till
-                = actBean.getParticipantRef("participation.till");
+            = actBean.getParticipantRef("participation.till");
         ActBean adjBean = new ActBean(adjustment);
         if (till != null) {
             adjBean.setParticipant("participation.till", till);

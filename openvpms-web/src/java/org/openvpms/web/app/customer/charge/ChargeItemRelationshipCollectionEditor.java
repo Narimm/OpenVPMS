@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -34,12 +34,12 @@ import java.util.Date;
 /**
  * Editor for <em>actRelationship.customerAccountInvoiceItem</em> and
  * <em>actRelationship.customerAccountCreditItem</em> act relationships.
- * Sets a {@link PopupEditorManager} on {@link CustomerChargeActItemEditor} instances.
+ * Sets a {@link EditorQueue} on {@link CustomerChargeActItemEditor} instances.
  *
  * @author Tim Anderson
  */
 public class ChargeItemRelationshipCollectionEditor
-        extends AltModelActRelationshipCollectionEditor {
+    extends AltModelActRelationshipCollectionEditor {
 
     /**
      * Last Selected Item Date.
@@ -49,7 +49,7 @@ public class ChargeItemRelationshipCollectionEditor
     /**
      * The popup editor manager.
      */
-    private PopupEditorManager popupEditorMgr;
+    private EditorQueue editorQueue;
 
 
     /**
@@ -61,7 +61,7 @@ public class ChargeItemRelationshipCollectionEditor
      */
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
-       popupEditorMgr = new DefaultPopupEditorManager(context.getContext(), context.getHelpContext());
+        editorQueue = new DefaultEditorQueue(context.getContext());
     }
 
     /**
@@ -69,8 +69,8 @@ public class ChargeItemRelationshipCollectionEditor
      *
      * @param manager the popup editor manager
      */
-    public void setPopupEditorManager(PopupEditorManager manager) {
-        popupEditorMgr = manager;
+    public void setPopupEditorManager(EditorQueue manager) {
+        editorQueue = manager;
     }
 
     /**
@@ -94,7 +94,7 @@ public class ChargeItemRelationshipCollectionEditor
      */
     protected void initialiseEditor(final IMObjectEditor editor) {
         if (editor instanceof CustomerChargeActItemEditor) {
-            ((CustomerChargeActItemEditor) editor).setPopupEditorManager(popupEditorMgr);
+            ((CustomerChargeActItemEditor) editor).setEditorQueue(editorQueue);
         }
 
         // Set startTime to to last used value

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.subsystem;
@@ -123,7 +123,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * Invoked when the 'refresh' button is pressed.
      */
     private void onRefresh() {
-        final RefreshDialog dialog = new RefreshDialog(getObject());
+        final RefreshDialog dialog = new RefreshDialog(getObject(), getHelpContext());
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -142,7 +142,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     private void refresh(final boolean print, boolean version) {
         final DocumentAct act = getObject();
         DocumentGenerator generator = new DocumentGenerator(
-                act, getContext(), getHelpContext(), new DocumentGenerator.Listener() {
+            act, getContext(), getHelpContext(), new DocumentGenerator.Listener() {
             public void generated(Document document) {
                 onSaved(act, false);
                 if (print) {
@@ -175,10 +175,12 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
         /**
          * Constructs a new {@code RefreshDialog}.
          *
-         * @param act the document act
+         * @param act  the document act
+         * @param help the help context
          */
-        public RefreshDialog(DocumentAct act) {
-            super(Messages.get("document.refresh.title"), Messages.get("document.refresh.message"));
+        public RefreshDialog(DocumentAct act, HelpContext help) {
+            super(Messages.get("document.refresh.title"), Messages.get("document.refresh.message"),
+                  help.subtopic("refresh"));
             DocumentRules rules = new DocumentRules();
             if (act.getDocument() != null && rules.supportsVersions(act)) {
                 version = CheckBoxFactory.create("document.refresh.version", true);

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.checkout;
@@ -77,9 +77,9 @@ public class CheckOutWorkflow extends WorkflowImpl {
      * @param help    the help context
      */
     public CheckOutWorkflow(Act act, Context context, HelpContext help) {
-        super(help);
+        super(help.topic("workflow/checkout"));
         external = context;
-        initialise(act, help);
+        initialise(act, getHelpContext());
 
         // update the act status
         TaskProperties appProps = new TaskProperties();
@@ -142,12 +142,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // on save, determine if the user wants to post the invoice, but
         // only if its not already posted
         NodeConditionTask<String> notPosted = new NodeConditionTask<String>(
-                CustomerAccountArchetypes.INVOICE, "status", false, FinancialActStatus.POSTED);
+            CustomerAccountArchetypes.INVOICE, "status", false, FinancialActStatus.POSTED);
         addTask(new ConditionalTask(notPosted, getPostTask()));
 
         // if the invoice is posted, prompt to pay the account
         NodeConditionTask<String> posted = new NodeConditionTask<String>(
-                CustomerAccountArchetypes.INVOICE, "status", FinancialActStatus.POSTED);
+            CustomerAccountArchetypes.INVOICE, "status", FinancialActStatus.POSTED);
 
         PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
         payWorkflow.setRequired(false);
@@ -158,7 +158,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         // print acts and documents created since the visit or invoice was
         // created
-        addTask(new PrintTask(act));
+        addTask(new PrintTask(act, help.subtopic("print")));
 
         // update the most recent act.patientClinicalEvent, setting it status
         // to COMPLETED, if one is present
@@ -187,7 +187,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
      * @return a new payment workflow
      */
     protected PaymentWorkflow createPaymentWorkflow(TaskContext context) {
-        return new PaymentWorkflow(context, external);
+        return new PaymentWorkflow(context, external, context.getHelpContext().subtopic("pay"));
     }
 
     /**
@@ -198,7 +198,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
     protected EvalTask<Boolean> getPostCondition() {
         String invoiceTitle = Messages.get("workflow.checkout.postinvoice.title");
         String invoiceMsg = Messages.get("workflow.checkout.postinvoice.message");
-        return new ConfirmationTask(invoiceTitle, invoiceMsg);
+        return new ConfirmationTask(invoiceTitle, invoiceMsg, getHelpContext().subtopic("post"));
     }
 
     /**
@@ -207,7 +207,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
      * @return a task to post the invoice
      */
     private Task getPostTask() {
-        Tasks postTasks = new Tasks(getHelpContext());
+        Tasks postTasks = new Tasks(getHelpContext().subtopic("post"));
         TaskProperties invoiceProps = new TaskProperties();
         invoiceProps.add("status", FinancialActStatus.POSTED);
         invoiceProps.add(new Variable("startTime") {
@@ -238,13 +238,19 @@ public class CheckOutWorkflow extends WorkflowImpl {
         private final Date startTime;
 
         /**
+         * The help context.
+         */
+        private final HelpContext help;
+
+        /**
          * Creates a new {@code PrintTask}.
          *
-         * @param act the act. Either an <em>act.customerAppointment</em> or
-         *            <em>act.customerTask</em>.
+         * @param act  the act. Either an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+         * @param help the help context
          */
-        public PrintTask(Act act) {
+        public PrintTask(Act act, HelpContext help) {
             startTime = getMin(new Date(), act.getActivityStartTime());
+            this.help = help;
         }
 
         /**
@@ -255,7 +261,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         public void execute(TaskContext context) {
             Date min = getMinStartTime(CustomerAccountArchetypes.INVOICE, startTime, context);
             min = getMinStartTime(PatientArchetypes.CLINICAL_EVENT, min, context);
-            PrintDocumentsTask printDocs = new PrintDocumentsTask(min);
+            PrintDocumentsTask printDocs = new PrintDocumentsTask(min, help);
             printDocs.setRequired(false);
             addTask(printDocs);
         }
@@ -269,8 +275,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
          * @param context   the task context
          * @return the minimum of the two start times
          */
-        private Date getMinStartTime(String shortName, Date startTime,
-                                     TaskContext context) {
+        private Date getMinStartTime(String shortName, Date startTime, TaskContext context) {
             Act act = (Act) context.getObject(shortName);
             if (act != null) {
                 startTime = getMin(startTime, act.getActivityStartTime());

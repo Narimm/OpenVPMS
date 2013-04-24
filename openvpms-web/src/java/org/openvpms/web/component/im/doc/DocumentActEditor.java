@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -82,7 +82,7 @@ public class DocumentActEditor extends AbstractActEditor {
         Property document = getProperty(DOCUMENT);
         if (document != null) {
             docEditor = new VersioningDocumentEditor(document, context.getContext(),
-                                                     context.getHelpContext().createTopic("document"));
+                                                     context.getHelpContext().topic("document"));
             ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     onDocumentUpdate();
@@ -260,7 +260,7 @@ public class DocumentActEditor extends AbstractActEditor {
     protected DocumentTemplateParticipationEditor getDocumentTemplateEditor() {
         ParticipationEditor editor = getParticipationEditor(DOC_TEMPLATE, true);
         return (editor instanceof DocumentTemplateParticipationEditor) ?
-                (DocumentTemplateParticipationEditor) editor : null;
+               (DocumentTemplateParticipationEditor) editor : null;
     }
 
     /**
@@ -282,7 +282,7 @@ public class DocumentActEditor extends AbstractActEditor {
     private void onTemplateUpdate() {
         IMObjectReference template = getTemplateRef();
         if ((template != null && lastTemplate != null && !template.equals(lastTemplate))
-                || (template != null && lastTemplate == null)) {
+            || (template != null && lastTemplate == null)) {
             lastTemplate = template;
             if (docEditor != null) {
                 generateDoc();

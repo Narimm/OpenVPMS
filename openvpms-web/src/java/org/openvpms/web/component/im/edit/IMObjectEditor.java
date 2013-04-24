@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -24,6 +22,7 @@ import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.property.Property;
 
 import java.beans.PropertyChangeListener;
@@ -32,11 +31,10 @@ import java.beans.PropertyChangeListener;
 /**
  * Editor for {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public interface IMObjectEditor extends Editor, Saveable, Deletable,
-                                        Cancellable {
+    Cancellable {
 
     /**
      * Property name for event indicating that the component has changed.
@@ -124,5 +122,12 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable,
      */
     void removePropertyChangeListener(String name,
                                       PropertyChangeListener listener);
+
+    /**
+     * Returns the help context for the editor.
+     *
+     * @return the help context
+     */
+    HelpContext getHelpContext();
 
 }

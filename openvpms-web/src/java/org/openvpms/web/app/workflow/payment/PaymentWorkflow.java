@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.payment;
@@ -67,7 +65,7 @@ public class PaymentWorkflow extends WorkflowImpl {
      * @param help         the help context
      */
     public PaymentWorkflow(BigDecimal chargeAmount, Context context, HelpContext help) {
-        this(new DefaultTaskContext(null, help), chargeAmount, context);
+        this(new DefaultTaskContext(null, help), chargeAmount, context, help);
     }
 
     /**
@@ -77,7 +75,18 @@ public class PaymentWorkflow extends WorkflowImpl {
      * @param parent  the context to fall back on if an object isn't in the task context
      */
     public PaymentWorkflow(TaskContext context, Context parent) {
-        this(context, BigDecimal.ZERO, parent);
+        this(context, BigDecimal.ZERO, parent, context.getHelpContext());
+    }
+
+    /**
+     * Constructs a {@code PaymentWorkflow}.
+     *
+     * @param context the task context
+     * @param parent  the context to fall back on if an object isn't in the task context
+     * @param help    the help context
+     */
+    public PaymentWorkflow(TaskContext context, Context parent, HelpContext help) {
+        this(context, BigDecimal.ZERO, parent, help);
     }
 
     /**
@@ -86,9 +95,10 @@ public class PaymentWorkflow extends WorkflowImpl {
      * @param initial      the initial task context
      * @param chargeAmount the charge amount that triggered the payment workflow
      * @param parent       the parent context to fall back on if an object isn't in the task context
+     * @param help         the help context
      */
-    public PaymentWorkflow(TaskContext initial, BigDecimal chargeAmount, Context parent) {
-        super(initial.getHelpContext());
+    public PaymentWorkflow(TaskContext initial, BigDecimal chargeAmount, Context parent, HelpContext help) {
+        super(help);
         this.initial = initial;
         this.chargeAmount = chargeAmount;
         this.parent = parent;
@@ -139,7 +149,7 @@ public class PaymentWorkflow extends WorkflowImpl {
         String payTitle = Messages.get("workflow.payment.payaccount.title");
         String payMsg = Messages.get("workflow.payment.payaccount.message");
 
-        Tasks tasks = new Tasks(context.getHelpContext());
+        Tasks tasks = new Tasks(getHelpContext());
         tasks.addTask(new PaymentEditTask(chargeAmount));
 
         // add a task to update the parent context at the end of the workflow
@@ -153,9 +163,7 @@ public class PaymentWorkflow extends WorkflowImpl {
         });
 
         boolean displayNo = !isRequired();
-        addTask(new ConditionalTask(
-                new ConfirmationTask(payTitle, payMsg, displayNo),
-                tasks));
+        addTask(new ConditionalTask(new ConfirmationTask(payTitle, payMsg, displayNo, getHelpContext()), tasks));
         super.start(context);
     }
 

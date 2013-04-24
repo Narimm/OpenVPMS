@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.product;
@@ -117,7 +117,8 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
             }
             String title = Messages.get("product.information.copy.title", displayName);
             String message = Messages.get("product.information.copy.message", name);
-            final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+            HelpContext help = getHelpContext().subtopic("copy");
+            final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -144,7 +145,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
             HelpContext edit = createEditTopic(product);
             LayoutContext context = createLayoutContext(edit);
             IMObjectEditor editor = createEditor(copy, context);
-            edit(editor, edit);
+            edit(editor);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("product.information.copy.failed", getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);

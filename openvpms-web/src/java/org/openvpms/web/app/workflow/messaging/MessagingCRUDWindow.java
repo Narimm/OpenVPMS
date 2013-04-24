@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.messaging;
@@ -175,7 +175,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     private void onReply() {
         Act reply = copyObject();
-        HelpContext help = getHelpContext().createSubtopic("reply");
+        HelpContext help = getHelpContext().subtopic("reply").topic(reply, "edit");
         LayoutContext layoutContext = createLayoutContext(help);
         UserMessageEditor editor = new UserMessageEditor(reply, null, layoutContext);
         Message message = new Message(getObject());
@@ -187,7 +187,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
                                    message.getMessage());
         editor.setSubject(subject);
         editor.setMessage(text);
-        edit(editor, Messages.get("workflow.messaging.reply.title"), help);
+        edit(editor, Messages.get("workflow.messaging.reply.title"));
     }
 
     /**
@@ -195,7 +195,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      */
     private void onForward() {
         Act forward = copyObject();
-        HelpContext help = getHelpContext().createSubtopic("forward");
+        HelpContext help = getHelpContext().subtopic("forward").topic(forward, "edit");
         LayoutContext layoutContext = createLayoutContext(help);
         UserMessageEditor editor = new UserMessageEditor(forward, null, layoutContext);
         Message message = new Message(getObject());
@@ -206,7 +206,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
         editor.setTo(null);
         editor.setSubject(subject);
         editor.setMessage(text);
-        edit(editor, Messages.get("workflow.messaging.forward.title"), help);
+        edit(editor, Messages.get("workflow.messaging.forward.title"));
     }
 
     /**
@@ -214,10 +214,9 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
      *
      * @param editor the editor
      * @param title  the dialog title
-     * @param help   the help context
      */
-    private void edit(IMObjectEditor editor, String title, HelpContext help) {
-        EditDialog dialog = edit(editor, help);
+    private void edit(IMObjectEditor editor, String title) {
+        EditDialog dialog = edit(editor);
         if (dialog != null) {
             dialog.setTitle(title);
         }

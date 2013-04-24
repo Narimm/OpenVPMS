@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.estimation;
@@ -181,7 +181,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
             } else {
                 String title = Messages.get("customer.estimate.invoice.title");
                 String message = Messages.get("customer.estimate.invoice.message");
-                HelpContext help = getHelpContext().createSubtopic("invoice");
+                HelpContext help = getHelpContext().subtopic("invoice");
                 ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
@@ -242,7 +242,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     private void invoice(final Act estimation, FinancialAct invoice) {
         try {
             EstimationInvoicer invoicer = new EstimationInvoicer();
-            HelpContext edit = getHelpContext().createTopic(invoice, "edit");
+            HelpContext edit = getHelpContext().topic(invoice, "edit");
             CustomerChargeActEditDialog editor = invoicer.invoice(estimation, invoice,
                                                                   new DefaultLayoutContext(true, getContext(), edit));
             editor.addWindowPaneListener(new WindowPaneListener() {

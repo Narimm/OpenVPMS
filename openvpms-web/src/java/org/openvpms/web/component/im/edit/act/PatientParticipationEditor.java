@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -62,7 +62,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
         super(participation, parent, layout);
         if (!TypeHelper.isA(participation, "participation.patient")) {
             throw new IllegalArgumentException(
-                    "Invalid participation type:" + participation.getArchetypeId().getShortName());
+                "Invalid participation type:" + participation.getArchetypeId().getShortName());
         }
         Context context = getLayoutContext().getContext();
         IMObjectReference patientRef = participation.getEntity();
@@ -97,7 +97,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
     @Override
     protected IMObjectReferenceEditor<Party> createEntityEditor(Property property) {
         LayoutContext context = getLayoutContext();
-        LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().createTopic("patient"));
+        LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().topic("patient"));
         return new AbstractIMObjectReferenceEditor<Party>(property, getParent(), subContext, true) {
 
             @Override
@@ -137,7 +137,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
             protected boolean isValidReference(IMObjectReference reference) {
                 Query<Party> query = createQuery(null);
                 if (query instanceof QueryAdapter
-                        && ((QueryAdapter) query).getQuery() instanceof PatientObjectSetQuery) {
+                    && ((QueryAdapter) query).getQuery() instanceof PatientObjectSetQuery) {
                     PatientObjectSetQuery q = (PatientObjectSetQuery) ((QueryAdapter) query).getQuery();
                     q.setActiveOnly(false);
                 }

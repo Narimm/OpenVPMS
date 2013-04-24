@@ -75,7 +75,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
     public ProductReferenceEditor(ProductParticipationEditor editor,
                                   Property property, LayoutContext context) {
         super(property, editor.getParent(), new DefaultLayoutContext(context,
-                                                                     context.getHelpContext().createTopic("product")));
+                                                                     context.getHelpContext().topic("product")));
         this.editor = editor;
     }
 

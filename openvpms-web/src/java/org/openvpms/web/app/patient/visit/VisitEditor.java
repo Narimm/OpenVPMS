@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.app.patient.visit;
 
@@ -182,9 +182,9 @@ public class VisitEditor {
         chargeWindow = createVisitChargeCRUDWindow(event, context);
         chargeWindow.setObject(invoice);
 
-        reminderWindow = new ReminderBrowserCRUDWindow(patient, context, help);
+        reminderWindow = new ReminderBrowserCRUDWindow(patient, context, help.subtopic("reminder"));
 
-        documentWindow = new VisitDocumentCRUDWindow(context, help);
+        documentWindow = new VisitDocumentCRUDWindow(context, help.subtopic("document"));
     }
 
     /**
@@ -271,6 +271,30 @@ public class VisitEditor {
     }
 
     /**
+     * Returns the help context for the selected tab.
+     *
+     * @return the help context
+     */
+    public HelpContext getHelpContext() {
+        HelpContext result = help;
+        switch (tab.getSelectedIndex()) {
+            case HISTORY_INDEX:
+                result = visitWindow.getHelpContext();
+                break;
+            case INVOICE_INDEX:
+                result = chargeWindow.getHelpContext();
+                break;
+            case REMINDERS_INDEX:
+                result = reminderWindow.getHelpContext();
+                break;
+            case DOCUMENT_INDEX:
+                result = documentWindow.getHelpContext();
+                break;
+        }
+        return result;
+    }
+
+    /**
      * Returns the component.
      *
      * @return the component
@@ -319,7 +343,7 @@ public class VisitEditor {
      * @return a new visit browser CRUD window
      */
     protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
-        return new VisitBrowserCRUDWindow(query, context, help);
+        return new VisitBrowserCRUDWindow(query, context, help.subtopic("summary"));
     }
 
     /**
@@ -330,16 +354,7 @@ public class VisitEditor {
      * @return a new visit charge CRUD window
      */
     protected VisitChargeCRUDWindow createVisitChargeCRUDWindow(Act event, Context context) {
-        return new VisitChargeCRUDWindow(event, context, help);
-    }
-
-    /**
-     * Returns the help context.
-     *
-     * @return the help context
-     */
-    protected HelpContext getHelpContext() {
-        return help;
+        return new VisitChargeCRUDWindow(event, context, help.subtopic("invoice"));
     }
 
     /**

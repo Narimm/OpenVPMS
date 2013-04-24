@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialogListener;
-import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.resource.util.Messages;
@@ -35,17 +34,12 @@ import java.util.LinkedList;
  *
  * @author Tim Anderson
  */
-public class DefaultPopupEditorManager implements PopupEditorManager {
+public class DefaultEditorQueue implements EditorQueue {
 
     /**
      * The context.
      */
     private final Context context;
-
-    /**
-     * The help context.
-     */
-    private final HelpContext help;
 
     /**
      * The queue of editors.
@@ -58,13 +52,12 @@ public class DefaultPopupEditorManager implements PopupEditorManager {
     private boolean editing;
 
     /**
-     * Constructs a {@code DefaultPopupEditorManager}.
+     * Constructs a {@code DefaultEditorQueue}.
      *
-     * @param help the help context
+     * @param context the context
      */
-    public DefaultPopupEditorManager(Context context, HelpContext help) {
+    public DefaultEditorQueue(Context context) {
         this.context = context;
-        this.help = help;
     }
 
     /**
@@ -93,7 +86,7 @@ public class DefaultPopupEditorManager implements PopupEditorManager {
         final IMObjectEditor editor = state.editor;
         final Listener listener = state.listener;
         // create an edit dialog with OK and (for non-medication acts) Skip buttons
-        EditDialog dialog = new EditDialog(editor, false, false, false, state.skip, context, help);
+        EditDialog dialog = new EditDialog(editor, false, false, false, state.skip, context);
         dialog.setTitle(getTitle(editor));
         dialog.setStyleName("ChildEditDialog");
         dialog.addWindowPaneListener(new PopupDialogListener() {

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.estimation;
@@ -36,8 +36,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
-import org.openvpms.web.app.customer.charge.DefaultPopupEditorManager;
-import org.openvpms.web.app.customer.charge.PopupEditorManager;
+import org.openvpms.web.app.customer.charge.DefaultEditorQueue;
+import org.openvpms.web.app.customer.charge.EditorQueue;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.help.HelpContext;
@@ -219,8 +219,8 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
          */
         @Override
         protected ChargeEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-            final PopupEditorManager manager = new DefaultPopupEditorManager(context.getContext(),
-                                                                             new HelpContext("foo", null)) {
+            final EditorQueue manager = new DefaultEditorQueue(context.getContext()
+            ) {
                 @Override
                 protected void edit(EditDialog dialog) {
                     super.edit(dialog);
