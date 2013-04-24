@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -54,7 +54,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author Tim Anderson
  */
 public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
-        extends AbstractPropertyEditor implements IMObjectReferenceEditor<T> {
+    extends AbstractPropertyEditor implements IMObjectReferenceEditor<T> {
 
     /**
      * The parent object. May be {@code null}
@@ -107,7 +107,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                                            boolean allowCreate) {
         super(property);
         this.parent = parent;
-        this.context = new DefaultLayoutContext(context, context.getHelpContext().createSubtopic("select"));
+        this.context = new DefaultLayoutContext(context, context.getHelpContext().subtopic("select"));
 
         selector = new IMObjectSelector<T>(property, allowCreate, this.context) {
             @Override
@@ -305,10 +305,10 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     protected void onCreated(IMObject object) {
         Context context = new LocalContext(this.context.getContext());
         context.setCurrent(object);
-        HelpContext help = this.context.getHelpContext().createTopic(object, "edit");
+        HelpContext help = this.context.getHelpContext().topic(object, "edit");
         LayoutContext layoutContext = new DefaultLayoutContext(true, context, help);
         final IMObjectEditor editor = IMObjectEditorFactory.create(object, parent, layoutContext);
-        final EditDialog dialog = EditDialogFactory.create(editor, context, help);
+        final EditDialog dialog = EditDialogFactory.create(editor, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 getFocusGroup().setFocus(); // restore focus

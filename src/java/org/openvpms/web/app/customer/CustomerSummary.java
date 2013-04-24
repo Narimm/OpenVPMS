@@ -82,7 +82,7 @@ public class CustomerSummary extends PartySummary {
      * @param help    the help context
      */
     public CustomerSummary(Context context, HelpContext help) {
-        super(context, help.createTopic("customer/summary"));
+        super(context, help.topic("customer/summary"));
         IArchetypeService service = ServiceHelper.getArchetypeService();
         partyRules = new CustomerRules(service);
         accountRules = new CustomerAccountRules(service);
@@ -152,7 +152,7 @@ public class CustomerSummary extends PartySummary {
                 local.setCustomer(party);
                 Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
                     public void onAction(ActionEvent event) {
-                        SMSDialog dialog = new SMSDialog(contacts, context, getHelpContext().createSubtopic("sms"));
+                        SMSDialog dialog = new SMSDialog(contacts, context, getHelpContext().subtopic("sms"));
                         dialog.show();
                     }
                 });
@@ -203,7 +203,7 @@ public class CustomerSummary extends PartySummary {
         Button mail = ButtonFactory.create(null, "hyperlink", new ActionListener() {
             public void onAction(ActionEvent event) {
                 Context context = getContext();
-                HelpContext mail = getHelpContext().createTopic("customer/email");
+                HelpContext mail = getHelpContext().topic("customer/email");
                 MailContext mailContext = new CustomerMailContext(context, mail);
                 MailDialog dialog = new MailDialog(mailContext, email, context, mail);
                 dialog.show();

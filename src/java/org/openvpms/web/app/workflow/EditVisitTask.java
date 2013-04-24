@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.app.workflow;
 
@@ -26,6 +26,7 @@ import org.openvpms.web.app.patient.visit.VisitEditor;
 import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -99,9 +100,10 @@ public class EditVisitTask extends AbstractTask {
         }
         Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"), context);
         if (patient != null) {
-            VisitEditor editor = createVisitEditor(event, invoice, context, patient);
+            HelpContext help = context.getHelpContext().topic("visit");
+            VisitEditor editor = createVisitEditor(event, invoice, patient, context, help);
             String title = Messages.get("workflow.visit.edit.title");
-            dialog = new VisitEditorDialog(title, editor, context.getHelpContext());
+            dialog = new VisitEditorDialog(title, editor, help);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {
@@ -130,12 +132,14 @@ public class EditVisitTask extends AbstractTask {
      *
      * @param event   the event
      * @param invoice the invoice
-     * @param context the task context
      * @param patient the patient
+     * @param context the task context
+     * @param help    the help context
      * @return a new editor
      */
-    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, TaskContext context, Party patient) {
-        return new VisitEditor(patient, event, invoice, context, context.getHelpContext());
+    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, Party patient, TaskContext context,
+                                            HelpContext help) {
+        return new VisitEditor(patient, event, invoice, context, help);
     }
 
 }

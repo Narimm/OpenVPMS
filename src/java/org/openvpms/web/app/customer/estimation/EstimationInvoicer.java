@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.estimation;
@@ -26,7 +26,6 @@ import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -78,7 +77,7 @@ class EstimationInvoicer {
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        EditDialog dialog = new EditDialog(editor, estimation, context.getContext(), context.getHelpContext());
+        EditDialog dialog = new EditDialog(editor, estimation, context.getContext());
         dialog.show();
         for (Act estimationItem : estimationBean.getNodeActs("items")) {
             ActBean itemBean = new ActBean(estimationItem);
@@ -179,10 +178,9 @@ class EstimationInvoicer {
          * @param editor     the invoice editor
          * @param estimation the estimation
          * @param context    the context
-         * @param help       the help context
          */
-        public EditDialog(CustomerChargeActEditor editor, Act estimation, Context context, HelpContext help) {
-            super(editor, context, help);
+        public EditDialog(CustomerChargeActEditor editor, Act estimation, Context context) {
+            super(editor, context);
             this.estimation = estimation;
         }
 

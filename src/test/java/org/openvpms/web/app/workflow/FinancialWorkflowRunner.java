@@ -26,8 +26,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.web.app.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
-import org.openvpms.web.app.customer.charge.ChargePopupEditorManager;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
@@ -212,7 +212,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
         /**
          * The popup dialog manager.
          */
-        private ChargePopupEditorManager manager = new ChargePopupEditorManager();
+        private ChargeEditorQueue manager = new ChargeEditorQueue();
 
         /**
          * Constructs an <tt>EditInvoice</tt> to edit an object in the {@link TaskContext}.
@@ -226,7 +226,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
          *
          * @return the popup dialog manager
          */
-        public ChargePopupEditorManager getEditorManager() {
+        public ChargeEditorQueue getEditorManager() {
             return manager;
         }
 

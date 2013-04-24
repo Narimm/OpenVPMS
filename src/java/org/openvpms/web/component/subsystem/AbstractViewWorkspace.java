@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.subsystem;
@@ -230,8 +230,8 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
     protected SplitPane createRootComponent() {
         int orientation = SplitPane.ORIENTATION_VERTICAL;
         String style = (selector != null)
-                ? "AbstractViewWorkspace.Layout"
-                : "AbstractViewWorkspace.LayoutNoSelector";
+                       ? "AbstractViewWorkspace.Layout"
+                       : "AbstractViewWorkspace.LayoutNoSelector";
         return SplitPaneFactory.create(orientation, style);
     }
 
@@ -246,7 +246,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * Invoked when the 'select' button is pressed. This pops up an {@link Browser} to select an object.
      */
     protected void onSelect() {
-        HelpContext select = getHelpContext().createSubtopic("select");
+        HelpContext select = getHelpContext().subtopic("select");
         Browser<T> browser = createSelectBrowser(select);
         onSelect(browser, select);
     }
@@ -255,7 +255,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * Invoked when the 'select again' button is pressed. This pops up an {@link Browser} to select an object.
      */
     protected void onSelectAgain() {
-        HelpContext select = getHelpContext().createSubtopic("select");
+        HelpContext select = getHelpContext().subtopic("select");
         Browser<T> browser = createSelectBrowser(select);
         BrowserStates states = BrowserStates.getInstance();
         states.setBrowserState(browser);

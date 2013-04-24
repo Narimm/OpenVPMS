@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
@@ -53,6 +54,11 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
     private final Task createTask;
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
      * The dialog title.
      */
     private String title;
@@ -69,59 +75,65 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
 
 
     /**
-     * Constructs a new <tt>SelectIMObjectTask</tt>.
+     * Constructs a {@code SelectIMObjectTask}.
      *
      * @param shortName the short name to query on. May contain wildcards
      * @param context   the context
+     * @param help      the help context
      */
-    public SelectIMObjectTask(String shortName, Context context) {
-        this(shortName, context, null);
+    public SelectIMObjectTask(String shortName, Context context, HelpContext help) {
+        this(shortName, context, null, help);
     }
 
     /**
-     * Constructs a new <tt>SelectIMObjectTask</tt>.
+     * Constructs a {@code SelectIMObjectTask}.
      *
      * @param shortName  the short name to query on. May contain wildcards
      * @param context    the context
      * @param createTask if non-null, handles creation of new objects
+     * @param help       the help context
      */
-    public SelectIMObjectTask(String shortName, Context context,
-                              Task createTask) {
+    public SelectIMObjectTask(String shortName, Context context, Task createTask, HelpContext help) {
         query = QueryFactory.create(shortName, context, IMObject.class);
         type = getType(query.getShortNames());
         this.createTask = createTask;
+        this.help = help;
     }
 
     /**
-     * Constructs a <tt>SelectIMObjectTask</tt>.
+     * Constructs a {@code SelectIMObjectTask}.
      *
      * @param query the query
+     * @param help  the help context
      */
-    public SelectIMObjectTask(Query<T> query) {
-        this(getType(query.getShortNames()), query, null);
+    public SelectIMObjectTask(Query<T> query, HelpContext help) {
+        this(getType(query.getShortNames()), query, null, help);
     }
 
     /**
-     * Constructs a <tt>SelectIMObjectTask</tt>.
+     * Constructs a {@code SelectIMObjectTask}.
      *
      * @param query      the query
      * @param createTask if non-null, handles creation of new objects
+     * @param help       the help context
      */
-    public SelectIMObjectTask(Query<T> query, Task createTask) {
-        this(getType(query.getShortNames()), query, createTask);
+    public SelectIMObjectTask(Query<T> query, Task createTask, HelpContext help) {
+        this(getType(query.getShortNames()), query, createTask, help);
     }
 
     /**
-     * Constructs a <tt>SelectIMObjectTask</tt>.
+     * Constructs a {@code SelectIMObjectTask}.
      *
      * @param type       the collective noun for the types this may select
      * @param query      the query
      * @param createTask if non-null, handles creation of new objects
+     * @param help       the help context
      */
-    public SelectIMObjectTask(String type, Query<T> query, Task createTask) {
+    public SelectIMObjectTask(String type, Query<T> query, Task createTask, HelpContext help) {
         this.type = type;
         this.query = query;
         this.createTask = createTask;
+        this.help = help;
     }
 
     /**
@@ -130,7 +142,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      * If none is specified, one will be generated from the type of objects
      * being queried.
      *
-     * @param title the dialog title. May be <tt>null</tt>
+     * @param title the dialog title. May be {@code null}
      */
     public void setTitle(String title) {
         this.title = title;
@@ -139,7 +151,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
     /**
      * Sets the dialog message.
      *
-     * @param message the message. May be <tt>null</tt>
+     * @param message the message. May be {@code null}
      */
     public void setMessage(String message) {
         this.message = message;
@@ -148,7 +160,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
     /**
      * Returns the browser dialog.
      *
-     * @return the browser dialog, or <tt>null</tt> if none is being displayed
+     * @return the browser dialog, or {@code null} if none is being displayed
      */
     public BrowserDialog<T> getBrowserDialog() {
         return dialog;
@@ -162,14 +174,14 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      * @param context the task context
      */
     public void start(final TaskContext context) {
-        LayoutContext layout = new DefaultLayoutContext(context, context.getHelpContext());
+        LayoutContext layout = new DefaultLayoutContext(context, help.subtopic("select"));
         Browser<T> browser = BrowserFactory.create(query, layout);
         if (title == null) {
             title = Messages.get("imobject.select.title", type);
         }
         String[] buttons = isRequired() ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);
-        dialog = new BrowserDialog<T>(title, message, buttons, browser, addNew, context.getHelpContext());
+        dialog = new BrowserDialog<T>(title, message, buttons, browser, addNew, layout.getHelpContext());
         dialog.addWindowPaneListener(new PopupDialogListener() {
 
             @Override

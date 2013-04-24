@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.subsystem;
@@ -274,7 +274,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
         } else {
             IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
-            HelpContext delete = getHelpContext().createSubtopic("delete");
+            HelpContext delete = getHelpContext().subtopic("delete");
             deletor.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
                 public void deleted(T object) {
                     onDeleted(object);
@@ -483,7 +483,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             }
         };
 
-        HelpContext help = getHelpContext().createSubtopic("new");
+        HelpContext help = getHelpContext().subtopic("new");
         IMObjectCreator.create(archetypes, listener, help);
     }
 
@@ -506,7 +506,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             HelpContext edit = createEditTopic(object);
             LayoutContext context = createLayoutContext(edit);
             IMObjectEditor editor = createEditor(object, context);
-            edit(editor, edit);
+            edit(editor);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -519,7 +519,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return the edit topic
      */
     protected HelpContext createEditTopic(T object) {
-        return help.createTopic(object, "edit");
+        return help.topic(object, "edit");
     }
 
     /**
@@ -529,21 +529,20 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return the print topic
      */
     protected HelpContext createPrintTopic(T object) {
-        return help.createTopic(object, "print");
+        return help.topic(object, "print");
     }
 
     /**
      * Edits an object.
      *
      * @param editor the object editor
-     * @param help   the help context
      * @return the edit dialog
      */
     @SuppressWarnings("unchecked")
-    protected EditDialog edit(final IMObjectEditor editor, HelpContext help) {
+    protected EditDialog edit(final IMObjectEditor editor) {
         T object = (T) editor.getObject();
         final boolean isNew = object.isNew();
-        EditDialog dialog = createEditDialog(editor, help);
+        EditDialog dialog = createEditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 onEditCompleted(editor, isNew);
@@ -568,8 +567,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param context the layout context
      * @return a new editor
      */
-    protected IMObjectEditor createEditor(T object,
-                                          LayoutContext context) {
+    protected IMObjectEditor createEditor(T object, LayoutContext context) {
         return IMObjectEditorFactory.create(object, context);
     }
 
@@ -579,11 +577,10 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * This implementation uses {@link EditDialogFactory#create}.
      *
      * @param editor the editor
-     * @param help   the help context
      * @return a new edit dialog
      */
-    protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
-        return EditDialogFactory.create(editor, context, help);
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        return EditDialogFactory.create(editor, context);
     }
 
     /**

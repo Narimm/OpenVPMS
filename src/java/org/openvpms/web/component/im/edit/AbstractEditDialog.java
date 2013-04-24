@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.edit;
 
@@ -71,17 +71,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
     /**
      * Constructs an {@code AbstractEditDialog}.
      *
-     * @param editor  the editor
-     * @param context the context
-     * @param help    the help context
-     */
-    public AbstractEditDialog(IMObjectEditor editor, Context context, HelpContext help) {
-        this(editor.getTitle(), getButtons(true, true, false), true, context, help);
-    }
-
-    /**
-     * Constructs an {@code AbstractEditDialog}.
-     *
      * @param title   the dialog title
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
@@ -99,10 +88,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      * @param context the context
-     * @param help    the help context
      */
-    public AbstractEditDialog(IMObjectEditor editor, String[] buttons, boolean save, Context context, HelpContext help) {
-        this(editor, editor.getTitle(), buttons, save, context, help);
+    public AbstractEditDialog(IMObjectEditor editor, String[] buttons, boolean save, Context context) {
+        this(editor, editor.getTitle(), buttons, save, context, editor.getHelpContext());
     }
 
     /**
@@ -115,8 +103,8 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param context the context
      * @param help    the help context
      */
-    public AbstractEditDialog(IMObjectEditor editor, String title, String[] buttons, boolean save,
-                              Context context, HelpContext help) {
+    protected AbstractEditDialog(IMObjectEditor editor, String title, String[] buttons, boolean save,
+                                 Context context, HelpContext help) {
         super(title, STYLE, buttons, help);
         this.context = context;
         setModal(true);
@@ -234,12 +222,12 @@ public abstract class AbstractEditDialog extends PopupDialog {
         if (editor != null) {
             setTitle(editor.getTitle());
             editor.addPropertyChangeListener(
-                    IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-                    new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent event) {
-                            onComponentChange(event);
-                        }
-                    });
+                IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                        onComponentChange(event);
+                    }
+                });
         }
         this.editor = editor;
         if (previous != null) {
@@ -385,6 +373,18 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected boolean isSaveDisabled() {
         return savedDisabled;
+    }
+
+    /**
+     * Returns the help context.
+     * <p/>
+     * This implementation returns the help context of the editor, if one is registered
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        return (editor != null) ? editor.getHelpContext() : super.getHelpContext();
     }
 
     /**

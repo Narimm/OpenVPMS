@@ -1,24 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.app.workflow;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.customer.charge.ChargePopupEditorManager;
+import org.openvpms.web.app.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.app.patient.visit.VisitBrowserCRUDWindow;
@@ -41,14 +41,14 @@ public class TestEditVisitTask extends EditVisitTask {
     /**
      * The popup dialog manager.
      */
-    private ChargePopupEditorManager manager = new ChargePopupEditorManager();
+    private ChargeEditorQueue manager = new ChargeEditorQueue();
 
     /**
      * Returns the popup dialog manager.
      *
      * @return the popup dialog manager
      */
-    public ChargePopupEditorManager getEditorManager() {
+    public ChargeEditorQueue getEditorManager() {
         return manager;
     }
 
@@ -57,12 +57,14 @@ public class TestEditVisitTask extends EditVisitTask {
      *
      * @param event   the event
      * @param invoice the invoice
-     * @param context the task context
      * @param patient the patient
+     * @param context the task context
+     * @param help    the help context
      * @return a new editor
      */
     @Override
-    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, TaskContext context, Party patient) {
+    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, Party patient, TaskContext context,
+                                            final HelpContext help) {
         return new VisitEditor(patient, event, invoice, context, context.getHelpContext()) {
             @Override
             protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
@@ -71,7 +73,7 @@ public class TestEditVisitTask extends EditVisitTask {
 
             @Override
             protected VisitChargeCRUDWindow createVisitChargeCRUDWindow(Act event, Context context) {
-                return new VisitChargeCRUDWindow(event, context, getHelpContext()) {
+                return new VisitChargeCRUDWindow(event, context, help) {
                     @Override
                     protected VisitChargeEditor createVisitChargeEditor(FinancialAct charge, Act event,
                                                                         LayoutContext context) {

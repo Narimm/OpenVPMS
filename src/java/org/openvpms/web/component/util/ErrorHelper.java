@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.util;
@@ -179,11 +179,11 @@ public class ErrorHelper {
         String archetypeName = null;
         String nodeName = null;
         ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(error.getArchetype());
+            = DescriptorHelper.getArchetypeDescriptor(error.getArchetype());
         if (archetype != null) {
             archetypeName = archetype.getDisplayName();
             NodeDescriptor descriptor
-                    = archetype.getNodeDescriptor(error.getNode());
+                = archetype.getNodeDescriptor(error.getNode());
             if (descriptor != null) {
                 nodeName = descriptor.getDisplayName();
             }
@@ -247,7 +247,7 @@ public class ErrorHelper {
         String result = null;
         if (displayName != null) {
             String key = exception.getClass().getName() + ".formatted";
-            result = Messages.get(key, true, displayName);
+            result = Messages.format(key, true, displayName);
         }
         if (result == null) {
             result = Messages.get(exception.getClass().getName(), true);

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting.till;
@@ -61,13 +61,12 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
     /**
      * Constructs a {@code TillActTableModel}.
      *
-     * @param context the context
-     * @param help the help context
+     * @param context the layout context
      */
-    public TillActTableModel(Context context, HelpContext help) {
+    public TillActTableModel(LayoutContext context) {
         super(true, false, true, true);
-        this.context = context;
-        this.help = help;
+        this.context = context.getContext();
+        this.help = context.getHelpContext();
     }
 
     /**
@@ -116,11 +115,11 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
     @Override
     protected TableColumnModel createColumnModel(boolean showArchetype, boolean showStatus, boolean showAmount) {
         DefaultTableColumnModel model
-                = (DefaultTableColumnModel) super.createColumnModel(showArchetype, showStatus,
-                                                                    showAmount);
+            = (DefaultTableColumnModel) super.createColumnModel(showArchetype, showStatus,
+                                                                showAmount);
         customerIndex = getNextModelIndex(model);
         TableColumn column = createTableColumn(
-                customerIndex, "tillacttablemodel.customer");
+            customerIndex, "tillacttablemodel.customer");
         model.addColumn(column);
         if (showAmount) {
             model.moveColumn(model.getColumnCount() - 1,

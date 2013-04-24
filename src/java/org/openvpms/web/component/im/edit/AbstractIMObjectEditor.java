@@ -32,6 +32,7 @@ import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -419,6 +420,15 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             propertyChangeNotifier.removePropertyChangeListener(
                 name, listener);
         }
+    }
+
+    /**
+     * Returns the help context for the editor.
+     *
+     * @return the help context
+     */
+    public HelpContext getHelpContext() {
+        return context.getHelpContext();
     }
 
     /**

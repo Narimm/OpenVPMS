@@ -140,7 +140,8 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
         final Act act = IMObjectHelper.reload(getObject());
         // make sure the act is still available
         if (act != null) {
-            TransferWorkflow transfer = new TransferWorkflow(act, getContext(), getHelpContext());
+            HelpContext help = getHelpContext().subtopic("transfer");
+            TransferWorkflow transfer = new TransferWorkflow(act, getContext(), help);
             transfer.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(act);

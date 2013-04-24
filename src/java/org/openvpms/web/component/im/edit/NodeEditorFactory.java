@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -140,7 +140,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     /**
      * Creates an editor for an {@link IMObject}.
      *
-     * @param object  the object to edit
+     * @param object the object to edit
      * @param parent the object's parent. May be {@code null}
      * @return a new editor for {@code object}
      */
@@ -215,7 +215,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         Editor editor = null;
         if (property.isParentChild()) {
             LayoutContext context = getLayoutContext();
-            HelpContext help = context.getHelpContext().createSubtopic(property.getName());
+            HelpContext help = context.getHelpContext().subtopic(property.getName());
             LayoutContext subContext = new DefaultLayoutContext(context, help);
 
             if (property.getMinCardinality() == 1 && property.getMaxCardinality() == 1) {
@@ -247,7 +247,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> identifiers = ArchetypeQueryHelper.getCandidates(service, property.getDescriptor());
             final String[] nodes = DescriptorHelper.getCommonNodeNames(
-                    property.getDescriptor().getArchetypeRange(), IDENTIFIER_SORT_NODES, service);
+                property.getDescriptor().getArchetypeRange(), IDENTIFIER_SORT_NODES, service);
 
             Palette<IMObject> palette = new BoundPalette<IMObject>(identifiers, property) {
                 @Override
@@ -305,7 +305,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     private PropertyEditor createPropertyEditor(Property property,
                                                 Component component) {
         PropertyComponentEditor editor
-                = new PropertyComponentEditor(property, component);
+            = new PropertyComponentEditor(property, component);
         editors.add(editor);
         return editor;
     }

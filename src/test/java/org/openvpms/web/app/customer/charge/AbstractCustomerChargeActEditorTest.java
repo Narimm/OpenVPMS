@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -99,7 +99,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @return the editor for the new item
      */
     protected CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient, Product product,
-                                                  BigDecimal quantity, ChargePopupEditorManager mgr) {
+                                                  BigDecimal quantity, ChargeEditorQueue mgr) {
         return CustomerChargeTestHelper.addItem(editor, patient, product, quantity, mgr);
     }
 
@@ -114,7 +114,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param mgr        the popup editor manager
      */
     protected void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                           Party patient, Product product, BigDecimal quantity, ChargePopupEditorManager mgr) {
+                           Party patient, Product product, BigDecimal quantity, ChargeEditorQueue mgr) {
         CustomerChargeTestHelper.setItem(editor, itemEditor, patient, product, quantity, mgr);
     }
 

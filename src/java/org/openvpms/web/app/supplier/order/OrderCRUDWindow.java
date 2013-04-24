@@ -139,7 +139,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
     protected void onCreated(final FinancialAct act) {
         String title = Messages.get("supplier.order.selectdetails.title", DescriptorHelper.getDisplayName(act));
         final SelectStockDetailsDialog dialog = new SelectStockDetailsDialog(title, getContext(),
-                                                                             getHelpContext().createSubtopic("new"));
+                                                                             getHelpContext().subtopic("new"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -206,7 +206,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     private void onGenerate() {
         String title = Messages.get("supplier.order.generate.title");
-        HelpContext help = getHelpContext().createSubtopic("generate");
+        HelpContext help = getHelpContext().subtopic("generate");
         final StockLocationSupplierDialog dialog = new StockLocationSupplierDialog(title, getContext(), help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override

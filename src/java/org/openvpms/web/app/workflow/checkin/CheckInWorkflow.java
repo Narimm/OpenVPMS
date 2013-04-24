@@ -1,17 +1,17 @@
 /*
  * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.checkin;
@@ -65,10 +65,9 @@ public class CheckInWorkflow extends WorkflowImpl {
     private Context external;
 
     /**
-     * Work list archetype short name.
+     * The check-in workflow help topic.
      */
-    protected static final String WORK_LIST_SHORTNAME = "party.organisationWorkList";
-
+    private static final String HELP_TOPIC = "workflow/checkin";
 
     /**
      * Constructs a {@code CheckInWorkflow}.
@@ -80,7 +79,7 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param help      the help context
      */
     public CheckInWorkflow(Party customer, Party patient, User clinician, Context context, HelpContext help) {
-        super(help.createTopic("workflow/checkin"));
+        super(help.topic(HELP_TOPIC));
         initialise(null, customer, patient, clinician, null, null, context);
     }
 
@@ -92,7 +91,7 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param help        the help context
      */
     public CheckInWorkflow(Act appointment, Context context, HelpContext help) {
-        super(help.createTopic("workflow/checkin"));
+        super(help.topic(HELP_TOPIC));
         initialise(appointment, context);
     }
 
@@ -219,7 +218,8 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @return a new task to select a patient
      */
     protected SelectIMObjectTask<Party> createSelectPatientTask(TaskContext context, EditIMObjectTask patientEditor) {
-        return new SelectIMObjectTask<Party>(PatientArchetypes.PATIENT, context, patientEditor);
+        return new SelectIMObjectTask<Party>(PatientArchetypes.PATIENT, context, patientEditor,
+                                             context.getHelpContext().topic("patient"));
     }
 
     /**
@@ -229,7 +229,8 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @return a new task to select a work list
      */
     protected SelectIMObjectTask<Party> createSelectWorkListTask(TaskContext context) {
-        return new SelectIMObjectTask<Party>(WORK_LIST_SHORTNAME, context);
+        HelpContext help = context.getHelpContext().topic("worklist");
+        return new SelectIMObjectTask<Party>(ScheduleArchetypes.ORGANISATION_WORKLIST, context, help);
     }
 
     /**
@@ -294,8 +295,7 @@ public class CheckInWorkflow extends WorkflowImpl {
             ActBean bean = new ActBean((Act) object);
             bean.setValue("arrivalTime", new Date());
             if (bean.getParticipantRef("participation.patient") == null) {
-                bean.addParticipation("participation.patient",
-                                      context.getPatient());
+                bean.addParticipation("participation.patient", context.getPatient());
             }
             Act act = (Act) context.getObject("act.customerTask");
             if (act != null) {

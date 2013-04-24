@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.checkout;
@@ -74,6 +74,11 @@ class PrintDocumentsTask extends AbstractTask {
     private final Date startTime;
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
      * The print dialog.
      */
     private BatchPrintDialog dialog;
@@ -86,9 +91,11 @@ class PrintDocumentsTask extends AbstractTask {
     /**
      * The printable patient documents.
      */
-    private static final String[] DOCUMENTS
-            = {"act.patientDocumentLetter", "act.patientDocumentForm"};
+    private static final String[] DOCUMENTS = {"act.patientDocumentLetter", "act.patientDocumentForm"};
 
+    /**
+     * The mail button identifier.
+     */
     private static final String MAIL_ID = "mail";
 
 
@@ -96,9 +103,11 @@ class PrintDocumentsTask extends AbstractTask {
      * Constructs a {@code PrintDocumentsTask}.
      *
      * @param startTime the act start time.
+     * @param help      the help context
      */
-    public PrintDocumentsTask(Date startTime) {
+    public PrintDocumentsTask(Date startTime, HelpContext help) {
         this.startTime = startTime;
+        this.help = help;
     }
 
     /**
@@ -118,7 +127,7 @@ class PrintDocumentsTask extends AbstractTask {
         } else {
             String title = Messages.get("workflow.checkout.print.title");
             String[] buttons = isRequired() ? PopupDialog.OK_CANCEL : PopupDialog.OK_SKIP_CANCEL;
-            dialog = new BatchPrintDialog(title, buttons, unprinted);
+            dialog = new BatchPrintDialog(title, buttons, unprinted, help);
             dialog.getButtons().add(MAIL_ID, new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onMail(context);
@@ -210,8 +219,8 @@ class PrintDocumentsTask extends AbstractTask {
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         CollectionNodeConstraint participations
-                = new CollectionNodeConstraint(node, participation,
-                                               false, true);
+            = new CollectionNodeConstraint(node, participation,
+                                           false, true);
         participations.add(new ObjectRefNodeConstraint("entity", party.getObjectReference()));
 
         query.add(participations);
@@ -231,7 +240,7 @@ class PrintDocumentsTask extends AbstractTask {
     private void onMail(TaskContext context) {
         List<IMObject> list = dialog.getSelected();
         if (!list.isEmpty()) {
-            HelpContext email = context.getHelpContext().createSubtopic("email");
+            HelpContext email = context.getHelpContext().subtopic("email");
             MailContext mailContext = new CustomerMailContext(context, email);
             MailDialog dialog = new MailDialog(mailContext, context, email);
             MailEditor editor = dialog.getMailEditor();

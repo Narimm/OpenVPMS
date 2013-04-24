@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -20,7 +20,6 @@ import nextapp.echo2.app.Button;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.property.Modifiable;
@@ -46,10 +45,9 @@ public class ActEditDialog extends EditDialog {
      *
      * @param editor  the editor
      * @param context the context
-     * @param help    the help context
      */
-    public ActEditDialog(IMObjectEditor editor, Context context, HelpContext help) {
-        super(editor, context, help);
+    public ActEditDialog(IMObjectEditor editor, Context context) {
+        super(editor, context);
         init(editor);
     }
 
@@ -59,10 +57,9 @@ public class ActEditDialog extends EditDialog {
      * @param editor  the editor
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      * @param context the context
-     * @param help    the help context
      */
-    public ActEditDialog(IMObjectEditor editor, boolean save, Context context, HelpContext help) {
-        super(editor, save, context, help);
+    public ActEditDialog(IMObjectEditor editor, boolean save, Context context) {
+        super(editor, save, context);
         init(editor);
     }
 
@@ -75,10 +72,9 @@ public class ActEditDialog extends EditDialog {
      * @param skip    if {@code true} display a 'Skip' button that simply
      *                closes the dialog
      * @param context the context
-     * @param help    the help context
      */
-    public ActEditDialog(IMObjectEditor editor, boolean save, boolean skip, Context context, HelpContext help) {
-        super(editor, save, skip, context, help);
+    public ActEditDialog(IMObjectEditor editor, boolean save, boolean skip, Context context) {
+        super(editor, save, skip, context);
         init(editor);
 
         posted = getPosted();

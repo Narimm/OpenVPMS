@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -64,7 +62,7 @@ public class CustomerChargeTestHelper {
      */
     public static CustomerChargeActItemEditor addItem(AbstractCustomerChargeActEditor editor, Party patient,
                                                       Product product, BigDecimal quantity,
-                                                      ChargePopupEditorManager mgr) {
+                                                      ChargeEditorQueue mgr) {
         CustomerChargeActItemEditor itemEditor = editor.addItem();
         itemEditor.getComponent();
         assertTrue(editor.isValid());
@@ -85,7 +83,7 @@ public class CustomerChargeTestHelper {
      * @param mgr        the popup editor manager
      */
     public static void setItem(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                               Party patient, Product product, BigDecimal quantity, ChargePopupEditorManager mgr) {
+                               Party patient, Product product, BigDecimal quantity, ChargeEditorQueue mgr) {
         if (itemEditor.getProperty("patient") != null) {
             itemEditor.setPatient(patient);
         }
@@ -102,7 +100,7 @@ public class CustomerChargeTestHelper {
                 }
             }
         }
-        Validator validator =new Validator();
+        Validator validator = new Validator();
         boolean valid = itemEditor.validate(validator);
         if (!valid) {
             ValidationHelper.showError(validator);
@@ -110,7 +108,8 @@ public class CustomerChargeTestHelper {
         assertTrue(itemEditor.isValid());
     }
 
-    private static void checkSavePopups(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor, Product product, ChargePopupEditorManager mgr) {
+    private static void checkSavePopups(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+                                        Product product, ChargeEditorQueue mgr) {
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             // invoice items have a dispensing node
             assertFalse(itemEditor.isValid());  // not valid while popup is displayed
@@ -135,7 +134,7 @@ public class CustomerChargeTestHelper {
      * @param mgr       the popup editor manager
      * @param shortName the expected archetype short name of the object being edited
      */
-    public static void checkSavePopup(ChargePopupEditorManager mgr, String shortName) {
+    public static void checkSavePopup(ChargeEditorQueue mgr, String shortName) {
         EditDialog dialog = mgr.getCurrent();
         assertNotNull(dialog);
         IMObjectEditor editor = dialog.getEditor();

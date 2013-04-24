@@ -99,16 +99,15 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Edits an object.
      *
      * @param editor the object editor
-     * @param help   the help context
      * @return the edit dialog
      */
     @Override
-    protected EditDialog edit(IMObjectEditor editor, HelpContext help) {
+    protected EditDialog edit(IMObjectEditor editor) {
         Date startTime = browser.getSelectedTime();
         if (startTime != null && editor.getObject().isNew() && editor instanceof AppointmentActEditor) {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
-        return super.edit(editor, help);
+        return super.edit(editor);
     }
 
     /**
@@ -189,11 +188,10 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Creates a new edit dialog.
      *
      * @param editor the editor
-     * @param help   the help context
      */
     @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
-        return new AppointmentEditDialog(editor, getContext(), help);
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        return new AppointmentEditDialog(editor, getContext());
     }
 
     /**
@@ -343,7 +341,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         HelpContext edit = createEditTopic(appointment);
         DefaultLayoutContext context = new DefaultLayoutContext(getContext(), edit);
         AppointmentActEditor editor = new AppointmentActEditor(appointment, null, context);
-        EditDialog dialog = edit(editor, edit);  // NOTE: need to update the start time after dialog is created
+        EditDialog dialog = edit(editor);  // NOTE: need to update the start time after dialog is created
         editor.setSchedule(schedule);      //       See AppointmentEditDialog.timesModified().
         editor.setStartTime(startTime); // will recalc end time
         dialog.save(true);              // checks for overlapping appointments

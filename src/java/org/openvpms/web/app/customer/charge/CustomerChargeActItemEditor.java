@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -58,6 +58,7 @@ import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.reminder.ReminderEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
@@ -120,7 +121,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * The medication, investigation and reminder act editor manager.
      */
-    private PopupEditorManager popupEditorMgr;
+    private EditorQueue popupEditorMgr;
 
     /**
      * Listener for changes to the quantity.
@@ -181,8 +182,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Node filter, used to disable properties when a product template is selected.
      */
     private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-            "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
-            REMINDERS);
+        "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
+        REMINDERS);
 
 
     /**
@@ -302,7 +303,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      *
      * @param manager the popup editor manager. May be <code>null</tt>
      */
-    public void setPopupEditorManager(PopupEditorManager manager) {
+    public void setEditorQueue(EditorQueue manager) {
         popupEditorMgr = manager;
     }
 
@@ -462,7 +463,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Calculates the tax amount.
      *
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws TaxRuleException for any tax error
+     * @throws TaxRuleException          for any tax error
      */
     protected void calculateTax() {
         Party customer = getCustomer();
@@ -544,7 +545,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     Act act = (Act) dispensing.create();
                     if (act != null) {
                         boolean dispensingLabel = hasDispensingLabel(product);
-                        IMObjectEditor editor = dispensing.getEditor(act);
+                        IMObjectEditor editor = createEditor(act, dispensing);
                         if (editor instanceof PatientMedicationActEditor) {
                             // display the product read-only to ensure it is consistent with the charge item
                             ((PatientMedicationActEditor) editor).setProductReadOnly(true);
@@ -582,7 +583,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 for (Entity investigationType : getInvestigationTypes(product)) {
                     Act act = (Act) investigations.create();
                     if (act != null) {
-                        IMObjectEditor editor = investigations.createEditor(act, getLayoutContext());
+                        IMObjectEditor editor = createEditor(act, investigations);
                         if (editor instanceof PatientInvestigationActEditor) {
                             ((PatientInvestigationActEditor) editor).setInvestigationType(investigationType);
                         }
@@ -615,7 +616,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     EntityRelationship relationship = entry.getValue();
                     Act act = (Act) reminders.create();
                     if (act != null) {
-                        IMObjectEditor editor = reminders.createEditor(act, getLayoutContext());
+                        IMObjectEditor editor = createEditor(act, reminders);
                         if (editor instanceof ReminderEditor) {
                             ReminderEditor reminder = (ReminderEditor) editor;
                             Date startTime = getStartTime();
@@ -639,6 +640,19 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
             }
         }
+    }
+
+    /**
+     * Creates an act editor, with a new help context.
+     *
+     * @param act     the act to editor
+     * @param editors the editor collection
+     * @return the editor
+     */
+    private IMObjectEditor createEditor(Act act, ActRelationshipCollectionEditor editors) {
+        LayoutContext context = getLayoutContext();
+        LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().topic(act, "edit"));
+        return editors.createEditor(act, subContext);
     }
 
     /**
@@ -713,7 +727,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private Map<Entity, EntityRelationship> getReminderTypes(Product product) {
         Map<EntityRelationship, Entity> map = reminderRules.getReminderTypes(product);
         Map<Entity, EntityRelationship> result
-                = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
+            = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
         for (Map.Entry<EntityRelationship, Entity> entry : map.entrySet()) {
             result.put(entry.getValue(), entry.getKey());
         }
@@ -735,7 +749,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void queuePatientActEditor(final IMObjectEditor editor, boolean skip,
                                        final ActRelationshipCollectionEditor collection) {
         if (popupEditorMgr != null) {
-            popupEditorMgr.queue(editor, skip, new PopupEditorManager.Listener() {
+            popupEditorMgr.queue(editor, skip, new EditorQueue.Listener() {
                 public void completed(boolean skipped) {
                     if (skipped) {
                         collection.remove(editor.getObject());
@@ -994,7 +1008,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         CollectionProperty collection = (CollectionProperty) getProperty(name);
         if (collection != null && !collection.isHidden()) {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
-                    collection, act, getLayoutContext());
+                collection, act, getLayoutContext());
             editor.setExcludeDefaultValueObject(false);
             getEditors().add(editor);
         }

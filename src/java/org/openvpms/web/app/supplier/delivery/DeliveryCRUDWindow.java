@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.supplier.delivery;
@@ -97,7 +97,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         String displayName = DescriptorHelper.getDisplayName(act);
         String title = Messages.get("supplier.delivery.selectorders.title", displayName);
         String message = Messages.get("supplier.delivery.selectorders.message", displayName);
-        HelpContext help = getHelpContext().createSubtopic("order");
+        HelpContext help = getHelpContext().subtopic("order");
         PopupDialog dialog = new OrderSelectionBrowserDialog(title, message, browser, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
@@ -180,11 +180,10 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      * Creates a new edit dialog with Apply button disabled for <em>POSTED</em> acts, to workaround OVPMS-733.
      *
      * @param editor the editor
-     * @param help   the help context
      */
     @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor, HelpContext help) {
-        return new ActEditDialog(editor, getContext(), help);
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        return new ActEditDialog(editor, getContext());
     }
 
     /**
@@ -196,13 +195,13 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     protected boolean post(FinancialAct act) {
         boolean result = false;
         // use the editor to ensure that the validation rules are invoked
-        HelpContext context = getHelpContext().createSubtopic("finalise");
+        HelpContext context = getHelpContext().subtopic("finalise");
         DeliveryEditor editor = new DeliveryEditor(getObject(), null, createLayoutContext(context));
         editor.setStatus(ActStatus.POSTED);
         Validator validator = new Validator();
         if (!editor.validate(validator)) {
             // pop up an editor for the delivery and display the errors
-            edit(editor, context);
+            edit(editor);
             ValidationHelper.showError(validator);
         } else {
             result = SaveHelper.save(editor);
@@ -228,7 +227,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
             FinancialAct item = (delivery) ? rules.createDeliveryItem(orderItem) : rules.createReturnItem(orderItem);
             editor.addItem(item, orderItem);
         }
-        edit(editor, edit);
+        edit(editor);
     }
 
     /**
@@ -239,7 +238,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     private void onInvoice(final Act act) {
         String title = Messages.get("supplier.delivery.invoice.title");
         String message = Messages.get("supplier.delivery.invoice.message");
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().createSubtopic("invoice"));
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("invoice"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
                 invoice(act);
@@ -256,7 +255,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
     private void onCredit(final Act act) {
         String title = Messages.get("supplier.delivery.credit.title");
         String message = Messages.get("supplier.delivery.credit.message");
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().createSubtopic("credit"));
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("credit"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
                 credit(act);
@@ -279,7 +278,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
             title = Messages.get("supplier.delivery.reverseReturn.title");
             message = Messages.get("supplier.delivery.reverseReturn.message");
         }
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().createSubtopic("reverse"));
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("reverse"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
                 reverse(act);
