@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting.deposit;
@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
@@ -44,12 +45,14 @@ public class DepositWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> 
     /**
      * Constructs a {@code DepositWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param mailContext the mail context
      */
-    public DepositWorkspace(Context context) {
+    public DepositWorkspace(Context context, MailContext mailContext) {
         super("reporting", "deposit", context);
         setArchetypes(Party.class, "party.organisationDeposit");
         setChildArchetypes(FinancialAct.class, "act.bankDeposit");
+        setMailContext(mailContext);
     }
 
     /**
@@ -80,8 +83,8 @@ public class DepositWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> 
      */
     protected ActQuery<FinancialAct> createQuery() {
         ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
-                getObject(), "depositAccount", "participation.deposit",
-                "act.bankDeposit", STATUSES);
+            getObject(), "depositAccount", "participation.deposit",
+            "act.bankDeposit", STATUSES);
         query.setStatus(DepositStatus.UNDEPOSITED);
         return query;
     }

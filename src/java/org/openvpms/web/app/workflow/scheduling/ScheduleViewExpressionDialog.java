@@ -1,31 +1,29 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.scheduling;
 
 import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.help.HelpContext;
 
 
 /**
  * Dialog to edit the expression of a schedule view.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ScheduleViewExpressionDialog extends PopupDialog {
 
@@ -36,14 +34,14 @@ public class ScheduleViewExpressionDialog extends PopupDialog {
 
 
     /**
-     * Construct a new <tt>ScheduleViewExpressionDialog</tt>.
+     * Constructs a {@code ScheduleViewExpressionDialog}.
      *
      * @param title  the window title
      * @param editor the expression editor
+     * @param help   the help context
      */
-    public ScheduleViewExpressionDialog(String title,
-                                        ScheduleViewExpressionEditor editor) {
-        super(title, "EditDialog", new String[]{"test", OK_ID});
+    public ScheduleViewExpressionDialog(String title, ScheduleViewExpressionEditor editor, HelpContext help) {
+        super(title, "EditDialog", new String[]{"test", OK_ID}, help);
         getLayout().add(editor.getComponent());
         setModal(true);
         this.editor = editor;

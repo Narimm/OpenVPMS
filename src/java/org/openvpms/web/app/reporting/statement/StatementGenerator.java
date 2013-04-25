@@ -63,22 +63,17 @@ class StatementGenerator extends AbstractStatementGenerator {
     private StatementProcessor processor;
 
     /**
-     * The mail context.
-     */
-    private MailContext mailContext;
-
-
-    /**
      * Constructs a new {@code StatementGenerator} for a single customer.
      *
-     * @param customer  the customer reference
-     * @param date      the statement date
-     * @param printOnly if {@code true} only print statements
-     * @param context   the context
-     * @param help      the help context
+     * @param customer    the customer reference
+     * @param date        the statement date
+     * @param printOnly   if {@code true} only print statements
+     * @param context     the context
+     * @param mailContext the mail context
+     * @param help        the help context
      */
     public StatementGenerator(IMObjectReference customer, Date date, boolean printOnly, Context context,
-                              HelpContext help) {
+                              MailContext mailContext, HelpContext help) {
         super(Messages.get("reporting.statements.run.title"),
               Messages.get("reporting.statements.run.cancel.title"),
               Messages.get("reporting.statements.run.cancel.message"),
@@ -88,18 +83,18 @@ class StatementGenerator extends AbstractStatementGenerator {
         if (party != null) {
             customers.add(party);
         }
-        init(customers, date, printOnly, context, help);
+        init(customers, date, printOnly, context, mailContext, help);
     }
 
     /**
-     * Constructs a new {@code StatementGenerator} for statements returned by a
-     * query.
+     * Constructs a new {@code StatementGenerator} for statements returned by a query.
      *
-     * @param query   the query
-     * @param context the context
-     * @param help    the help context
+     * @param query       the query
+     * @param context     the context
+     * @param mailContext the mail context
+     * @param help        the help context
      */
-    public StatementGenerator(CustomerBalanceQuery query, Context context, HelpContext help) {
+    public StatementGenerator(CustomerBalanceQuery query, Context context, MailContext mailContext, HelpContext help) {
         super(Messages.get("reporting.statements.run.title"),
               Messages.get("reporting.statements.run.cancel.title"),
               Messages.get("reporting.statements.run.cancel.message"),
@@ -119,7 +114,7 @@ class StatementGenerator extends AbstractStatementGenerator {
                 }
             }
         }
-        init(customers, query.getDate(), false, context, help);
+        init(customers, query.getDate(), false, context, mailContext, help);
     }
 
     /**
@@ -136,15 +131,6 @@ class StatementGenerator extends AbstractStatementGenerator {
     }
 
     /**
-     * Sets the mail context, used for mailing from print dialogs.
-     *
-     * @param context the mail context. May be {@code null}
-     */
-    public void setMailContext(MailContext context) {
-        mailContext = context;
-    }
-
-    /**
      * Returns the processor.
      *
      * @return the processor
@@ -156,41 +142,38 @@ class StatementGenerator extends AbstractStatementGenerator {
     /**
      * Initialises this.
      *
-     * @param customers the customers to generate statements for
-     * @param date      the statement date
-     * @param printOnly if {@code true}, only print statements
-     * @param context   the context
-     * @param help      the help context
+     * @param customers   the customers to generate statements for
+     * @param date        the statement date
+     * @param printOnly   if {@code true}, only print statements
+     * @param context     the context
+     * @param mailContext the mail context
+     * @param help        the help context
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor exception
      */
-    private void init(List<Party> customers, Date date, boolean printOnly, Context context, HelpContext help) {
+    private void init(List<Party> customers, Date date, boolean printOnly, Context context, MailContext mailContext,
+                      HelpContext help) {
         Party practice = context.getPractice();
         if (practice == null) {
-            throw new StatementProcessorException(
-                StatementProcessorException.ErrorCode.InvalidConfiguration,
-                "Context has no practice");
+            throw new StatementProcessorException(StatementProcessorException.ErrorCode.InvalidConfiguration,
+                                                  "Context has no practice");
         }
         Contact email = getEmail(practice);
         if (email == null) {
-            throw new StatementProcessorException(
-                StatementProcessorException.ErrorCode.InvalidConfiguration,
-                "Practice " + practice.getName()
-                + " has no email contact for statements");
+            throw new StatementProcessorException(StatementProcessorException.ErrorCode.InvalidConfiguration,
+                                                  "Practice " + practice.getName()
+                                                  + " has no email contact for statements");
         }
         IMObjectBean bean = new IMObjectBean(email);
         String address = bean.getString("emailAddress");
         String name = practice.getName();
         if (StringUtils.isEmpty(address)) {
-            throw new StatementProcessorException(
-                StatementProcessorException.ErrorCode.InvalidConfiguration,
-                "Practice " + practice.getName()
-                + " email contact address is empty");
+            throw new StatementProcessorException(StatementProcessorException.ErrorCode.InvalidConfiguration,
+                                                  "Practice " + practice.getName() + " email contact address is empty");
         }
 
         processor = new StatementProcessor(date, practice);
-        progressBarProcessor = new StatementProgressBarProcessor(
-            processor, customers);
+        progressBarProcessor = new StatementProgressBarProcessor(processor, customers);
 
         StatementPrintProcessor printer = new StatementPrintProcessor(progressBarProcessor, getCancelListener(),
                                                                       practice, context, mailContext, help);
@@ -198,9 +181,8 @@ class StatementGenerator extends AbstractStatementGenerator {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);
         } else {
-            StatementEmailProcessor mailer = new StatementEmailProcessor(
-                ServiceHelper.getMailSender(), address, name,
-                practice);
+            StatementEmailProcessor mailer = new StatementEmailProcessor(ServiceHelper.getMailSender(), address, name,
+                                                                         practice);
             processor.addListener(new StatementDelegator(printer, mailer));
         }
     }

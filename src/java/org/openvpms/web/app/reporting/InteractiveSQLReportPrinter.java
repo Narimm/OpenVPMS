@@ -22,6 +22,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.print.InteractivePrinter;
@@ -51,10 +52,11 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
      * @param help      the help context
      * @param variables variables for macro expansion
      */
-    public InteractiveSQLReportPrinter(SQLReportPrinter printer, Context context, HelpContext help,
-                                       Variables variables) {
+    public InteractiveSQLReportPrinter(SQLReportPrinter printer, Context context, MailContext mailContext,
+                                       HelpContext help, Variables variables) {
         super(printer, context, help);
         this.variables = variables;
+        setMailContext(mailContext);
     }
 
     /**
@@ -65,7 +67,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
     @Override
     protected PrintDialog createDialog() {
         final SQLReportPrinter printer = getPrinter();
-        return new SQLReportDialog(getTitle(), printer.getParameterTypes(), variables) {
+        return new SQLReportDialog(getTitle(), printer.getParameterTypes(), variables, getHelpContext()) {
 
             @Override
             protected void doPrint() {

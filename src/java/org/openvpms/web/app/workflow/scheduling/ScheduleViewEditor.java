@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.scheduling;
@@ -29,6 +27,7 @@ import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -68,7 +67,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
                               LayoutContext layoutContext) {
         super(object, parent, layoutContext);
         expressionEditor = new ExpressionEditor(
-                getProperty("displayExpression"), object, getLayoutContext());
+            getProperty("displayExpression"), object, getLayoutContext());
         getEditors().add(expressionEditor);
     }
 
@@ -108,7 +107,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
     }
 
     private static class ExpressionEditor
-            extends AbstractPropertyEditor {
+        extends AbstractPropertyEditor {
 
         /**
          * The wrapper component.
@@ -126,6 +125,12 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
         private final ScheduleViewExpressionEditor editor;
 
         /**
+         * The help context.
+         */
+        private final HelpContext help;
+
+
+        /**
          * Creates a new <tt>ExpressionEditor</tt>.
          *
          * @param property the property being edited
@@ -136,7 +141,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
                                 LayoutContext context) {
             super(property);
             ComponentState state = context.getComponentFactory().create(
-                    property, parent);
+                property, parent);
             Component field = state.getComponent();
             Button test = ButtonFactory.create("test", new ActionListener() {
                 public void onAction(ActionEvent onEvent) {
@@ -147,8 +152,9 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
             focus.add(test);
             container = RowFactory.create("CellSpacing", field, test);
             boolean arrivalTime = TypeHelper.isA(
-                    parent, "entity.organisationScheduleView");
+                parent, "entity.organisationScheduleView");
             editor = new ScheduleViewExpressionEditor(property, arrivalTime);
+            help = context.getHelpContext();
         }
 
         /**
@@ -196,7 +202,8 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
          */
         private void onTest() {
             String title = Messages.get("editor.edit.title", editor.getDisplayName());
-            ScheduleViewExpressionDialog dialog = new ScheduleViewExpressionDialog(title, editor);
+            ScheduleViewExpressionDialog dialog = new ScheduleViewExpressionDialog(title, editor,
+                                                                                   help.subtopic("test"));
             dialog.show();
         }
 
