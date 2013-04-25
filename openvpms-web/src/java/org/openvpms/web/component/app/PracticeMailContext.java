@@ -32,7 +32,7 @@ import java.util.List;
 public class PracticeMailContext extends ContextMailContext {
 
     /**
-     * Constructs a <tt>ContextMailContext</tt>.
+     * Constructs a {@code PracticeMailContext}.
      *
      * @param context the context
      */

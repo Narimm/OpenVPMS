@@ -21,6 +21,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.util.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.ReportParameters;
 import org.openvpms.web.component.print.PrintDialog;
 import org.openvpms.web.component.util.GroupBoxFactory;
@@ -58,9 +59,10 @@ public class SQLReportDialog extends PrintDialog {
      * @param title      the dialog title
      * @param parameters the report parameter types
      * @param variables  variables for macro expansion
+     * @param help       the help context
      */
-    public SQLReportDialog(String title, Set<ParameterType> parameters, Variables variables) {
-        super(title);
+    public SQLReportDialog(String title, Set<ParameterType> parameters, Variables variables, HelpContext help) {
+        super(title, true, true, false, help);
         setStyleName("SQLReportDialog");
         this.parameters = new ReportParameters(parameters, variables);
     }

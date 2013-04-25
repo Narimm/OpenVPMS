@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.reporting.reminder;
@@ -37,6 +37,7 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
@@ -47,6 +48,7 @@ import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.view.TableComponentFactory;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
@@ -75,10 +77,11 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
     /**
      * Constructs a {@code ReminderWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param mailContext the mail context
      */
-    public ReminderWorkspace(Context context) {
-        super("reporting", "reminder", Act.class, context);
+    public ReminderWorkspace(Context context, MailContext mailContext) {
+        super("reporting", "reminder", Act.class, context, mailContext);
     }
 
     /**
@@ -135,15 +138,17 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
             Act reminder = browser.getSelected();
             if (reminder != null) {
                 ReminderProcessor processor = new ReminderProcessor(
-                        reminder.getActivityStartTime(), reminder.getActivityEndTime(),
-                        reminder.getActivityStartTime(), ServiceHelper.getArchetypeService(),
-                        new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService()));
+                    reminder.getActivityStartTime(), reminder.getActivityEndTime(),
+                    reminder.getActivityStartTime(), ServiceHelper.getArchetypeService(),
+                    new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService()));
                 IMObjectBean bean = new IMObjectBean(reminder);
                 int reminderCount = bean.getInt("reminderCount");
                 ReminderEvent event = processor.process(reminder, reminderCount);
                 if (event.getDocumentTemplate() != null) {
                     Context context = getContext();
-                    CustomerMailContext mailContext = CustomerMailContext.create(reminder, context, getHelpContext());
+                    HelpContext help = getHelpContext().subtopic("print");
+                    MailContext mailContext = CustomerMailContext.create(event.getCustomer(), event.getPatient(),
+                                                                         context, help);
                     if (mailContext != null) {
 
                         DocumentTemplate template = new DocumentTemplate(event.getDocumentTemplate(),
@@ -151,7 +156,7 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
                         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, reminder,
                                                                                              context);
                         InteractivePrinter printer = new InteractivePrinter(
-                                new IMObjectReportPrinter<Act>(reminder, locator, context), context, getHelpContext());
+                            new IMObjectReportPrinter<Act>(reminder, locator, context), context, help);
                         printer.setMailContext(mailContext);
                         printer.print();
                     }
@@ -166,14 +171,13 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
     }
 
     /**
-     * Invoked when the 'Send All' button is pressed. Runs the reminder
-     * generator for all reminders.
+     * Invoked when the 'Send All' button is pressed. Runs the reminder generator for all reminders.
      */
     private void onSendAll() {
         String title = Messages.get("reporting.reminder.run.title");
         String message = Messages.get("reporting.reminder.run.message");
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
+        HelpContext help = getHelpContext().subtopic("confirmsend");
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -192,8 +196,8 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
         IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(objects, ReminderArchetypes.REMINDER, getContext());
         String title = Messages.get("reporting.reminder.print.title");
         try {
-            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getContext(),
-                                                                               getHelpContext());
+            HelpContext help = getHelpContext().subtopic("report");
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, getContext(), help);
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
@@ -206,8 +210,9 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
      */
     private void generateReminders() {
         try {
+            HelpContext help = getHelpContext().subtopic("send");
             ReminderGenerator generator = new ReminderGenerator(query.createReminderQuery(), getContext(),
-                                                                getMailContext(), getHelpContext());
+                                                                getMailContext(), help);
             generateReminders(generator);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

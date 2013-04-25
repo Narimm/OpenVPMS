@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.app.admin.lookup;
 
@@ -80,7 +80,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
             ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
             IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
-            deletor.delete(object, getHelpContext(), new LookupDeletorListener());
+            deletor.delete(object, getHelpContext().subtopic("delete"), new LookupDeletorListener());
         }
     }
 
@@ -123,7 +123,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
             String shortName = lookup.getArchetypeId().getShortName();
             Query<Lookup> query = QueryFactory.create(shortName, getContext(), Lookup.class);
             query.setAuto(true);
-            HelpContext help = getHelpContext();
+            HelpContext help = getHelpContext().subtopic("replace");
             DefaultLayoutContext context = new DefaultLayoutContext(getContext(), help);
             final ReplaceLookupBrowser browser = new ReplaceLookupBrowser(query, lookup, context);
             String title = Messages.get("lookup.replace.title");
@@ -150,7 +150,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
         String title = Messages.get("lookup.replace.title");
         String message = Messages.get(delete ? "lookup.replace.confirmDelete" : "lookup.replace.confirm",
                                       source.getName(), target.getName());
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("confirmreplace"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

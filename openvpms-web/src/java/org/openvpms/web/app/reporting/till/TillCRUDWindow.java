@@ -22,6 +22,7 @@ import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillBalanceQuery;
 import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.archetype.rules.finance.till.TillRules;
@@ -211,7 +212,8 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             if (till != null && location != null) {
                 IMObjectBean bean = new IMObjectBean(till);
                 BigDecimal lastFloat = bean.getBigDecimal("tillFloat", BigDecimal.ZERO);
-                final ClearTillDialog dialog = new ClearTillDialog(location, getContext());
+                HelpContext help = getHelpContext().subtopic("clear");
+                final ClearTillDialog dialog = new ClearTillDialog(location, getContext(), help);
                 dialog.setAmount(lastFloat);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
@@ -237,8 +239,9 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
             String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
             String title = Messages.get("imobject.print.title", displayName);
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(),
-                                                                                           getHelpContext());
+            HelpContext help = getHelpContext().subtopic("print");
+            InteractiveIMPrinter<ObjectSet> iPrinter =
+                new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(), help);
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
@@ -258,18 +261,19 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     protected void onTransfer() {
         final FinancialAct act = getObject();
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        ArchetypeQuery query = new ArchetypeQuery("party.organisationTill", true)
-            .setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> accounts = service.get(query).getResults();
+        ActBean bean = new ActBean(act);
+        Party till = (Party) bean.getNodeParticipant("till");
+        List<IMObject> tills = getTillsExcluding(till);
+
         String title = Messages.get("till.transfer.title");
         String message = Messages.get("till.transfer.message");
-        ListBox list = new ListBox(accounts.toArray());
+        ListBox list = new ListBox(tills.toArray());
         list.setStyleName("default");
         list.setHeight(new Extent(10, Extent.EM));
         list.setCellRenderer(IMObjectListCellRenderer.NAME);
 
-        final SelectionDialog dialog = new SelectionDialog(title, message, list);
+        final SelectionDialog dialog = new SelectionDialog(title, message, list,
+                                                           getHelpContext().subtopic("transfer"));
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent e) {
                 Party selected = (Party) dialog.getSelected();
@@ -280,6 +284,20 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         });
         dialog.show();
 
+    }
+
+    /**
+     * Returns all tills except that supplied.
+     *
+     * @param till the till to exclude
+     * @return the list of available tills
+     */
+    private List<IMObject> getTillsExcluding(Party till) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        ArchetypeQuery query = new ArchetypeQuery(TillArchetypes.TILL, true).setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> tills = service.get(query).getResults();
+        tills.remove(till);
+        return tills;
     }
 
     /**

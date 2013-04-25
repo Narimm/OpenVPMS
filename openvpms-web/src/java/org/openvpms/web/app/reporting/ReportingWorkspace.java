@@ -29,12 +29,14 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroVariables;
+import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -69,10 +71,11 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
     /**
      * Constructs a {@code ReportingWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param mailContext the mail context
      */
-    public ReportingWorkspace(Context context) {
-        super("reporting", "reports", Entity.class, context);
+    public ReportingWorkspace(Context context, MailContext mailContext) {
+        super("reporting", "report", Entity.class, context, mailContext);
         user = getContext().getUser();
     }
 
@@ -170,9 +173,9 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
                 DocumentTemplate template = new DocumentTemplate(entity, service);
                 Context context = getContext();
                 SQLReportPrinter printer = new SQLReportPrinter(template, context);
+                HelpContext help = getHelpContext().subtopic("run");
                 InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(
-                    printer, context, getHelpContext(), new MacroVariables(context, service, lookups));
-                iPrinter.setMailContext(getMailContext());
+                    printer, context, getMailContext(), help, new MacroVariables(context, service, lookups));
                 iPrinter.print();
             } catch (Throwable exception) {
                 ErrorHelper.show(exception);
