@@ -42,10 +42,8 @@ import org.openvpms.web.component.mail.ToAddressFormatter;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -107,9 +105,7 @@ public class CustomerMailContext extends ContextMailContext {
     public static CustomerMailContext create(Party customer, Party patient, Context context, HelpContext help) {
         CustomerMailContext result = null;
         if (customer != null || patient != null) {
-            Context local = new LocalContext();
-            local.setPractice(context.getPractice());
-            local.setLocation(context.getLocation());
+            Context local = new LocalContext(context);
             local.setCustomer(customer);
             local.setPatient(patient);
             result = new CustomerMailContext(local, help);
@@ -154,32 +150,6 @@ public class CustomerMailContext extends ContextMailContext {
     }
 
     /**
-     * Returns variables to be used in macro expansion.
-     * <p/>
-     * This implementation returns a map of:
-     * <ul>
-     * <li>customer -> the customer party
-     * <li>patient -> the patient party
-     * </ul>
-     *
-     * @return variables to use in macro expansion
-     */
-    @Override
-    public Map<String, Object> getVariables() {
-        Map<String, Object> variables = new HashMap<String, Object>();
-        Context context = getContext();
-        Party customer = context.getCustomer();
-        Party patient = context.getPatient();
-        if (customer != null) {
-            variables.put("customer", customer);
-        }
-        if (patient != null) {
-            variables.put("patient", patient);
-        }
-        return variables;
-    }
-
-    /**
      * Returns a formatter to format 'to' addresses.
      *
      * @return the 'to' address formatter
@@ -207,7 +177,7 @@ public class CustomerMailContext extends ContextMailContext {
     /**
      * An address formatter that indicates that a vet/vet practice is the referring vet/vet practice.
      */
-    private static class ReferringAddressFormatter extends ToAddressFormatter  {
+    private static class ReferringAddressFormatter extends ToAddressFormatter {
 
         /**
          * The singleton instance.

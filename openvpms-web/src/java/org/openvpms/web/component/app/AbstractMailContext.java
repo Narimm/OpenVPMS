@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.app;
 
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.mail.AddressFormatter;
@@ -23,8 +24,6 @@ import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.FromAddressFormatter;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.ToAddressFormatter;
-
-import java.util.Map;
 
 
 /**
@@ -62,7 +61,7 @@ public abstract class AbstractMailContext implements MailContext {
      *
      * @return {@code null}
      */
-    public Map<String, Object> getVariables() {
+    public Variables getVariables() {
         return null;
     }
 

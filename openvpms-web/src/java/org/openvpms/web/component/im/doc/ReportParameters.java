@@ -169,7 +169,7 @@ public class ReportParameters {
                     }
                 }
                 if (property.isString()) {
-                    if (context != null) {
+                    if (context != null || variables != null) {
                         // register a transformer that supports macro expansion
                         property.setVariables(variables);
                         property.setTransformer(new StringPropertyTransformer(property, context, true));

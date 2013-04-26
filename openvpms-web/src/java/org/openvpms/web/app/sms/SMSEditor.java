@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.sms;
@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.sms.Connection;
@@ -100,18 +101,19 @@ public class SMSEditor extends AbstractModifiable {
      * Constructs an {@code SMSEditor}.
      */
     public SMSEditor() {
-        this(Collections.<Contact>emptyList());
+        this(Collections.<Contact>emptyList(), null);
     }
 
     /**
-     * Constructs an <tt>SMSEditor</tt>.
+     * Constructs an {@code SMSEditor}.
      * <p/>
      * If no phone numbers are supplied, the phone number will be editable, otherwise it will be read-only.
      * If there are multiple phone numbers, they will be displayed in a dropdown, with the first no. as the default
      *
-     * @param contacts the available mobile contacts. May be <tt>null</tt>
+     * @param contacts  the available mobile contacts. May be {@code null}
+     * @param variables the variables for macro expansion. May be {@code null}
      */
-    public SMSEditor(List<Contact> contacts) {
+    public SMSEditor(List<Contact> contacts, Variables variables) {
         int length = (contacts == null) ? 0 : contacts.size();
         if (length <= 1) {
             phone = TextComponentFactory.create(20);
@@ -133,8 +135,10 @@ public class SMSEditor extends AbstractModifiable {
             });
         }
         property = new SimpleProperty("property", String.class);
+        property.setVariables(variables);
         property.setMaxLength(MAX_LENGTH);
         property.setTransformer(new StringPropertyTransformer(property, new Object(), false));
+
         message = new BoundCountedTextArea(property, 40, 15);
         message.setStyleName(Styles.DEFAULT);
         message.addActionListener(new ActionListener() {
@@ -164,20 +168,9 @@ public class SMSEditor extends AbstractModifiable {
     }
 
     /**
-     * Declares a variable to be used in macro expansion.
-     *
-     * @param name  the variable name
-     * @param value the variable value
-     */
-    public void declareVariable(String name, Object value) {
-        StringPropertyTransformer transformer = (StringPropertyTransformer) property.getTransformer();
-        transformer.getMacroEvaluator().declareVariable(name, value);
-    }
-
-    /**
      * Returns the phone number.
      *
-     * @return the phone number. May be <tt>null</tt>
+     * @return the phone number. May be {@code null}
      */
     public String getPhone() {
         String result = null;
@@ -234,7 +227,7 @@ public class SMSEditor extends AbstractModifiable {
     /**
      * Determines if the object has been modified.
      *
-     * @return <tt>true</tt> if the object has been modified
+     * @return {@code true} if the object has been modified
      */
     public boolean isModified() {
         return modified;
@@ -279,7 +272,7 @@ public class SMSEditor extends AbstractModifiable {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         return !StringUtils.isEmpty(getPhone()) && !StringUtils.isEmpty(getMessage());

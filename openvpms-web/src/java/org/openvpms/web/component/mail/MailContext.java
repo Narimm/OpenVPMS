@@ -16,12 +16,12 @@
 
 package org.openvpms.web.component.mail;
 
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.im.query.Browser;
 
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -64,7 +64,7 @@ public interface MailContext {
      *
      * @return variables to use in macro expansion. May be {@code null}
      */
-    Map<String, Object> getVariables();
+    Variables getVariables();
 
     /**
      * Returns a formatter to format 'from' addresses.

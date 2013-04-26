@@ -16,9 +16,12 @@
 
 package org.openvpms.web.component.app;
 
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -34,6 +37,10 @@ public abstract class ContextMailContext extends AbstractMailContext {
      */
     private final Context context;
 
+    /**
+     * The variables.
+     */
+    private Variables variables;
 
     /**
      * Constructs a {@code ContextMailContext}.
@@ -57,6 +64,20 @@ public abstract class ContextMailContext extends AbstractMailContext {
             result = ContactHelper.getEmailContacts(context.getPractice());
         }
         return result;
+    }
+
+    /**
+     * Returns variables to be used in macro expansion.
+     *
+     * @return an instance of {@link MacroVariables}
+     */
+    @Override
+    public Variables getVariables() {
+        if (variables == null) {
+            variables = new MacroVariables(context, ServiceHelper.getArchetypeService(),
+                                           ServiceHelper.getLookupService());
+        }
+        return variables;
     }
 
     /**

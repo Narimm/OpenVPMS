@@ -49,8 +49,6 @@ import org.openvpms.web.component.util.VetoListener;
 import org.openvpms.web.component.util.Vetoable;
 import org.openvpms.web.resource.util.Messages;
 
-import java.util.Map;
-
 
 /**
  * Dialog to send emails.
@@ -188,10 +186,6 @@ public class MailDialog extends PopupDialog {
         this.documents = documents;
         this.context = context;
         editor = new MailEditor(mailContext, preferred, context, help);
-        Map<String, Object> variables = mailContext.getVariables();
-        if (variables != null) {
-            editor.declareVariables(variables);
-        }
 
         getLayout().add(editor.getComponent());
         getFocusGroup().add(editor.getFocusGroup());
