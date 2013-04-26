@@ -40,6 +40,7 @@ import nextapp.echo2.app.table.DefaultTableModel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.util.Variables;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -87,7 +88,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -131,6 +131,11 @@ public class MailEditor extends AbstractModifiable {
      * The help context.
      */
     private final HelpContext help;
+
+    /**
+     * Variables for macro expansion. May be {@code null}
+     */
+    private final Variables variables;
 
     /**
      * The selected 'from' contact.
@@ -246,8 +251,9 @@ public class MailEditor extends AbstractModifiable {
         this.toFormatter = mailContext.getToAddressFormatter();
         this.context = context;
         this.help = help;
-        from = createProperty("from", "mail.from");
-        to = createProperty("to", "mail.to");
+        this.variables = mailContext.getVariables();
+        from = createProperty("from", "mail.from", false);
+        to = createProperty("to", "mail.to", false);
         toListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 toAddressChanged();
@@ -259,7 +265,7 @@ public class MailEditor extends AbstractModifiable {
             setTo(preferredTo);
         }
 
-        subject = createProperty("subject", "mail.subject");
+        subject = createProperty("subject", "mail.subject", true);
         ModifiableListener listener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onModified();
@@ -267,33 +273,11 @@ public class MailEditor extends AbstractModifiable {
         };
         subject.addModifiableListener(listener);
 
-        message = createProperty("message", "mail.message");
+        message = createProperty("message", "mail.message", true);
         message.setRequired(false);
         message.setMaxLength(-1);     // no maximum length
         message.setTransformer(new StringPropertyTransformer(message, new Object(), false));
         message.addModifiableListener(listener);
-    }
-
-    /**
-     * Declares a variable to be used in macro expansion.
-     *
-     * @param name  the variable name
-     * @param value the variable value
-     */
-    public void declareVariable(String name, Object value) {
-        StringPropertyTransformer transformer = (StringPropertyTransformer) message.getTransformer();
-        transformer.getMacroEvaluator().declareVariable(name, value);
-    }
-
-    /**
-     * Declares variables to be used in macro expansion.
-     *
-     * @param variables a map of variable name to variable value
-     */
-    public void declareVariables(Map<String, Object> variables) {
-        for (Map.Entry<String, Object> variable : variables.entrySet()) {
-            declareVariable(variable.getKey(), variable.getValue());
-        }
     }
 
     /**
@@ -368,15 +352,6 @@ public class MailEditor extends AbstractModifiable {
      */
     public String getSubject() {
         return (String) subject.getValue();
-    }
-
-    /**
-     * Sets the message to send.
-     *
-     * @param message the message
-     */
-    public void setMessage(String message) {
-        this.message.setValue(message);
     }
 
     /**
@@ -761,14 +736,24 @@ public class MailEditor extends AbstractModifiable {
     /**
      * Helper to create a mandatory property.
      *
-     * @param name the property name
-     * @param key  the message resource bundle key
+     * @param name   the property name
+     * @param key    the message resource bundle key
+     * @param macros if {@code true} enable macro expansion
      * @return a new property
      */
-    private SimpleProperty createProperty(String name, String key) {
+    private SimpleProperty createProperty(String name, String key, boolean macros) {
         SimpleProperty result = new SimpleProperty(name, String.class);
         result.setDisplayName(Messages.get(key));
         result.setRequired(true);
+        StringPropertyTransformer transformer;
+        if (macros) {
+            result.setVariables(variables);
+            transformer = new StringPropertyTransformer(result);
+        } else {
+            transformer = new StringPropertyTransformer(result);
+            transformer.setExpandMacros(false);
+        }
+        result.setTransformer(transformer);
         return result;
     }
 
