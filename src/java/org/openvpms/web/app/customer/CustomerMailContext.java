@@ -16,6 +16,7 @@
 
 package org.openvpms.web.app.customer;
 
+import org.apache.commons.collections.ComparatorUtils;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -42,6 +43,8 @@ import org.openvpms.web.component.mail.ToAddressFormatter;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -146,6 +149,9 @@ public class CustomerMailContext extends ContextMailContext {
                 }
             }
         }
+        if (result.size() > 1) {
+            sort(result);
+        }
         return result;
     }
 
@@ -172,6 +178,22 @@ public class CustomerMailContext extends ContextMailContext {
             return (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef(node), context);
         }
         return null;
+    }
+
+    /**
+     * Sorts contacts by party name.
+     *
+     * @param contacts the contacts to sort
+     */
+    @SuppressWarnings("unchecked")
+    private void sort(List<Contact> contacts) {
+        final Comparator<Object> comparator = (Comparator<Object>) ComparatorUtils.nullHighComparator(null);
+        // sort the contacts on party name
+        Collections.sort(contacts, new Comparator<Contact>() {
+            public int compare(Contact o1, Contact o2) {
+                return comparator.compare(o1.getParty().getName(), o2.getParty().getName());
+            }
+        });
     }
 
     /**
