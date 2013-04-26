@@ -252,8 +252,8 @@ public class MailEditor extends AbstractModifiable {
         this.context = context;
         this.help = help;
         this.variables = mailContext.getVariables();
-        from = createProperty("from", "mail.from", false);
-        to = createProperty("to", "mail.to", false);
+        from = createProperty("from", "mail.from", false, true);
+        to = createProperty("to", "mail.to", false, true);
         toListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 toAddressChanged();
@@ -265,7 +265,7 @@ public class MailEditor extends AbstractModifiable {
             setTo(preferredTo);
         }
 
-        subject = createProperty("subject", "mail.subject", true);
+        subject = createProperty("subject", "mail.subject", true, true);
         ModifiableListener listener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onModified();
@@ -273,10 +273,9 @@ public class MailEditor extends AbstractModifiable {
         };
         subject.addModifiableListener(listener);
 
-        message = createProperty("message", "mail.message", true);
+        message = createProperty("message", "mail.message", true, false);
         message.setRequired(false);
         message.setMaxLength(-1);     // no maximum length
-        message.setTransformer(new StringPropertyTransformer(message, new Object(), false));
         message.addModifiableListener(listener);
     }
 
@@ -571,6 +570,7 @@ public class MailEditor extends AbstractModifiable {
                 }
             }
             if (result == null) {
+                //  contact not in the list, so create a temporary one to hold the email address
                 result = (Contact) ServiceHelper.getArchetypeService().create(ContactArchetypes.EMAIL);
                 IMObjectBean bean = new IMObjectBean(result);
                 bean.setValue("emailAddress", text);
@@ -687,7 +687,13 @@ public class MailEditor extends AbstractModifiable {
         Component toAddress = toText;
         if (!toAddresses.isEmpty()) {
             final ListBox toAddressSelector = ListBoxFactory.create(toAddresses);
-            toAddressSelector.getSelectionModel().clearSelection(); // don't default the selection as per OVPMS-1295
+            if (toAddresses.size() > 1) {
+                // don't default the selection as per OVPMS-1295
+                toAddressSelector.getSelectionModel().clearSelection();
+            } else {
+                setTo(toAddresses.get(0));
+            }
+
             toAddressSelector.setWidth(EXTENT);
             toAddressSelector.setCellRenderer(new EmailCellRenderer(toFormatter));
 
@@ -739,18 +745,19 @@ public class MailEditor extends AbstractModifiable {
      * @param name   the property name
      * @param key    the message resource bundle key
      * @param macros if {@code true} enable macro expansion
+     * @param trim   if {@code true} trim the string of leading and trailing spaces, new lines
      * @return a new property
      */
-    private SimpleProperty createProperty(String name, String key, boolean macros) {
+    private SimpleProperty createProperty(String name, String key, boolean macros, boolean trim) {
         SimpleProperty result = new SimpleProperty(name, String.class);
         result.setDisplayName(Messages.get(key));
         result.setRequired(true);
         StringPropertyTransformer transformer;
         if (macros) {
             result.setVariables(variables);
-            transformer = new StringPropertyTransformer(result);
+            transformer = new StringPropertyTransformer(result, trim);
         } else {
-            transformer = new StringPropertyTransformer(result);
+            transformer = new StringPropertyTransformer(result, trim);
             transformer.setExpandMacros(false);
         }
         result.setTransformer(transformer);

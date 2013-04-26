@@ -49,8 +49,15 @@ public class ToAddressFormatter extends AbstractAddressFormatter {
      * @return the formatted contact
      */
     public String format(Contact contact) {
+        String result;
+        String address = getAddress(contact);
         Party party = contact.getParty();
-        String type = DescriptorHelper.getDisplayName(party);
-        return Messages.get("mail.contact.to", party.getName(), getAddress(contact), type);
+        if (party != null) {
+            String type = DescriptorHelper.getDisplayName(party);
+            result = Messages.get("mail.contact.to", party.getName(), address, type);
+        } else {
+            result = address;
+        }
+        return result;
     }
 }
