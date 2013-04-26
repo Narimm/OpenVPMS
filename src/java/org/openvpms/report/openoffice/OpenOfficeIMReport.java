@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -35,6 +33,8 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -44,14 +44,12 @@ import java.util.Set;
 
 import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
 import static org.openvpms.report.ReportException.ErrorCode.FailedToPrintReport;
-import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 
 
 /**
  * Generates a report using an OpenOffice document as the template.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OpenOfficeIMReport<T> implements IMReport<T> {
 
@@ -84,7 +82,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
 
 
     /**
-     * Creates a new <tt>OpenOfficeIMReport</tt>.
+     * Creates a new {@code OpenOfficeIMReport}.
      *
      * @param template the document template
      * @param handlers the document handlers
@@ -108,7 +106,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * Determines if the report accepts the named parameter.
      *
      * @param name the parameter name
-     * @return <tt>true</tt> if the report accepts the parameter, otherwise <tt>false</tt>
+     * @return {@code true} if the report accepts the parameter, otherwise {@code false}
      */
     public boolean hasParameter(String name) {
         return getParameters().containsKey(name);
@@ -137,7 +135,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      */
     public String[] getMimeTypes() {
         return new String[]{DocFormats.ODT_TYPE, DocFormats.DOC_TYPE,
-                            DocFormats.PDF_TYPE};
+                            DocFormats.PDF_TYPE, DocFormats.TEXT_TYPE};
     }
 
     /**
@@ -155,17 +153,6 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * @throws UnsupportedOperationException if invoked
      */
     public Document generate(Map<String, Object> parameters, String mimeType) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Not supported.
-     *
-     * @throws UnsupportedOperationException if invoked
-     */
-    @Deprecated
-    public Document generate(Map<String, Object> parameters,
-                             String[] mimeTypes) {
         throw new UnsupportedOperationException();
     }
 
@@ -205,7 +192,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be <tt>null</tt>
+     *                   the report. May be {@code null}
      * @return a document containing the report
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
@@ -221,15 +208,14 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be <tt>null</tt>
+     *                   the report. May be {@code null}
      * @param mimeType   the output format of the report
      * @return a document containing the report
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    public Document generate(Iterator<T> objects,
-                             Map<String, Object> parameters, String mimeType) {
+    public Document generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType) {
         OpenOfficeDocument doc = null;
         OOConnection connection = null;
         try {
@@ -243,62 +229,41 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     }
 
     /**
-     * Not supported.
-     *
-     * @throws UnsupportedOperationException if invoked
-     */
-    public void print(Map<String, Object> parameters,
-                      PrintProperties properties) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Generates a report for a collection of objects.
-     *
-     * @param objects   the objects to report on
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
-     * @return a document containing the report
-     * @throws ReportException for any report error
-     */
-    @Deprecated
-    public Document generate(Iterator<T> objects, String[] mimeTypes) {
-        if (mimeTypes.length == 0) {
-            throw new ReportException(UnsupportedMimeType);
-        }
-
-        String mimeType = null;
-        for (String type : mimeTypes) {
-            if (DocFormats.ODT_TYPE.equals(type)
-                || DocFormats.PDF_TYPE.equals(type)
-                || DocFormats.DOC_TYPE.equals(type)) {
-                mimeType = type;
-                break;
-            }
-        }
-        if (mimeType == null) {
-            throw new ReportException(UnsupportedMimeType, mimeTypes[0]);
-        }
-
-        return generate(objects, mimeType);
-    }
-
-    /**
-     * Generates a report for a collection of objects.
+     * Generates a report for a collection of objects to the specified stream.
      *
      * @param objects    the objects to report on
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be <tt>null</tt>
-     * @param mimeTypes  a list of mime-types, used to select the preferred
-     *                   output format of the report
-     * @return a document containing the report
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param mimeType   the output format of the report
+     * @param stream     the stream to write to
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
      * @throws UnsupportedOperationException if this operation is not supported
      */
-    @Deprecated
-    public Document generate(Iterator<T> objects, Map<String, Object> parameters, String[] mimeTypes) {
-        return generate(objects, mimeTypes);
+    public void generate(Iterator<T> objects, Map<String, Object> parameters, String mimeType, OutputStream stream) {
+        OpenOfficeDocument doc = null;
+        OOConnection connection = null;
+        try {
+            OOConnectionPool pool = OpenOfficeHelper.getConnectionPool();
+            connection = pool.getConnection();
+            doc = create(objects, parameters, connection);
+            byte[] content = doc.export(mimeType);
+            try {
+                stream.write(content);
+            } catch (IOException exception) {
+                throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+            }
+        } finally {
+            close(doc, connection);
+        }
+    }
+
+    /**
+     * Not supported.
+     *
+     * @throws UnsupportedOperationException if invoked
+     */
+    public void print(Map<String, Object> parameters, PrintProperties properties) {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -318,7 +283,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param objects    the objects to report on
      * @param parameters a map of parameter names and their values, to pass to
-     *                   the report. May be <tt>null</tt>
+     *                   the report. May be {@code null}
      * @param properties the print properties
      * @throws ReportException               for any report error
      * @throws ArchetypeServiceException     for any archetype service error
@@ -345,7 +310,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param objects    the objects to generate the document from
      * @param connection a connection to the OpenOffice service
-     * @param parameters a map of parameter names and their values, to pass to the report. May be <tt>null</tt>
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
      * @return a new openoffice document
      * @throws ReportException           for any report error
      * @throws ArchetypeServiceException for any archetype service error
@@ -428,7 +393,7 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      *
      * @param document   the document
      * @param object     the object to evaluate expressions with
-     * @param parameters the parameters. May be <tt>null</tt>
+     * @param parameters the parameters. May be {@code null}
      */
     protected void populateUserFields(OpenOfficeDocument document, T object, Map<String, Object> parameters) {
         ExpressionEvaluator eval = ExpressionEvaluatorFactory.create(
@@ -450,8 +415,8 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
      * Helper to return the string value of a parameter, if it exists.
      *
      * @param name       the parameter name
-     * @param parameters the parameters. May be <tt>null</tt>
-     * @return the parameter value, or <tt>null</tt> if it is not found
+     * @param parameters the parameters. May be {@code null}
+     * @return the parameter value, or {@code null} if it is not found
      */
     private String getParameter(String name, Map<String, Object> parameters) {
         String result = null;
@@ -495,8 +460,8 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
     /**
      * Helper to close a document and connection.
      *
-     * @param doc        the document. May be <tt>null</tt>
-     * @param connection the connection. May be <tt>null</tt>
+     * @param doc        the document. May be {@code null}
+     * @param connection the connection. May be {@code null}
      */
     private void close(OpenOfficeDocument doc, OOConnection connection) {
         if (doc != null) {

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -28,8 +26,7 @@ import java.util.Set;
 /**
  * Generates a report.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public interface Report {
 
@@ -97,22 +94,6 @@ public interface Report {
      * @throws UnsupportedOperationException if this operation is not supported
      */
     Document generate(Map<String, Object> parameters, String mimeType);
-
-    /**
-     * Generates a report.
-     *
-     * @param parameters a map of parameter names and their values, to pass to
-     *                   the report
-     * @param mimeTypes  a list of mime-types, used to select the preferred
-     *                   output format of the report
-     * @return a document containing the report
-     * @throws ReportException               for any report error
-     * @throws ArchetypeServiceException     for any archetype service error
-     * @throws UnsupportedOperationException if this operation is not supported
-     * @deprecated use either of other generate() methods
-     */
-    @Deprecated
-    Document generate(Map<String, Object> parameters, String[] mimeTypes);
 
     /**
      * Prints a report directly to a printer.

@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
@@ -33,11 +49,14 @@
                 <prop key="hibernate.dialect">${hibernate.dialect}</prop>
                 <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
                 <prop key="hibernate.c3p0.min_size">
-                    ${hibernate.c3p0.min_size}</prop>
+                    ${hibernate.c3p0.min_size}
+                </prop>
                 <prop key="hibernate.c3p0.max_size">
-                    ${hibernate.c3p0.max_size}</prop>
+                    ${hibernate.c3p0.max_size}
+                </prop>
                 <prop key="hibernate.c3p0.timeout">
-                    ${hibernate.c3p0.timeout}</prop>
+                    ${hibernate.c3p0.timeout}
+                </prop>
                 <prop key="hibernate.c3p0.max_statements">
                     ${hibernate.c3p0.max_statements}
                 </prop>
@@ -52,7 +71,7 @@
     </bean>
 
     <bean id="txnManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-      <property name="sessionFactory" ref="sessionFactory" />
+        <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
     <!--  The IMObject DAO bean -->
@@ -62,7 +81,7 @@
             <ref local="sessionFactory"/>
         </property>
         <property name="transactionManager">
-          <ref local="txnManager"/>
+            <ref local="txnManager"/>
         </property>
     </bean>
 
@@ -127,7 +146,8 @@
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
         <constructor-arg>
             <map>
-                <entry key="openvpms" value="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions"/>
+                <entry key="openvpms"
+                       value="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions"/>
                 <entry key="date" value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
                 <entry key="lookup" value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
@@ -145,7 +165,9 @@
           class="org.openvpms.archetype.rules.doc.DocumentHandlers">
         <property name="documentHandlers">
             <list>
-                <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler"/>
+                <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
+                    <constructor-arg ref="archetypeService"/>
+                </bean>
             </list>
         </property>
     </bean>

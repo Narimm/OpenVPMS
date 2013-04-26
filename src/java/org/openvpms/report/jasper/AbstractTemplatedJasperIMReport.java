@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -22,7 +20,6 @@ import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRQuery;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
-import static net.sf.jasperreports.engine.query.JRJdbcQueryExecuterFactory.QUERY_LANGUAGE_SQL;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -33,15 +30,15 @@ import java.sql.Connection;
 import java.util.Map;
 import java.util.Set;
 
+import static net.sf.jasperreports.engine.query.JRJdbcQueryExecuterFactory.QUERY_LANGUAGE_SQL;
+
 
 /**
  * A {@link JasperIMReport} that uses pre-defined templates.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public abstract class AbstractTemplatedJasperIMReport<T>
-        extends AbstractJasperIMReport<T> {
+public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperIMReport<T> {
 
     /**
      * The template loader.
@@ -50,7 +47,7 @@ public abstract class AbstractTemplatedJasperIMReport<T>
 
 
     /**
-     * Constructs a new <tt>AbstractTemplatedJasperIMReport</tt>.
+     * Constructs an {@code AbstractTemplatedJasperIMReport}.
      *
      * @param template the document template
      * @param service  the archetype service
@@ -76,27 +73,23 @@ public abstract class AbstractTemplatedJasperIMReport<T>
     public Set<ParameterType> getParameterTypes() {
         Set<ParameterType> result = super.getParameterTypes();
         JRQuery query = getReport().getQuery();
-        if (query != null
-                && QUERY_LANGUAGE_SQL.equalsIgnoreCase(query.getLanguage())) {
-            ParameterType type = new ParameterType(
-                    JRParameter.REPORT_CONNECTION, Connection.class,
-                    "JDBC connection", true);
+        if (query != null && QUERY_LANGUAGE_SQL.equalsIgnoreCase(query.getLanguage())) {
+            ParameterType type = new ParameterType(JRParameter.REPORT_CONNECTION, Connection.class,
+                                                   "JDBC connection", true);
             result.add(type);
         }
         return result;
     }
 
     /**
-     * Constructs a new <code>AbstractTemplatedJasperIMReport</code>.
+     * Constructs a new {@code AbstractTemplatedJasperIMReport}.
      *
      * @param design   the master report design
      * @param service  the archetype service
      * @param handlers the document handlers
      * @throws ReportException if the report cannot be created
      */
-    public AbstractTemplatedJasperIMReport(JasperDesign design,
-                                           IArchetypeService service,
-                                           DocumentHandlers handlers) {
+    public AbstractTemplatedJasperIMReport(JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
         super(service, handlers);
         this.template = new JasperTemplateLoader(design, service, handlers);
     }
