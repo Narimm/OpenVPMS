@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -51,12 +49,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToCreateDoc;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToExportDoc;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetField;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetInputFields;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetUserFields;
-import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToSetField;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -65,6 +57,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToCreateDoc;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToExportDoc;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetField;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetInputFields;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToGetUserFields;
+import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.FailedToSetField;
 
 
 /**
@@ -316,6 +315,9 @@ public class OpenOfficeDocument {
         } else if (mimeType.equals(DocFormats.DOC_TYPE)) {
             PropertyValue filter = property("FilterName", "MS Word 97");
             properties = new PropertyValue[]{outputStream, overwrite, filter};
+        } else if (mimeType.equals(DocFormats.TEXT_TYPE)) {
+            PropertyValue filter = property("FilterName", "Text");
+            properties = new PropertyValue[]{outputStream, overwrite, filter};
         } else {
             properties = new PropertyValue[]{outputStream, overwrite};
         }
@@ -347,16 +349,15 @@ public class OpenOfficeDocument {
             name = name + "." + DocFormats.PDF_EXT;
         } else if (mimeType.equals(DocFormats.DOC_TYPE)) {
             name = name + "." + DocFormats.DOC_EXT;
+        } else if (mimeType.equals(DocFormats.TEXT_TYPE)) {
+            name = name + "." + DocFormats.TEXT_EXT;
         }
 
         try {
-            DocumentHandler handler = handlers.get(name, "document.other",
-                                                   mimeType);
-            return handler.create(name, new ByteArrayInputStream(content),
-                                  mimeType, content.length);
+            DocumentHandler handler = handlers.get(name, "document.other", mimeType);
+            return handler.create(name, new ByteArrayInputStream(content), mimeType, content.length);
         } catch (OpenVPMSException exception) {
-            throw new OpenOfficeException(exception, FailedToExportDoc,
-                                          exception.getMessage());
+            throw new OpenOfficeException(exception, FailedToExportDoc, exception.getMessage());
         }
     }
 
