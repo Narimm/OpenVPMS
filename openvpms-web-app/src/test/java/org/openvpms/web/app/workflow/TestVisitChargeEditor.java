@@ -66,7 +66,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor {
                                                                 CollectionProperty items) {
         VisitChargeItemRelationshipCollectionEditor result
             = new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
-        result.setPopupEditorManager(new DelegatingEditorQueue());
+        result.setEditorQueue(new DelegatingEditorQueue());
         return result;
     }
 
@@ -80,7 +80,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor {
          * @param listener the listener to notify on completion
          */
         public void queue(IMObjectEditor editor, boolean skip, Listener listener) {
-            testEditVisitTask.getEditorManager().queue(editor, skip, listener);
+            testEditVisitTask.getEditorQueue().queue(editor, skip, listener);
         }
 
         /**
@@ -89,7 +89,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor {
          * @return {@code true} if there are no more editors
          */
         public boolean isComplete() {
-            return testEditVisitTask.getEditorManager().isComplete();
+            return testEditVisitTask.getEditorQueue().isComplete();
         }
     }
 }

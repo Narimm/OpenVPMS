@@ -25,7 +25,7 @@ import org.openvpms.web.component.im.edit.EditDialog;
  *
  * @author Tim Anderson
  */
-public class ChargeEditorQueue extends DefaultPopupEditorManager {
+public class ChargeEditorQueue extends DefaultEditorQueue {
 
     /**
      * The current edit dialog.

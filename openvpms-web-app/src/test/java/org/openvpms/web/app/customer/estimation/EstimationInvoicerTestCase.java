@@ -36,7 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.app.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
-import org.openvpms.web.app.customer.charge.DefaultPopupEditorManager;
+import org.openvpms.web.app.customer.charge.DefaultEditorQueue;
 import org.openvpms.web.app.customer.charge.EditorQueue;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.dialog.PopupDialog;
@@ -219,7 +219,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
          */
         @Override
         protected ChargeEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-            final EditorQueue manager = new DefaultPopupEditorManager(context.getContext()
+            final EditorQueue manager = new DefaultEditorQueue(context.getContext()
             ) {
                 @Override
                 protected void edit(EditDialog dialog) {
@@ -233,7 +233,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
                     ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
                     if (editor instanceof ChargeItemRelationshipCollectionEditor) {
                         // register a handler for act popups
-                        ((ChargeItemRelationshipCollectionEditor) editor).setPopupEditorManager(manager);
+                        ((ChargeItemRelationshipCollectionEditor) editor).setEditorQueue(manager);
                     }
                     return editor;
                 }
