@@ -217,6 +217,23 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that if a macro is called recursively from {@link Macros#runAll}, the macro doesn't expand
+     */
+    @Test
+    public void testRunAllMacroRecursion() {
+        // verify that recursivemacro1 fails
+        try {
+            macros.run("recursivemacro1", new Object());
+            fail("Expected MacroException to be thrown");
+        } catch (MacroException expected) {
+            // expected behaviour
+        }
+        // verify it isn't expanded when called from runAll
+        String result = macros.runAll("A recursivemacro1 B", new Object());
+        assertEquals("A recursivemacro1 B", result);
+    }
+
+    /**
      * Tests that numeric prefixes are expanded as the $number variable by {@link Macros#runAll}.
      */
     @Test

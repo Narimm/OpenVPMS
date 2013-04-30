@@ -18,7 +18,6 @@ package org.openvpms.macro.impl;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 
 /**
@@ -26,31 +25,16 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
  *
  * @author Tim Anderson
  */
-class ExpressionMacro extends Macro {
-
-    /**
-     * The JXPath expression
-     */
-    private final String expression;
+class ExpressionMacro extends AbstractExpressionMacro {
 
     /**
      * Constructs an {@link ExpressionMacro}.
      *
      * @param lookup  the expression macro lookup
-     * @param service the archeype service
+     * @param service the archetype service
      */
     public ExpressionMacro(Lookup lookup, IArchetypeService service) {
-        super(lookup);
-        IMObjectBean bean = new IMObjectBean(lookup, service);
-        expression = bean.getString("expression");
+        super(lookup, service);
     }
 
-    /**
-     * Returns the JXPath expression.
-     *
-     * @return the expression
-     */
-    public String getExpression() {
-        return expression;
-    }
 }

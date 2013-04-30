@@ -23,13 +23,14 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.macro.MacroException;
 
 /**
  * Definition of a macro that launches a report.
  *
  * @author Tim Anderson
  */
-public class ReportMacro extends Macro {
+public class ReportMacro extends AbstractExpressionMacro {
 
     /**
      * The report document template.
@@ -37,33 +38,31 @@ public class ReportMacro extends Macro {
     private final DocumentTemplate template;
 
     /**
-     * The report page width, in characters. This only applies to Jasperreports.
-     */
-    private final int width;
-
-    /**
-     * The report page height, in characters. This only applies to Jasperreports.
-     */
-    private final int height;
-
-
-    /**
      * Constructs a {@link ReportMacro}.
      *
      * @param lookup  the report macro lookup
      * @param service the archetype service
+     * @throws MacroException if the document template cannot be found
      */
     public ReportMacro(Lookup lookup, IArchetypeService service) {
-        super(lookup);
-        IMObjectBean bean = new IMObjectBean(lookup, service);
+        this(new IMObjectBean(lookup, service), service);
+    }
+
+    /**
+     * Constructs an {@link ReportMacro}.
+     *
+     * @param bean    the macro definition
+     * @param service the archetype service
+     * @throws MacroException if the document template cannot be found
+     */
+    protected ReportMacro(IMObjectBean bean, IArchetypeService service) {
+        super(bean);
         IMObjectReference reference = bean.getReference("report");
         Entity entity = null;
         if (reference != null) {
             entity = (Entity) service.get(reference);
         }
         template = (entity != null) ? new DocumentTemplate(entity, service) : null;
-        this.width = bean.getInt("width");
-        this.height = bean.getInt("height");
     }
 
     /**
@@ -75,25 +74,4 @@ public class ReportMacro extends Macro {
         return template != null ? template.getDocument() : null;
     }
 
-    /**
-     * Returns the report page width.
-     * <p/>
-     * This attribute only applies to Jasperreports
-     *
-     * @return the report page width, in characters
-     */
-    public int getWidth() {
-        return width;
-    }
-
-    /**
-     * Returns the report page height.
-     * <p/>
-     * This attribute only applies to Jasperreports
-     *
-     * @return the report page height, in characters
-     */
-    public int getHeight() {
-        return height;
-    }
 }

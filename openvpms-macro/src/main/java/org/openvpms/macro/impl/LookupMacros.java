@@ -224,18 +224,22 @@ public class LookupMacros implements Macros {
     }
 
     /**
-     * Adds a lookup to the cache.
+     * Adds a macro to the cache.
      *
-     * @param lookup the lookup to add
+     * @param lookup the macro definition
      */
     private void add(Lookup lookup) {
-        macros.put(lookup.getCode(), factory.create(lookup));
+        try {
+            macros.put(lookup.getCode(), factory.create(lookup));
+        } catch (Throwable exception) {
+            log.error(exception.getMessage(), exception);
+        }
     }
 
     /**
-     * Removes a lookup from the cache.
+     * Removes a macro from the cache.
      *
-     * @param lookup the lookup to remove
+     * @param lookup the macro definition
      */
     private void delete(Lookup lookup) {
         macros.remove(lookup.getCode());
