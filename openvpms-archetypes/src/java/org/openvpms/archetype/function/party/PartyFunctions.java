@@ -20,6 +20,7 @@ import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.PartyRules;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -948,6 +949,19 @@ public class PartyFunctions {
             return patientRules.getPatientDesexStatus(act);
         }
         return "";
+    }
+
+    /**
+     * Returns the most recent <em>act.patientClinicalEvent</em> (i.e. Visit) for a patient.
+     *
+     * @param patient the patient. May be {@code null}
+     * @return the most recent visit for {@code patient}, or {@code null} if none is found
+     */
+    public Act getPatientVisit(Party patient) {
+        if (patient != null) {
+            return new MedicalRecordRules(service).getEvent(patient);
+        }
+        return null;
     }
 
     /**

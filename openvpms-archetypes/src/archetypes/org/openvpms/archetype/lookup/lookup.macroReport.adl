@@ -13,10 +13,11 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
-    <archetype name="lookup.macro.1.0" latest="true"
+    <archetype name="lookup.macroReport.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
-               displayName="Macro">
+               displayName="Report Macro">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="code" path="/code" type="java.lang.String" minCardinality="1">
@@ -28,7 +29,17 @@
               minCardinality="1"/>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="expression" type="java.lang.String" path="/details/expression"
-              maxLength="4999" minCardinality="1"/>
+        <node name="expression" type="java.lang.String" path="/details/expression" maxLength="4999"
+              minCardinality="1"/>
+        <node name="report" path="/details/report"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
+            <assertion name="archetypeRange" filter="entity.documentTemplate">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entity.documentTemplate"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
     </archetype>
 </archetypes>
