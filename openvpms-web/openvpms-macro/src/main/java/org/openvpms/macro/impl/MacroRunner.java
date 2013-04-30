@@ -17,6 +17,8 @@
 package org.openvpms.macro.impl;
 
 
+import org.openvpms.macro.MacroException;
+
 /**
  * Runs a macro.
  *
@@ -45,6 +47,7 @@ abstract class MacroRunner {
      * @param macro  the macro to run
      * @param number a numeric expression, used to declare the <em>$number</em> variable. May be empty or {@code null}
      * @return the result of the macro
+     * @throws MacroException for any macro error
      */
     public abstract String run(Macro macro, String number);
 

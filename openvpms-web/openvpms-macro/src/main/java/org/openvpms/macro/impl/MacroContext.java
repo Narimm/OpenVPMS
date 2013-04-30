@@ -136,6 +136,7 @@ class MacroContext {
      * @param macro  the macro to run
      * @param number a numeric expression, used to declare the <em>$number</em> variable. May be empty or {@code null}
      * @return the result of the macro
+     * @throws MacroException for any macro error
      */
     public String run(Macro macro, String number) {
         String result = null;

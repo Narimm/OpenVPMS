@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.macro.MacroException;
 
 
 /**
@@ -56,6 +57,7 @@ class MacroFactory {
      * @param lookup the lookup
      * @return a new macro
      * @throws IllegalArgumentException if the lookup is not supported
+     * @throws MacroException           if the macro definition is invalid
      */
     public Macro create(Lookup lookup) {
         if (TypeHelper.isA(lookup, MacroArchetypes.EXPRESSION_MACRO)) {
