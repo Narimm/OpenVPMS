@@ -37,7 +37,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate$
  */
 public class ChargeItemRelationshipCollectionViewer
-        extends ActRelationshipCollectionViewer {
+    extends ActRelationshipCollectionViewer {
 
     /**
      * Constructs a new <tt>ChargeItemRelationshipCollectionViewer</tt>.

@@ -1009,7 +1009,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
                 ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
                 if (editor instanceof ChargeItemRelationshipCollectionEditor) {
                     // register a handler for act popups
-                    ((ChargeItemRelationshipCollectionEditor) editor).setPopupEditorManager(manager);
+                    ((ChargeItemRelationshipCollectionEditor) editor).setEditorQueue(manager);
                 }
                 return editor;
             }

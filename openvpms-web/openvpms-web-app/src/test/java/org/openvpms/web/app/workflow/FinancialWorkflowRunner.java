@@ -180,7 +180,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
         VisitChargeEditor editor = visitEditor.getChargeEditor();
         assertNotNull(editor);
         editor.setClinician(clinician);
-        return (VisitChargeItemEditor) addItem(editor, patient, product, BigDecimal.ONE, task.getEditorManager());
+        return (VisitChargeItemEditor) addItem(editor, patient, product, BigDecimal.ONE, task.getEditorQueue());
     }
 
     public VisitChargeItemEditor getVisitItemEditor() {
@@ -246,7 +246,7 @@ public abstract class FinancialWorkflowRunner<T extends WorkflowImpl> extends Wo
                     ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
                     if (editor instanceof ChargeItemRelationshipCollectionEditor) {
                         // register a handler for act popups
-                        ((ChargeItemRelationshipCollectionEditor) editor).setPopupEditorManager(manager);
+                        ((ChargeItemRelationshipCollectionEditor) editor).setEditorQueue(manager);
                     }
                     return editor;
                 }

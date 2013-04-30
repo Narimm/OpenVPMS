@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.app.customer.charge;
@@ -22,7 +20,8 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
@@ -31,13 +30,13 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.subsystem.CRUDWindow;
 
 
 /**
  * Customer charges workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
 
@@ -45,20 +44,20 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      * The act statuses to query, excluding POSTED.
      */
     private static final ActStatuses STATUSES = new ActStatuses(
-            "act.customerAccountChargesInvoice", FinancialActStatus.POSTED);
+        "act.customerAccountChargesInvoice", FinancialActStatus.POSTED);
     /**
      * The customer archetype short names.
      */
-    private static final String[] CUSTOMER_SHORT_NAMES = {
-            "party.customer*", "party.organisationOTC"
-    };
+    private static final String[] CUSTOMER_SHORT_NAMES = {"party.customer*", "party.organisationOTC"};
 
 
     /**
-     * Constructs a new <tt>ChargeWorkspace</tt>.
+     * Constructs a {@code ChargeWorkspace}.
+     *
+     * @param context the context
      */
-    public ChargeWorkspace() {
-        super("customer", "invoice");
+    public ChargeWorkspace(Context context) {
+        super("customer", "charge", context);
         setArchetypes(Party.class, CUSTOMER_SHORT_NAMES);
         setChildArchetypes(FinancialAct.class, "act.customerAccountCharges*");
     }
@@ -69,7 +68,7 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      * @return a new CRUD window
      */
     protected CRUDWindow<FinancialAct> createCRUDWindow() {
-        return new ChargeCRUDWindow(getChildArchetypes());
+        return new ChargeCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**
@@ -79,8 +78,8 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      */
     protected ActQuery<FinancialAct> createQuery() {
         return new DefaultActQuery<FinancialAct>(
-                getObject(), "customer", "participation.customer",
-                getChildArchetypes().getShortNames(), STATUSES);
+            getObject(), "customer", "participation.customer",
+            getChildArchetypes().getShortNames(), STATUSES);
     }
 
     /**
@@ -105,9 +104,8 @@ public class ChargeWorkspace extends CustomerActWorkspace<FinancialAct> {
      */
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
-        IMObjectTableModel<FinancialAct> model
-                = new ActAmountTableModel<FinancialAct>(true, true);
-        return BrowserFactory.create(query, null, model);
+        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
+        return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
 }

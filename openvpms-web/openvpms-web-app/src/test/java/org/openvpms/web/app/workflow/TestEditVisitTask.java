@@ -41,15 +41,15 @@ public class TestEditVisitTask extends EditVisitTask {
     /**
      * The popup dialog manager.
      */
-    private ChargeEditorQueue manager = new ChargeEditorQueue();
+    private ChargeEditorQueue queue = new ChargeEditorQueue();
 
     /**
      * Returns the popup dialog manager.
      *
      * @return the popup dialog manager
      */
-    public ChargeEditorQueue getEditorManager() {
-        return manager;
+    public ChargeEditorQueue getEditorQueue() {
+        return queue;
     }
 
     /**
