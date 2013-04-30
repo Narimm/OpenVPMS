@@ -33,7 +33,6 @@ import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.JRTextExporter;
-import net.sf.jasperreports.engine.export.JRTextExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.JRXlsExporterParameter;
 import net.sf.jasperreports.engine.export.JRXmlExporter;
@@ -585,11 +584,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     private void exportToText(JasperPrint report, OutputStream stream, Map<String, Object> parameters)
             throws JRException {
         JRTextExporter exporter = new JRTextExporter();
-        // give the page width and height an initial value, so something renders if they aren't overridden by parameters
-        exporter.setParameter(JRTextExporterParameter.PAGE_WIDTH, 80);
-        exporter.setParameter(JRTextExporterParameter.PAGE_HEIGHT, 25);
-        exporter.setParameter(JRExporterParameter.CHARACTER_ENCODING, "UTF-8");
         exporter.getParameters().putAll(parameters);
+        exporter.setParameter(JRExporterParameter.CHARACTER_ENCODING, "UTF-8");
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
         export(exporter, report, stream);
     }
