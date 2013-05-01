@@ -98,9 +98,4 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
-    <bean id="macroCache" class="org.openvpms.archetype.util.MacroCache">
-        <constructor-arg index="0" ref="lookupService"/>
-        <constructor-arg index="1" ref="archetypeService"/>
-    </bean>
-
 </beans>
