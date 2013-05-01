@@ -135,16 +135,7 @@ public class VisitEditorDialog extends PopupDialog {
             CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
             List<Act> existing = docs.getUnprinted();
             if (editor.save()) {
-                ActionListener printListener = new ActionListener() {
-                    @Override
-                    public void onAction(ActionEvent event) {
-                        VisitEditorDialog.super.onOK();
-                    }
-                };
-                if (!docs.printNew(existing, printListener)) {
-                    // nothing to print, so close now
-                    super.onOK();
-                }
+                printNew(docs, existing);
             }
         } else {
             super.onOK();
@@ -209,8 +200,10 @@ public class VisitEditorDialog extends PopupDialog {
      * Marks the invoice COMPLETED and closes the dialog if the operation is successful.
      */
     private void onComplete() {
+        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
+        List<Act> existing = docs.getUnprinted();
         if (editor.getCharge().complete()) {
-            onOK();
+            printNew(docs, existing);
         }
     }
 
@@ -218,8 +211,29 @@ public class VisitEditorDialog extends PopupDialog {
      * Marks the invoice IN_PROGRESS, and closes the dialog if the operation is successful.
      */
     private void onInProgress() {
+        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
+        List<Act> existing = docs.getUnprinted();
         if (editor.getCharge().inProgress()) {
-            onOK();
+            printNew(docs, existing);
+        }
+    }
+
+    /**
+     * Prints any new documents set for immediate printing.
+     *
+     * @param docs     the documents
+     * @param existing the existing documents
+     */
+    private void printNew(CustomerChargeDocuments docs, List<Act> existing) {
+        ActionListener printListener = new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                VisitEditorDialog.super.onOK();
+            }
+        };
+        if (!docs.printNew(existing, printListener)) {
+            // nothing to print, so close now
+            super.onOK();
         }
     }
 
