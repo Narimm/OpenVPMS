@@ -63,46 +63,10 @@
                 </prop>
             </props>
         </property>
-        <property name="mappingResources">
+        <property name="mappingLocations">
             <list>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ActRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/act/ParticipationDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ActionTypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/ArchetypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/AssertionTypeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/archetype/NodeDescriptorDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/document/DocumentDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/audit/AuditRecord.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityIdentityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/entity/EntityRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/lookup/LookupRelationshipDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/party/ContactDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/product/ProductPriceDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/ArchetypeAuthorityDOImpl.hbm.xml</value>
-                <value>
-                    org/openvpms/component/business/dao/hibernate/im/security/SecurityRoleDOImpl.hbm.xml</value>
+                <value>classpath:org/openvpms/component/business/dao/**/*.hbm.xml</value>
+                <value>classpath:org/openvpms/archetype/rules/**/*.hbm.xml</value>
             </list>
         </property>
     </bean>
@@ -172,6 +136,34 @@
         </constructor-arg>
     </bean>
 
+
+    <!-- ================================================================== -->
+    <!-- Business rules                                                     -->
+    <!-- ================================================================== -->
+
+    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="patientAgeFormatter"/>
+    </bean>
+
+    <bean id="patientAgeFormatter" class="org.openvpms.archetype.rules.patient.RefreshablePatientAgeFormatter">
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="practiceRules"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="imObjectBeanFactory"/>
+    </bean>
+
+    <bean name="imObjectBeanFactory"
+          class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
+        <constructor-arg index="0" ref="archetypeService"/>
+    </bean>
+
+
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
@@ -184,7 +176,10 @@
                 <entry key="lookup"
                        value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
-                    <bean class="org.openvpms.archetype.function.party.PartyFunctions"/>
+                    <bean class="org.openvpms.archetype.function.party.PartyFunctions">
+                        <constructor-arg ref="archetypeService"/>
+                        <constructor-arg ref="patientRules"/>
+                    </bean>
                 </entry>
                 <entry key="math">
                     <bean class="org.openvpms.archetype.function.math.MathFunctions"/>
@@ -198,7 +193,9 @@
           class="org.openvpms.archetype.rules.doc.DocumentHandlers">
         <property name="documentHandlers">
             <list>
-                <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler"/>
+                <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
+                    <constructor-arg ref="archetypeService"/>
+                </bean>
             </list>
         </property>
     </bean>
