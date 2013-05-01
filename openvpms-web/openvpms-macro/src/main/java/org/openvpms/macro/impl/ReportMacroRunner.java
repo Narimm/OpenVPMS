@@ -96,12 +96,10 @@ public class ReportMacroRunner extends AbstractExpressionMacroRunner {
             } catch (UnsupportedEncodingException exception) {
                 throw new MacroException("Failed to encode report output", exception);
             }
-            if (document.getName().endsWith(DocFormats.JRXML_EXT)) {
-                // Jasper Reports generates an array characters to fill with text, much of which ends up as whitespace.
-                // Strip trailing whitespace.
-                result = result.replaceAll("[\\s&&[^\\n]]+\n", "\n"); // strip whitespace up to each newline
-                result = result.replaceAll("\\n+$", "");              // strip empty lines at the end
-            }
+            // strip leading and trailing whitespace
+            result = result.replaceAll("[\\s&&[^\\n]]+\n", "\n"); // strip whitespace up to each newline
+            result = result.replaceAll("^\\n+", "");              // strip empty lines at the start
+            result = result.replaceAll("\\n+$", "");              // strip empty lines at the end
         } else {
             throw new MacroException("Expression='" + reportMacro.getExpression()
                                      + "' did not return an object for macro=" + reportMacro.getCode());
