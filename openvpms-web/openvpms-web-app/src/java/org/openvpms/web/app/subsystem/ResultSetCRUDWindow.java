@@ -116,9 +116,15 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
         if (object != null) {
             final FocusCommand focus = new FocusCommand();
             String title = DescriptorHelper.getDisplayName(object);
-            boolean edit = canEdit();      // TODO - says nothing about whether other objects in the set may be edited
+            boolean edit = canEdit();
             final ViewResultSetDialog<T> dialog = new ViewResultSetDialog<T>(title, object, set, edit,
-                                                                             getContext(), getHelpContext());
+                                                                             getContext(), getHelpContext()) {
+                @Override
+                protected void view(T object) {
+                    setTitle(DescriptorHelper.getDisplayName(object));
+                    super.view(object);
+                }
+            };
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {
