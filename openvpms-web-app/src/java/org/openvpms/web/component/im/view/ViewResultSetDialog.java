@@ -1,22 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
@@ -76,7 +75,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     /**
      * The object being viewed.
      */
-    private Component currentViewer;
+    private IMObjectViewer viewer;
 
     /**
      * The selected object.
@@ -185,22 +184,35 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
     }
 
     /**
+     * Returns the help context.
+     * <p/>
+     * This implementation returns the help context of the viewer, if one is registered
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        return (viewer != null) ? viewer.getHelpContext() : super.getHelpContext();
+    }
+
+    /**
      * Views an object.
      *
      * @param object the object to view
      */
-    private void view(T object) {
+    protected void view(T object) {
         selected = object;
-        LayoutContext context = new DefaultLayoutContext(this.context, getHelpContext());
+        HelpContext help = getHelpContext().topic(object, "view");
+        LayoutContext context = new DefaultLayoutContext(this.context, help);
         context.getContext().setCurrent(object); // TODO - remove requirement for setCurrent()
         context.setContextSwitchListener(listener);
         IMObjectViewer viewer = new IMObjectViewer(object, null, context);
         SplitPane pane = getLayout();
-        if (currentViewer != null) {
-            pane.remove(currentViewer);
+        if (this.viewer != null) {
+            pane.remove(this.viewer.getComponent());
         }
-        currentViewer = viewer.getComponent();
-        pane.add(currentViewer);
+        this.viewer = viewer;
+        pane.add(this.viewer.getComponent());
     }
 
     /**
