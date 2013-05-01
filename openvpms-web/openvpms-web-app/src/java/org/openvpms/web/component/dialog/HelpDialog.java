@@ -32,6 +32,7 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.system.common.util.StringUtilities;
@@ -49,6 +50,9 @@ import org.openvpms.web.system.Version;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 
@@ -108,10 +112,19 @@ public class HelpDialog extends PopupDialog {
                 label.setText(Messages.get("helpdialog.nohelp.topic", topic));
                 component = label;
             } else {
-                String content = "<p xmlns='http://www.w3.org/1999/xhtml'>"
-                                 + Messages.get("helpdialog.nohelp.create", topicURL)
-                                 + "</p>";
-                LabelEx label = new LabelEx(new XhtmlFragment(content));
+                String parent = getExistingParent(topicURL);
+                StringBuilder content = new StringBuilder();
+                content.append("<div xmlns='http://www.w3.org/1999/xhtml'>");
+                content.append("<p>");
+                content.append(Messages.get("helpdialog.nohelp.create", topicURL));
+                content.append("</p>");
+                if (parent != null) {
+                    content.append("<p>");
+                    content.append(Messages.get("helpdialog.nohelp.parent", parent));
+                    content.append("</p>");
+                }
+                content.append("</div>");
+                LabelEx label = new LabelEx(new XhtmlFragment(content.toString()));
                 label.setLineWrap(true);
                 component = label;
             }
@@ -139,7 +152,7 @@ public class HelpDialog extends PopupDialog {
     /**
      * Displays a help dialog for the specified help context.
      *
-     * @param context the help context. May be {@code null}
+     * @param help    the help context. May be {@code null}
      * @param context the context
      */
     public static void show(HelpContext help, Context context) {
@@ -171,13 +184,20 @@ public class HelpDialog extends PopupDialog {
         }
     }
 
+    /**
+     * Returns the topics hyperlink.
+     * <p/>
+     * This launches a new browser window.
+     *
+     * @return the topics hyperlink.
+     */
     private Component getTopics() {
         Column topics = ColumnFactory.create();
         Button helpLink = ButtonFactory.create("helpdialog.topics", "hyperlink");
         helpLink.setBackground(null); // want to inherit style of parent
         helpLink.addActionListener(new ActionListener() {
             public void onAction(ActionEvent e) {
-                String link = Messages.get("helpdialog.topics.link");
+                String link = Messages.get("help.url", Messages.HELP, true);
                 ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(link, null, null));
                 close();
             }
@@ -186,6 +206,11 @@ public class HelpDialog extends PopupDialog {
         return ColumnFactory.create("Inset.Large", topics);
     }
 
+    /**
+     * Returns the header component.
+     *
+     * @return the header component
+     */
     private Component getHeader() {
         Label logo = LabelFactory.create(new ResourceImageReference(PATH));
         RowLayoutData centre = new RowLayoutData();
@@ -204,6 +229,11 @@ public class HelpDialog extends PopupDialog {
         return RowFactory.create(INSET, logo, labelRow);
     }
 
+    /**
+     * Returns the subscription details.
+     *
+     * @return the subscription details
+     */
     private LabelEx getSubscription() {
         String content =
             "<p xmlns='http://www.w3.org/1999/xhtml'>" + SubscriptionHelper.formatSubscription(context) + "</p>";
@@ -214,6 +244,12 @@ public class HelpDialog extends PopupDialog {
     }
 
 
+    /**
+     * Returns the topic URL for a given topic identifier.
+     *
+     * @param topic the topic identifier
+     * @return the topic URL or {@code null} if none is found
+     */
     private static String getTopicURL(String topic) {
         String result = null;
         String baseURL = Messages.get("help.url", Messages.HELP, true);
@@ -236,6 +272,44 @@ public class HelpDialog extends PopupDialog {
         return result;
     }
 
+    /**
+     * Tries to locate an existing URL for the given topic URL.
+     *
+     * @param topicURL the topic URL
+     * @return the closest parent URL to the topic that exists, or {@code null} if none is found
+     */
+    private String getExistingParent(String topicURL) {
+        String result = null;
+        try {
+            URI uri = new URI(topicURL);
+            String path = uri.getPath();
+            while (!StringUtils.isEmpty(path)) {
+                if (!path.endsWith("/")) {
+                    uri = uri.resolve(".");
+                } else {
+                    uri = uri.resolve("..");
+                }
+                String parent = uri.toURL().toString();
+                if (exists(parent)) {
+                    result = parent;
+                    break;
+                }
+                path = uri.getPath();
+            }
+        } catch (URISyntaxException exception) {
+            log.debug(exception, exception);
+        } catch (MalformedURLException exception) {
+            log.debug(exception, exception);
+        }
+        return result;
+    }
+
+    /**
+     * Determines if a topic URL exists.
+     *
+     * @param topicURL the topic URL
+     * @return {@code true} if the topic URL exists, otherwise {@code false}
+     */
     private static boolean exists(String topicURL) {
         boolean exists = false;
         try {
