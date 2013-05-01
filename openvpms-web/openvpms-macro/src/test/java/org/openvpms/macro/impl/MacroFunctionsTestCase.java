@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.archetype.util.MacroTestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
@@ -59,8 +58,9 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
 
         Macros macros = new LookupMacros(lookupService, getArchetypeService(), new DocumentHandlers());
 
+        // register the macro functions
         Map properties = new HashMap();
-        properties.put("macro", macros);
+        properties.put("macro", new MacroFunctions(macros));
         new JXPathHelper(properties);
     }
 
