@@ -25,7 +25,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.macro.Variables;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ReloadingContext;
 import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
@@ -174,8 +176,9 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
                 Context context = getContext();
                 SQLReportPrinter printer = new SQLReportPrinter(template, context);
                 HelpContext help = getHelpContext().subtopic("run");
+                Variables variables = new MacroVariables(new ReloadingContext(context), service, lookups);
                 InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(
-                    printer, context, getMailContext(), help, new MacroVariables(context, service, lookups));
+                    printer, context, getMailContext(), help, variables);
                 iPrinter.print();
             } catch (Throwable exception) {
                 ErrorHelper.show(exception);

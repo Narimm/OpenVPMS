@@ -35,6 +35,7 @@ import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
+import org.openvpms.web.component.workflow.LocalTask;
 import org.openvpms.web.component.workflow.ReloadTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
@@ -188,8 +189,8 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new GetInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
 
-        // edit the act.patientClinicalEvent
-        addTask(createEditVisitTask());
+        // edit the act.patientClinicalEvent in a local context, propagating the patient and customer on completion
+        addTask(new LocalTask(createEditVisitTask(), Context.PATIENT_SHORTNAME, Context.CUSTOMER_SHORTNAME));
 
         // Reload the task to refresh the context with any edits made
         addTask(new ReloadTask(PatientArchetypes.CLINICAL_EVENT));

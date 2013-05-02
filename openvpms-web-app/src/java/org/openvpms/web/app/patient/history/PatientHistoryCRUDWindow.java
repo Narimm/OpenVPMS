@@ -96,6 +96,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
      * @param event the current event
      */
     public void setEvent(Act event) {
+        getContext().setObject(PatientArchetypes.CLINICAL_EVENT, event);
         this.event = event;
     }
 

@@ -74,7 +74,7 @@ public abstract class ContextMailContext extends AbstractMailContext {
     @Override
     public Variables getVariables() {
         if (variables == null) {
-            variables = new MacroVariables(context, ServiceHelper.getArchetypeService(),
+            variables = new MacroVariables(new ReloadingContext(context), ServiceHelper.getArchetypeService(),
                                            ServiceHelper.getLookupService());
         }
         return variables;

@@ -21,6 +21,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ReloadingContext;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
@@ -69,7 +70,8 @@ public class SMSDialog extends PopupDialog {
         super(Messages.get("sms.send.title"), "SMSDialog", OK_CANCEL, help);
         setModal(true);
 
-        MacroVariables variables = new MacroVariables(context, ServiceHelper.getArchetypeService(),
+        MacroVariables variables = new MacroVariables(new ReloadingContext(context),
+                                                      ServiceHelper.getArchetypeService(),
                                                       ServiceHelper.getLookupService());
         editor = new SMSEditor(phones, variables);
 

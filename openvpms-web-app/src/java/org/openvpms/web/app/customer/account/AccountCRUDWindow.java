@@ -19,6 +19,7 @@ package org.openvpms.web.app.customer.account;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.tools.account.AccountBalanceTool;
@@ -71,18 +72,6 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     private static final String CHECK_ID = "check";
 
-    /**
-     * Opening Balance type.
-     */
-    private static final String OPENING_BALANCE_TYPE
-        = "act.customerAccountOpeningBalance";
-
-    /**
-     * Closing Balance type.
-     */
-    private static final String CLOSING_BALANCE_TYPE
-        = "act.customerAccountClosingBalance";
-
 
     /**
      * Constructs an {@code AccountCRUDWindow}.
@@ -93,6 +82,17 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     public AccountCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
         super(archetypes, DefaultActActions.<FinancialAct>getInstance(), context, help);
+    }
+
+    /**
+     * Sets the object.
+     *
+     * @param object the object. May be {@code null}
+     */
+    @Override
+    public void setObject(FinancialAct object) {
+        super.setObject(object);
+        updateContext(CustomerAccountArchetypes.INVOICE, object);
     }
 
     /**
@@ -153,7 +153,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     protected void onReverse() {
         final FinancialAct act = getObject();
         String status = act.getStatus();
-        if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE, CLOSING_BALANCE_TYPE)
+        if (!TypeHelper.isA(act, CustomerAccountArchetypes.OPENING_BALANCE, CustomerAccountArchetypes.CLOSING_BALANCE)
             && FinancialActStatus.POSTED.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();
             String title = Messages.get("customer.account.reverse.title", name);
@@ -169,8 +169,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
             });
             dialog.show();
         } else {
-            showStatusError(act, "customer.account.noreverse.title",
-                            "customer.account.noreverse.message");
+            showStatusError(act, "customer.account.noreverse.title", "customer.account.noreverse.message");
         }
     }
 
@@ -276,8 +275,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     private void regenerate(Party customer) {
         try {
-            IArchetypeService service
-                = ServiceHelper.getArchetypeService(false);
+            IArchetypeService service = ServiceHelper.getArchetypeService(false);
             AccountBalanceTool tool = new AccountBalanceTool(service);
             tool.generate(customer);
             onRefresh(getObject());
