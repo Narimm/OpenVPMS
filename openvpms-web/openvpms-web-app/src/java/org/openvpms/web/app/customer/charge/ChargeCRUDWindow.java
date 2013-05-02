@@ -63,6 +63,17 @@ public class ChargeCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     }
 
     /**
+     * Sets the object.
+     *
+     * @param object the object. May be {@code null}
+     */
+    @Override
+    public void setObject(FinancialAct object) {
+        super.setObject(object);
+        updateContext(CustomerAccountArchetypes.INVOICE, object);
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row

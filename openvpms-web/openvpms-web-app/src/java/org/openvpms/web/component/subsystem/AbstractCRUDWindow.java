@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.button.ButtonSet;
@@ -675,6 +676,21 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             printer.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Updates the context for the specified short name. If the supplied object matches the short name, it will be
+     * added to the context, otherwise, the context entry will be set null.
+     *
+     * @param shortName the short name to match
+     * @param object    the object. May be {@code null}
+     */
+    protected void updateContext(String shortName, T object) {
+        if (TypeHelper.isA(object, shortName)) {
+            context.setObject(shortName, object);
+        } else {
+            context.setObject(shortName, null);
         }
     }
 }
