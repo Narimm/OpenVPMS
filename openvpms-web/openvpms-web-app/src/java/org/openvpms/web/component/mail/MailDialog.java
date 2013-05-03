@@ -63,11 +63,6 @@ public class MailDialog extends PopupDialog {
     public static final String SEND_ID = "send";
 
     /**
-     * The mailer.
-     */
-    private final Mailer mailer;
-
-    /**
      * The mail editor.
      */
     private final MailEditor editor;
@@ -182,7 +177,6 @@ public class MailDialog extends PopupDialog {
         super(title, "MailDialog", documents != null ? SEND_ATTACH_ALL_CANCEL : SEND_ATTACH_FILE_CANCEL, help);
         setModal(true);
         setDefaultCloseAction(CANCEL_ID);
-        this.mailer = new DefaultMailer();
         this.documents = documents;
         this.context = context;
         editor = new MailEditor(mailContext, preferred, context, help);
@@ -302,6 +296,7 @@ public class MailDialog extends PopupDialog {
         try {
             Validator validator = new Validator();
             if (editor.validate(validator)) {
+                Mailer mailer = new DefaultMailer();
                 mailer.setFrom(editor.getFrom());
                 mailer.setFromName(editor.getFromName());
                 mailer.setTo(editor.getTo());
