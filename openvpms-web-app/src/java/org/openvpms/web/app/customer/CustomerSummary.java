@@ -23,6 +23,7 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.CustomerRules;
@@ -190,7 +191,9 @@ public class CustomerSummary extends PartySummary {
      * @return the set of outstanding alerts for the party
      */
     protected ResultSet<Act> createAlertsResultSet(Party party, int pageSize) {
-        return new CustomerAlertQuery(party).query();
+        CustomerAlertQuery query = new CustomerAlertQuery(party, true);
+        query.setStatus(ActStatus.IN_PROGRESS);
+        return query.query();
     }
 
     /**

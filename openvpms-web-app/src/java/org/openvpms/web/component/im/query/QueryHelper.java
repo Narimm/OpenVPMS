@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -32,6 +30,7 @@ import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -126,6 +125,35 @@ public class QueryHelper {
             matches.add(iterator.next());
         }
         return matches;
+    }
+
+    /**
+     * Helper to create a date range constraint for acts, on a particular date.
+     *
+     * @param date the date
+     * @return a new constraint
+     */
+    public static IConstraint createDateRangeConstraint(Date date) {
+        return Constraints.and(Constraints.lte("startTime", date),
+                               Constraints.or(Constraints.gte("endTime", date), Constraints.isNull("endTime")));
+    }
+
+    /**
+     * Helper to create a date range constraint for acts of the form:<br/>
+     * {@code act.startTime <= from && (act.endTime >= from || act.endTime == null)}
+     *
+     * @param from the from date
+     * @param to   the to date. May be {@code null}
+     * @return a new constraint
+     */
+    public static IConstraint createDateRangeConstraint(Date from, Date to) {
+        IConstraint result;
+        if (to != null) {
+            result = Constraints.or(createDateRangeConstraint(from), createDateRangeConstraint(to));
+        } else {
+            result = Constraints.or(Constraints.gte("startTime", from), createDateRangeConstraint(from));
+        }
+        return result;
     }
 
     /**
