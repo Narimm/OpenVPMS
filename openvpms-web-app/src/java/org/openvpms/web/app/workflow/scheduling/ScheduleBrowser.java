@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.scheduling;
@@ -59,8 +57,7 @@ import static org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availab
 /**
  * Schedule browser.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
 
@@ -146,8 +143,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or {@code null} if none has been
-     *         selected.
+     * @return the selected object, or {@code null} if none has been selected.
      */
     public PropertySet getSelected() {
         return selected;
@@ -178,6 +174,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             model.setSelectedCell(-1, -1);
             selectedTime = null;
             selectedSchedule = null;
+            getTable().getSelectionModel().clearSelection();
         }
     }
 
@@ -508,7 +505,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             lastColumn = model.getSelectedColumn();
             lastEventId = getEventReference(lastColumn, lastRow);
             isCut = model.isCut();
-
         }
         model = createTableModel(grid);
         if (table == null) {
@@ -651,9 +647,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         } else {
             notifySelected(selected);
         }
-
-        // deselect the row
-        table.getSelectionModel().clearSelection();
     }
 
     /**

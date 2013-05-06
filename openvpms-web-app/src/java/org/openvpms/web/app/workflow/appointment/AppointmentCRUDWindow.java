@@ -86,11 +86,11 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
     }
 
     /**
-     * Creates and edits a new object.
+     * Creates and edits a new appointment, if a slot has been selected.
      */
     @Override
     public void create() {
-        if (browser.getSelectedSchedule() != null && browser.getSelectedTime() != null) {
+        if (canCreateAppointment()) {
             super.create();
         }
     }
@@ -166,6 +166,7 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                 checkoutConsultEnabled = true;
             }
         }
+        buttons.setEnabled(NEW_ID, canCreateAppointment());
         buttons.setEnabled(CHECKIN_ID, checkInEnabled);
         buttons.setEnabled(CONSULT_ID, checkoutConsultEnabled);
         buttons.setEnabled(CHECKOUT_ID, checkoutConsultEnabled);
@@ -205,6 +206,15 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
                || AppointmentStatus.IN_PROGRESS.equals(status)
                || AppointmentStatus.COMPLETED.equals(status)
                || AppointmentStatus.BILLED.equals(status);
+    }
+
+    /**
+     * Determines if an appointment can be created.
+     *
+     * @return {@code true} if a schedule and slot has been selected
+     */
+    private boolean canCreateAppointment() {
+        return browser.getSelectedSchedule() != null && browser.getSelectedTime() != null;
     }
 
     /**
