@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.app.patient.mr;
 
@@ -217,7 +217,7 @@ class ResendReminderDialog extends PopupDialog {
                 generator.setUpdateOnCompletion(false);
                 generator.setListener(new BatchProcessorListener() {
                     public void completed() {
-                        if (generator.getProcessed() > 0) {
+                        if (generator.getProcessed() > 0 && generator.getErrors() == 0) {
                             onGenerated(reminderCount);
                         }
                     }
@@ -240,13 +240,13 @@ class ResendReminderDialog extends PopupDialog {
     /**
      * Invoked when a reminder is generated.
      * <p/>
-     * If the selected reminder count is the same as the original reminder count, a dialog will be displayed prompting
-     * the user to update the reminder.
+     * If the selected reminder count is the current reminder count - 1 (i.e. the last sent), a dialog will be
+     * displayed prompting the user to update the reminder.
      *
      * @param count the count that the reminder was generated for
      */
     private void onGenerated(int count) {
-        if (count == reminderCount) {
+        if (count == reminderCount - 1) {
             final ConfirmationDialog dialog = new ConfirmationDialog(
                 Messages.get("patient.reminder.resend.update.title"),
                 Messages.get("patient.reminder.resend.update"));
@@ -276,7 +276,7 @@ class ResendReminderDialog extends PopupDialog {
             ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
                                                     new PatientRules(ServiceHelper.getArchetypeService(),
                                                                      ServiceHelper.getLookupService()));
-            rules.updateReminder(reminder, new Date());
+            rules.updateReminder(reminder, reminderCount, new Date());
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
@@ -299,7 +299,7 @@ class ResendReminderDialog extends PopupDialog {
     }
 
     /**
-     * Returns an ordered list of reminder counts up to and including the current reminder count, that have an
+     * Returns an ordered list of reminder counts up to but not including the current reminder count, that have an
      * associated document template, and don't have their <em>list</em> node set.
      *
      * @param reminderType  the reminder type
@@ -315,7 +315,7 @@ class ResendReminderDialog extends PopupDialog {
             boolean list = relBean.getBoolean("list");
             if (!list) {
                 int count = relBean.getInt("reminderCount");
-                if (count <= reminderCount) {
+                if (count < reminderCount) {
                     counts.add(count);
                 }
             }

@@ -222,7 +222,7 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
         InteractiveIMPrinter<T> printer = (InteractiveIMPrinter<T>) super.createPrinter(object);
         printer.setListener(new PrinterListener() {
             public void printed(String printer) {
-                if (getActions().printed(object)) {
+                if (getActions().setPrinted(object)) {
                     saved(object);
                 }
             }
