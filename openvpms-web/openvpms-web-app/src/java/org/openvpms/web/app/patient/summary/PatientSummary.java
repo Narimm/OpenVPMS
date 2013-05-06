@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.patient.summary;
@@ -29,6 +27,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -43,6 +42,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
+import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.table.PagedIMTable;
@@ -57,7 +57,10 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Date;
 import java.util.List;
+
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PARTICIPATION;
 
 
 /**
@@ -183,7 +186,14 @@ public class PatientSummary extends PartySummary {
      * @return the set of outstanding alerts for the patient
      */
     protected ActResultSet<Act> createAlertsResultSet(Party patient, int pageSize) {
-        return createActResultSet(patient, pageSize, PatientArchetypes.ALERT);
+        String[] statuses = {ActStatus.IN_PROGRESS};
+        ShortNameConstraint archetypes = new ShortNameConstraint(PatientArchetypes.ALERT, true, true);
+        ParticipantConstraint[] participants = {new ParticipantConstraint("patient", PATIENT_PARTICIPATION, patient)};
+
+        IConstraint dateRange = QueryHelper.createDateRangeConstraint(new Date());
+        // constrain to alerts that intersect today
+
+        return new ActResultSet<Act>(archetypes, participants, dateRange, statuses, false, null, pageSize, null);
     }
 
     /**
@@ -196,7 +206,7 @@ public class PatientSummary extends PartySummary {
     private ActResultSet<Act> createActResultSet(Party patient, int pageSize, String... shortNames) {
         String[] statuses = {ActStatus.IN_PROGRESS};
         ShortNameConstraint archetypes = new ShortNameConstraint(shortNames, true, true);
-        ParticipantConstraint[] participants = {new ParticipantConstraint("patient", "participation.patient", patient)};
+        ParticipantConstraint[] participants = {new ParticipantConstraint("patient", PATIENT_PARTICIPATION, patient)};
         return new ActResultSet<Act>(archetypes, participants, null, statuses, false, null, pageSize, null);
     }
 

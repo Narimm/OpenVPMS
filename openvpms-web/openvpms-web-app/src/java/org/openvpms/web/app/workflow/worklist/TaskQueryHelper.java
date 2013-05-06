@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.app.workflow.worklist;
@@ -28,9 +28,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
+import org.openvpms.web.component.im.query.QueryHelper;
 
 import java.util.Date;
 
@@ -64,7 +64,7 @@ class TaskQueryHelper {
             query.add(Constraints.ne("id", act.getId()));
             query.add(Constraints.and(Constraints.ne("status", FinancialActStatus.CANCELLED),
                                       Constraints.ne("status", FinancialActStatus.COMPLETED)));
-            query.add(createDateRangeConstraint(startTime, act.getActivityEndTime()));
+            query.add(QueryHelper.createDateRangeConstraint(startTime, act.getActivityEndTime()));
             query.setFirstResult(0);
             query.setMaxResults(1);
             query.setCountResults(true);
@@ -77,32 +77,4 @@ class TaskQueryHelper {
         return result;
     }
 
-    /**
-     * Helper to create a date range constraint for a particular date.
-     *
-     * @param date the date
-     * @return a new constraint
-     */
-    private static IConstraint createDateRangeConstraint(Date date) {
-        return Constraints.and(Constraints.lte("startTime", date),
-                               Constraints.or(Constraints.gte("endTime", date), Constraints.isNull("endTime")));
-    }
-
-    /**
-     * Helper to create a constraint of the form:<br/>
-     * {@code act.startTime <= from && (act.endTime >= from || act.endTime == null)}
-     *
-     * @param from the from date
-     * @param to   the to date. May be {@code null}
-     * @return a new constraint
-     */
-    private static IConstraint createDateRangeConstraint(Date from, Date to) {
-        IConstraint result;
-        if (to != null) {
-            result = Constraints.or(createDateRangeConstraint(from), createDateRangeConstraint(to));
-        } else {
-            result = Constraints.or(Constraints.gte("startTime", from), createDateRangeConstraint(from));
-        }
-        return result;
-    }
 }
