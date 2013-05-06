@@ -23,7 +23,6 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.Context;
@@ -31,7 +30,6 @@ import org.openvpms.web.component.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
 import org.openvpms.web.component.help.HelpContext;
-import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -70,7 +68,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
      */
     public ReminderCRUDWindow(Party patient, Context context, HelpContext help) {
         super(Archetypes.create(SHORT_NAMES, Act.class, Messages.get("patient.reminder.createtype")),
-              DefaultActActions.getInstance(), context, help);
+              ReminderActions.getInstance(), context, help);
         this.patient = patient;
     }
 
@@ -101,7 +99,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
         super.enableButtons(buttons, enable);
         boolean enableResend = false;
         if (enable) {
-            enableResend = TypeHelper.isA(getObject(), ReminderArchetypes.REMINDER);
+            enableResend = getActions().canResendReminder(getObject());
         }
         buttons.setEnabled(RESEND_ID, enableResend);
     }
@@ -120,6 +118,16 @@ public class ReminderCRUDWindow extends ActCRUDWindow<Act> {
             ErrorHelper.show(exception);
         }
         super.onCreated(act);
+    }
+
+    /**
+     * Returns the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected ReminderActions getActions() {
+        return (ReminderActions) super.getActions();
     }
 
     /**
