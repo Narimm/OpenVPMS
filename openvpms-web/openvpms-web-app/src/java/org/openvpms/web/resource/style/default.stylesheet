@@ -430,7 +430,7 @@
 
     <!--  Schedule table styles. -->
 
-    <style name="ScheduleTable" type="nextapp.echo2.app.Table">
+    <style name="ScheduleTable" base-name="default" type="nextapp.echo2.app.Table">
         <properties>
             <property name="border">
                 <border size="2px" style="groove" color="#cfdfff"/>
@@ -438,7 +438,6 @@
             <property name="insets" value="${padding.small} ${padding.tiny}"/>
             <property name="rolloverBackground" value="#85c1ff"/>
             <property name="rolloverEnabled" value="false"/>
-            <property name="selectionBackground" value="#ffffff"/>
             <property name="selectionEnabled" value="true"/>
             <property name="width" value="100%"/>
             <property name="font">

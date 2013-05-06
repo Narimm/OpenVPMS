@@ -132,7 +132,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
     /**
      * Invoked when events are queried.
      * <p/>
-     * This implementation updates the context with the selected work list date and work list
+     * This implementation updates the context with the selected schedule date and schedule.
      */
     @Override
     protected void onQuery() {
@@ -140,7 +140,8 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
         ScheduleBrowser browser = getBrowser();
         context.setScheduleDate(browser.getDate());
         context.setSchedule((Party) browser.getSelectedSchedule());
-        super.onQuery();
+        Act act = browser.getAct(browser.getSelected());
+        getCRUDWindow().setObject(act);
     }
 
     /**
