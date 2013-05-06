@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.dialog;
@@ -76,6 +76,11 @@ public class HelpDialog extends PopupDialog {
      * The project logo.
      */
     private static final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
+
+    /**
+     * The home page.
+     */
+    private static final String HOME = "http://www.openvpms.org";
 
     /**
      * The logger.
@@ -192,18 +197,45 @@ public class HelpDialog extends PopupDialog {
      * @return the topics hyperlink.
      */
     private Component getTopics() {
-        Column topics = ColumnFactory.create();
-        Button helpLink = ButtonFactory.create("helpdialog.topics", "hyperlink");
+        Column topics = ColumnFactory.create("WideCellSpacing");
+
+        for (int i = 0; ; ++i) {
+            String topic = Messages.get("help.topic." + i + ".title", Messages.HELP, true);
+            if (topic != null) {
+                final String url = Messages.get("help.topic." + i + ".url", Messages.HELP, true);
+                if (url != null) {
+                    Button helpLink = createHelpURL(topic, url);
+                    topics.add(RowFactory.create(helpLink)); // force to minimum width
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        return ColumnFactory.create("Inset.Large", topics);
+    }
+
+    /**
+     * Creates a help URL button.
+     * <p/>
+     * When clicked, this opens a new browser window/tab.
+     *
+     * @param topic the topic name
+     * @param url   the topic url
+     * @return a new help URL button
+     */
+    private Button createHelpURL(String topic, final String url) {
+        Button helpLink = ButtonFactory.create(null, "hyperlink");
+        helpLink.setText(topic);
         helpLink.setBackground(null); // want to inherit style of parent
+        helpLink.setToolTipText(url);
         helpLink.addActionListener(new ActionListener() {
             public void onAction(ActionEvent e) {
-                String link = Messages.get("help.url", Messages.HELP, true);
-                ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(link, null, null));
-                close();
+                launch(url);
             }
         });
-        topics.add(RowFactory.create(helpLink)); // force to minimum width
-        return ColumnFactory.create("Inset.Large", topics);
+        return helpLink;
     }
 
     /**
@@ -212,7 +244,13 @@ public class HelpDialog extends PopupDialog {
      * @return the header component
      */
     private Component getHeader() {
-        Label logo = LabelFactory.create(new ResourceImageReference(PATH));
+        Button logo = new Button(new ResourceImageReference(PATH));
+        logo.setToolTipText(HOME);
+        logo.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent e) {
+                launch(HOME);
+            }
+        });
         RowLayoutData centre = new RowLayoutData();
         centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
         logo.setLayoutData(centre);
@@ -227,6 +265,16 @@ public class HelpDialog extends PopupDialog {
         labelRow.setLayoutData(right);
 
         return RowFactory.create(INSET, logo, labelRow);
+    }
+
+    /**
+     * Launches a URL in a new window, closing the help dialog.
+     *
+     * @param url the URL
+     */
+    private void launch(String url) {
+        ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, null, null));
+        close();
     }
 
     /**
