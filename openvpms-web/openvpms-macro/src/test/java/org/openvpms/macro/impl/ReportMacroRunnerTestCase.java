@@ -132,7 +132,8 @@ public class ReportMacroRunnerTestCase extends ArchetypeServiceTest {
         String text = runMacro(report);
 
         // verify the macro output
-        String expected = "First Name: Foo" + System.lineSeparator() + "Last Name: Bar";
+        String expected = "First Name: Foo\nLast Name: Bar";
+        text = text.replaceAll("\\s?\\n", "\n"); // make sure carriage returns handled in platform independent manner
         text = text.trim(); // remove extraneous whitespace
         assertEquals(expected, text);
     }
