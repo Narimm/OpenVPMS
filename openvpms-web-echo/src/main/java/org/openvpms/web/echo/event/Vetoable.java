@@ -12,19 +12,15 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.event;
 
 
 /**
- * <tt>Vetoable</tt> enables {@link VetoListener}s to veto actions
- * asynchronously.
+ * <tt>Vetoable</tt> enables {@link VetoListener}s to veto actions asynchronously.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  * @see VetoListener
  */
 public interface Vetoable {

@@ -21,12 +21,12 @@ import org.openvpms.archetype.component.processor.AbstractBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.component.processor.BatchProcessorDialog;
 import org.openvpms.web.component.processor.RetryListener;
-import org.openvpms.web.component.util.VetoListener;
-import org.openvpms.web.component.util.Vetoable;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.event.VetoListener;
+import org.openvpms.web.echo.event.Vetoable;
+import org.openvpms.web.echo.event.WindowPaneListener;
 
 
 /**

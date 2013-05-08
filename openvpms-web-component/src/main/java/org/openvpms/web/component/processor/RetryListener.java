@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.processor;
 
-import org.openvpms.web.component.util.Vetoable;
+import org.openvpms.web.echo.event.Vetoable;
 
 
 /**

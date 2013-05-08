@@ -36,15 +36,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.system.common.util.StringUtilities;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.component.im.subscription.SubscriptionHelper;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.Version;
 
@@ -68,11 +66,6 @@ import static org.openvpms.web.echo.style.Styles.INSET;
 public class HelpDialog extends PopupDialog {
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * The project logo.
      */
     private static final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
@@ -89,11 +82,9 @@ public class HelpDialog extends PopupDialog {
 
     /**
      * Constructs a {@code HelpDialog}.
-     *
-     * @param context the context
      */
-    public HelpDialog(Context context) {
-        this(null, null, context);
+    public HelpDialog() {
+        this(null, null);
     }
 
     /**
@@ -101,12 +92,10 @@ public class HelpDialog extends PopupDialog {
      *
      * @param topic    the topic. May be {@code null}
      * @param topicURL the topic URL. May be {@code null}
-     * @param context  the context
      */
-    protected HelpDialog(String topic, final String topicURL, Context context) {
+    protected HelpDialog(String topic, final String topicURL) {
         super(Messages.get("helpdialog.title"), "HelpDialog", OK);
         setModal(true);
-        this.context = context;
 
         Component component = null;
 
@@ -158,13 +147,13 @@ public class HelpDialog extends PopupDialog {
      * Displays a help dialog for the specified help context.
      *
      * @param help    the help context. May be {@code null}
-     * @param context the context
+     *
      */
-    public static void show(HelpContext help, Context context) {
+    public static void show(HelpContext help) {
         if (help == null) {
-            new HelpDialog(context).show();
+            new HelpDialog().show();
         } else {
-            show(help.getTopic(), context);
+            show(help.getTopic());
         }
     }
 
@@ -172,19 +161,19 @@ public class HelpDialog extends PopupDialog {
      * Displays a help dialog for the specified topic.
      *
      * @param topic   the topic identifier
-     * @param context the context
+     *
      */
-    public static void show(String topic, Context context) {
+    public static void show(String topic) {
         String url = getTopicURL(topic);
         if (url != null) {
             if (exists(url)) {
                 ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, null, null));
             } else {
-                HelpDialog dialog = new HelpDialog(topic, url, context);
+                HelpDialog dialog = new HelpDialog(topic, url);
                 dialog.show();
             }
         } else {
-            HelpDialog dialog = new HelpDialog(topic, null, context);
+            HelpDialog dialog = new HelpDialog(topic, null);
             dialog.show();
         }
     }
@@ -283,8 +272,7 @@ public class HelpDialog extends PopupDialog {
      * @return the subscription details
      */
     private LabelEx getSubscription() {
-        String content =
-            "<p xmlns='http://www.w3.org/1999/xhtml'>" + SubscriptionHelper.formatSubscription(context) + "</p>";
+        String content = "<p xmlns='http://www.w3.org/1999/xhtml'>" + SubscriptionHelper.formatSubscription() + "</p>";
         LabelEx subscription = new LabelEx(new XhtmlFragment(content));
         subscription.setLineWrap(true);
         subscription.setTextAlignment(Alignment.ALIGN_CENTER);
