@@ -15,7 +15,7 @@
  *
  *  $Id$
  */
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.propertypeer;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.HttpImageReference;

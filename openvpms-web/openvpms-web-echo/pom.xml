@@ -11,8 +11,53 @@
 
     <artifactId>openvpms-web-echo</artifactId>
 
+    <properties>
+        <echo.version>2.1.1</echo.version>
+        <echo-extras.version>2.1.0</echo-extras.version>
+        <echo-filetransfer.version>2.1.0</echo-filetransfer.version>
+    </properties>
+
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-app</artifactId>
+            <version>${echo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-webcontainer</artifactId>
+            <version>${echo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-webrender</artifactId>
+            <version>${echo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-extras-app</artifactId>
+            <version>${echo-extras.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-extras-webcontainer</artifactId>
+            <version>${echo-extras.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-filetransfer-app</artifactId>
+            <version>${echo-filetransfer.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-filetransfer-webcontainer</artifactId>
+            <version>${echo-filetransfer.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
 
 </project>
