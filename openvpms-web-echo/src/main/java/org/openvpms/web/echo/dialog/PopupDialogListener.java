@@ -12,29 +12,26 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.echo.dialog;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.web.component.event.WindowPaneListener;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.error.ErrorHandler;
+import org.openvpms.web.echo.event.WindowPaneListener;
 
 
 /**
  * Listener for {@link PopupDialog} window close events.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class PopupDialogListener extends WindowPaneListener {
 
     /**
-     * Invoked when a user attempts to close a <tt>WindowPane</tt>.
+     * Invoked when a user attempts to close a {@code WindowPane}.
      *
-     * @param event the <tt>WindowPaneEvent</tt> describing the change
+     * @param event the {@code WindowPaneEvent} describing the change
      */
     public void onClose(WindowPaneEvent event) {
         if (event.getSource() instanceof PopupDialog) {
@@ -42,7 +39,7 @@ public abstract class PopupDialogListener extends WindowPaneListener {
             try {
                 onAction(dialog);
             } catch (Throwable exception) {
-                ErrorHelper.show(exception);
+                ErrorHandler.getInstance().error(exception);
             }
         }
     }

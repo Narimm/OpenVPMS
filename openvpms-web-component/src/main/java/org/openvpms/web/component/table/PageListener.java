@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.table;
 
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 
 
 /**
