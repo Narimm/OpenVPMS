@@ -34,7 +34,7 @@ import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

@@ -45,7 +45,7 @@ import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.Arrays;
 

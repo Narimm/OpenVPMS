@@ -19,7 +19,7 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.ApplicationInstance;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.text.DateFormat;
 import java.text.ParseException;

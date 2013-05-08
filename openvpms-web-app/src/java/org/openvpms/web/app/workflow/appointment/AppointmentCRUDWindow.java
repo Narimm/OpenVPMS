@@ -43,7 +43,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.Date;
 

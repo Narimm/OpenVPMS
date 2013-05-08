@@ -38,7 +38,7 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.system.SpringApplicationInstance;
+import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

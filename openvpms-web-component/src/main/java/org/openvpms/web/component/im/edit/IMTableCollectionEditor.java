@@ -54,9 +54,9 @@ import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.component.util.KeyStrokeHelper;
+import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

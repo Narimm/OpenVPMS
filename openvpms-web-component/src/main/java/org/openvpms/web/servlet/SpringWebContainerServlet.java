@@ -21,7 +21,7 @@ package org.openvpms.web.servlet;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.web.system.SpringApplicationInstance;
+import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 

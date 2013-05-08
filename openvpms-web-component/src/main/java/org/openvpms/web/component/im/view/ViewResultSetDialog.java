@@ -27,7 +27,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.ResultSetIterator;
-import org.openvpms.web.component.util.KeyStrokeHelper;
+import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
 
 
 /**

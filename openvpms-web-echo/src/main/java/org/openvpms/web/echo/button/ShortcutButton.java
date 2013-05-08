@@ -21,7 +21,7 @@ package org.openvpms.web.echo.button;
 import echopointng.ButtonEx;
 import echopointng.xhtml.XhtmlFragment;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.web.component.util.KeyStrokeHelper;
+import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
 
 
 /**

@@ -20,7 +20,7 @@ package org.openvpms.web.component.util;
 
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.TabModel;
-import org.openvpms.web.echo.button.KeyStrokeHandler;
+import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

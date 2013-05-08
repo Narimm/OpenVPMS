@@ -22,7 +22,7 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.table.TableModel;
 import org.openvpms.web.component.table.KeyTable;
 import org.openvpms.web.echo.factory.ComponentFactory;
-import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.echo.style.Styles;
 
 
 /**

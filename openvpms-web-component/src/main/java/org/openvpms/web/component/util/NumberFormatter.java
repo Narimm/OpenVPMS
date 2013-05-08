@@ -21,7 +21,7 @@ package org.openvpms.web.component.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;

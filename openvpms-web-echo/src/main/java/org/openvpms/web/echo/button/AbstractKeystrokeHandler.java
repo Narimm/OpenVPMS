@@ -21,6 +21,7 @@ import echopointng.KeyStrokeListener;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 
 import java.util.HashMap;
 import java.util.Map;

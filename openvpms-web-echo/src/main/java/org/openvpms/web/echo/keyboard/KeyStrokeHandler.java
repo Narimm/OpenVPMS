@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.echo.button;
+package org.openvpms.web.echo.keyboard;
 
 
 /**

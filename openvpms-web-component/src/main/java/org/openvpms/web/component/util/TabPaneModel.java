@@ -21,7 +21,7 @@ package org.openvpms.web.component.util;
 import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ImageReference;
-import org.openvpms.web.echo.button.KeyStrokeHandler;
+import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 import org.openvpms.web.echo.button.ShortcutButton;
 import org.openvpms.web.echo.button.ShortcutButtons;
 import org.openvpms.web.echo.button.ShortcutHelper;

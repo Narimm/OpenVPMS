@@ -52,7 +52,7 @@ import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 

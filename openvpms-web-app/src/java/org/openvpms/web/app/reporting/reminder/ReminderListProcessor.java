@@ -36,7 +36,7 @@ import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.ArrayList;
 import java.util.Date;

@@ -45,7 +45,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.Version;
 
 import java.io.IOException;
@@ -56,8 +56,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 
-import static org.openvpms.web.resource.util.Styles.BOLD;
-import static org.openvpms.web.resource.util.Styles.INSET;
+import static org.openvpms.web.echo.style.Styles.BOLD;
+import static org.openvpms.web.echo.style.Styles.INSET;
 
 
 /**

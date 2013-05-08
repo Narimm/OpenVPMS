@@ -24,6 +24,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 
 
 /**

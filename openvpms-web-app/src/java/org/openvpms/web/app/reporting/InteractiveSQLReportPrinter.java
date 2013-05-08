@@ -27,7 +27,7 @@ import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.component.print.PrintDialog;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
 

@@ -44,7 +44,7 @@ import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.util.ColourHelper;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.Arrays;
 import java.util.List;

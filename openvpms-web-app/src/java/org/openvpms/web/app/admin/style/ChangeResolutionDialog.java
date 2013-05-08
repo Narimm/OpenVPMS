@@ -23,7 +23,7 @@ import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.awt.*;
 

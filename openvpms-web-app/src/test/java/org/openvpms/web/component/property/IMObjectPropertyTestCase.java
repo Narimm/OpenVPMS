@@ -32,7 +32,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.AssertionPro
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -20,7 +20,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**
