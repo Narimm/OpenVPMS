@@ -30,8 +30,8 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

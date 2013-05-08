@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 
 import java.math.BigDecimal;

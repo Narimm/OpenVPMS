@@ -109,7 +109,7 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField createNumeric(Property property, int columns) {
         boolean edit = !property.isReadOnly() && !property.isDerived();
-        Format format = NumberFormatter.getFormat(property, edit);
+        Format format = NumericPropertyFormatter.getFormat(property, edit);
         TextField text = create(property, columns, format);
         if (!edit) {
             Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);

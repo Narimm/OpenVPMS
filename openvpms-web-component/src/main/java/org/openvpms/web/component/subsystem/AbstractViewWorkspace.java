@@ -37,9 +37,9 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.RepeatSelector;
 import org.openvpms.web.component.im.util.Archetypes;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 

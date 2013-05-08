@@ -20,7 +20,7 @@ import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.web.app.workflow.messaging.MessageMonitor;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.system.ServiceHelper;
 
 

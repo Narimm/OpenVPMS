@@ -37,7 +37,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.List;

@@ -31,7 +31,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.util.CollectionHelper;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 import java.util.Date;
 

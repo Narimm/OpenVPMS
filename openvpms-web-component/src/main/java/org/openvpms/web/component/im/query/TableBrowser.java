@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

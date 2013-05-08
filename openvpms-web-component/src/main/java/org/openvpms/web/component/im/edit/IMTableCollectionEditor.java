@@ -52,7 +52,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.table.SortableTableModel;
 import org.openvpms.web.echo.table.TableNavigator;
 import org.openvpms.web.component.util.ButtonRow;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
 import org.openvpms.web.component.util.SelectFieldFactory;

@@ -30,8 +30,8 @@ import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.text.NumberFormatter;
 
 import java.math.BigDecimal;
 import java.util.Date;

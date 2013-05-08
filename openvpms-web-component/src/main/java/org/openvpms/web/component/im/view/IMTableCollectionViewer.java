@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.table.SortableTableModel;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 
 import java.util.ArrayList;

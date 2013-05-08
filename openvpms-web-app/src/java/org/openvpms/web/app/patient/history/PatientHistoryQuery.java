@@ -39,7 +39,7 @@ import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.echo.i18n.Messages;
 

@@ -39,8 +39,8 @@ import org.openvpms.web.component.im.sms.SMSDialog;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 
 import java.util.List;
 

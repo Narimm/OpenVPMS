@@ -43,7 +43,7 @@ import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.DateSelector;
 import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.util.ArrayList;

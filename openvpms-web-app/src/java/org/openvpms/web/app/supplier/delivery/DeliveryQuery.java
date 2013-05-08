@@ -25,8 +25,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 
 
 /**

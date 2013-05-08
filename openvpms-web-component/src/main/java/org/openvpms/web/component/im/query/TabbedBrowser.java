@@ -21,7 +21,7 @@ import echopointng.TabbedPane;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 

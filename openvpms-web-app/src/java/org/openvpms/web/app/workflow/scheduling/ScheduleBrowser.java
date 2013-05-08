@@ -41,10 +41,10 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 import org.openvpms.web.component.util.ButtonRow;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.DoubleClickMonitor;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 import java.util.ArrayList;
 import java.util.Date;

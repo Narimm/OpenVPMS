@@ -12,20 +12,17 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.echo.event;
 
 import nextapp.echo2.app.event.DocumentEvent;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.error.ErrorHandler;
 
 
 /**
  * An <em>nextapp.echo2.app.event.DocumentListener</em> that catches any unhandled exceptions.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class DocumentListener implements nextapp.echo2.app.event.DocumentListener {
 
@@ -40,7 +37,7 @@ public abstract class DocumentListener implements nextapp.echo2.app.event.Docume
         try {
             onUpdate(event);
         } catch (Throwable exception) {
-            ErrorHelper.show(exception);
+            ErrorHandler.getInstance().error(exception);
         }
     }
 

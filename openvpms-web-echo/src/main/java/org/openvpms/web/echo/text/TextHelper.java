@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.text;
 
 import org.apache.commons.lang.StringUtils;
 

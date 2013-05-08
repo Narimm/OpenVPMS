@@ -22,7 +22,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.style.StyleSheets;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 
 import java.awt.*;

@@ -38,7 +38,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.component.util.ColourHelper;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 import java.util.HashMap;
 import java.util.Iterator;

@@ -27,7 +27,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.macro.MacroVariables;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;

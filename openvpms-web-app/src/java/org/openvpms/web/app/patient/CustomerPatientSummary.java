@@ -27,7 +27,7 @@ import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.system.ServiceHelper;
 
 

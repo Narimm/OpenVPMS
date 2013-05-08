@@ -36,9 +36,9 @@ import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 
