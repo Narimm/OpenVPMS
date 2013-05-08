@@ -19,6 +19,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-web-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <!-- NOTE: this dependency only required by HelpContext TODO -->
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>

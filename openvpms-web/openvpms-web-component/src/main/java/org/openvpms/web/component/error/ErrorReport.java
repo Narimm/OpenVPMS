@@ -18,7 +18,7 @@
 package org.openvpms.web.component.error;
 
 import com.thoughtworks.xstream.XStream;
-import org.openvpms.web.system.Version;
+import org.openvpms.web.util.version.Version;
 
 import java.util.Properties;
 

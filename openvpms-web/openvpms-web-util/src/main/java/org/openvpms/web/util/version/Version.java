@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.system;
+package org.openvpms.web.util.version;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
