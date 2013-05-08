@@ -16,8 +16,9 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.button;
+package org.openvpms.web.echo.button;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -41,9 +42,9 @@ public class ShortcutHelperTestCase {
         assertNull(ShortcutHelper.getShortcut(""));
         assertNull(ShortcutHelper.getShortcut("&"));
         assertNull(ShortcutHelper.getShortcut("&&"));
-        assertEquals("A", ShortcutHelper.getShortcut("&A"));
-        assertEquals("A", ShortcutHelper.getShortcut("&A &B"));
-        assertEquals("B", ShortcutHelper.getShortcut("&& &B"));
+        Assert.assertEquals("A", ShortcutHelper.getShortcut("&A"));
+        Assert.assertEquals("A", ShortcutHelper.getShortcut("&A &B"));
+        Assert.assertEquals("B", ShortcutHelper.getShortcut("&& &B"));
     }
 
     /**
@@ -51,13 +52,13 @@ public class ShortcutHelperTestCase {
      */
     @Test
     public void testGetText() {
-        assertEquals("", ShortcutHelper.getText(null));
-        assertEquals("", ShortcutHelper.getText(""));
-        assertEquals("", ShortcutHelper.getText("&"));
-        assertEquals("&", ShortcutHelper.getText("&&"));
-        assertEquals("A", ShortcutHelper.getText("&A"));
-        assertEquals("A B", ShortcutHelper.getText("&A &B"));
-        assertEquals("& B", ShortcutHelper.getText("&& &B"));
+        Assert.assertEquals("", ShortcutHelper.getText(null));
+        Assert.assertEquals("", ShortcutHelper.getText(""));
+        Assert.assertEquals("", ShortcutHelper.getText("&"));
+        Assert.assertEquals("&", ShortcutHelper.getText("&&"));
+        Assert.assertEquals("A", ShortcutHelper.getText("&A"));
+        Assert.assertEquals("A B", ShortcutHelper.getText("&A &B"));
+        Assert.assertEquals("& B", ShortcutHelper.getText("&& &B"));
     }
 
     /**
@@ -88,6 +89,6 @@ public class ShortcutHelperTestCase {
      * @param expected the expected result
      */
     private void checkHtml(String text, String expected) {
-        assertEquals(expected, ShortcutHelper.getHTML(text));
+        Assert.assertEquals(expected, ShortcutHelper.getHTML(text));
     }
 }
