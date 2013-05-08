@@ -14,7 +14,7 @@
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.app.sms;
+package org.openvpms.web.component.im.sms;
 
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
