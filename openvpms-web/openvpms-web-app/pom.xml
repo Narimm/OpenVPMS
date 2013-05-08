@@ -20,7 +20,7 @@
         <finalName>openvpms</finalName>
         <resources>
             <resource>
-                <directory>${basedir}/src/java</directory>
+                <directory>${basedir}/src/main/java</directory>
                 <includes>
                     <include>**/*.gif</include>
                     <include>**/*.png</include>

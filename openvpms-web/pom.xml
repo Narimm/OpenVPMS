@@ -48,6 +48,9 @@
         </site>
     </distributionManagement>
 
+    <build>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+    </build>
     <modules>
         <module>openvpms-macro</module>
         <module>openvpms-web-component</module>
