@@ -27,12 +27,6 @@
 
     <artifactId>openvpms-web-component</artifactId>
 
-    <properties>
-        <echo.version>2.1.1</echo.version>
-        <echo-extras.version>2.1.0</echo-extras.version>
-        <echo-filetransfer.version>2.1.0</echo-filetransfer.version>
-    </properties>
-
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -60,18 +54,23 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-web-echo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
             <artifactId>openvpms-esci-adapter</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-sms</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-reports</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
@@ -80,12 +79,12 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-macro</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
             <exclusions>
                 <exclusion>
                     <!-- only used by the deprecated ArchetypeDataLoader -->
@@ -131,42 +130,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.nextapp</groupId>
-            <artifactId>echo-app</artifactId>
-            <version>${echo.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.nextapp</groupId>
-            <artifactId>echo-webcontainer</artifactId>
-            <version>${echo.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.nextapp</groupId>
-            <artifactId>echo-webrender</artifactId>
-            <version>${echo.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.nextapp</groupId>
-            <artifactId>echo-extras-app</artifactId>
-            <version>${echo-extras.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.nextapp</groupId>
-            <artifactId>echo-extras-webcontainer</artifactId>
-            <version>${echo-extras.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.nextapp</groupId>
-            <artifactId>echo-filetransfer-app</artifactId>
-            <version>${echo-filetransfer.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.nextapp</groupId>
-            <artifactId>echo-filetransfer-webcontainer</artifactId>
-            <version>${echo-filetransfer.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>net.sf.echopoint</groupId>
