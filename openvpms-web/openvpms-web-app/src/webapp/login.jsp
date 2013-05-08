@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="org.openvpms.web.component.im.subscription.SubscriptionHelper" %>
 <%@ page import="org.openvpms.web.echo.button.ShortcutHelper" %>
-<%@ page import="org.openvpms.web.resource.util.Messages" %>
+<%@ page import="org.openvpms.web.echo.i18n.Messages" %>
 <%@ page import="org.openvpms.web.system.Version" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>

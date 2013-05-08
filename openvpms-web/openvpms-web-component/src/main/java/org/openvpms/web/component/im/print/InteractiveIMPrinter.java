@@ -19,7 +19,7 @@ package org.openvpms.web.component.im.print;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.print.InteractivePrinter;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

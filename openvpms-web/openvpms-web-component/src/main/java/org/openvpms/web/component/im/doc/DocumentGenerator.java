@@ -30,7 +30,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroVariables;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;

@@ -37,7 +37,7 @@ import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.text.DateFormat;
 import java.util.Date;

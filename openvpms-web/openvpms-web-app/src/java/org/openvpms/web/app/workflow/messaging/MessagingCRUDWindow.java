@@ -43,7 +43,7 @@ import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

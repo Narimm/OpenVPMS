@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.dialog;
 
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

@@ -36,7 +36,7 @@ import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.Collections;
 import java.util.List;

@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.property;
 
-import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.echo.style.Styles;
 
 
 /**

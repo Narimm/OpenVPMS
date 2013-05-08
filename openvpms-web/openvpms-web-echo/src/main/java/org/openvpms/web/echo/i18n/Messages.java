@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.resource.util;
+package org.openvpms.web.echo.i18n;
 
 import nextapp.echo2.app.ApplicationInstance;
 

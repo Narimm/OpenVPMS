@@ -500,7 +500,7 @@
          If mask not specified, defaults to 'Alt'.
       -->
     <bean id="keyStrokeMask"
-          class="org.openvpms.web.component.util.KeyStrokeMask">
+          class="org.openvpms.web.echo.keyboard.KeyStrokeMask">
         <!--  The mask. May contain combinations of Ctrl, Alt, or Shift,
               separated by '-' -->
         <property name="mask" value="Alt"/>

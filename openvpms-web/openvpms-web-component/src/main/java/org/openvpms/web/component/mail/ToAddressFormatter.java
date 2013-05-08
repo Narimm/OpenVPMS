@@ -19,7 +19,7 @@ package org.openvpms.web.component.mail;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 /**
  * An {@link AddressFormatter} for 'to' addresses.

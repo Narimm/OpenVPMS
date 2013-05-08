@@ -30,7 +30,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.echo.style.Styles;
 
 import java.text.DateFormat;
 

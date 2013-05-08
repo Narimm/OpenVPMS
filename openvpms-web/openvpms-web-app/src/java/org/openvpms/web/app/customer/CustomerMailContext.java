@@ -40,7 +40,7 @@ import org.openvpms.web.component.mail.AddressFormatter;
 import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.ToAddressFormatter;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.ArrayList;
 import java.util.Collections;

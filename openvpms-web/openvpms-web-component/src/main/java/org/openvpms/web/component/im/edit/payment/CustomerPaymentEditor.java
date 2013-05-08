@@ -42,7 +42,7 @@ import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.NumberFormatter;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;

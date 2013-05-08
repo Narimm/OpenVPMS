@@ -49,7 +49,7 @@ import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 

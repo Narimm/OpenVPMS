@@ -37,7 +37,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.io.IOException;
 import java.io.InputStream;

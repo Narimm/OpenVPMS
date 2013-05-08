@@ -32,7 +32,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
-import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.echo.style.Styles;
 
 import java.math.BigDecimal;
 import java.util.Date;

@@ -52,7 +52,7 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.WorkflowImpl;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;

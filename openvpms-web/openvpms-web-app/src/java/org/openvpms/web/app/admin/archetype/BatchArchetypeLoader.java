@@ -27,7 +27,7 @@ import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.ArrayList;
 import java.util.List;

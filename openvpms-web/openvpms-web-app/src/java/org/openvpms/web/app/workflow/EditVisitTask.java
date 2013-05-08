@@ -30,7 +30,7 @@ import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

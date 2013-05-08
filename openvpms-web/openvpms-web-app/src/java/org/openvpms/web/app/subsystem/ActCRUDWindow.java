@@ -39,7 +39,7 @@ import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;

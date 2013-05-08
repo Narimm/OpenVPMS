@@ -35,7 +35,7 @@ import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.awt.*;
 import java.util.Iterator;

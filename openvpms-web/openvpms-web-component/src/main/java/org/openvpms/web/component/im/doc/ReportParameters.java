@@ -34,7 +34,7 @@ import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Styles;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;

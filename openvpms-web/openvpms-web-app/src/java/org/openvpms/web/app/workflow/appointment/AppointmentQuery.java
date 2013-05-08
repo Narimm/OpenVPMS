@@ -27,7 +27,7 @@ import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;

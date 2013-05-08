@@ -18,7 +18,7 @@ package org.openvpms.web.component.dialog;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openvpms.web.component.help.HelpContext;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

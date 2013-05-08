@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.util.VetoListener;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

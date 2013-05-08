@@ -28,7 +28,7 @@ import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.VetoListener;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
 

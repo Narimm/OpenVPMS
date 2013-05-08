@@ -31,7 +31,7 @@ import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.IMTableCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

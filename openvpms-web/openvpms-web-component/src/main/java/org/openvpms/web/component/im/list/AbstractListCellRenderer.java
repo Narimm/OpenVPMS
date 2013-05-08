@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.list;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.list.ListCellRenderer;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

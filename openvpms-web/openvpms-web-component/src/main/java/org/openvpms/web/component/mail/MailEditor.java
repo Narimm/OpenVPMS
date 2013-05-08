@@ -82,7 +82,7 @@ import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.util.TableFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;

@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**

@@ -16,40 +16,49 @@
  *  $Id$
  */
 
-package org.openvpms.web.system;
-
-import nextapp.echo2.app.ApplicationInstance;
-import org.springframework.context.ApplicationContext;
+package org.openvpms.web.echo.style;
 
 /**
- * <code>ApplicationInstance</code> for integrating Echo with Spring.
+ * Stylesheet helper.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class SpringApplicationInstance extends ApplicationInstance {
+public final class Styles {
 
     /**
-     * The application context.
+     * Default style name.
      */
-    private ApplicationContext _context;
+    public static final String DEFAULT = "default";
 
     /**
-     * Sets the application context.
-     *
-     * @param context the application context
+     * Edit style name.
      */
-    public void setApplicationContext(ApplicationContext context) {
-        _context = context;
-    }
+    public static final String EDIT = "edit";
 
     /**
-     * Returns the application context.
-     *
-     * @return the application context
+     * Error style name.
      */
-    public ApplicationContext getApplicationContext() {
-        return _context;
-    }
+    public static final String ERROR = "error";
+
+    /**
+     * Bold style name.
+     */
+    public static final String BOLD = "bold";
+
+    /**
+     * Inset style name.
+     */
+    public static final String INSET = "Inset";
+
+    /**
+     * Cell spacing style name.
+     */
+    public static final String CELL_SPACING = "CellSpacing";
+
+    /**
+     * Selected style name.
+     */
+    public static final String SELECTED = "selected";
 
 }

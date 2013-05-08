@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.keyboard;
 
 import echopointng.KeyStrokes;
 import org.apache.commons.logging.Log;

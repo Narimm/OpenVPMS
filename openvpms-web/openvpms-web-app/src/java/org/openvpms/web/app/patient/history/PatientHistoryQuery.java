@@ -41,7 +41,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.echo.i18n.Messages;
 
 
 /**
