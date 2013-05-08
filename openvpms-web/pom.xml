@@ -50,6 +50,7 @@
 
     <modules>
         <module>openvpms-macro</module>
+        <module>openvpms-web-components</module>
         <module>openvpms-web-app</module>
     </modules>
 
