@@ -20,7 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.IMObjectSelector;

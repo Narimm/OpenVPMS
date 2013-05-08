@@ -22,8 +22,8 @@ import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.table.PageableTableModel;
-import org.openvpms.web.component.table.SortableTableModel;
+import org.openvpms.web.echo.table.PageableTableModel;
+import org.openvpms.web.echo.table.SortableTableModel;
 
 import java.util.Collections;
 import java.util.Iterator;

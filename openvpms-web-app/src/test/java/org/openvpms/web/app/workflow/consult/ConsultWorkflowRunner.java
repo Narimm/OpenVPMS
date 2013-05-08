@@ -26,7 +26,7 @@ import org.openvpms.web.app.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.app.workflow.TestEditVisitTask;
 import org.openvpms.web.app.workflow.TestVisitCRUDWindow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 
 import java.math.BigDecimal;
 

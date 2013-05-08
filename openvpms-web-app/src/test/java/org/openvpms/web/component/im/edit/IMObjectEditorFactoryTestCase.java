@@ -53,7 +53,7 @@ import org.openvpms.web.app.supplier.order.OrderEditor;
 import org.openvpms.web.app.supplier.order.OrderItemEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageEditor;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.contact.LocationEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;

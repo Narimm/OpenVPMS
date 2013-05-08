@@ -19,7 +19,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.openvpms.web.app.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**

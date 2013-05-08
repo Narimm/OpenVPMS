@@ -506,7 +506,7 @@
         <property name="mask" value="Alt"/>
     </bean>
 
-    <bean id="errorReporter" class="org.openvpms.web.component.error.ErrorReporter"/>
+    <bean id="errorReporter" class="org.openvpms.web.echo.error.ErrorReporter"/>
 
 
 </beans>

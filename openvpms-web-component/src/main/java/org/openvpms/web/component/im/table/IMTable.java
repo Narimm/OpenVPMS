@@ -22,8 +22,8 @@ import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.list.ListSelectionModel;
 import nextapp.echo2.app.table.TableModel;
-import org.openvpms.web.component.table.EvenOddTableCellRenderer;
-import org.openvpms.web.component.table.KeyTable;
+import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
+import org.openvpms.web.echo.table.KeyTable;
 
 import java.util.List;
 

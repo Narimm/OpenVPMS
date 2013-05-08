@@ -29,7 +29,7 @@ import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
 import org.openvpms.web.component.echo.CountedTextArea;
 import org.openvpms.web.component.echo.TextField;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ModifiableListener;

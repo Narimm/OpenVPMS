@@ -17,10 +17,10 @@
 package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.event.WindowPaneListener;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**

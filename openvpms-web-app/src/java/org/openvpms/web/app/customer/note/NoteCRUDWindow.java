@@ -18,7 +18,7 @@ package org.openvpms.web.app.customer.note;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;

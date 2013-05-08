@@ -24,7 +24,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Table;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.web.component.table.AbstractTableCellRenderer;
+import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 
 
 /**

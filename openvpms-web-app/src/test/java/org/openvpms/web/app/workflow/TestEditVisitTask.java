@@ -26,7 +26,7 @@ import org.openvpms.web.app.patient.visit.VisitCRUDWindow;
 import org.openvpms.web.app.patient.visit.VisitChargeCRUDWindow;
 import org.openvpms.web.app.patient.visit.VisitEditor;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.workflow.TaskContext;
 

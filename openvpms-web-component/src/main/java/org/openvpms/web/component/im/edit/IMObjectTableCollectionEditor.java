@@ -30,7 +30,7 @@ import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.table.TableNavigator;
+import org.openvpms.web.echo.table.TableNavigator;
 
 import java.util.List;
 

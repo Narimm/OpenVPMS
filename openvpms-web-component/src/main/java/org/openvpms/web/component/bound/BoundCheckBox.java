@@ -23,7 +23,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ChangeEvent;
 import nextapp.echo2.app.event.ChangeListener;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.property.Property;
 
 

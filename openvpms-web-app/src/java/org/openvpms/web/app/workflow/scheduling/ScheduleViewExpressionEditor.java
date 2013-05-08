@@ -25,7 +25,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.web.component.dialog.InformationDialog;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.component.property.DefaultPropertyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyComponentFactory;

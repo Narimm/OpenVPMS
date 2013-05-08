@@ -18,7 +18,7 @@ package org.openvpms.web.app.workflow.payment;
 
 import org.openvpms.web.app.workflow.checkout.PaymentEditTask;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;

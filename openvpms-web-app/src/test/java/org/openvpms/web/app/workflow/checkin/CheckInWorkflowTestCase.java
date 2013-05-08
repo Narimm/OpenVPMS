@@ -41,11 +41,11 @@ import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.app.workflow.WorkflowTestHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.util.ErrorHandler;
+import org.openvpms.web.echo.error.ErrorHandler;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

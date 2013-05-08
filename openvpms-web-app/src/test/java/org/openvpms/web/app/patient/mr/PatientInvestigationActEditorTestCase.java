@@ -25,7 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.patient.history.PatientInvestigationActEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.doc.VersionedDocumentActEditorTest;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;

@@ -21,7 +21,7 @@ package org.openvpms.web.app.patient.history;
 import nextapp.echo2.app.Table;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.IMTable;
-import org.openvpms.web.component.table.AbstractTableCellRenderer;
+import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 
 
 /**

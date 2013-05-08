@@ -24,7 +24,7 @@ import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.workflow.DefaultTaskContext;

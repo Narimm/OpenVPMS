@@ -21,7 +21,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.macro.Variables;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;

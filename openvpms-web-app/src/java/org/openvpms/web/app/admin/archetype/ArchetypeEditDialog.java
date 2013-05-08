@@ -24,8 +24,8 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;

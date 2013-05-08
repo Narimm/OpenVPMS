@@ -22,9 +22,9 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.table.PageListener;
-import org.openvpms.web.component.table.SortableTableHeaderRenderer;
-import org.openvpms.web.component.table.TableNavigator;
+import org.openvpms.web.echo.table.PageListener;
+import org.openvpms.web.echo.table.SortableTableHeaderRenderer;
+import org.openvpms.web.echo.table.TableNavigator;
 
 
 /**
