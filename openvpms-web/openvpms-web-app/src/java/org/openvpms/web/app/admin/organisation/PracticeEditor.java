@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.subscription.SubscriptionHelper;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 
 /**

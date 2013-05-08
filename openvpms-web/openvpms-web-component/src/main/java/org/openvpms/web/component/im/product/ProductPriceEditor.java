@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.product;
+package org.openvpms.web.component.im.product;
 
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.product.ProductPriceRules;

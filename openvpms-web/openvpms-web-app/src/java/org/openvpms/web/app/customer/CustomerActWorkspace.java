@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
+import org.openvpms.web.component.im.customer.CustomerBrowser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.Archetypes;
 

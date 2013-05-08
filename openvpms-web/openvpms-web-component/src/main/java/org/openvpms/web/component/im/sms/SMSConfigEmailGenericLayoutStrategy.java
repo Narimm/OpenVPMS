@@ -16,7 +16,7 @@
  *  $Id: $
  */
 
-package org.openvpms.web.app.sms;
+package org.openvpms.web.component.im.sms;
 
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.web.component.util.SplitPaneFactory;

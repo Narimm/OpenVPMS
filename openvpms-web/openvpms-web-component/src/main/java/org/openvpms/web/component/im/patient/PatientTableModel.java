@@ -14,7 +14,7 @@
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.component.im.patient;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
