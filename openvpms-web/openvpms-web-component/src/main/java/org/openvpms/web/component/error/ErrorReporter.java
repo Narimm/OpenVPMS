@@ -21,7 +21,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.report.DocFormats;
-import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSender;
