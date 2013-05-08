@@ -20,8 +20,8 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
-import org.openvpms.web.component.button.KeyStrokeHandler;
-import org.openvpms.web.component.focus.FocusHelper;
+import org.openvpms.web.echo.button.KeyStrokeHandler;
+import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.system.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
 

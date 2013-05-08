@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.button;
+package org.openvpms.web.echo.button;
 
 import echopointng.ButtonEx;
 import echopointng.ui.syncpeer.PushButtonPeer;

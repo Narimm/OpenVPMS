@@ -19,7 +19,7 @@ package org.openvpms.web.app.supplier;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;

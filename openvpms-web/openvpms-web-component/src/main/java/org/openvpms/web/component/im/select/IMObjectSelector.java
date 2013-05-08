@@ -30,7 +30,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.DocumentListener;
 import org.openvpms.web.component.event.WindowPaneListener;
-import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -39,7 +39,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 
 import java.util.List;

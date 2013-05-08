@@ -36,7 +36,7 @@ import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.select.BasicSelector;
 import org.openvpms.web.component.property.Property;

@@ -21,7 +21,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
-import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;

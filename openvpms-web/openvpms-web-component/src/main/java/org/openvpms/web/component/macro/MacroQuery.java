@@ -21,7 +21,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.focus.FocusHelper;
+import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.ResultSet;
 

@@ -34,7 +34,7 @@ import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.report.DocumentActReporter;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.system.ServiceHelper;

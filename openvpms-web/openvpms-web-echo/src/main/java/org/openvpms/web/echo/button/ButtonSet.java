@@ -16,14 +16,14 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.button;
+package org.openvpms.web.echo.button;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 
 /**

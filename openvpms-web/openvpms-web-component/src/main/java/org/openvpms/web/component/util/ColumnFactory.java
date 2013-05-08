@@ -20,6 +20,7 @@ package org.openvpms.web.component.util;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**

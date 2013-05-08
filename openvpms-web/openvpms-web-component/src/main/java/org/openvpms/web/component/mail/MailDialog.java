@@ -32,7 +32,7 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
-import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.doc.DocumentUploadListener;

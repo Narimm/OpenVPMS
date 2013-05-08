@@ -20,6 +20,7 @@ package org.openvpms.web.component.util;
 
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.TabModel;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**

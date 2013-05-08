@@ -16,14 +16,15 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import echopointng.ButtonEx;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.MutableStyle;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.component.button.ShortcutButton;
-import org.openvpms.web.component.button.ShortcutHelper;
+import org.openvpms.web.echo.button.ShortcutButton;
+import org.openvpms.web.echo.button.ShortcutHelper;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**

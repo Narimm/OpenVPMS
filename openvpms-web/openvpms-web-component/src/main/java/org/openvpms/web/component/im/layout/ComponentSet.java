@@ -17,8 +17,8 @@
 package org.openvpms.web.component.im.layout;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.focus.FocusHelper;
+import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 

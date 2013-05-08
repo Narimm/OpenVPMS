@@ -30,7 +30,7 @@ import nextapp.echo2.app.list.ListModel;
 import nextapp.echo2.app.list.ListSelectionModel;
 import org.apache.commons.collections.ListUtils;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.ListBoxFactory;

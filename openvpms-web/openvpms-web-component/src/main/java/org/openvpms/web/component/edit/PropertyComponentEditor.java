@@ -19,7 +19,7 @@
 package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.property.Property;
 
 

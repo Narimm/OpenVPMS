@@ -20,6 +20,7 @@ package org.openvpms.web.component.util;
 
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**

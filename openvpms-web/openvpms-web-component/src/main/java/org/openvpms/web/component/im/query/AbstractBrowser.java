@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.ArrayList;
 import java.util.List;

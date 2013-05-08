@@ -27,7 +27,7 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusHelper;
+import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
