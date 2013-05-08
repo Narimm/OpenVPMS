@@ -29,7 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.ScheduleQuery;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.im.list.AbstractListCellRenderer;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DateHelper;

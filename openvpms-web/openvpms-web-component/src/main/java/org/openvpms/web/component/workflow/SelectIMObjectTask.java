@@ -18,9 +18,9 @@ package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.dialog.PopupDialogListener;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;

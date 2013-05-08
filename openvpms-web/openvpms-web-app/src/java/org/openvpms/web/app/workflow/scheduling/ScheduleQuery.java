@@ -33,7 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;

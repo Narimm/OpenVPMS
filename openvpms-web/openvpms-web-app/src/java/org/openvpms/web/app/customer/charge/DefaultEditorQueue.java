@@ -20,7 +20,7 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.echo.i18n.Messages;

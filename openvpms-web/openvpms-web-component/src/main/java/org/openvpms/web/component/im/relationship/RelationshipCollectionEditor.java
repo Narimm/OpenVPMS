@@ -23,14 +23,14 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.component.table.TableNavigator;
+import org.openvpms.web.echo.table.TableNavigator;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.echo.i18n.Messages;
 

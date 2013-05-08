@@ -30,7 +30,7 @@ import org.openvpms.web.app.workflow.GetClinicalEventTask;
 import org.openvpms.web.app.workflow.GetInvoiceTask;
 import org.openvpms.web.app.workflow.payment.PaymentWorkflow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;

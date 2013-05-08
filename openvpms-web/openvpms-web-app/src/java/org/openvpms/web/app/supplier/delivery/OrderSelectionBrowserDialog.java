@@ -17,7 +17,7 @@
 package org.openvpms.web.app.supplier.delivery;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 
 

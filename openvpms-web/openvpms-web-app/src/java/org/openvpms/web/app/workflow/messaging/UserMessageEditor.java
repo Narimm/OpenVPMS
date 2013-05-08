@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.customer.CustomerParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;

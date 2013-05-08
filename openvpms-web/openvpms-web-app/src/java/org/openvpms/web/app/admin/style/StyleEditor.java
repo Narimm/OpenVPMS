@@ -19,8 +19,8 @@ package org.openvpms.web.app.admin.style;
 
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.style.StylePropertyEvaluator;

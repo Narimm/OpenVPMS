@@ -19,8 +19,8 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.DocumentEvent;
 import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.DocumentListener;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.DocumentListener;
 import org.openvpms.web.component.property.Property;
 
 

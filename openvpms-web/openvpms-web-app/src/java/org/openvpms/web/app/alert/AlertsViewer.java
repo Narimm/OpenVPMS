@@ -31,9 +31,9 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;

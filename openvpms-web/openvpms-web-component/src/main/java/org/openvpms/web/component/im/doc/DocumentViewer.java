@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;

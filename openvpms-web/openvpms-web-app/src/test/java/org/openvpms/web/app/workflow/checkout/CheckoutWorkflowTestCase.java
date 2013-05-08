@@ -32,7 +32,7 @@ import org.openvpms.web.app.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.app.workflow.WorkflowTestHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 
 import java.math.BigDecimal;

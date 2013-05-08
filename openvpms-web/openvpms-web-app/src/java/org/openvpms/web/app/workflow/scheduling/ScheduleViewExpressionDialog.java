@@ -16,8 +16,8 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**

@@ -16,7 +16,7 @@
  *  $Id: $
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.error;
 
 import nextapp.echo2.app.event.WindowPaneListener;
 

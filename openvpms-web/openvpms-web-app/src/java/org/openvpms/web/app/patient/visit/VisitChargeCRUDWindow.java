@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.patient.charge.VisitChargeEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;

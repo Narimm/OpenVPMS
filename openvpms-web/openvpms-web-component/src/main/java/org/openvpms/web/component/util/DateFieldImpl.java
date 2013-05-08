@@ -21,7 +21,7 @@ package org.openvpms.web.component.util;
 import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 
 import java.text.DateFormat;
 import java.text.FieldPosition;

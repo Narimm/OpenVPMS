@@ -22,7 +22,7 @@ import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.property.Property;
 
 import java.beans.PropertyChangeListener;

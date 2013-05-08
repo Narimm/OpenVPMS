@@ -20,7 +20,7 @@ package org.openvpms.web.app.admin.style;
 import nextapp.echo2.app.Grid;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.app.ContextApplicationInstance;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.echo.i18n.Messages;

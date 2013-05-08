@@ -25,7 +25,7 @@ import org.openvpms.web.app.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;

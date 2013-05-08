@@ -26,7 +26,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.im.lookup.ArchetypeLookupQuery;
 import org.openvpms.web.component.im.lookup.LookupField;

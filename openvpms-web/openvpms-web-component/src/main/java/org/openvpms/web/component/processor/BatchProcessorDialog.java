@@ -20,7 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.layout.GridLayoutData;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 
 
 /**

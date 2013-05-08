@@ -22,8 +22,8 @@ import nextapp.echo2.app.Table;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.table.IMTable;
-import org.openvpms.web.component.table.AbstractTableCellRenderer;
-import org.openvpms.web.component.table.EvenOddTableCellRenderer;
+import org.openvpms.web.echo.table.AbstractTableCellRenderer;
+import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 
 
 /**

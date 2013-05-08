@@ -34,7 +34,7 @@ import org.openvpms.web.app.patient.visit.VisitEditor;
 import org.openvpms.web.app.patient.visit.VisitEditorDialog;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 
 import java.math.BigDecimal;
 

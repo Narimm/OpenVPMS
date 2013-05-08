@@ -25,7 +25,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.web.component.table.KeyTable;
+import org.openvpms.web.echo.table.KeyTable;
 
 
 /**

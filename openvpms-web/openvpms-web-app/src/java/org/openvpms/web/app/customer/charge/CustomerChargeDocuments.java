@@ -19,9 +19,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.event.WindowPaneListener;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.print.BatchPrinter;
 import org.openvpms.web.component.util.ErrorHelper;
 

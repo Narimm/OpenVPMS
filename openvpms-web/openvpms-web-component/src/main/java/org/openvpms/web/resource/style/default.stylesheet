@@ -224,7 +224,7 @@
         </properties>
     </style>
 
-    <style name="MedicalRecordSummary" type="org.openvpms.web.component.table.KeyTable"
+    <style name="MedicalRecordSummary" type="org.openvpms.web.echo.table.KeyTable"
            base-name="plain">
         <properties>
             <property name="selectionBackground" value="#47A3FF"/>
@@ -1856,7 +1856,7 @@
     <!--  Table defaults                                                     -->
     <!-- =================================================================== -->
 
-    <style name="default" type="org.openvpms.web.component.table.KeyTable">
+    <style name="default" type="org.openvpms.web.echo.table.KeyTable">
         <properties>
             <property name="border">
                 <border size="2px" style="groove" color="#cfdfff"/>
@@ -1892,7 +1892,7 @@
         </properties>
     </style>
 
-    <style name="plain" type="org.openvpms.web.component.table.KeyTable"
+    <style name="plain" type="org.openvpms.web.echo.table.KeyTable"
            base-name="default">
         <properties>
             <property name="border">
@@ -1902,7 +1902,7 @@
     </style>
 
     <!-- table that displays like a list. -->
-    <style name="list" type="org.openvpms.web.component.table.KeyTable"
+    <style name="list" type="org.openvpms.web.echo.table.KeyTable"
            base-name="plain">
         <properties>
             <property name="background" value="#ffff99"/>

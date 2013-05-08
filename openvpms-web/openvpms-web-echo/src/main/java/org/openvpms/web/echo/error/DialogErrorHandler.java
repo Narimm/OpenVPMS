@@ -16,14 +16,14 @@
  *  $Id: $
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.error;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.error.ErrorReportingDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.error.ErrorReportingDialog;
 
 
 /**

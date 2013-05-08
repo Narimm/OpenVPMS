@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.macro.Variables;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;

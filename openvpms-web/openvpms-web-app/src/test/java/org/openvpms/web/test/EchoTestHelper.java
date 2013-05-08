@@ -21,7 +21,7 @@ package org.openvpms.web.test;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

@@ -27,7 +27,7 @@ import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableCellRenderer;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
-import org.openvpms.web.component.table.TableHelper;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.component.util.DateHelper;
 
 import java.util.Date;

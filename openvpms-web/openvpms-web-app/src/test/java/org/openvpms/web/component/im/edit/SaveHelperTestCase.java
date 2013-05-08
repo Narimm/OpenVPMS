@@ -22,10 +22,10 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.ErrorHandler;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.test.AbstractAppTest;
 

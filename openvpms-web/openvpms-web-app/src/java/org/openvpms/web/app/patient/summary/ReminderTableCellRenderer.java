@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.table.IMTable;
-import org.openvpms.web.component.table.AbstractTableCellRenderer;
+import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 import org.openvpms.web.system.ServiceHelper;
 
 

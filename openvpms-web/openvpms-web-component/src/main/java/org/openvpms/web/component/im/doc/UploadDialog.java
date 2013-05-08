@@ -19,8 +19,8 @@ package org.openvpms.web.component.im.doc;
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
-import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.TooManyListenersException;

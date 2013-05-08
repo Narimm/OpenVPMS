@@ -17,7 +17,7 @@
 package org.openvpms.web.component.workflow;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**

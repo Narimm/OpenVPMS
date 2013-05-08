@@ -24,8 +24,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.dialog.PopupDialogListener;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.echo.i18n.Messages;
 

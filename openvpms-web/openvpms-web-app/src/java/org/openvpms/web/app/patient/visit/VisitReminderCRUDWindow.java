@@ -19,7 +19,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.mr.ReminderCRUDWindow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 
 /**
  * Visit reminder/alert CRUD window.

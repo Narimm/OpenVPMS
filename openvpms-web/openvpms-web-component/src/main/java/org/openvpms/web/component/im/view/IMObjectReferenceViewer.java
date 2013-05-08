@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
-import org.openvpms.web.component.event.ActionListener;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
