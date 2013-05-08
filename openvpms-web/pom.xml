@@ -52,6 +52,7 @@
         <module>openvpms-macro</module>
         <module>openvpms-web-component</module>
         <module>openvpms-web-app</module>
+        <module>openvpms-web-echo</module>
     </modules>
 
 </project>
