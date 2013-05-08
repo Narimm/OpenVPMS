@@ -197,7 +197,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-web-components</artifactId>
+            <artifactId>openvpms-web-component</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
