@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.dialog;
+package org.openvpms.web.echo.dialog;
 
 import org.openvpms.web.echo.i18n.Messages;
 

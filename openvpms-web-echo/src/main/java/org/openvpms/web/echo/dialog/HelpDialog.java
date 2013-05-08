@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.dialog;
+package org.openvpms.web.echo.dialog;
 
 import echopointng.LabelEx;
 import echopointng.xhtml.XhtmlFragment;
