@@ -11,5 +11,8 @@
 
     <artifactId>openvpms-web-echo</artifactId>
 
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+    </build>
 
 </project>
