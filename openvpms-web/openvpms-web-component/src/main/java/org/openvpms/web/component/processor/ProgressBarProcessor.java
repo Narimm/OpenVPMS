@@ -24,7 +24,7 @@ import nextapp.echo2.app.TaskQueueHandle;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.util.Vetoable;
+import org.openvpms.web.echo.event.Vetoable;
 
 import java.util.Collection;
 

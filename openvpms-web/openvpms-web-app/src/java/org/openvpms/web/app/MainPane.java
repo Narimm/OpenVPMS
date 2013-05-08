@@ -52,11 +52,6 @@ import org.openvpms.web.app.workflow.messaging.MessageMonitor;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.HelpDialog;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -65,10 +60,15 @@ import org.openvpms.web.component.subsystem.Refreshable;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.component.util.ButtonColumn;
-import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.ContentPaneFactory;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.HelpDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
@@ -254,7 +254,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
 
         menu.addButton("help", new ActionListener() {
             public void onAction(ActionEvent event) {
-                new HelpDialog(MainPane.this.context).show();
+                new HelpDialog().show();
             }
         });
         menu.add(getManagementRow());

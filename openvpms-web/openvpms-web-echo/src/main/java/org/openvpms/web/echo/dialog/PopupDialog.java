@@ -18,12 +18,12 @@ package org.openvpms.web.echo.dialog;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.VetoListener;
+import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.VetoListener;
-import org.openvpms.web.component.util.Vetoable;
 
 
 /**
@@ -118,7 +118,7 @@ public abstract class PopupDialog extends PopupWindow {
      * buttons.
      */
     public static final String[] APPLY_OK_CANCEL
-        = {APPLY_ID, OK_ID, CANCEL_ID};
+            = {APPLY_ID, OK_ID, CANCEL_ID};
 
     /**
      * Helper to craete a button row containing the RETRY and CANCEL buttons.
@@ -311,7 +311,7 @@ public abstract class PopupDialog extends PopupWindow {
                 close();
             }
         } catch (Throwable exception) {
-            ErrorHelper.show(exception);
+            ErrorHandler.getInstance().error(exception);
         }
     }
 

@@ -21,13 +21,13 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.event.WindowPaneListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.VetoListener;
+import org.openvpms.web.echo.event.VetoListener;
+import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
