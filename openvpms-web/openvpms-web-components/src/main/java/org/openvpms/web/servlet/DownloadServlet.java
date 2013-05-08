@@ -12,12 +12,11 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.servlet;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Command;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import org.apache.commons.io.IOUtils;
@@ -34,7 +33,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
-import org.openvpms.web.app.OpenVPMSApp;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -52,8 +50,7 @@ import java.util.Set;
 /**
  * Download servlet. Downloads {@link Document}s to clients.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DownloadServlet extends HttpServlet {
 
@@ -61,7 +58,7 @@ public class DownloadServlet extends HttpServlet {
      * The set of temporary documents. These are deleted after being served.
      */
     private static Set<IMObjectReference> tempDocs
-        = Collections.synchronizedSet(new HashSet<IMObjectReference>());
+            = Collections.synchronizedSet(new HashSet<IMObjectReference>());
 
     /**
      * The document handlers.
@@ -83,21 +80,21 @@ public class DownloadServlet extends HttpServlet {
         if (isNew) {
             // need to save the document in order for it to be served.
             IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+                    = ArchetypeServiceHelper.getArchetypeService();
             service.save(document);
             tempDocs.add(document.getObjectReference());
         }
         String qname = document.getArchetypeId().getQualifiedName();
-        StringBuffer uri = new StringBuffer();
+        StringBuilder uri = new StringBuilder();
         uri.append(ServletHelper.getRedirectURI("download"));
         uri.append("?qname=");
         uri.append(qname);
         uri.append("&id=");
         uri.append(document.getId());
         Command command = new BrowserOpenWindowCommand(
-            uri.toString(), null,
-            "width=800,height=600,menubar=yes,toolbar=yes,location=yes,resizable=yes,scrollbars=yes");
-        OpenVPMSApp.getInstance().enqueueCommand(command);
+                uri.toString(), null,
+                "width=800,height=600,menubar=yes,toolbar=yes,location=yes,resizable=yes,scrollbars=yes");
+        ApplicationInstance.getActive().enqueueCommand(command);
     }
 
     /**
@@ -109,8 +106,8 @@ public class DownloadServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         ApplicationContext context
-            = WebApplicationContextUtils.getRequiredWebApplicationContext(
-            getServletContext());
+                = WebApplicationContextUtils.getRequiredWebApplicationContext(
+                getServletContext());
         handlers = (DocumentHandlers) context.getBean("documentHandlers");
     }
 
@@ -129,16 +126,16 @@ public class DownloadServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         IArchetypeService service
-            = ArchetypeServiceHelper.getArchetypeService();
+                = ArchetypeServiceHelper.getArchetypeService();
         String qname = request.getParameter("qname");
         String id = request.getParameter("id");
         if (StringUtils.isEmpty(qname) || StringUtils.isEmpty(id)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         } else {
             IMObjectReference ref = new IMObjectReference(
-                new ArchetypeId(qname), Integer.valueOf(id));
+                    new ArchetypeId(qname), Integer.valueOf(id));
             IMObject object = service.get(ref);
             if (!(object instanceof Document)) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -160,8 +157,8 @@ public class DownloadServlet extends HttpServlet {
                                IArchetypeService service) throws IOException {
         try {
             DocumentHandler handler = handlers.get(
-                doc.getName(), doc.getArchetypeId().getShortName(),
-                doc.getMimeType());
+                    doc.getName(), doc.getArchetypeId().getShortName(),
+                    doc.getMimeType());
             if (DocFormats.XML_TYPE.equals(doc.getMimeType())) {
                 response.setHeader("Content-Disposition", "attachment; filename=\"" + doc.getName() + "\"");
             } else {
@@ -184,7 +181,7 @@ public class DownloadServlet extends HttpServlet {
             }
         } catch (OpenVPMSException exception) {
             response.sendError(
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             log.error("Failed to serve document: name=" + doc.getName()
                       + ", shortName="
                       + doc.getArchetypeId().getShortName()

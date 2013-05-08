@@ -99,7 +99,7 @@ public class ServletHelper {
                 String name = (String) attributes.nextElement();
                 if (name.startsWith(instance)) {
                     if (session.getAttribute(name)
-                        instanceof ContainerInstance) {
+                            instanceof ContainerInstance) {
                         ++count;
                     }
                 }
@@ -121,11 +121,11 @@ public class ServletHelper {
      * caller is an echo2 client. The <tt>HttpServletResponse.sendRedirect()</tt>
      * method doesn't work as XmlHttpRequest automatically follows redirections.
      *
-     * @param response
+     * @param response the response
      * @throws IOException
      */
     public static void forceExpiry(HttpServletResponse response) throws
-        IOException {
+                                                                 IOException {
         response.setContentType(ContentType.TEXT_HTML.getMimeType());
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         response.getWriter().write("Session Expired");
