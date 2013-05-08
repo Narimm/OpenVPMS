@@ -17,10 +17,6 @@
         <echo-filetransfer.version>2.1.0</echo-filetransfer.version>
     </properties>
 
-    <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
-    </build>
-
     <dependencies>
         <dependency>
             <!-- NOTE: this dependency only required by HelpContext TODO -->

@@ -28,7 +28,6 @@
     <artifactId>openvpms-web-component</artifactId>
 
     <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>${basedir}/src/main/java</directory>
