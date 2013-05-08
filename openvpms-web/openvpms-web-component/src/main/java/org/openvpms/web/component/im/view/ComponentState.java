@@ -22,7 +22,7 @@ import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 
 /**

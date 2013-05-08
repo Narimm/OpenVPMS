@@ -48,10 +48,10 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;

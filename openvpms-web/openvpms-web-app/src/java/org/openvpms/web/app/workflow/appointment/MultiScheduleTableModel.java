@@ -28,7 +28,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.List;

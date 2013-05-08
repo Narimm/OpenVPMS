@@ -16,14 +16,15 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import echopointng.LabelEx;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.CellLayoutData;
-import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.text.NumberFormatter;
+import org.openvpms.web.echo.text.TextHelper;
 
 import java.math.BigDecimal;
 
@@ -32,8 +33,7 @@ import java.math.BigDecimal;
  * Factory for {@link Label}s. Labels returned by this factory filter
  * invalid characters, using {@link TextHelper}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public final class LabelFactory extends ComponentFactory {
 

@@ -28,7 +28,7 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 
 /**

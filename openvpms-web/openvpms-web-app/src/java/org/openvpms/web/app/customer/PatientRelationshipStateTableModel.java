@@ -24,8 +24,8 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipState;
 import org.openvpms.web.component.im.relationship.RelationshipStateTableModel;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 
 
 /**

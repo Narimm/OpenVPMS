@@ -30,7 +30,7 @@ import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.subsystem.DefaultCRUDWindow;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 
 /**

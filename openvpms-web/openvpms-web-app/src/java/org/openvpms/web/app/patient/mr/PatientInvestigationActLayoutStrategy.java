@@ -45,9 +45,9 @@ import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 
 import java.util.List;
 

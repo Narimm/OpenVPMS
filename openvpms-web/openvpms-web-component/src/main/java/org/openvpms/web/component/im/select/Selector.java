@@ -28,8 +28,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.i18n.Messages;
 

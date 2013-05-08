@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 
 import java.util.List;
 

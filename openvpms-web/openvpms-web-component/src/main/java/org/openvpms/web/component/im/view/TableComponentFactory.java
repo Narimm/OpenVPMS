@@ -30,8 +30,8 @@ import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.layout.TableLayoutStrategyFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.component.util.NumericPropertyFormatter;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
 
 import java.math.BigDecimal;
@@ -132,7 +132,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
             value = (Number) tmp;
         }
         if (value != null) {
-            return NumberFormatter.format(value, property, false);
+            return NumericPropertyFormatter.format(value, property, false);
         }
         return null;
     }

@@ -14,13 +14,14 @@
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.echo.error;
+package org.openvpms.web.component.error;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.error.ErrorReportingDialog;
 
 

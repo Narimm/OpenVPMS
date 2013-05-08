@@ -27,7 +27,7 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.TableCellRenderer;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 
 /**

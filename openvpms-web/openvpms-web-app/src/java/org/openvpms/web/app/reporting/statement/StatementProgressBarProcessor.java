@@ -24,8 +24,8 @@ import org.openvpms.archetype.component.processor.Processor;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.component.processor.RetryListener;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.List;

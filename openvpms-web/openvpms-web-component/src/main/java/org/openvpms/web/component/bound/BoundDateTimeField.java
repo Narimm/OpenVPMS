@@ -30,7 +30,7 @@ import org.openvpms.web.component.property.DefaultPropertyTransformer;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
 import java.util.Calendar;

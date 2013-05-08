@@ -38,8 +38,8 @@ import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 

@@ -27,8 +27,8 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 
 /**

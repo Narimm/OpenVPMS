@@ -38,10 +38,10 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 
 import java.util.Calendar;
 import java.util.Date;

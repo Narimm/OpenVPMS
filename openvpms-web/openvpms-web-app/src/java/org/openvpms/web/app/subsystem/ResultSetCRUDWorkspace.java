@@ -22,9 +22,9 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.CRUDWindow;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.DoubleClickMonitor;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 
 /**

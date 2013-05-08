@@ -33,9 +33,9 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.select.AbstractIMObjectSelectorListener;
 import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 

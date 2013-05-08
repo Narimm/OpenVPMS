@@ -27,10 +27,10 @@ import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.List;

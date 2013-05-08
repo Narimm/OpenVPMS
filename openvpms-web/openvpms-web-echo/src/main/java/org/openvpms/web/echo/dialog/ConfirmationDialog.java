@@ -17,7 +17,7 @@
 package org.openvpms.web.echo.dialog;
 
 
-import org.openvpms.web.component.help.HelpContext;
+import org.openvpms.web.echo.help.HelpContext;
 
 /**
  * A modal dialog that prompts the user to select an OK or Cancel button.

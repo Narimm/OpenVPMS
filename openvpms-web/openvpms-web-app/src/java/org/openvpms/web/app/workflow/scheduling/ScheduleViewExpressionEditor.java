@@ -30,12 +30,12 @@ import org.openvpms.web.component.property.DefaultPropertyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyComponentFactory;
 import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.TextHelper;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.text.TextHelper;
 
 import java.util.ArrayList;
 import java.util.Date;

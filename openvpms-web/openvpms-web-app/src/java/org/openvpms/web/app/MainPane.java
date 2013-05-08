@@ -67,9 +67,9 @@ import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.component.util.ButtonColumn;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.ContentPaneFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 import java.beans.PropertyChangeEvent;

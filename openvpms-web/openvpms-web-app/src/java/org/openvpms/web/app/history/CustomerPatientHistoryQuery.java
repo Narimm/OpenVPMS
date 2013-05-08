@@ -40,8 +40,8 @@ import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.IMObjectSorter;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.system.ServiceHelper;
 

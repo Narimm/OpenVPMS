@@ -12,18 +12,13 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
-
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.text;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.i18n.Messages;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -31,76 +26,36 @@ import java.util.Locale;
 
 
 /**
- * Helper to format numbers.
+ * Helper to format numbers for viewing and editing.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class NumberFormatter {
 
     /**
      * Decimal edit pattern key.
      */
-    private static final String DECIMAL_EDIT = "decimal.format.edit";
+    public static final String DECIMAL_EDIT = "decimal.format.edit";
 
     /**
      * Decimal view pattern key.
      */
-    private static final String DECIMAL_VIEW = "decimal.format.view";
+    public static final String DECIMAL_VIEW = "decimal.format.view";
 
     /**
      * Integer edit pattern key.
      */
-    private static final String INTEGER_EDIT = "integer.format.edit";
+    public static final String INTEGER_EDIT = "integer.format.edit";
 
     /**
      * Integer view pattern key.
      */
-    private static final String INTEGER_VIEW = "integer.format.view";
+    public static final String INTEGER_VIEW = "integer.format.view";
 
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(NumberFormatter.class);
-
-
-    /**
-     * Format a number according to its node descriptor.
-     *
-     * @param value    the number to format
-     * @param property the property
-     * @param edit     if <tt>true</tt> format the number for editing
-     * @return the formatted number
-     */
-    public static String format(Number value, Property property, boolean edit) {
-        NumberFormat format = getFormat(property, edit);
-        return format(value, format);
-    }
-
-    /**
-     * Returns the format for a numeric property.
-     *
-     * @param property the property
-     * @param edit     if <tt>true</tt> format the number for editing
-     * @return a format for the property
-     */
-    public static NumberFormat getFormat(Property property, boolean edit) {
-        NumberFormat format;
-        if (property.isMoney()) {
-            if (edit) {
-                format = getFormat(DECIMAL_EDIT);
-            } else {
-                format = getCurrencyFormat();
-            }
-        } else if (property.getType().isAssignableFrom(Float.class)
-                   || property.getType().isAssignableFrom(Double.class)
-                   || property.getType().isAssignableFrom(BigDecimal.class)) {
-            format = (edit) ? getFormat(DECIMAL_EDIT) : getFormat(DECIMAL_VIEW);
-        } else {
-            format = (edit) ? getFormat(INTEGER_EDIT) : getFormat(INTEGER_VIEW);
-        }
-        return format;
-    }
+    public static final Log log = LogFactory.getLog(NumberFormatter.class);
 
     /**
      * Format a number.
@@ -162,7 +117,7 @@ public class NumberFormatter {
      * @param key the key
      * @return the corresponding locale
      */
-    private static NumberFormat getFormat(String key) {
+    public static NumberFormat getFormat(String key) {
         Locale locale = Messages.getLocale();
         String pattern = Messages.get(key);
         try {
@@ -180,10 +135,9 @@ public class NumberFormatter {
      *
      * @return the currency format
      */
-    private static NumberFormat getCurrencyFormat() {
+    public static NumberFormat getCurrencyFormat() {
         // TODO - should use the configured currency's format, rather than the default Locale's.
         // Doesn't appear to be a simple way of going from Currency -> NumberFormat
         return NumberFormat.getCurrencyInstance();
     }
-
 }

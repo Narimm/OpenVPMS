@@ -72,8 +72,8 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;

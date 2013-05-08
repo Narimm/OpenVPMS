@@ -21,8 +21,8 @@ package org.openvpms.web.component.subsystem;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.web.echo.button.ShortcutHelper;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 

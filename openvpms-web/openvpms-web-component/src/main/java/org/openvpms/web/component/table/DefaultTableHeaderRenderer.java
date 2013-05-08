@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.table.TableCellRenderer;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 
 /**

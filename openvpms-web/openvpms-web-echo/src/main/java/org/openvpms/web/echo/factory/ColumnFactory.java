@@ -12,22 +12,18 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**
  * Factory for {@link Column}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public final class ColumnFactory extends ComponentFactory {
 

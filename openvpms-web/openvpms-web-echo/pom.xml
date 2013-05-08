@@ -23,6 +23,31 @@
 
     <dependencies>
         <dependency>
+            <!-- NOTE: this dependency only required by HelpContext TODO -->
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-framework</artifactId>
+            <exclusions>
+                <exclusion>
+                    <!-- only used by the deprecated ArchetypeDataLoader -->
+                    <groupId>jdom</groupId>
+                    <artifactId>jdom</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-webmvc</artifactId>
+                </exclusion>
+                <!-- stax only required by StaxArchetypeDataLoader -->
+                <exclusion>
+                    <groupId>stax</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>stax</groupId>
+                    <artifactId>stax</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-app</artifactId>
             <version>${echo.version}</version>

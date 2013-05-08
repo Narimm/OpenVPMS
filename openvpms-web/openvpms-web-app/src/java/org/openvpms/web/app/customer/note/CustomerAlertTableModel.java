@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.util.ColourHelper;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 import java.util.List;
 import java.util.Map;

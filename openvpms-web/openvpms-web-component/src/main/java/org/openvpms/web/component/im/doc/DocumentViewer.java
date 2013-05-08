@@ -33,7 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 

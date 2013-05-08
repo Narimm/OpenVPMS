@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.table;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.web.component.util.TextHelper;
+import org.openvpms.web.echo.text.TextHelper;
 import org.openvpms.web.echo.i18n.Messages;
 
 import java.util.ArrayList;

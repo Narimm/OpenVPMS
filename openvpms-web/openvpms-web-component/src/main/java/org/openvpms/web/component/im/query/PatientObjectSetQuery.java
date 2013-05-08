@@ -27,7 +27,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 
 /**

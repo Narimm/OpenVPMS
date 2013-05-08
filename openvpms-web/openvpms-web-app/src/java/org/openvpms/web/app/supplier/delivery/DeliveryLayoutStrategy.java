@@ -31,7 +31,7 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.TitledTextArea;
 
 import java.util.List;

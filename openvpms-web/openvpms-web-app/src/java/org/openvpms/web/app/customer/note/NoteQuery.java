@@ -35,7 +35,7 @@ import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 import java.util.ArrayList;
 import java.util.List;

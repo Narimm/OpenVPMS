@@ -36,7 +36,7 @@ import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.echo.i18n.Messages;

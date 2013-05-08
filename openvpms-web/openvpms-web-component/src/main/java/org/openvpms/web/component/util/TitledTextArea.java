@@ -22,6 +22,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextArea;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
 
 

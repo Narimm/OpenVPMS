@@ -18,10 +18,10 @@ package org.openvpms.web.echo.dialog;
 
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusCommand;
-import org.openvpms.web.component.help.HelpContext;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**

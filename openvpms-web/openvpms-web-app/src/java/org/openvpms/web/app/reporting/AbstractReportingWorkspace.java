@@ -25,7 +25,7 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ButtonRow;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 
 /**

@@ -20,10 +20,10 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.act.ActHelper;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.text.NumberFormatter;
 
 import java.math.BigDecimal;
 

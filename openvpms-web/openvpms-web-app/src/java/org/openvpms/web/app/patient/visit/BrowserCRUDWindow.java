@@ -27,7 +27,7 @@ import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.util.DoubleClickMonitor;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 
 /**

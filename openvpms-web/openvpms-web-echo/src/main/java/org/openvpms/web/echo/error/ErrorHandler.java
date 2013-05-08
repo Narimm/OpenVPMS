@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.echo.error;
@@ -24,15 +22,14 @@ import nextapp.echo2.app.event.WindowPaneListener;
 /**
  * Error handler.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public abstract class ErrorHandler {
 
     /**
      * The singleton instance.
      */
-    private static ErrorHandler instance = new DialogErrorHandler();
+    private static ErrorHandler instance;
 
     /**
      * Registers an instance to handle errors.
@@ -50,8 +47,12 @@ public abstract class ErrorHandler {
      * Returns the singleton instance.
      *
      * @return the singleton instance
+     * @throws IllegalStateException if no handler is register
      */
     public static ErrorHandler getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("ErrorHandler not registered");
+        }
         return instance;
     }
 
@@ -66,10 +67,10 @@ public abstract class ErrorHandler {
     /**
      * Handles an error.
      *
-     * @param title    the error title. May be <tt>null</tt>
+     * @param title    the error title. May be {@code null}
      * @param message  the error message
-     * @param cause    the cause. May be <tt>null</tt>
-     * @param listener the listener. May be <tt>null</tt>
+     * @param cause    the cause. May be {@code null}
+     * @param listener the listener. May be {@code null}
      */
     public abstract void error(String title, String message, Throwable cause, WindowPaneListener listener);
 

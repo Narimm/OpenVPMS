@@ -32,11 +32,11 @@ import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.i18n.Messages;
 
 import java.text.DateFormat;

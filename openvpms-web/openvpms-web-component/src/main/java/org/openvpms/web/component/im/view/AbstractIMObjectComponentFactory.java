@@ -22,7 +22,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.AbstractPropertyComponentFactory;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 
 
 /**

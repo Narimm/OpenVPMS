@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.subsystem.CRUDWindowListener;
-import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 import java.util.Date;
 
