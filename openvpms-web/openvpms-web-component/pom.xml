@@ -25,7 +25,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>openvpms-web-components</artifactId>
+    <artifactId>openvpms-web-component</artifactId>
 
     <properties>
         <echo.version>2.1.1</echo.version>
@@ -35,6 +35,26 @@
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/java</directory>
+                <includes>
+                    <include>**/*.gif</include>
+                    <include>**/*.png</include>
+                    <include>**/*.stylesheet</include>
+                    <include>**/*.js</include>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <includes>
+                    <include>*.properties</include>
+                </includes>
+                <directory>${basedir}/src/conf/version</directory>
+                <targetPath>META-INF/</targetPath>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
 
     <dependencies>
