@@ -14,7 +14,7 @@
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.dialog;
+package org.openvpms.web.echo.dialog;
 
 
 import org.openvpms.web.component.help.HelpContext;

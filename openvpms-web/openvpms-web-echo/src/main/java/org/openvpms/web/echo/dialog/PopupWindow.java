@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.dialog;
+package org.openvpms.web.echo.dialog;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
