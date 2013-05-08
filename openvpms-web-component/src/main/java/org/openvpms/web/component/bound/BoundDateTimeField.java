@@ -24,7 +24,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.property.DateTimePropertyTransformer;
 import org.openvpms.web.component.property.DefaultPropertyTransformer;
 import org.openvpms.web.component.property.Property;

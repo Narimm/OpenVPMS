@@ -21,7 +21,7 @@ package org.openvpms.web.component.im.lookup;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ComponentFactory;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 import java.util.List;
 

@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ModifiableListener;

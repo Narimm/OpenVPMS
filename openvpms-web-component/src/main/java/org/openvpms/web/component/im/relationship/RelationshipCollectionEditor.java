@@ -24,7 +24,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;

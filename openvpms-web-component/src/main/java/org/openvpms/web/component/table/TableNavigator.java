@@ -30,7 +30,7 @@ import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.DefaultListSelectionModel;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 

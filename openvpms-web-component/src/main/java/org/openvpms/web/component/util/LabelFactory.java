@@ -23,6 +23,7 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.CellLayoutData;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 import java.math.BigDecimal;
 

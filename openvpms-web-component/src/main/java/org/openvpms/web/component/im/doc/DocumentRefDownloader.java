@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 
 
 /**

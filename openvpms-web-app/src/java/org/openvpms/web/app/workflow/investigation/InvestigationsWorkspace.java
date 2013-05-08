@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.reporting.AbstractReportingWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;

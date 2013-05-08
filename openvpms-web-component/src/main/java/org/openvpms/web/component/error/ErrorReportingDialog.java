@@ -28,7 +28,7 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;

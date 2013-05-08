@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.Iterator;
 

@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.bound.BoundCheckBox;
-import org.openvpms.web.component.util.ComponentFactory;
+import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 

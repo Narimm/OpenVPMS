@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.app.subsystem.ResultSetCRUDWindow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
@@ -38,7 +38,7 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 

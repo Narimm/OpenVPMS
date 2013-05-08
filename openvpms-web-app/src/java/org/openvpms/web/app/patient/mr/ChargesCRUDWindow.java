@@ -19,7 +19,7 @@ package org.openvpms.web.app.patient.mr;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.util.Archetypes;

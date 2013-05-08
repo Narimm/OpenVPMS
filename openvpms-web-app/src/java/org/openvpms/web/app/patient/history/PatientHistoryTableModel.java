@@ -54,7 +54,7 @@ import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ComponentFactory;
+import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;

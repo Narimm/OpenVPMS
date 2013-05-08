@@ -47,7 +47,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;

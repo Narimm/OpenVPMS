@@ -54,7 +54,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.echo.DropDown;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;

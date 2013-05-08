@@ -33,7 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;

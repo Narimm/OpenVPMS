@@ -30,7 +30,7 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.InformationDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ButtonRow;

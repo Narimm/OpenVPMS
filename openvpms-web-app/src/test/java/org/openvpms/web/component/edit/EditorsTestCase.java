@@ -20,7 +20,7 @@ package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
 import org.junit.Test;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;

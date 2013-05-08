@@ -18,7 +18,7 @@ package org.openvpms.web.app.patient.visit;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;

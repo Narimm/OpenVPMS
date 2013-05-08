@@ -31,7 +31,7 @@ import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;

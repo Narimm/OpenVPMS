@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -36,7 +36,7 @@ import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.RowFactory;

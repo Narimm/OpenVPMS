@@ -23,9 +23,9 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.component.button.ButtonSet;
-import org.openvpms.web.component.button.KeyStrokeHandler;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.button.KeyStrokeHandler;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 
 /**

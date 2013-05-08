@@ -33,7 +33,7 @@ import org.openvpms.subscription.core.Subscription;
 import org.openvpms.subscription.core.SubscriptionFactory;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.GridFactory;

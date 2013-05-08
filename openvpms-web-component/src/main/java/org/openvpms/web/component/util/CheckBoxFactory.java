@@ -19,6 +19,7 @@
 package org.openvpms.web.component.util;
 
 import nextapp.echo2.app.CheckBox;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**

@@ -20,11 +20,11 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.dialog.PopupDialogListener;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusCommand;
+import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.component.help.HelpContext;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
@@ -34,7 +34,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.ViewResultSetDialog;
 import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
 

@@ -37,7 +37,7 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.component.subsystem.CRUDWindowListener;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;

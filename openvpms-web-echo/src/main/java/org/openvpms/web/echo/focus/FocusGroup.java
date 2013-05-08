@@ -16,7 +16,7 @@
  *  $Id: FocusGroup.java 757 2006-04-13 02:02:07Z tanderson $
  */
 
-package org.openvpms.web.component.focus;
+package org.openvpms.web.echo.focus;
 
 import echopointng.DateField;
 import nextapp.echo2.app.Component;

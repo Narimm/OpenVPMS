@@ -26,7 +26,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.web.component.event.ActionListener;
-import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.ComponentHelper;
 import org.openvpms.web.component.util.DateFieldFactory;

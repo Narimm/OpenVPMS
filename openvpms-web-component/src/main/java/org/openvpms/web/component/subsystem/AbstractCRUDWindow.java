@@ -26,7 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.button.ButtonSet;
+import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.event.WindowPaneListener;
@@ -50,7 +50,7 @@ import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;

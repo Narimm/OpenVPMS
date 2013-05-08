@@ -23,6 +23,7 @@ import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
 import org.openvpms.web.component.bound.BoundSelectField;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 import java.util.List;
 

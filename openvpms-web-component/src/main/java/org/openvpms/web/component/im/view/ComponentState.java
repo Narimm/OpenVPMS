@@ -19,8 +19,8 @@ package org.openvpms.web.component.im.view;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.web.component.edit.PropertyEditor;
-import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.focus.FocusHelper;
+import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.LabelFactory;
 

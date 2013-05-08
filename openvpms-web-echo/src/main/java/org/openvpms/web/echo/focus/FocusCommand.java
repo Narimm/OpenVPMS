@@ -15,7 +15,7 @@
  *
  *  $Id$
  */
-package org.openvpms.web.component.focus;
+package org.openvpms.web.echo.focus;
 
 import nextapp.echo2.app.Component;
 
