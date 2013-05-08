@@ -14,7 +14,7 @@
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.component.im.patient;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;

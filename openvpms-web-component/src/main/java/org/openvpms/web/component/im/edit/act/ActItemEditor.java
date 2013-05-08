@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;

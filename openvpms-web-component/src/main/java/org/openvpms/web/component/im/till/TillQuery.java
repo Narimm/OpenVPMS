@@ -14,7 +14,7 @@
  *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.app.reporting.till;
+package org.openvpms.web.component.im.till;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.SortConstraint;

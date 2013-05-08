@@ -15,13 +15,14 @@
  *
  *  $Id$
  */
-package org.openvpms.web.component.im.edit.act;
+package org.openvpms.web.component.im.patient;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 

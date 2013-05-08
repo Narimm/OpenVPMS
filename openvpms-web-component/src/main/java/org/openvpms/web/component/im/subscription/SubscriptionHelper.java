@@ -14,7 +14,7 @@
  *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.app.admin.organisation;
+package org.openvpms.web.component.im.subscription;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

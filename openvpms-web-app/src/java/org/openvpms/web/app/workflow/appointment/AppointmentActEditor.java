@@ -31,7 +31,7 @@ import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.workflow.scheduling.AbstractScheduleActEditor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.help.HelpContext;
-import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
+import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;

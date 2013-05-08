@@ -18,7 +18,7 @@ package org.openvpms.web.app.customer.info;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.customer.CustomerBrowser;
+import org.openvpms.web.component.im.customer.CustomerBrowser;
 import org.openvpms.web.app.customer.CustomerMailContext;
 import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.subsystem.BasicCRUDWorkspace;

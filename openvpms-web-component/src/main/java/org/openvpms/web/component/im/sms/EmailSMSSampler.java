@@ -16,7 +16,7 @@
  *  $Id: $
  */
 
-package org.openvpms.web.app.sms;
+package org.openvpms.web.component.im.sms;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
@@ -43,6 +43,7 @@ import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
 import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.event.ActionListener;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.im.sms.SMSEditor;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;

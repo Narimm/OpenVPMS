@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.im.edit.act.PatientActEditor;
+import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;

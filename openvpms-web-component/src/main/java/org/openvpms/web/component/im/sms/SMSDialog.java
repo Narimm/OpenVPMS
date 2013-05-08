@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.app.sms;
+package org.openvpms.web.component.im.sms;
 
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Column;

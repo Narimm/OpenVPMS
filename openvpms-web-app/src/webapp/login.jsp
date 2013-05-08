@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="org.openvpms.web.app.admin.organisation.SubscriptionHelper" %>
+<%@ page import="org.openvpms.web.component.im.subscription.SubscriptionHelper" %>
 <%@ page import="org.openvpms.web.component.button.ShortcutHelper" %>
 <%@ page import="org.openvpms.web.resource.util.Messages" %>
 <%@ page import="org.openvpms.web.system.Version" %>

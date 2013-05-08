@@ -14,7 +14,7 @@
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.component.im.customer;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ObjectSet;
