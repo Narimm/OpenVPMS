@@ -59,6 +59,13 @@ public abstract class ErrorHandler {
     /**
      * Handles an error.
      *
+     * @param cause the cause of the error
+     */
+    public abstract void error(Throwable cause);
+
+    /**
+     * Handles an error.
+     *
      * @param title    the error title. May be <tt>null</tt>
      * @param message  the error message
      * @param cause    the cause. May be <tt>null</tt>

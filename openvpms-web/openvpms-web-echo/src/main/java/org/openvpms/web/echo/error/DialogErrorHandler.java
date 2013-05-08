@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.echo.error;
@@ -34,8 +32,7 @@ import org.openvpms.web.echo.error.ErrorReportingDialog;
  * <p/>
  * This is to avoid popping up multiple dialogs relating to the same error.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class DialogErrorHandler extends ErrorHandler {
 
