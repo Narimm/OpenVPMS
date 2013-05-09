@@ -12,12 +12,11 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.query;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -40,8 +39,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests the {@link ResultSetIterator} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ResultSetIteratorTestCase extends AbstractResultSetTest {
 
@@ -110,9 +108,8 @@ public class ResultSetIteratorTestCase extends AbstractResultSetTest {
     /**
      * Sets up the test case.
      */
-    @Override
+    @Before
     public void setUp() {
-        super.setUp();
         customer = TestHelper.createCustomer(true);
     }
 }
