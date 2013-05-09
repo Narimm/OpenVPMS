@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.component.im.lookup;
 
@@ -29,8 +27,7 @@ import java.util.Arrays;
 /**
  * Tests the {@link BoundLookupField} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BoundLookupFieldTestCase extends AbstractBoundFieldTest<BoundLookupField, String> {
 
