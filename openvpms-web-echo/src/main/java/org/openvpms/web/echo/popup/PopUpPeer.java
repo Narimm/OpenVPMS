@@ -16,7 +16,7 @@
  *  $Id: $
  */
 
-package org.openvpms.web.component.echo;
+package org.openvpms.web.echo.popup;
 
 import nextapp.echo2.webrender.Service;
 import nextapp.echo2.webrender.WebRenderServlet;
