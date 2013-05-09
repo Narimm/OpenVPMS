@@ -12,25 +12,20 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import echopointng.DateField;
 import nextapp.echo2.app.Extent;
-import org.openvpms.web.component.bound.BoundDateField;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.date.DateFieldImpl;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 
 /**
- * Factory for <code>DateFields</code>.
+ * Factory for {@link DateField}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DateFieldFactory extends ComponentFactory {
 
@@ -44,22 +39,12 @@ public class DateFieldFactory extends ComponentFactory {
     }
 
     /**
-     * Creates a new bound date field with the default style.
-     *
-     * @param property the property to bind
-     * @return a new bound date field
-     */
-    public static DateField create(Property property) {
-        return init(new BoundDateField(property));
-    }
-
-    /**
      * Initialises a date field.
      *
      * @param date the date field
      * @return the date field
      */
-    private static DateField init(DateField date) {
+    protected static DateField init(DateField date) {
         setDefaultStyle(date.getDateChooser());
         setDefaultStyle(date.getTextField());
         int length = DateFormatter.getLength(date.getDateFormat());

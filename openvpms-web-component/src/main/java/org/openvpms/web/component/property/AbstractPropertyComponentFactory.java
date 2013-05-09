@@ -22,9 +22,9 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.bound.BoundCheckBox;
-import org.openvpms.web.echo.factory.ComponentFactory;
-import org.openvpms.web.component.util.DateFieldFactory;
+import org.openvpms.web.component.bound.BoundDateFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**
@@ -140,7 +140,7 @@ public abstract class AbstractPropertyComponentFactory
      * @return a new component
      */
     protected Component createDate(Property property) {
-        return DateFieldFactory.create(property);
+        return BoundDateFieldFactory.create(property);
     }
 
     /**
