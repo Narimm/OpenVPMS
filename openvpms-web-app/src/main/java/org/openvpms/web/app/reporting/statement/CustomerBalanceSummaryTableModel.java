@@ -30,10 +30,10 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.text.NumberFormatter;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.util.DateHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;

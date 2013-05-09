@@ -24,19 +24,18 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.subscription.core.Subscription;
 import org.openvpms.subscription.core.SubscriptionFactory;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.util.DateHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,9 +60,9 @@ public class SubscriptionHelper {
      *
      * @return the subscription message
      */
-    public static String formatSubscription() {
+    public static String formatSubscription(IArchetypeService service) {
         String result = null;
-        Subscription subscription = getSubscription();
+        Subscription subscription = getSubscription(service);
         if (subscription != null) {
             String user = subscription.getOrganisationName();
             if (user == null) {
@@ -88,15 +87,16 @@ public class SubscriptionHelper {
     /**
      * Returns the current subscription.
      *
+     * @param service the archetype service
      * @return the subscription, or {@code null} if there is none
      */
-    public static Subscription getSubscription() {
+    public static Subscription getSubscription(IArchetypeService service) {
         Subscription result = null;
         try {
-            Party practice = new PracticeRules().getPractice();
+            Party practice = new PracticeRules(service).getPractice();
             if (practice != null) {
-                DocumentAct act = getSubscriptionAct(practice, context);
-                result = getSubscription(act, context);
+                DocumentAct act = getSubscriptionAct(practice, service);
+                result = getSubscription(act, service);
             }
         } catch (Throwable exception) {
             log.error(exception);
@@ -108,16 +108,16 @@ public class SubscriptionHelper {
      * Returns the subscription.
      *
      * @param act     the <em>act.subscription</em>
-     * @param context the context
+     * @param service the archetype service
      * @return the subscription, or {@code null} if there is none
-     * @throws IOException
-     * @throws GeneralSecurityException
+     * @throws IOException              for any I/O error
+     * @throws GeneralSecurityException for any security error
      */
-    public static Subscription getSubscription(DocumentAct act, Context context)
-        throws IOException, GeneralSecurityException {
+    public static Subscription getSubscription(DocumentAct act, IArchetypeService service)
+            throws IOException, GeneralSecurityException {
         Subscription result = null;
-        if (act != null) {
-            Document document = (Document) IMObjectHelper.getObject(act.getDocument(), context);
+        if (act != null && act.getDocument() != null) {
+            Document document = (Document) service.get(act.getDocument());
             if (document != null) {
                 DocumentHandler documentHandler = new DefaultDocumentHandler(DocumentArchetypes.DEFAULT_DOCUMENT);
                 InputStream content = documentHandler.getContent(document);
@@ -131,15 +131,15 @@ public class SubscriptionHelper {
      * Returns the subscription act associated with an  <em>party.organisationPractice</em>.
      *
      * @param practice the practice. A <em>party.organisationPractice</em>
-     * @param context  the context
+     * @param service  the archetype service
      * @return the subscription act, or {@code null} if none exists
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static DocumentAct getSubscriptionAct(Party practice, Context context) {
+    private static DocumentAct getSubscriptionAct(Party practice, IArchetypeService service) {
         DocumentAct result = null;
-        Participation participation = getSubscriptionParticipation(practice);
+        Participation participation = getSubscriptionParticipation(practice, service);
         if (participation != null) {
-            result = (DocumentAct) IMObjectHelper.getObject(participation.getAct(), context);
+            result = (DocumentAct) getObject(participation.getAct(), service);
         }
         return result;
     }
@@ -149,16 +149,28 @@ public class SubscriptionHelper {
      * if available.
      *
      * @param practice the practice. A <em>party.organisationPractice</em>
-     * @return the participation, or <code>null</code> if none exists
+     * @param service  the archetype service
+     * @return the participation, or {@code null} if none exists
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static Participation getSubscriptionParticipation(Party practice) {
+    private static Participation getSubscriptionParticipation(Party practice, IArchetypeService service) {
         ArchetypeQuery query = new ArchetypeQuery("participation.subscription", true, true);
         query.add(new ObjectRefNodeConstraint("entity", practice.getObjectReference()));
         query.setFirstResult(0);
         query.setMaxResults(1);
-        List<IMObject> rows = ArchetypeServiceHelper.getArchetypeService().get(query).getResults();
+        List<IMObject> rows = service.get(query).getResults();
         return (!rows.isEmpty()) ? (Participation) rows.get(0) : null;
+    }
+
+    /**
+     * Helper to return an object by reference.
+     *
+     * @param ref     the reference. May be {@code null}
+     * @param service the archetype service
+     * @return the corresponding object, or {@code null} if none is found
+     */
+    private static IMObject getObject(IMObjectReference ref, IArchetypeService service) {
+        return (ref != null) ? service.get(ref) : null;
     }
 
 }

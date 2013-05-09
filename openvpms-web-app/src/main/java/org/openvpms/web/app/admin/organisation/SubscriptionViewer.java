@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.subscription.core.Subscription;
 import org.openvpms.subscription.core.SubscriptionFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -40,6 +39,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.util.DateHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.io.InputStream;

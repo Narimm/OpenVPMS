@@ -54,13 +54,13 @@ import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.text.NumberFormatter;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.util.DateHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;

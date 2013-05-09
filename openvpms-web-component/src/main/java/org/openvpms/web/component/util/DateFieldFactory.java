@@ -23,6 +23,7 @@ import nextapp.echo2.app.Extent;
 import org.openvpms.web.component.bound.BoundDateField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.resource.util.DateHelper;
 
 
 /**

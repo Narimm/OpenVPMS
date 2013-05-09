@@ -14,9 +14,8 @@
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.resource.util;
 
-import nextapp.echo2.app.ApplicationInstance;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.web.resource.i18n.Messages;
@@ -128,7 +127,7 @@ public class DateHelper {
      */
     public static DateFormat getDateFormat(boolean edit) {
         DateFormat format;
-        Locale locale = getLocale();
+        Locale locale = Messages.getLocale();
         String pattern = (edit) ? DATE_EDIT_PATTERN : DATE_VIEW_PATTERN;
         if (pattern == null) {
             if (edit) {
@@ -153,7 +152,7 @@ public class DateHelper {
      * @return the full date format
      */
     public static DateFormat getFullDateFormat() {
-        Locale locale = getLocale();
+        Locale locale = Messages.getLocale();
         if (FULL_DATE_PATTERN != null) {
             return new SimpleDateFormat(FULL_DATE_PATTERN, locale);
         }
@@ -193,7 +192,7 @@ public class DateHelper {
      */
     public static DateFormat getTimeFormat(boolean edit) {
         DateFormat format;
-        Locale locale = getLocale();
+        Locale locale = Messages.getLocale();
         String pattern = (edit) ? TIME_EDIT_PATTERN : TIME_VIEW_PATTERN;
         if (pattern == null) {
             if (edit) {
@@ -216,7 +215,7 @@ public class DateHelper {
      * @return the corresponding time format
      */
     public static DateFormat getTimeFormat(int style) {
-        return DateFormat.getTimeInstance(style, getLocale());
+        return DateFormat.getTimeInstance(style, Messages.getLocale());
     }
 
     /**
@@ -227,7 +226,7 @@ public class DateHelper {
      */
     public static DateFormat getDateTimeFormat(boolean edit) {
         DateFormat format;
-        Locale locale = getLocale();
+        Locale locale = Messages.getLocale();
         if (edit) {
             // specify SHORT style for dates when parsing, so that 2 digit years
             // are handled correctly
@@ -390,16 +389,6 @@ public class DateHelper {
         calendar.set(Calendar.HOUR_OF_DAY, hours);
         calendar.set(Calendar.MINUTE, mins);
         return calendar.getTime();
-    }
-
-    /**
-     * Returns the current locale.
-     *
-     * @return the locale
-     */
-    private static Locale getLocale() {
-        ApplicationInstance instance = ApplicationInstance.getActive();
-        return (instance != null) ? instance.getLocale() : Locale.getDefault();
     }
 
     static {

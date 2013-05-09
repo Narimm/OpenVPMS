@@ -38,12 +38,12 @@ import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.util.DateHelper;
 
 
 /**

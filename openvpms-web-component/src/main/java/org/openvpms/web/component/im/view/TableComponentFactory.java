@@ -29,10 +29,10 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.layout.TableLayoutStrategyFactory;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.component.util.NumericPropertyFormatter;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.util.DateHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
