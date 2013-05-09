@@ -32,8 +32,8 @@ import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
-import org.openvpms.web.resource.util.DateHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;

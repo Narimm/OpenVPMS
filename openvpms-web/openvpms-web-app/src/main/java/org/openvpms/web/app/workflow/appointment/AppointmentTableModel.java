@@ -24,7 +24,7 @@ import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.util.Date;
 

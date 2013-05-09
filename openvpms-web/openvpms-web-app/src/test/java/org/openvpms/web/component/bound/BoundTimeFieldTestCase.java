@@ -22,7 +22,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.TimePropertyTransformer;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.util.Date;
 

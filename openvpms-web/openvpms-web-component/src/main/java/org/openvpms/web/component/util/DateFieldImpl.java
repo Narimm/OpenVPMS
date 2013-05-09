@@ -22,7 +22,7 @@ import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.text.DateFormat;
 import java.text.FieldPosition;

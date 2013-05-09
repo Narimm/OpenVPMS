@@ -35,8 +35,8 @@ import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
-import org.openvpms.web.resource.util.DateHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;

@@ -31,7 +31,7 @@ import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.util.TimeFieldFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.util.Calendar;
 import java.util.Date;
