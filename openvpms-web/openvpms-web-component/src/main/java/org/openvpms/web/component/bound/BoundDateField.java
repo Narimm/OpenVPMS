@@ -25,7 +25,7 @@ import org.openvpms.web.component.property.DatePropertyTransformer;
 import org.openvpms.web.component.property.DefaultPropertyTransformer;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyTransformer;
-import org.openvpms.web.component.util.DateFieldImpl;
+import org.openvpms.web.echo.date.DateFieldImpl;
 
 import java.util.Calendar;
 import java.util.Date;

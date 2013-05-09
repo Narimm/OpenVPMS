@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.date;
 
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;

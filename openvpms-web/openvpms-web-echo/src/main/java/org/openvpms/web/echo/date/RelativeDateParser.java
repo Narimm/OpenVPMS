@@ -12,11 +12,9 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.date;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -39,8 +37,7 @@ import java.util.regex.Pattern;
  * date</li>
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class RelativeDateParser {
 
