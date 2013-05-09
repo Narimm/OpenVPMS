@@ -29,7 +29,7 @@ public abstract class ErrorHandler {
     /**
      * The singleton instance.
      */
-    private static ErrorHandler instance;
+    private static ErrorHandler instance = LoggingErrorHandler.INSTANCE;
 
     /**
      * Registers an instance to handle errors.
@@ -47,12 +47,8 @@ public abstract class ErrorHandler {
      * Returns the singleton instance.
      *
      * @return the singleton instance
-     * @throws IllegalStateException if no handler is register
      */
     public static ErrorHandler getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("ErrorHandler not registered");
-        }
         return instance;
     }
 
