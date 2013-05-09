@@ -15,6 +15,7 @@
  */
 package org.openvpms.web.app.workflow.messaging;
 
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -69,7 +70,7 @@ public class MessageTableModel extends AbstractActTableModel {
         DateFormat format;
         Date startTime = act.getActivityStartTime();
         if (startTime != null) {
-            if (DateFormatter.compareDates(startTime, new Date()) == 0) {
+            if (DateRules.compareDates(startTime, new Date()) == 0) {
                 format = DateFormatter.getTimeFormat(DateFormat.SHORT);
             } else {
                 format = DateFormatter.getDateTimeFormat(false);

@@ -137,7 +137,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
         Date result = null;
         Calendar calendar = getDateField().getDateChooser().getSelectedDate();
         if (calendar != null) {
-            result = DateRules.getDayMonthYear(calendar.getTime());
+            result = DateRules.getDate(calendar.getTime());
         }
         return result;
     }

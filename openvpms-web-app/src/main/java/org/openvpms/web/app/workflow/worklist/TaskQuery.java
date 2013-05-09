@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -35,7 +36,6 @@ import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -122,7 +122,7 @@ public class TaskQuery extends ScheduleQuery {
      */
     protected void onDateChanged() {
         Date date = getDate();
-        Date today = DateFormatter.getDayMonthYear(new Date());
+        Date today = DateRules.getToday();
         statusRange.removeActionListener(statusRangeListener);
         if (date.equals(today)) {
             statusRange.setSelectedItem(StatusRange.INCOMPLETE);
@@ -176,7 +176,7 @@ public class TaskQuery extends ScheduleQuery {
         List<Entity> result = new ArrayList<Entity>();
         EntityBean bean = new EntityBean(view);
         List<EntityRelationship> relationships
-            = bean.getNodeRelationships("workLists");
+                = bean.getNodeRelationships("workLists");
         Collections.sort(relationships, new Comparator<EntityRelationship>() {
             public int compare(EntityRelationship o1, EntityRelationship o2) {
                 return o1.getSequence() - o2.getSequence();
@@ -246,7 +246,7 @@ public class TaskQuery extends ScheduleQuery {
      * Cell renderer for the status range combo.
      */
     private static class StatusRangeListCellRenderer
-        extends AbstractListCellRenderer<StatusRange> {
+            extends AbstractListCellRenderer<StatusRange> {
 
 
         /**

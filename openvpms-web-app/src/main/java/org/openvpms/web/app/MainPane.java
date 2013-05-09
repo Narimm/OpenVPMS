@@ -71,6 +71,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -254,7 +255,8 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
 
         menu.addButton("help", new ActionListener() {
             public void onAction(ActionEvent event) {
-                new HelpDialog().show();
+                HelpDialog dialog = new HelpDialog(ServiceHelper.getArchetypeService());
+                dialog.show();
             }
         });
         menu.add(getManagementRow());

@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -33,6 +34,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.subscription.SubscriptionHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -80,7 +82,8 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         if (subscription == null) {
-            Participation participation = SubscriptionHelper.getSubscriptionParticipation((Party) object);
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            Participation participation = SubscriptionHelper.getSubscriptionParticipation((Party) object, service);
             SubscriptionViewer viewer = new SubscriptionViewer(context);
             if (participation != null) {
                 DocumentAct act = (DocumentAct) context.getCache().get(participation.getAct());

@@ -153,7 +153,7 @@ public class SubscriptionHelper {
      * @return the participation, or {@code null} if none exists
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private static Participation getSubscriptionParticipation(Party practice, IArchetypeService service) {
+    public static Participation getSubscriptionParticipation(Party practice, IArchetypeService service) {
         ArchetypeQuery query = new ArchetypeQuery("participation.subscription", true, true);
         query.add(new ObjectRefNodeConstraint("entity", practice.getObjectReference()));
         query.setFirstResult(0);

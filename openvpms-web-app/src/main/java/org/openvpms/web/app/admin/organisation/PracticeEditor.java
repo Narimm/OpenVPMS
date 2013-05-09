@@ -21,12 +21,14 @@ package org.openvpms.web.app.admin.organisation;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.resource.subscription.SubscriptionHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Editor for <em>party.organisationPractice</em>.
@@ -52,7 +54,8 @@ public class PracticeEditor extends AbstractIMObjectEditor {
     public PracticeEditor(Party practice, IMObject parent, LayoutContext context) {
         super(practice, parent, context);
 
-        Participation participation = SubscriptionHelper.getSubscriptionParticipation(practice);
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        Participation participation = SubscriptionHelper.getSubscriptionParticipation(practice, service);
         if (participation == null) {
             participation = (Participation) IMObjectCreator.create("participation.subscription");
         }

@@ -38,12 +38,12 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.error.ErrorHandler;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -94,6 +94,11 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // register an ErrorHandler to collect errors
         ErrorHandler.setInstance(new ErrorHandler() {
+            @Override
+            public void error(Throwable cause) {
+                errors.add(cause.getMessage());
+            }
+
             public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
                 errors.add(message);
             }
