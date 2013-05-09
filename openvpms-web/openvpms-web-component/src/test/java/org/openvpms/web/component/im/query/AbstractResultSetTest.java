@@ -19,20 +19,19 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.test.AbstractAppTest;
 
 
 /**
  * Base class for {@link ResultSet} test cases.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class AbstractResultSetTest extends AbstractAppTest {
+public class AbstractResultSetTest extends ArchetypeServiceTest {
 
     /**
      * Helper to create a new <code>act.customerEstimation</code>, and save it.
