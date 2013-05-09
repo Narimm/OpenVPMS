@@ -18,9 +18,9 @@
 
 package org.openvpms.web.component.bound;
 
-import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.palette.Palette;
 
 import java.util.ArrayList;
 import java.util.List;
