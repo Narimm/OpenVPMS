@@ -28,18 +28,18 @@ import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.ArrayUtils;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.style.UserStyleSheets;
-import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.TableFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SelectFieldFactory;
+import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 import org.openvpms.web.resource.i18n.Messages;
@@ -300,7 +300,7 @@ public class StyleBrowser {
      * @return a new text field
      */
     private TextComponent createField(Property property) {
-        return TextComponentFactory.create(property, 4);
+        return BoundTextComponentFactory.create(property, 4);
     }
 
     private static class PropertyTableModel extends AbstractTableModel {

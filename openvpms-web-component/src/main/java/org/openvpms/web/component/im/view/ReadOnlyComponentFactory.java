@@ -23,6 +23,7 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
@@ -86,14 +87,13 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
     /**
      * Returns a component to display a date.
      *
-     * @param property
+     * @param property the property to bind the field to
      * @return a component to display the date
      */
     protected Component createDate(Property property) {
         DateFormat format = DateFormatter.getDateFormat(false);
         int maxColumns = DateFormatter.getLength(format);
-        TextField result = TextComponentFactory.create(property, maxColumns,
-                                                       format);
+        TextField result = BoundTextComponentFactory.create(property, maxColumns, format);
         ComponentFactory.setStyle(result, getStyle());
         return result;
     }

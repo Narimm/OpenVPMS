@@ -29,7 +29,7 @@ import org.openvpms.web.echo.factory.ComponentFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DateTimeFieldFactory extends ComponentFactory {
+public class BoundDateTimeFieldFactory extends ComponentFactory {
 
     /**
      * Creates a new bound date-time field with the default style.

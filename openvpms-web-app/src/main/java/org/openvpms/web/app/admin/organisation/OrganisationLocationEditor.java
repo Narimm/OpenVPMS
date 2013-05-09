@@ -21,6 +21,8 @@ package org.openvpms.web.app.admin.organisation;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.bound.BoundSelectFieldFactory;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -28,8 +30,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.print.PrintHelper;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 
 /**
  * Editor for <em>party.organisationLocation</em>
@@ -80,10 +80,10 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
             ComponentState result;
             if (property.getName().equals("mailPassword")) {
-                result = new ComponentState(TextComponentFactory.createPassword(property), property);
+                result = new ComponentState(BoundTextComponentFactory.createPassword(property), property);
             } else if (property.getName().equals("defaultPrinter")) {
                 DefaultListModel model = new DefaultListModel(PrintHelper.getPrinters());
-                SelectField field = SelectFieldFactory.create(property, model);
+                SelectField field = BoundSelectFieldFactory.create(property, model);
                 result = new ComponentState(field, property);
             } else {
                 result = super.createComponent(property, parent, context);

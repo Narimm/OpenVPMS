@@ -28,12 +28,12 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.IMObjectSorter;
-import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 

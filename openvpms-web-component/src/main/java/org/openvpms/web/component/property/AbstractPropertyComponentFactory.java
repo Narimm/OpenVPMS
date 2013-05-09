@@ -23,7 +23,7 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateFieldFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
 
 
@@ -108,12 +108,11 @@ public abstract class AbstractPropertyComponentFactory
         TextComponent result;
         if (property.getMaxLength() > 255) {
             if (property.getMaxLength() < 500)
-                result = TextComponentFactory.createTextArea(property, columns,
-                                                             5);
+                result = BoundTextComponentFactory.createTextArea(property, columns, 5);
             else
-                result = TextComponentFactory.createTextArea(property, 80, 15);
+                result = BoundTextComponentFactory.createTextArea(property, 80, 15);
         } else {
-            result = TextComponentFactory.create(property, columns);
+            result = BoundTextComponentFactory.create(property, columns);
         }
         ComponentFactory.setStyle(result, getStyle());
         return result;
@@ -127,8 +126,7 @@ public abstract class AbstractPropertyComponentFactory
      */
     protected Component createNumeric(Property property) {
         int maxColumns = 10;
-        TextField result = TextComponentFactory.createNumeric(property,
-                                                              maxColumns);
+        TextField result = BoundTextComponentFactory.createNumeric(property, maxColumns);
         ComponentFactory.setStyle(result, getStyle());
         return result;
     }

@@ -32,10 +32,10 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
-import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Collections;

@@ -40,10 +40,10 @@ import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.DateSelector;
 import org.openvpms.web.component.im.query.QueryListener;
-import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.ArrayList;

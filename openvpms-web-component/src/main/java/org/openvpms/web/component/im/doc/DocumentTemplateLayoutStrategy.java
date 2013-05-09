@@ -25,14 +25,14 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.component.bound.SpinBox;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.component.util.SpinBox;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.List;
 
