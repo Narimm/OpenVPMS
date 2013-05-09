@@ -18,6 +18,7 @@ package org.openvpms.web.component.property;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -27,10 +28,12 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.macro.Macros;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.macro.impl.LookupMacros;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -43,6 +46,12 @@ import static org.junit.Assert.fail;
  * @author Tim Anderson
  */
 public class StringPropertyTransformerTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    ILookupService lookups;
 
     /**
      * Tests {@link StringPropertyTransformer#apply}.
@@ -90,7 +99,7 @@ public class StringPropertyTransformerTestCase extends ArchetypeServiceTest {
         Party person = TestHelper.createCustomer();
         NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(person, "lastName");
         Property property = new IMObjectProperty(person, descriptor);
-        Macros macros = ServiceHelper.getMacros();
+        Macros macros = new LookupMacros(lookups, getArchetypeService(), new DocumentHandlers());
         StringPropertyTransformer handler = new StringPropertyTransformer(property, macros);
 
         Object text1 = handler.apply("macro1");
