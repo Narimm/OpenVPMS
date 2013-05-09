@@ -36,7 +36,7 @@ import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Collections;
 import java.util.List;

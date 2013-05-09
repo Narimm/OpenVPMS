@@ -25,9 +25,6 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.event.WindowPaneListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -37,10 +34,13 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.RepeatSelector;
 import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

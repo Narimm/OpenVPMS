@@ -20,7 +20,7 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.List;

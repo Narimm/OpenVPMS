@@ -26,7 +26,7 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 /**
  * Supplier/Stock Location selector.

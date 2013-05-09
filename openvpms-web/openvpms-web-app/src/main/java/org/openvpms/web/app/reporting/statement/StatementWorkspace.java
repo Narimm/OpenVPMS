@@ -44,7 +44,7 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Calendar;
 import java.util.Date;

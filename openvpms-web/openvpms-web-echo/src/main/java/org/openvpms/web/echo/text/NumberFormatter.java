@@ -17,7 +17,7 @@ package org.openvpms.web.echo.text;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

@@ -36,7 +36,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;

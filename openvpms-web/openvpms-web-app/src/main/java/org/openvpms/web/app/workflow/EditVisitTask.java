@@ -30,7 +30,7 @@ import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

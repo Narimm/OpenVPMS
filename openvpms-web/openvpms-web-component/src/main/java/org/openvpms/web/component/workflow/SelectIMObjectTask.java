@@ -18,9 +18,6 @@ package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
@@ -28,7 +25,10 @@ import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

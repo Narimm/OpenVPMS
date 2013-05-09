@@ -31,7 +31,7 @@ import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
 

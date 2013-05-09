@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.im.util.IMObjectCreator;
@@ -29,7 +28,8 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
 

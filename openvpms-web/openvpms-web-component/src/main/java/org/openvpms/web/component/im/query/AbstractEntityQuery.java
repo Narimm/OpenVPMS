@@ -27,10 +27,10 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.echo.focus.FocusHelper;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

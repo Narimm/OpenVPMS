@@ -39,7 +39,7 @@ import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

@@ -28,7 +28,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
 
 

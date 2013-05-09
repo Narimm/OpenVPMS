@@ -47,7 +47,7 @@ import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

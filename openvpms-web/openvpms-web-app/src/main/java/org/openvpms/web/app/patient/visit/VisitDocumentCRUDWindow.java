@@ -22,7 +22,7 @@ import org.openvpms.web.app.patient.mr.PatientDocumentQuery;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

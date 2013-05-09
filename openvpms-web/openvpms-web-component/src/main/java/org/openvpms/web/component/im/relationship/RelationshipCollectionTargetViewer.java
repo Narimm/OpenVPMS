@@ -24,12 +24,12 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectTableCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

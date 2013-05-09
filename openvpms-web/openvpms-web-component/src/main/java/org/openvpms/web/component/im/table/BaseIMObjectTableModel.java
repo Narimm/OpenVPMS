@@ -28,7 +28,7 @@ import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

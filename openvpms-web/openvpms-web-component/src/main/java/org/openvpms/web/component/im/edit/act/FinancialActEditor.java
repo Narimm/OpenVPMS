@@ -31,8 +31,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.echo.text.NumberFormatter;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;

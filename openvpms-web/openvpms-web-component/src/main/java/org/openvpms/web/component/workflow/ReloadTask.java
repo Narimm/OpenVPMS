@@ -25,7 +25,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.echo.dialog.ErrorDialog;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import static org.openvpms.web.component.app.ContextException.ErrorCode.NoObject;
 

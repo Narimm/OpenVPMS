@@ -14,9 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.echo.i18n;
-
-import nextapp.echo2.app.ApplicationInstance;
+package org.openvpms.web.resource.i18n;
 
 import java.text.MessageFormat;
 import java.util.Enumeration;
@@ -92,8 +90,7 @@ public final class Messages {
      * @return the current locale
      */
     public static Locale getLocale() {
-        ApplicationInstance active = ApplicationInstance.getActive();
-        return (active != null) ? active.getLocale() : Locale.getDefault();
+        return Locale.getDefault();
     }
 
     /**

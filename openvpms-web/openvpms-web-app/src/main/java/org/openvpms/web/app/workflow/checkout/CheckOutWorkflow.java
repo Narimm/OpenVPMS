@@ -46,7 +46,7 @@ import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Date;
 
