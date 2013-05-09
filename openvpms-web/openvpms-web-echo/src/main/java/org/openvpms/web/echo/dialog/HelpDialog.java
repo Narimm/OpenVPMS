@@ -46,7 +46,7 @@ import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.subscription.SubscriptionHelper;
-import org.openvpms.web.util.version.Version;
+import org.openvpms.web.resource.version.Version;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
