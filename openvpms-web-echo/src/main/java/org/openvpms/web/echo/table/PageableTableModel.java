@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.table;
+package org.openvpms.web.echo.table;
 
 import nextapp.echo2.app.table.TableModel;
 
