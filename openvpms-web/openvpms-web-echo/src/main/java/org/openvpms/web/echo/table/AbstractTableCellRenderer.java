@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.table;
+package org.openvpms.web.echo.table;
 
 import echopointng.LabelEx;
 import echopointng.xhtml.XhtmlFragment;
