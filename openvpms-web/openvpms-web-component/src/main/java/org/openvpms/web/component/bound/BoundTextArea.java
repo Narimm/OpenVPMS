@@ -21,7 +21,7 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.TextArea;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.StringPropertyTransformer;
-import org.openvpms.web.component.util.TextDocument;
+import org.openvpms.web.echo.text.TextDocument;
 
 
 /**

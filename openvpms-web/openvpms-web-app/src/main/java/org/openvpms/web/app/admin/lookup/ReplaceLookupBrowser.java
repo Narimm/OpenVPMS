@@ -26,10 +26,10 @@ import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.GridFactory;
+import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 

@@ -29,7 +29,7 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.util.ColourHelper;
+import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;

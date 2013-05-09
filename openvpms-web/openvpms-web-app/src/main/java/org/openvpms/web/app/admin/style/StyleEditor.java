@@ -24,9 +24,9 @@ import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.style.StylePropertyEvaluator;
 import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
 

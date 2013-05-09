@@ -19,7 +19,7 @@ package org.openvpms.web.component.bound;
 
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.util.ColourHelper;
+import org.openvpms.web.echo.colour.ColourHelper;
 
 
 /**

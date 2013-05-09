@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.util.ColourHelper;
+import org.openvpms.web.echo.colour.ColourHelper;
 
 
 /**

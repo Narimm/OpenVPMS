@@ -26,12 +26,12 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMTable;
-import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.factory.CheckBoxFactory;
+import org.openvpms.web.echo.help.HelpContext;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -22,7 +22,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.PasswordField;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.TextDocument;
+import org.openvpms.web.echo.text.TextDocument;
 
 
 /**

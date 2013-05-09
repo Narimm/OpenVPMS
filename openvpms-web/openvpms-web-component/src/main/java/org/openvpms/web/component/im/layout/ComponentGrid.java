@@ -22,7 +22,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 

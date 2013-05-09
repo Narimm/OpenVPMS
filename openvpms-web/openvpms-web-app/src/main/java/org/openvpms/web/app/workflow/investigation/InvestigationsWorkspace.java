@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 
 

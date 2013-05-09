@@ -22,8 +22,8 @@ import org.openvpms.macro.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.im.doc.ReportParameters;
 import org.openvpms.web.component.print.PrintDialog;
-import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.help.HelpContext;
 
 import java.util.Map;
