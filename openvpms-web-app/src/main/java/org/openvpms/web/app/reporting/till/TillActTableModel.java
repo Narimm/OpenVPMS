@@ -31,7 +31,7 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.util.Date;
 

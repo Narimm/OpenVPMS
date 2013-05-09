@@ -20,7 +20,7 @@ package org.openvpms.web.component.property;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.text.ParseException;
 import java.util.Date;

@@ -35,7 +35,7 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.subscription.core.Subscription;
 import org.openvpms.subscription.core.SubscriptionFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.io.IOException;
 import java.io.InputStream;

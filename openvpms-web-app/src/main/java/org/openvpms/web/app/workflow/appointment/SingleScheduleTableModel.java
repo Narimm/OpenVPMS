@@ -29,7 +29,7 @@ import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.util.Date;
 import java.util.List;

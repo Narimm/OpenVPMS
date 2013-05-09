@@ -23,7 +23,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.util.Calendar;
 import java.util.Date;

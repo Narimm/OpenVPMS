@@ -25,7 +25,7 @@ import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.resource.util.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
