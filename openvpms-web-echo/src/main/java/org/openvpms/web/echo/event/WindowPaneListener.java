@@ -12,13 +12,11 @@
  *  License.
  *
  *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.web.echo.event;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.error.ErrorHandler;
 
 
 /**
@@ -38,7 +36,7 @@ public abstract class WindowPaneListener implements nextapp.echo2.app.event.Wind
         try {
             onClose(event);
         } catch (Throwable exception) {
-            ErrorHelper.show(exception);
+            ErrorHandler.getInstance().error(exception);
         }
     }
 

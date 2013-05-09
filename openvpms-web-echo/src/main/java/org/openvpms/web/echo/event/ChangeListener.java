@@ -16,7 +16,7 @@
 package org.openvpms.web.echo.event;
 
 import nextapp.echo2.app.event.ChangeEvent;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.error.ErrorHandler;
 
 
 /**
@@ -37,7 +37,7 @@ public abstract class ChangeListener implements nextapp.echo2.app.event.ChangeLi
         try {
             onChange(e);
         } catch (Throwable exception) {
-            ErrorHelper.show(exception);
+            ErrorHandler.getInstance().error(exception);
         }
     }
 

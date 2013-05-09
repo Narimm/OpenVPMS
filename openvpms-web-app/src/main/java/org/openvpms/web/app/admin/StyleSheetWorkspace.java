@@ -28,7 +28,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
-import org.openvpms.web.component.util.ButtonRow;
+import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;

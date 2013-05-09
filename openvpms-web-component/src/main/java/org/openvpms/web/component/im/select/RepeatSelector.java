@@ -20,8 +20,8 @@ package org.openvpms.web.component.im.select;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.component.util.ButtonRow;
 
 
 /**
