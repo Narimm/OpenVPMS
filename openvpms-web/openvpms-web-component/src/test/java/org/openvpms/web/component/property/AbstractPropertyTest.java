@@ -12,17 +12,15 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.component.property;
 
 import org.junit.Test;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -36,10 +34,9 @@ import static org.junit.Assert.assertTrue;
 /**
  * Base class for {@link Property} tests.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
-public abstract class AbstractPropertyTest extends AbstractAppTest {
+public abstract class AbstractPropertyTest extends ArchetypeServiceTest {
 
     /**
      * Tests the {@link Property#isValid()}, {@link Property#validate} and {@link Property#resetValid()} methods.
