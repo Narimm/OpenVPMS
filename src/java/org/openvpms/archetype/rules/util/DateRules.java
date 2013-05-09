@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -207,4 +207,39 @@ public class DateRules {
         return (from == null || DateRules.compareTo(from, date) <= 0)
                && (to == null || DateRules.compareTo(to, date) >= 0);
     }
+
+    /**
+     * Adds a date and time.
+     *
+     * @param date the date part
+     * @param time the time to add
+     * @return the date+time
+     */
+    public static Date addDateTime(Date date, Date time) {
+        GregorianCalendar dateCal = new GregorianCalendar();
+        dateCal.setTime(date);
+        GregorianCalendar timeCal = new GregorianCalendar();
+        timeCal.setTime(time);
+
+        dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
+        dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
+        dateCal.set(Calendar.SECOND, timeCal.get(Calendar.SECOND));
+        return dateCal.getTime();
+    }
+
+    /**
+     * Compares the date portion of two date/times. Any time component is ignored.
+     *
+     * @param d1 the first date/time
+     * @param d2 the second date/time
+     * @return the {@code 0} if {@code d1} is equal to this {@code d2};
+     *         a value less than {@code 0} if {@code d1}  is before the {@code d2};
+     *         and a value greater than {@code 0} if {@code d1} is after {@code d2}.
+     */
+    public static int compareDates(Date d1, Date d2) {
+        d1 = getDate(d1);
+        d2 = getDate(d2);
+        return d1.compareTo(d2);
+    }
+
 }
