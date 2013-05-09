@@ -90,25 +90,6 @@ public class DateHelper {
     }
 
     /**
-     * Returns the current date/time if the date falls on the
-     * current date, otherwise returns the date unchanged.
-     *
-     * @param date the date
-     * @return the current date/time if {@code date} falls on the current date.
-     *         If not, returns {@code date} unchanged.
-     */
-    public static Date getDatetimeIfToday(Date date) {
-        Calendar now = Calendar.getInstance();
-        Calendar d = Calendar.getInstance();
-        d.setTime(date);
-        if (now.get(Calendar.DAY_OF_YEAR) == d.get(Calendar.DAY_OF_YEAR)
-            && now.get(Calendar.YEAR) == d.get(Calendar.YEAR)) {
-            return now.getTime();
-        }
-        return date;
-    }
-
-    /**
      * Format a date.
      *
      * @param date the date to format

@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.text.NumberFormatter;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
 import java.math.BigDecimal;
 import java.util.Date;

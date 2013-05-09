@@ -17,12 +17,10 @@
 package org.openvpms.web.component.util;
 
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.echo.text.NumberFormatter;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
-
-import static org.openvpms.web.echo.text.NumberFormatter.getFormat;
 
 
 /**

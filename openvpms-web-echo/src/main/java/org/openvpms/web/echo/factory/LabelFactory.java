@@ -23,8 +23,8 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.CellLayoutData;
-import org.openvpms.web.echo.text.NumberFormatter;
 import org.openvpms.web.echo.text.TextHelper;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
 import java.math.BigDecimal;
 
