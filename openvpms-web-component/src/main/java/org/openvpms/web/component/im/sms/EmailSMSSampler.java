@@ -40,7 +40,6 @@ import org.openvpms.sms.mail.MailMessageFactory;
 import org.openvpms.sms.mail.template.MailTemplate;
 import org.openvpms.sms.mail.template.MailTemplateFactory;
 import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
-import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -56,6 +55,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
