@@ -16,7 +16,9 @@
 
 package org.openvpms.web.component.property;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -29,7 +31,6 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.macro.Macros;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.test.AbstractAppTest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -41,7 +42,7 @@ import static org.junit.Assert.fail;
  *
  * @author Tim Anderson
  */
-public class StringPropertyTransformerTestCase extends AbstractAppTest {
+public class StringPropertyTransformerTestCase extends ArchetypeServiceTest {
 
     /**
      * Tests {@link StringPropertyTransformer#apply}.
@@ -52,7 +53,7 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
         NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(person, "name");
         Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
-            = new StringPropertyTransformer(property);
+                = new StringPropertyTransformer(property);
 
         assertNull(handler.apply(null));
         assertNull(handler.apply(""));
@@ -72,7 +73,7 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
         NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(person, "name");
         Property property = new IMObjectProperty(person, descriptor);
         StringPropertyTransformer handler
-            = new StringPropertyTransformer(property);
+                = new StringPropertyTransformer(property);
         try {
             handler.apply(bad);
             fail("Expected PropertyException to be thrown");
@@ -116,9 +117,8 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
     /**
      * Sets up the test case.
      */
-    @Override
+    @Before
     public void setUp() {
-        super.setUp();
         createMacro("macro1", "'macro 1 text'");
         createMacro("macro2", "concat('one', 'two', 'three')");
         createMacro("displayName", "openvpms:get(., 'displayName')");
@@ -136,7 +136,7 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
     private void createMacro(String code, String expression) {
         deleteExisting(code);
         IArchetypeService service
-            = ArchetypeServiceHelper.getArchetypeService();
+                = ArchetypeServiceHelper.getArchetypeService();
         Lookup macro = (Lookup) service.create("lookup.macro");
         IMObjectBean bean = new IMObjectBean(macro);
         bean.setValue("code", code);
@@ -155,7 +155,7 @@ public class StringPropertyTransformerTestCase extends AbstractAppTest {
         ArchetypeQuery query = new ArchetypeQuery("lookup.macro", false, false);
         query.add(new NodeConstraint("code", code));
         IArchetypeService service
-            = ArchetypeServiceHelper.getArchetypeService();
+                = ArchetypeServiceHelper.getArchetypeService();
         for (IMObject object : service.get(query).getResults()) {
             service.remove(object);
         }
