@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>openvpms-web-util</artifactId>
+    <artifactId>openvpms-web-resource</artifactId>
 
     <dependencies>
         <dependency>
