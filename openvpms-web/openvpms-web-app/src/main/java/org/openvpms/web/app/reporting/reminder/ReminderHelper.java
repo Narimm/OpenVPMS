@@ -29,8 +29,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
@@ -92,7 +92,7 @@ class ReminderHelper {
             reminder = IMObjectHelper.reload(reminder);
             if (reminder != null) {
                 IMObjectBean bean = new IMObjectBean(reminder);
-                bean.setValue("error", ErrorHelper.getError(error));
+                bean.setValue("error", ErrorFormatter.format(error));
                 bean.save();
             }
         } catch (Throwable exception) {

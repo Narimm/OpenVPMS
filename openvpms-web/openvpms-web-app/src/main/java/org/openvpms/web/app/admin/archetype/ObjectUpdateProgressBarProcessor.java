@@ -26,8 +26,8 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.MessageDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -208,7 +208,7 @@ class ObjectUpdateProgressBarProcessor extends ProgressBarProcessor<IMObject> {
         setSuspend(true);
         String displayName = DescriptorHelper.getDisplayName(object);
         String title = Messages.get("archetype.update.errortitle", displayName);
-        String error = ErrorHelper.getError(exception, displayName);
+        String error = ErrorFormatter.format(exception, displayName);
         String message = Messages.get("archetype.update.errormessage", displayName, object.getId(), error);
         ErrorDialog dialog = new ErrorDialog(title, message, MessageDialog.SKIP_CANCEL);
         dialog.addWindowPaneListener(new PopupDialogListener() {

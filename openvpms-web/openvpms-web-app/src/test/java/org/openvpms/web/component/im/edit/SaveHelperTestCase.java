@@ -168,6 +168,11 @@ public class SaveHelperTestCase extends AbstractAppTest {
 
         // register an ErrorHandler to collect errors
         ErrorHandler.setInstance(new ErrorHandler() {
+            @Override
+            public void error(Throwable cause) {
+                errors.add(cause.getMessage());
+            }
+
             public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
                 errors.add(message);
             }
