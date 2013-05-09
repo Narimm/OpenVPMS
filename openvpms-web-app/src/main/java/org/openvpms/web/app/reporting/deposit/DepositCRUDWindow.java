@@ -38,7 +38,7 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import static org.openvpms.archetype.rules.finance.deposit.DepositArchetypes.BANK_DEPOSIT;
 import static org.openvpms.archetype.rules.finance.deposit.DepositStatus.UNDEPOSITED;

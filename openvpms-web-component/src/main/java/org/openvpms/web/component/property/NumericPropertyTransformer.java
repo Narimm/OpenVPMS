@@ -20,7 +20,7 @@ package org.openvpms.web.component.property;
 
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.math.BigDecimal;
 

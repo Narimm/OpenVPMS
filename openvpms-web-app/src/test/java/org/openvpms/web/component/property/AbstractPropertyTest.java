@@ -21,7 +21,7 @@ package org.openvpms.web.component.property;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;

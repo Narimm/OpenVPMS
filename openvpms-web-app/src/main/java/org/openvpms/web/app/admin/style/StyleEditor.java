@@ -28,7 +28,7 @@ import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.awt.*;
 import java.util.ArrayList;

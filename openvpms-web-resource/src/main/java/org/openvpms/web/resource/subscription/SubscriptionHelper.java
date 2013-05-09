@@ -14,7 +14,7 @@
  *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.im.subscription;
+package org.openvpms.web.resource.subscription;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,10 +34,9 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.subscription.core.Subscription;
 import org.openvpms.subscription.core.SubscriptionFactory;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DateHelper;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,18 +62,8 @@ public class SubscriptionHelper {
      * @return the subscription message
      */
     public static String formatSubscription() {
-        return formatSubscription(new LocalContext());
-    }
-
-    /**
-     * Formats the current subscription, if any.
-     *
-     * @param context the context
-     * @return the subscription message
-     */
-    public static String formatSubscription(Context context) {
         String result = null;
-        Subscription subscription = getSubscription(context);
+        Subscription subscription = getSubscription();
         if (subscription != null) {
             String user = subscription.getOrganisationName();
             if (user == null) {
@@ -99,10 +88,9 @@ public class SubscriptionHelper {
     /**
      * Returns the current subscription.
      *
-     * @param context the context
      * @return the subscription, or {@code null} if there is none
      */
-    public static Subscription getSubscription(Context context) {
+    public static Subscription getSubscription() {
         Subscription result = null;
         try {
             Party practice = new PracticeRules().getPractice();

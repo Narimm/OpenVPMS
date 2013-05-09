@@ -23,17 +23,17 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusCommand;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.echo.focus.FocusCommand;
+import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

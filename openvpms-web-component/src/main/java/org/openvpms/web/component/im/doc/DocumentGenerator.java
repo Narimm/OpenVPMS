@@ -24,13 +24,13 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.dialog.PopupDialogListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroVariables;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;

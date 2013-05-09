@@ -19,8 +19,8 @@
 package org.openvpms.web.echo.factory;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.web.echo.i18n.Messages;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**

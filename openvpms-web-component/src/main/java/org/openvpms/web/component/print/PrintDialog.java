@@ -22,16 +22,16 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.list.DefaultListModel;
-import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.SpinBox;
-import org.openvpms.web.echo.i18n.Messages;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 
 
 /**
