@@ -16,11 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ContentPane;
-import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**

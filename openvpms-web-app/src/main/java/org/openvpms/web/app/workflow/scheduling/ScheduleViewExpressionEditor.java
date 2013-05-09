@@ -30,10 +30,10 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyComponentFactory;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.GridFactory;
+import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.text.TextHelper;
 

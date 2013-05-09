@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundColorSelect;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ColourHelper;
+import org.openvpms.web.echo.colour.ColourHelper;
 
 
 /**

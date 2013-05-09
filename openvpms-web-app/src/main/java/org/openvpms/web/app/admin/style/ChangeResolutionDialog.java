@@ -21,8 +21,8 @@ import nextapp.echo2.app.Grid;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.awt.*;

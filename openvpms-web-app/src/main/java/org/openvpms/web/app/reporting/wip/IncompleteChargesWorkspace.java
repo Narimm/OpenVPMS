@@ -38,9 +38,9 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.Messages;
 

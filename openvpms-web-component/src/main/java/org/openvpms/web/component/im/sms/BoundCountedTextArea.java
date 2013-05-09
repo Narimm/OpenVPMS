@@ -21,8 +21,8 @@ import org.openvpms.web.component.bound.Binder;
 import org.openvpms.web.component.bound.TextAreaComponentBinder;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.StringPropertyTransformer;
-import org.openvpms.web.component.util.TextDocument;
 import org.openvpms.web.echo.text.CountedTextArea;
+import org.openvpms.web.echo.text.TextDocument;
 
 
 /**

@@ -16,12 +16,11 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.text;
 
 import nextapp.echo2.app.event.DocumentEvent;
 import nextapp.echo2.app.text.AbstractDocument;
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.web.echo.text.TextHelper;
 
 
 /**
