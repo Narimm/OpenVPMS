@@ -12,16 +12,14 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.app;
 
 import org.apache.commons.beanutils.MethodUtils;
 import org.junit.Test;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.test.AbstractAppTest;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -33,13 +31,12 @@ import static org.junit.Assert.assertNull;
 /**
  * Tests the {@link LocalContext} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class LocalContextTestCase extends AbstractAppTest {
+public class LocalContextTestCase extends ArchetypeServiceTest {
 
     /**
-     * Verfies that values specified in a local context overrides those
+     * Verifies that values specified in a local context overrides those
      * specified in the parent.
      *
      * @throws Exception for any error
