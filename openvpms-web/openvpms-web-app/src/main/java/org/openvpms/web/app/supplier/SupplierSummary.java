@@ -23,7 +23,7 @@ import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.text.NumberFormatter;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
 import java.math.BigDecimal;
 

@@ -26,8 +26,8 @@ import org.openvpms.web.component.property.DefaultPropertyTransformer;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.util.DateFieldImpl;
-import org.openvpms.web.resource.util.DateHelper;
 
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -163,7 +163,7 @@ public class BoundDateField extends DateFieldImpl {
                         // preserve the existing date/time, to avoid spurious modification notifications
                         result = current;
                     } else if (includeTimeForToday) {
-                        result = DateHelper.getDatetimeIfToday(result);
+                        result = getDatetimeIfToday(result);
                     }
                 }
                 return result;
@@ -178,6 +178,25 @@ public class BoundDateField extends DateFieldImpl {
      */
     protected DateBinder getBinder() {
         return binder;
+    }
+
+    /**
+     * Returns the current date/time if the date falls on the
+     * current date, otherwise returns the date unchanged.
+     *
+     * @param date the date
+     * @return the current date/time if {@code date} falls on the current date.
+     *         If not, returns {@code date} unchanged.
+     */
+    private Date getDatetimeIfToday(Date date) {
+        Calendar now = Calendar.getInstance();
+        Calendar d = Calendar.getInstance();
+        d.setTime(date);
+        if (now.get(Calendar.DAY_OF_YEAR) == d.get(Calendar.DAY_OF_YEAR)
+            && now.get(Calendar.YEAR) == d.get(Calendar.YEAR)) {
+            return now.getTime();
+        }
+        return date;
     }
 
 }

@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.echo.text;
+package org.openvpms.web.resource.i18n.format;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
