@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-web-util</artifactId>
+            <artifactId>openvpms-web-resource</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
