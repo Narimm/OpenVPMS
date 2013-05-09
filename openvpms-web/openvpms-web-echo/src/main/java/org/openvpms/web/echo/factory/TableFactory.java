@@ -12,24 +12,20 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.table.TableModel;
-import org.openvpms.web.echo.table.KeyTable;
-import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.KeyTable;
 
 
 /**
  * Factory for {@link Table}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public final class TableFactory extends ComponentFactory {
 

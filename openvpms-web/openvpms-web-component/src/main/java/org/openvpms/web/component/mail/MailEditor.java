@@ -51,7 +51,7 @@ import org.openvpms.macro.Variables;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.echo.DropDown;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
@@ -67,18 +67,18 @@ import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.DoubleClickMonitor;
-import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.TableFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.ListBoxFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
+import org.openvpms.web.echo.factory.TableFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.popup.DropDown;
 import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 import org.openvpms.web.echo.table.DefaultTableCellRenderer;
 import org.openvpms.web.echo.text.TextField;
@@ -539,7 +539,7 @@ public class MailEditor extends AbstractModifiable {
      * @return a message editor
      */
     protected TextArea createMessageEditor(Property message) {
-        TextArea result = TextComponentFactory.createTextArea(message);
+        TextArea result = BoundTextComponentFactory.createTextArea(message);
         result.setStyleName("MailEditor.message");
         return result;
     }
@@ -664,7 +664,7 @@ public class MailEditor extends AbstractModifiable {
 
         Component fromAddress;
         if (fromAddresses.size() <= 1) {
-            TextField fromText = TextComponentFactory.create(from, 40);
+            TextField fromText = BoundTextComponentFactory.create(from, 40);
             fromText.setWidth(EXTENT);
             fromAddress = fromText;
             fromAddress.setEnabled(false);
@@ -684,7 +684,7 @@ public class MailEditor extends AbstractModifiable {
             focus.add(fromAddressSelector);
         }
 
-        TextField toText = TextComponentFactory.create(to, 40);
+        TextField toText = BoundTextComponentFactory.create(to, 40);
         toText.setWidth(EXTENT);
         Component toAddress = toText;
         if (!toAddresses.isEmpty()) {
@@ -717,7 +717,7 @@ public class MailEditor extends AbstractModifiable {
         }
         focus.add(toText);
 
-        TextField subjectText = TextComponentFactory.create(subject, 40);
+        TextField subjectText = BoundTextComponentFactory.create(subject, 40);
         subjectText.setWidth(EXTENT);
 
         TextArea messageArea = createMessageEditor(message);

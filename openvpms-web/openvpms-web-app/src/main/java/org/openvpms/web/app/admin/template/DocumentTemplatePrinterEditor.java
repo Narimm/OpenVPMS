@@ -22,13 +22,13 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.print.PrintHelper;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.SelectFieldFactory;
 
 
 /**
@@ -79,8 +79,8 @@ public class DocumentTemplatePrinterEditor extends EntityRelationshipEditor {
             ComponentState result;
             if (property.getName().equals("printerName")) {
                 DefaultListModel model
-                    = new DefaultListModel(PrintHelper.getPrinters());
-                SelectField field = SelectFieldFactory.create(property, model);
+                        = new DefaultListModel(PrintHelper.getPrinters());
+                SelectField field = BoundSelectFieldFactory.create(property, model);
                 result = new ComponentState(field, property);
             } else {
                 result = super.createComponent(property, parent, context);

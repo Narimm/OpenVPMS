@@ -12,18 +12,13 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
-import org.openvpms.web.component.bound.BoundSelectField;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.echo.factory.ComponentFactory;
 
 import java.util.List;
 
@@ -31,10 +26,9 @@ import java.util.List;
 /**
  * Factory for {@link SelectField}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public final class SelectFieldFactory extends ComponentFactory {
+public class SelectFieldFactory extends ComponentFactory {
 
     /**
      * Creates a new select field with the provided model.
@@ -59,18 +53,6 @@ public final class SelectFieldFactory extends ComponentFactory {
         } else if (model.size() != 0) {
             select.setSelectedIndex(0);
         }
-        return select;
-    }
-
-    /**
-     * Creates a new bound select field.
-     *
-     * @param property the property to bind
-     * @param model    the model
-     */
-    public static SelectField create(Property property, ListModel model) {
-        SelectField select = new BoundSelectField(property, model);
-        setDefaultStyle(select);
         return select;
     }
 

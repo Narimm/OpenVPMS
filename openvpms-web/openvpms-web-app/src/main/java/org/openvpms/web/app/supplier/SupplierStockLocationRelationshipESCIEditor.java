@@ -24,13 +24,13 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -110,7 +110,7 @@ public class SupplierStockLocationRelationshipESCIEditor extends EntityRelations
      * @return a new component
      */
     private ComponentState createPassword(Property property) {
-        TextField password = TextComponentFactory.createPassword(property);
+        TextField password = BoundTextComponentFactory.createPassword(property);
         return new ComponentState(password, property);
     }
 

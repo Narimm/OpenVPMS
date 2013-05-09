@@ -20,9 +20,9 @@ package org.openvpms.web.app.admin.style;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.style.StyleSheets;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 
 import java.awt.*;
@@ -81,7 +81,7 @@ public class StyleHelper {
         Label name = LabelFactory.create();
         name.setText(property.getDisplayName());
         int length = property.getMaxLength() != -1 ? property.getMaxLength() : 40;
-        TextField field = TextComponentFactory.create(property, length);
+        TextField field = BoundTextComponentFactory.create(property, length);
         grid.add(name);
         grid.add(field);
     }

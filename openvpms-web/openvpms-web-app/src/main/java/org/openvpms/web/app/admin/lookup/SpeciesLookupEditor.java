@@ -22,6 +22,7 @@ import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -29,7 +30,6 @@ import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.SelectFieldFactory;
 
 
 /**
@@ -87,12 +87,11 @@ public class SpeciesLookupEditor extends AbstractLookupEditor {
          */
         private SelectField createCustomFieldSelector(final Property property) {
             String[] shortNames = DescriptorHelper.getShortNames(
-                "entity.customPatient*");
+                    "entity.customPatient*");
             ShortNameListModel model = new ShortNameListModel(shortNames,
                                                               false, true,
                                                               true);
-            final SelectField field = SelectFieldFactory.create(property,
-                                                                model);
+            final SelectField field = BoundSelectFieldFactory.create(property, model);
             field.setCellRenderer(new ShortNameListCellRenderer());
             return field;
         }

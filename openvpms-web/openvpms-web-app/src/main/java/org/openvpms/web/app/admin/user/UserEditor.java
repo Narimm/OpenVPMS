@@ -22,6 +22,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -32,7 +33,6 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Arrays;
@@ -110,9 +110,9 @@ public class UserEditor extends AbstractIMObjectEditor {
                 valid = true;
             } else {
                 ValidatorError error = new ValidatorError(
-                    getObject().getArchetypeId().getShortName(),
-                    password.getName(),
-                    Messages.get("admin.user.password.mismatch"));
+                        getObject().getArchetypeId().getShortName(),
+                        password.getName(),
+                        Messages.get("admin.user.password.mismatch"));
                 validator.add(password, Arrays.asList(error));
             }
         }
@@ -154,7 +154,7 @@ public class UserEditor extends AbstractIMObjectEditor {
         @Override
         protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
             if (property.getName().equals("password")) {
-                return new ComponentState(TextComponentFactory.createPassword(property), property);
+                return new ComponentState(BoundTextComponentFactory.createPassword(property), property);
             }
             return super.createComponent(property, parent, context);
         }
@@ -176,7 +176,7 @@ public class UserEditor extends AbstractIMObjectEditor {
             int index = set.indexOf("password");
             if (index != -1) {
                 ComponentState passwordField = set.getComponents().get(index);
-                ComponentState confirmField = new ComponentState(TextComponentFactory.createPassword(confirm));
+                ComponentState confirmField = new ComponentState(BoundTextComponentFactory.createPassword(confirm));
                 String label = Messages.get("admin.user.password.confirm", passwordField.getDisplayName());
                 confirmField.setDisplayName(label);
                 set.add(index + 1, confirmField);

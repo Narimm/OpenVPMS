@@ -15,29 +15,28 @@
  *
  *  $Id$
  */
-package org.openvpms.web.component.util;
+package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 
 /**
  * A numeric text field with a pair of small up/down arrows which can be used to step through the
  * range of possible values.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SpinBox extends Row {
 
@@ -115,7 +114,7 @@ public class SpinBox extends Row {
         checkRange();
 
         int columns = Integer.toString(max).length() + 2; // add some padding
-        TextField text = TextComponentFactory.createNumeric(property, columns);
+        TextField text = BoundTextComponentFactory.createNumeric(property, columns);
         Button inc = ButtonFactory.create(null, "SpinBox.increment");
         inc.setFocusTraversalParticipant(false);
         inc.addActionListener(new ActionListener() {

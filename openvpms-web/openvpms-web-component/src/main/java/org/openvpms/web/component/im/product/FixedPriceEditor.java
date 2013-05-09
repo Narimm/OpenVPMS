@@ -23,17 +23,17 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.IMObjectListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -109,7 +109,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
 
         date = new Date();
 
-        field = TextComponentFactory.createNumeric(property, 10);
+        field = BoundTextComponentFactory.createNumeric(property, 10);
         focus = new FocusGroup(property.getDisplayName());
         focus.add(field);
         container = RowFactory.create(field);
