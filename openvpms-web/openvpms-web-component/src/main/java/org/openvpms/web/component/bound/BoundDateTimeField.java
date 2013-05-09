@@ -31,7 +31,7 @@ import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.util.TimeFieldFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -137,7 +137,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
         Date result = null;
         Calendar calendar = getDateField().getDateChooser().getSelectedDate();
         if (calendar != null) {
-            result = DateHelper.getDayMonthYear(calendar.getTime());
+            result = DateRules.getDayMonthYear(calendar.getTime());
         }
         return result;
     }
@@ -149,7 +149,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      */
     public void setDatetime(Date datetime) {
         setDate(datetime);
-        time.setText(DateHelper.formatTime(datetime, true));
+        time.setText(DateFormatter.formatTime(datetime, true));
     }
 
     /**
@@ -207,8 +207,8 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
     private Date getDatetime(Date date) {
         Date result = date;
         try {
-            Date timePart = DateHelper.parseTime(time.getText());
-            result = DateHelper.addDateTime(date, timePart);
+            Date timePart = DateFormatter.parseTime(time.getText());
+            result = DateRules.addDateTime(date, timePart);
         } catch (Throwable ignore) {
             // no-op
         }

@@ -28,6 +28,7 @@ import org.openvpms.web.echo.dialog.HelpDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.help.HelpListener;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -239,7 +240,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
         if (help == null) {
             help = new HelpContext(getHelpTopic(), new HelpListener() {
                 public void show(HelpContext help) {
-                    HelpDialog.show(help);
+                    HelpDialog.show(help, ServiceHelper.getArchetypeService());
                 }
             });
         }

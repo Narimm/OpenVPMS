@@ -23,7 +23,7 @@ import nextapp.echo2.app.Extent;
 import org.openvpms.web.component.bound.BoundDateField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ComponentFactory;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 
 /**
@@ -62,7 +62,7 @@ public class DateFieldFactory extends ComponentFactory {
     private static DateField init(DateField date) {
         setDefaultStyle(date.getDateChooser());
         setDefaultStyle(date.getTextField());
-        int length = DateHelper.getLength(date.getDateFormat());
+        int length = DateFormatter.getLength(date.getDateFormat());
         date.getTextField().setWidth(new Extent(length, Extent.EX));
         return date;
     }

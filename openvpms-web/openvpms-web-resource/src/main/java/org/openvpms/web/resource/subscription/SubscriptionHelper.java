@@ -35,7 +35,7 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.subscription.core.Subscription;
 import org.openvpms.subscription.core.SubscriptionFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,7 +70,7 @@ public class SubscriptionHelper {
             }
             Date expiryDate = subscription.getExpiryDate();
             if (expiryDate != null) {
-                String date = DateHelper.getFullDateFormat().format(expiryDate);
+                String date = DateFormatter.getFullDateFormat().format(expiryDate);
                 if (expiryDate.before(new Date())) {
                     result = Messages.get("subscription.summary.expired", user, date);
                 } else {

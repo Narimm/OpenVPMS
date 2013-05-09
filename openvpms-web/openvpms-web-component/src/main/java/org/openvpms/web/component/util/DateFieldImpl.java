@@ -22,7 +22,7 @@ import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.text.DateFormat;
 import java.text.FieldPosition;
@@ -52,8 +52,8 @@ public class DateFieldImpl extends DateField {
      * Constructs a new <tt>DateFieldImpl</tt>.
      */
     public DateFieldImpl() {
-        DateFormat edit = DateHelper.getDateFormat(true);
-        DateFormat view = DateHelper.getDateFormat(false);
+        DateFormat edit = DateFormatter.getDateFormat(true);
+        DateFormat view = DateFormatter.getDateFormat(false);
         DateFormat format = new DelegatingDateFormat(edit, view);
         setDateFormat(format);
         setPopUpAlwaysOnTop(true);

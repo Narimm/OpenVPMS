@@ -32,7 +32,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.NumericPropertyFormatter;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -145,7 +145,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      */
     protected String getDateValue(Property property) {
         Date value = (Date) property.getValue();
-        return (value != null) ? DateHelper.formatDate(value, false) : null;
+        return (value != null) ? DateFormatter.formatDate(value, false) : null;
     }
 
 }

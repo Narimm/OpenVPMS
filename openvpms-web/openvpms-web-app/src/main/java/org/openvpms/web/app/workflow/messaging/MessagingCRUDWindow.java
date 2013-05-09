@@ -43,7 +43,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 
 /**
@@ -325,7 +325,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
          * @return the date when the message was sent
          */
         public String getSent() {
-            return DateHelper.formatDateTime(bean.getDate("startTime"), false);
+            return DateFormatter.formatDateTime(bean.getDate("startTime"), false);
         }
     }
 }

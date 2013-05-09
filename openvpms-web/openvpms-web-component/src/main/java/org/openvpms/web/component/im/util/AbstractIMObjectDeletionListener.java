@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.error.ExceptionHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.i18n.Messages;
@@ -74,7 +75,7 @@ public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMO
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored ")
     public void failed(T object, Throwable cause) {
         String displayName = DescriptorHelper.getDisplayName(object);
-        Throwable rootCause = ErrorHelper.getRootCause(cause);
+        Throwable rootCause = ExceptionHelper.getRootCause(cause);
         String title = Messages.get("imobject.delete.failed.title");
         if (rootCause instanceof ObjectNotFoundException) {
             // delete failed as the object (or a related object) has already been deleted
@@ -99,7 +100,7 @@ public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMO
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     public void failed(T object, Throwable cause, IMObjectEditor editor) {
         String title = Messages.get("imobject.delete.failed.title");
-        Throwable rootCause = ErrorHelper.getRootCause(cause);
+        Throwable rootCause = ExceptionHelper.getRootCause(cause);
         if (rootCause instanceof ObjectNotFoundException) {
             // delete failed as the object (or a related object) has already been deleted
             String message = Messages.get("imobject.notfound", editor.getDisplayName());

@@ -34,7 +34,7 @@ import java.util.Locale;
  *
  * @author Tim Anderson
  */
-public class DateHelper {
+public class DateFormatter {
 
     /**
      * Date edit pattern.
@@ -71,23 +71,6 @@ public class DateHelper {
      */
     private static final Date WIDE_DATE;
 
-
-    /**
-     * Compares the date portion of two date/times. Any time component is
-     * ignored.
-     *
-     * @param d1 the first date/time
-     * @param d2 the second date/time
-     * @return the {@code 0} if {@code d1} is equal to this {@code d2};
-     *         a value less than {@code 0} if {@code d1}  is before the
-     *         {@code d2}; and a value greater than {@code 0} if
-     *         {@code d1} is after {@code d2}.
-     */
-    public static int compareDates(Date d1, Date d2) {
-        d1 = getDayMonthYear(d1);
-        d2 = getDayMonthYear(d2);
-        return d1.compareTo(d2);
-    }
 
     /**
      * Format a date.
@@ -138,16 +121,6 @@ public class DateHelper {
             return new SimpleDateFormat(FULL_DATE_PATTERN, locale);
         }
         return DateFormat.getDateInstance(DateFormat.FULL, locale);
-    }
-
-    /**
-     * Returns the day/month/year part of a date-time.
-     *
-     * @param datetime the date/time
-     * @return the day/month/year part of the date
-     */
-    public static Date getDayMonthYear(Date datetime) {
-        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
     }
 
     /**
@@ -293,25 +266,6 @@ public class DateHelper {
             }
         }
         return result;
-    }
-
-    /**
-     * Adds a date and time.
-     *
-     * @param date the date part
-     * @param time the time to add
-     * @return the date+time
-     */
-    public static Date addDateTime(Date date, Date time) {
-        GregorianCalendar dateCal = new GregorianCalendar();
-        dateCal.setTime(date);
-        GregorianCalendar timeCal = new GregorianCalendar();
-        timeCal.setTime(time);
-
-        dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
-        dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
-        dateCal.set(Calendar.SECOND, timeCal.get(Calendar.SECOND));
-        return dateCal.getTime();
     }
 
     /**

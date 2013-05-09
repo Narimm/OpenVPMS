@@ -30,7 +30,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.text.DateFormat;
 
@@ -90,8 +90,8 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @return a component to display the date
      */
     protected Component createDate(Property property) {
-        DateFormat format = DateHelper.getDateFormat(false);
-        int maxColumns = DateHelper.getLength(format);
+        DateFormat format = DateFormatter.getDateFormat(false);
+        int maxColumns = DateFormatter.getLength(format);
         TextField result = TextComponentFactory.create(property, maxColumns,
                                                        format);
         ComponentFactory.setStyle(result, getStyle());

@@ -31,7 +31,7 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Date;
 
@@ -84,7 +84,7 @@ public class TillActTableModel extends ActAmountTableModel<FinancialAct> {
         if (index == DATE_INDEX) {
             Date date = act.getActivityStartTime();
             if (date != null) {
-                result = DateHelper.formatDateTime(date, false);
+                result = DateFormatter.formatDateTime(date, false);
             }
         } else if (index == customerIndex) {
             ActBean bean = new ActBean(act);

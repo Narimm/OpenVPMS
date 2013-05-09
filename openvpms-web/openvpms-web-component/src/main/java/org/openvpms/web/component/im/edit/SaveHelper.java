@@ -24,6 +24,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.error.ExceptionHelper;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -258,7 +259,7 @@ public class SaveHelper {
      */
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     private static void error(String displayName, String context, Throwable exception) {
-        Throwable cause = ErrorHelper.getRootCause(exception);
+        Throwable cause = ExceptionHelper.getRootCause(exception);
         String title = Messages.get("imobject.save.failed", displayName);
         if (cause instanceof ObjectNotFoundException) {
             // Don't propagate the exception

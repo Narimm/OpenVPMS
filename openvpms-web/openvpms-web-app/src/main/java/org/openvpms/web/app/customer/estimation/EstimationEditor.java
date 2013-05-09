@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.customer.estimation;
 
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -25,7 +26,6 @@ import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -81,7 +81,7 @@ public class EstimationEditor extends ActEditor {
         Date start = getStartTime();
         if (start != null) {
             Date now = new Date();
-            if (DateHelper.compareDates(start, now) < 0) {
+            if (DateRules.compareDates(start, now) < 0) {
                 // ensure start date isn't before the current date
                 setStartTime(now, true);
             } else {

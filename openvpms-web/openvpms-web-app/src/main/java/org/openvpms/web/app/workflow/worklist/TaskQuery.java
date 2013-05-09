@@ -35,7 +35,7 @@ import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -122,7 +122,7 @@ public class TaskQuery extends ScheduleQuery {
      */
     protected void onDateChanged() {
         Date date = getDate();
-        Date today = DateHelper.getDayMonthYear(new Date());
+        Date today = DateFormatter.getDayMonthYear(new Date());
         statusRange.removeActionListener(statusRangeListener);
         if (date.equals(today)) {
             statusRange.setSelectedItem(StatusRange.INCOMPLETE);

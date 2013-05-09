@@ -28,7 +28,7 @@ import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid.Availability;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableCellRenderer;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
 import org.openvpms.web.echo.table.TableHelper;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Date;
 
@@ -68,7 +68,7 @@ public class AppointmentTableCellRenderer extends ScheduleTableCellRenderer {
 
         if (model.isStartTimeColumn(column)) {
             Date date = (Date) value;
-            String text = DateHelper.formatTime(date, false);
+            String text = DateFormatter.formatTime(date, false);
 
             result = TableHelper.createFragment(text);
 

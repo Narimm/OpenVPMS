@@ -18,9 +18,10 @@
 package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -202,10 +203,10 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      */
     protected Date addTime(String value) throws ParseException {
         Date result;
-        Date time = DateHelper.parseTime(value);
+        Date time = DateFormatter.parseTime(value);
         Date date = getDate();
         if (date != null) {
-            result = DateHelper.addDateTime(date, time);
+            result = DateRules.addDateTime(date, time);
         } else {
             result = time;
         }
@@ -224,11 +225,11 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
             String formatDate;
             String formatMin;
             if (format == Format.DATE) {
-                formatDate = DateHelper.formatDate(date, false);
-                formatMin = DateHelper.formatDate(min, false);
+                formatDate = DateFormatter.formatDate(date, false);
+                formatMin = DateFormatter.formatDate(min, false);
             } else {
-                formatDate = DateHelper.formatDateTime(date, false);
-                formatMin = DateHelper.formatDateTime(min, false);
+                formatDate = DateFormatter.formatDateTime(date, false);
+                formatMin = DateFormatter.formatDateTime(min, false);
             }
             String msg = Messages.get("property.error.minDate", formatDate, formatMin);
             throw new PropertyException(getProperty(), msg);
@@ -237,11 +238,11 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
             String formatDate;
             String formatMax;
             if (format == Format.DATE) {
-                formatDate = DateHelper.formatDate(date, false);
-                formatMax = DateHelper.formatDate(max, false);
+                formatDate = DateFormatter.formatDate(date, false);
+                formatMax = DateFormatter.formatDate(max, false);
             } else {
-                formatDate = DateHelper.formatDateTime(date, false);
-                formatMax = DateHelper.formatDateTime(max, false);
+                formatDate = DateFormatter.formatDateTime(date, false);
+                formatMax = DateFormatter.formatDateTime(max, false);
             }
             String msg = Messages.get("property.error.maxDate", formatDate, formatMax);
             throw new PropertyException(getProperty(), msg);
