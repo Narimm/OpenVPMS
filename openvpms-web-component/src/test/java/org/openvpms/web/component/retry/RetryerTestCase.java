@@ -12,14 +12,10 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
-package org.openvpms.web.component.util;
+package org.openvpms.web.component.retry;
 
 import org.junit.Test;
-import org.openvpms.web.component.retry.Retryable;
-import org.openvpms.web.component.retry.Retryer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,8 +25,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link org.openvpms.web.component.retry.Retryer}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class RetryerTestCase {
 
