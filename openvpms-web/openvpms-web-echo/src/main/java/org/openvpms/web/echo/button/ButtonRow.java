@@ -16,16 +16,15 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.button;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 
 
 /**

@@ -18,8 +18,7 @@
 package org.openvpms.web.echo.event;
 
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.error.ErrorHandler;
 
 
 /**
@@ -28,16 +27,6 @@ import org.openvpms.web.component.util.ErrorHelper;
  * @author Tim Anderson
  */
 public abstract class ActionListener implements nextapp.echo2.app.event.ActionListener {
-
-    private final HelpContext help;
-
-    public ActionListener() {
-        this(null);
-    }
-
-    public ActionListener(HelpContext help) {
-        this.help = help;
-    }
 
     /**
      * Invoked when an action occurs.
@@ -50,7 +39,7 @@ public abstract class ActionListener implements nextapp.echo2.app.event.ActionLi
         try {
             onAction(event);
         } catch (Throwable exception) {
-            ErrorHelper.show(exception);
+            ErrorHandler.getInstance().error(exception);
         }
     }
 

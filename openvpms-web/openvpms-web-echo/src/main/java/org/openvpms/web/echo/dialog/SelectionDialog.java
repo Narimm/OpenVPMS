@@ -24,12 +24,12 @@ import nextapp.echo2.app.list.AbstractListComponent;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.component.list.KeyListBox;
-import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.list.KeyListBox;
 
 import java.util.List;
 

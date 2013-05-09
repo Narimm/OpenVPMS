@@ -35,6 +35,7 @@ import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.StringUtilities;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -83,9 +84,11 @@ public class HelpDialog extends PopupDialog {
 
     /**
      * Constructs a {@code HelpDialog}.
+     *
+     * @param service the archetype service
      */
-    public HelpDialog() {
-        this(null, null);
+    public HelpDialog(IArchetypeService service) {
+        this(null, null, service);
     }
 
     /**
@@ -93,8 +96,9 @@ public class HelpDialog extends PopupDialog {
      *
      * @param topic    the topic. May be {@code null}
      * @param topicURL the topic URL. May be {@code null}
+     * @param service  the archetype service
      */
-    protected HelpDialog(String topic, final String topicURL) {
+    protected HelpDialog(String topic, final String topicURL, IArchetypeService service) {
         super(Messages.get("helpdialog.title"), "HelpDialog", OK);
         setModal(true);
 
@@ -138,7 +142,7 @@ public class HelpDialog extends PopupDialog {
             content = topics;
         }
         SplitPane footer = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "HelpDialog.footer",
-                                                   ColumnFactory.create(INSET, getSubscription()), content);
+                                                   ColumnFactory.create(INSET, getSubscription(service)), content);
         SplitPane header = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, "HelpDialog.header",
                                                    getHeader(), footer);
         getLayout().add(header);
@@ -147,14 +151,14 @@ public class HelpDialog extends PopupDialog {
     /**
      * Displays a help dialog for the specified help context.
      *
-     * @param help    the help context. May be {@code null}
-     *
+     * @param help the help context. May be {@code null}
+     * @param service the archetype service
      */
-    public static void show(HelpContext help) {
+    public static void show(HelpContext help, IArchetypeService service) {
         if (help == null) {
-            new HelpDialog().show();
+            new HelpDialog(service).show();
         } else {
-            show(help.getTopic());
+            show(help.getTopic(), service);
         }
     }
 
@@ -162,19 +166,19 @@ public class HelpDialog extends PopupDialog {
      * Displays a help dialog for the specified topic.
      *
      * @param topic   the topic identifier
-     *
+     * @param service the archetype service
      */
-    public static void show(String topic) {
+    public static void show(String topic, IArchetypeService service) {
         String url = getTopicURL(topic);
         if (url != null) {
             if (exists(url)) {
                 ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, null, null));
             } else {
-                HelpDialog dialog = new HelpDialog(topic, url);
+                HelpDialog dialog = new HelpDialog(topic, url, service);
                 dialog.show();
             }
         } else {
-            HelpDialog dialog = new HelpDialog(topic, null);
+            HelpDialog dialog = new HelpDialog(topic, null, service);
             dialog.show();
         }
     }
@@ -270,14 +274,16 @@ public class HelpDialog extends PopupDialog {
     /**
      * Returns the subscription details.
      *
+     * @param service the archetype service
      * @return the subscription details
      */
-    private LabelEx getSubscription() {
-        String content = "<p xmlns='http://www.w3.org/1999/xhtml'>" + SubscriptionHelper.formatSubscription() + "</p>";
-        LabelEx subscription = new LabelEx(new XhtmlFragment(content));
-        subscription.setLineWrap(true);
-        subscription.setTextAlignment(Alignment.ALIGN_CENTER);
-        return subscription;
+    private LabelEx getSubscription(IArchetypeService service) {
+        String subscription = SubscriptionHelper.formatSubscription(service);
+        String content = "<p xmlns='http://www.w3.org/1999/xhtml'>" + subscription + "</p>";
+        LabelEx label = new LabelEx(new XhtmlFragment(content));
+        label.setLineWrap(true);
+        label.setTextAlignment(Alignment.ALIGN_CENTER);
+        return label;
     }
 
 
