@@ -16,12 +16,13 @@
 
 package org.openvpms.web.component.im.print;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.LocalContext;
@@ -29,8 +30,6 @@ import org.openvpms.web.component.im.doc.DocumentActAttachmentPrinter;
 import org.openvpms.web.component.im.doc.DocumentActPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
-import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.test.AbstractAppTest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,12 +41,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tim Anderson
  */
-public class IMPrinterFactoryTestCase extends AbstractAppTest {
-
-    /**
-     * The archetype service.
-     */
-    private IArchetypeService service;
+public class IMPrinterFactoryTestCase extends ArchetypeServiceTest {
 
     /**
      * The document template.
@@ -89,14 +83,11 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
     /**
      * Sets up the test case.
      */
-    @Override
+    @Before
     public void setUp() {
-        super.setUp();
-        service = ServiceHelper.getArchetypeService();
-        documentTemplate = (Entity) service.create("entity.documentTemplate");
-        documentTemplate.setName("XTestDocumentTemplate"
-                                 + System.currentTimeMillis());
-        service.save(documentTemplate);
+        documentTemplate = (Entity) create("entity.documentTemplate");
+        documentTemplate.setName("XTestDocumentTemplate" + System.currentTimeMillis());
+        save(documentTemplate);
     }
 
     /**
@@ -110,7 +101,7 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
         String[] shortNames = DescriptorHelper.getShortNames(shortName);
         assertTrue(shortNames.length > 0);
         for (String s : shortNames) {
-            IMObject object = service.create(s);
+            IMObject object = create(s);
             assertNotNull(object);
             checkCreate(object, type);
         }
@@ -127,9 +118,8 @@ public class IMPrinterFactoryTestCase extends AbstractAppTest {
         if (object instanceof DocumentAct) {
             ActBean bean = new ActBean((Act) object);
             if (bean.hasNode("documentTemplate")) {
-                service.save(documentTemplate);
-                bean.addParticipation("participation.documentTemplate",
-                                      documentTemplate);
+                save(documentTemplate);
+                bean.addParticipation("participation.documentTemplate", documentTemplate);
             }
         }
         LocalContext context = new LocalContext();
