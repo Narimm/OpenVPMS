@@ -20,9 +20,9 @@ package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.TextDocument;
+import org.openvpms.web.echo.text.TextField;
 
 import java.text.Format;
 import java.text.ParseException;

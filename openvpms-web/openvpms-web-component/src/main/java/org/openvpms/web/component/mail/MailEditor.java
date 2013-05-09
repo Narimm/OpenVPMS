@@ -52,7 +52,6 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.echo.DropDown;
-import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.im.doc.DocumentHelper;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
@@ -82,6 +81,7 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 import org.openvpms.web.echo.table.DefaultTableCellRenderer;
+import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 

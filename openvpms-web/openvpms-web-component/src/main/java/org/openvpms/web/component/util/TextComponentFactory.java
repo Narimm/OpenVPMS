@@ -29,9 +29,9 @@ import org.openvpms.web.component.bound.BoundPasswordField;
 import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
-import org.openvpms.web.component.echo.TextField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.text.TextField;
 
 import java.text.Format;
 

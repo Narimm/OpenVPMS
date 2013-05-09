@@ -14,7 +14,7 @@
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.echo;
+package org.openvpms.web.echo.text;
 
 import echopointng.text.StringDocumentEx;
 import nextapp.echo2.app.TextArea;

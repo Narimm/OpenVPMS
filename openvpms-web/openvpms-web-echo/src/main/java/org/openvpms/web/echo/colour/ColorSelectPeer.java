@@ -15,7 +15,7 @@
  *
  *  $Id$
  */
-package org.openvpms.web.component.echo;
+package org.openvpms.web.echo.colour;
 
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;

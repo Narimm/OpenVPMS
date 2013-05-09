@@ -14,7 +14,7 @@
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.echo;
+package org.openvpms.web.echo.text;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
