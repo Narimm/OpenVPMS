@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.property;
 
-import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.web.resource.util.DateHelper;
 
 import java.text.ParseException;
 import java.util.Date;

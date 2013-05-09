@@ -30,8 +30,8 @@ import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.IMObjectProperty;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.DateHelper;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.util.DateHelper;
 
 import java.util.Date;
 

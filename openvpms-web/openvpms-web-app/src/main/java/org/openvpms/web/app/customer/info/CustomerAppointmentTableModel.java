@@ -25,7 +25,7 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
-import org.openvpms.web.component.util.DateHelper;
+import org.openvpms.web.resource.util.DateHelper;
 
 import java.util.Date;
 import java.util.List;
