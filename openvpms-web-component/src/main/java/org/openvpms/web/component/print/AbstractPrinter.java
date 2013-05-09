@@ -25,7 +25,7 @@ import org.openvpms.report.DocFormats;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.servlet.DownloadServlet;
+import org.openvpms.web.echo.servlet.DownloadServlet;
 
 import javax.print.attribute.standard.MediaTray;
 

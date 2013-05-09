@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.servlet;
+package org.openvpms.web.echo.servlet;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;

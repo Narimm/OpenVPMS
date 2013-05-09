@@ -43,7 +43,7 @@ import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.servlet.DownloadServlet;
+import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.io.ByteArrayInputStream;

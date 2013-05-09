@@ -32,8 +32,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.echo.servlet.ServletHelper;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.servlet.ServletHelper;
 
 import javax.servlet.http.HttpServletRequest;
 

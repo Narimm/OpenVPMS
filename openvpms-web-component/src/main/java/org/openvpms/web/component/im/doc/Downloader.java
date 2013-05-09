@@ -29,7 +29,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.openoffice.OpenOfficeException;
-import org.openvpms.web.servlet.DownloadServlet;
+import org.openvpms.web.echo.servlet.DownloadServlet;
 
 
 /**

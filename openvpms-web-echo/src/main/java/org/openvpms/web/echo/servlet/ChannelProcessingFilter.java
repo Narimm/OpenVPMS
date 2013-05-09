@@ -15,7 +15,7 @@
  *
  *  $Id$
  */
-package org.openvpms.web.servlet;
+package org.openvpms.web.echo.servlet;
 
 import org.springframework.security.web.access.channel.ChannelEntryPoint;
 import org.springframework.security.web.access.channel.RetryWithHttpsEntryPoint;
