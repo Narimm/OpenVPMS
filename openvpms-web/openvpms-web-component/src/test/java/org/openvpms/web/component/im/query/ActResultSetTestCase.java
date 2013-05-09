@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -162,10 +163,8 @@ public class ActResultSetTestCase extends AbstractResultSetTest {
     /**
      * Sets up the test case.
      */
-    @Override
+    @Before
     public void setUp() {
-        super.setUp();
-
         customer = TestHelper.createCustomer(true);
         Party patient = TestHelper.createPatient(true);
         Product product = TestHelper.createProduct();

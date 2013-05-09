@@ -18,9 +18,9 @@
 package org.openvpms.web.component.im.query;
 
 import org.junit.Test;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.List;
 
@@ -31,10 +31,9 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Abstract base class for {@link Query} test cases.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public abstract class AbstractQueryTest<T extends IMObject> extends AbstractAppTest {
+public abstract class AbstractQueryTest<T extends IMObject> extends ArchetypeServiceTest {
 
     /**
      * Tests the behaviour of constraining the query using the {@link Query#setValue(String)} method.

@@ -31,7 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
  *
  * @author Tim Anderson
  */
-public class AbstractResultSetTest extends ArchetypeServiceTest {
+public abstract class AbstractResultSetTest extends ArchetypeServiceTest {
 
     /**
      * Helper to create a new <code>act.customerEstimation</code>, and save it.
