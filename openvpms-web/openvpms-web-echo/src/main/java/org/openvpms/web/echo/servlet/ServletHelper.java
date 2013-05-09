@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.servlet;
+package org.openvpms.web.echo.servlet;
 
 import nextapp.echo2.webcontainer.ContainerInstance;
 import nextapp.echo2.webrender.Connection;

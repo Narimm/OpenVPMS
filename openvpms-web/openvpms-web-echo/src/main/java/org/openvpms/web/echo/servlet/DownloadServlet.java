@@ -14,7 +14,7 @@
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.servlet;
+package org.openvpms.web.echo.servlet;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Command;
