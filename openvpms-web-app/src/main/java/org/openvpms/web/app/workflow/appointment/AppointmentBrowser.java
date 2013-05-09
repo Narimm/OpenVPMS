@@ -37,7 +37,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -174,7 +174,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * Updates the title based on the current selection.
      */
     private void updateTitle() {
-        DateFormat format = DateHelper.getFullDateFormat();
+        DateFormat format = DateFormatter.getFullDateFormat();
         String date = format.format(getDate());
         Entity view = getScheduleView();
         Entity schedule = getQuery().getSchedule();

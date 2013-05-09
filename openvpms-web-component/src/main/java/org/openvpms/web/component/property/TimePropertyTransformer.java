@@ -19,7 +19,6 @@
 package org.openvpms.web.component.property;
 
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.web.resource.i18n.format.DateHelper;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -66,7 +65,7 @@ public class TimePropertyTransformer extends AbstractDateTimePropertyTransformer
     protected Date getDateTime(Date value) {
         Date result;
         if (date != null) {
-            result = DateHelper.addDateTime(date, value);
+            result = DateRules.addDateTime(date, value);
         } else {
             result = value;
         }

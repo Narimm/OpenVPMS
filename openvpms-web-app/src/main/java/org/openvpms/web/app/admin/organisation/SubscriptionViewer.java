@@ -39,7 +39,7 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.io.InputStream;
@@ -168,7 +168,7 @@ public class SubscriptionViewer {
             boolean expired = true;
             if (expiryDate != null && DateRules.getDate(expiryDate).compareTo(DateRules.getDate(new Date())) > 0) {
                 expired = false;
-                expiration.setText(DateHelper.getFullDateFormat().format(expiryDate));
+                expiration.setText(DateFormatter.getFullDateFormat().format(expiryDate));
             }
 
             Grid grid = GridFactory.create(

@@ -27,7 +27,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -69,10 +69,10 @@ public class MessageTableModel extends AbstractActTableModel {
         DateFormat format;
         Date startTime = act.getActivityStartTime();
         if (startTime != null) {
-            if (DateHelper.compareDates(startTime, new Date()) == 0) {
-                format = DateHelper.getTimeFormat(DateFormat.SHORT);
+            if (DateFormatter.compareDates(startTime, new Date()) == 0) {
+                format = DateFormatter.getTimeFormat(DateFormat.SHORT);
             } else {
-                format = DateHelper.getDateTimeFormat(false);
+                format = DateFormatter.getDateTimeFormat(false);
             }
             result = format.format(startTime);
         } else {

@@ -29,7 +29,7 @@ import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Date;
 import java.util.List;
@@ -172,7 +172,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                 Date date = set.getDate(ScheduleEvent.ACT_START_TIME);
                 Label label = LabelFactory.create();
                 if (date != null) {
-                    label.setText(DateHelper.formatTime(date, false));
+                    label.setText(DateFormatter.formatTime(date, false));
                 }
                 result = label;
                 break;

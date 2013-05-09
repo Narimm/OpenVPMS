@@ -25,7 +25,7 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Date;
 import java.util.List;
@@ -94,9 +94,9 @@ public class CustomerAppointmentTableModel extends AbstractActTableModel {
             Date startTime = object.getActivityStartTime();
             if (startTime != null) {
                 if (index == dateIndex) {
-                    return DateHelper.formatDate(startTime, false);
+                    return DateFormatter.formatDate(startTime, false);
                 } else {
-                    return DateHelper.formatTime(startTime, false);
+                    return DateFormatter.formatTime(startTime, false);
                 }
             }
         }

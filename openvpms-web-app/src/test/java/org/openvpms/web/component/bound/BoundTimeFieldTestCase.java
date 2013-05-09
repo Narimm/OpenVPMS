@@ -22,7 +22,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.TimePropertyTransformer;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Date;
 
@@ -50,7 +50,7 @@ public class BoundTimeFieldTestCase extends AbstractBoundTextComponentTest {
      */
     @Override
     protected String getValue(Property property) {
-        return DateHelper.formatTime((Date) property.getValue(), true);
+        return DateFormatter.formatTime((Date) property.getValue(), true);
     }
 
     /**

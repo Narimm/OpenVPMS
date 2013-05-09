@@ -31,7 +31,7 @@ import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Date;
 import java.util.List;
@@ -163,7 +163,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
                 Date date = set.getDate(ScheduleEvent.ACT_START_TIME);
                 Label label = LabelFactory.create();
                 if (date != null) {
-                    label.setText(DateHelper.formatTime(date, false));
+                    label.setText(DateFormatter.formatTime(date, false));
                 }
                 result = label;
                 break;
@@ -192,7 +192,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
                     if (end == null) {
                         end = new Date();
                     }
-                    result = DateHelper.formatTimeDiff(start, end);
+                    result = DateFormatter.formatTimeDiff(start, end);
                 }
                 break;
         }

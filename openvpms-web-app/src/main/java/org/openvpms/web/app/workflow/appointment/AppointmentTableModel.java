@@ -24,7 +24,7 @@ import org.openvpms.web.app.workflow.scheduling.Schedule;
 import org.openvpms.web.app.workflow.scheduling.ScheduleTableModel;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Date;
 
@@ -109,7 +109,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
         if (AppointmentStatus.CHECKED_IN.equals(code)) {
             Date arrival = event.getDate(ScheduleEvent.ARRIVAL_TIME);
             if (arrival != null) {
-                String diff = DateHelper.formatTimeDiff(arrival, new Date());
+                String diff = DateFormatter.formatTimeDiff(arrival, new Date());
                 status = Messages.get("workflow.scheduling.table.waiting",
                                       diff);
             }

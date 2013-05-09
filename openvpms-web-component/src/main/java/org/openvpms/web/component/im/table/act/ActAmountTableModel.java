@@ -35,7 +35,7 @@ import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
 import java.math.BigDecimal;
@@ -189,7 +189,7 @@ public class ActAmountTableModel<T extends Act>
             case DATE_INDEX:
                 Date date = act.getActivityStartTime();
                 if (date != null) {
-                    result = DateHelper.formatDate(date, false);
+                    result = DateFormatter.formatDate(date, false);
                 }
                 break;
             case STATUS_INDEX:

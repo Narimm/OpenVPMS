@@ -32,7 +32,7 @@ import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
 import java.math.BigDecimal;
@@ -216,7 +216,7 @@ public class CustomerBalanceSummaryTableModel
     private Component getDate(Date date) {
         Label label = LabelFactory.create();
         if (date != null) {
-            label.setText(DateHelper.formatDate(date, false));
+            label.setText(DateFormatter.formatDate(date, false));
         }
         return label;
     }

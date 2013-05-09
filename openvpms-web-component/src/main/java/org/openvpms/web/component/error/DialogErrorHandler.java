@@ -22,7 +22,6 @@ import nextapp.echo2.app.Window;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.error.ErrorHandler;
-import org.openvpms.web.echo.error.ErrorReportingDialog;
 
 
 /**
@@ -36,6 +35,18 @@ import org.openvpms.web.echo.error.ErrorReportingDialog;
  * @author Tim Anderson
  */
 public class DialogErrorHandler extends ErrorHandler {
+
+    /**
+     * Handles an error.
+     *
+     * @param cause the cause of the error
+     */
+    @Override
+    public void error(Throwable cause) {
+        Throwable rootCause = ExceptionHelper.getRootCause(cause);
+        String message = ErrorFormatter.format(rootCause);
+        error(null, message, cause, null);
+    }
 
     /**
      * Handles an error.
@@ -92,4 +103,6 @@ public class DialogErrorHandler extends ErrorHandler {
         }
         return false;
     }
+
+
 }

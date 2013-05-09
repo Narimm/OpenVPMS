@@ -23,7 +23,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateHelper;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -91,7 +91,7 @@ public class SchedulingHelper {
         if (event.exists(ScheduleEvent.ARRIVAL_TIME)) {
             Date arrival = event.getDate(ScheduleEvent.ARRIVAL_TIME);
             if (arrival != null) {
-                waiting = DateHelper.formatTimeDiff(arrival, new Date());
+                waiting = DateFormatter.formatTimeDiff(arrival, new Date());
                 waiting = Messages.get("scheduleview.expression.waiting",
                                        waiting);
             }
