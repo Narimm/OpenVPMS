@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.button;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
