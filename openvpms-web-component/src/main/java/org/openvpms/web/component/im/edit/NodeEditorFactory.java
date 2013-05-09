@@ -29,7 +29,6 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.edit.PropertyEditor;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -41,10 +40,11 @@ import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
-import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.palette.Palette;
 import org.openvpms.web.echo.style.Styles;
 
 import java.util.List;
@@ -247,7 +247,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> identifiers = ArchetypeQueryHelper.getCandidates(service, property.getDescriptor());
             final String[] nodes = DescriptorHelper.getCommonNodeNames(
-                property.getDescriptor().getArchetypeRange(), IDENTIFIER_SORT_NODES, service);
+                    property.getDescriptor().getArchetypeRange(), IDENTIFIER_SORT_NODES, service);
 
             Palette<IMObject> palette = new BoundPalette<IMObject>(identifiers, property) {
                 @Override
@@ -305,7 +305,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     private PropertyEditor createPropertyEditor(Property property,
                                                 Component component) {
         PropertyComponentEditor editor
-            = new PropertyComponentEditor(property, component);
+                = new PropertyComponentEditor(property, component);
         editors.add(editor);
         return editor;
     }
