@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.tabpane;
 
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.TabModel;

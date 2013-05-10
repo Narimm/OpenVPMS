@@ -27,11 +27,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.event.DocumentListener;
-import org.openvpms.web.echo.event.WindowPaneListener;
-import org.openvpms.web.echo.focus.FocusCommand;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -40,7 +35,12 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.event.DocumentListener;
+import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.factory.TextComponentFactory;
+import org.openvpms.web.echo.focus.FocusCommand;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.List;
 

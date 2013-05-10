@@ -16,11 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.TabModel;
-import org.openvpms.web.echo.factory.ComponentFactory;
 
 
 /**

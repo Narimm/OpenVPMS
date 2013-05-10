@@ -28,8 +28,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 

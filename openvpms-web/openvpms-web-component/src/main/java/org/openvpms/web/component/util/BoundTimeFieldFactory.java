@@ -18,31 +18,28 @@
 
 package org.openvpms.web.component.util;
 
-import org.openvpms.web.component.bound.BoundDateField;
-import org.openvpms.web.component.bound.BoundDateTimeField;
+import org.openvpms.web.component.bound.BoundTimeField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ComponentFactory;
 
+
 /**
- * Factory for {@link BoundDateTimeField}s.
+ * Factory for {@link BoundTimeField}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class BoundDateTimeFieldFactory extends ComponentFactory {
+public class BoundTimeFieldFactory extends ComponentFactory {
 
     /**
-     * Creates a new bound date-time field with the default style.
+     * Creates a new bound time field with the default style.
      *
      * @param property the property to bind
-     * @return a new bound date-time field
+     * @return a new bound time field
      */
-    public static BoundDateTimeField create(Property property) {
-        BoundDateTimeField field = new BoundDateTimeField(property);
-        BoundDateField date = field.getDateField();
-        setDefaultStyle(date.getDateChooser());
-        setDefaultStyle(date.getTextField());
-        setDefaultStyle(field.getTimeField());
+    public static BoundTimeField create(Property property) {
+        BoundTimeField field = new BoundTimeField(property);
+        setDefaultStyle(field);
         return field;
     }
 

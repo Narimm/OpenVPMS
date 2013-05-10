@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -35,10 +34,11 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.component.util.TabPaneModel;
-import org.openvpms.web.component.util.TabbedPaneFactory;
+import org.openvpms.web.echo.factory.TabbedPaneFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.HashMap;
 import java.util.List;
