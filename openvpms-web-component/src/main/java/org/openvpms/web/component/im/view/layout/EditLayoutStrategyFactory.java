@@ -19,10 +19,10 @@
 package org.openvpms.web.component.im.view.layout;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.archetype.ShortNamePairArchetypeHandlers;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
-import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
 
 
 /**

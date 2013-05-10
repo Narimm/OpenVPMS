@@ -30,7 +30,7 @@ import org.openvpms.web.app.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.app.workflow.scheduling.ScheduleCRUDWindow;
 import org.openvpms.web.app.workflow.scheduling.SchedulingWorkspace;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.archetype.Archetypes;
 
 
 /**

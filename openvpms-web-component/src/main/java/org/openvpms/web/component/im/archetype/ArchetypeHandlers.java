@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.util;
+package org.openvpms.web.component.im.archetype;
 
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang.ObjectUtils;
@@ -25,8 +25,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.util.ConfigReader;
-import org.openvpms.web.component.util.PropertiesReader;
 
 import java.net.URL;
 import java.util.ArrayList;

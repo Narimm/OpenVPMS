@@ -21,9 +21,9 @@ package org.openvpms.web.component.im.edit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.archetype.ArchetypeHandler;
+import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ArchetypeHandler;
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
 import org.openvpms.web.component.property.CollectionProperty;
 
 import java.lang.reflect.Constructor;

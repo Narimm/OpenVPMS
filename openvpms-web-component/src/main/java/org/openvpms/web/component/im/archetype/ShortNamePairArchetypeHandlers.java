@@ -16,12 +16,11 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.util;
+package org.openvpms.web.component.im.archetype;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.util.PropertiesReader;
 
 import java.util.HashMap;
 import java.util.Map;

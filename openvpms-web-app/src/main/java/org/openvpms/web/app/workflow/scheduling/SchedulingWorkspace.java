@@ -28,7 +28,7 @@ import org.openvpms.web.app.patient.CustomerPatientSummary;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 import org.openvpms.web.component.subsystem.CRUDWindowListener;

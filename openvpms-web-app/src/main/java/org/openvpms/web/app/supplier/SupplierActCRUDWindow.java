@@ -22,8 +22,8 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.help.HelpContext;
 
