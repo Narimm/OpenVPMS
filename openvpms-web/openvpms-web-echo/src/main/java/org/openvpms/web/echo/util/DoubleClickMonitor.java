@@ -12,10 +12,8 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.util;
 
 import org.apache.commons.lang.ObjectUtils;
 
@@ -30,8 +28,7 @@ import java.util.Date;
  * <p/>
  * Double clicks are simulated by tracking single clicks on the same object, within a configurable time frame.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DoubleClickMonitor {
 

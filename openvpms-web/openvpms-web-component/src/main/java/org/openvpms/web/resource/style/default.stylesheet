@@ -1642,7 +1642,7 @@
     <!-- =================================================================== -->
 
     <style name="default"
-           type="org.openvpms.web.component.tree.StyleableTreeCellRenderer">
+           type="org.openvpms.web.echo.tree.StyleableTreeCellRenderer">
         <properties>
             <property name="selectedForeground" value="#ffffff"/>
             <property name="selectedBackground" value="#000000"/>
@@ -1650,7 +1650,7 @@
     </style>
 
     <style name="default"
-           type="org.openvpms.web.component.tree.StyleableTreeIcons">
+           type="org.openvpms.web.echo.tree.StyleableTreeIcons">
         <properties>
             <property name="plus"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -1726,7 +1726,7 @@
     </style>
 
     <style name="none"
-           type="org.openvpms.web.component.tree.StyleableTreeIcons">
+           type="org.openvpms.web.echo.tree.StyleableTreeIcons">
         <properties/>
     </style>
 

@@ -28,7 +28,6 @@ import org.openvpms.web.component.property.DateTimePropertyTransformer;
 import org.openvpms.web.component.property.DefaultPropertyTransformer;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyTransformer;
-import org.openvpms.web.component.util.BoundTimeFieldFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
