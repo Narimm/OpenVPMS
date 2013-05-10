@@ -25,7 +25,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.TimePropertyTransformer;
-import org.openvpms.web.component.util.TimeFieldFactory;
+import org.openvpms.web.component.util.BoundTimeFieldFactory;
 
 
 /**
@@ -52,7 +52,7 @@ public class ScheduleLayoutStrategy extends AbstractLayoutStrategy {
                                              LayoutContext context) {
         String name = property.getName();
         if ("startTime".equals(name) || "endTime".equals(name)) {
-            Component time = TimeFieldFactory.create(property);
+            Component time = BoundTimeFieldFactory.create(property);
             if (!context.isEdit()) {
                 time.setEnabled(false);
             } else {

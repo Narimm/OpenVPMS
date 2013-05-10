@@ -16,13 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.echo.factory;
 
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.PasswordField;
 import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.text.TextDocument;
 import org.openvpms.web.echo.text.TextField;
 

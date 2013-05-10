@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.bound.BoundDateTimeField;
+import org.openvpms.web.component.bound.BoundDateTimeFieldFactory;
 import org.openvpms.web.component.im.customer.CustomerParticipationEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
@@ -33,7 +34,6 @@ import org.openvpms.web.component.property.DateTimePropertyTransformer;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.BoundDateTimeFieldFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 

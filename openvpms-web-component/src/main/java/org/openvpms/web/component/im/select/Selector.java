@@ -25,11 +25,11 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.ClassUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.Messages;
 

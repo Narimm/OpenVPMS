@@ -23,7 +23,7 @@ import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.NumericPropertyFormatter;
-import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.text.TextField;
 
 import java.text.Format;

@@ -37,8 +37,8 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.colour.ColourHelper;
+import org.openvpms.web.echo.factory.TextComponentFactory;
 
 
 /**

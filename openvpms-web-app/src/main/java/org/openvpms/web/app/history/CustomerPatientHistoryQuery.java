@@ -38,10 +38,10 @@ import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.IMObjectSorter;
-import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.system.ServiceHelper;
 

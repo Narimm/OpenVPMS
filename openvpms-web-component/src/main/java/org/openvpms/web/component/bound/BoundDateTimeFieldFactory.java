@@ -12,34 +12,32 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.component.bound;
 
-import org.openvpms.web.component.bound.BoundTimeField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ComponentFactory;
 
-
 /**
- * Factory for {@link BoundTimeField}s.
+ * Factory for {@link BoundDateTimeField}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class TimeFieldFactory extends ComponentFactory {
+public class BoundDateTimeFieldFactory extends ComponentFactory {
 
     /**
-     * Creates a new bound time field with the default style.
+     * Creates a new bound date-time field with the default style.
      *
      * @param property the property to bind
-     * @return a new bound time field
+     * @return a new bound date-time field
      */
-    public static BoundTimeField create(Property property) {
-        BoundTimeField field = new BoundTimeField(property);
-        setDefaultStyle(field);
+    public static BoundDateTimeField create(Property property) {
+        BoundDateTimeField field = new BoundDateTimeField(property);
+        BoundDateField date = field.getDateField();
+        setDefaultStyle(date.getDateChooser());
+        setDefaultStyle(date.getTextField());
+        setDefaultStyle(field.getTimeField());
         return field;
     }
 
