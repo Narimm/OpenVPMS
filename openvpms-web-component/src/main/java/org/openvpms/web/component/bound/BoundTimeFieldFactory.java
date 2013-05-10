@@ -16,9 +16,8 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.component.bound;
 
-import org.openvpms.web.component.bound.BoundTimeField;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ComponentFactory;
 

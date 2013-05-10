@@ -22,7 +22,7 @@
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-package org.openvpms.web.component.tree;
+package org.openvpms.web.echo.tree;
 
 import echopointng.tree.DefaultTreeCellRenderer;
 import nextapp.echo2.app.ApplicationInstance;

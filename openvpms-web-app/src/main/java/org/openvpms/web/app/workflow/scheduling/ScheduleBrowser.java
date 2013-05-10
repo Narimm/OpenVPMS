@@ -36,7 +36,6 @@ import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -45,6 +44,7 @@ import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
+import org.openvpms.web.echo.util.DoubleClickMonitor;
 
 import java.util.ArrayList;
 import java.util.Date;

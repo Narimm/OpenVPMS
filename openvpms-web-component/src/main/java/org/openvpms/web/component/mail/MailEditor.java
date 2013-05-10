@@ -66,7 +66,6 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.util.DoubleClickMonitor;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
@@ -82,6 +81,7 @@ import org.openvpms.web.echo.popup.DropDown;
 import org.openvpms.web.echo.table.AbstractTableCellRenderer;
 import org.openvpms.web.echo.table.DefaultTableCellRenderer;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.echo.util.DoubleClickMonitor;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
