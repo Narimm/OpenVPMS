@@ -24,7 +24,7 @@
  */
 package org.openvpms.web.component.im.view.layout;
 
-import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
+import org.openvpms.web.component.im.archetype.ShortNamePairArchetypeHandlers;
 
 
 /**

@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.DocumentCRUDWindow;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.echo.help.HelpContext;
 

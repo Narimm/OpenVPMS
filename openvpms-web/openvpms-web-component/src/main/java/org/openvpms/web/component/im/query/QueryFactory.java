@@ -25,8 +25,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.util.ArchetypeHandler;
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
+import org.openvpms.web.component.im.archetype.ArchetypeHandler;
+import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 
 
 /**

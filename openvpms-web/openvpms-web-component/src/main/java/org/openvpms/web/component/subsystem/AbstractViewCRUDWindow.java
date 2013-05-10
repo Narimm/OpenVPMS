@@ -21,14 +21,14 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
-import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**

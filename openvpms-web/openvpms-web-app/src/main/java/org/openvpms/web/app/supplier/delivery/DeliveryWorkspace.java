@@ -20,9 +20,9 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.app.supplier.SupplierMailContext;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.subsystem.CRUDWindow;
 
 

@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.BrowserCRUDWorkspace;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.util.Archetypes;
+import org.openvpms.web.component.im.archetype.Archetypes;
 
 
 /**

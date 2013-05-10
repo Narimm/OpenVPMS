@@ -21,6 +21,8 @@ package org.openvpms.web.component.im.util;
 import org.junit.Test;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.archetype.ArchetypeHandler;
+import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.query.AutoQuery;
 import org.openvpms.web.component.im.query.EntityQuery;
 import org.openvpms.web.component.im.query.PatientQuery;

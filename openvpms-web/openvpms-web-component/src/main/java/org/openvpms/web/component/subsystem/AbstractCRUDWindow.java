@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectActions;
@@ -38,7 +39,6 @@ import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.Archetypes;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;

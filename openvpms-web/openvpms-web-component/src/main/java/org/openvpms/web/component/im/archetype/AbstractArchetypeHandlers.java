@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.util;
+package org.openvpms.web.component.im.archetype;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;

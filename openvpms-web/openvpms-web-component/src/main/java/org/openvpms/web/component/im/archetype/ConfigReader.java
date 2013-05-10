@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.util;
+package org.openvpms.web.component.im.archetype;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

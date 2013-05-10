@@ -18,8 +18,8 @@
 
 package org.openvpms.web.component.im.view.layout;
 
+import org.openvpms.web.component.im.archetype.ShortNamePairArchetypeHandlers;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
-import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
 
 
 /**
