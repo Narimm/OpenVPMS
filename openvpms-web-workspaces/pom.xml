@@ -11,6 +11,24 @@
 
     <artifactId>openvpms-web-workspaces</artifactId>
 
+    <build>
+        <testResources>
+            <testResource>
+                <directory>${basedir}/src/test/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <directory>${basedir}/src/test/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.stylesheet</include>
+                </includes>
+            </testResource>
+        </testResources>
+    </build>
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
