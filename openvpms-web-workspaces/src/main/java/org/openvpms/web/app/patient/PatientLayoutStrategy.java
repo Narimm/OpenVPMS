@@ -35,7 +35,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.TabPaneModel;
+import org.openvpms.web.echo.tabpane.TabPaneModel;
 
 import java.util.Collection;
 import java.util.List;

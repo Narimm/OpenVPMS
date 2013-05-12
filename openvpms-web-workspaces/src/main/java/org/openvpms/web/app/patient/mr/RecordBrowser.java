@@ -34,11 +34,11 @@ import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.beans.PropertyChangeEvent;
