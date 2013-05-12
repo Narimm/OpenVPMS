@@ -42,13 +42,13 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.component.retry.Retryer;
-import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ChangeListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
