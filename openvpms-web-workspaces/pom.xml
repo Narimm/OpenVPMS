@@ -154,7 +154,14 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-web-component</artifactId>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

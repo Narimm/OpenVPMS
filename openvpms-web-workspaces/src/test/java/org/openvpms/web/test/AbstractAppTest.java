@@ -19,9 +19,12 @@
 package org.openvpms.web.test;
 
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Window;
 import org.junit.Before;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
-import org.openvpms.web.app.OpenVPMSApp;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -37,7 +40,31 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        OpenVPMSApp app = (OpenVPMSApp) applicationContext.getBean("openVPMSApp");
+        ContextApplicationInstance app = new ContextApplicationInstance(new GlobalContext()) {
+            /**
+             * Switches the current workspace to display an object.
+             *
+             * @param object the object to view
+             */
+            @Override
+            public void switchTo(IMObject object) {
+            }
+
+            /**
+             * Switches the current workspace to one that supports a particular archetype.
+             *
+             * @param shortName the archetype short name
+             */
+            @Override
+            public void switchTo(String shortName) {
+            }
+
+            @Override
+            public Window init() {
+                Window window = new Window();
+                return window;
+            }
+        };
         app.setApplicationContext(applicationContext);
         ApplicationInstance.setActive(app);
         app.doInit();
