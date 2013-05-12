@@ -57,6 +57,7 @@
         <module>openvpms-web-component</module>
         <module>openvpms-web-app</module>
         <module>openvpms-web-echo</module>
+        <module>openvpms-web-workspaces</module>
     </modules>
 
 </project>
