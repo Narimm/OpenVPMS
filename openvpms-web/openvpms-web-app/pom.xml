@@ -20,16 +20,6 @@
         <finalName>openvpms</finalName>
         <resources>
             <resource>
-                <directory>${basedir}/src/main/java</directory>
-                <includes>
-                    <include>**/*.gif</include>
-                    <include>**/*.png</include>
-                    <include>**/*.stylesheet</include>
-                    <include>**/*.js</include>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>
-            <resource>
                 <directory>${basedir}/src/conf</directory>
                 <includes>
                     <include>*.properties</include>
@@ -62,12 +52,6 @@
                 </includes>
             </resource>
             <resource>
-                <directory>${basedir}/src/conf/echo2</directory>
-                <includes>
-                    <include>**</include>
-                </includes>
-            </resource>
-            <resource>
                 <includes>
                     <include>*.properties</include>
                 </includes>
@@ -76,28 +60,6 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <testResources>
-            <testResource>
-                <directory>${basedir}/src/test/conf</directory>
-                <includes>
-                    <include>**/*.*</include>
-                </includes>
-            </testResource>
-            <testResource>
-                <directory>${basedir}/src/test/resources</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
-            </testResource>
-            <testResource>
-                <directory>${basedir}/src/test/java</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.xml</include>
-                    <include>**/*.stylesheet</include>
-                </includes>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
