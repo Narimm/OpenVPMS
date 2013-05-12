@@ -34,11 +34,11 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.util.TabPaneModel;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.tabpane.TabPaneModel;
 
 import java.util.HashMap;
 import java.util.List;
