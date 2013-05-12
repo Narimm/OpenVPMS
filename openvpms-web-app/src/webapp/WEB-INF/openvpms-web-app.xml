@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- ================================================================== -->
+    <!--                        MACROS                                      -->
+    <!-- ================================================================== -->
+
+    <bean id="macros" class="org.openvpms.macro.impl.LookupMacros">
+        <constructor-arg index="0" ref="lookupService"/>
+        <constructor-arg index="1" ref="archetypeRuleService"/>
+        <constructor-arg index="2" ref="documentHandlers"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!--                        EMAIL                                       -->
+    <!-- ================================================================== -->
+    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="prototype"/>
+
+    <!-- ================================================================== -->
+    <!--                        APPLICATION                                 -->
+    <!-- ================================================================== -->
+    <bean id="context" class="org.openvpms.web.component.app.GlobalContext" scope="prototype"/>
+
+    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype">
+        <constructor-arg ref="context"/>
+        <property name="styleSheets" ref="userStyleSheets"/>
+    </bean>
+
+    <bean id="styleSheetCache" class="org.openvpms.web.component.style.StyleSheetCache">
+        <constructor-arg index="0" value="org/openvpms/web/resource/style/default"/>
+    </bean>
+
+    <bean id="userStyleSheets" class="org.openvpms.web.component.style.UserStyleSheets" scope="session">
+        <constructor-arg index="0" ref="styleSheetCache"/>
+    </bean>
+
+    <bean id="browserStates" class="org.openvpms.web.component.im.query.BrowserStates" scope="session"/>
+
+    <bean id="messageMonitor" class="org.openvpms.web.app.workflow.messaging.MessageMonitor">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <!-- Defines the key stroke combination for accelerator keys.
+         If mask not specified, defaults to 'Alt'.
+      -->
+    <bean id="keyStrokeMask"
+          class="org.openvpms.web.echo.keyboard.KeyStrokeMask">
+        <!--  The mask. May contain combinations of Ctrl, Alt, or Shift,
+              separated by '-' -->
+        <property name="mask" value="Alt"/>
+    </bean>
+
+    <bean id="errorReporter" class="org.openvpms.web.component.error.ErrorReporter"/>
+
+</beans>

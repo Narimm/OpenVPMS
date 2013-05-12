@@ -17,10 +17,6 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>
             /WEB-INF/applicationContext.xml
-            /WEB-INF/openvpms-archetypes.xml
-            /WEB-INF/openvpms-authentication.xml
-            /WEB-INF/openvpms-esci.xml
-            /WEB-INF/openvpms-sms.xml
         </param-value>
     </context-param>
 

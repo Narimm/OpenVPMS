@@ -2,7 +2,8 @@
 <%@ page import="org.openvpms.web.echo.button.ShortcutHelper" %>
 <%@ page import="org.openvpms.web.resource.i18n.Messages" %>
 <%@ page import="org.openvpms.web.resource.subscription.SubscriptionHelper" %>
-<%@ page import="org.openvpms.web.util.Version" %>
+<%@ page import="org.openvpms.web.resource.version.Version" %>
+<%@ page import="org.openvpms.web.system.ServiceHelper" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
@@ -214,7 +215,7 @@
     </div>
 </form>
 <div class="footer">
-    <div><%=SubscriptionHelper.formatSubscription()%>
+    <div><%=SubscriptionHelper.formatSubscription(ServiceHelper.getArchetypeService())%>
     </div>
     <div class="version"><%=Messages.get("openvpms.version", Version.VERSION, Version.REVISION)%>
     </div>
