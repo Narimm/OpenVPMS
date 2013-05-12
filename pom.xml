@@ -54,10 +54,10 @@
     <modules>
         <module>openvpms-macro</module>
         <module>openvpms-web-resource</module>
-        <module>openvpms-web-component</module>
-        <module>openvpms-web-app</module>
         <module>openvpms-web-echo</module>
+        <module>openvpms-web-component</module>
         <module>openvpms-web-workspaces</module>
+        <module>openvpms-web-app</module>
     </modules>
 
 </project>
