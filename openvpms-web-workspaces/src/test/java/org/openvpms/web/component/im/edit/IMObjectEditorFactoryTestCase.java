@@ -23,34 +23,6 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.app.admin.lookup.AlertTypeEditor;
-import org.openvpms.web.app.admin.lookup.LookupEditor;
-import org.openvpms.web.app.admin.lookup.MacroEditor;
-import org.openvpms.web.app.admin.lookup.SpeciesLookupEditor;
-import org.openvpms.web.app.admin.lookup.SuburbLookupEditor;
-import org.openvpms.web.app.admin.template.DocumentTemplatePrinterEditor;
-import org.openvpms.web.app.customer.CustomerEditor;
-import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
-import org.openvpms.web.app.customer.account.AdjustmentActEditor;
-import org.openvpms.web.app.customer.charge.CustomerChargeActEditor;
-import org.openvpms.web.app.customer.charge.DefaultCustomerChargeActItemEditor;
-import org.openvpms.web.app.customer.estimation.EstimationEditor;
-import org.openvpms.web.app.customer.estimation.EstimationItemEditor;
-import org.openvpms.web.app.patient.PatientEditor;
-import org.openvpms.web.app.patient.mr.PatientClinicalEventActEditor;
-import org.openvpms.web.app.patient.mr.PatientClinicalProblemActEditor;
-import org.openvpms.web.app.product.stock.StockAdjustEditor;
-import org.openvpms.web.app.product.stock.StockAdjustItemEditor;
-import org.openvpms.web.app.product.stock.StockTransferEditor;
-import org.openvpms.web.app.product.stock.StockTransferItemEditor;
-import org.openvpms.web.app.supplier.SupplierStockLocationRelationshipESCIEditor;
-import org.openvpms.web.app.supplier.charge.SupplierChargeActEditor;
-import org.openvpms.web.app.supplier.charge.SupplierChargeActItemEditor;
-import org.openvpms.web.app.supplier.delivery.DeliveryEditor;
-import org.openvpms.web.app.supplier.delivery.DeliveryItemEditor;
-import org.openvpms.web.app.supplier.order.OrderEditor;
-import org.openvpms.web.app.supplier.order.OrderItemEditor;
-import org.openvpms.web.app.workflow.messaging.UserMessageEditor;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.LocationEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
@@ -69,6 +41,34 @@ import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.workspace.admin.lookup.AlertTypeEditor;
+import org.openvpms.web.workspace.admin.lookup.LookupEditor;
+import org.openvpms.web.workspace.admin.lookup.MacroEditor;
+import org.openvpms.web.workspace.admin.lookup.SpeciesLookupEditor;
+import org.openvpms.web.workspace.admin.lookup.SuburbLookupEditor;
+import org.openvpms.web.workspace.admin.template.DocumentTemplatePrinterEditor;
+import org.openvpms.web.workspace.customer.CustomerEditor;
+import org.openvpms.web.workspace.customer.PatientOwnerRelationshipEditor;
+import org.openvpms.web.workspace.customer.account.AdjustmentActEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor;
+import org.openvpms.web.workspace.customer.estimation.EstimationEditor;
+import org.openvpms.web.workspace.customer.estimation.EstimationItemEditor;
+import org.openvpms.web.workspace.patient.PatientEditor;
+import org.openvpms.web.workspace.patient.mr.PatientClinicalEventActEditor;
+import org.openvpms.web.workspace.patient.mr.PatientClinicalProblemActEditor;
+import org.openvpms.web.workspace.product.stock.StockAdjustEditor;
+import org.openvpms.web.workspace.product.stock.StockAdjustItemEditor;
+import org.openvpms.web.workspace.product.stock.StockTransferEditor;
+import org.openvpms.web.workspace.product.stock.StockTransferItemEditor;
+import org.openvpms.web.workspace.supplier.SupplierStockLocationRelationshipESCIEditor;
+import org.openvpms.web.workspace.supplier.charge.SupplierChargeActEditor;
+import org.openvpms.web.workspace.supplier.charge.SupplierChargeActItemEditor;
+import org.openvpms.web.workspace.supplier.delivery.DeliveryEditor;
+import org.openvpms.web.workspace.supplier.delivery.DeliveryItemEditor;
+import org.openvpms.web.workspace.supplier.order.OrderEditor;
+import org.openvpms.web.workspace.supplier.order.OrderItemEditor;
+import org.openvpms.web.workspace.workflow.messaging.UserMessageEditor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -193,7 +193,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verfies that a {@link org.openvpms.web.app.customer.charge.DefaultCustomerChargeActItemEditor} is created for
+     * Verfies that a {@link org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor} is created for
      * <em>act.customerAccountInvoiceItem, act.customerAccountCreditItem and
      * act.customerAccountCounterItem</em>
      */
