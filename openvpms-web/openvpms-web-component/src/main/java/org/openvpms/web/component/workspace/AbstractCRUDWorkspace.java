@@ -40,7 +40,7 @@ import org.openvpms.web.resource.i18n.Messages;
  * @author Tim Anderson
  */
 public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child extends IMObject>
-    extends AbstractViewWorkspace<Parent> {
+        extends AbstractViewWorkspace<Parent> {
 
     /**
      * The child archetypes.
@@ -60,19 +60,19 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
      * be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param subsystemId  the subsystem localisation identifier
+     * @param workspacesId the workspace group localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public AbstractCRUDWorkspace(String subsystemId, String workspaceId, Context context, boolean showSelector) {
-        this(subsystemId, workspaceId, null, null, context, showSelector);
+    public AbstractCRUDWorkspace(String workspacesId, String workspaceId, Context context, boolean showSelector) {
+        this(workspacesId, workspaceId, null, null, context, showSelector);
     }
 
     /**
      * Constructs an {@code AbstractCRUDWorkspace}, with a selector for the parent object.
      *
-     * @param subsystemId     the subsystem localisation identifier
+     * @param workspacesId    the workspace group localisation identifier
      * @param workspaceId     the workspace localisation identifier
      * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value before performing any operation
@@ -81,15 +81,15 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
      *                        performing any operation
      * @param context         the context
      */
-    public AbstractCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<Parent> archetypes,
+    public AbstractCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
                                  Archetypes<Child> childArchetypes, Context context) {
-        this(subsystemId, workspaceId, archetypes, childArchetypes, context, true);
+        this(workspacesId, workspaceId, archetypes, childArchetypes, context, true);
     }
 
     /**
      * Constructs an {@code AbstractCRUDWorkspace}.
      *
-     * @param subsystemId     the subsystem localisation identifier
+     * @param workspacesId    the workspace group localisation identifier
      * @param workspaceId     the workspace localisation identifier
      * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes} method
      *                        must be invoked to set a non-null value before performing any operation
@@ -99,9 +99,9 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
      * @param context         the context
      * @param showSelector    if {@code true}, show a selector to select the parent object
      */
-    public AbstractCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<Parent> archetypes,
+    public AbstractCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
                                  Archetypes<Child> childArchetypes, Context context, boolean showSelector) {
-        super(subsystemId, workspaceId, archetypes, context, showSelector);
+        super(workspacesId, workspaceId, archetypes, context, showSelector);
         this.childArchetypes = childArchetypes;
     }
 
@@ -190,13 +190,13 @@ public abstract class AbstractCRUDWorkspace<Parent extends IMObject, Child exten
      * <p/>
      * The archetypes are assigned a localised display name using the
      * resource bundle key:
-     * <em>&lt;subsystemId&gt;.&lt;workspaceId&gt;.createtype</em>
+     * <em>&lt;workspacesId&gt;.&lt;workspaceId&gt;.createtype</em>
      *
      * @param type       the type that the short names represent
      * @param shortNames the archetype short names
      */
     protected void setChildArchetypes(Class<Child> type, String... shortNames) {
-        String key = getSubsystemId() + "." + getWorkspaceId() + ".createtype";
+        String key = getWorkspacesId() + "." + getWorkspaceId() + ".createtype";
         Archetypes<Child> archetypes = Archetypes.create(shortNames, type,
                                                          Messages.get(key));
         setChildArchetypes(archetypes);

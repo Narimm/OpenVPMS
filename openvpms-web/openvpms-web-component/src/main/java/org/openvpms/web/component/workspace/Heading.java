@@ -37,17 +37,16 @@ public final class Heading {
     /**
      * Returns the heading component.
      *
-     * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identifier
+     * @param workspacesId the workspace group localisation identifier
+     * @param workspaceId  the workspace localisation identifier
      * @return the heading component
      */
-    public static Component getHeading(String subsystemId, String workspaceId) {
-        String subsystem = Messages.get("subsystem." + subsystemId);
-        String workspace = Messages.get("workspace." + subsystemId
-                                        + "." + workspaceId);
-        subsystem = ShortcutHelper.getText(subsystem);
+    public static Component getHeading(String workspacesId, String workspaceId) {
+        String workspaces = Messages.get("workspaces." + workspacesId);
+        String workspace = Messages.get("workspace." + workspacesId + "." + workspaceId);
+        workspaces = ShortcutHelper.getText(workspaces);
         workspace = ShortcutHelper.getText(workspace);
-        String text = Messages.get("workspace.heading", subsystem, workspace);
+        String text = Messages.get("workspace.heading", workspaces, workspace);
 
         Label heading = LabelFactory.create(null, "Workspace.Heading");
         heading.setText(text);

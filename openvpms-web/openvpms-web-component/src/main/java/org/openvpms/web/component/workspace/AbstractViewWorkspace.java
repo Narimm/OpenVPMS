@@ -72,12 +72,12 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspace group localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param context     the context
      */
-    public AbstractViewWorkspace(String subsystemId, String workspaceId, Context context) {
-        this(subsystemId, workspaceId, null, context);
+    public AbstractViewWorkspace(String workspacesId, String workspaceId, Context context) {
+        this(workspacesId, workspaceId, null, context);
     }
 
     /**
@@ -86,13 +86,13 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * If no archetypes are supplied, the {@link #setArchetypes} method must
      * before performing any operations.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspace group localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param archetypes  the archetype that this operates on. May be {@code null}
      * @param context     the context
      */
-    public AbstractViewWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes, Context context) {
-        this(subsystemId, workspaceId, archetypes, context, true);
+    public AbstractViewWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
+        this(workspacesId, workspaceId, archetypes, context, true);
     }
 
     /**
@@ -100,15 +100,15 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * <p/>
      * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
-     * @param subsystemId  the subsystem localisation identifier
+     * @param workspacesId  the workspace group localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @param archetypes   the archetype that this operates on. May be {@code null}
      * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public AbstractViewWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes,
+    public AbstractViewWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes,
                                  Context context, boolean showSelector) {
-        super(subsystemId, workspaceId, context);
+        super(workspacesId, workspaceId, context);
         this.archetypes = archetypes;
         if (showSelector) {
             selector = createSelector();
@@ -170,13 +170,13 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * <p/>
      * The archetypes are assigned a localised display name using the
      * resource bundle key:
-     * <em>&lt;subsystemId&gt;.&lt;workspaceId&gt;.type</em>
+     * <em>&lt;workspacesId&gt;.&lt;workspaceId&gt;.type</em>
      *
      * @param type       the type that the short names represent
      * @param shortNames the archetype short names
      */
     protected void setArchetypes(Class<T> type, String... shortNames) {
-        String key = getSubsystemId() + "." + getWorkspaceId() + ".type";
+        String key = getWorkspacesId() + "." + getWorkspaceId() + ".type";
         setArchetypes(Archetypes.create(shortNames, type, Messages.get(key)));
     }
 
