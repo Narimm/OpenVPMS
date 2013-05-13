@@ -19,7 +19,7 @@
 package org.openvpms.web.workspace.supplier;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.subsystem.AbstractWorkspaces;
 import org.openvpms.web.workspace.supplier.charge.ChargeWorkspace;
 import org.openvpms.web.workspace.supplier.delivery.DeliveryWorkspace;
 import org.openvpms.web.workspace.supplier.document.SupplierDocumentWorkspace;
@@ -27,19 +27,19 @@ import org.openvpms.web.workspace.supplier.order.OrderWorkspace;
 
 
 /**
- * Supplier subsystem.
+ * Supplier workspaces.
  * `
  *
  * @author Tim Anderson
  */
-public class SupplierSubsystem extends AbstractSubsystem {
+public class SupplierWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs a {@code SupplierSubsystem|.
+     * Constructs a {@code SupplierWorkspaces|.
      *
      * @param context the context
      */
-    public SupplierSubsystem(Context context) {
+    public SupplierWorkspaces(Context context) {
         super("supplier");
         addWorkspace(new InformationWorkspace(context));
         addWorkspace(new SupplierDocumentWorkspace(context));

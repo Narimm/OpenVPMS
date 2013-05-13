@@ -17,23 +17,23 @@
 package org.openvpms.web.workspace.patient;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.subsystem.AbstractWorkspaces;
 import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.workspace.patient.info.InformationWorkspace;
 import org.openvpms.web.workspace.patient.mr.PatientRecordWorkspace;
 
 
 /**
- * Patient subsystem.
+ * Patient workspaces.
  *
  * @author Tim Anderson
  */
-public class PatientSubsystem extends AbstractSubsystem {
+public class PatientWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs a {@code PatientSubsystem}.
+     * Constructs a {@code PatientWorkspaces}.
      */
-    public PatientSubsystem(Context context) {
+    public PatientWorkspaces(Context context) {
         super("patient");
         addWorkspace(new InformationWorkspace(context));
         addWorkspace(new PatientRecordWorkspace(context));

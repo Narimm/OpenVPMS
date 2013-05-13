@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.admin;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.subsystem.AbstractWorkspaces;
 import org.openvpms.web.workspace.admin.archetype.ArchetypeWorkspace;
 import org.openvpms.web.workspace.admin.group.GroupWorkspace;
 import org.openvpms.web.workspace.admin.lookup.LookupWorkspace;
@@ -26,18 +26,18 @@ import org.openvpms.web.workspace.admin.user.UserWorkspace;
 
 
 /**
- * Administration subsystem.
+ * Administration workspaces.
  *
  * @author Tim Anderson
  */
-public class AdminSubsystem extends AbstractSubsystem {
+public class AdminWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs an {@code AdminSubsystem}.
+     * Constructs an {@code AdminWorkspaces}.
      *
      * @param context the context
      */
-    public AdminSubsystem(Context context) {
+    public AdminWorkspaces(Context context) {
         super("admin");
 
         addWorkspace(new OrganisationWorkspace(context));

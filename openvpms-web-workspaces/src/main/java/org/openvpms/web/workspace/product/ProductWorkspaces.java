@@ -18,23 +18,23 @@ package org.openvpms.web.workspace.product;
 
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.subsystem.AbstractWorkspaces;
 import org.openvpms.web.workspace.product.stock.StockWorkspace;
 
 
 /**
- * Product subsystem.
+ * Product workspaces.
  *
  * @author Tim Anderson
  */
-public class ProductSubsystem extends AbstractSubsystem {
+public class ProductWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs a {@code ProductSubsystem}.
+     * Constructs a {@code ProductWorkspaces}.
      *
      * @param context the context
      */
-    public ProductSubsystem(Context context) {
+    public ProductWorkspaces(Context context) {
         super("product");
         PracticeMailContext mailContext = new PracticeMailContext(context);
 

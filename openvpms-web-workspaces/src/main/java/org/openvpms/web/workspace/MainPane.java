@@ -47,8 +47,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.subsystem.Refreshable;
-import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
+import org.openvpms.web.component.subsystem.Workspaces;
 import org.openvpms.web.echo.button.ButtonColumn;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -62,15 +62,15 @@ import org.openvpms.web.echo.factory.ContentPaneFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.admin.AdminSubsystem;
-import org.openvpms.web.workspace.customer.CustomerSubsystem;
+import org.openvpms.web.workspace.admin.AdminWorkspaces;
+import org.openvpms.web.workspace.customer.CustomerWorkspaces;
 import org.openvpms.web.workspace.history.CustomerPatient;
 import org.openvpms.web.workspace.history.CustomerPatientHistoryBrowser;
-import org.openvpms.web.workspace.patient.PatientSubsystem;
-import org.openvpms.web.workspace.product.ProductSubsystem;
-import org.openvpms.web.workspace.reporting.ReportingSubsystem;
-import org.openvpms.web.workspace.supplier.SupplierSubsystem;
-import org.openvpms.web.workspace.workflow.WorkflowSubsystem;
+import org.openvpms.web.workspace.patient.PatientWorkspaces;
+import org.openvpms.web.workspace.product.ProductWorkspaces;
+import org.openvpms.web.workspace.reporting.ReportingWorkspaces;
+import org.openvpms.web.workspace.supplier.SupplierWorkspaces;
+import org.openvpms.web.workspace.workflow.WorkflowWorkspaces;
 import org.openvpms.web.workspace.workflow.messaging.MessageMonitor;
 
 import java.beans.PropertyChangeEvent;
@@ -89,7 +89,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     /**
      * The subsystems.
      */
-    private final List<Subsystem> subsystems = new ArrayList<Subsystem>();
+    private final List<Workspaces> workspaces = new ArrayList<Workspaces>();
 
     /**
      * Menu button row.
@@ -107,7 +107,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     private ButtonColumn subMenu;
 
     /**
-     * Workspace summary component. May be <tt>null</tt>.
+     * Workspace summary component. May be {@code null}.
      */
     private Component summary;
 
@@ -205,7 +205,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
 
 
     /**
-     * Constructs a <tt>MainPane</tt>.
+     * Constructs a {@code MainPane}.
      *
      * @param monitor the message monitor
      * @param context the context
@@ -239,18 +239,18 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
         currentSubsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
 
-        Button button = addSubsystem(new CustomerSubsystem(context));
-        addSubsystem(new PatientSubsystem(context));
-        addSubsystem(new SupplierSubsystem(context));
-        addSubsystem(new WorkflowSubsystem(context));
-        addSubsystem(new ProductSubsystem(context));
-        addSubsystem(new ReportingSubsystem(context));
+        Button button = addSubsystem(new CustomerWorkspaces(context));
+        addSubsystem(new PatientWorkspaces(context));
+        addSubsystem(new SupplierWorkspaces(context));
+        addSubsystem(new WorkflowWorkspaces(context));
+        addSubsystem(new ProductWorkspaces(context));
+        addSubsystem(new ReportingWorkspaces(context));
 
         context.addListener(this);
 
         // if the current user is an admin, show the administration subsystem
         if (UserHelper.isAdmin(user)) {
-            addSubsystem(new AdminSubsystem(context));
+            addSubsystem(new AdminWorkspaces(context));
         }
 
         menu.addButton("help", new ActionListener() {
@@ -310,13 +310,13 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      */
     public void changeContext(IMObject context) {
         String shortName = context.getArchetypeId().getShortName();
-        for (Subsystem subsystem : subsystems) {
-            Workspace workspace = subsystem.getWorkspaceForArchetype(shortName);
+        for (Workspaces workspaces : this.workspaces) {
+            Workspace workspace = workspaces.getWorkspaceForArchetype(shortName);
             if (workspace != null) {
                 workspace.getComponent();
                 workspace.update(context);
-                subsystem.setWorkspace(workspace);
-                select(subsystem);
+                workspaces.setWorkspace(workspace);
+                select(workspaces);
                 break;
             }
         }
@@ -328,12 +328,12 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      * @param shortName the archetype short name of the context to change to
      */
     public void changeContext(String shortName) {
-        for (Subsystem subsystem : subsystems) {
-            Workspace workspace = subsystem.getWorkspaceForArchetype(shortName);
+        for (Workspaces workspaces : this.workspaces) {
+            Workspace workspace = workspaces.getWorkspaceForArchetype(shortName);
             if (workspace != null) {
                 workspace.getComponent();
-                subsystem.setWorkspace(workspace);
-                select(subsystem);
+                workspaces.setWorkspace(workspace);
+                select(workspaces);
                 break;
             }
         }
@@ -344,7 +344,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      * visible workspace, if necessary.
      *
      * @param key   the context key
-     * @param value the context value. May be <tt>null</tt>
+     * @param value the context value. May be {@code null}
      */
     public void changed(String key, IMObject value) {
         if (currentWorkspace != null) {
@@ -362,7 +362,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      *
      * @param subsystem the subsystem
      */
-    protected void select(final Subsystem subsystem) {
+    protected void select(final Workspaces subsystem) {
         currentSubsystem.removeAll();
         subMenu.removeAll();
 
@@ -388,10 +388,10 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     /**
      * Select a workspace.
      *
-     * @param subsystem the subsystem that owns the workspace
+     * @param workspaces the subsystem that owns the workspace
      * @param workspace the workspace within the subsystem to select
      */
-    protected void select(Subsystem subsystem, Workspace workspace) {
+    protected void select(Workspaces workspaces, Workspace workspace) {
         if (currentWorkspace != null) {
             currentWorkspace.removePropertyChangeListener(Workspace.SUMMARY_PROPERTY, summaryRefresher);
             currentWorkspace.hide();
@@ -400,7 +400,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
             // currentWorkspace
             currentWorkspace = null;
         }
-        subsystem.setWorkspace(workspace);
+        workspaces.setWorkspace(workspace);
         currentSubsystem.removeAll();
         currentSubsystem.add(workspace.getComponent());
 
@@ -418,18 +418,18 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     /**
      * Add a subsystem.
      *
-     * @param subsystem the subsystem to add
+     * @param workspaces the subsystem to add
      * @return a button to invoke the subsystem
      */
-    protected Button addSubsystem(final Subsystem subsystem) {
+    protected Button addSubsystem(final Workspaces workspaces) {
         ActionListener listener = new ActionListener() {
             public void onAction(ActionEvent e) {
-                select(subsystem);
+                select(workspaces);
             }
         };
-        Button button = menu.addButton(subsystem.getTitleKey(), listener);
+        Button button = menu.addButton(workspaces.getTitleKey(), listener);
         button.setFocusTraversalParticipant(false);
-        subsystems.add(subsystem);
+        this.workspaces.add(workspaces);
         return button;
     }
 
@@ -460,7 +460,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     /**
      * Updates the message status button.
      *
-     * @param newMessages if <tt>true</tt> indicates there is new messages
+     * @param newMessages if {@code true} indicates there is new messages
      */
     private void updateMessageStatus(boolean newMessages) {
         if (newMessages) {

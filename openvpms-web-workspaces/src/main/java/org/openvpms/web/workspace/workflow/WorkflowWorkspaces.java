@@ -18,7 +18,7 @@ package org.openvpms.web.workspace.workflow;
 
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.subsystem.AbstractWorkspaces;
 import org.openvpms.web.workspace.workflow.appointment.AppointmentWorkspace;
 import org.openvpms.web.workspace.workflow.investigation.InvestigationsWorkspace;
 import org.openvpms.web.workspace.workflow.messaging.MessagingWorkspace;
@@ -26,18 +26,18 @@ import org.openvpms.web.workspace.workflow.worklist.TaskWorkspace;
 
 
 /**
- * Workflow subsystem.
+ * Workflow workspaces.
  *
  * @author Tim Anderson
  */
-public class WorkflowSubsystem extends AbstractSubsystem {
+public class WorkflowWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs a {@code WorkflowSubsystem}.
+     * Constructs a {@code WorkflowWorkspaces}.
      *
      * @param context the context
      */
-    public WorkflowSubsystem(Context context) {
+    public WorkflowWorkspaces(Context context) {
         super("workflow");
         addWorkspace(new AppointmentWorkspace(context));
         addWorkspace(new TaskWorkspace(context));
