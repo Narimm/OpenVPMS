@@ -24,9 +24,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.app.patient.history.PatientHistoryQuery;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 
 import java.sql.Timestamp;
 import java.util.Date;

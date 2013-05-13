@@ -22,8 +22,6 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.app.customer.charge.CustomerChargeActEditDialog;
-import org.openvpms.web.app.patient.mr.PatientClinicalEventEditDialog;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -32,6 +30,8 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.help.HelpListener;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
+import org.openvpms.web.workspace.patient.mr.PatientClinicalEventEditDialog;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
