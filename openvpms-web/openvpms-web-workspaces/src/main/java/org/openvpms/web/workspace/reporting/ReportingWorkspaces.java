@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.reporting;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.subsystem.AbstractWorkspaces;
 import org.openvpms.web.workspace.reporting.deposit.DepositWorkspace;
 import org.openvpms.web.workspace.reporting.reminder.ReminderWorkspace;
 import org.openvpms.web.workspace.reporting.statement.StatementWorkspace;
@@ -28,16 +28,16 @@ import org.openvpms.web.workspace.reporting.wip.IncompleteChargesWorkspace;
 
 
 /**
- * Reporting subsystem.
+ * Reporting workspaces.
  *
  * @author Tim Anderson
  */
-public class ReportingSubsystem extends AbstractSubsystem {
+public class ReportingWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs a {@code ReportingSubsystem}.
+     * Constructs a {@code ReportingWorkspaces}.
      */
-    public ReportingSubsystem(Context context) {
+    public ReportingWorkspaces(Context context) {
         super("reporting");
 
         MailContext mailContext = new PracticeMailContext(context);

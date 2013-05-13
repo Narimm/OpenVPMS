@@ -21,11 +21,11 @@ import java.util.List;
 
 
 /**
- * Abstract implementation of the {@link Subsystem} interface.
+ * Abstract implementation of the {@link Workspaces} interface.
  *
  * @author Tim Anderson
  */
-public abstract class AbstractSubsystem implements Subsystem {
+public abstract class AbstractWorkspaces implements Workspaces {
 
     /**
      * The identity of the subsystem.
@@ -44,11 +44,11 @@ public abstract class AbstractSubsystem implements Subsystem {
 
 
     /**
-     * Constructs an <tt>AbstractSubsystem</tt>.
+     * Constructs an {@code AbstractWorkspaces}.
      *
-     * @param id the subsystem identity
+     * @param id the workspaces identity
      */
-    public AbstractSubsystem(String id) {
+    public AbstractWorkspaces(String id) {
         this.id = id;
     }
 
@@ -74,8 +74,7 @@ public abstract class AbstractSubsystem implements Subsystem {
     /**
      * Returns the current workspace.
      *
-     * @return the current workspace, or  <code>null</code> if there is no
-     *         current workspace
+     * @return the current workspace, or  {@code null} if there is no current workspace
      */
     public Workspace getWorkspace() {
         return workspace;
@@ -93,8 +92,7 @@ public abstract class AbstractSubsystem implements Subsystem {
     /**
      * Returns the default workspace.
      *
-     * @return the default workspace, or <code>null</code>  if there is no
-     *         default workspace
+     * @return the default workspace, or {@code null}  if there is no default workspace
      */
     public Workspace getDefaultWorkspace() {
         return (!workspaces.isEmpty()) ? workspaces.get(0) : null;
@@ -114,7 +112,7 @@ public abstract class AbstractSubsystem implements Subsystem {
      *
      * @param shortName the archetype's short name.
      * @return a workspace that supports the specified archetype or
-     *         <code>null</code> if no workspace supports it
+     *         {@code null} if no workspace supports it
      */
     public Workspace getWorkspaceForArchetype(String shortName) {
         for (Workspace workspace : workspaces) {

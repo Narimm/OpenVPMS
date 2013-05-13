@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.customer;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.subsystem.AbstractWorkspaces;
 import org.openvpms.web.workspace.customer.account.AccountWorkspace;
 import org.openvpms.web.workspace.customer.charge.ChargeWorkspace;
 import org.openvpms.web.workspace.customer.document.CustomerDocumentWorkspace;
@@ -28,18 +28,18 @@ import org.openvpms.web.workspace.customer.payment.PaymentWorkspace;
 
 
 /**
- * Customer subsystem.
+ * Customer workspaces.
  *
  * @author Tim Anderson
  */
-public class CustomerSubsystem extends AbstractSubsystem {
+public class CustomerWorkspaces extends AbstractWorkspaces {
 
     /**
-     * Constructs a {@code CustomerSubsystem}.
+     * Constructs a {@code CustomerWorkspaces}.
      *
      * @param context the context
      */
-    public CustomerSubsystem(Context context) {
+    public CustomerWorkspaces(Context context) {
         super("customer");
 
         addWorkspace(new InformationWorkspace(context));
