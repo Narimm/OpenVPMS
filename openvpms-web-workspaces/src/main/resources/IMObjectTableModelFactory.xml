@@ -1,6 +1,6 @@
 <handlers>
     <handler>
-        <type>org.openvpms.web.app.patient.history.PatientHistoryTableModel</type>
+        <type>org.openvpms.web.workspace.patient.history.PatientHistoryTableModel</type>
         <properties>
             <entry>
                 <string>expressions</string>

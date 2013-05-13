@@ -23,7 +23,7 @@
     <!-- ================================================================== -->
     <bean id="context" class="org.openvpms.web.component.app.GlobalContext" scope="prototype"/>
 
-    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp" scope="prototype">
+    <bean id="openVPMSApp" class="org.openvpms.web.workspace.OpenVPMSApp" scope="prototype">
         <constructor-arg ref="context"/>
         <property name="styleSheets" ref="userStyleSheets"/>
     </bean>
@@ -38,7 +38,7 @@
 
     <bean id="browserStates" class="org.openvpms.web.component.im.query.BrowserStates" scope="session"/>
 
-    <bean id="messageMonitor" class="org.openvpms.web.app.workflow.messaging.MessageMonitor">
+    <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
