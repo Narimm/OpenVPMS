@@ -22,10 +22,10 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.customer.CustomerBrowser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.workspace.BasicCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.customer.CustomerSummary;
-import org.openvpms.web.workspace.subsystem.BasicCRUDWorkspace;
 
 
 /**

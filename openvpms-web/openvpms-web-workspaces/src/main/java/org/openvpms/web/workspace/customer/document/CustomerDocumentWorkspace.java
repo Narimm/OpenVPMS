@@ -20,8 +20,8 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.DocumentCRUDWindow;
 import org.openvpms.web.workspace.customer.CustomerActWorkspace;
-import org.openvpms.web.workspace.subsystem.DocumentCRUDWindow;
 
 
 /**

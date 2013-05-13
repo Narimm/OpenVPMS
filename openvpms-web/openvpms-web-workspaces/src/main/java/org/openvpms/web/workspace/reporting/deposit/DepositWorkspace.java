@@ -25,8 +25,8 @@ import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
-import org.openvpms.web.workspace.subsystem.BrowserCRUDWorkspace;
 
 
 /**

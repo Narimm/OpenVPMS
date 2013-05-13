@@ -25,8 +25,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
-import org.openvpms.web.workspace.subsystem.BrowserCRUDWorkspace;
 
 
 /**

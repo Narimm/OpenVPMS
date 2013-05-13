@@ -13,7 +13,7 @@
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.workspace.subsystem;
+package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
@@ -27,7 +27,6 @@ import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.view.ViewResultSetDialog;
-import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;

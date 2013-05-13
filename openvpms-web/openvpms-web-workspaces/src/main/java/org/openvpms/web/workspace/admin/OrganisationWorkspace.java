@@ -20,7 +20,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.workspace.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 
 /**

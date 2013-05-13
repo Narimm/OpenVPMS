@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
+import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
@@ -48,7 +49,6 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
-import org.openvpms.web.workspace.subsystem.BrowserCRUDWorkspace;
 
 import java.util.List;
 

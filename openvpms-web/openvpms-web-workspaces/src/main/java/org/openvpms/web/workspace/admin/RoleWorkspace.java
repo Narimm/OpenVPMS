@@ -18,7 +18,7 @@ package org.openvpms.web.workspace.admin;
 
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.workspace.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 
 /**

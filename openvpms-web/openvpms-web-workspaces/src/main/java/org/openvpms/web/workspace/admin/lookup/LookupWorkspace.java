@@ -20,7 +20,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.workspace.CRUDWindow;
-import org.openvpms.web.workspace.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 
 /**
