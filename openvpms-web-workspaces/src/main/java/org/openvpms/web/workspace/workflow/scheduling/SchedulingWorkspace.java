@@ -28,9 +28,9 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
-import org.openvpms.web.component.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.workspace.AbstractViewWorkspace;
+import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindowListener;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
 
@@ -75,14 +75,14 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      * <p/>
      * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param archetypes  the archetype that this operates on. May be {@code null}
      * @param context     the context
      */
-    public SchedulingWorkspace(String subsystemId, String workspaceId, Archetypes<Entity> archetypes,
+    public SchedulingWorkspace(String workspacesId, String workspaceId, Archetypes<Entity> archetypes,
                                Context context) {
-        super(subsystemId, workspaceId, archetypes, context, false);
+        super(workspacesId, workspaceId, archetypes, context, false);
         locationListener = new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.LOCATION_SHORTNAME.equals(key)) {

@@ -17,8 +17,8 @@
 package org.openvpms.web.workspace.patient;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.subsystem.AbstractWorkspaces;
-import org.openvpms.web.component.subsystem.Workspace;
+import org.openvpms.web.component.workspace.AbstractWorkspaces;
+import org.openvpms.web.component.workspace.Workspace;
 import org.openvpms.web.workspace.patient.info.InformationWorkspace;
 import org.openvpms.web.workspace.patient.mr.PatientRecordWorkspace;
 

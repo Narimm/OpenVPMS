@@ -38,26 +38,26 @@ public abstract class CustomerActWorkspace<T extends Act>
     /**
      * Constructs a new {@code CustomerActWorkspace}.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param context     the context
      */
-    public CustomerActWorkspace(String subsystemId, String workspaceId, Context context) {
-        this(subsystemId, workspaceId, null, context);
+    public CustomerActWorkspace(String workspacesId, String workspaceId, Context context) {
+        this(workspacesId, workspaceId, null, context);
     }
 
 
     /**
      * Constructs a {@code CustomerActWorkspace}.
      *
-     * @param subsystemId   the subsystem localisation identifier
+     * @param workspacesId   the workspaces localisation identifier
      * @param workspaceId   the workspace localisation identifier
      * @param actArchetypes the act archetypes that this operates on
      * @param context       the context
      */
-    public CustomerActWorkspace(String subsystemId, String workspaceId,
+    public CustomerActWorkspace(String workspacesId, String workspaceId,
                                 Archetypes<T> actArchetypes, Context context) {
-        super(subsystemId, workspaceId, null, actArchetypes, context);
+        super(workspacesId, workspaceId, null, actArchetypes, context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
@@ -65,15 +65,15 @@ public abstract class CustomerActWorkspace<T extends Act>
     /**
      * Constructs a {@code CustomerActWorkspace}.
      *
-     * @param subsystemId     the subsystem localisation identifier
+     * @param workspacesId     the workspaces localisation identifier
      * @param workspaceId     the workspace localisation identifier
      * @param partyArchetypes the party archetypes that this operates on
      * @param actArchetypes   the act archetypes that this operates on
      * @param context         the context
      */
-    public CustomerActWorkspace(String subsystemId, String workspaceId,
+    public CustomerActWorkspace(String workspacesId, String workspaceId,
                                 Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes, Context context) {
-        super(subsystemId, workspaceId, partyArchetypes, actArchetypes, context);
+        super(workspacesId, workspaceId, partyArchetypes, actArchetypes, context);
         setMailContext(new CustomerMailContext(context, getHelpContext()));
     }
 

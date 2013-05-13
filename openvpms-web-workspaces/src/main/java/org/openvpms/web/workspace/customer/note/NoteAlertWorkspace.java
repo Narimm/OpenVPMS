@@ -27,8 +27,8 @@ import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
-import org.openvpms.web.component.subsystem.CRUDWindow;
-import org.openvpms.web.component.subsystem.DefaultCRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.DefaultCRUDWindow;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.workspace.customer.CustomerActWorkspace;
 

@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.customer;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.subsystem.AbstractWorkspaces;
+import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.customer.account.AccountWorkspace;
 import org.openvpms.web.workspace.customer.charge.ChargeWorkspace;
 import org.openvpms.web.workspace.customer.document.CustomerDocumentWorkspace;

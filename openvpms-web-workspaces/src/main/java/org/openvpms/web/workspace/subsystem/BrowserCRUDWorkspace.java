@@ -29,8 +29,8 @@ import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.component.subsystem.AbstractCRUDWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.workspace.AbstractCRUDWorkspace;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 
@@ -72,11 +72,11 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId, Context context) {
-        this(subsystemId, workspaceId, context, true);
+    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
+        this(workspacesId, workspaceId, context, true);
     }
 
     /**
@@ -86,13 +86,13 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param subsystemId  the subsystem localisation identifier
+     * @param workspacesId  the workspaces localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId, Context context, boolean showSelector) {
-        super(subsystemId, workspaceId, context, showSelector);
+    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Context context, boolean showSelector) {
+        super(workspacesId, workspaceId, context, showSelector);
     }
 
     /**
@@ -102,22 +102,22 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * The {@link #setChildArchetypes} method must be invoked to set archetypes
      * that the workspace supports, before performing any operations.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param archetypes  the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                    method must be invoked to set a non-null value before performing any operation
      * @param context     the context
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<Parent> archetypes,
+    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
                                 Context context) {
-        this(subsystemId, workspaceId, archetypes, null, context);
+        this(workspacesId, workspaceId, archetypes, null, context);
     }
 
     /**
      * Constructs a new {@code BrowserCRUDWorkspace}, with a selector for
      * the parent object.
      *
-     * @param subsystemId     the subsystem localisation identifier
+     * @param workspacesId     the workspaces localisation identifier
      * @param workspaceId     the workspace localisation identifier
      * @param archetypes      the archetypes that this operates on.
      *                        If {@code null}, the {@link #setArchetypes}
@@ -128,15 +128,15 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      *                        performing any operation
      * @param context         the context
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<Parent> archetypes,
+    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
                                 Archetypes<Child> childArchetypes, Context context) {
-        this(subsystemId, workspaceId, archetypes, childArchetypes, context, true);
+        this(workspacesId, workspaceId, archetypes, childArchetypes, context, true);
     }
 
     /**
      * Constructs a new {@code BrowserCRUDWorkspace}.
      *
-     * @param subsystemId     the subsystem localisation identifier
+     * @param workspacesId     the workspaces localisation identifier
      * @param workspaceId     the workspace localisation identifier
      * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value before performing any operation
@@ -147,10 +147,10 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * @param showSelector    if {@code true}, show a selector to select the
      *                        parent object
      */
-    public BrowserCRUDWorkspace(String subsystemId, String workspaceId,
+    public BrowserCRUDWorkspace(String workspacesId, String workspaceId,
                                 Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
                                 Context context, boolean showSelector) {
-        super(subsystemId, workspaceId, archetypes, childArchetypes, context, showSelector);
+        super(workspacesId, workspaceId, archetypes, childArchetypes, context, showSelector);
     }
 
     /**

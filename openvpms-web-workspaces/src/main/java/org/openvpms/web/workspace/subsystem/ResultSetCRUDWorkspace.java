@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.query.QueryBrowser;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
@@ -47,12 +47,12 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
      * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param subsystemId the subsystem localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param context     the context
+     * @param workspacesId the workspaces localisation identifier
+     * @param workspaceId  the workspace localisation identifier
+     * @param context      the context
      */
-    public ResultSetCRUDWorkspace(String subsystemId, String workspaceId, Context context) {
-        super(subsystemId, workspaceId, context, false);
+    public ResultSetCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
+        super(workspacesId, workspaceId, context, false);
     }
 
     /**

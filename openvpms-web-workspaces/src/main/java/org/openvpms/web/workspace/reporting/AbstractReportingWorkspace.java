@@ -21,7 +21,7 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.subsystem.AbstractWorkspace;
+import org.openvpms.web.component.workspace.AbstractWorkspace;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
@@ -49,15 +49,15 @@ public abstract class AbstractReportingWorkspace<T extends IMObject> extends Abs
     /**
      * Constructs an {@code AbstractReportingWorkspace}.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param type        the supported workspace type
      * @param context     the context
      * @param mailContext the mail context
      */
-    public AbstractReportingWorkspace(String subsystemId, String workspaceId, Class<T> type, Context context,
+    public AbstractReportingWorkspace(String workspacesId, String workspaceId, Class<T> type, Context context,
                                       MailContext mailContext) {
-        super(subsystemId, workspaceId, context);
+        super(workspacesId, workspaceId, context);
         this.type = type;
         setMailContext(mailContext);
     }

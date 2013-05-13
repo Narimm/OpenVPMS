@@ -36,7 +36,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;

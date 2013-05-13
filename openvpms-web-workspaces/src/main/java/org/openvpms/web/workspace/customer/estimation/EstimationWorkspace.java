@@ -21,7 +21,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.workspace.customer.CustomerActWorkspace;
 
 
