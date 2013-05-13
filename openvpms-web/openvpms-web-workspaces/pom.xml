@@ -16,7 +16,8 @@
             <testResource>
                 <directory>${basedir}/src/test/resources</directory>
                 <includes>
-                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.jrxml</include>
                 </includes>
             </testResource>
             <testResource>
