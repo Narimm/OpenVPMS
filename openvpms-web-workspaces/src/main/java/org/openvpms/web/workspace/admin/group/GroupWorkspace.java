@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.admin.group;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.workspace.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 
 /**

@@ -24,8 +24,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.workspace.DocumentCRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.subsystem.DocumentCRUDWindow;
 
 /**
  * CRUD window for patient documents.

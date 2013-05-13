@@ -24,8 +24,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.workspace.ActCRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.subsystem.ActCRUDWindow;
 
 
 /**

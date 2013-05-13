@@ -14,7 +14,7 @@
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.subsystem;
+package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
@@ -29,8 +29,6 @@ import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.component.workspace.AbstractCRUDWorkspace;
-import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 

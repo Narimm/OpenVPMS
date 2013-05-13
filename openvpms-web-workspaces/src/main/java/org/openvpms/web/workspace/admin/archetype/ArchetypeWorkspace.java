@@ -19,8 +19,8 @@ package org.openvpms.web.workspace.admin.archetype;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.QueryBrowser;
-import org.openvpms.web.workspace.subsystem.ResultSetCRUDWindow;
-import org.openvpms.web.workspace.subsystem.ResultSetCRUDWorkspace;
+import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
+import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
 
 
 /**

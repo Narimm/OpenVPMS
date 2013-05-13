@@ -13,7 +13,7 @@
  *
  *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.workspace.subsystem;
+package org.openvpms.web.component.workspace;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
