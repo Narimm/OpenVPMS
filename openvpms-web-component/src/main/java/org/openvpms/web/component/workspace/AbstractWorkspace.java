@@ -53,9 +53,9 @@ public abstract class AbstractWorkspace<T extends IMObject>
     private Component component;
 
     /**
-     * The subsystem localisation id.
+     * The workpaces group localisation id.
      */
-    private final String subsystemId;
+    private final String workspacesId;
 
     /**
      * The workspace localisation id.
@@ -86,12 +86,12 @@ public abstract class AbstractWorkspace<T extends IMObject>
     /**
      * Constructs an {@code AbstractWorkspace}.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspace group localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param context     the context
      */
-    public AbstractWorkspace(String subsystemId, String workspaceId, Context context) {
-        this.subsystemId = subsystemId;
+    public AbstractWorkspace(String workspacesId, String workspaceId, Context context) {
+        this.workspacesId = workspacesId;
         this.workspaceId = workspaceId;
         this.context = context;
     }
@@ -103,7 +103,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the resource bundle key the workspace title
      */
     public String getTitleKey() {
-        return "workspace." + subsystemId + "." + workspaceId;
+        return "workspace." + workspacesId + "." + workspaceId;
     }
 
     /**
@@ -304,7 +304,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the component
      */
     protected Component doLayout() {
-        Component heading = Heading.getHeading(subsystemId, workspaceId);
+        Component heading = Heading.getHeading(workspacesId, workspaceId);
         KeyStrokeListener listener = new KeyStrokeListener();
         listener.addKeyCombination(KeyStrokes.VK_F1);
         listener.addActionListener(new ActionListener() {
@@ -318,12 +318,12 @@ public abstract class AbstractWorkspace<T extends IMObject>
     }
 
     /**
-     * Returns the subsystem localisation identifier.
+     * Returns the workspace group localisation identifier.
      *
-     * @return the subsystem localisation id.
+     * @return the workspace group localisation id.
      */
-    protected String getSubsystemId() {
-        return subsystemId;
+    protected String getWorkspacesId() {
+        return workspacesId;
     }
 
     /**
@@ -388,7 +388,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * @return the help topic
      */
     protected String getHelpTopic() {
-        return subsystemId + "/" + workspaceId;
+        return workspacesId + "/" + workspaceId;
     }
 
 }

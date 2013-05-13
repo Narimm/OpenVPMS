@@ -20,17 +20,17 @@ import java.util.List;
 
 
 /**
- * Manages a set of related {@link Workspace}s.
+ * A group of {@link Workspace}s.
  *
  * @author Tim Anderson
  */
 public interface Workspaces {
 
     /**
-     * Returns the resource bundle key for the subsystem title.
+     * Returns the resource bundle key for the workspace group title.
      * The corresponding title may contain keyboard shortcuts.
      *
-     * @return the resource bundle key the subsystem title
+     * @return the resource bundle key the workspace group title
      */
     String getTitleKey();
 

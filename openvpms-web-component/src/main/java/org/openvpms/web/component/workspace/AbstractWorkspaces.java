@@ -28,7 +28,7 @@ import java.util.List;
 public abstract class AbstractWorkspaces implements Workspaces {
 
     /**
-     * The identity of the subsystem.
+     * The identity of the workspace group.
      */
     private final String id;
 
