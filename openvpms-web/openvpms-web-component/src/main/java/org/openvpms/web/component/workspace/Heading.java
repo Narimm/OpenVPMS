@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.subsystem;
+package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;

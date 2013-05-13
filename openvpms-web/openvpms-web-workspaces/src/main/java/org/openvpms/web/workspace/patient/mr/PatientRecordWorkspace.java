@@ -37,7 +37,7 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TabbedBrowserListener;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 import org.openvpms.web.resource.i18n.Messages;

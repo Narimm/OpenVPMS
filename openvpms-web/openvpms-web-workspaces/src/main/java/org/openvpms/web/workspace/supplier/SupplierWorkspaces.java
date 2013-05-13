@@ -19,7 +19,7 @@
 package org.openvpms.web.workspace.supplier;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.subsystem.AbstractWorkspaces;
+import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.supplier.charge.ChargeWorkspace;
 import org.openvpms.web.workspace.supplier.delivery.DeliveryWorkspace;
 import org.openvpms.web.workspace.supplier.document.SupplierDocumentWorkspace;

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: AdminSubsystem.java 3769 2010-06-28 13:32:18Z tanderson $
  */
 
 package org.openvpms.web.workspace.admin.organisation;

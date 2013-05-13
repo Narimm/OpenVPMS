@@ -35,24 +35,24 @@ public abstract class SupplierActWorkspace<T extends Act>
     /**
      * Constructs a {@code SupplierActWorkspace}.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param context     the context
      */
-    public SupplierActWorkspace(String subsystemId, String workspaceId, Context context) {
-        this(subsystemId, workspaceId, null, context);
+    public SupplierActWorkspace(String workspacesId, String workspaceId, Context context) {
+        this(workspacesId, workspaceId, null, context);
     }
 
     /**
      * Constructs a {@code SupplierActWorkspace}.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param archetypes  the archetype short names that this operates on
      * @param context     the context
      */
-    public SupplierActWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes, Context context) {
-        super(subsystemId, workspaceId, null, archetypes, context);
+    public SupplierActWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
+        super(workspacesId, workspaceId, null, archetypes, context);
         setArchetypes(Party.class, "party.supplier*");
         setMailContext(new SupplierMailContext(context, getHelpContext()));
     }

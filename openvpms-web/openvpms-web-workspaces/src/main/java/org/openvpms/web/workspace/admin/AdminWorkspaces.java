@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.admin;
 
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.subsystem.AbstractWorkspaces;
+import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.admin.archetype.ArchetypeWorkspace;
 import org.openvpms.web.workspace.admin.group.GroupWorkspace;
 import org.openvpms.web.workspace.admin.lookup.LookupWorkspace;

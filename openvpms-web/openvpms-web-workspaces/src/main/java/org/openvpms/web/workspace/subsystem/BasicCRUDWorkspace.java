@@ -23,8 +23,8 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.subsystem.AbstractCRUDWorkspace;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.workspace.AbstractCRUDWorkspace;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -46,41 +46,41 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
      * The {@link #setArchetypes} method must be invoked to set the archetypes
      * that the workspace supports, before performing any operations.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param context     the context
      */
-    public BasicCRUDWorkspace(String subsystemId, String workspaceId, Context context) {
-        this(subsystemId, workspaceId, null, context);
+    public BasicCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
+        this(workspacesId, workspaceId, null, context);
     }
 
     /**
      * Constructs a new {@code BasicCRUDWorkspace}, with a selector for
      * the object.
      *
-     * @param subsystemId the subsystem localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId the workspace localisation identifier
      * @param archetypes  the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                    method must be invoked to set a non-null value before performing any operation
      * @param context     the context
      */
-    public BasicCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes, Context context) {
-        super(subsystemId, workspaceId, archetypes, archetypes, context);
+    public BasicCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
+        super(workspacesId, workspaceId, archetypes, archetypes, context);
     }
 
     /**
      * Constructs a {@code BasicCRUDWorkspace}.
      *
-     * @param subsystemId  the subsystem localisation identifier
+     * @param workspacesId  the workspaces localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @param archetypes   the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                     method must be invoked to set a non-null value before performing any operation
      * @param context      the context
      * @param showSelector if {@code true}, show a selector to select the object
      */
-    public BasicCRUDWorkspace(String subsystemId, String workspaceId, Archetypes<T> archetypes, Context context,
+    public BasicCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context,
                               boolean showSelector) {
-        super(subsystemId, workspaceId, archetypes, archetypes, context, showSelector);
+        super(workspacesId, workspaceId, archetypes, archetypes, context, showSelector);
     }
 
     /**

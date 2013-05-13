@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.reporting;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.PracticeMailContext;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.subsystem.AbstractWorkspaces;
+import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.reporting.deposit.DepositWorkspace;
 import org.openvpms.web.workspace.reporting.reminder.ReminderWorkspace;
 import org.openvpms.web.workspace.reporting.statement.StatementWorkspace;

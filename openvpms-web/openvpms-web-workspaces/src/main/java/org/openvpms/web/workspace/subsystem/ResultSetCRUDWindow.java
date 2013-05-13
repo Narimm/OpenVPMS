@@ -27,7 +27,7 @@ import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.view.ViewResultSetDialog;
-import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;

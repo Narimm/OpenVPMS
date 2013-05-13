@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.component.subsystem.CRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
 
 
 /**

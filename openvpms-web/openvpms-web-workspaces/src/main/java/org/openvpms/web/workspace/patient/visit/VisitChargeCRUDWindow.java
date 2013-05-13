@@ -30,7 +30,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.subsystem.AbstractCRUDWindow;
+import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;

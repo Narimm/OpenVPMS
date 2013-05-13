@@ -14,13 +14,13 @@
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.subsystem;
+package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**

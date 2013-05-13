@@ -46,9 +46,9 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
-import org.openvpms.web.component.subsystem.Refreshable;
-import org.openvpms.web.component.subsystem.Workspace;
-import org.openvpms.web.component.subsystem.Workspaces;
+import org.openvpms.web.component.workspace.Refreshable;
+import org.openvpms.web.component.workspace.Workspace;
+import org.openvpms.web.component.workspace.Workspaces;
 import org.openvpms.web.echo.button.ButtonColumn;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -87,7 +87,7 @@ import java.util.List;
 public class MainPane extends SplitPane implements ContextChangeListener, ContextListener {
 
     /**
-     * The subsystems.
+     * The workspace groups.
      */
     private final List<Workspaces> workspaces = new ArrayList<Workspaces>();
 
@@ -117,9 +117,9 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     private final PropertyChangeListener summaryRefresher;
 
     /**
-     * The pane for the current subsystem.
+     * The pane for the current workspace group.
      */
-    private ContentPane currentSubsystem;
+    private ContentPane currentWorkspaces;
 
     /**
      * The current workspace.
@@ -189,19 +189,19 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      * Reference to the new window icon.
      */
     private ImageReference NEW_WINDOW
-        = new ResourceImageReference("/org/openvpms/web/resource/image/newwindow.gif");
+            = new ResourceImageReference("/org/openvpms/web/resource/image/newwindow.gif");
 
     /**
      * Reference to the mail icon.
      */
     private static final ImageReference MAIL
-        = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail.png");
+            = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail.png");
 
     /**
      * Reference to the new mail icon.
      */
     private static final ImageReference UNREAD_MAIL
-        = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail-unread.png");
+            = new ResourceImageReference("/org/openvpms/web/resource/image/buttons/mail-unread.png");
 
 
     /**
@@ -237,20 +237,20 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         menu.setLayoutData(layout);
         subMenu = new ButtonColumn(BUTTON_COLUMN_STYLE, BUTTON_STYLE);
         leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
-        currentSubsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
+        currentWorkspaces = ContentPaneFactory.create(WORKSPACE_STYLE);
 
-        Button button = addSubsystem(new CustomerWorkspaces(context));
-        addSubsystem(new PatientWorkspaces(context));
-        addSubsystem(new SupplierWorkspaces(context));
-        addSubsystem(new WorkflowWorkspaces(context));
-        addSubsystem(new ProductWorkspaces(context));
-        addSubsystem(new ReportingWorkspaces(context));
+        Button button = addWorkspaces(new CustomerWorkspaces(context));
+        addWorkspaces(new PatientWorkspaces(context));
+        addWorkspaces(new SupplierWorkspaces(context));
+        addWorkspaces(new WorkflowWorkspaces(context));
+        addWorkspaces(new ProductWorkspaces(context));
+        addWorkspaces(new ReportingWorkspaces(context));
 
         context.addListener(this);
 
-        // if the current user is an admin, show the administration subsystem
+        // if the current user is an admin, show the administration workspaces
         if (UserHelper.isAdmin(user)) {
-            addSubsystem(new AdminWorkspaces(context));
+            addWorkspaces(new AdminWorkspaces(context));
         }
 
         menu.addButton("help", new ActionListener() {
@@ -269,7 +269,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         left.add(new Label());
         left.add(leftMenu);
         right.add(menu);
-        right.add(currentSubsystem);
+        right.add(currentWorkspaces);
 
         add(left);
         add(right);
@@ -358,38 +358,38 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     }
 
     /**
-     * Selects a subsystem.
+     * Selects a workspace group.
      *
-     * @param subsystem the subsystem
+     * @param workspaces the workspaces
      */
-    protected void select(final Workspaces subsystem) {
-        currentSubsystem.removeAll();
+    protected void select(final Workspaces workspaces) {
+        currentWorkspaces.removeAll();
         subMenu.removeAll();
 
-        List<Workspace> workspaces = subsystem.getWorkspaces();
-        for (final Workspace workspace : workspaces) {
+        List<Workspace> list = workspaces.getWorkspaces();
+        for (final Workspace workspace : list) {
             ActionListener listener = new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    select(subsystem, workspace);
+                    select(workspaces, workspace);
                 }
             };
             Button button = subMenu.addButton(workspace.getTitleKey(), listener, true);
             button.setFocusTraversalParticipant(false);
         }
-        Workspace current = subsystem.getWorkspace();
+        Workspace current = workspaces.getWorkspace();
         if (current == null) {
-            current = subsystem.getDefaultWorkspace();
+            current = workspaces.getDefaultWorkspace();
         }
         if (current != null) {
-            select(subsystem, current);
+            select(workspaces, current);
         }
     }
 
     /**
      * Select a workspace.
      *
-     * @param workspaces the subsystem that owns the workspace
-     * @param workspace the workspace within the subsystem to select
+     * @param workspaces the workspace group that owns the workspace
+     * @param workspace  the workspace within the group to select
      */
     protected void select(Workspaces workspaces, Workspace workspace) {
         if (currentWorkspace != null) {
@@ -401,8 +401,8 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
             currentWorkspace = null;
         }
         workspaces.setWorkspace(workspace);
-        currentSubsystem.removeAll();
-        currentSubsystem.add(workspace.getComponent());
+        currentWorkspaces.removeAll();
+        currentWorkspaces.add(workspace.getComponent());
 
         currentWorkspace = workspace;
         refreshSummary();
@@ -416,12 +416,12 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     }
 
     /**
-     * Add a subsystem.
+     * Adds a workspace group.
      *
-     * @param workspaces the subsystem to add
-     * @return a button to invoke the subsystem
+     * @param workspaces the group to add
+     * @return a button to invoke the group
      */
-    protected Button addSubsystem(final Workspaces workspaces) {
+    protected Button addWorkspaces(final Workspaces workspaces) {
         ActionListener listener = new ActionListener() {
             public void onAction(ActionEvent e) {
                 select(workspaces);
@@ -510,7 +510,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
 
         RowLayoutData rightAlign = new RowLayoutData();
         rightAlign.setAlignment(
-            new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
+                new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
         rightAlign.setWidth(new Extent(100, Extent.PERCENT));
         row.setLayoutData(rightAlign);
         return row;
@@ -576,7 +576,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         LayoutContext layout = new DefaultLayoutContext(context, currentWorkspace.getHelpContext());
         final CustomerPatientHistoryBrowser browser = new CustomerPatientHistoryBrowser(context, layout);
         BrowserDialog<CustomerPatient> dialog
-            = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser, layout.getHelpContext());
+                = new BrowserDialog<CustomerPatient>(Messages.get("history.title"), browser, layout.getHelpContext());
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 CustomerPatient selected = browser.getSelected();

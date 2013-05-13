@@ -28,7 +28,7 @@ import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 
 

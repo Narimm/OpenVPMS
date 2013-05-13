@@ -14,7 +14,7 @@
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.subsystem;
+package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;

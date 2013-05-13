@@ -14,7 +14,7 @@
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.subsystem;
+package org.openvpms.web.component.workspace;
 
 import java.util.List;
 
