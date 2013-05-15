@@ -1,0 +1,37 @@
+<handlers>
+    <handler>
+        <type>org.openvpms.web.workspace.patient.history.PatientHistoryTableModel</type>
+        <properties>
+            <entry>
+                <string>expressions</string>
+                <java.util.Map>
+                    <entry>
+                        <string>act.patientClinicalEvent</string>
+                        <string>/description</string>
+                    </entry>
+                    <entry>
+                        <string>act.patientClinicalProblem</string>
+                        <string>/description</string>
+                    </entry>
+                    <entry>
+                        <string>act.patientClinicalNote</string>
+                        <string>/details/note</string>
+                    </entry>
+                    <entry>
+                        <string>act.patientInvestigation</string>
+                        <string>concat(openvpms:get(.,'investigationType.entity.name'),"- Request No:
+                            ",/id,"-",/description, " [", openvpms:lookup(.,
+                            "status"), "]")
+                        </string>
+                    </entry>
+                    <entry>
+                        <string>act.patientMedication</string>
+                        <string>concat(openvpms:get(.,'product.entity.name'), ' - ',/details/label,' Qty :
+                            ',/details/quantity,' Expiry : ', date:formatDate(/activityEndTime))
+                        </string>
+                    </entry>
+                </java.util.Map>
+            </entry>
+        </properties>
+    </handler>
+</handlers>

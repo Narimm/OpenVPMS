@@ -17,10 +17,6 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>
             /WEB-INF/applicationContext.xml
-            /WEB-INF/openvpms-archetypes.xml
-            /WEB-INF/openvpms-authentication.xml
-            /WEB-INF/openvpms-esci.xml
-            /WEB-INF/openvpms-sms.xml
         </param-value>
     </context-param>
 
@@ -72,7 +68,7 @@
 
     <servlet>
         <servlet-name>AppServlet</servlet-name>
-        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <servlet-class>org.openvpms.web.echo.servlet.SpringWebContainerServlet</servlet-class>
         <init-param>
             <param-name>app-name</param-name>
             <param-value>openVPMSApp</param-value>
@@ -81,12 +77,12 @@
 
     <servlet>
         <servlet-name>DownloadServlet</servlet-name>
-        <servlet-class>org.openvpms.web.servlet.DownloadServlet</servlet-class>
+        <servlet-class>org.openvpms.web.echo.servlet.DownloadServlet</servlet-class>
     </servlet>
 
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
-        <servlet-class>org.openvpms.web.servlet.LogoutServlet</servlet-class>
+        <servlet-class>org.openvpms.web.echo.servlet.LogoutServlet</servlet-class>
     </servlet>
 
     <servlet>
