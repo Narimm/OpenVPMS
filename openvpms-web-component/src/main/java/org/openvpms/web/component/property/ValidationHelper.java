@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id:ValidationHelper.java 2147 2007-06-21 04:16:11Z tanderson $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -25,7 +23,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -37,8 +35,7 @@ import java.util.List;
 /**
  * Validation helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2007-06-21 04:16:11Z $
+ * @author Tim Anderson
  */
 public class ValidationHelper {
 
@@ -52,7 +49,7 @@ public class ValidationHelper {
      * Validates an object.
      *
      * @param object the object to validate
-     * @return <tt>true</tt> if the object is valid; otherwise <tt>false</tt>
+     * @return {@code true} if the object is valid; otherwise {@code false}
      */
     public static boolean isValid(IMObject object) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -64,8 +61,7 @@ public class ValidationHelper {
      *
      * @param object  the object to validate
      * @param service the archetype service
-     * @return <tt>true</tt> if the object is valid; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the object is valid; otherwise {@code false}
      */
     public static boolean isValid(IMObject object, IArchetypeService service) {
         List<ValidatorError> errors = validate(object, service);
@@ -77,7 +73,7 @@ public class ValidationHelper {
      *
      * @param object  the object to validate
      * @param service the archetype service
-     * @return a list of validation errors, or <tt>null</tt> if the object is valid
+     * @return a list of validation errors, or {@code null} if the object is valid
      */
     public static List<ValidatorError> validate(IMObject object, IArchetypeService service) {
         List<ValidatorError> result = null;
@@ -116,10 +112,10 @@ public class ValidationHelper {
     /**
      * Display the first error from a validator.
      *
-     * @param title     the dialog title. May  be <tt>null</tt>
+     * @param title     the dialog title. May  be {@code null}
      * @param validator the validator
-     * @param key       resource bundle key, if the error should be included in text. May be <tt>null</tt>
-     * @param formatted if <tt>true</tt> format the message, otherwise display as is
+     * @param key       resource bundle key, if the error should be included in text. May be {@code null}
+     * @param formatted if {@code true} format the message, otherwise display as is
      */
     public static void showError(String title, Validator validator, String key, boolean formatted) {
         Collection<Modifiable> invalid = validator.getInvalid();
@@ -132,7 +128,7 @@ public class ValidationHelper {
                 if (key != null) {
                     message = Messages.get(key, message);
                 }
-                ErrorHelper.show(title, message);
+                ErrorHandler.getInstance().error(title, message, null, null);
             }
         }
     }
