@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.error;
@@ -20,6 +20,8 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.error.ErrorHandler;
 
@@ -35,6 +37,11 @@ import org.openvpms.web.echo.error.ErrorHandler;
  * @author Tim Anderson
  */
 public class DialogErrorHandler extends ErrorHandler {
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(DialogErrorHandler.class);
 
     /**
      * Handles an error.
@@ -57,6 +64,7 @@ public class DialogErrorHandler extends ErrorHandler {
      * @param listener the listener. May be <tt>null</tt>
      */
     public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
+        log.error(message, cause);
         if (canDisplay() && !inError()) {
             ErrorDialog dialog;
             if (cause != null) {
