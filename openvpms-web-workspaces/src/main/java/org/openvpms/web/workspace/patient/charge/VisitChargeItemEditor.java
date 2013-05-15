@@ -17,13 +17,13 @@ package org.openvpms.web.workspace.patient.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.filter.FilterHelper;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 
 
@@ -33,11 +33,6 @@ import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
  * @author Tim Anderson
  */
 public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
-
-    /**
-     * Filters patient node.
-     */
-    private static final NodeFilter patientFilter = new NamedNodeFilter("patient");
 
     /**
      * Constructs a {@code VisitChargeActItemEditor}.
@@ -61,12 +56,7 @@ public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
-        return new CustomerChargeItemLayoutStrategy(fixedPrice) {
-            @Override
-            protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-                return FilterHelper.chain(patientFilter, context.getDefaultNodeFilter(), getFilter());
-            }
-        };
+        return new VisitChargeItemLayoutStrategy(fixedPrice);
     }
 
     /**
@@ -80,6 +70,52 @@ public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
         ProductParticipationEditor product = getProductEditor();
         if (product != null) {
             product.setPatient(getPatient());
+        }
+    }
+
+    /**
+     * A layout strategy that filters the patient node.
+     */
+    private class VisitChargeItemLayoutStrategy extends CustomerChargeItemLayoutStrategy {
+
+        /**
+         * The nodes to display.
+         */
+        private ArchetypeNodes nodes;
+
+
+        /**
+         * Constructs a {@link VisitChargeItemLayoutStrategy}.
+         *
+         * @param fixedPrice the fixed price editor
+         */
+        public VisitChargeItemLayoutStrategy(FixedPriceEditor fixedPrice) {
+            super(fixedPrice);
+        }
+
+        /**
+         * Apply the layout strategy.
+         *
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param context    the layout context
+         * @return the component containing the rendered {@code object}
+         */
+        @Override
+        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            nodes = new ArchetypeNodes(super.getArchetypeNodes()).exclude("patient");
+            return super.apply(object, properties, parent, context);
+        }
+
+        /**
+         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+         *
+         * @return the archetype nodes
+         */
+        @Override
+        protected ArchetypeNodes getArchetypeNodes() {
+            return nodes;
         }
     }
 }

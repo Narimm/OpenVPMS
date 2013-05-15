@@ -25,9 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
-import org.openvpms.web.component.im.filter.ChainedNodeFilter;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.PropertySet;
@@ -40,18 +38,23 @@ import java.util.List;
 /**
  * Layout strategy for <em>act.supplierDelivery</em> and <em>act.supplierReturn</em> acts.
  * <p/>
- * Displays the <tt>supplierNotes</tt> below the simple items, if non-null.
+ * Displays the {@code supplierNotes} below the simple items, if non-null.
  */
 public class DeliveryLayoutStrategy extends ActLayoutStrategy {
 
     /**
-     * Constructs a <tt>DeliveryLayoutStrategy</tt> for viewing deliveries.
+     * Excludes the supplierNotes node.
+     */
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("supplierNotes");
+
+    /**
+     * Constructs a {@link DeliveryLayoutStrategy} for viewing deliveries.
      */
     public DeliveryLayoutStrategy() {
     }
 
     /**
-     * Constructs a <tt>DeliveryLayoutStrategy</tt> for editing deliveries.
+     * Constructs a {@link DeliveryLayoutStrategy} for editing deliveries.
      *
      * @param editor the delivery items editor
      */
@@ -63,7 +66,7 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
      * Lays out child components in a grid.
      *
      * @param object      the object to lay out
-     * @param parent      the parent object. May be <tt>null</tt>
+     * @param parent      the parent object. May be {@code null}
      * @param descriptors the property descriptors
      * @param properties  the properties
      * @param container   the container to use
@@ -83,16 +86,13 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
     }
 
     /**
-     * Returns a node filter to filter nodes. This implementation filters the "supplierNotes" node.
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param object  the object
-     * @param context the context
-     * @return a node filter to filter nodes
+     * @return the archetype nodes
      */
     @Override
-    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-        NamedNodeFilter notesFilter = new NamedNodeFilter("supplierNotes");
-        return new ChainedNodeFilter(super.getNodeFilter(object, context), notesFilter);
+    protected ArchetypeNodes getArchetypeNodes() {
+        return NODES;
     }
 
     /**

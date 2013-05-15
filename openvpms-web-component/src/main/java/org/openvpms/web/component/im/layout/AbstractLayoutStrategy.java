@@ -26,8 +26,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.im.filter.ChainedNodeFilter;
-import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
@@ -53,6 +51,12 @@ import java.util.Map;
 public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
+     * Default nodes to render.
+     */
+    public static ArchetypeNodes DEFAULT_NODES = new ArchetypeNodes();
+
+
+    /**
      * The component states, used to determine initial focus.
      */
     private ComponentSet components;
@@ -68,7 +72,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     private FocusGroup focusGroup;
 
     /**
-     * If <tt>true</tt> keep layout state after invoking <tt>apply()</tt>. Use this if the same strategy will be used
+     * If {@code true} keep layout state after invoking {@code apply()}. Use this if the same strategy will be used
      * to layout a component multiple times.
      */
     private boolean keepState;
@@ -76,20 +80,20 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Sanity checker to detect recursion.
      */
-    boolean inApply;
+    private boolean inApply;
 
 
     /**
-     * Constructs a <tt>AbstractLayoutStrategy</tt>.
+     * Constructs an {@link AbstractLayoutStrategy}.
      */
     public AbstractLayoutStrategy() {
         this(false);
     }
 
     /**
-     * Constructs a <tt>AbstractLayoutStrategy</tt>.
+     * Constructs an {@link AbstractLayoutStrategy}.
      *
-     * @param keepState if <tt>true</tt> keep layout state. Use this if the same strategy will be used to layout a
+     * @param keepState if {@code true} keep layout state. Use this if the same strategy will be used to layout a
      *                  component multiple times
      */
     public AbstractLayoutStrategy(boolean keepState) {
@@ -115,14 +119,13 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a <code>Component</code>, using a factory to
-     * create the child components.
+     * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
      * @param parent     the parent object. May be {@code null}
      * @param context    the layout context
-     * @return the component containing the rendered <code>object</code>
+     * @return the component containing the rendered {@code object}
      */
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         ComponentState state;
@@ -182,12 +185,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
                             LayoutContext context) {
         ArchetypeDescriptor archetype = context.getArchetypeDescriptor(object);
-        List<NodeDescriptor> simple = getSimpleNodes(archetype);
-        List<NodeDescriptor> complex = getComplexNodes(archetype);
-
+        ArchetypeNodes nodes = getArchetypeNodes();
         NodeFilter filter = getNodeFilter(object, context);
-        simple = filter(object, simple, filter);
-        complex = filter(object, complex, filter);
+
+        List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
+        List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
 
         doSimpleLayout(object, parent, simple, properties, container, context);
         doComplexLayout(object, parent, complex, properties, container, context);
@@ -207,7 +209,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                   PropertySet properties, Component container, LayoutContext context) {
         if (!descriptors.isEmpty()) {
             Grid grid = createGrid(object, descriptors, properties, context);
-            container.add(ColumnFactory.create("Inset.Small", grid));
+            container.add(grid);
         }
     }
 
@@ -283,25 +285,12 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Returns the 'simple' nodes.
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param archetype the archetype
-     * @return the simple nodes
-     * @see ArchetypeDescriptor#getSimpleNodeDescriptors()
+     * @return the archetype nodes
      */
-    protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
-        return archetype.getSimpleNodeDescriptors();
-    }
-
-    /**
-     * Returns the 'complex' nodes.
-     *
-     * @param archetype the archetype
-     * @return the complex nodes
-     * @see ArchetypeDescriptor#getComplexNodeDescriptors()
-     */
-    protected List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype) {
-        return archetype.getComplexNodeDescriptors();
+    protected ArchetypeNodes getArchetypeNodes() {
+        return DEFAULT_NODES;
     }
 
     /**
@@ -313,30 +302,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
         return context.getDefaultNodeFilter();
-    }
-
-    /**
-     * Helper to create a chained node filter from the default node filter and a
-     * custom node filter.
-     *
-     * @param context the context
-     * @param filter  the node filter
-     * @return a new chained node filter
-     */
-    protected ChainedNodeFilter getNodeFilter(LayoutContext context, NodeFilter filter) {
-        return FilterHelper.chain(context.getDefaultNodeFilter(), filter);
-    }
-
-    /**
-     * Filters a set of node descriptors, using the specfied node filter.
-     *
-     * @param object      the object
-     * @param descriptors the node descriptors to filter
-     * @param filter      the filter to use
-     * @return the filtered nodes
-     */
-    protected List<NodeDescriptor> filter(IMObject object, List<NodeDescriptor> descriptors, NodeFilter filter) {
-        return FilterHelper.filter(object, filter, descriptors);
     }
 
     /**
@@ -358,7 +323,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param properties   the properties
      * @param container    the container
      * @param context      the layout context
-     * @param shortcutHint a hint to display short cuts for tabs. If <tt>false</tt> shortcuts will only be displayed if
+     * @param shortcutHint a hint to display short cuts for tabs. If {@code false} shortcuts will only be displayed if
      *                     there is more than one descriptor. Shortcuts will never be displayed if the layout depth
      *                     is non-zero
      * @return the tab model
@@ -395,7 +360,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param properties  the properties
      * @param model       the tab model
      * @param context     the layout context
-     * @param shortcuts   if <tt>true</tt> include short cuts
+     * @param shortcuts   if {@code true} include short cuts
      */
     protected void doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
                                TabPaneModel model, LayoutContext context, boolean shortcuts) {
@@ -412,7 +377,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param model       the tab  model
      * @param property    property
      * @param component   the component to add
-     * @param addShortcut if <tt>true</tt> add a tab shortcut
+     * @param addShortcut if {@code true} add a tab shortcut
      */
     protected void addTab(TabPaneModel model, Property property, ComponentState component, boolean addShortcut) {
         setFocusTraversal(component);
@@ -530,7 +495,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param property the property
      * @param parent   the parent object
      * @param context  the layout context
-     * @return a component to display <code>property</code>
+     * @return a component to display {@code property}
      */
     protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
         ComponentState result = getComponent(property);
@@ -617,5 +582,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         };
         return property;
     }
+
 }
 

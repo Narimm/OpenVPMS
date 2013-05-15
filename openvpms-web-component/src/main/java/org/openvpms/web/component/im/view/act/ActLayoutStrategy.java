@@ -12,34 +12,22 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.view.act;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Property;
 
 
 /**
  * Act layout strategy. Hides the items node.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ActLayoutStrategy extends AbstractLayoutStrategy {
-
-    /**
-     * The act item editor. May be <tt>null</tt>.
-     */
-    private final IMObjectCollectionEditor editor;
 
     /**
      * The collection items node.
@@ -47,39 +35,38 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     private final String itemsNode;
 
     /**
-     * Determines if the items node should be displayed.
+     * The nodes to display.
      */
-    private final boolean showItems;
-
+    private final ArchetypeNodes nodes;
 
     /**
-     * Construct a new <tt>ActLayoutStrategy</tt>.
+     * Constructs an {@link ActLayoutStrategy}.
      */
     public ActLayoutStrategy() {
         this(true);
     }
 
     /**
-     * Construct a new <tt>ActLayoutStrategy</tt>
+     * Constructs an {@link ActLayoutStrategy}.
      *
-     * @param showItems if <tt>true</tt>, show the items node
+     * @param showItems if {@code true}, show the items node
      */
     public ActLayoutStrategy(boolean showItems) {
         this(null, showItems);
     }
 
     /**
-     * Construct a new <tt>ActLayoutStrategy</tt>
+     * Constructs an {@link ActLayoutStrategy}.
      *
      * @param node      the act items node
-     * @param showItems if <tt>true</tt>, show the items node
+     * @param showItems if {@code true}, show the items node
      */
     public ActLayoutStrategy(String node, boolean showItems) {
         this(null, node, showItems);
     }
 
     /**
-     * Construct a new <tt>ActLayoutStrategy</tt>.
+     * Constructs an {@link ActLayoutStrategy}.
      *
      * @param editor the act items editor
      */
@@ -88,7 +75,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Construct a new <tt>ActLayoutStrategy</tt>.
+     * Constructs an {@link ActLayoutStrategy}.
      *
      * @param editor the act items editor
      * @param node   the node that the editor corresponds to
@@ -98,75 +85,37 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Construct a new <tt>ActLayoutStrategy</tt>.
+     * Constructs an {@link ActLayoutStrategy}.
      *
-     * @param editor    the act items editor. May be <tt>null</tt>
-     * @param node      the node that editor corresponds to. May be <tt>null</tt>
-     * @param showItems if <tt>true</tt>, show the items node
+     * @param editor    the act items editor. May be {@code null}
+     * @param node      the node that editor corresponds to. May be {@code null}
+     * @param showItems if {@code true}, show the items node
      */
-    private ActLayoutStrategy(IMObjectCollectionEditor editor,
-                              String node, boolean showItems) {
-        this.editor = editor;
-        this.showItems = showItems;
+    private ActLayoutStrategy(IMObjectCollectionEditor editor, String node, boolean showItems) {
         itemsNode = (node == null) ? "items" : node;
+        nodes = (showItems) ? DEFAULT_NODES : new ArchetypeNodes().exclude(itemsNode);
+        if (editor != null && showItems) {
+            // pre-register the editor
+            addComponent(new ComponentState(editor));
+        }
     }
 
     /**
-     * Creates a component for a property.
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param property the property
-     * @param parent   the parent object
-     * @param context  the layout context
-     * @return a component to display <tt>property</tt>
+     * @return the archetype nodes
      */
     @Override
-    protected ComponentState createComponent(Property property, IMObject parent,
-                                             LayoutContext context) {
-        String name = property.getName();
-        ComponentState component;
-        if (name.equals(itemsNode)) {
-            if (editor != null) {
-                component = new ComponentState(editor.getComponent(),
-                                               editor.getFocusGroup());
-            } else {
-                component = createItems(property, parent, context);
-            }
-        } else {
-            component = super.createComponent(property, parent, context);
-        }
-        return component;
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
     }
 
     /**
-     * Creates a component for the items node.
+     * Returns the name of the items node.
      *
-     * @param property the property
-     * @param parent   the parent object
-     * @param context  the layout context
-     * @return a component to display <tt>property</tt>
+     * @return the items node name
      */
-    protected ComponentState createItems(Property property, IMObject parent,
-                                         LayoutContext context) {
-        return super.createComponent(property, parent, context);
+    protected String getItemsNode() {
+        return itemsNode;
     }
-
-    /**
-     * Returns a node filter to filter nodes. This implementation filters the
-     * "items" node.
-     *
-     * @param object  the object
-     * @param context the context
-     * @return a node filter to filter nodes
-     */
-    @Override
-    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-        NodeFilter filter;
-        if (!showItems) {
-            filter = getNodeFilter(context, new NamedNodeFilter(itemsNode));
-        } else {
-            filter = super.getNodeFilter(object, context);
-        }
-        return filter;
-    }
-
 }

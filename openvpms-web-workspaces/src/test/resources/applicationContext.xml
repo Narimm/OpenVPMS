@@ -222,6 +222,9 @@
 
     <bean id="openVPMSApp" class="org.openvpms.web.workspace.OpenVPMSApp" scope="prototype">
         <constructor-arg ref="context"/>
+        <constructor-arg>
+            <bean class="org.openvpms.web.workspace.DefaultWorkspacesFactory"/>
+        </constructor-arg>
     </bean>
 
     <bean id="styleSheetCache" class="org.openvpms.web.component.style.StyleSheetCache">

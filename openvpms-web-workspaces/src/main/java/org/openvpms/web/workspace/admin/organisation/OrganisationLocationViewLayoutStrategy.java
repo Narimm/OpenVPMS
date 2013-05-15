@@ -12,41 +12,31 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.workspace.admin.organisation;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 
 /**
  * Layout strategy for <em>party.organisationLocation<em> that masks the "mailPassword" node.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class OrganisationLocationViewLayoutStrategy extends AbstractLayoutStrategy {
-
     /**
-     * The mail password node name.
+     * Exclude the mailPassword node from display.
      */
-    private static final String MAIL_PASSWORD = "mailPassword";
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("mailPassword");
 
     /**
-     * Returns a node filter to filter nodes. This implementation filters the "mailPassword" node when in view mode.
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param context the context
-     * @return a node filter to filter nodes
+     * @return the archetype nodes
      */
     @Override
-    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-        NodeFilter filter = new NamedNodeFilter(MAIL_PASSWORD);
-        return getNodeFilter(context, filter);
+    protected ArchetypeNodes getArchetypeNodes() {
+        return NODES;
     }
-
 }

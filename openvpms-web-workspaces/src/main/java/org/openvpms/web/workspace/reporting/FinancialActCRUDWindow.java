@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.reporting;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
@@ -27,7 +28,7 @@ import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -39,7 +40,7 @@ import org.openvpms.web.echo.help.HelpContext;
  * @author Tim Anderson
  */
 public class FinancialActCRUDWindow
-    extends AbstractViewCRUDWindow<FinancialAct> {
+        extends AbstractViewCRUDWindow<FinancialAct> {
 
     /**
      * Constructs a {@code FinancialActCRUDWindow}.
@@ -73,24 +74,24 @@ public class FinancialActCRUDWindow
     }
 
     /**
-     * Layout strategy that creates an {@link Viewer} for the items node.
+     * Layout strategy that renders a {@link Viewer} for the items node.
      */
     private class LayoutStrategy extends ActLayoutStrategy {
 
         /**
-         * Creates a component for the items node.
+         * Lay out out the object.
          *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display {@code property}
+         * @param object     the object to lay out
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param context    the layout context
+         * @return the component
          */
         @Override
-        protected ComponentState createItems(Property property, IMObject parent,
-                                             LayoutContext context) {
-            Viewer viewer = new Viewer((CollectionProperty) property,
-                                       parent, context);
-            return new ComponentState(viewer.getComponent(), property);
+        protected Component doLayout(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            CollectionProperty items = (CollectionProperty) properties.get(getItemsNode());
+            addComponent(new ComponentState(new Viewer(items, parent, context).getComponent(), items));
+            return super.doLayout(object, properties, parent, context);
         }
     }
 

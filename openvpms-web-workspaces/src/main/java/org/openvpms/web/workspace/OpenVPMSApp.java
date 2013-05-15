@@ -32,6 +32,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.servlet.ServletHelper;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -44,6 +45,11 @@ import javax.servlet.http.HttpServletRequest;
  * @author Tim Anderson
  */
 public class OpenVPMSApp extends ContextApplicationInstance {
+
+    /**
+     * The workspaces factory.
+     */
+    private final WorkspacesFactory factory;
 
     /**
      * The window.
@@ -70,9 +76,11 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * Constructs an {@code OpenVPMSApp}.
      *
      * @param context the context
+     * @param factory the workspaces factory
      */
-    public OpenVPMSApp(GlobalContext context) {
+    public OpenVPMSApp(GlobalContext context, WorkspacesFactory factory) {
         super(context);
+        this.factory = factory;
         location = getLocation(context.getLocation());
         customer = getCustomer(context.getCustomer());
     }
@@ -87,7 +95,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         setStyleSheet();
         window = new Window();
         updateTitle();
-        window.setContent(new ApplicationContentPane(getContext()));
+        window.setContent(new ApplicationContentPane(getContext(), factory));
         getContext().addListener(new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.CUSTOMER_SHORTNAME.equals(key)) {
@@ -198,7 +206,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     private void configureSessionExpirationURL() {
         ContainerContext context = (ContainerContext) getContextProperty(
-            ContainerContext.CONTEXT_PROPERTY_NAME);
+                ContainerContext.CONTEXT_PROPERTY_NAME);
         Connection connection = WebRenderServlet.getActiveConnection();
         if (context != null && connection != null) {
             HttpServletRequest request = connection.getRequest();
@@ -207,8 +215,8 @@ public class OpenVPMSApp extends ContextApplicationInstance {
             String loginUri = baseUri + "/login";
             ClientConfiguration config = new ClientConfiguration();
             config.setProperty(
-                ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI,
-                loginUri);
+                    ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI,
+                    loginUri);
             context.setClientConfiguration(config);
         }
     }

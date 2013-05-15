@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -42,16 +40,14 @@ import java.util.List;
 
 
 /**
- * Editor for collections of {@link EntityRelationship}s.
+ * Editor for collections of {@link EntityRelationship}s with cardinality > 1, or that multiple archetypes.
  * <p/>
- * If the relationships have a <em>sequence</em> node, the collection will
- * be ordered on it, and controls displayed to move relationships up or down
- * within the collection.
+ * If the relationships have a <em>sequence</em> node, the collection will be ordered on it, and controls displayed to
+ * move relationships up or down within the collection.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class EntityRelationshipCollectionEditor
+public class MultipleEntityRelationshipCollectionEditor
     extends RelationshipCollectionEditor {
 
     /**
@@ -82,19 +78,16 @@ public class EntityRelationshipCollectionEditor
 
 
     /**
-     * Creates a new <tt>EntityRelationshipCollectionEditor</tt>.
+     * Constructs a {@link MultipleEntityRelationshipCollectionEditor}.
      *
      * @param property the collection property
      * @param object   the object being edited
      * @param context  the layout context
      */
-    public EntityRelationshipCollectionEditor(
-        CollectionProperty property, Entity object,
-        LayoutContext context) {
-        super(new EntityRelationshipCollectionPropertyEditor(property, object),
-              object, context);
-        sequenced = EntityRelationshipCollectionHelper.hasSequenceNode(
-            property.getArchetypeRange());
+    public MultipleEntityRelationshipCollectionEditor(CollectionProperty property, Entity object,
+                                                      LayoutContext context) {
+        super(new EntityRelationshipCollectionPropertyEditor(property, object), object, context);
+        sequenced = EntityRelationshipCollectionHelper.hasSequenceNode(property.getArchetypeRange());
     }
 
     /**
@@ -102,20 +95,17 @@ public class EntityRelationshipCollectionEditor
      * current collection cardinality. This must be registered with the
      * collection.
      * <p/>
-     * If an {@link IMObjectCreationListener} is registered, it will be
-     * notified on successful creation of an object.
+     * If an {@link IMObjectCreationListener} is registered, it will be notified on successful creation of an object.
      *
-     * @return a new object, or <tt>null</tt> if the object can't be created
+     * @return a new object, or {@code null} if the object can't be created
      */
     @Override
     public IMObject create() {
         EntityRelationship relationship = (EntityRelationship) super.create();
         if (sequenced && relationships != null) {
             if (!relationships.isEmpty()) {
-                RelationshipState state
-                    = relationships.get(relationships.size() - 1);
-                EntityRelationship last
-                    = (EntityRelationship) state.getRelationship();
+                RelationshipState state = relationships.get(relationships.size() - 1);
+                EntityRelationship last = (EntityRelationship) state.getRelationship();
                 int sequence = last.getSequence();
                 relationship.setSequence(++sequence);
             }
@@ -126,18 +116,15 @@ public class EntityRelationshipCollectionEditor
     /**
      * Creates a new result set for display.
      * <p/>
-     * If the relationships have a <em>sequence</em> node, they will be
-     * ordered on this.
+     * If the relationships have a <em>sequence</em> node, they will be ordered on this.
      *
      * @return a new result set
      */
     @Override
     protected ResultSet<RelationshipState> createResultSet() {
         ResultSet<RelationshipState> result;
-        RelationshipCollectionPropertyEditor editor
-            = getCollectionPropertyEditor();
-        List<RelationshipState> relationships
-            = new ArrayList<RelationshipState>(editor.getRelationships());
+        RelationshipCollectionPropertyEditor editor = getCollectionPropertyEditor();
+        List<RelationshipState> relationships = new ArrayList<RelationshipState>(editor.getRelationships());
         if (sequenced) {
             EntityRelationshipCollectionHelper.sort(relationships);
             result = new ListResultSet<RelationshipState>(relationships, ROWS);
@@ -215,8 +202,7 @@ public class EntityRelationshipCollectionEditor
     }
 
     /**
-     * Lays out the component with controls to change the sequence of
-     * relationships.
+     * Lays out the component with controls to change the sequence of relationships.
      *
      * @param container the container
      */
@@ -255,7 +241,7 @@ public class EntityRelationshipCollectionEditor
      * <p/>
      * This delegates to the superclass, before enabling/disabling the move up/move down buttons.
      *
-     * @param enable if <tt>true</tt> enable buttons (subject to criteria), otherwise disable them
+     * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them
      */
     @Override
     protected void enableNavigation(boolean enable) {
