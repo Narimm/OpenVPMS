@@ -44,7 +44,7 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class IMObjectProperty extends AbstractProperty
-    implements CollectionProperty {
+        implements CollectionProperty {
 
     /**
      * The object that the property belongs to.
@@ -454,7 +454,7 @@ public class IMObjectProperty extends AbstractProperty
                     // as these may be corrected without updating the status
                     // of this property
                     IArchetypeService service
-                        = ServiceHelper.getArchetypeService();
+                            = ServiceHelper.getArchetypeService();
                     for (Object value : getValues()) {
                         IMObject object = (IMObject) value;
                         errors = ValidationHelper.validate(object, service);
@@ -496,6 +496,7 @@ public class IMObjectProperty extends AbstractProperty
      * @param exception the reason for the failure
      */
     private void invalidate(DescriptorException exception) {
+        log.warn(exception.getMessage(), exception);
         resetErrors();
         Throwable cause = ExceptionUtils.getRootCause(exception);
         if (cause != null) {
