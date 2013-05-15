@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.charge;
 
 import org.apache.commons.lang.StringUtils;
@@ -171,6 +172,16 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
                 result.add(2, tax);
 
                 return result;
+            }
+
+            /**
+             * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+             *
+             * @return the archetype nodes
+             */
+            @Override
+            protected ArchetypeNodes getArchetypeNodes() {
+                return NODES;
             }
         };
     }
