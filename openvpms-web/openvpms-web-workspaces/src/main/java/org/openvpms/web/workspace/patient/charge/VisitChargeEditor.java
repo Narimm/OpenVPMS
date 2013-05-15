@@ -28,9 +28,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
-import org.openvpms.web.component.im.filter.FilterHelper;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -77,8 +75,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     /**
      * Filters the amount, tax, and printed nodes.
      */
-    private static final NodeFilter filter = new NamedNodeFilter("amount", "tax", "printed");
-
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("amount", "tax", "printed");
 
     /**
      * Constructs a {@code VisitChargeActEditor}.
@@ -138,10 +135,6 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new ActLayoutStrategy(getItems()) {
-            @Override
-            protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-                return FilterHelper.chain(filter, context.getDefaultNodeFilter());
-            }
 
             /**
              * Creates a component for a property.

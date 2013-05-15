@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -41,8 +42,8 @@ import org.openvpms.web.echo.factory.LabelFactory;
 
 import java.util.List;
 
-import static org.openvpms.web.component.im.filter.NamedNodeFilter.exclude;
-import static org.openvpms.web.component.im.filter.NamedNodeFilter.include;
+import static org.openvpms.web.component.im.layout.ArchetypeNodes.exclude;
+import static org.openvpms.web.component.im.layout.ArchetypeNodes.include;
 
 
 /**
@@ -99,30 +100,29 @@ public class UserMessageLayoutStrategy extends AbstractLayoutStrategy {
     protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
                             LayoutContext context) {
         ArchetypeDescriptor archetype = context.getArchetypeDescriptor(object);
-        List<NodeDescriptor> simple = getSimpleNodes(archetype);
-        List<NodeDescriptor> complex = getComplexNodes(archetype);
-
+        ArchetypeNodes nodes = getArchetypeNodes();
         NodeFilter filter = getNodeFilter(object, context);
-        simple = filter(object, simple, filter);
-        complex = filter(object, complex, filter);
 
-        List<NodeDescriptor> from = filter(object, simple, include("from"));
-        List<NodeDescriptor> header = filter(object, simple, include("to", "description"));
-        List<NodeDescriptor> customer = filter(object, simple, include("customer", "patient"));
-        List<NodeDescriptor> fields = filter(object, simple, exclude("from", "to", "description", "startTime",
-                                                                     "customer", "patient", "message", "status"));
+        List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
+        List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
+
+        List<NodeDescriptor> from = include(simple, "from");
+        List<NodeDescriptor> header = include(simple, "to", "description");
+        List<NodeDescriptor> customer = include(simple, "customer", "patient");
+        List<NodeDescriptor> fields = exclude(simple, "from", "to", "description", "startTime", "customer", "patient",
+                                              "message", "status");
 
         if (!context.isEdit()) {
             // hide empty customer and patient nodes in view layout
             ActBean bean = new ActBean((Act) object);
             if (bean.getNodeParticipantRef("customer") == null) {
-                customer = filter(object, customer, exclude("customer"));
+                customer = exclude(customer, "customer");
             }
             if (bean.getNodeParticipantRef("patient") == null) {
-                customer = filter(object, customer, exclude("patient"));
+                customer = exclude(customer, "patient");
             }
         }
-        List<NodeDescriptor> message = filter(object, simple, include("message"));
+        List<NodeDescriptor> message = include(simple, "message");
 
         ComponentGrid componentGrid = new ComponentGrid();
         ComponentSet fromSet = createComponentSet(object, from, properties, context);

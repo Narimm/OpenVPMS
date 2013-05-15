@@ -53,13 +53,13 @@ public abstract class AbstractWorkspaces implements Workspaces {
     }
 
     /**
-     * Returns the resource bundle key for the subsystem title.
+     * Returns the resource bundle key for the workspace group title.
      * The corresponding title may contain keyboard shortcuts.
      *
-     * @return the resource bundle key the subsystem title.
+     * @return the resource bundle key the workspace group title
      */
     public String getTitleKey() {
-        return "subsystem." + id;
+        return "workspaces." + id;
     }
 
     /**

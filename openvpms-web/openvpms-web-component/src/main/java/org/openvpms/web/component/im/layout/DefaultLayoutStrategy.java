@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.layout;
@@ -21,15 +19,38 @@ package org.openvpms.web.component.im.layout;
 /**
  * Default implementation of the {@link IMObjectLayoutStrategy} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DefaultLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * Construct a new <code>DefaultLayoutStrategy</code>.
+     * The nodes to render.
+     */
+    private final ArchetypeNodes nodes;
+
+    /**
+     * Constructs a {@link DefaultLayoutStrategy}.
      */
     public DefaultLayoutStrategy() {
+        this(DEFAULT_NODES);
     }
 
+    /**
+     * Constructs a {@link DefaultLayoutStrategy}.
+     *
+     * @param nodes the nodes to render
+     */
+    public DefaultLayoutStrategy(ArchetypeNodes nodes) {
+        this.nodes = nodes;
+    }
+
+    /**
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+     *
+     * @return the archetype nodes
+     */
+    @Override
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
+    }
 }

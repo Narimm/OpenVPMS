@@ -12,18 +12,15 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.workspace.admin.lookup;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.web.component.im.filter.FilterHelper;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -33,8 +30,7 @@ import java.util.UUID;
 /**
  * Editor for <em>lookup.durationformat</em> lookups.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class DurationFormatLookupEditor extends AbstractLookupEditor {
 
@@ -45,11 +41,11 @@ public class DurationFormatLookupEditor extends AbstractLookupEditor {
 
 
     /**
-     * Constructs a <tt>DurationFormatLookupEditor</tt>.
+     * Constructs a {@link DurationFormatLookupEditor}.
      *
      * @param lookup        the object to edit
-     * @param parent        the parent object. May be <tt>null</tt>
-     * @param layoutContext the layout context. May be <tt>null</tt>.
+     * @param parent        the parent object. May be {@code null}
+     * @param layoutContext the layout context. May be {@code null}.
      */
     public DurationFormatLookupEditor(Lookup lookup, IMObject parent, LayoutContext layoutContext) {
         super(lookup, parent, layoutContext);
@@ -58,9 +54,9 @@ public class DurationFormatLookupEditor extends AbstractLookupEditor {
     /**
      * Determines if the name node should be displayed.
      * <p/>
-     * Defaults to <tt>true</tt>
+     * Defaults to {@code true}.
      *
-     * @param show if <tt>true</tt> show the name node, otherwise hide it
+     * @param show if {@code true} show the name node, otherwise hide it
      */
     public void setShowName(boolean show) {
         showName = show;
@@ -93,14 +89,7 @@ public class DurationFormatLookupEditor extends AbstractLookupEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new AbstractLayoutStrategy() {
-            @Override
-            protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-                if (!showName) {
-                    return FilterHelper.chain(context.getDefaultNodeFilter(), new NamedNodeFilter("name"));
-                }
-                return super.getNodeFilter(object, context);
-            }
-        };
+        ArchetypeNodes nodes = (showName) ? AbstractLayoutStrategy.DEFAULT_NODES : new ArchetypeNodes().exclude("name");
+        return new DefaultLayoutStrategy(nodes);
     }
 }

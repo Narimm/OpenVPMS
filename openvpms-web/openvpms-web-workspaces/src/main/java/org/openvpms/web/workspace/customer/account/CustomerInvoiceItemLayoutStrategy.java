@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.workspace.customer.account;
@@ -21,9 +19,8 @@ package org.openvpms.web.workspace.customer.account;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
@@ -34,27 +31,16 @@ import java.util.List;
 
 /**
  * Layout strategy for <em>act.customerAccountInvoiceItem</em> that hides
- * the dispensing node if it is empty.
+ * the dispensing, investigation and reminder nodes if they are empty.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerInvoiceItemLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * Determines if the dispensing node should be hidden.
+     * The nodes to display.
      */
-    private boolean hideDispensing;
-
-    /**
-     * Determines if the investigations node should be hidden.
-     */
-    private boolean hideInvestigations;
-
-    /**
-     * Determines if the reminders node should be hidden.
-     */
-    private boolean hideReminders;
+    private ArchetypeNodes nodes;
 
     /**
      * The dispensing node name.
@@ -74,50 +60,43 @@ public class CustomerInvoiceItemLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a <tt>Component</tt>, using a factory to
+     * This renders an object in a {@code Component}, using a factory to
      * create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param context    the layout context
-     * @return the component containing the rendered <tt>object</tt>
+     * @return the component containing the rendered {@code object}
      */
     @Override
-    public ComponentState apply(IMObject object, PropertySet properties,
-                                IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         ActBean bean = new ActBean((Act) object);
-        hideDispensing = bean.getValues(DISPENSING).isEmpty();
-        hideInvestigations = bean.getValues(INVESTIGATIONS).isEmpty();
-        hideReminders = bean.getValues(REMINDERS).isEmpty();
+        List<String> exclude = new ArrayList<String>();
+        if (bean.getValues(DISPENSING).isEmpty()) {
+            exclude.add(DISPENSING);
+        }
+        if (bean.getValues(INVESTIGATIONS).isEmpty()) {
+            exclude.add(INVESTIGATIONS);
+        }
+        if (bean.getValues(REMINDERS).isEmpty()) {
+            exclude.add(REMINDERS);
+        }
+        if (!exclude.isEmpty()) {
+            nodes = new ArchetypeNodes().exclude(exclude);
+        } else {
+            nodes = DEFAULT_NODES;
+        }
         return super.apply(object, properties, parent, context);
     }
 
     /**
-     * Returns a node filter to filter nodes.
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param object  the object
-     * @param context the context
-     * @return a node filter to filter nodes, or <tt>null</tt> if no filterering is required
+     * @return the archetype nodes
      */
     @Override
-    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-        NodeFilter filter;
-        if (hideDispensing || hideInvestigations || hideReminders) {
-            List<String> nodes = new ArrayList<String>();
-            if (hideDispensing) {
-                nodes.add(DISPENSING);
-            }
-            if (hideInvestigations) {
-                nodes.add(INVESTIGATIONS);
-            }
-            if (hideReminders) {
-                nodes.add(REMINDERS);
-            }
-            filter = getNodeFilter(context, new NamedNodeFilter(nodes));
-        } else {
-            filter = super.getNodeFilter(object, context);
-        }
-        return filter;
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
     }
 }

@@ -49,8 +49,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.reminder.ReminderEditor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -104,17 +103,17 @@ import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_
 public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
-     * Dispensing act editor. May be <tt>null</tt>
+     * Dispensing act editor. May be {@code null}
      */
     private ActRelationshipCollectionEditor dispensing;
 
     /**
-     * Investigation act editor. May be <tt>null</tt>
+     * Investigation act editor. May be {@code null}
      */
     private ActRelationshipCollectionEditor investigations;
 
     /**
-     * Reminders act editor. May be <tt>null</tt>
+     * Reminders act editor. May be {@code null}
      */
     private ActRelationshipCollectionEditor reminders;
 
@@ -179,15 +178,15 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String INVESTIGATIONS = "investigations";
 
     /**
-     * Node filter, used to disable properties when a product template is selected.
+     * Nodes to use when a product template is selected.
      */
-    private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
-        "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
-        REMINDERS);
+    private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
+            "quantity", "fixedPrice", "unitPrice", "discount", "clinician", "total", DISPENSING, INVESTIGATIONS,
+            REMINDERS);
 
 
     /**
-     * Constructs a <tt>AbstractCustomerChargeActItemEditor</tt>.
+     * Constructs a {@code AbstractCustomerChargeActItemEditor}.
      * <p/>
      * This recalculates the tax amount.
      *
@@ -233,8 +232,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         calculateTax();
 
-        NodeFilter filter = getFilterForProduct(getProductRef());
-        setFilter(filter);
+        ArchetypeNodes nodes = getFilterForProduct(getProductRef());
+        setArchetypeNodes(nodes);
 
         // add a listener to update the tax amount when the total changes
         totalListener = new ModifiableListener() {
@@ -291,7 +290,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     public boolean validate(Validator validator) {
@@ -301,7 +300,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Sets the popup editor manager.
      *
-     * @param manager the popup editor manager. May be <code>null</tt>
+     * @param manager the popup editor manager. May be <code>null}
      */
     public void setEditorQueue(EditorQueue manager) {
         popupEditorMgr = manager;
@@ -322,7 +321,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * For invoice items, this implementation also creates/deletes document acts related to the document templates
      * associated with the product, using {@link ChargeItemDocumentLinker}.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     @Override
     protected boolean saveObject() {
@@ -341,7 +340,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Returns the dispensing node editor.
      *
-     * @return the editor. May be <tt>null</tt>
+     * @return the editor. May be {@code null}
      */
     protected ActRelationshipCollectionEditor getDispensingEditor() {
         return dispensing;
@@ -362,7 +361,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Determines if an editor should be disposed on layout change.
      *
      * @param editor the editor
-     * @return <tt>true</tt> if the editor isn't for dispensing, investigations, or reminders
+     * @return {@code true} if the editor isn't for dispensing, investigations, or reminders
      */
     @Override
     protected boolean disposeOnChangeLayout(Editor editor) {
@@ -400,7 +399,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Invoked when the product is changed, to update prices, dispensing and reminder acts.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     @Override
     protected void productModified(Product product) {
@@ -528,7 +527,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <p/>
      * If the product is null, any existing act will be removed
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updatePatientMedication(Product product) {
         if (dispensing != null) {
@@ -571,7 +570,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <p/>
      * This removes any existing investigations, and creates new ones, if required.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updateInvestigations(Product product) {
         if (investigations != null) {
@@ -602,7 +601,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <p/>
      * This removes any existing reminders, and creates new ones, if required.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updateReminders(Product product) {
         if (reminders != null) {
@@ -658,13 +657,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Invoked when the product changes to update the layout, if required.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updateLayout(Product product) {
-        NodeFilter currentFilter = getFilter();
+        ArchetypeNodes currentNodes = getArchetypeNodes();
         IMObjectReference productRef = (product != null) ? product.getObjectReference() : null;
-        NodeFilter expectedFilter = getFilterForProduct(productRef);
-        if (!ObjectUtils.equals(currentFilter, expectedFilter)) {
+        ArchetypeNodes expectedFilter = getFilterForProduct(productRef);
+        if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
             Component popupFocus = null;
             if (popupEditorMgr != null && !popupEditorMgr.isComplete()) {
                 popupFocus = FocusHelper.getFocus();
@@ -683,7 +682,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Updates the selling units label.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updateSellingUnits(Product product) {
         String units = "";
@@ -727,7 +726,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private Map<Entity, EntityRelationship> getReminderTypes(Product product) {
         Map<EntityRelationship, Entity> map = reminderRules.getReminderTypes(product);
         Map<Entity, EntityRelationship> result
-            = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
+                = new TreeMap<Entity, EntityRelationship>(IMObjectSorter.getNameComparator(true));
         for (Map.Entry<EntityRelationship, Entity> entry : map.entrySet()) {
             result.put(entry.getValue(), entry.getKey());
         }
@@ -743,7 +742,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * present.
      *
      * @param editor     the editor to queue
-     * @param skip       if <tt>true</tt>, indicates that the editor may be skipped
+     * @param skip       if {@code true}, indicates that the editor may be skipped
      * @param collection the collection to remove the object from, if the editor is skipped
      */
     private void queuePatientActEditor(final IMObjectEditor editor, boolean skip,
@@ -892,7 +891,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Returns the act editors for the specified collection editor.
      *
-     * @param editors the collection editor. May be <tt>null</tt>
+     * @param editors the collection editor. May be {@code null}
      * @return a set of editors
      */
     @SuppressWarnings("unchecked")
@@ -911,7 +910,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Determines if a medication product requires a dispensing label.
      *
      * @param product the product
-     * @return <tt>true</tt> if the product requires a dispensing label
+     * @return {@code true} if the product requires a dispensing label
      */
     private boolean hasDispensingLabel(Product product) {
         IMObjectBean bean = new IMObjectBean(product);
@@ -965,13 +964,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * <li>the reminders node is excluded if there are no reminders present.
      * </ul>
      *
-     * @param product a reference to the product. May be <tt>null</tt>
-     * @return a node filter for the product. If <tt>null</tt>, no nodes require filtering
+     * @param product a reference to the product. May be {@code null}
+     * @return a node filter for the product. If {@code null}, no nodes require filtering
      */
-    private NodeFilter getFilterForProduct(IMObjectReference product) {
-        NodeFilter result = null;
+    private ArchetypeNodes getFilterForProduct(IMObjectReference product) {
+        ArchetypeNodes result = null;
         if (TypeHelper.isA(product, TEMPLATE)) {
-            result = TEMPLATE_FILTER;
+            result = TEMPLATE_NODES;
         } else {
             List<String> filter = new ArrayList<String>();
             filter.add(DISPENSING);
@@ -988,7 +987,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 filter.remove(REMINDERS);
             }
             if (!filter.isEmpty()) {
-                result = new NamedNodeFilter(filter.toArray(new String[filter.size()]));
+                result = new ArchetypeNodes().exclude(filter);
             }
         }
         return result;
@@ -1001,14 +1000,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      *
      * @param name the collection node name
      * @param act  the act
-     * @return the collection editor, or <tt>null</tt> if the node doesn't exist
+     * @return the collection editor, or {@code null} if the node doesn't exist
      */
     private ActRelationshipCollectionEditor createCollectionEditor(String name, Act act) {
         ActRelationshipCollectionEditor editor = null;
         CollectionProperty collection = (CollectionProperty) getProperty(name);
         if (collection != null && !collection.isHidden()) {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
-                collection, act, getLayoutContext());
+                    collection, act, getLayoutContext());
             editor.setExcludeDefaultValueObject(false);
             getEditors().add(editor);
         }

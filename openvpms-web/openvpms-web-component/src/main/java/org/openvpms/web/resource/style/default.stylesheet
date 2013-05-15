@@ -1931,6 +1931,12 @@
         </properties>
     </style>
 
+    <style name="Inset" base-name="default" type="echopointng.GroupBox">
+        <properties>
+            <property name="insets" value="${padding.medium}"/>
+        </properties>
+    </style>
+
     <!-- =================================================================== -->
     <!--  Grid defaults                                                      -->
     <!-- =================================================================== -->

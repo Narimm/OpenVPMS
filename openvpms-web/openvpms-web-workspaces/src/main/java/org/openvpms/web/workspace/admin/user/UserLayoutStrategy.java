@@ -12,41 +12,55 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.workspace.admin.user;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ColourNodeLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.PropertySet;
 
 
 /**
  * Layout strategy that hides the 'password' node.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UserLayoutStrategy extends ColourNodeLayoutStrategy {
 
     /**
-     * Returns a node filter to filter nodes. This implementation filters
-     * the "password" node when in view mode.
+     * The nodes to display.
+     */
+    private ArchetypeNodes nodes;
+
+    /**
+     * Apply the layout strategy.
+     * <p/>
+     * This renders an object in a {@code Component}, using a factory to create the child components.
      *
-     * @param object
-     * @param context the context
-     * @return a node filter to filter nodes
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param parent     the parent object. May be {@code null}
+     * @param context    the layout context
+     * @return the component containing the rendered {@code object}
      */
     @Override
-    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-        if (!context.isEdit()) {
-            NodeFilter filter = new NamedNodeFilter("password");
-            return getNodeFilter(context, filter);
-        }
-        return super.getNodeFilter(object, context);
+    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+        // when viewing, exclude the password node
+        nodes = context.isEdit() ? DEFAULT_NODES : new ArchetypeNodes().exclude("password");
+        return super.apply(object, properties, parent, context);
+    }
+
+    /**
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+     *
+     * @return the archetype nodes
+     */
+    @Override
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
     }
 }

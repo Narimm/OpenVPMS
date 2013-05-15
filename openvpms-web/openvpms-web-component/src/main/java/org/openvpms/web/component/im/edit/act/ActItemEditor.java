@@ -12,15 +12,12 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -28,8 +25,8 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
@@ -45,15 +42,14 @@ import java.math.BigDecimal;
  * <em>act.customerAccount*Item</em>, <em>act.customerEstimationItem</em>,
  * <em><em>act.supplierAccount*Item</em> or <em>act.supplierOrderItem</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class ActItemEditor extends AbstractActEditor {
 
     /**
-     * Current node filter. May be {@code null}.
+     * Current nodes to display. May be {@code null}.
      */
-    private NodeFilter filter;
+    private ArchetypeNodes nodes;
 
     /**
      * The product listener. May be {@code null}.
@@ -61,11 +57,11 @@ public abstract class ActItemEditor extends AbstractActEditor {
     private ProductListener listener;
 
     /**
-     * Construct a new <tt>ActItemEditor</tt>.
+     * Constructs an {@link ActItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act.
-     * @param context the layout context. May be <tt>null</tt>
+     * @param context the layout context. May be {@code null}
      */
     public ActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
@@ -79,7 +75,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the customer, obtained from the parent act.
      *
-     * @return a reference to the customer or <tt>null</tt> if the act
+     * @return a reference to the customer or {@code null} if the act
      *         has no parent
      */
     public IMObjectReference getCustomerRef() {
@@ -94,7 +90,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the customer, obtained from the parent act.
      *
-     * @return a reference to the customer or <tt>null</tt> if the act
+     * @return a reference to the customer or {@code null} if the act
      *         has no parent
      */
     public Party getCustomer() {
@@ -104,7 +100,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the product.
      *
-     * @return a reference to the product, or <tt>null</tt> if the act has
+     * @return a reference to the product, or {@code null} if the act has
      *         no product
      */
     public IMObjectReference getProductRef() {
@@ -114,7 +110,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the product.
      *
-     * @return the product, or <tt>null</tt> if the act has no product
+     * @return the product, or {@code null} if the act has no product
      */
     public Product getProduct() {
         return (Product) getObject(getProductRef());
@@ -123,7 +119,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the product.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     public void setProduct(Product product) {
         setProductRef(product != null ? product.getObjectReference() : null);
@@ -132,7 +128,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the product.
      *
-     * @param product a reference to the product. May be <tt>null</tt>
+     * @param product a reference to the product. May be {@code null}
      */
     public void setProductRef(IMObjectReference product) {
         setParticipant("product", product);
@@ -141,7 +137,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the patient.
      *
-     * @return a reference to the patient, or <tt>null</tt> if the act has no patient
+     * @return a reference to the patient, or {@code null} if the act has no patient
      */
     public Party getPatient() {
         return (Party) getObject(getPatientRef());
@@ -150,7 +146,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the patient.
      *
-     * @return a reference to the patient, or <tt>null</tt> if the act
+     * @return a reference to the patient, or {@code null} if the act
      *         has no patient
      */
     public IMObjectReference getPatientRef() {
@@ -160,7 +156,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the patient.
      *
-     * @param patient the patient. May be <tt>null</tt>
+     * @param patient the patient. May be {@code null}
      */
     public void setPatient(Party patient) {
         setPatientRef(patient != null ? patient.getObjectReference() : null);
@@ -169,7 +165,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the patient.
      *
-     * @param patient a reference to the patient. May be <tt>null</tt>
+     * @param patient a reference to the patient. May be {@code null}
      */
     public void setPatientRef(IMObjectReference patient) {
         setParticipant("patient", patient);
@@ -178,7 +174,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the clinician.
      *
-     * @return a reference to the clinician, or <tt>null</tt> if the act has
+     * @return a reference to the clinician, or {@code null} if the act has
      *         no clinician
      */
     public User getClinician() {
@@ -188,7 +184,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns a reference to the clinician.
      *
-     * @return a reference to the clinician, or <tt>null</tt> if the act has
+     * @return a reference to the clinician, or {@code null} if the act has
      *         no clinician
      */
     public IMObjectReference getClinicianRef() {
@@ -198,7 +194,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the clinician.
      *
-     * @param clinician a reference to the clinician. May be <tt>null</tt>
+     * @param clinician a reference to the clinician. May be {@code null}
      */
     public void setClinician(User clinician) {
         setClinicianRef(clinician != null ? clinician.getObjectReference() : null);
@@ -207,7 +203,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Sets the clinician.
      *
-     * @param clinician a reference to the clinician. May be <tt>null</tt>
+     * @param clinician a reference to the clinician. May be {@code null}
      */
     public void setClinicianRef(IMObjectReference clinician) {
         setParticipant("clinician", clinician);
@@ -295,7 +291,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * <p/>
      * This implementation is a no-op.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     protected void productModified(Product product) {
     }
@@ -316,7 +312,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *
      * @param shortName the price short name
      * @param product   the product
-     * @return the corresponding product price, or <tt>null</tt> if none exists
+     * @return the corresponding product price, or {@code null} if none exists
      */
     protected ProductPrice getProductPrice(String shortName, Product product) {
         ProductPriceRules rules = new ProductPriceRules();
@@ -326,7 +322,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the product editor.
      *
-     * @return the product editor, or <tt>null</tt> if none exists
+     * @return the product editor, or {@code null} if none exists
      */
     protected ProductParticipationEditor getProductEditor() {
         return getProductEditor(true);
@@ -335,9 +331,9 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the product editor.
      *
-     * @param create if <tt>true</tt> force creation of the edit components if
+     * @param create if {@code true} force creation of the edit components if
      *               it hasn't already been done
-     * @return the product editor, or <tt>null</tt> if none exists
+     * @return the product editor, or {@code null} if none exists
      */
     protected ProductParticipationEditor getProductEditor(boolean create) {
         ParticipationEditor<Product> editor = getParticipationEditor("product",
@@ -348,7 +344,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the patient editor.
      *
-     * @return the patient editor, or <tt>null</tt>  if none exists
+     * @return the patient editor, or {@code null}  if none exists
      */
     protected PatientParticipationEditor getPatientEditor() {
         return getPatientEditor(true);
@@ -357,20 +353,20 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the patient editor.
      *
-     * @param create if <tt>true</tt> force creation of the edit components if
+     * @param create if {@code true} force creation of the edit components if
      *               it hasn't already been done
-     * @return the patient editor, or <tt>null</tt> if none exists
+     * @return the patient editor, or {@code null} if none exists
      */
     protected PatientParticipationEditor getPatientEditor(boolean create) {
         ParticipationEditor<Party> editor
-            = getParticipationEditor("patient", create);
+                = getParticipationEditor("patient", create);
         return (PatientParticipationEditor) editor;
     }
 
     /**
      * Returns the clinician editor.
      *
-     * @return the clinician editor, or <tt>null</tt>  if none exists
+     * @return the clinician editor, or {@code null}  if none exists
      */
     protected ClinicianParticipationEditor getClinicianEditor() {
         return getClinicianEditor(true);
@@ -379,9 +375,9 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Returns the clinician editor.
      *
-     * @param create if <tt>true</tt> force creation of the edit components if
+     * @param create if {@code true} force creation of the edit components if
      *               it hasn't already been done
-     * @return the clinician editor, or <tt>null</tt>  if none exists
+     * @return the clinician editor, or {@code null}  if none exists
      */
     protected ClinicianParticipationEditor getClinicianEditor(boolean create) {
         ParticipationEditor<User> editor = getParticipationEditor("clinician",
@@ -402,29 +398,29 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Change the layout of the act.
      *
-     * @param filter the node filter to use
+     * @param nodes the nodes to display
      */
-    protected void changeLayout(NodeFilter filter) {
-        setFilter(filter);
+    protected void changeLayout(ArchetypeNodes nodes) {
+        setArchetypeNodes(nodes);
         onLayout();
     }
 
     /**
-     * Sets the node filter, used to lay out the act.
+     * Sets the nodes to display.
      *
-     * @param filter the node filter. May be <tt>null</tt>
+     * @param nodes the nodes. May be {@code null}
      */
-    protected void setFilter(NodeFilter filter) {
-        this.filter = filter;
+    protected void setArchetypeNodes(ArchetypeNodes nodes) {
+        this.nodes = nodes;
     }
 
     /**
-     * Returns the current node filter, used to lay out the act.
+     * Returns the nodes to display.
      *
-     * @return the current node filter. May be <tt>null</tt>
+     * @return the nodes. May be {@code null}
      */
-    protected NodeFilter getFilter() {
-        return filter;
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
     }
 
     /**
@@ -458,18 +454,13 @@ public abstract class ActItemEditor extends AbstractActEditor {
     protected class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Returns a node filter to filter nodes.
+         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
          *
-         * @param object  the object to filter nodes for
-         * @param context the context
-         * @return a node filter to filter nodes, or <tt>null</tt> if no
-         *         filterering is required
+         * @return the archetype nodes
          */
         @Override
-        protected NodeFilter getNodeFilter(IMObject object,
-                                           LayoutContext context) {
-            return super.getNodeFilter(context, getFilter());
+        protected ArchetypeNodes getArchetypeNodes() {
+            return nodes != null ? nodes : super.getArchetypeNodes();
         }
-
     }
 }

@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.workspace.customer.estimation;
@@ -27,8 +25,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
@@ -46,11 +43,9 @@ import java.util.Date;
 
 
 /**
- * An editor for {@link Act}s which have an archetype of
- * <em>act.customerEstimationItem</em>.
+ * An editor for {@link Act}s which have an archetype of <em>act.customerEstimationItem</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public class EstimationItemEditor extends PriceActItemEditor {
 
@@ -65,16 +60,15 @@ public class EstimationItemEditor extends PriceActItemEditor {
     private Label highQtySellingUnits = LabelFactory.create();
 
     /**
-     * Node filter, used to disable properties when a product template is
-     * selected.
+     * Nodes to display when a product template is selected.
      */
-    private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
+    private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
         "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice",
         "lowTotal", "highTotal");
 
 
     /**
-     * Construct a new <tt>EstimationItemEdtor</tt>.
+     * Construct a new <tt>EstimationItemEditor</tt>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
@@ -83,8 +77,7 @@ public class EstimationItemEditor extends PriceActItemEditor {
     public EstimationItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.customerEstimationItem")) {
-            throw new IllegalArgumentException(
-                "Invalid act type:" + act.getArchetypeId().getShortName());
+            throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
         if (act.isNew()) {
             // default the act start time to today
@@ -152,8 +145,8 @@ public class EstimationItemEditor extends PriceActItemEditor {
         discount.setValue(BigDecimal.ZERO);
 
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            if (getFilter() != TEMPLATE_FILTER) {
-                changeLayout(TEMPLATE_FILTER);
+            if (getArchetypeNodes() != TEMPLATE_NODES) {
+                changeLayout(TEMPLATE_NODES);
             }
             // zero out the fixed, low and high prices.
             Property fixedPrice = getProperty("fixedPrice");
@@ -164,7 +157,7 @@ public class EstimationItemEditor extends PriceActItemEditor {
             highUnitPrice.setValue(BigDecimal.ZERO);
             updateSellingUnits(null);
         } else {
-            if (getFilter() != null) {
+            if (getArchetypeNodes() != null) {
                 changeLayout(null);
             }
             Property fixedPrice = getProperty("fixedPrice");

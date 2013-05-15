@@ -15,15 +15,10 @@
  */
 package org.openvpms.web.component.im.doc;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -46,17 +41,22 @@ public class DocumentActLayoutStrategy extends ActLayoutStrategy {
     public static final String VERSIONS = "versions";
 
     /**
-     * Constructs a <tt>DocumentActLayoutStrategy</tt> for viewing document acts.
+     * Treats the document node as a simple rather than complex node.
+     */
+    private static ArchetypeNodes NODES = new ArchetypeNodes().simple(DOCUMENT);
+
+    /**
+     * Constructs a {@code DocumentActLayoutStrategy} for viewing document acts.
      */
     public DocumentActLayoutStrategy() {
         this(null, null);
     }
 
     /**
-     * Constructs a <tt>DocumentActEditLayoutStrategy</tt> for editing document acts.
+     * Constructs a {@code DocumentActEditLayoutStrategy} for editing document acts.
      *
-     * @param editor         the document reference editor. May be <tt>null</tt>
-     * @param versionsEditor the document version editor. May be <tt>null</tt>
+     * @param editor         the document reference editor. May be {@code null}
+     * @param versionsEditor the document version editor. May be {@code null}
      */
     public DocumentActLayoutStrategy(DocumentEditor editor, ActRelationshipCollectionEditor versionsEditor) {
         if (editor != null) {
@@ -68,45 +68,12 @@ public class DocumentActLayoutStrategy extends ActLayoutStrategy {
     }
 
     /**
-     * Returns the 'simple' nodes.
-     * <p/>
-     * This implementation always returns the 'document' node as a simple node, if present.
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param archetype the archetype
-     * @return the simple nodes
+     * @return the archetype nodes
      */
     @Override
-    protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
-        List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
-        nodes.addAll(super.getSimpleNodes(archetype));
-        boolean found = false;
-        for (NodeDescriptor node : nodes) {
-            String name = node.getName();
-            if (DOCUMENT.equals(name)) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            NodeDescriptor node = archetype.getNodeDescriptor(DOCUMENT);
-            if (node != null) {
-                nodes.add(node);
-            }
-        }
-        return nodes;
+    protected ArchetypeNodes getArchetypeNodes() {
+        return NODES;
     }
-
-    /**
-     * Returns the 'complex' nodes.
-     * <p/>
-     * This implementation filters any 'document' node, if present.
-     *
-     * @param archetype the archetype
-     * @return the complex nodes
-     */
-    @Override
-    protected List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype) {
-        return filter(null, archetype.getComplexNodeDescriptors(), new NamedNodeFilter(DOCUMENT));
-    }
-
 }

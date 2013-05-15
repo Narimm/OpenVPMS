@@ -25,10 +25,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.web.component.im.filter.FilterHelper;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetEditor;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -68,7 +66,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     private ComponentState customFieldState;
 
     /**
-     * The index of the custom fields tab, or <tt>-1</tt> if it is not displayed.
+     * The index of the custom fields tab, or {@code -1} if it is not displayed.
      */
     private int customFieldsTab;
 
@@ -77,6 +75,10 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      */
     private boolean hideCustomFields;
 
+    /**
+     * The nodes to display.
+     */
+    private ArchetypeNodes nodes;
 
     /**
      * Constructs a <em>PatientLayoutStrategy</em> to view a patient.
@@ -124,35 +126,23 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a <code>Component</code>, using a factory to
-     * create the child components.
+     * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent     the parent object. May be <code>null</code>
+     * @param parent     the parent object. May be {@code null}
      * @param context    the layout context
-     * @return the component containing the rendered <code>object</code>
+     * @return the component containing the rendered {@code object}
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         customFieldsTab = -1;
-        return super.apply(object, properties, parent, context);
-    }
-
-    /**
-     * Returns a node filter to filter nodes.
-     *
-     * @param object  the object to filter nodes for
-     * @param context the context
-     * @return a node filter to filter nodes, or <tt>null</tt> if no filterering is required
-     */
-    @Override
-    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-        NodeFilter filter = super.getNodeFilter(object, context);
         if (hideCustomFields || !hasCustomFields(object)) {
-            filter = FilterHelper.chain(new NamedNodeFilter("customFields"), filter);
+            nodes = new ArchetypeNodes().exclude("customFields");
+        } else {
+            nodes = DEFAULT_NODES;
         }
-        return filter;
+        return super.apply(object, properties, parent, context);
     }
 
     /**
@@ -161,7 +151,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      * @param property the property
      * @param parent   the parent object
      * @param context  the layout context
-     * @return a component to display <tt>property</tt>
+     * @return a component to display {@code property}
      */
     @Override
     protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
@@ -181,7 +171,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Creates a new tab model.
      *
-     * @param container the tab container. May be <tt>null</tt>
+     * @param container the tab container. May be {@code null}
      * @return a new tab model
      */
     @Override
@@ -196,7 +186,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      * @param model       the tab  model
      * @param property    property
      * @param component   the component to add
-     * @param addShortcut if <tt>true</tt> add a tab shortcut
+     * @param addShortcut if {@code true} add a tab shortcut
      */
     @Override
     protected void addTab(TabPaneModel model, Property property, ComponentState component, boolean addShortcut) {
@@ -232,6 +222,17 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+     *
+     * @return the archetype nodes
+     */
+    @Override
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
+    }
+
+
+    /**
      * Creates a component to edit the custom fields node.
      *
      * @return a new component
@@ -253,7 +254,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      * with it.
      *
      * @param object the object. Must be an {@link Entity}.
-     * @return <tt>true</em> if there is any <em>entity.customPatient*</em>
+     * @return {@code true</em> if there is any <em>entity.customPatient*</em>
      *         associated with the object
      */
     private boolean hasCustomFields(IMObject object) {

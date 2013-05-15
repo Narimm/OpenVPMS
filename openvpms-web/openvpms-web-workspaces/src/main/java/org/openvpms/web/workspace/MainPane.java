@@ -49,6 +49,7 @@ import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.workspace.Refreshable;
 import org.openvpms.web.component.workspace.Workspace;
 import org.openvpms.web.component.workspace.Workspaces;
+import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.button.ButtonColumn;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -62,15 +63,8 @@ import org.openvpms.web.echo.factory.ContentPaneFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.admin.AdminWorkspaces;
-import org.openvpms.web.workspace.customer.CustomerWorkspaces;
 import org.openvpms.web.workspace.history.CustomerPatient;
 import org.openvpms.web.workspace.history.CustomerPatientHistoryBrowser;
-import org.openvpms.web.workspace.patient.PatientWorkspaces;
-import org.openvpms.web.workspace.product.ProductWorkspaces;
-import org.openvpms.web.workspace.reporting.ReportingWorkspaces;
-import org.openvpms.web.workspace.supplier.SupplierWorkspaces;
-import org.openvpms.web.workspace.workflow.WorkflowWorkspaces;
 import org.openvpms.web.workspace.workflow.messaging.MessageMonitor;
 
 import java.beans.PropertyChangeEvent;
@@ -209,8 +203,9 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
      *
      * @param monitor the message monitor
      * @param context the context
+     * @param factory the workspaces factory
      */
-    public MainPane(MessageMonitor monitor, GlobalContext context) {
+    public MainPane(MessageMonitor monitor, GlobalContext context, WorkspacesFactory factory) {
         super(ORIENTATION_HORIZONTAL);
         setStyleName(STYLE);
         this.monitor = monitor;
@@ -239,18 +234,18 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, subMenu);
         currentWorkspaces = ContentPaneFactory.create(WORKSPACE_STYLE);
 
-        Button button = addWorkspaces(new CustomerWorkspaces(context));
-        addWorkspaces(new PatientWorkspaces(context));
-        addWorkspaces(new SupplierWorkspaces(context));
-        addWorkspaces(new WorkflowWorkspaces(context));
-        addWorkspaces(new ProductWorkspaces(context));
-        addWorkspaces(new ReportingWorkspaces(context));
+        Button button = addWorkspaces(factory.createCustomerWorkspaces(context));
+        addWorkspaces(factory.createPatientWorkspaces(context));
+        addWorkspaces(factory.createSupplierWorkspaces(context));
+        addWorkspaces(factory.createWorkflowWorkspaces(context));
+        addWorkspaces(factory.createProductWorkspaces(context));
+        addWorkspaces(factory.createReportingWorkspaces(context));
 
         context.addListener(this);
 
         // if the current user is an admin, show the administration workspaces
         if (UserHelper.isAdmin(user)) {
-            addWorkspaces(new AdminWorkspaces(context));
+            addWorkspaces(factory.createAdminWorkspaces(context));
         }
 
         menu.addButton("help", new ActionListener() {
@@ -261,10 +256,8 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
         });
         menu.add(getManagementRow());
 
-        SplitPane left = SplitPaneFactory.create(ORIENTATION_VERTICAL,
-                                                 LEFTPANE_STYLE);
-        SplitPane right = SplitPaneFactory.create(ORIENTATION_VERTICAL,
-                                                  RIGHTPANE_STYLE);
+        SplitPane left = SplitPaneFactory.create(ORIENTATION_VERTICAL, LEFTPANE_STYLE);
+        SplitPane right = SplitPaneFactory.create(ORIENTATION_VERTICAL, RIGHTPANE_STYLE);
 
         left.add(new Label());
         left.add(leftMenu);
@@ -278,8 +271,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     }
 
     /**
-     * Life-cycle method invoked when the <code>Component</code> is added
-     * to a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is added to a registered hierarchy.
      * <p/>
      * This implementation registers a listener for message notification.
      */
@@ -292,8 +284,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     }
 
     /**
-     * Life-cycle method invoked when the <code>Component</code> is removed
-     * from a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
@@ -340,8 +331,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     }
 
     /**
-     * Invoked when a global context object changes, to refresh the current
-     * visible workspace, if necessary.
+     * Invoked when a global context object changes, to refresh the current visible workspace, if necessary.
      *
      * @param key   the context key
      * @param value the context value. May be {@code null}
@@ -447,7 +437,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
     /**
      * Updates the message status button when a message is updated.
      *
-     * @param message the updated messsage
+     * @param message the updated message
      */
     private void updateMessageStatus(Act message) {
         if (MessageStatus.PENDING.equals(message.getStatus())) {

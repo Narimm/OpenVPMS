@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.relationship;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -26,13 +27,16 @@ import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 
 import java.util.List;
 
@@ -53,6 +57,11 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * Editor for the target of the relationship. Null if the target is the parent.
      */
     private PropertyEditor targetEditor;
+
+    /**
+     * The nodes to render.
+     */
+    private ArchetypeNodes nodes;
 
     /**
      * The source node name.
@@ -92,12 +101,20 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
             targetProp.setValue(target.getObjectReference());
         }
 
+        nodes = new ArchetypeNodes();
+
         if (source == null || !source.equals(parent)) {
             sourceEditor = createReferenceEditor(sourceProp, layoutContext);
+            nodes.simple(SOURCE);
+            nodes.first(SOURCE);
+            nodes.exclude(TARGET);
         }
 
         if (target == null || !target.equals(parent) || target.equals(source)) {
             targetEditor = createReferenceEditor(targetProp, layoutContext);
+            nodes.simple(TARGET);
+            nodes.first(TARGET);
+            nodes.exclude(SOURCE);
         }
     }
 
@@ -144,13 +161,44 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
 
     /**
      * Relationship layout strategy. Displays the source/target nodes before any others.
+     * <p/>
+     * If there is only a single node, this is rendered without any label.
      */
     protected class LayoutStrategy extends AbstractLayoutStrategy {
+
 
         /**
          * Constructs a {@code LayoutStrategy}.
          */
         public LayoutStrategy() {
+        }
+
+        /**
+         * Lay out out the object in the specified container.
+         *
+         * @param object     the object to lay out
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param container  the container to use
+         * @param context    the layout context
+         */
+        @Override
+        protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
+                                LayoutContext context) {
+            ArchetypeDescriptor archetype = context.getArchetypeDescriptor(object);
+            ArchetypeNodes nodes = getArchetypeNodes();
+            NodeFilter filter = getNodeFilter(object, context);
+
+            List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
+            List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
+
+            if (simple.size() == 1 && complex.isEmpty()) {
+                ComponentSet set = createComponentSet(object, simple, properties, context);
+                container.add(set.getComponents().get(0).getComponent());
+            } else {
+                doSimpleLayout(object, parent, simple, properties, container, context);
+                doComplexLayout(object, parent, complex, properties, container, context);
+            }
         }
 
         /**
@@ -173,33 +221,13 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         }
 
         /**
-         * Returns the 'simple' nodes. These will be rendered in a grid.
+         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
          *
-         * @param archetype the archetype
-         * @return the simple nodes
+         * @return the archetype nodes
          */
         @Override
-        protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
-            List<NodeDescriptor> result = super.getSimpleNodes(archetype);
-            if (targetEditor != null) {
-                result.add(0, targetEditor.getProperty().getDescriptor());
-            }
-            if (sourceEditor != null) {
-                result.add(0, sourceEditor.getProperty().getDescriptor());
-            }
-            return result;
-        }
-
-        /**
-         * Returns the 'complex' nodes. This filters the 'source' and 'target' nodes which are treated as
-         * 'simple' nodes by {@link #getSimpleNodes}.
-         *
-         * @param archetype the archetype
-         * @return the 'complex' nodes
-         */
-        @Override
-        protected List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype) {
-            return filter(null, archetype.getComplexNodeDescriptors(), new NamedNodeFilter(SOURCE, TARGET));
+        protected ArchetypeNodes getArchetypeNodes() {
+            return nodes;
         }
     }
 

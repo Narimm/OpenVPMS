@@ -16,12 +16,8 @@
 
 package org.openvpms.web.workspace.admin.lookup;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-
-import java.util.Collections;
-import java.util.List;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 
 
 /**
@@ -34,24 +30,17 @@ import java.util.List;
 public class ReportMacroLookupLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * Returns the 'simple' nodes.
-     *
-     * @param archetype the archetype
-     * @return the simple nodes
+     * Treat the report node as a simple node.
      */
-    @Override
-    protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
-        return archetype.getAllNodeDescriptors();
-    }
+    private static ArchetypeNodes NODES = new ArchetypeNodes().simple("report");
 
     /**
-     * Returns the 'complex' nodes.
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
      *
-     * @param archetype the archetype
-     * @return the complex nodes
+     * @return the archetype nodes
      */
     @Override
-    protected List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype) {
-        return Collections.emptyList();
+    protected ArchetypeNodes getArchetypeNodes() {
+        return NODES;
     }
 }

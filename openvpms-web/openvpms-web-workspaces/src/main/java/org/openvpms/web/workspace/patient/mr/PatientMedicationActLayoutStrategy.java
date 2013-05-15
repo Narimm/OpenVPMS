@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -23,8 +21,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.layout.PrintObjectLayoutStrategy;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -48,8 +45,8 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
 
     /**
      * Determines if the product node should be displayed. False if
-     * the parent act has a product. Ignored if <tt>showProductReadOnly</tt>
-     * is <tt>true</tt>
+     * the parent act has a product. Ignored if {@code showProductReadOnly}
+     * is {@code true}
      */
     private boolean showProduct;
 
@@ -59,13 +56,18 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     private boolean showProductReadOnly;
 
     /**
-     * A component to display usage notes. May be <tt>null</tt>.
+     * A component to display usage notes. May be {@code null}.
      */
     private Component usageNotes;
 
+    /**
+     * The nodes to display.
+     */
+    private ArchetypeNodes nodes;
+
 
     /**
-     * Constructs a <tt>PatientMedicationActLayoutStrategy</tt>.
+     * Constructs a {@code PatientMedicationActLayoutStrategy}.
      */
     public PatientMedicationActLayoutStrategy() {
         super("button.printlabel");
@@ -74,7 +76,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     /**
      * Determines if the data should be displayed read-only.
      *
-     * @param readOnly if <tt>true</tt> display the date read-only.
+     * @param readOnly if {@code true} display the date read-only.
      */
     public void setDateReadOnly(boolean readOnly) {
         showDateReadOnly = readOnly;
@@ -83,7 +85,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     /**
      * Determines if the product should be displayed read-only.
      *
-     * @param readOnly if <tt>true</tt> display the product read-only.
+     * @param readOnly if {@code true} display the product read-only.
      */
     public void setProductReadOnly(boolean readOnly) {
         showProduct = true;
@@ -95,7 +97,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * <p/>
      * If set, this is displayed immediately after the simple properties.
      *
-     * @param notes the usage notes. May be <tt>null</tt>
+     * @param notes the usage notes. May be {@code null}
      */
     public void setUsageNotes(Component notes) {
         usageNotes = notes;
@@ -104,18 +106,16 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a <tt>Component</tt>, using a factory to
-     * create the child components.
+     * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param context    the layout context
-     * @return the component containing the rendered <tt>object</tt>
+     * @return the component containing the rendered {@code object}
      */
     @Override
-    public ComponentState apply(IMObject object, PropertySet properties,
-                                IMObject parent, LayoutContext context) {
+    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         if (!showProductReadOnly) {
             if (parent instanceof Act) {
                 ActBean bean = new ActBean((Act) parent);
@@ -124,6 +124,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
                 showProduct = true;
             }
         }
+        nodes = (showProduct) ? DEFAULT_NODES : new ArchetypeNodes().exclude("product");
         return super.apply(object, properties, parent, context);
     }
 
@@ -131,7 +132,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * Lays out child components in a grid.
      *
      * @param object      the object to lay out
-     * @param parent      the parent object. May be <tt>null</tt>
+     * @param parent      the parent object. May be {@code null}
      * @param descriptors the property descriptors
      * @param properties  the properties
      * @param container   the container to use
@@ -147,35 +148,15 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     }
 
     /**
-     * Returns a node filter to filter nodes. This implementation filters
-     * out the product node if {@link #showProduct} is <tt>false</tt>.
-     *
-     * @param object  the object to filter nodes for
-     * @param context the context
-     * @return a node filter to filter nodes, or <tt>null</tt> if no filterering is required
-     */
-    @Override
-    protected NodeFilter getNodeFilter(IMObject object, LayoutContext context) {
-        NodeFilter filter;
-        if (!showProduct) {
-            filter = super.getNodeFilter(context, new NamedNodeFilter("product"));
-        } else {
-            filter = super.getNodeFilter(object, context);
-        }
-        return filter;
-    }
-
-    /**
      * Creates a component for a property.
      *
      * @param property the property
      * @param parent   the parent object
      * @param context  the layout context
-     * @return a component to display <tt>property</tt>
+     * @return a component to display {@code property}
      */
     @Override
-    protected ComponentState createComponent(Property property, IMObject parent,
-                                             LayoutContext context) {
+    protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
         ComponentState result;
         String name = property.getName();
         if (showDateReadOnly && name.equals("startTime")) {
@@ -189,6 +170,16 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     }
 
     /**
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+     *
+     * @return the archetype nodes
+     */
+    @Override
+    protected ArchetypeNodes getArchetypeNodes() {
+        return nodes;
+    }
+
+    /**
      * Helper to return a read-only component.
      *
      * @param property the property
@@ -196,9 +187,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * @param context  the layout context
      * @return a read-only component to display the property
      */
-    private ComponentState getReadOnlyComponent(Property property,
-                                                IMObject parent,
-                                                LayoutContext context) {
+    private ComponentState getReadOnlyComponent(Property property, IMObject parent, LayoutContext context) {
         ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(context);
         return factory.create(property, parent);
     }

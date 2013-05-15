@@ -25,6 +25,9 @@
 
     <bean id="openVPMSApp" class="org.openvpms.web.workspace.OpenVPMSApp" scope="prototype">
         <constructor-arg ref="context"/>
+        <constructor-arg>
+            <bean class="org.openvpms.web.workspace.DefaultWorkspacesFactory"/>
+        </constructor-arg>
         <property name="styleSheets" ref="userStyleSheets"/>
     </bean>
 
@@ -50,6 +53,17 @@
         <!--  The mask. May contain combinations of Ctrl, Alt, or Shift,
               separated by '-' -->
         <property name="mask" value="Alt"/>
+    </bean>
+
+    <bean id="errorHandler"  class="org.openvpms.web.component.error.DialogErrorHandler"/>
+
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="org.openvpms.web.echo.error.ErrorHandler.setInstance"/>
+        <property name="arguments">
+            <list>
+                <ref bean="errorHandler"/>
+            </list>
+        </property>
     </bean>
 
     <bean id="errorReporter" class="org.openvpms.web.component.error.ErrorReporter"/>

@@ -19,6 +19,7 @@ package org.openvpms.web.workspace;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.messaging.MessageMonitor;
@@ -37,6 +38,11 @@ public class ApplicationContentPane extends ContentPane {
     private final GlobalContext context;
 
     /**
+     * The workspaces factory.
+     */
+    private final WorkspacesFactory factory;
+
+    /**
      * The layout pane style name.
      */
     private static final String LAYOUT_STYLE = "ApplicationContentPane.Layout";
@@ -46,9 +52,11 @@ public class ApplicationContentPane extends ContentPane {
      * Constructs an {@code ApplicationContentPane}.
      *
      * @param context the context
+     * @param factory the workspaces factory
      */
-    public ApplicationContentPane(GlobalContext context) {
+    public ApplicationContentPane(GlobalContext context, WorkspacesFactory factory) {
         this.context = context;
+        this.factory = factory;
     }
 
     /**
@@ -66,7 +74,7 @@ public class ApplicationContentPane extends ContentPane {
         SplitPane layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, LAYOUT_STYLE);
         MessageMonitor messageMonitor = (MessageMonitor) ServiceHelper.getContext().getBean("messageMonitor");
         layout.add(new TitlePane(context));
-        layout.add(new MainPane(messageMonitor, context));
+        layout.add(new MainPane(messageMonitor, context, factory));
         add(layout);
     }
 

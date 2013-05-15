@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.edit;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -509,8 +508,7 @@ public abstract class IMTableCollectionEditor<T>
                 componentListener);
             editBox.remove(editor.getComponent());
         } else {
-            editBox = GroupBoxFactory.create();
-            editBox.setInsets(new Insets(0));
+            editBox = GroupBoxFactory.create("Inset");
             container.add(editBox);
         }
         editor = getEditor(object);
