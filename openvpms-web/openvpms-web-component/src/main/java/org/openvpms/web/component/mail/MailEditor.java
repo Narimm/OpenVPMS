@@ -673,10 +673,10 @@ public class MailEditor extends AbstractModifiable {
             }
         } else {
             fromAddressSelector = createAddressSelector(fromAddresses);
-            selectedFrom = (Contact) fromAddressSelector.getSelectedItem();
+            setFrom((Contact) fromAddressSelector.getSelectedItem());
             fromAddressSelector.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    selectedFrom = (Contact) fromAddressSelector.getSelectedItem();
+                    setFrom((Contact) fromAddressSelector.getSelectedItem());
                     onModified();
                 }
             });
