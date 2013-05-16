@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -51,8 +49,7 @@ import static org.junit.Assert.assertTrue;
  * Note: this requires the archetype service to be configured to trigger the
  * <em>archetypeService.remove.act.patientClinicalEvent.after.drl</em> rule.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
@@ -686,8 +683,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * @param acts  the expected acts
      */
     private void checkContains(Act event, Act... acts) {
-        ActBean bean = new ActBean(event);
-        List<Act> items = bean.getNodeActs("items");
+        List<Act> items = getActs(event);
         assertEquals(acts.length, items.size());
         for (Act act : acts) {
             boolean found = false;
@@ -699,6 +695,17 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
             }
             assertTrue(found);
         }
+    }
+
+    /**
+     * Returns the items linked to an event.
+     *
+     * @param event the event
+     * @return the items
+     */
+    private List<Act> getActs(Act event) {
+        ActBean bean = new ActBean(event);
+        return bean.getNodeActs("items");
     }
 
     /**

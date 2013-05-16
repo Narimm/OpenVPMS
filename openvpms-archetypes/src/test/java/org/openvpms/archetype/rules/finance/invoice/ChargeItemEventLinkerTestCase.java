@@ -1,35 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -47,12 +39,19 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
+import static org.openvpms.archetype.test.TestHelper.getDate;
+
 
 /**
  * Tests the {@link ChargeItemEventLinker} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
 
@@ -133,8 +132,8 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testMultipleLinkDifferentStartTime() {
-        Date startTime1 = TestHelper.getDate("2011-01-09");
-        Date startTime2 = TestHelper.getDate("2011-01-02");
+        Date startTime1 = getDate("2011-01-09");
+        Date startTime2 = getDate("2011-01-02");
         Party patient = TestHelper.createPatient();
         FinancialAct item1 = createInvoiceItem(startTime1, patient);
         FinancialAct item2 = createInvoiceItem(startTime2, patient);
@@ -204,6 +203,45 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies a charge item and related acts can't be linked to two different events.
+     */
+    @Test
+    public void testLinkForDifferentEvents() {
+        Date date1 = getDate("2013-05-15");
+        Date date2 = getDate("2013-05-16");
+        Party patient = TestHelper.createPatient();
+        Act event1 = rules.createEvent(patient, date1, clinician);
+        Act event2 = rules.createEvent(patient, date2, clinician);
+
+        FinancialAct item = createInvoiceItem(date1, patient);
+
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
+        linker.link(event1, item);
+        checkEvent(item, event1, null, null);
+
+        // try linking to event1 again. Should be a no-op
+        linker.link(event1, item);
+        checkEvent(item, event1, null, null);
+
+        // try linking to event2, and verify that the item is still linked to event1
+        linker.link(event2, item);
+        item = get(item);
+        checkEvent(item, event1, null, null);
+
+        // verify the item and its child acts don't have any links to event2
+        ActBean event2Bean = new ActBean(event2);
+        assertNull(event2Bean.getRelationship(item));
+
+        ActBean itemBean = new ActBean(item);
+        List<Act> acts = itemBean.getActs();
+        assertEquals(3, acts.size()); // dispensing, investigation and document acts
+        for (Act act : acts) {
+            assertNull(event2Bean.getRelationship(act));
+        }
+    }
+
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -215,12 +253,12 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Checks that a patient clinical event has links to the releveat charge items acts.
+     * Checks that a patient clinical event has links to the relevant charge items acts.
      *
-     * @param item  the charge item
-     * @param event the event
-     * @param author the expected author
-     * @param location the expected location
+     * @param item     the charge item
+     * @param event    the event
+     * @param author   the expected author. May be {@code null}
+     * @param location the expected location. May be {@code null}
      */
     private void checkEvent(FinancialAct item, Act event, User author, Party location) {
         item = get(item);
@@ -236,8 +274,16 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         assertEquals(1, documents.size());
 
         ActBean eventBean = new ActBean(event);
-        assertEquals(author.getObjectReference(), eventBean.getNodeParticipantRef("author"));
-        assertEquals(location.getObjectReference(), eventBean.getNodeParticipantRef("location"));
+        if (author == null) {
+            assertNull(eventBean.getNodeParticipantRef("author"));
+        } else {
+            assertEquals(author.getObjectReference(), eventBean.getNodeParticipantRef("author"));
+        }
+        if (location == null) {
+            assertNull(eventBean.getNodeParticipantRef("location"));
+        } else {
+            assertEquals(location.getObjectReference(), eventBean.getNodeParticipantRef("location"));
+        }
         assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, investigations.get(0)));
         assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, dispensing.get(0)));
         assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, documents.get(0)));
