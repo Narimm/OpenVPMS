@@ -32,8 +32,10 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.DefaultActEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ListQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -235,8 +237,9 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
      * @param patient   the expected patient. May be {@code null}
      * @param clinician the expected clinician. May be {@code null}
      * @param status    the expected status
+     * @return the event
      */
-    public void checkEvent(Party patient, User clinician, String status) {
+    public Act checkEvent(Party patient, User clinician, String status) {
         Act event = (Act) getContext().getObject(PatientArchetypes.CLINICAL_EVENT);
         assertNotNull(event);
         assertFalse(event.isNew());  // should be saved
@@ -244,6 +247,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(clinician, bean.getNodeParticipant("clinician"));
         assertEquals(status, event.getStatus());
+        return event;
     }
 
     /**
@@ -394,7 +398,12 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
                                                                     EditIMObjectTask patientEditor) {
             List<Party> patients = (patient != null) ? Arrays.asList(patient) : Collections.<Party>emptyList();
             Query<Party> query = new ListQuery<Party>(patients, PatientArchetypes.PATIENT, Party.class);
-            return new SelectIMObjectTask<Party>(query, patientEditor, context.getHelpContext());
+            return new SelectIMObjectTask<Party>(query, patientEditor, context.getHelpContext()) {
+                @Override
+                protected Browser<Party> createBrowser(Query<Party> query, LayoutContext layout) {
+                    return new DefaultIMObjectTableBrowser<Party>(query, layout);
+                }
+            };
         }
 
         /**
@@ -407,7 +416,12 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
         protected SelectIMObjectTask<Party> createSelectWorkListTask(TaskContext context) {
             List<Party> worklists = (workList != null) ? Arrays.asList(workList) : Collections.<Party>emptyList();
             Query<Party> query = new ListQuery<Party>(worklists, ScheduleArchetypes.ORGANISATION_WORKLIST, Party.class);
-            return new SelectIMObjectTask<Party>(query, context.getHelpContext());
+            return new SelectIMObjectTask<Party>(query, context.getHelpContext()) {
+                @Override
+                protected Browser<Party> createBrowser(Query<Party> query, LayoutContext layout) {
+                    return new DefaultIMObjectTableBrowser<Party>(query, layout);
+                }
+            };
         }
 
         /**

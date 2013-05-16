@@ -211,7 +211,6 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
         List<FinancialAct> items = getItems().getPatientActs();
         event = IMObjectHelper.reload(event); // make sure the most recent instance is being used
         if (event != null && !items.isEmpty()) {
-            // make sure the current event is being used
             ChargeItemEventLinker linker = new ChargeItemEventLinker(null, null,
                                                                      ServiceHelper.getArchetypeService());
             linker.link(event, items);

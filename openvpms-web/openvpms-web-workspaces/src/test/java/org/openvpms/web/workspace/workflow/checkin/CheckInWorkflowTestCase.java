@@ -17,15 +17,18 @@
 package org.openvpms.web.workspace.workflow.checkin;
 
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -33,28 +36,37 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.error.ErrorHandler;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper;
+import org.openvpms.web.workspace.customer.charge.TestChargeEditor;
 import org.openvpms.web.workspace.patient.charge.VisitChargeItemEditor;
 import org.openvpms.web.workspace.patient.visit.VisitEditorDialog;
 import org.openvpms.web.workspace.workflow.WorkflowTestHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createAppointment;
 import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createWorkList;
@@ -137,14 +149,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     public void testCheckInFromAppointmentWithPatient() {
         Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
-        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
-        workflow.start();
-
-        workflow.selectWorkList(workList, customer, patient);
-
-        workflow.addWeight(patient, BigDecimal.valueOf(20), clinician);
-
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        runCheckInToVisit(workflow);
 
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
@@ -342,10 +347,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     public void testSkipPatientWeight() {
         Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
-        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
-        workflow.start();
-
-        workflow.selectWorkList(workList, customer, patient);
+        runCheckInToWeight(workflow);
 
         // skip the weight entry and verify that the context has a weight act that is unsaved
         fireDialogButton(workflow.getEditDialog(), PopupDialog.SKIP_ID);
@@ -379,6 +381,80 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         checkCancelPatientWeight(true);
     }
 
+    /**
+     * Performs a check in, one day after a patient was invoiced but using the same invoice.
+     * <p/>
+     * This verifies the fix for OVPMS-1302.
+     */
+    @Test
+    public void testCheckInWithInProgressInvoice() {
+        // Two visits should be created, one on date1, the other on date2
+        Date date1 = getDatetime("2012-01-01 10:00:00");
+        Date date2 = getDatetime("2012-01-02 12:00:00");
+
+        // Invoice the customer for a medication1 for the patient on 1/1/2012.
+        // Leave the invoice IN_PROGRESS
+        Product medication1 = TestHelper.createProduct();
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+        charge.setActivityStartTime(date1);
+
+        context.setCustomer(customer);
+        context.setPatient(patient);
+        context.setPractice(getPractice());
+        context.setClinician(clinician);
+        LayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+
+        TestChargeEditor editor = new TestChargeEditor(charge, layoutContext, false);
+        editor.getComponent();
+        CustomerChargeActItemEditor itemEditor1 = editor.addItem();
+        itemEditor1.setStartTime(date1);  // otherwise will default to now
+        setItem(editor, itemEditor1, patient, medication1, BigDecimal.TEN, editor.getQueue());
+
+        assertTrue(SaveHelper.save(editor));
+
+        // Verify that an event has been created, linked to the charge
+        Act item1 = (Act) itemEditor1.getObject();
+        ActBean bean = new ActBean(item1);
+        Act event1 = bean.getSourceAct(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
+        assertNotNull(event1);
+        assertEquals(date1, event1.getActivityStartTime());
+        assertEquals(ActStatus.COMPLETED, event1.getStatus());
+
+        Act appointment = createAppointment(date2, customer, patient, clinician);
+        CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
+
+        runCheckInToVisit(workflow);
+
+        // Add another invoice item.
+        Product medication2 = TestHelper.createProduct();
+        VisitChargeItemEditor itemEditor2 = workflow.addVisitInvoiceItem(patient, clinician, medication2);
+
+        // close the dialog
+        PopupDialog eventDialog = workflow.editVisit();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        Act event2 = workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
+        workflow.checkComplete(true, customer, patient, context);
+
+        // verify the second item is linked to event2
+        Act item2 = (Act) itemEditor2.getObject();
+        ActBean bean2 = new ActBean(item2);
+        assertEquals(event2, bean2.getSourceAct(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM));
+
+        // verify the second event is not the same as the first, and that none of the acts in the second event
+        // are the same as those in the first
+        assertNotEquals(event1, event2);
+        ActBean event1Bean = new ActBean(event1);
+        ActBean event2Bean = new ActBean(event2);
+        List<Act> event1Items = event1Bean.getActs();
+        List<Act> event2Items = event2Bean.getActs();
+        Collection inBoth = CollectionUtils.intersection(event1Items, event2Items);
+        assertTrue(inBoth.isEmpty());
+    }
+
+    /**
+     * Verifies that changing the clinician on an invoice item propagates through to the documents associated
+     * with the invoice.
+     */
     @Test
     public void testChangeClinicianOnInvoiceItem() {
         Act appointment = createAppointment(customer, patient, clinician);
@@ -391,8 +467,8 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         Product product = CustomerChargeTestHelper.createProduct(ProductArchetypes.MEDICATION, BigDecimal.TEN,
                                                                  getPractice());
-        Entity template1 = addDocumentTemplate(product);
-        Entity template2 = addDocumentTemplate(product);
+        addDocumentTemplate(product);
+        addDocumentTemplate(product);
 
         // edit the charge
         VisitEditorDialog dialog = workflow.getVisitEditorDialog();
@@ -404,29 +480,19 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         List<Act> documents1 = getDocuments(itemEditor);
         assertEquals(2, documents1.size());
 
-        itemEditor.setClinician(TestHelper.createClinician());
+        User clinician2 = TestHelper.createClinician();
+        itemEditor.setClinician(clinician2);
         fireDialogButton(dialog, PopupDialog.OK_ID);
 
         List<Act> documents2 = getDocuments(itemEditor);
         assertEquals(2, documents2.size());
+        assertEquals(clinician2, getClinician(documents2.get(0)));
+        assertEquals(clinician2, getClinician(documents2.get(1)));
 
         workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
         workflow.checkComplete(true, customer, patient, context);
 
         assertTrue(errors.isEmpty());
-    }
-
-    private Act getPatientDocumentForm(VisitChargeItemEditor itemEditor) {
-        List<Act> documents = getDocuments(itemEditor);
-        assertEquals(1, documents.size());
-        Act document = documents.get(0);
-        assertTrue(TypeHelper.isA(document, PatientArchetypes.DOCUMENT_FORM));
-        return document;
-    }
-
-    private List<Act> getDocuments(VisitChargeItemEditor itemEditor) {
-        ActBean bean = new ActBean((Act) itemEditor.getObject());
-        return bean.getNodeActs("documents");
     }
 
     /**
@@ -502,10 +568,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     private void checkCancelSelectDialog(boolean userClose) {
         Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
-        workflow.setWorkList(workList);        // need to pre-set work-list so it can be selected in popup
-        workflow.start();
-
-        workflow.selectWorkList(workList, customer, patient);
+        runCheckInToWeight(workflow);
 
         workflow.addWeight(patient, BigDecimal.ONE, clinician);
 
@@ -523,14 +586,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     private void checkCancelEditEvent(boolean userClose) {
         Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
-        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
-        workflow.start();
-
-        workflow.selectWorkList(workList, customer, patient);
-
-        workflow.addWeight(patient, BigDecimal.ONE, clinician);
-
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        runCheckInToVisit(workflow);
 
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
@@ -550,15 +606,36 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     private void checkCancelPatientWeight(boolean userClose) {
         Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
-        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
-        workflow.start();
-
-        workflow.selectWorkList(workList, customer, patient);
+        runCheckInToWeight(workflow);
 
         EditDialog editor = workflow.getWeightEditor();
         WorkflowTestHelper.cancelDialog(editor, userClose);
         workflow.checkComplete(false, null, null, context);
     }
+
+    /**
+     * Runs the check-in workflow up to the weight editing step.
+     *
+     * @param workflow the workflow
+     */
+    private void runCheckInToWeight(CheckInWorkflowRunner workflow) {
+        workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
+        workflow.start();
+        workflow.selectWorkList(workList, customer, patient);
+    }
+
+    /**
+     * Runs the check-in workflow up to the visit editing step.
+     *
+     * @param workflow the workflow
+     */
+    private void runCheckInToVisit(CheckInWorkflowRunner workflow) {
+        runCheckInToWeight(workflow);
+
+        workflow.addWeight(patient, BigDecimal.valueOf(20), clinician);
+        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+    }
+
 
     /**
      * Verifies that the clinician is populated correctly.
@@ -586,6 +663,34 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.checkComplete(true, customer, patient, context);
     }
 
+    /**
+     * Returns the documents associated with a charge item.
+     *
+     * @param itemEditor the item editor
+     * @return the documents
+     */
+    private List<Act> getDocuments(VisitChargeItemEditor itemEditor) {
+        ActBean bean = new ActBean((Act) itemEditor.getObject());
+        return bean.getNodeActs("documents");
+    }
+
+    /**
+     * Returns the clinician from an act.
+     *
+     * @param act the act
+     * @return the clinician. May be {@code null}
+     */
+    private User getClinician(Act act) {
+        ActBean bean = new ActBean(act);
+        return (User) bean.getNodeParticipant("clinician");
+    }
+
+    /**
+     * Helper to add a document template to a product.
+     *
+     * @param product the product
+     * @return the document template
+     */
     private Entity addDocumentTemplate(Product product) {
         Entity template = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
         EntityBean bean = new EntityBean(product);

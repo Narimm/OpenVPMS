@@ -175,7 +175,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      */
     public void start(final TaskContext context) {
         LayoutContext layout = new DefaultLayoutContext(context, help.subtopic("select"));
-        Browser<T> browser = BrowserFactory.create(query, layout);
+        Browser<T> browser = createBrowser(query, layout);
         if (title == null) {
             title = Messages.get("imobject.select.title", type);
         }
@@ -247,6 +247,17 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
 
         });
         dialog.show();
+    }
+
+    /**
+     * Creates a browser to select an object returned by the query.
+     *
+     * @param query  the query
+     * @param layout the layout context
+     * @return a new browser
+     */
+    protected Browser<T> createBrowser(Query<T> query, LayoutContext layout) {
+        return BrowserFactory.create(query, layout);
     }
 
 }
