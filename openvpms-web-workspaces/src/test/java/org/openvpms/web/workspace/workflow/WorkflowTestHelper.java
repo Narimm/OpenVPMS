@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -37,8 +35,7 @@ import java.util.Date;
 /**
  * Helper class for workflow tests.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class WorkflowTestHelper extends TestHelper {
 
@@ -46,18 +43,29 @@ public class WorkflowTestHelper extends TestHelper {
      * Helper to create an appointment.
      *
      * @param customer  the customer
-     * @param patient   the patient. May be <tt>null</tt>
-     * @param clinician the clinician. May be <tt>null</tt>
+     * @param patient   the patient. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
      * @return a new appointment
      */
     public static Act createAppointment(Party customer, Party patient, User clinician) {
-        Date startTime = new Date();
-        Date endTime = new Date();
+        return createAppointment(new Date(), customer, patient, clinician);
+    }
+
+    /**
+     * Helper to create an appointment.
+     *
+     * @param startTime the appointment start time
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
+     * @return a new appointment
+     */
+    public static Act createAppointment(Date startTime, Party customer, Party patient, User clinician) {
         Party schedule = ScheduleTestHelper.createSchedule();
         Entity appointmentType = ScheduleTestHelper.createAppointmentType();
 
-        Act act = ScheduleTestHelper.createAppointment(startTime, endTime, schedule, appointmentType, customer, patient,
-                                                       clinician, null);
+        Act act = ScheduleTestHelper.createAppointment(startTime, startTime, schedule, appointmentType, customer,
+                                                       patient, clinician, null);
         act.setStatus(AppointmentStatus.PENDING);
         TestHelper.save(act);
         return act;
@@ -67,8 +75,8 @@ public class WorkflowTestHelper extends TestHelper {
      * Helper to create a task.
      *
      * @param customer  the customer
-     * @param patient   the patient. May be <tt>null</tt>
-     * @param clinician the clinician. May be <tt>null</tt>
+     * @param patient   the patient. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
      * @return a new task
      */
     public static Act createTask(Party customer, Party patient, User clinician) {
@@ -80,9 +88,9 @@ public class WorkflowTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create and save new <tt>party.organisationWorkList</em>.
+     * Helper to create and save new {@code party.organisationWorkList}.
      *
-     * @param taskType the task type. May be <tt>null</tt>
+     * @param taskType the task type. May be {@code null}
      * @param noSlots  the no. of slots the task type takes up
      * @return a new schedule
      */
@@ -106,7 +114,7 @@ public class WorkflowTestHelper extends TestHelper {
      * Cancels a dialog.
      *
      * @param dialog    the dialog
-     * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
+     * @param userClose if {@code true} cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     public static void cancelDialog(PopupDialog dialog, boolean userClose) {
         if (userClose) {

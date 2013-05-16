@@ -46,10 +46,10 @@ import static org.junit.Assert.assertTrue;
 /**
  * Helper routines for customer charge tests.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class CustomerChargeTestHelper {
+
     /**
      * Adds a charge item.
      *

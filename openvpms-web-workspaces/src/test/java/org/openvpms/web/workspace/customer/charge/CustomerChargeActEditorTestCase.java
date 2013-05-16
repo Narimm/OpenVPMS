@@ -41,10 +41,8 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.help.HelpContext;
@@ -189,15 +187,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
         BigDecimal quantity = BigDecimal.ONE;
-        addItem(editor, patient, product1, quantity, mgr);
-        addItem(editor, patient, product2, quantity, mgr);
-        addItem(editor, patient, product3, quantity, mgr);
+        addItem(editor, patient, product1, quantity, queue);
+        addItem(editor, patient, product2, quantity, queue);
+        addItem(editor, patient, product3, quantity, queue);
         assertTrue(SaveHelper.save(editor));
 
         checkTotal(charge, total);
@@ -220,15 +218,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
             BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
-            ChargeEditorQueue mgr = new ChargeEditorQueue();
-            ChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+            TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
             editor.getComponent();
             assertTrue(editor.isValid());
 
             BigDecimal quantity = BigDecimal.ONE;
-            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, mgr);
-            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, mgr);
-            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, mgr);
+            ChargeEditorQueue queue = editor.getQueue();
+            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, queue);
+            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, queue);
+            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, queue);
             assertTrue(SaveHelper.save(editor));
 
             charge = get(charge);
@@ -274,21 +272,21 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
             BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
-            ChargeEditorQueue mgr = new ChargeEditorQueue();
-            ChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+            TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+            ChargeEditorQueue queue = editor.getQueue();
             editor.getComponent();
             assertTrue(editor.isValid());
 
             BigDecimal quantity = BigDecimal.ONE;
-            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, mgr);
-            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, mgr);
-            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, queue);
+            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, queue);
+            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, queue);
             assertTrue(SaveHelper.save(editor));
 
             charge = get(charge);
             checkTotal(charge, total);
 
-            editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+            editor = createCustomerChargeActEditor(charge, layoutContext);
             editor.getComponent();
 
             if (j == 0) {
@@ -328,14 +326,14 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
             BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
-            ChargeEditorQueue mgr = new ChargeEditorQueue();
-            ChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+            TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+            ChargeEditorQueue queue = editor.getQueue();
             editor.getComponent();
 
             BigDecimal quantity = BigDecimal.ONE;
-            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, mgr);
-            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, mgr);
-            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, quantity, queue);
+            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, queue);
+            CustomerChargeActItemEditor itemEditor3 = addItem(editor, patient, product3, quantity, queue);
 
             if (j == 0) {
                 editor.delete((Act) itemEditor1.getObject());
@@ -375,20 +373,19 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
             FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
             BigDecimal total = itemTotal1.add(itemTotal2).add(itemTotal3);
 
-            ChargeEditorQueue mgr = new ChargeEditorQueue();
             boolean addDefaultItem = (j == 0);
-            ChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr, addDefaultItem);
+            TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext, addDefaultItem);
             editor.getComponent();
 
             BigDecimal quantity = BigDecimal.ONE;
             CustomerChargeActItemEditor itemEditor1;
             if (j == 0) {
                 itemEditor1 = editor.getCurrentEditor();
-                setItem(editor, itemEditor1, patient, product1, quantity, mgr);
+                setItem(editor, itemEditor1, patient, product1, quantity, editor.getQueue());
             } else {
-                itemEditor1 = addItem(editor, patient, product1, quantity, mgr);
+                itemEditor1 = addItem(editor, patient, product1, quantity, editor.getQueue());
             }
-            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, mgr);
+            CustomerChargeActItemEditor itemEditor2 = addItem(editor, patient, product2, quantity, editor.getQueue());
 
             if (j == 0) {
                 itemEditor1.setProduct(product3);
@@ -438,15 +435,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
 
         Entity template3 = addTemplate(product3);
 
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
         BigDecimal quantity = BigDecimal.ONE;
-        CustomerChargeActItemEditor item1Editor = addItem(editor, patient, product1, quantity, mgr);
-        CustomerChargeActItemEditor item2Editor = addItem(editor, patient, product2, quantity, mgr);
-        CustomerChargeActItemEditor item3Editor = addItem(editor, patient, product3, quantity, mgr);
+        CustomerChargeActItemEditor item1Editor = addItem(editor, patient, product1, quantity, queue);
+        CustomerChargeActItemEditor item2Editor = addItem(editor, patient, product2, quantity, queue);
+        CustomerChargeActItemEditor item3Editor = addItem(editor, patient, product3, quantity, queue);
         FinancialAct item1 = (FinancialAct) item1Editor.getObject();
         FinancialAct item2 = (FinancialAct) item2Editor.getObject();
         FinancialAct item3 = (FinancialAct) item3Editor.getObject();
@@ -586,14 +583,13 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Product product1 = createProduct(ProductArchetypes.SERVICE, itemTotal);
 
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
 
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
         assertTrue(editor.isValid());
 
         BigDecimal quantity = BigDecimal.ONE;
-        addItem(editor, patient, product1, quantity, mgr);
+        addItem(editor, patient, product1, quantity, editor.getQueue());
         assertTrue(editor.isValid());
         charge.setTotal(Money.ONE);
         Validator validator = new Validator();
@@ -623,15 +619,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice);
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
 
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
         BigDecimal quantity = BigDecimal.ONE;
-        addItem(editor, patient, product1, quantity, mgr);
-        addItem(editor, patient, product2, quantity, mgr);
-        addItem(editor, patient, product3, quantity, mgr);
+        addItem(editor, patient, product1, quantity, queue);
+        addItem(editor, patient, product2, quantity, queue);
+        addItem(editor, patient, product3, quantity, queue);
 
         assertTrue(SaveHelper.save(editor));
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
@@ -657,8 +653,8 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param charge the charge
      */
     private void checkEmptyCharge(FinancialAct charge) {
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext,
-                                                                       new ChargeEditorQueue());
+        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext
+        );
         editor.getComponent();
         assertTrue(editor.isValid());
         assertTrue(editor.save());
@@ -711,15 +707,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         initStock(product1, stockLocation, product1Stock);
         initStock(product2, stockLocation, product2Stock);
 
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
         editor.getComponent();
         assertTrue(editor.isValid());
 
         BigDecimal quantity = BigDecimal.ONE;
-        addItem(editor, patient, product1, quantity, mgr);
-        addItem(editor, patient, product2, quantity, mgr);
-        addItem(editor, patient, product3, quantity, mgr);
+        addItem(editor, patient, product1, quantity, queue);
+        addItem(editor, patient, product2, quantity, queue);
+        addItem(editor, patient, product3, quantity, queue);
 
         assertTrue(editor.isValid());
         assertTrue(SaveHelper.save(editor));
@@ -777,16 +773,15 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         initStock(product1, stockLocation, product1InitialStock);
         initStock(product2, stockLocation, product2InitialStock);
 
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
         assertTrue(editor.isValid());
 
         BigDecimal quantity1 = BigDecimal.valueOf(5);
         BigDecimal quantity2 = BigDecimal.valueOf(10);
 
-        CustomerChargeActItemEditor item1 = addItem(editor, patient, product1, quantity1, mgr);
-        CustomerChargeActItemEditor item2 = addItem(editor, patient, product2, quantity2, mgr);
+        CustomerChargeActItemEditor item1 = addItem(editor, patient, product1, quantity1, editor.getQueue());
+        CustomerChargeActItemEditor item2 = addItem(editor, patient, product2, quantity2, editor.getQueue());
         assertTrue(SaveHelper.save(editor));
 
         boolean add = TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT);
@@ -844,10 +839,9 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         templateBean.addNodeRelationship("includes", product3);
         save(template);
 
-        ChargeEditorQueue mgr = new ChargeEditorQueue();
-        CustomerChargeActEditor editor = createCustomerChargeActEditor(charge, layoutContext, mgr);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
-        CustomerChargeTestHelper.addItem(editor, patient, template, BigDecimal.ONE, mgr);
+        CustomerChargeTestHelper.addItem(editor, patient, template, BigDecimal.ONE, editor.getQueue());
 
         boolean invoice = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE);
         int product1Acts = 0;     // expected child acts for product1
@@ -899,7 +893,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param stockLocation the stock location
      * @param initial       the initial stock quantity
      * @param change        the change in stock quantity
-     * @param add           if <tt>true</tt> add the change, otherwise subtract it
+     * @param add           if {@code true} add the change, otherwise subtract it
      * @return the new stock quantity
      */
     private BigDecimal checkStock(Product product, Party stockLocation, BigDecimal initial, BigDecimal change,
@@ -942,7 +936,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * Deletes a charge.
      *
      * @param editor the editor to use
-     * @return <tt>true</tt> if the delete was successful
+     * @return {@code true} if the delete was successful
      */
     private boolean delete(final CustomerChargeActEditor editor) {
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
@@ -984,12 +978,10 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      *
      * @param invoice the charge to edit
      * @param context the layout context
-     * @param manager the popup editor manager
      * @return a new customer charge act editor
      */
-    private ChargeEditor createCustomerChargeActEditor(final FinancialAct invoice, final LayoutContext context,
-                                                       final EditorQueue manager) {
-        return createCustomerChargeActEditor(invoice, context, manager, false);
+    private TestChargeEditor createCustomerChargeActEditor(FinancialAct invoice, LayoutContext context) {
+        return createCustomerChargeActEditor(invoice, context, false);
     }
 
     /**
@@ -997,23 +989,12 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      *
      * @param invoice        the charge to edit
      * @param context        the layout context
-     * @param manager        the popup editor manager
-     * @param addDefaultItem if <tt>true</tt> add a default item if the act has none
+     * @param addDefaultItem if {@code true} add a default item if the act has none
      * @return a new customer charge act editor
      */
-    private ChargeEditor createCustomerChargeActEditor(final FinancialAct invoice, final LayoutContext context,
-                                                       final EditorQueue manager, boolean addDefaultItem) {
-        return new ChargeEditor(invoice, context, addDefaultItem) {
-            @Override
-            protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
-                ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
-                if (editor instanceof ChargeItemRelationshipCollectionEditor) {
-                    // register a handler for act popups
-                    ((ChargeItemRelationshipCollectionEditor) editor).setEditorQueue(manager);
-                }
-                return editor;
-            }
-        };
+    private TestChargeEditor createCustomerChargeActEditor(FinancialAct invoice, LayoutContext context,
+                                                           boolean addDefaultItem) {
+        return new TestChargeEditor(invoice, context, addDefaultItem);
     }
 
     /**
@@ -1031,36 +1012,4 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         return stockLocation;
     }
 
-    private static class ChargeEditor extends CustomerChargeActEditor {
-
-        /**
-         * Constructs a <tt>ChargeEditor</tt>.
-         *
-         * @param act            the act to edit
-         * @param context        the layout context
-         * @param addDefaultItem if <tt>true</tt> add a default item if the act has none
-         */
-        public ChargeEditor(FinancialAct act, LayoutContext context, boolean addDefaultItem) {
-            super(act, null, context, addDefaultItem);
-        }
-
-        /**
-         * Deletes an item.
-         *
-         * @param item the item to delete
-         */
-        public void delete(Act item) {
-            getItems().remove(item);
-        }
-
-        /**
-         * Returns the current editor.
-         *
-         * @return the current editor. May be <tt>null</tt>
-         */
-        public CustomerChargeActItemEditor getCurrentEditor() {
-            return (CustomerChargeActItemEditor) getItems().getCurrentEditor();
-        }
-
-    }
 }
