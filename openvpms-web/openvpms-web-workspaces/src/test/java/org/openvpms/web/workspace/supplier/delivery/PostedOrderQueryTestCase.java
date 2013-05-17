@@ -23,9 +23,9 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -47,7 +47,7 @@ public class PostedOrderQueryTestCase extends AbstractAppTest {
      * Verifies that the query only returns POSTED and ACCEPTED orders for a specific supplier and stock location.
      */
     @Test
-    public void testQuery() {
+    public void testQueryStatus() {
         Party supplier1 = TestHelper.createSupplier();
         Party supplier2 = TestHelper.createSupplier();
         Party stockLocation = SupplierTestHelper.createStockLocation();
@@ -83,12 +83,62 @@ public class PostedOrderQueryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Creates a new query.
-     *
-     * @return a new query
+     * Verifies the correct orders are returned when a supplier is selected.
      */
-    protected Query<FinancialAct> createQuery() {
-        return new PostedOrderQuery(true, null);
+    @Test
+    public void testSupplierQuery() {
+        Party supplier1 = TestHelper.createSupplier();
+        Party supplier2 = TestHelper.createSupplier();
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+
+        FinancialAct posted1 = createOrder(supplier1, stockLocation, OrderStatus.POSTED);
+        FinancialAct posted2 = createOrder(supplier2, stockLocation, OrderStatus.POSTED);
+
+        PostedOrderQuery query = new PostedOrderQuery(true, new DefaultLayoutContext(new LocalContext(),
+                                                                                     new HelpContext("foo", null)));
+        checkExists(posted1, query, false);
+        checkExists(posted2, query, false);
+
+        query.setStockLocation(stockLocation);
+        checkExists(posted1, query, false);
+        checkExists(posted2, query, false);
+
+        query.setSupplier(supplier1);
+        checkExists(posted1, query, true);
+        checkExists(posted2, query, false);
+    }
+
+
+    /**
+     * Verifies the correct orders are returned when the query is initialised from the context.
+     */
+    @Test
+    public void testInitFromContext() {
+        HelpContext help = new HelpContext("foo", null);
+        Party supplier1 = TestHelper.createSupplier();
+        Party supplier2 = TestHelper.createSupplier();
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+
+        FinancialAct posted1 = createOrder(supplier1, stockLocation, OrderStatus.POSTED);
+        FinancialAct posted2 = createOrder(supplier2, stockLocation, OrderStatus.POSTED);
+
+        Context context1 = new LocalContext();
+        PostedOrderQuery query1 = new PostedOrderQuery(true, new DefaultLayoutContext(context1, help));
+        checkExists(posted1, query1, false);
+        checkExists(posted2, query1, false);
+
+        Context context2 = new LocalContext();
+        context2.setStockLocation(stockLocation);
+        PostedOrderQuery query2 = new PostedOrderQuery(true, new DefaultLayoutContext(context2, help));
+        checkExists(posted1, query2, false);
+        checkExists(posted2, query2, false);
+
+        Context context3 = new LocalContext();
+        context3.setStockLocation(stockLocation);
+        context3.setSupplier(supplier2);
+        PostedOrderQuery query3 = new PostedOrderQuery(true, new DefaultLayoutContext(context3, help));
+        checkExists(posted1, query3, false);
+        checkExists(posted2, query3, true);
     }
 
     /**
