@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.supplier;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -62,18 +63,12 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
      * @param context    the layout context
      */
     public SupplierActQuery(String[] shortNames, ActStatuses statuses, Class type, LayoutContext context) {
-        super(shortNames, statuses, type);
+        super(null, "supplier", SupplierArchetypes.SUPPLIER_PARTICIPATION, shortNames, statuses, type);
 
         supplier = new IMObjectSelector<Party>(Messages.get("supplier.type"), context, "party.supplier*");
         supplier.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
-                if (object == null) {
-                    // query all suppliers
-                    setParticipantConstraint(null, null, null);
-                } else {
-                    // limit query to the selected supplier
-                    setParticipantConstraint(object, "supplier", "participation.supplier");
-                }
+                setSupplier(object);
                 onQuery();
             }
         });
@@ -96,6 +91,7 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
      * @param supplier the supplier. May be {@code null}
      */
     public void setSupplier(Party supplier) {
+        setEntity(supplier);
         this.supplier.setObject(supplier);
     }
 
@@ -135,15 +131,15 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
     @Override
     protected ResultSet<T> createResultSet(SortConstraint[] sort) {
         List<ParticipantConstraint> list
-            = new ArrayList<ParticipantConstraint>();
+                = new ArrayList<ParticipantConstraint>();
         ParticipantConstraint supplier = getParticipantConstraint();
         if (supplier != null) {
             list.add(supplier);
         }
         if (stockLocation.getObject() != null) {
             ParticipantConstraint location = new ParticipantConstraint(
-                "stockLocation", "participation.stockLocation",
-                stockLocation.getObject());
+                    "stockLocation", "participation.stockLocation",
+                    stockLocation.getObject());
             list.add(location);
         }
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
@@ -158,7 +154,7 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
      * @return a new result set
      */
     protected abstract ResultSet<T> createResultSet(
-        ParticipantConstraint[] participants, SortConstraint[] sort);
+            ParticipantConstraint[] participants, SortConstraint[] sort);
 
     /**
      * Adds the supplier selector to a container.
