@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.bound;
@@ -24,15 +22,19 @@ import nextapp.echo2.app.event.ChangeEvent;
 import nextapp.echo2.app.event.ChangeListener;
 import nextapp.echo2.app.list.ListModel;
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.event.ActionListener;
+
+import java.util.Collection;
 
 
 /**
  * Helper to bind a property to a select field.
+ * <p/>
+ * If the property is a collection property, only a single element may be present in the collection.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SelectFieldBinder extends Binder {
 
@@ -74,6 +76,53 @@ public class SelectFieldBinder extends Binder {
         component.setSelectedIndex(index);
 
         bind();
+    }
+
+    /**
+     * Updates the field from the property.
+     */
+    @Override
+    public void setField() {
+        Property property = getProperty();
+        if (!property.isCollection()) {
+            setFieldValue(property.getValue());
+        } else {
+            Collection values = ((CollectionProperty) property).getValues();
+            if (!values.isEmpty()) {
+                setFieldValue(values.iterator().next());
+            }
+        }
+    }
+
+    /**
+     * Updates the property from the field.
+     *
+     * @param property the propery to update
+     */
+    @Override
+    protected void setProperty(Property property) {
+        if (!property.isCollection()) {
+            super.setProperty(property);
+        } else {
+            // if its a collection property add the selected value to the collection, replacing any existing values
+            CollectionProperty collection = (CollectionProperty) property;
+            Collection values = collection.getValues();
+            if (component.getSelectedIndex() == -1) {
+                // nothing selected, so remove any existing value
+                for (Object value : values) {
+                    collection.remove(value);
+                }
+            } else {
+                // replace any existing values with the selected value
+                Object fieldValue = getFieldValue();
+                if (!values.contains(fieldValue)) {
+                    for (Object value : values) {
+                        collection.remove(value);
+                    }
+                    collection.add(fieldValue);
+                }
+            }
+        }
     }
 
     /**

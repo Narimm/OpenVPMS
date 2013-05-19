@@ -14,6 +14,11 @@
     </bean>
 
     <!-- ================================================================== -->
+    <!--                        PATIENT                                     -->
+    <!-- ================================================================== -->
+    <bean class="org.openvpms.web.workspace.patient.summary.DefaultCustomerPatientSummaryFactory"/>
+
+    <!-- ================================================================== -->
     <!--                        EMAIL                                       -->
     <!-- ================================================================== -->
     <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="prototype"/>
@@ -55,7 +60,7 @@
         <property name="mask" value="Alt"/>
     </bean>
 
-    <bean id="errorHandler"  class="org.openvpms.web.component.error.DialogErrorHandler"/>
+    <bean id="errorHandler" class="org.openvpms.web.component.error.DialogErrorHandler"/>
 
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="org.openvpms.web.echo.error.ErrorHandler.setInstance"/>
