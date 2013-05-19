@@ -1,5 +1,7 @@
 package org.openvpms.web.component.im.layout;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -11,10 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -63,6 +63,11 @@ public class ArchetypeNodes {
      * Exclude the specified nodes.
      */
     private Set<String> exclude = new HashSet<String>();
+
+    /**
+     * Used to order nodes. The n-th element is placed before the n-th+1 element.
+     */
+    private List<String> order = new ArrayList<String>();
 
 
     /**
@@ -166,20 +171,26 @@ public class ArchetypeNodes {
     }
 
     /**
+     * Places a node before another.
+     *
+     * @param node1 the first node
+     * @param node2 the second node
+     * @return this instance
+     */
+    public ArchetypeNodes order(String node1, String node2) {
+        order.add(node1);
+        order.add(node2);
+        return this;
+    }
+
+    /**
      * Returns the simple nodes.
      *
      * @param archetype the archetype descriptor
      * @return the simple nodes
      */
     public List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
-        LinkedHashMap<String, NodeDescriptor> map = new LinkedHashMap<String, NodeDescriptor>();
-        if (allSimpleNodes) {
-            include(archetype.getSimpleNodeDescriptors(), map);
-        }
-        include(includeSimpleNodes, archetype, map);
-        exclude(exclude, map);
-        exclude(includeComplexNodes, map);  // if the node is being include as a complex node, don't duplicate here
-        return reorder(map);
+        return getNodes(archetype, new SimplePredicate());
     }
 
     /**
@@ -201,14 +212,7 @@ public class ArchetypeNodes {
      * @return the simple nodes
      */
     public List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype) {
-        LinkedHashMap<String, NodeDescriptor> map = new LinkedHashMap<String, NodeDescriptor>();
-        if (allComplexNodes) {
-            include(archetype.getComplexNodeDescriptors(), map);
-        }
-        include(includeComplexNodes, archetype, map);
-        exclude(exclude, map);
-        exclude(includeSimpleNodes, map);  // if the node is being include as a simple node, don't duplicate here
-        return reorder(map);
+        return getNodes(archetype, new ComplexPredicate());
     }
 
     /**
@@ -283,60 +287,56 @@ public class ArchetypeNodes {
     }
 
     /**
-     * Adds all nodes to the map.
+     * Returns all nodes matching a predicate, in appropriate order.
      *
-     * @param descriptors the node descriptors
-     * @param map         the map to add to
+     * @param archetype the archetype
+     * @param predicate the predicate to select nodes
+     * @return the matching nodes
      */
-    private void include(List<NodeDescriptor> descriptors, Map<String, NodeDescriptor> map) {
-        for (NodeDescriptor descriptor : descriptors) {
-            map.put(descriptor.getName(), descriptor);
-        }
-    }
-
-    /**
-     * Includes all those nodes specified, adding them to the supplied map.
-     *
-     * @param include   the names of the nodes to include
-     * @param archetype the archetype descriptor
-     * @param map       the map to add matching nodes to
-     */
-    private void include(Set<String> include, ArchetypeDescriptor archetype, Map<String, NodeDescriptor> map) {
-        for (String name : include) {
-            if (!map.containsKey(name)) {
-                NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-                if (descriptor != null) {
-                    map.put(name, descriptor);
-                }
-            }
-        }
-    }
-
-    /**
-     * Removes all nodes specified from the supplied map.
-     *
-     * @param exclude the nodes to exclude
-     * @param map     the map to remove nodes from
-     */
-    private void exclude(Set<String> exclude, Map<String, NodeDescriptor> map) {
-        map.keySet().removeAll(exclude);
+    private List<NodeDescriptor> getNodes(ArchetypeDescriptor archetype, Predicate predicate) {
+        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
+        CollectionUtils.select(archetype.getAllNodeDescriptors(), predicate, result);
+        reorder(result);
+        return result;
     }
 
     /**
      * Reorders nodes so that any {@link #first} and {@link #second} node is in the correct order.
      *
-     * @param map the node map
-     * @return the reordered nodes
+     * @param descriptors the node descriptors
      */
-    private List<NodeDescriptor> reorder(Map<String, NodeDescriptor> map) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>(map.values());
+    private void reorder(List<NodeDescriptor> descriptors) {
         if (first != null) {
-            move(first, 0, result);
+            move(first, 0, descriptors);
         }
         if (second != null) {
-            move(second, 1, result);
+            move(second, 1, descriptors);
         }
-        return result;
+        for (int i = 0; i < order.size(); i += 2) {
+            String node1 = order.get(i);
+            String node2 = order.get(i + 1);
+            int index = indexOf(node2, descriptors);
+            if (index != -1) {
+                move(node1, index, descriptors);
+            }
+        }
+    }
+
+    /**
+     * Returns the index of a node in a list.
+     *
+     * @param node        the node name
+     * @param descriptors the list of descriptors to search
+     * @return the index of the node, or {@code -1} if none is found
+     */
+    private int indexOf(String node, List<NodeDescriptor> descriptors) {
+        for (int i = 0; i < descriptors.size(); ++i) {
+            NodeDescriptor descriptor = descriptors.get(i);
+            if (descriptor.getName().equals(node)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -347,17 +347,46 @@ public class ArchetypeNodes {
      * @param descriptors the list of descriptors
      */
     private void move(String node, int index, List<NodeDescriptor> descriptors) {
-        for (int i = 0; i < descriptors.size(); ++i) {
-            NodeDescriptor descriptor = descriptors.get(i);
-            if (descriptor.getName().equals(node)) {
-                if (i != index) {
-                    descriptors.remove(i);
-                    descriptors.add(index, descriptor);
-                }
-                break;
-            }
+        int pos = indexOf(node, descriptors);
+        if (pos != -1 && pos != index) {
+            NodeDescriptor descriptor = descriptors.remove(pos);
+            descriptors.add(index, descriptor);
         }
-
     }
 
+    private class SimplePredicate implements Predicate {
+
+        /**
+         * Determines if a node is an included simple node.
+         *
+         * @param object the descriptor to evaluate
+         * @return true or false
+         */
+        @Override
+        public boolean evaluate(Object object) {
+            NodeDescriptor descriptor = (NodeDescriptor) object;
+            String name = descriptor.getName();
+            boolean simple = !descriptor.isComplexNode();
+            return ((allSimpleNodes && simple) || (!simple && includeSimpleNodes.contains(name)))
+                   && !exclude.contains(name) && !includeComplexNodes.contains(name);
+        }
+    }
+
+    private class ComplexPredicate implements Predicate {
+
+        /**
+         * Determines if a node is an included complex node.
+         *
+         * @param object the descriptor to evaluate
+         * @return true or false
+         */
+        @Override
+        public boolean evaluate(Object object) {
+            NodeDescriptor descriptor = (NodeDescriptor) object;
+            String name = descriptor.getName();
+            boolean complex = descriptor.isComplexNode();
+            return ((allComplexNodes && complex) || (!complex && includeComplexNodes.contains(name)))
+                   && !exclude.contains(name) && !includeSimpleNodes.contains(name);
+        }
+    }
 }

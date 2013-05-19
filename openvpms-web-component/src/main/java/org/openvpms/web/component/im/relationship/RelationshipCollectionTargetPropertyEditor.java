@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -49,11 +47,10 @@ import java.util.Set;
  * A {@link CollectionPropertyEditor} for collections of
  * {@link IMObjectRelationship}s where the targets are being added and removed.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class RelationshipCollectionTargetPropertyEditor
-    extends AbstractCollectionPropertyEditor {
+        extends AbstractCollectionPropertyEditor {
 
     /**
      * The parent object.
@@ -79,7 +76,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * The logger.
      */
     private static final Log log = LogFactory.getLog(
-        RelationshipCollectionTargetPropertyEditor.class);
+            RelationshipCollectionTargetPropertyEditor.class);
 
 
     /**
@@ -89,7 +86,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * @param parent   the parent object
      */
     public RelationshipCollectionTargetPropertyEditor(
-        CollectionProperty property, IMObject parent) {
+            CollectionProperty property, IMObject parent) {
         super(property);
         // @todo - no support for multiple relationship archetypes
         relationshipType = property.getArchetypeRange()[0];
@@ -114,7 +111,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     @Override
     public String[] getArchetypeRange() {
         ArchetypeDescriptor relationship
-            = DescriptorHelper.getArchetypeDescriptor(relationshipType);
+                = DescriptorHelper.getArchetypeDescriptor(relationshipType);
         NodeDescriptor target = relationship.getNodeDescriptor("target");
         return DescriptorHelper.getShortNames(target);
     }
@@ -243,19 +240,17 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     protected Map<IMObject, IMObjectRelationship> getTargets() {
         if (targets == null) {
             IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
+                    = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> relationships = super.getObjects();
             targets = new LinkedHashMap<IMObject, IMObjectRelationship>();
             for (IMObject object : relationships) {
-                IMObjectRelationship relationship
-                    = (IMObjectRelationship) object;
-                IMObject target = service.get(relationship.getTarget());
+                IMObjectRelationship relationship = (IMObjectRelationship) object;
+                IMObject target = (relationship.getTarget() != null) ? service.get(relationship.getTarget()) : null;
                 if (target != null) {
                     targets.put(target, relationship);
                 } else {
                     log.warn("Target object=" + relationship.getTarget()
-                             + " no longer exists. Referred to by relationship="
-                             + relationship);
+                             + " doesn't exist. Referred to by relationship=" + relationship);
                     getProperty().remove(relationship);
                 }
             }

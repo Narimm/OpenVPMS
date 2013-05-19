@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -43,10 +44,12 @@ public class ParticipationTableModel extends BaseIMObjectTableModel<IMObject> {
 
 
     /**
-     * Constructs a {@code ParticipationTableModel}.
+     * Constructs a {@link ParticipationTableModel}.
+     *
+     * @param context the context
      */
-    public ParticipationTableModel(Context context) {
-        this.context = context;
+    public ParticipationTableModel(LayoutContext context) {
+        this.context = context.getContext();
     }
 
     /**
