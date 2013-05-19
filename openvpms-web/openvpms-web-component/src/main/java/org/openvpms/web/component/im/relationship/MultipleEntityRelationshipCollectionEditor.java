@@ -40,7 +40,7 @@ import java.util.List;
 
 
 /**
- * Editor for collections of {@link EntityRelationship}s with cardinality > 1, or that multiple archetypes.
+ * Editor for collections of {@link EntityRelationship}s with cardinality > 1, or that have multiple archetypes.
  * <p/>
  * If the relationships have a <em>sequence</em> node, the collection will be ordered on it, and controls displayed to
  * move relationships up or down within the collection.
@@ -48,7 +48,7 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class MultipleEntityRelationshipCollectionEditor
-    extends RelationshipCollectionEditor {
+        extends RelationshipCollectionEditor {
 
     /**
      * Determines if the collection has a sequence node.
