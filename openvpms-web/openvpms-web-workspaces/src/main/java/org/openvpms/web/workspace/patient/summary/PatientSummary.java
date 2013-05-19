@@ -57,6 +57,7 @@ import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.summary.PartySummary;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -82,7 +83,7 @@ public class PatientSummary extends PartySummary {
 
 
     /**
-     * Constructs a {@code PatientSummary}.
+     * Constructs a {@link PatientSummary}.
      *
      * @param context the context
      * @param help    the help context
@@ -98,58 +99,173 @@ public class PatientSummary extends PartySummary {
      * <p/>
      * The summary includes any alerts.
      *
-     * @param party the party
+     * @param patient the patient
      * @return a summary component
      */
-    protected Component createSummary(final Party party) {
+    protected Component createSummary(Party patient) {
         Component column = ColumnFactory.create();
-        String name = party.getName();
-        if (rules.isDesexed(party)) {
-            name += " (" + getPatientSex(party) + " " + Messages.get("patient.desexed") + ")";
-        } else {
-            name += " (" + getPatientSex(party) + " " + Messages.get("patient.entire") + ")";
+
+        List<Component> components = getSummaryComponents(patient);
+        for (Component component : components) {
+            if (!(component instanceof Grid)) {
+                // grid already inset.... ugly TODO
+                column.add(ColumnFactory.create("Inset.Small", component));
+            } else {
+                column.add(component);
+            }
         }
-        IMObjectReferenceViewer patientName = new IMObjectReferenceViewer(party.getObjectReference(), name, true,
+        AlertSummary alerts = getAlertSummary(patient);
+        if (alerts != null) {
+            column.add(ColumnFactory.create("Inset.Small", LabelFactory.create("alerts.patient")));
+            column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
+        }
+
+        return ColumnFactory.create("PartySummary", column);
+    }
+
+    protected List<Component> getSummaryComponents(Party patient) {
+        List<Component> result = new ArrayList<Component>();
+        result.add(getPatientName(patient));
+
+        if (rules.isDeceased(patient)) {
+            result.add(getDeceased());
+        }
+
+        result.add(getSpecies(patient));
+        result.add(getBreed(patient));
+        result.add(createSummaryGrid(patient));
+        return result;
+    }
+
+    /**
+     * Returns a component that displays the patient name.
+     *
+     * @param patient the patient
+     * @return the patient name
+     */
+    protected Component getPatientName(Party patient) {
+        String name = patient.getName();
+        if (rules.isDesexed(patient)) {
+            name += " (" + getPatientSex(patient) + " " + Messages.get("patient.desexed") + ")";
+        } else {
+            name += " (" + getPatientSex(patient) + " " + Messages.get("patient.entire") + ")";
+        }
+        IMObjectReferenceViewer patientName = new IMObjectReferenceViewer(patient.getObjectReference(), name, true,
                                                                           getContext());
         patientName.setStyleName("hyperlink-bold");
-        column.add(RowFactory.create("Inset.Small", patientName.getComponent()));
-        if (rules.isDeceased(party)) {
-            Label deceased = LabelFactory.create("patient.deceased", "Patient.Deceased");
-            column.add(RowFactory.create("Inset.Small", deceased));
-        }
+        return patientName.getComponent();
+    }
+
+    /**
+     * Returns a component indicating the patient is deceased.
+     *
+     * @return the component
+     */
+    protected Component getDeceased() {
+        return LabelFactory.create("patient.deceased", "Patient.Deceased");
+    }
+
+    /**
+     * Returns a component that displays the patient species.
+     *
+     * @param patient the patient
+     * @return the patient species
+     */
+    protected Component getSpecies(Party patient) {
         Label species = LabelFactory.create();
-        species.setText(getPatientSpecies(party));
-        column.add(RowFactory.create("Inset.Small", species));
+        species.setText(getPatientSpecies(patient));
+        return species;
+    }
 
+    /**
+     * Returns a component that displays the patient breed.
+     *
+     * @param patient the patient
+     * @return the patient breed
+     */
+    protected Component getBreed(Party patient) {
         Label breed = LabelFactory.create();
-        breed.setText(getPatientBreed(party));
-        column.add(RowFactory.create("Inset.Small", breed));
+        breed.setText(getPatientBreed(patient));
+        return breed;
+    }
 
+    /**
+     * Displays a summary of patient information in a grid.
+     *
+     * @param patient the patient
+     * @return the summary grid
+     */
+    protected Grid createSummaryGrid(Party patient) {
+        Grid grid = GridFactory.create(2);
+
+        addReminders(patient, grid);
+        addAge(patient, grid);
+        addWeight(patient, grid);
+        addMicrochip(patient, grid);
+        return grid;
+    }
+
+    /**
+     * Displays a summary of patient reminders in a grid.
+     *
+     * @param patient the patient
+     * @param grid    the summary grid
+     */
+    protected void addReminders(final Party patient, Grid grid) {
         Label reminderTitle = LabelFactory.create("patient.reminders");
         Component reminders;
-        ReminderRules.DueState due = getDueState(party);
+        ReminderRules.DueState due = getDueState(patient);
         if (due == null) {
             reminders = LabelFactory.create("patient.noreminders");
         } else {
             String style = "reminder." + due.toString();
             reminders = ButtonFactory.create(null, style, new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    onShowReminders(party);
+                    onShowReminders(patient);
                 }
             });
             reminders = RowFactory.create(reminders);
         }
+        grid.add(reminderTitle);
+        grid.add(reminders);
+    }
+
+    /**
+     * Displays the patient age in a grid.
+     *
+     * @param patient the patient
+     * @param grid    the grid
+     */
+    protected void addAge(Party patient, Grid grid) {
         Label ageTitle = LabelFactory.create("patient.age");
         Label age = LabelFactory.create();
-        age.setText(rules.getPatientAge(party));
+        age.setText(rules.getPatientAge(patient));
+        grid.add(ageTitle);
+        grid.add(age);
+    }
 
+    /**
+     * Displays the patient weight in a grid.
+     *
+     * @param patient the patient
+     * @param grid    the grid
+     */
+    private void addWeight(Party patient, Grid grid) {
         Label weightTitle = LabelFactory.create("patient.weight");
         Label weight = LabelFactory.create();
-        weight.setText(getPatientWeight(party));
-        Grid grid = GridFactory.create(2, reminderTitle, reminders,
-                                       ageTitle, age, weightTitle, weight);
+        weight.setText(getPatientWeight(patient));
+        grid.add(weightTitle);
+        grid.add(weight);
+    }
 
-        String identity = rules.getMicrochip(party);
+    /**
+     * Displays the patient microchip in a grid.
+     *
+     * @param patient the patient
+     * @param grid    the grid
+     */
+    protected void addMicrochip(Party patient, Grid grid) {
+        String identity = rules.getMicrochip(patient);
         if (identity != null) {
             Label microchipTitle = LabelFactory.create("patient.microchip");
             Label microchip = LabelFactory.create();
@@ -157,15 +273,6 @@ public class PatientSummary extends PartySummary {
             grid.add(microchipTitle);
             grid.add(microchip);
         }
-
-        column.add(grid);
-
-        AlertSummary alerts = getAlertSummary(party);
-        if (alerts != null) {
-            grid.add(LabelFactory.create("alerts.patient"));
-            column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
-        }
-        return ColumnFactory.create("PartySummary", column);
     }
 
     /**
@@ -298,9 +405,9 @@ public class PatientSummary extends PartySummary {
         String[] shortNames = {ReminderArchetypes.REMINDER};
         String[] statuses = {ActStatus.IN_PROGRESS};
         ShortNameConstraint archetypes = new ShortNameConstraint(
-            shortNames, true, true);
+                shortNames, true, true);
         ParticipantConstraint[] participants = {
-            new ParticipantConstraint("patient", "participation.patient", patient)
+                new ParticipantConstraint("patient", "participation.patient", patient)
         };
         SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
         return new ActResultSet<Act>(archetypes, participants, null,

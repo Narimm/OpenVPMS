@@ -35,12 +35,14 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
 import org.openvpms.web.workspace.patient.PatientRecordCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
+import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
 import java.util.List;
 
@@ -90,7 +92,9 @@ public class PatientRecordWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      */
     @Override
     public Component getSummary() {
-        return new CustomerPatientSummary(getContext(), getHelpContext()).getSummary(getObject());
+        CustomerPatientSummaryFactory factory = ServiceHelper.getContext().getBean(CustomerPatientSummaryFactory.class);
+        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+        return summary.getSummary(getObject());
     }
 
     /**

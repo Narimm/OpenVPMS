@@ -57,7 +57,7 @@ public class CustomerPatientSummary {
 
 
     /**
-     * Constructs a {@code CustomerPatientSummary}.
+     * Constructs a {@link CustomerPatientSummary}.
      *
      * @param context the context
      * @param help    the help context
@@ -96,7 +96,7 @@ public class CustomerPatientSummary {
      * display the customer summary above the patient summary.
      *
      * @param act the act. May be {@code null}
-     * @return a summary component, or {@code null</codett> if there is no summary
+     * @return a summary component, or {@code null} if there is no summary
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Component getSummary(Act act) {
@@ -113,6 +113,15 @@ public class CustomerPatientSummary {
     }
 
     /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
+    }
+
+    /**
      * Returns a component displaying customer and patient summary details.
      *
      * @param customer the customer
@@ -120,16 +129,15 @@ public class CustomerPatientSummary {
      * @return the summary, or {@code null} if the customer and patient are both {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Component getSummary(Party customer, Party patient) {
+    protected Component getSummary(Party customer, Party patient) {
         Component result = null;
-        Component customerSummary = null;
-        if (customer != null) {
-            Context local = new LocalContext(context);
-            local.setCustomer(customer);
-            local.setPatient(patient);
-            customerSummary = new CustomerSummary(local, help).getSummary(customer);
-        }
-        Component patientSummary = (patient != null) ? new PatientSummary(context, help).getSummary(patient) : null;
+
+        Context local = new LocalContext(context);
+        local.setCustomer(customer);
+        local.setPatient(patient);
+
+        Component customerSummary = (customer != null) ? getCustomerSummary(customer, local) : null;
+        Component patientSummary = (patient != null) ? getPatientSummary(patient, local) : null;
         if (customerSummary != null || patientSummary != null) {
             result = ColumnFactory.create("CellSpacing");
             if (customerSummary != null) {
@@ -140,5 +148,29 @@ public class CustomerPatientSummary {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the customer summary component
+     *
+     * @param customer the customer to summarise
+     * @param context  the context
+     * @return the customer summary component
+     */
+    protected Component getCustomerSummary(Party customer, Context context) {
+        CustomerSummary summary = new CustomerSummary(context, help);
+        return summary.getSummary(customer);
+    }
+
+    /**
+     * Returns the patient summary component
+     *
+     * @param patient the patient to summarise
+     * @param context the context
+     * @return the customer summary component
+     */
+    protected Component getPatientSummary(Party patient, Context context) {
+        PatientSummary summary = new PatientSummary(context, help);
+        return summary.getSummary(patient);
     }
 }

@@ -73,8 +73,8 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
 
     /**
      * Performs the query.
-     * If constraining acts to a particular entity, the entity must be non-null
-     * or a {@code null} will be returned.
+     * <p/>
+     * If constraining acts to a particular entity, the entity must be non-null or a {@code null} will be returned.
      *
      * @param sort the sort constraint. May be {@code null}
      * @return the query result set. May be {@code null}
@@ -83,9 +83,11 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
     @Override
     public ResultSet<FinancialAct> query(SortConstraint[] sort) {
         ResultSet<FinancialAct> result = super.query(sort);
-        String deliveryStatus = getDeliveryStatus();
-        if (deliveryStatus != null) {
-            result = filterOnDeliveryStatus(result, deliveryStatus);
+        if (result != null) {
+            String deliveryStatus = getDeliveryStatus();
+            if (deliveryStatus != null) {
+                result = filterOnDeliveryStatus(result, deliveryStatus);
+            }
         }
 
         return result;
@@ -149,7 +151,7 @@ public class OrderQuery extends SupplierActQuery<FinancialAct> {
     private void addDeliveryStatus(Component container) {
         Label label = LabelFactory.create();
         String displayName = DescriptorHelper.getDisplayName(
-            "act.supplierOrder", "deliveryStatus");
+                "act.supplierOrder", "deliveryStatus");
         label.setText(displayName);
         NodeLookupQuery source = new NodeLookupQuery("act.supplierOrder", "deliveryStatus");
         deliveryStatus = LookupFieldFactory.create(source, true);

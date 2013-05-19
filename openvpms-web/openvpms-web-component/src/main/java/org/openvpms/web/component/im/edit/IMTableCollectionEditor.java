@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.edit;
@@ -66,11 +64,10 @@ import java.beans.PropertyChangeListener;
  * in a table. When an item is selected, an editor containing it is displayed
  * in a box beneath the table.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class IMTableCollectionEditor<T>
-    extends AbstractIMObjectCollectionEditor {
+        extends AbstractIMObjectCollectionEditor {
 
     /**
      * The container.
@@ -131,7 +128,7 @@ public abstract class IMTableCollectionEditor<T>
      * The logger.
      */
     private static final Log log = LogFactory.getLog(
-        IMTableCollectionEditor.class);
+            IMTableCollectionEditor.class);
 
     /**
      * The 'add' button identifier.
@@ -160,14 +157,13 @@ public abstract class IMTableCollectionEditor<T>
 
 
     /**
-     * Creates a new <tt>IMTableCollectionEditor</tt>.
+     * Constructs an {@link IMTableCollectionEditor}.
      *
      * @param editor  the editor
      * @param object  the parent object
      * @param context the layout context
      */
-    public IMTableCollectionEditor(CollectionPropertyEditor editor,
-                                   IMObject object, LayoutContext context) {
+    public IMTableCollectionEditor(CollectionPropertyEditor editor, IMObject object, LayoutContext context) {
         super(editor, object, context);
 
         context = getContext();
@@ -175,7 +171,7 @@ public abstract class IMTableCollectionEditor<T>
         // filter out the "id" field
         NodeFilter idFilter = new NamedNodeFilter("id");
         NodeFilter filter = FilterHelper.chain(
-            idFilter, context.getDefaultNodeFilter());
+                idFilter, context.getDefaultNodeFilter());
         context.setNodeFilter(filter);
 
         componentListener = new PropertyChangeListener() {
@@ -199,7 +195,7 @@ public abstract class IMTableCollectionEditor<T>
      * If an {@link IMObjectCreationListener} is registered, it will be
      * notified on successful creation of an object.
      *
-     * @return a new object, or <tt>null</tt> if the object can't be created
+     * @return a new object, or {@code null} if the object can't be created
      */
     public IMObject create() {
         IMObject object = null;
@@ -255,7 +251,7 @@ public abstract class IMTableCollectionEditor<T>
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <tt>null</tt> if the editor hasn't been
+     * @return the focus group, or {@code null} if the editor hasn't been
      *         rendered
      */
     public FocusGroup getFocusGroup() {
@@ -280,21 +276,21 @@ public abstract class IMTableCollectionEditor<T>
     /**
      * Returns the selected object.
      *
-     * @return the selected object. May be <tt>null</tt>
+     * @return the selected object. May be {@code null}
      */
     protected abstract IMObject getSelected();
 
     /**
      * Selects the object prior to the selected object, if one is available.
      *
-     * @return the prior object. May be <tt>null</tt>
+     * @return the prior object. May be {@code null}
      */
     protected abstract IMObject selectPrevious();
 
     /**
      * Selects the object after the selected object, if one is available.
      *
-     * @return the next object. May be <tt>null</tt>
+     * @return the next object. May be {@code null}
      */
     protected abstract IMObject selectNext();
 
@@ -376,25 +372,26 @@ public abstract class IMTableCollectionEditor<T>
         };
         buttons.addButton(DELETE_ID, deleteListener, disableShortcut);
 
-        ActionListener previous = new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onPrevious();
-            }
-        };
-        buttons.addButton(PREVIOUS_ID, previous, disableShortcut);
+        int cardinality = getCollection().getMaxCardinality();
+        if (cardinality > 1 || cardinality == -1) {
+            ActionListener previous = new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onPrevious();
+                }
+            };
+            buttons.addButton(PREVIOUS_ID, previous, disableShortcut);
 
-        ActionListener next = new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onNext();
-            }
-        };
-        buttons.addButton(NEXT_ID, next, disableShortcut);
-
+            ActionListener next = new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onNext();
+                }
+            };
+            buttons.addButton(NEXT_ID, next, disableShortcut);
+        }
         if (range.length == 1) {
             shortName = range[0];
         } else if (range.length > 1) {
-            final ShortNameListModel model
-                = new ShortNameListModel(range, false, false);
+            final ShortNameListModel model = new ShortNameListModel(range, false, false);
             final SelectField archetypeNames = SelectFieldFactory.create(model);
             int index = archetypeNames.getSelectedIndex();
             shortName = model.getShortName(index);
@@ -420,7 +417,7 @@ public abstract class IMTableCollectionEditor<T>
      * The object will be selected if visible in the table.
      *
      * @param editor the editor
-     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
     @Override
     protected boolean addEdited(IMObjectEditor editor) {
@@ -440,7 +437,7 @@ public abstract class IMTableCollectionEditor<T>
      * Invoked when the "New" button is pressed. Creates a new instance of the
      * selected archetype, and displays it in an editor.
      *
-     * @return the new editor, or <tt>null</tt> if an object couldn't be created
+     * @return the new editor, or {@code null} if an object couldn't be created
      */
     protected IMObjectEditor onNew() {
         IMObjectEditor editor = null;
@@ -503,9 +500,7 @@ public abstract class IMTableCollectionEditor<T>
     protected IMObjectEditor edit(final IMObject object) {
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
-            editor.removePropertyChangeListener(
-                IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-                componentListener);
+            editor.removePropertyChangeListener(IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
             editBox.remove(editor.getComponent());
         } else {
             editBox = GroupBoxFactory.create("Inset");
@@ -514,9 +509,7 @@ public abstract class IMTableCollectionEditor<T>
         editor = getEditor(object);
         editBox.add(editor.getComponent());
         editBox.setTitle(editor.getTitle());
-        editor.addPropertyChangeListener(
-            IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-            componentListener);
+        editor.addPropertyChangeListener(IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
         editor.addModifiableListener(editorListener);
         changeFocusGroup(editor);
         setCurrentEditor(editor);
@@ -591,8 +584,7 @@ public abstract class IMTableCollectionEditor<T>
         editorFocusGroup = null;
         editBox.remove(editor.getComponent());
         container.remove(editBox);
-        editor.removePropertyChangeListener(
-            IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
+        editor.removePropertyChangeListener(IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
         editor.removeModifiableListener(editorListener);
         editorModified = false;
         editBox = null;
@@ -607,12 +599,9 @@ public abstract class IMTableCollectionEditor<T>
      */
     private void confirmDelete(final IMObject object) {
         String displayName = DescriptorHelper.getDisplayName(object);
-        String title = Messages.get("imobject.collection.delete.title",
-                                    displayName);
-        String message = Messages.get("imobject.collection.delete.message",
-                                      displayName);
-        final ConfirmationDialog dialog
-            = new ConfirmationDialog(title, message);
+        String title = Messages.get("imobject.collection.delete.title", displayName);
+        String message = Messages.get("imobject.collection.delete.message", displayName);
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -653,7 +642,7 @@ public abstract class IMTableCollectionEditor<T>
      * <p/>
      * Note that the delete button is enabled if {@link #getCurrentEditor()} or {@link #getSelected()} return non-null.
      *
-     * @param enable if <tt>true</tt> enable buttons (subject to criteria), otherwise disable them
+     * @param enable if {@code true} enable buttons (subject to criteria), otherwise disable them
      */
     protected void enableNavigation(boolean enable) {
         if (buttons != null) {

@@ -31,6 +31,11 @@ import java.util.ResourceBundle;
 public final class Messages {
 
     /**
+     * Messages resource bundle name.
+     */
+    public static final String MESSAGES = "localisation.messages";
+
+    /**
      * The help resource bundle name.
      */
     public static final String HELP = "org.openvpms.web.resource.localisation.help";
@@ -46,8 +51,7 @@ public final class Messages {
      *
      * @param key       the key of the message to be returned
      * @param arguments an array of arguments to be inserted into the message
-     * @return the appropriate formatted localized text
-     *         (if the key is not defined, the string "!key!" is returned)
+     * @return the appropriate formatted localized text (if the key is not defined, the string "!key!" is returned)
      */
     public static String get(String key, Object... arguments) {
         return format(key, false, arguments);
@@ -59,8 +63,7 @@ public final class Messages {
      * @param key       the key of the message to be returned
      * @param allowNull determines behaviour if the key doesn't exist
      * @param arguments an array of arguments to be inserted into the message
-     * @return the appropriate formatted localized text
-     *         (if the key is not defined, the string "!key!" is returned)
+     * @return the appropriate formatted localized text (if the key is not defined, the string "!key!" is returned)
      */
     public static String format(String key, boolean allowNull, Object... arguments) {
         String result = null;
@@ -77,8 +80,7 @@ public final class Messages {
      * Returns localised text.
      *
      * @param key the key of the text to be returned
-     * @return the appropriate localized text (if the key is not defined, the
-     *         string "!key!" is returned)
+     * @return the appropriate localized text (if the key is not defined, the string "!key!" is returned)
      */
     public static String get(String key) {
         return get(key, false);
@@ -104,8 +106,7 @@ public final class Messages {
     public static String get(String key, boolean allowNull) {
         String result = null;
         try {
-            ResourceBundle bundle = ResourceBundle.getBundle(DEFAULT_BUNDLE_NAME, getLocale());
-            result = bundle.getString(key);
+            result = getString(key, getLocale(), MESSAGES, DEFAULT_BUNDLE_NAME);
         } catch (MissingResourceException exception) {
             if (!allowNull) {
                 result = '!' + key + '!';
@@ -126,8 +127,7 @@ public final class Messages {
     public static String get(String key, String bundleName, boolean allowNull) {
         String result = null;
         try {
-            ResourceBundle bundle = ResourceBundle.getBundle(bundleName, getLocale());
-            result = bundle.getString(key);
+            result = getString(key, getLocale(), bundleName);
         } catch (MissingResourceException exception) {
             if (!allowNull) {
                 result = '!' + key + '!';
@@ -145,5 +145,30 @@ public final class Messages {
     public static Enumeration<String> getKeys(String bundleName) {
         ResourceBundle bundle = ResourceBundle.getBundle(bundleName, getLocale());
         return bundle.getKeys();
+    }
+
+    /**
+     * Returns localised text.
+     *
+     * @param key         the key of the text to be returned.
+     * @param locale      the locale
+     * @param bundleNames the resource bundles to look for the text
+     * @return the text
+     * @throws MissingResourceException if the resource cannot be found
+     */
+    private static String getString(String key, Locale locale, String... bundleNames) {
+        String result = null;
+        for (int i = 0; i < bundleNames.length; ++i) {
+            try {
+                ResourceBundle bundle = ResourceBundle.getBundle(bundleNames[i], locale);
+                result = bundle.getString(key);
+                break;
+            } catch (MissingResourceException exception) {
+                if (i == bundleNames.length - 1) {
+                    throw exception;
+                }
+            }
+        }
+        return result;
     }
 }

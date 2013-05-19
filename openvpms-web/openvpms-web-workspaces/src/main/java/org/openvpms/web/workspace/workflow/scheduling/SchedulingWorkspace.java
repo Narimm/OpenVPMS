@@ -32,7 +32,9 @@ import org.openvpms.web.component.workspace.AbstractViewWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindowListener;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
+import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
 import java.util.Date;
 
@@ -76,9 +78,9 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
      * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param archetypes  the archetype that this operates on. May be {@code null}
-     * @param context     the context
+     * @param workspaceId  the workspace localisation identifier
+     * @param archetypes   the archetype that this operates on. May be {@code null}
+     * @param context      the context
      */
     public SchedulingWorkspace(String workspacesId, String workspaceId, Archetypes<Entity> archetypes,
                                Context context) {
@@ -111,7 +113,10 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     public Component getSummary() {
         if (window != null) {
             Act act = window.getObject();
-            return new CustomerPatientSummary(getContext(), getHelpContext()).getSummary(act);
+            CustomerPatientSummaryFactory factory = ServiceHelper.getContext().getBean(
+                    CustomerPatientSummaryFactory.class);
+            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+            return summary.getSummary(act);
         }
         return null;
     }
@@ -254,8 +259,8 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
         Component acts = browser.getComponent();
         Component window = getCRUDWindow().getComponent();
         return SplitPaneFactory.create(
-            SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-            "SchedulingWorkspace.Layout", window, acts);
+                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
+                "SchedulingWorkspace.Layout", window, acts);
     }
 
     /**
