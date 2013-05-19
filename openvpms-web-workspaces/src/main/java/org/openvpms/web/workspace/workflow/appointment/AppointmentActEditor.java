@@ -38,9 +38,10 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
-import org.openvpms.web.workspace.patient.summary.PatientSummary;
+import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
 
 import java.util.Calendar;
@@ -273,7 +274,8 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         LayoutContext layout = getLayoutContext();
         Context context = layout.getContext();
         HelpContext help = layout.getHelpContext();
-        AlertSummary alerts = new PatientSummary(context, help).getAlertSummary(patient);
+        CustomerPatientSummaryFactory factory = ServiceHelper.getContext().getBean(CustomerPatientSummaryFactory.class);
+        AlertSummary alerts = factory.createPatientSummary(context, help).getAlertSummary(patient);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", "bold"),
                                           alerts.getComponent());
@@ -361,7 +363,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         Date start = getStartTime();
         Party schedule = (Party) getParticipant("schedule");
         AppointmentTypeParticipationEditor editor
-            = getAppointmentTypeEditor();
+                = getAppointmentTypeEditor();
         Entity appointmentType = editor.getEntity();
         if (start != null && schedule != null && appointmentType != null) {
             AppointmentRules rules = new AppointmentRules();
@@ -377,7 +379,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     private AppointmentTypeParticipationEditor getAppointmentTypeEditor() {
         return (AppointmentTypeParticipationEditor) getEditor(
-            "appointmentType");
+                "appointmentType");
     }
 
     /**

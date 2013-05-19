@@ -25,8 +25,10 @@ import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.workspace.BasicCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
+import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
 
 /**
@@ -37,7 +39,7 @@ import org.openvpms.web.workspace.patient.CustomerPatientSummary;
 public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
-     * Constructs an {@code InformationWorkspace}.
+     * Constructs an {@link InformationWorkspace}.
      *
      * @param context the context
      */
@@ -66,7 +68,9 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
      */
     @Override
     public Component getSummary() {
-        return new CustomerPatientSummary(getContext(), getHelpContext()).getSummary(getObject());
+        CustomerPatientSummaryFactory factory = ServiceHelper.getContext().getBean(CustomerPatientSummaryFactory.class);
+        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+        return summary.getSummary(getObject());
     }
 
     /**
