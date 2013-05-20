@@ -27,13 +27,15 @@ import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.workflow.checkin.CheckInWorkflow;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.workflow.WorkflowFactory;
 import org.openvpms.web.workspace.workflow.merge.MergeWorkflow;
 
 
@@ -113,7 +115,8 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
         Party patient = context.getPatient();
         User clinician = context.getClinician();
         if (customer != null && patient != null) {
-            CheckInWorkflow workflow = new CheckInWorkflow(customer, patient, clinician, context, getHelpContext());
+            WorkflowFactory factory = ServiceHelper.getContext().getBean(WorkflowFactory.class);
+            Workflow workflow = factory.createCheckInWorkflow(customer, patient, clinician, context, getHelpContext());
             workflow.start();
         } else {
             String title = Messages.get("patient.checkin.title");
