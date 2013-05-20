@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.customer.CustomerParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
-import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -205,8 +205,8 @@ public class UserMessageEditor extends ActEditor {
      * @return the customer editor
      */
     private CustomerParticipationEditor getCustomerEditor() {
-        ParticipationCollectionEditor editor = (ParticipationCollectionEditor) getEditor("customer");
-        return (CustomerParticipationEditor) editor.getCurrentEditor();
+        ParticipationEditor<Party> result = getParticipationEditor("customer", true);
+        return (CustomerParticipationEditor) result;
     }
 
     /**
@@ -215,8 +215,8 @@ public class UserMessageEditor extends ActEditor {
      * @return the patient editor
      */
     private PatientParticipationEditor getPatientEditor() {
-        ParticipationCollectionEditor editor = (ParticipationCollectionEditor) getEditor("patient");
-        return (PatientParticipationEditor) editor.getCurrentEditor();
+        ParticipationEditor<Party> result = getParticipationEditor("patient", true);
+        return (PatientParticipationEditor) result;
     }
 
     /**

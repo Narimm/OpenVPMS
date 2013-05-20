@@ -35,14 +35,16 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.Workflow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.LocalClinicianContext;
-import org.openvpms.web.workspace.workflow.checkin.CheckInWorkflow;
+import org.openvpms.web.workspace.workflow.WorkflowFactory;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
 
 import java.util.Date;
@@ -225,7 +227,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         // make sure the act is still available and PENDING prior to beginning
         // workflow
         if (act != null && AppointmentStatus.PENDING.equals(act.getStatus())) {
-            CheckInWorkflow workflow = new CheckInWorkflow(act, getContext(), getHelpContext());
+            WorkflowFactory factory = ServiceHelper.getContext().getBean(WorkflowFactory.class);
+            Workflow workflow = factory.createCheckInWorkflow(act, getContext(), getHelpContext());
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onRefresh(getObject());

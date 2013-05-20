@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.visit;
 
 import echopointng.TabbedPane;
@@ -303,10 +304,7 @@ public class VisitEditor {
         if (container == null) {
             container = ColumnFactory.create("InsetY");
             TabPaneModel model = new TabPaneModel(container);
-            addPatientHistoryTab(model);
-            addInvoiceTab(model);
-            addRemindersAlertsTab(model);
-            addDocumentsTab(model);
+            addTabs(model);
             tab = TabbedPaneFactory.create(model);
             tab.setStyleName("VisitEditor.TabbedPane");
             tab.getSelectionModel().addChangeListener(new ChangeListener() {
@@ -337,6 +335,33 @@ public class VisitEditor {
     }
 
     /**
+     * Returns the patient.
+     *
+     * @return the patient
+     */
+    public Party getPatient() {
+        return patient;
+    }
+
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    protected Context getContext() {
+        return context;
+    }
+
+    /**
+     * Returns the base help context for the editor.
+     *
+     * @return the help context
+     */
+    protected HelpContext getBaseHelpContext() {
+        return help;
+    }
+
+    /**
      * Creates a new visit browser CRUD window.
      *
      * @param context the context
@@ -355,6 +380,51 @@ public class VisitEditor {
      */
     protected VisitChargeCRUDWindow createVisitChargeCRUDWindow(Act event, Context context) {
         return new VisitChargeCRUDWindow(event, context, help.subtopic("invoice"));
+    }
+
+    /**
+     * Adds the history, invoice, reminder and document tabs to the tab pane model.
+     *
+     * @param model the model to add to
+     */
+    protected void addTabs(TabPaneModel model) {
+        addPatientHistoryTab(model);
+        addInvoiceTab(model);
+        addRemindersAlertsTab(model);
+        addDocumentsTab(model);
+    }
+
+    /**
+     * Helper to add a browser to the tab pane.
+     *
+     * @param shortcut  the tab button shortcut no.
+     * @param button    the button key
+     * @param model     the tab model
+     * @param component the component
+     */
+    protected void addTab(int shortcut, String button, DefaultTabModel model, Component component) {
+        String text = "&" + shortcut + " " + Messages.get(button);
+        model.addTab(text, component);
+    }
+
+    /**
+     * Invoked when a tab is selected.
+     */
+    protected void onTabSelected() {
+        switch (tab.getSelectedIndex()) {
+            case HISTORY_INDEX:
+                onHistorySelected();
+                break;
+            case INVOICE_INDEX:
+                onInvoiceSelected();
+                break;
+            case REMINDERS_INDEX:
+                onRemindersSelected();
+                break;
+            case DOCUMENT_INDEX:
+                onDocumentsSelected();
+                break;
+        }
     }
 
     /**
@@ -400,39 +470,6 @@ public class VisitEditor {
         documentBrowser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         BrowserCRUDWindow<DocumentAct> window = new BrowserCRUDWindow<DocumentAct>(documentBrowser, documentWindow);
         addTab(4, "button.document", model, window.getComponent());
-    }
-
-    /**
-     * Helper to add a browser to the tab pane.
-     *
-     * @param shortcut  the tab button shortcut no.
-     * @param button    the button key
-     * @param model     the tab model
-     * @param component the component
-     */
-    private void addTab(int shortcut, String button, DefaultTabModel model, Component component) {
-        String text = "&" + shortcut + " " + Messages.get(button);
-        model.addTab(text, component);
-    }
-
-    /**
-     * Invoked when a tab is selected.
-     */
-    private void onTabSelected() {
-        switch (tab.getSelectedIndex()) {
-            case HISTORY_INDEX:
-                onHistorySelected();
-                break;
-            case INVOICE_INDEX:
-                onInvoiceSelected();
-                break;
-            case REMINDERS_INDEX:
-                onRemindersSelected();
-                break;
-            case DOCUMENT_INDEX:
-                onDocumentsSelected();
-                break;
-        }
     }
 
     /**

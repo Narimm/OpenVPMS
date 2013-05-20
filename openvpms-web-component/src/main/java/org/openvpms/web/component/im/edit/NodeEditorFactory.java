@@ -18,6 +18,7 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -25,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.bound.BoundPalette;
+import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.edit.PropertyComponentEditor;
@@ -33,6 +35,7 @@ import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
+import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectSorter;
@@ -233,10 +236,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                             property.add(value);
                         }
                     }
-                    if (value != null) {
-                        editor = getObjectEditor(value, object, subContext);
-                        editors.add(editor, property);
-                    }
+//                    if (value != null) {
+//                        editor = getObjectEditor(value, object, subContext);
+//                        editors.add(editor, property);
+//                    }
                 }
             }
             if (editor == null) {
@@ -249,14 +252,25 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             final String[] nodes = DescriptorHelper.getCommonNodeNames(
                     property.getDescriptor().getArchetypeRange(), IDENTIFIER_SORT_NODES, service);
 
-            Palette<IMObject> palette = new BoundPalette<IMObject>(identifiers, property) {
-                @Override
-                protected void sort(List<IMObject> values) {
-                    IMObjectSorter.sort(values, nodes);
-                }
-            };
-            palette.setCellRenderer(IMObjectListCellRenderer.NAME);
-            editor = createPropertyEditor(property, palette);
+            Component component;
+            if (property.getMaxCardinality() == 1) {
+                // render as a dropdown when at most one element can be selected
+                IMObjectListModel model = new IMObjectListModel(identifiers, false, false);
+                SelectField selectField = BoundSelectFieldFactory.create(property, model);
+                selectField.setCellRenderer(IMObjectListCellRenderer.NAME);
+                component = selectField;
+            } else {
+                // render as a palette when more than one object may be selected
+                Palette<IMObject> palette = new BoundPalette<IMObject>(identifiers, property) {
+                    @Override
+                    protected void sort(List<IMObject> values) {
+                        IMObjectSorter.sort(values, nodes);
+                    }
+                };
+                palette.setCellRenderer(IMObjectListCellRenderer.NAME);
+                component = palette;
+            }
+            editor = createPropertyEditor(property, component);
         }
         return editor;
     }
@@ -264,7 +278,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     /**
      * Returns an editor for an object reference property.
      *
-     * @param property the object reference properrty
+     * @param property the object reference property
      * @param object   the parent object
      * @return a new editor for {@code property}
      */
