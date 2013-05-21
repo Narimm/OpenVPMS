@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.visit;
 
 import nextapp.echo2.app.Button;
@@ -71,20 +72,9 @@ public class VisitEditorDialog extends PopupDialog {
         }
 
         visitEditor.setListener(new VisitEditorListener() {
-            public void historySelected() {
-                onHistorySelected();
-            }
-
-            public void invoiceSelected() {
-                onInvoiceSelected();
-            }
-
-            public void remindersSelected() {
-                onRemindersSelected();
-            }
-
-            public void documentsSelected() {
-                onDocumentsSelected();
+            @Override
+            public void selected(int index) {
+                VisitEditorDialog.this.onSelected(index);
             }
         });
         setHistoryButtons();
@@ -140,6 +130,41 @@ public class VisitEditorDialog extends PopupDialog {
         } else {
             super.onOK();
         }
+    }
+
+    /**
+     * Invoked when a tab is selected.
+     *
+     * @param index the tab index.
+     */
+    protected void onSelected(int index) {
+        switch (index) {
+            case VisitEditor.HISTORY_INDEX:
+                onHistorySelected();
+                break;
+            case VisitEditor.INVOICE_INDEX:
+                onInvoiceSelected();
+                break;
+            case VisitEditor.REMINDERS_INDEX:
+                onRemindersSelected();
+                break;
+            case VisitEditor.DOCUMENT_INDEX:
+                onDocumentsSelected();
+                break;
+        }
+    }
+
+    /**
+     * Sets the dialog buttons to the default Apply, OK and Cancel buttons.
+     *
+     * @return the buttons
+     */
+    protected ButtonSet setDefaultButtons() {
+        ButtonSet buttons = getButtons();
+        buttons.removeAll();
+        addButton(OK_ID);
+        addButton(CANCEL_ID);
+        return buttons;
     }
 
     /**
@@ -264,19 +289,6 @@ public class VisitEditorDialog extends PopupDialog {
         addButton(OK_ID);
         addButton(CANCEL_ID);
         editor.setButtons(buttons);
-    }
-
-    /**
-     * Sets the dialog buttons to the default Apply, OK and Cancel buttons.
-     *
-     * @return the buttons
-     */
-    private ButtonSet setDefaultButtons() {
-        ButtonSet buttons = getButtons();
-        buttons.removeAll();
-        addButton(OK_ID);
-        addButton(CANCEL_ID);
-        return buttons;
     }
 
 }
