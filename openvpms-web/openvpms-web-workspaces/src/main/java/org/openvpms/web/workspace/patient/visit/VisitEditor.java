@@ -37,6 +37,8 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.component.retry.Retryer;
+import org.openvpms.web.component.workspace.AbstractCRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ChangeListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -60,6 +62,26 @@ import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
  * @author Tim Anderson
  */
 public class VisitEditor {
+
+    /**
+     * The index of the patient history tab.
+     */
+    public static final int HISTORY_INDEX = 0;
+
+    /**
+     * The index of the invoice tab.
+     */
+    public static final int INVOICE_INDEX = 1;
+
+    /**
+     * The index of the reminders/alerts tab.
+     */
+    public static final int REMINDERS_INDEX = 2;
+
+    /**
+     * The index of the document tab.
+     */
+    public static final int DOCUMENT_INDEX = 3;
 
     /**
      * The CRUD window for editing events and their items.
@@ -135,26 +157,6 @@ public class VisitEditor {
      * Determines if the documents have been queried.
      */
     private boolean documentsQueried;
-
-    /**
-     * The index of the patient history tab.
-     */
-    private static final int HISTORY_INDEX = 0;
-
-    /**
-     * The index of the invoice tab.
-     */
-    private static final int INVOICE_INDEX = 1;
-
-    /**
-     * The index of the reminders/alerts tab.
-     */
-    private static final int REMINDERS_INDEX = 2;
-
-    /**
-     * The index of the document tab.
-     */
-    private static final int DOCUMENT_INDEX = 3;
 
 
     /**
@@ -237,19 +239,9 @@ public class VisitEditor {
      * @param buttons the buttons
      */
     public void setButtons(ButtonSet buttons) {
-        switch (tab.getSelectedIndex()) {
-            case HISTORY_INDEX:
-                visitWindow.setButtons(buttons);
-                break;
-            case INVOICE_INDEX:
-                chargeWindow.setButtons(buttons);
-                break;
-            case REMINDERS_INDEX:
-                reminderWindow.setButtons(buttons);
-                break;
-            case DOCUMENT_INDEX:
-                documentWindow.setButtons(buttons);
-                break;
+        CRUDWindow<? extends Act> window = getWindow(tab.getSelectedIndex());
+        if (window instanceof AbstractCRUDWindow) {
+            ((AbstractCRUDWindow) window).setButtons(buttons);
         }
     }
 
@@ -277,20 +269,10 @@ public class VisitEditor {
      * @return the help context
      */
     public HelpContext getHelpContext() {
-        HelpContext result = help;
-        switch (tab.getSelectedIndex()) {
-            case HISTORY_INDEX:
-                result = visitWindow.getHelpContext();
-                break;
-            case INVOICE_INDEX:
-                result = chargeWindow.getHelpContext();
-                break;
-            case REMINDERS_INDEX:
-                result = reminderWindow.getHelpContext();
-                break;
-            case DOCUMENT_INDEX:
-                result = documentWindow.getHelpContext();
-                break;
+        HelpContext result = getBaseHelpContext();
+        CRUDWindow<? extends Act> window = getWindow(tab.getSelectedIndex());
+        if (window != null) {
+            result = window.getHelpContext();
         }
         return result;
     }
@@ -310,7 +292,7 @@ public class VisitEditor {
             tab.getSelectionModel().addChangeListener(new ChangeListener() {
                 @Override
                 public void onChange(ChangeEvent event) {
-                    onTabSelected();
+                    onTabSelected(tab.getSelectedIndex());
                 }
             });
             focusGroup.add(tab);
@@ -362,6 +344,26 @@ public class VisitEditor {
     }
 
     /**
+     * Returns the {@link CRUDWindow} associated with the tab index.
+     *
+     * @param index the tab index
+     * @return the corresponding {@link CRUDWindow} or {@code null} if none is found
+     */
+    protected CRUDWindow<? extends Act> getWindow(int index) {
+        switch (index) {
+            case HISTORY_INDEX:
+                return visitWindow.getWindow();
+            case INVOICE_INDEX:
+                return chargeWindow;
+            case REMINDERS_INDEX:
+                return reminderWindow.getWindow();
+            case DOCUMENT_INDEX:
+                return documentWindow;
+        }
+        return null;
+    }
+
+    /**
      * Creates a new visit browser CRUD window.
      *
      * @param context the context
@@ -409,9 +411,11 @@ public class VisitEditor {
 
     /**
      * Invoked when a tab is selected.
+     *
+     * @param selected the selected tab
      */
-    protected void onTabSelected() {
-        switch (tab.getSelectedIndex()) {
+    protected void onTabSelected(int selected) {
+        switch (selected) {
             case HISTORY_INDEX:
                 onHistorySelected();
                 break;
@@ -424,6 +428,17 @@ public class VisitEditor {
             case DOCUMENT_INDEX:
                 onDocumentsSelected();
                 break;
+        }
+    }
+
+    /**
+     * Notify the listener of a tab selection.
+     *
+     * @param index the tab index
+     */
+    protected void notifyListener(int index) {
+        if (listener != null) {
+            listener.selected(index);
         }
     }
 
@@ -485,9 +500,7 @@ public class VisitEditor {
             browser.setSelected(selected);
         }
         browser.setFocusOnResults();
-        if (listener != null) {
-            listener.historySelected();
-        }
+        notifyListener(HISTORY_INDEX);
     }
 
     /**
@@ -498,9 +511,7 @@ public class VisitEditor {
         if (editor != null) {
             editor.getFocusGroup().setFocus();
         }
-        if (listener != null) {
-            listener.invoiceSelected();
-        }
+        notifyListener(INVOICE_INDEX);
     }
 
     /**
@@ -508,9 +519,7 @@ public class VisitEditor {
      */
     private void onRemindersSelected() {
         reminderWindow.getBrowser().setFocusOnResults();
-        if (listener != null) {
-            listener.remindersSelected();
-        }
+        notifyListener(REMINDERS_INDEX);
     }
 
     /**
@@ -523,9 +532,7 @@ public class VisitEditor {
         } else {
             documentBrowser.setFocusOnResults();
         }
-        if (listener != null) {
-            listener.documentsSelected();
-        }
+        notifyListener(DOCUMENT_INDEX);
     }
 
     /**

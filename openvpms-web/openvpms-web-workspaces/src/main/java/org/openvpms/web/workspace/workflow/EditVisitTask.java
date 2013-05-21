@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -103,7 +104,7 @@ public class EditVisitTask extends AbstractTask {
             HelpContext help = context.getHelpContext().topic("visit");
             VisitEditor editor = createVisitEditor(event, invoice, patient, context, help);
             String title = Messages.get("workflow.visit.edit.title");
-            dialog = new VisitEditorDialog(title, editor, help);
+            dialog = createDialog(title, editor, help);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {
@@ -140,6 +141,18 @@ public class EditVisitTask extends AbstractTask {
     protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, Party patient, TaskContext context,
                                             HelpContext help) {
         return new VisitEditor(patient, event, invoice, context, help);
+    }
+
+    /**
+     * Creates a new visit editor dialog.
+     *
+     * @param title  the dialog title
+     * @param editor the visit editor
+     * @param help   the help context
+     * @return a new dialog
+     */
+    protected VisitEditorDialog createDialog(String title, VisitEditor editor, HelpContext help) {
+        return new VisitEditorDialog(title, editor, help);
     }
 
 }
