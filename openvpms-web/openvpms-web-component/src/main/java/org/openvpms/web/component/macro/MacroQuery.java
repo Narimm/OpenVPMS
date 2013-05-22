@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.macro;
 
@@ -21,16 +19,15 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.echo.focus.FocusHelper;
 
 
 /**
  * Query for <em>lookup.macro</em> lookups.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MacroQuery extends AbstractIMObjectQuery<Lookup> {
 
@@ -42,11 +39,11 @@ public class MacroQuery extends AbstractIMObjectQuery<Lookup> {
     /**
      * The archetype short names to query.
      */
-    public static final String[] SHORT_NAMES = new String[]{"lookup.macro"};
+    public static final String[] SHORT_NAMES = new String[]{"lookup.macro", "lookup.macroReport"};
 
 
     /**
-     * Constructs a <tt>MacroQuery</tt>.
+     * Constructs a {@code MacroQuery}.
      *
      * @throws org.openvpms.component.system.common.query.ArchetypeQueryException
      *          if the short names don't match any archetypes
@@ -59,10 +56,10 @@ public class MacroQuery extends AbstractIMObjectQuery<Lookup> {
     /**
      * Determines if the inactive check box should be displayed.
      * <tt/>
-     * Defaults to <tt>true</tt>.
+     * Defaults to {@code true}.
      * Must be invoked prior to the component being created
      *
-     * @param show if <tt>true</tt>, show the inactive check box when the component is created, otherwise leave it out
+     * @param show if {@code true}, show the inactive check box when the component is created, otherwise leave it out
      */
     public void setShowInactive(boolean show) {
         this.showInactive = show;
@@ -75,7 +72,6 @@ public class MacroQuery extends AbstractIMObjectQuery<Lookup> {
      */
     @Override
     protected void doLayout(Component container) {
-        addShortNameSelector(container);
         addSearchField(container);
         if (showInactive) {
             addInactive(container);
