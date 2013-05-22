@@ -19,6 +19,7 @@ package org.openvpms.web.component.workspace;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
@@ -247,7 +248,8 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
      */
     protected void showStatusError(Act act, String titleKey,
                                    String messageKey) {
-        String name = getArchetypeDescriptor().getDisplayName();
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor();
+        String name = (descriptor != null) ? descriptor.getDisplayName() : act.getArchetypeId().getShortName();
         String status = act.getStatus();
         String title = Messages.get(titleKey, name);
         String message = Messages.get(messageKey, name, status);
