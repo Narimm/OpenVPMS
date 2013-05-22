@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.button;
@@ -32,8 +30,7 @@ import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
  * If a {@link ShortcutButton} with a valid keycode is added to this, it
  * will receive keystroke notification.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-12-12 03:25:07Z $
+ * @author Tim Anderson
  */
 public class ButtonSet implements KeyStrokeHandler {
 
@@ -43,7 +40,7 @@ public class ButtonSet implements KeyStrokeHandler {
     private final Component container;
 
     /**
-     * The focus group. May be <tt>null</tt>
+     * The focus group. May be {@code null}
      */
     private final FocusGroup focusGroup;
 
@@ -69,7 +66,7 @@ public class ButtonSet implements KeyStrokeHandler {
 
 
     /**
-     * Constructs a <tt>ButtonSet</tt>.
+     * Constructs a {@link ButtonSet}.
      *
      * @param container the button container
      */
@@ -78,34 +75,34 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
-     * Constructs a <tt>ButtonSet</tt>.
+     * Constructs a {@link ButtonSet}.
      *
      * @param container the button container
-     * @param focus     the focus group. May be <tt>null</tt>
+     * @param focus     the focus group. May be {@code null}
      */
     public ButtonSet(Component container, FocusGroup focus) {
         this(container, focus, BUTTON_STYLE);
     }
 
     /**
-     * Constructs a <tt>ButtonSet</tt>.
+     * Constructs a {@link ButtonSet}.
      *
      * @param container the button container
-     * @param focus     the focus group. May be <tt>null</tt>
-     * @param style     the button style. May be <tt>null</tt>
+     * @param focus     the focus group. May be {@code null}
+     * @param style     the button style. May be {@code null}
      */
     public ButtonSet(Component container, FocusGroup focus, String style) {
         this(container, container, focus, style);
     }
 
     /**
-     * Constructs a <tt>ButtonSet</tt>.
+     * Constructs a {@link ButtonSet}.
      *
      * @param container         the button container
      * @param shortcutContainer the container to add the keystroke listener to. Specify this to avoid cell spacing
      *                          issues
-     * @param focus             the focus group. May be <tt>null</tt>
-     * @param style             the button style. May be <tt>null</tt>
+     * @param focus             the focus group. May be {@code null}
+     * @param style             the button style. May be {@code null}
      */
     public ButtonSet(Component container, Component shortcutContainer, FocusGroup focus, String style) {
         this.container = container;
@@ -129,12 +126,10 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
-     * Adds a button. The id is used to get localised text for the
-     * button, and is returned by {@link ActionEvent#getActionCommand} when
-     * triggered.
+     * Adds a button. The id is used to get localised text for the button, and is returned by
+     * {@link ActionEvent#getActionCommand} when triggered.
      *
-     * @param id the button id, used to identify the button and as a resource
-     *           bundle key. May be <tt>null</tt>
+     * @param id the button id, used to identify the button and as a resource bundle key. May be {@code null}
      * @return a new button
      */
     public Button add(String id) {
@@ -142,18 +137,65 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
-     * Adds a button. The id is used to get localised text for the
-     * button, and is returned by {@link ActionEvent#getActionCommand} when
-     * triggered.
+     * Adds a button. The id is used to get localised text for the button, and is returned by
+     * {@link ActionEvent#getActionCommand} when triggered.
      *
      * @param id              the button id, used to identify the button and as
-     *                        a resource bundle key. May be <tt>null</tt>
-     * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
+     *                        a resource bundle key. May be {@code null}
+     * @param disableShortcut if {@code true} disable any keyboard shortcut
      * @return a new button
      */
     public Button add(String id, boolean disableShortcut) {
-        Button button = ButtonFactory.create(id, style, !disableShortcut);
+        Button button = create(id, disableShortcut);
         return add(button);
+    }
+
+    /**
+     * Creates, but does not add a button.
+     *
+     * @param id the button id, used to identify the button and as a resource bundle key. May be {@code null}
+     * @return the new button
+     */
+    public Button create(String id) {
+        return create(id, false);
+    }
+
+    /**
+     * Creates, but does not add a button.
+     *
+     * @param id              the button id, used to identify the button and as a resource bundle key.
+     *                        May be {@code null}
+     * @param disableShortcut if {@code true} disable any keyboard shortcut
+     * @return the new button
+     */
+    public Button create(String id, boolean disableShortcut) {
+        return ButtonFactory.create(id, style, !disableShortcut);
+    }
+
+    /**
+     * Creates, but does not add a button.
+     *
+     * @param id       the button id, used to identify the button and as a resource bundle key. May be {@code null}
+     * @param listener the listener to add
+     * @return the new button
+     */
+    public Button create(String id, ActionListener listener) {
+        return create(id, false, listener);
+    }
+
+    /**
+     * Creates, but does not add a button.
+     *
+     * @param id              the button id, used to identify the button and as a resource bundle key.
+     *                        May be {@code null}
+     * @param disableShortcut if {@code true} disable any keyboard shortcut
+     * @param listener        the listener to add
+     * @return the new button
+     */
+    public Button create(String id, boolean disableShortcut, ActionListener listener) {
+        Button button = create(id, disableShortcut);
+        button.addActionListener(listener);
+        return button;
     }
 
     /**
@@ -202,7 +244,7 @@ public class ButtonSet implements KeyStrokeHandler {
      * Adds a button, and registers an event listener.
      *
      * @param id       the button id, used to identify the button and as a
-     *                 resource bundle key. May be <tt>null</tt>
+     *                 resource bundle key. May be {@code null}
      * @param listener the listener to add
      * @return a new button
      */
@@ -214,9 +256,9 @@ public class ButtonSet implements KeyStrokeHandler {
      * Adds a button, and registers an event listener.
      *
      * @param id              the button id, used to identify the button and as
-     *                        a resource bundle key. May be <tt>null</tt>
+     *                        a resource bundle key. May be {@code null}
      * @param listener        the listener to add
-     * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
+     * @param disableShortcut if {@code true} disable any keyboard shortcut
      * @return a new button
      */
     public Button add(String id, ActionListener listener,
@@ -257,16 +299,27 @@ public class ButtonSet implements KeyStrokeHandler {
      * Returns a button given its identifier.
      *
      * @param id the button identifier
-     * @return the button with the corresponding id, or <tt>null</tt> if none is found
+     * @return the button with the corresponding id, or {@code null} if none is found
      */
     public Button getButton(String id) {
         return (Button) container.getComponent(id);
     }
 
     /**
+     * Returns the index of a button given its identifier.
+     *
+     * @param id the button identifier
+     * @return the index of the button or {@code -1} if none is found
+     */
+    public int indexOf(String id) {
+        Button button = getButton(id);
+        return (button == null) ? -1 : container.indexOf(button);
+    }
+
+    /**
      * Determines if disabled components should be visible.
      *
-     * @param hide if <tt>true</tt>, hide disabled components
+     * @param hide if {@code true}, hide disabled components
      */
     public void setHideDisabled(boolean hide) {
         this.hideDisabled = hide;
@@ -276,7 +329,7 @@ public class ButtonSet implements KeyStrokeHandler {
      * Enables or disables a button.
      *
      * @param id      the button identifer
-     * @param enabled if <tt>true</tt> enable the button, otherwise disable it
+     * @param enabled if {@code true} enable the button, otherwise disable it
      */
     public void setEnabled(String id, boolean enabled) {
         Button button = getButton(id);
