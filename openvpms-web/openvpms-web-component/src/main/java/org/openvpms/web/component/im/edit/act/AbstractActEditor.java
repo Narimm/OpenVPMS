@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -67,11 +67,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     protected static final String END_TIME = "endTime";
 
     /**
-     * Constructs an <tt>AbstractActEditor</tt>.
+     * Constructs an {@link AbstractActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
-     * @param context the layout context. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
+     * @param context the layout context. May be {@code null}
      */
     public AbstractActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
@@ -91,7 +91,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     /**
      * Sets the author.
      *
-     * @param author the author. May be <tt>null</tt>
+     * @param author the author. May be {@code null}
      */
     public void setAuthor(User author) {
         setParticipant("author", author);
@@ -100,7 +100,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     /**
      * Returns the author.
      *
-     * @return the author, or <tt>null</tt> if there is no author
+     * @return the author, or {@code null} if there is no author
      */
     public User getAuthor() {
         return (User) getParticipant("author");
@@ -109,7 +109,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     /**
      * Returns the act start time.
      *
-     * @return the act start time. May be <tt>null</tt>
+     * @return the act start time. May be {@code null}
      */
     public Date getStartTime() {
         return ((Act) getObject()).getActivityStartTime();
@@ -127,7 +127,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     /**
      * Returns the end time.
      *
-     * @return the end time. May be <tt>null</tt>
+     * @return the end time. May be {@code null}
      */
     public Date getEndTime() {
         return ((Act) getObject()).getActivityEndTime();
@@ -152,12 +152,21 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Returns the status.
+     *
+     * @return the status. May be {@code null}
+     */
+    public String getStatus() {
+        return ((Act) getObject()).getStatus();
+    }
+
+    /**
      * Validates the object.
      * <p/>
      * This extends validation by ensuring that the start time is less than the end time, if non-null.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     protected boolean doValidation(Validator validator) {
@@ -174,13 +183,12 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * This uses {@link #deleteChildren()} to delete the children prior to
      * invoking {@link #deleteObject()}.
      *
-     * @return <tt>true</tt> if the delete was successful
+     * @return {@code true} if the delete was successful
      * @throws IllegalStateException if the act is POSTED
      */
     @Override
     protected boolean doDelete() {
-        Act act = (Act) getObject();
-        if (ActStatus.POSTED.equals(act.getStatus())) {
+        if (ActStatus.POSTED.equals(getStatus())) {
             throw new IllegalStateException("Cannot delete " + ActStatus.POSTED + " act");
         }
         return super.doDelete();
@@ -190,11 +198,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Helper to initialises a participation, if it exists and is empty.
      *
      * @param name   the participation name
-     * @param entity the participation entity. May be <tt>null</tt>
+     * @param entity the participation entity. May be {@code null}
      */
     protected void initParticipant(String name, IMObject entity) {
         IMObjectReference ref
-            = (entity != null) ? entity.getObjectReference() : null;
+                = (entity != null) ? entity.getObjectReference() : null;
         initParticipant(name, ref);
     }
 
@@ -202,7 +210,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Helper to initialises a participant, if it exists and is empty.
      *
      * @param name   the participation property name
-     * @param entity the entity reference. May be <tt>null</tt>
+     * @param entity the entity reference. May be {@code null}
      */
     protected void initParticipant(String name, IMObjectReference entity) {
         Property property = getProperty(name);
@@ -223,8 +231,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Sets a participant.
      *
      * @param name   the participation property name
-     * @param entity the participant. May be <tt>null</tt>
-     * @return <tt>true</tt> if the participant was modified, otherwise <tt>false</tt>
+     * @param entity the participant. May be {@code null}
+     * @return {@code true} if the participant was modified, otherwise {@code false}
      */
     protected boolean setParticipant(String name, IMObject entity) {
         boolean modified;
@@ -242,8 +250,8 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Sets a participant.
      *
      * @param name   the participation property name
-     * @param entity the participant. May be <tt>null</tt>
-     * @return <tt>true</tt> if the participant was modified, otherwise <tt>false</tt>
+     * @param entity the participant. May be {@code null}
+     * @return {@code true} if the participant was modified, otherwise {@code false}
      * @throws IllegalArgumentException if the name doesn't correspond to a valid node
      */
     protected boolean setParticipant(String name, IMObjectReference entity) {
@@ -280,7 +288,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Returns a participant reference.
      *
      * @param name the participation property name
-     * @return a reference to the participant. May be <tt>null</tt>
+     * @return a reference to the participant. May be {@code null}
      */
     protected IMObjectReference getParticipantRef(String name) {
         IMObjectReference result;
@@ -302,7 +310,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Returns a participant.
      *
      * @param name the participation property name
-     * @return the participant. May be <tt>null</tt>
+     * @return the participant. May be {@code null}
      */
     protected IMObject getParticipant(String name) {
         IMObjectReference ref = getParticipantRef(name);
@@ -323,9 +331,9 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Returns the participation editor for the named participation node.
      *
      * @param name   the participation property name
-     * @param create if <tt>true</tt> force creation of the edit components if
+     * @param create if {@code true} force creation of the edit components if
      *               it hasn't already been done
-     * @return the editor corresponding to <tt>name</tt> or </tt>null</tt> if
+     * @return the editor corresponding to {@code name} or }null} if
      *         none exists or hasn't been created
      */
     @SuppressWarnings("unchecked")
@@ -337,7 +345,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         } else if (editor instanceof ParticipationCollectionEditor) {
             // handle the case of an optional participation
             ParticipationCollectionEditor collectionEditor
-                = ((ParticipationCollectionEditor) editor);
+                    = ((ParticipationCollectionEditor) editor);
             if (collectionEditor.getEditor() instanceof SingleParticipationCollectionEditor) {
                 IMObjectEditor current = collectionEditor.getCurrentEditor();
                 if (current instanceof ParticipationEditor) {
@@ -352,7 +360,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Sets the act start time.
      *
      * @param time    the start time
-     * @param disable if <tt>true</tt> disable the {@link #onStartTimeChanged} callback
+     * @param disable if {@code true} disable the {@link #onStartTimeChanged} callback
      */
     protected void setStartTime(Date time, boolean disable) {
         Property startTime = getProperty(START_TIME);
@@ -369,7 +377,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Sets the act end time.
      *
      * @param time    the end time
-     * @param disable if <tt>true</tt> disable the {@link #onEndTimeChanged} callback
+     * @param disable if {@code true} disable the {@link #onEndTimeChanged} callback
      */
     protected void setEndTime(Date time, boolean disable) {
         Property endTime = getProperty(END_TIME);
@@ -447,7 +455,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Validates that the start and end times are valid.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the start and end times are valid
+     * @return {@code true} if the start and end times are valid
      */
     protected boolean validateStartEndTimes(Validator validator) {
         boolean result = true;
@@ -469,7 +477,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * Helper to return the display name of a property.
      *
      * @param name the property name
-     * @return the property's display name, or <tt>name</tt> if the property doesn't exist
+     * @return the property's display name, or {@code name} if the property doesn't exist
      */
     private String getDisplayName(String name) {
         Property property = getProperty(name);
