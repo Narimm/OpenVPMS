@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table.act;
@@ -45,11 +43,9 @@ import java.util.Date;
 /**
  * Table model for {@link Act}s containing amount fields.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
-public class ActAmountTableModel<T extends Act>
-    extends BaseIMObjectTableModel<T> {
+public class ActAmountTableModel<T extends Act> extends BaseIMObjectTableModel<T> {
 
     /**
      * Date column index.
@@ -73,16 +69,16 @@ public class ActAmountTableModel<T extends Act>
 
 
     /**
-     * Constructs a <tt>ActAmountTableModel</tt>.
+     * Constructs an {@code ActAmountTableModel}.
      */
     public ActAmountTableModel() {
         this(true, false);
     }
 
     /**
-     * Constructs a <tt>ActAmountTableModel</tt>.
+     * Constructs a {@code ActAmountTableModel}.
      *
-     * @param showStatus determines if the status colunn should be displayed
+     * @param showStatus determines if the status column should be displayed
      * @param showAmount determines if the credit/debit amount should be displayed
      */
     public ActAmountTableModel(boolean showStatus, boolean showAmount) {
@@ -90,10 +86,10 @@ public class ActAmountTableModel<T extends Act>
     }
 
     /**
-     * Constructs a <tt>ActAmountTableModel</tt>.
+     * Constructs a {@code ActAmountTableModel}.
      *
      * @param showArchetype determines if the archetype column should be displayed
-     * @param showStatus    determines if the status colunn should be displayed
+     * @param showStatus    determines if the status column should be displayed
      * @param showAmount    determines if the credit/debit amount should be displayed
      */
     public ActAmountTableModel(boolean showArchetype, boolean showStatus, boolean showAmount) {
@@ -101,10 +97,10 @@ public class ActAmountTableModel<T extends Act>
     }
 
     /**
-     * Constructs a <tt>ActAmountTableModel</tt>.
+     * Constructs a {@code ActAmountTableModel}.
      *
      * @param showArchetype determines if the archetype column should be displayed
-     * @param showStatus    determines if the status colunn should be displayed
+     * @param showStatus    determines if the status column should be displayed
      * @param showAmount    determines if the credit/debit amount should be displayed
      * @param negateAmount  determines if the credit/debit amount should be negated
      */
@@ -119,9 +115,9 @@ public class ActAmountTableModel<T extends Act>
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-     *                  sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't
+     * @param ascending if {@code true} sort in ascending order; otherwise
+     *                  sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't
      *         sortable
      */
     @Override
@@ -130,17 +126,17 @@ public class ActAmountTableModel<T extends Act>
         switch (column) {
             case DATE_INDEX:
                 result = new SortConstraint[]{
-                    new NodeSortConstraint("startTime", ascending)
+                        new NodeSortConstraint("startTime", ascending)
                 };
                 break;
             case STATUS_INDEX:
                 result = new SortConstraint[]{
-                    new NodeSortConstraint("status", ascending)
+                        new NodeSortConstraint("status", ascending)
                 };
                 break;
             case AMOUNT_INDEX:
                 result = new SortConstraint[]{
-                    new NodeSortConstraint("amount", ascending)};
+                        new NodeSortConstraint("amount", ascending)};
                 break;
             default:
                 result = super.getSortConstraints(column, ascending);
@@ -153,7 +149,7 @@ public class ActAmountTableModel<T extends Act>
      * Helper to create a column model.
      *
      * @param showArchetype determines if the archetype column should be displayed
-     * @param showStatus    determines if the status colunn should be displayed
+     * @param showStatus    determines if the status column should be displayed
      * @param showAmount    determines if the credit/debit amount should be
      *                      displayed   @return a new column model
      * @return a new column model
@@ -241,16 +237,16 @@ public class ActAmountTableModel<T extends Act>
      * Helper to return the display version of an act's status.
      *
      * @param act the act
-     * @return the display version of an act's status, or the status if
-     *         it can't be determined
+     * @return the display version of an act's status, or the status if it can't be determined
      */
     protected String getStatus(Act act) {
         String result = null;
-        ArchetypeDescriptor archetype
-            = DescriptorHelper.getArchetypeDescriptor(act);
-        NodeDescriptor status = archetype.getNodeDescriptor("status");
-        if (status != null) {
-            result = LookupNameHelper.getLookupName(status, act);
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(act);
+        if (archetype != null) {
+            NodeDescriptor status = archetype.getNodeDescriptor("status");
+            if (status != null) {
+                result = LookupNameHelper.getLookupName(status, act);
+            }
         }
         if (result == null) {
             result = act.getStatus();

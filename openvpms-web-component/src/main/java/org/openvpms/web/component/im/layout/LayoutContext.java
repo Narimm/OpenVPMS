@@ -22,12 +22,12 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.macro.Variables;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.util.IMObjectCache;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**
@@ -158,10 +158,10 @@ public interface LayoutContext {
      * Returns an archetype descriptor for an object.
      *
      * @param object the object
-     * @return an archetype descriptor for the object, or <tt>null</tt> if none can be found
+     * @return an archetype descriptor for the object
+     * @throws IllegalStateException if there is no archetype descriptor for the object
      */
     ArchetypeDescriptor getArchetypeDescriptor(IMObject object);
-
 
     /**
      * Registers a listener for deletion events.

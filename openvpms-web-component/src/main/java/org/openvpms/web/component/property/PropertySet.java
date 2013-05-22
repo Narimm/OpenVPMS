@@ -78,6 +78,12 @@ public class PropertySet {
     public PropertySet(IMObject object, ArchetypeDescriptor archetype, Variables variables) {
         this.object = object;
 
+        if (archetype == null) {
+            throw new IllegalStateException(
+                    "No archetype descriptor for object, id=" + object.getId() + ", archetypeId="
+                    + object.getArchetypeIdAsString());
+        }
+
         List<NodeDescriptor> descriptors = archetype.getAllNodeDescriptors();
         Property[] list = new Property[descriptors.size()];
         for (int i = 0; i < descriptors.size(); ++i) {

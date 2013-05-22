@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.layout;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -22,7 +23,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.macro.Variables;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.HashSet;
@@ -123,13 +124,13 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * The default layout strategy factory.
      */
     private static final IMObjectLayoutStrategyFactory DEFAULT_LAYOUT_FACTORY
-        = new ViewLayoutStrategyFactory();
+            = new ViewLayoutStrategyFactory();
 
     /**
      * The default deletion listener.
      */
     private static final IMObjectDeletionListener<IMObject> DEFAULT_DELETION_LISTENER
-        = new DefaultIMObjectDeletionListener();
+            = new DefaultIMObjectDeletionListener();
 
 
     /**
@@ -303,7 +304,7 @@ public abstract class AbstractLayoutContext implements LayoutContext {
      * @param factory the layout strategy factory
      */
     public void setLayoutStrategyFactory(
-        IMObjectLayoutStrategyFactory factory) {
+            IMObjectLayoutStrategyFactory factory) {
         layoutFactory = factory;
     }
 
@@ -367,7 +368,15 @@ public abstract class AbstractLayoutContext implements LayoutContext {
         if (parent != null) {
             result = parent.getArchetypeDescriptor(object);
         }
-        return (result == null) ? DescriptorHelper.getArchetypeDescriptor(object) : result;
+        if (result == null) {
+            result = DescriptorHelper.getArchetypeDescriptor(object);
+            if (result == null) {
+                throw new IllegalStateException(
+                        "No archetype descriptor found for object, id=" + object.getId() + ", archetypeId="
+                        + object.getArchetypeIdAsString());
+            }
+        }
+        return result;
     }
 
     /**
