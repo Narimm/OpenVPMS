@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.query;
 
@@ -35,8 +33,7 @@ import java.util.List;
 /**
  * Browser that contains other browsers, rendered in a tab pane.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class TabbedBrowser<T> implements Browser<T> {
 
@@ -82,7 +79,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
 
 
     /**
-     * Constructs a <tt>TabbedBrowser</tt>.
+     * Constructs a {@code TabbedBrowser}.
      */
     public TabbedBrowser() {
         container = ColumnFactory.create("InsetY");
@@ -122,9 +119,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
                     int index = tab.getSelectedIndex();
                     if (index != selected) {
                         selected = index;
-                        if (listener != null) {
-                            listener.onBrowserChanged();
-                        }
+                        onBrowserSelected(selected);
                     }
                 }
             });
@@ -137,7 +132,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     /**
      * Returns the selected object.
      *
-     * @return the selected object, or <tt>null</tt> if none has been selected.
+     * @return the selected object, or {@code null} if none has been selected.
      */
     public T getSelected() {
         Browser<T> browser = getSelectedBrowser();
@@ -212,16 +207,27 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     /**
      * Returns the selected browser.
      *
-     * @return the selected browser, or <tt>null</tt> if no browser is selected
+     * @return the selected browser, or {@code null} if no browser is selected
      */
     public Browser<T> getSelectedBrowser() {
         return (selected != -1) ? browsers.get(selected) : null;
     }
 
     /**
+     * Selects a browser.
+     *
+     * @param index the browser index
+     */
+    public void setSelectedBrowser(int index) {
+        selected = index;
+        tab.setSelectedIndex(selected);
+        onBrowserSelected(selected);
+    }
+
+    /**
      * Returns the selected browser index.
      *
-     * @return the selected browser index, or <tt>-1</tt> if no browser is selected
+     * @return the selected browser index, or {@code -1} if no browser is selected
      */
     public int getSelectedBrowserIndex() {
         return selected;
@@ -239,9 +245,9 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     /**
      * Returns the browser state.
      * <p/>
-     * This implementation always returns <tt>null</tt>.
+     * This implementation always returns {@code null}.
      *
-     * @return <tt>null</tt>
+     * @return {@code null}
      */
     public BrowserState getBrowserState() {
         return null;
@@ -275,18 +281,31 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
     }
 
     /**
+     * Invoked when a browser is selected.
+     * <p/>
+     * This notifies any registered listener.
+     *
+     * @param selected the selected index
+     */
+    protected void onBrowserSelected(@SuppressWarnings("unused") int selected) {
+        if (listener != null) {
+            listener.onBrowserChanged();
+        }
+    }
+
+    /**
      * Queries a browser, preserving the selected object if possible.
      * <p/>
-     * Note that this supresses events for all but the current browser, to avoid events from one browser triggering
+     * Note that this suppresses events for all but the current browser, to avoid events from one browser triggering
      * behaviour in another.
      * <p/>
      * TODO - ideally each tab would be treated independently, and refreshed when displayed.
      *
      * @param browser the browser
      */
-    private void query(Browser<T> browser) {
-        boolean supressEvents = getSelectedBrowser() != browser;
-        if (supressEvents) {
+    protected void query(Browser<T> browser) {
+        boolean suppressEvents = getSelectedBrowser() != browser;
+        if (suppressEvents) {
             for (BrowserListener<T> l : listeners) {
                 browser.removeBrowserListener(l);
             }
@@ -296,7 +315,7 @@ public abstract class TabbedBrowser<T> implements Browser<T> {
             browser.query();
             browser.setSelected(selected);
         } finally {
-            if (supressEvents) {
+            if (suppressEvents) {
                 for (BrowserListener<T> l : listeners) {
                     browser.addBrowserListener(l);
                 }
