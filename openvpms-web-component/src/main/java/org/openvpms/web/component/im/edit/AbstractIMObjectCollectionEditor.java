@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -41,11 +39,10 @@ import java.util.Set;
 /**
  * Abstract implementation of the {@link IMObjectCollectionEditor} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiable
-    implements IMObjectCollectionEditor {
+        implements IMObjectCollectionEditor {
 
     /**
      * The collection.
@@ -94,7 +91,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
 
 
     /**
-     * Constructs an <tt>AbstractIMObjectCollectionEditor</tt>.
+     * Constructs an {@link AbstractIMObjectCollectionEditor}.
      *
      * @param editor  the collection property
      * @param object  the object being edited
@@ -107,7 +104,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     }
 
     /**
-     * Constructs an <tt>AbstractIMObjectCollectionEditor</tt>.
+     * Constructs an {@link AbstractIMObjectCollectionEditor}.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
@@ -127,7 +124,6 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
         collection.addModifiableListener(broadcaster);
     }
 
-
     /**
      * Disposes of the editor.
      * <br/>
@@ -144,7 +140,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Determines if items can be added and removed.
      *
-     * @param readOnly if <tt>true</tt> items can't be added and removed
+     * @param readOnly if {@code true} items can't be added and removed
      */
     public void setCardinalityReadOnly(boolean readOnly) {
         cardinalityReadOnly = readOnly;
@@ -153,7 +149,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Determines if items can be added or removed.
      *
-     * @return <tt>true</tt> if items can't be added or removed.
+     * @return {@code true} if items can't be added or removed.
      */
     public boolean isCardinalityReadOnly() {
         return cardinalityReadOnly;
@@ -162,7 +158,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Sets a listener to be notified when an object is created.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setCreationListener(IMObjectCreationListener listener) {
         creationListener = listener;
@@ -171,7 +167,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Returns the listener to be notified when an object is created.
      *
-     * @return the listener, or <tt>null</tt> if none is registered
+     * @return the listener, or {@code null} if none is registered
      */
     public IMObjectCreationListener getCreationListener() {
         return creationListener;
@@ -219,7 +215,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Determines if the object has been modified.
      *
-     * @return <tt>true</tt> if the object has been modified
+     * @return {@code true} if the object has been modified
      */
     public boolean isModified() {
         boolean modified = collection.isModified();
@@ -270,7 +266,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Save any edits.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     public boolean save() {
         boolean saved;
@@ -288,7 +284,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Determines if any edits have been saved.
      *
-     * @return <tt>true</tt> if edits have been saved.
+     * @return {@code true} if edits have been saved.
      */
     public boolean isSaved() {
         return collection.isSaved();
@@ -300,7 +296,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * This validates the current object being edited, and if valid, the collection.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         boolean result = true;
@@ -335,9 +331,27 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     }
 
     /**
+     * Returns an editor for an object, creating one if it doesn't exist.
+     *
+     * @param object the object to edit
+     * @return an editor for the object
+     */
+    public IMObjectEditor getEditor(IMObject object) {
+        IMObjectEditor editor = collection.getEditor(object);
+        if (editor == null) {
+            LayoutContext context = new DefaultLayoutContext(getContext());
+            // increase the layout depth for collection items
+
+            editor = createEditor(object, context);
+            addEditor(object, editor);
+        }
+        return editor;
+    }
+
+    /**
      * Returns the current editor.
      *
-     * @return the current editor. May be <tt>null</tt>
+     * @return the current editor. May be {@code null}
      */
     public IMObjectEditor getCurrentEditor() {
         return editor;
@@ -390,7 +404,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Sets the current editor.
      *
-     * @param editor the editor. May be <tt>null</tt>
+     * @param editor the editor. May be {@code null}
      */
     protected void setCurrentEditor(IMObjectEditor editor) {
         this.editor = editor;
@@ -399,28 +413,10 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Removes the current editor.
      * <p/>
-     * This implementation simply invokes <tt>setCurrentEditor(null)</tt>.
+     * This implementation simply invokes {@code setCurrentEditor(null)}.
      */
     protected void removeCurrentEditor() {
         setCurrentEditor(null);
-    }
-
-    /**
-     * Returns an editor for an object, creating one if it doesn't exist.
-     *
-     * @param object the object to edit
-     * @return an editor for the object
-     */
-    protected IMObjectEditor getEditor(IMObject object) {
-        IMObjectEditor editor = collection.getEditor(object);
-        if (editor == null) {
-            LayoutContext context = new DefaultLayoutContext(getContext());
-            // increase the layout depth for collection items
-
-            editor = createEditor(object, context);
-            addEditor(object, editor);
-        }
-        return editor;
     }
 
     /**
@@ -428,7 +424,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      *
      * @param object  the object to edit
      * @param context the layout context
-     * @return an editor to edit <tt>object</tt>
+     * @return an editor to edit {@code object}
      */
     protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
         IMObjectEditor editor = IMObjectEditorFactory.create(object, this.object, context);
@@ -450,8 +446,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * Adds any object being edited to the collection, if it is valid.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object is valid,
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if the object is valid, otherwise {@code false}
      */
     protected boolean addCurrentEdits(Validator validator) {
         boolean valid = true;
@@ -468,7 +463,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * Adds the object being edited to the collection, if it doesn't exist.
      *
      * @param editor the editor
-     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
     protected boolean addEdited(IMObjectEditor editor) {
         IMObject object = editor.getObject();
@@ -500,7 +495,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Saves any current edits.
      *
-     * @return <tt>true</tt> if edits were saved successfully, otherwise <tt>false</tt>
+     * @return {@code true} if edits were saved successfully, otherwise {@code false}
      */
     protected boolean doSave() {
         if (editor != null) {
@@ -514,8 +509,8 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * <p/>
      * This implementation uses the cache associated with the layout context.
      *
-     * @param reference the reference. May be <tt>null</tt>
-     * @return the object corresponding to <tt>reference</tt> or <tt>null</tt> if none exists
+     * @param reference the reference. May be {@code null}
+     * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
     protected IMObject getObject(IMObjectReference reference) {
         return context.getCache().get(reference);

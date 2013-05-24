@@ -1,26 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
@@ -30,17 +27,14 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertySet;
 
 
 /**
  * An editor for {@link Participation} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
-public abstract class ParticipationEditor<T extends Entity>
-    extends AbstractIMObjectEditor {
+public abstract class ParticipationEditor<T extends Entity> extends AbstractIMObjectEditor {
 
     /**
      * The entity editor.
@@ -49,14 +43,13 @@ public abstract class ParticipationEditor<T extends Entity>
 
 
     /**
-     * Construct a new <tt>ParticipationEditor</tt>.
+     * Constructs a {@link ParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param context       the layout context. May be <tt>null</tt>
+     * @param context       the layout context. May be {@code null}
      */
-    public ParticipationEditor(Participation participation, Act parent,
-                               LayoutContext context) {
+    public ParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
         if (parent == null) {
             throw new IllegalArgumentException("Argument 'parent' is null");
@@ -91,7 +84,7 @@ public abstract class ParticipationEditor<T extends Entity>
     /**
      * Returns the participation entity reference.
      *
-     * @return the participation entity reference. May be <tt>null</tt>
+     * @return the participation entity reference. May be {@code null}
      */
     public IMObjectReference getEntityRef() {
         return (IMObjectReference) editor.getProperty().getValue();
@@ -100,8 +93,8 @@ public abstract class ParticipationEditor<T extends Entity>
     /**
      * Sets the participation entity reference.
      *
-     * @param reference the entity reference. May be <tt>null</tt>
-     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it cannot be set due to error, or is the same as
+     * @param reference the entity reference. May be {@code null}
+     * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
      *         the existing value
      */
     public boolean setEntityRef(IMObjectReference reference) {
@@ -111,7 +104,7 @@ public abstract class ParticipationEditor<T extends Entity>
     /**
      * Returns the participation entity.
      *
-     * @return the participation entity. May be <tt>null</tt>
+     * @return the participation entity. May be {@code null}
      */
     @SuppressWarnings("unchecked")
     public T getEntity() {
@@ -121,8 +114,8 @@ public abstract class ParticipationEditor<T extends Entity>
     /**
      * Sets the participation entity.
      *
-     * @param entity the entity. May be <tt>null</tt>
-     * @return <tt>true</tt> if the value was set, <tt>false</tt> if it cannot be set due to error, or is the same as
+     * @param entity the entity. May be {@code null}
+     * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
      *         the existing value
      */
     public boolean setEntity(T entity) {
@@ -133,7 +126,7 @@ public abstract class ParticipationEditor<T extends Entity>
      * Determines if the participation entity is null.
      * This takes into account if a name has been entered but does not match.
      *
-     * @return <tt>true</tt> if the participation entity is null; otherwise <tt>false</tt>
+     * @return {@code true} if the participation entity is null; otherwise {@code false}
      */
     public boolean isNull() {
         return editor.isNull();
@@ -142,10 +135,10 @@ public abstract class ParticipationEditor<T extends Entity>
     /**
      * Deletes the object.
      * <p/>
-     * This implementation always returns <tt>true</tt> if this is the child of an act, as the act manages its deletion.
+     * This implementation always returns {@code true} if this is the child of an act, as the act manages its deletion.
      * If the participation is not the child of an act, deletion fails.
      *
-     * @return <tt>true</tt> if the delete was successful
+     * @return {@code true} if the delete was successful
      */
     @Override
     protected boolean doDelete() {
@@ -178,19 +171,9 @@ public abstract class ParticipationEditor<T extends Entity>
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new IMObjectLayoutStrategy() {
-            public void addComponent(ComponentState state) {
-
-            }
-
-            public ComponentState apply(IMObject object,
-                                        PropertySet properties, IMObject parent,
-                                        LayoutContext context) {
-                return new ComponentState(editor.getComponent(),
-                                          editor.getFocusGroup());
-            }
-
-        };
+        IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+        strategy.addComponent(new ComponentState(editor));
+        return strategy;
     }
 
 }

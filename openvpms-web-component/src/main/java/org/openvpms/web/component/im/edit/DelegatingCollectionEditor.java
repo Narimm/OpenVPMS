@@ -1,41 +1,38 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 
 /**
  * An {@link IMObjectCollectionEditor} that delegates to another.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class DelegatingCollectionEditor
-    implements IMObjectCollectionEditor {
+        implements IMObjectCollectionEditor {
 
     /**
      * The editor to delegate to.
@@ -44,13 +41,13 @@ public abstract class DelegatingCollectionEditor
 
 
     /**
-     * Creates a new <tt>DelegatingCollectionEditor</tt>.
+     * Constructs a {@link DelegatingCollectionEditor}.
      */
     public DelegatingCollectionEditor() {
     }
 
     /**
-     * Creates a new <tt>DelegatingCollectionEditor</tt>.
+     * Constructs a {@link DelegatingCollectionEditor}.
      *
      * @param editor the editor to delegate to
      */
@@ -79,7 +76,7 @@ public abstract class DelegatingCollectionEditor
     /**
      * Determines if items can be added and removed.
      *
-     * @param readOnly if <tt>true</tt> items cannot be added or removed
+     * @param readOnly if {@code true} items cannot be added or removed
      */
     public void setCardinalityReadOnly(boolean readOnly) {
         editor.setCardinalityReadOnly(readOnly);
@@ -88,7 +85,7 @@ public abstract class DelegatingCollectionEditor
     /**
      * Determines if items can be added or removed.
      *
-     * @return <tt>true</tt> if items can't be added or removed.
+     * @return {@code true} if items can't be added or removed.
      */
     public boolean isCardinalityReadOnly() {
         return editor.isCardinalityReadOnly();
@@ -97,10 +94,25 @@ public abstract class DelegatingCollectionEditor
     /**
      * Sets a listener to be notified when an object is created.
      *
-     * @param listener the listener. May be <tt>null</tt>
+     * @param listener the listener. May be {@code null}
      */
     public void setCreationListener(IMObjectCreationListener listener) {
         editor.setCreationListener(listener);
+    }
+
+    /**
+     * Creates a new object.
+     * <p/>
+     * The object is not automatically added to the collection.
+     * <p/>
+     * If an {@link IMObjectCreationListener} is registered, it will be
+     * notified on successful creation of an object.
+     *
+     * @return a new object, or {@code null} if the object can't be created
+     */
+    @Override
+    public IMObject create() {
+        return editor.create();
     }
 
     /**
@@ -149,7 +161,7 @@ public abstract class DelegatingCollectionEditor
     /**
      * Determines if the object has been modified.
      *
-     * @return <tt>true</tt> if the object has been modified
+     * @return {@code true} if the object has been modified
      */
     public boolean isModified() {
         return editor.isModified();
@@ -193,8 +205,8 @@ public abstract class DelegatingCollectionEditor
     /**
      * Determines if the object is valid.
      *
-     * @return <tt>true</tt> if the object is valid; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the object is valid; otherwise
+     *         {@code false}
      */
     public boolean isValid() {
         return editor.isValid();
@@ -204,8 +216,8 @@ public abstract class DelegatingCollectionEditor
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendents are valid
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendents are valid
+     *         otherwise {@code false}
      */
     public boolean validate(Validator validator) {
         return editor.validate(validator);
@@ -221,7 +233,7 @@ public abstract class DelegatingCollectionEditor
     /**
      * Save any edits.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     public boolean save() {
         return editor.save();
@@ -230,7 +242,7 @@ public abstract class DelegatingCollectionEditor
     /**
      * Determines if any edits have been saved.
      *
-     * @return <tt>true</tt> if edits have been saved.
+     * @return {@code true} if edits have been saved.
      */
     public boolean isSaved() {
         return editor.isSaved();
@@ -239,7 +251,7 @@ public abstract class DelegatingCollectionEditor
     /**
      * Returns the current editor.
      *
-     * @return the current editor, or <tt>null</tt> if there is no current
+     * @return the current editor, or {@code null} if there is no current
      *         editor
      */
     public IMObjectEditor getCurrentEditor() {
@@ -249,7 +261,7 @@ public abstract class DelegatingCollectionEditor
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <tt>null</tt> if the editor hasn't been
+     * @return the focus group, or {@code null} if the editor hasn't been
      *         rendered
      */
     public FocusGroup getFocusGroup() {
@@ -263,6 +275,16 @@ public abstract class DelegatingCollectionEditor
      */
     public void dispose() {
         editor.dispose();
+    }
+
+    /**
+     * Returns an editor for an object, creating one if it doesn't exist.
+     *
+     * @param object the object to edit
+     * @return an editor for the object
+     */
+    public IMObjectEditor getEditor(IMObject object) {
+        return editor.getEditor(object);
     }
 
     /**

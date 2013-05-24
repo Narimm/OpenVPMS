@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -41,7 +39,7 @@ import java.util.List;
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public abstract class SingleIMObjectCollectionEditor
-    extends AbstractIMObjectCollectionEditor {
+        extends AbstractIMObjectCollectionEditor {
 
     /**
      * Constructs a <tt>SingleIMObjectCollectionEditor</tt>.
@@ -67,6 +65,35 @@ public abstract class SingleIMObjectCollectionEditor
                                              IMObject object,
                                              LayoutContext context) {
         super(editor, object, context);
+    }
+
+    /**
+     * Creates a new object, subject to collection cardinality constraints.
+     * <p/>
+     * The object is not automatically added to the collection.
+     * <p/>
+     * If an {@link IMObjectCreationListener} is registered, it will be
+     * notified on successful creation of an object.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public IMObject create() {
+        IMObject result = null;
+        CollectionPropertyEditor collection = getCollectionPropertyEditor();
+        List<IMObject> objects = collection.getObjects();
+        if (objects.isEmpty()) {
+            String[] shortNames = collection.getArchetypeRange();
+            if (shortNames.length == 1) {
+                String shortName = shortNames[0];
+                result = IMObjectCreator.create(shortName);
+                IMObjectCreationListener listener = getCreationListener();
+                if (result != null && listener != null) {
+                    listener.created(result);
+                }
+            }
+        }
+        return result;
     }
 
     /**
