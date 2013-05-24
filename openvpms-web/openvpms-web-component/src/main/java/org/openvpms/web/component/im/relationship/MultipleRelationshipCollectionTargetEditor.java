@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -28,25 +26,22 @@ import java.util.List;
 
 
 /**
- * Editor for collections of {@link IMObjectRelationship}s with 0..N
- * cardinality.
+ * Editor for collections of {@link IMObjectRelationship}s with 0..N cardinality.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MultipleRelationshipCollectionTargetEditor
-    extends IMObjectTableCollectionEditor {
+        extends IMObjectTableCollectionEditor {
 
     /**
-     * Creates a new <tt>MultipleRelationshipCollectionTargetEditor</tt>.
+     * Constructs a {@link MultipleRelationshipCollectionTargetEditor}.
      *
      * @param editor  the property editor
      * @param object  the parent object
      * @param context the layout context
      */
-    public MultipleRelationshipCollectionTargetEditor(
-        RelationshipCollectionTargetPropertyEditor editor,
-        IMObject object, LayoutContext context) {
+    public MultipleRelationshipCollectionTargetEditor(RelationshipCollectionTargetPropertyEditor editor,
+                                                      IMObject object, LayoutContext context) {
         super(editor, object, context);
     }
 
@@ -60,22 +55,11 @@ public class MultipleRelationshipCollectionTargetEditor
     }
 
     /**
-     * Returns an editor for an object, creating one if it doesn't exist.
-     *
-     * @param object the object to edit
-     * @return an editor for the object
-     */
-    @Override
-    public IMObjectEditor getEditor(IMObject object) {
-        return super.getEditor(object);
-    }
-
-    /**
      * Creates a new editor.
      *
      * @param object  the object to edit
      * @param context the layout context
-     * @return an editor to edit <code>object</code>
+     * @return an editor to edit {@code object}
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
@@ -97,7 +81,6 @@ public class MultipleRelationshipCollectionTargetEditor
      * @return the collection property editor
      */
     protected RelationshipCollectionTargetPropertyEditor getEditor() {
-        return (RelationshipCollectionTargetPropertyEditor)
-            getCollectionPropertyEditor();
+        return (RelationshipCollectionTargetPropertyEditor) getCollectionPropertyEditor();
     }
 }
