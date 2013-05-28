@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -31,6 +32,7 @@ import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.layout.LayoutHelper;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -501,13 +503,18 @@ public abstract class IMTableCollectionEditor<T>
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
             editor.removePropertyChangeListener(IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
-            editBox.remove(editor.getComponent());
+            editBox.removeAll();
         } else {
-            editBox = GroupBoxFactory.create("Inset");
-            container.add(editBox);
+            editBox = GroupBoxFactory.create();
+            editBox.setInsets(new Insets(0));
         }
+        container.add(editBox); // add even if present due to bug in GroupBox removal code
         editor = getEditor(object);
-        editBox.add(editor.getComponent());
+        Component component = editor.getComponent();
+        if (LayoutHelper.needsInset(component)) {
+            component = ColumnFactory.create("Inset", component);
+        }
+        editBox.add(component);
         editBox.setTitle(editor.getTitle());
         editor.addPropertyChangeListener(IMObjectEditor.COMPONENT_CHANGED_PROPERTY, componentListener);
         editor.addModifiableListener(editorListener);

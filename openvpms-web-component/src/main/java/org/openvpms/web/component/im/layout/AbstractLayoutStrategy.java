@@ -209,7 +209,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                   PropertySet properties, Component container, LayoutContext context) {
         if (!descriptors.isEmpty()) {
             Grid grid = createGrid(object, descriptors, properties, context);
-            container.add(ColumnFactory.create("Inset.Small", grid));
+            container.add(ColumnFactory.create("Inset", grid));
         }
     }
 
@@ -388,8 +388,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         if (addShortcut && model.size() < 10) {
             text = getShortcut(text, model.size() + 1);
         }
-        Component inset = ColumnFactory.create("Inset", component.getComponent());
-        model.addTab(text, inset);
+        Component child = component.getComponent();
+        if (LayoutHelper.needsInset(child)) {
+            child = ColumnFactory.create("Inset", child);
+        }
+        model.addTab(text, child);
     }
 
     /**

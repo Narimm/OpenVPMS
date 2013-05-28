@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.layout.LayoutHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
@@ -49,7 +50,7 @@ import java.util.List;
  * @author Tim Anderson
  */
 public abstract class IMTableCollectionViewer<T>
-    implements IMObjectCollectionViewer {
+        implements IMObjectCollectionViewer {
 
     /**
      * The object that owns the collection to view.
@@ -103,7 +104,7 @@ public abstract class IMTableCollectionViewer<T>
         // filter out the id field
         NodeFilter idFilter = new NamedNodeFilter("id");
         NodeFilter filter = FilterHelper.chain(
-            idFilter, this.context.getDefaultNodeFilter());
+                idFilter, this.context.getDefaultNodeFilter());
         context.setNodeFilter(filter);
 
         object = parent;
@@ -210,14 +211,15 @@ public abstract class IMTableCollectionViewer<T>
             box.setInsets(new Insets(0));
         } else {
             box.removeAll();
-            // workaround for a bug in EPNG
-            component.remove(box);
         }
-        component.add(box);
-        IMObjectViewer viewer = new IMObjectViewer(object, getObject(),
-                                                   context);
+        component.add(box); // add even if present due to bug in GroupBox removal code
+        IMObjectViewer viewer = new IMObjectViewer(object, getObject(), context);
         box.setTitle(viewer.getTitle());
-        box.add(viewer.getComponent());
+        Component child = viewer.getComponent();
+        if (LayoutHelper.needsInset(child)) {
+            child = ColumnFactory.create("Inset", child);
+        }
+        box.add(child);
     }
 
     /**

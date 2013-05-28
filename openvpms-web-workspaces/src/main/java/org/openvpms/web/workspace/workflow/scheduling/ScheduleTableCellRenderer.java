@@ -190,7 +190,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
                         // render a 'New' prompt if required
                         if (renderNewPrompt(model, column, row)) {
                             component = LabelFactory.create(
-                                "workflow.scheduling.table.new");
+                                    "workflow.scheduling.table.new");
                             highlightCell(table, component);
                             newPrompt = true;
                         }
@@ -312,7 +312,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      */
     protected void colourCell(Component component, int column, int row, ScheduleTableModel model) {
         ScheduleEventGrid.Availability avail
-            = model.getAvailability(column, row);
+                = model.getAvailability(column, row);
         colourCell(component, avail, model, row);
     }
 
@@ -384,7 +384,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     }
 
     /**
-     * Returns the stye of an event based on its status.
+     * Returns the style of an event based on its status.
      *
      * @param event the event
      * @return the style
