@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -23,7 +23,6 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -353,6 +352,17 @@ public class PatientRules {
     }
 
     /**
+     * Returns the patient date of birth.
+     *
+     * @param patient the patient
+     * @return the patient's date of birth. May be {@code null}
+     */
+    public Date getDateOfBirth(Party patient) {
+        IMObjectBean bean = factory.createBean(patient);
+        return bean.getDate("dateOfBirth");
+    }
+
+    /**
      * Returns the age of the patient.
      * <p/>
      * If the patient is deceased, the age of the patient when they died will be returned
@@ -471,26 +481,47 @@ public class PatientRules {
      */
     public BigDecimal getWeight(Party patient) {
         BigDecimal weight = BigDecimal.ZERO;
-        ArchetypeQuery query = createWeightQuery(patient);
-        Iterator<IMObject> iterator = new IMObjectQueryIterator<IMObject>(service, query);
-        if (iterator.hasNext()) {
-            IMObject object = iterator.next();
-            IMObjectBean bean = new IMObjectBean(object, service);
-            weight = bean.getBigDecimal("weight", BigDecimal.ZERO);
-            if (!BigDecimal.ZERO.equals(weight)) {
-                String units = bean.getString("units");
-                if ("KILOGRAMS".equals(units)) {
-                    // do nothing
-                } else if ("GRAMS".equals(units)) {
-                    weight = MathRules.divide(weight, MathRules.ONE_THOUSAND, 2);
-                } else if ("POUNDS".equals(units)) {
-                    weight = MathRules.round(weight.multiply(MathRules.ONE_POUND_IN_KILOS));
-                } else {
-                    weight = BigDecimal.ZERO;
-                }
+        Act act = getWeightAct(patient);
+        if (act != null) {
+            weight = getWeight(act);
+        }
+        return weight;
+    }
+
+    /**
+     * Returns a patient's weight, in kilograms.
+     *
+     * @param act an <em>act.patientWeight</em>
+     * @return the patient's weight in kilograms, or {@code 0} if its weight is not known
+     */
+    public BigDecimal getWeight(Act act) {
+        IMObjectBean bean = new IMObjectBean(act, service);
+        BigDecimal weight = bean.getBigDecimal("weight", BigDecimal.ZERO);
+        if (!BigDecimal.ZERO.equals(weight)) {
+            String units = bean.getString("units");
+            if ("KILOGRAMS".equals(units)) {
+                // do nothing
+            } else if ("GRAMS".equals(units)) {
+                weight = MathRules.divide(weight, MathRules.ONE_THOUSAND, 2);
+            } else if ("POUNDS".equals(units)) {
+                weight = MathRules.round(weight.multiply(MathRules.ONE_POUND_IN_KILOS));
+            } else {
+                weight = BigDecimal.ZERO;
             }
         }
         return weight;
+    }
+
+    /**
+     * Returns the most recent <em>act.patientWeight</em> for a patient.
+     *
+     * @param patient the patient
+     * @return the most recent weight act, or {@code null} if none is found
+     */
+    public Act getWeightAct(Party patient) {
+        ArchetypeQuery query = createWeightQuery(patient);
+        Iterator<Act> iterator = new IMObjectQueryIterator<Act>(service, query);
+        return (iterator.hasNext()) ? iterator.next() : null;
     }
 
     /**
