@@ -1,19 +1,19 @@
 <?xml version='1.0'?>
 <!--
-  #  Version: 1.0
-  #
-  #  The contents of this file are subject to the OpenVPMS License Version
-  #  1.0 (the 'License'); you may not use this file except in compliance with
-  #  the License. You may obtain a copy of the License at
-  #  http://www.openvpms.org/license/
-  #
-  #  Software distributed under the License is distributed on an 'AS IS' basis,
-  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  #  for the specific language governing rights and limitations under the
-  #  License.
-  #
-  #  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
--->
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <!DOCTYPE hibernate-mapping PUBLIC
         '-//Hibernate/Hibernate Mapping DTD 3.0//EN'
         'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
@@ -76,12 +76,12 @@
         left outer join entity_relationship_details packageUnits
                 on packageUnits.entity_relationship_id = productSupplier.entity_relationship_id
                 and packageUnits.name = "packageUnits"
-        left outer join entity_relationship_details reordercode
-                on reordercode.entity_relationship_id = productSupplier.entity_relationship_id
-                and reordercode.name = "reorderCode"
-        left outer join entity_relationship_details reorderdesc
-                on reorderdesc.entity_relationship_id = productSupplier.entity_relationship_id
-                and reorderdesc.name = "reorderDescription"
+        left outer join entity_relationship_details reorderCode
+                on reorderCode.entity_relationship_id = productSupplier.entity_relationship_id
+                and reorderCode.name = "reorderCode"
+        left outer join entity_relationship_details reorderDesc
+                on reorderDesc.entity_relationship_id = productSupplier.entity_relationship_id
+                and reorderDesc.name = "reorderDescription"
         left outer join entity_relationship_details nettPrice
                 on nettPrice.entity_relationship_id = productSupplier.entity_relationship_id
                 and nettPrice.name = "nettPrice"
