@@ -20,6 +20,9 @@ import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -30,6 +33,11 @@ import org.openvpms.web.system.ServiceHelper;
  * @author Tim Anderson
  */
 public class CustomerEditor extends AbstractIMObjectEditor {
+
+    /**
+     * Treats the account type as a simple node.
+     */
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().simple("type");
 
     /**
      * Constructs a new {@code CustomerEditor}.
@@ -48,5 +56,15 @@ public class CustomerEditor extends AbstractIMObjectEditor {
         }
 
         getLayoutContext().getContext().setCustomer(customer);
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new DefaultLayoutStrategy(NODES);
     }
 }
