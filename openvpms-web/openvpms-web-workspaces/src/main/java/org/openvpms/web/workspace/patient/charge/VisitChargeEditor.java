@@ -248,7 +248,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
         List<TemplateChargeItems> templates = getItems().getTemplates();
         if (event != null && !templates.isEmpty()) {
             List<FinancialAct> items = getItems().getPatientActs();
-            MedicalRecordRules rules = new MedicalRecordRules(ServiceHelper.getArchetypeService());
+            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
             for (TemplateChargeItems template : templates) {
                 Act item = template.findFirst(items);
                 if (item != null) {

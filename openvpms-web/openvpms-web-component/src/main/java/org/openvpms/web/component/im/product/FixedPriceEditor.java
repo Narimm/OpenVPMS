@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -34,6 +34,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -204,10 +205,9 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
         Component table = null;
         if (product != null) {
             if (rules == null) {
-                rules = new ProductPriceRules();
+                rules = ServiceHelper.getBean(ProductPriceRules.class);
             }
-            Set<ProductPrice> prices = rules.getProductPrices(
-                product, FIXED_PRICE, date);
+            Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date);
             if (!prices.isEmpty()) {
                 table = createPriceTable(prices);
             }
@@ -235,7 +235,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      */
     private PagedIMTable<ProductPrice> createPriceTable(Set<ProductPrice> prices) {
         ResultSet<ProductPrice> set = new IMObjectListResultSet<ProductPrice>(
-            new ArrayList<ProductPrice>(prices), 20);
+                new ArrayList<ProductPrice>(prices), 20);
         final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(context), set);
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -249,7 +249,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * Table model that displays the name and price of an {@link ProductPrice}.
      */
     private static class PriceTableModel
-        extends DescriptorTableModel<ProductPrice> {
+            extends DescriptorTableModel<ProductPrice> {
 
         /**
          * The nodes to display.

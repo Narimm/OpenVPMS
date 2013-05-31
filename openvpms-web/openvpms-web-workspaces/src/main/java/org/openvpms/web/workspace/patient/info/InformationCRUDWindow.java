@@ -115,7 +115,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow<Party> {
         Party patient = context.getPatient();
         User clinician = context.getClinician();
         if (customer != null && patient != null) {
-            WorkflowFactory factory = ServiceHelper.getContext().getBean(WorkflowFactory.class);
+            WorkflowFactory factory = ServiceHelper.getBean(WorkflowFactory.class);
             Workflow workflow = factory.createCheckInWorkflow(customer, patient, clinician, context, getHelpContext());
             workflow.start();
         } else {

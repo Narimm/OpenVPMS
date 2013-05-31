@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -32,6 +30,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 
@@ -40,8 +39,7 @@ import java.math.BigDecimal;
  * Editor for <em>productPrice.unitPrice</em> and
  * <em>productPrice.fixedPrice</em> product prices.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductPriceEditor extends AbstractIMObjectEditor {
 
@@ -67,14 +65,13 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
 
 
     /**
-     * Constructs a <tt>ProductPriceEditor</tt>.
+     * Constructs a {@link ProductPriceEditor}.
      *
      * @param object        the object to edit
-     * @param parent        the parent product. May be <tt>null</tt>
-     * @param layoutContext the layout context. May be <tt>null</tt>.
+     * @param parent        the parent product. May be {@code null}
+     * @param layoutContext the layout context
      */
-    public ProductPriceEditor(ProductPrice object, Product parent,
-                              LayoutContext layoutContext) {
+    public ProductPriceEditor(ProductPrice object, Product parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
 
         costListener = new ModifiableListener() {
@@ -97,7 +94,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
             }
         };
         getProperty("price").addModifiableListener(priceListener);
-        rules = new ProductPriceRules();
+        rules = ServiceHelper.getBean(ProductPriceRules.class);
     }
 
     /**
@@ -154,7 +151,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     /**
      * Calculates the price using the following formula:
      * <p/>
-     * <tt>price = (cost * (1 + markup/100) ) * (1 + tax/100)</tt>
+     * {@code price = (cost * (1 + markup/100) ) * (1 + tax/100)}
      *
      * @return the price
      */
@@ -176,7 +173,7 @@ public class ProductPriceEditor extends AbstractIMObjectEditor {
     /**
      * Calculates the markup using the following formula:
      * <p/>
-     * <tt>markup = ((price / (cost * ( 1 + tax/100))) - 1) * 100</tt>
+     * {@code markup = ((price / (cost * ( 1 + tax/100))) - 1) * 100}
      *
      * @return the markup
      */

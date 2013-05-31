@@ -206,12 +206,25 @@
     </bean>
 
     <!-- ================================================================== -->
-    <!--                        MISC                                        -->
+    <!-- Business rules                                                     -->
     <!-- ================================================================== -->
 
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">
+        <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
     <!-- ================================================================== -->

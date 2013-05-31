@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -78,8 +78,7 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
      */
     protected void checkInbox() {
         try {
-            DefaultESCIDispatcher dispatcher
-                = (DefaultESCIDispatcher) ServiceHelper.getContext().getBean("esciDispatcher");
+            DefaultESCIDispatcher dispatcher = ServiceHelper.getBean(DefaultESCIDispatcher.class);
             dispatcher.dispatch(true);
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
@@ -94,7 +93,7 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
     protected void scheduleCheckInbox(boolean delay) {
         try {
             String triggerName = "ESCIDispatcherAdhocTrigger";
-            Scheduler scheduler = (Scheduler) ServiceHelper.getContext().getBean("scheduler");
+            Scheduler scheduler = ServiceHelper.getBean(Scheduler.class);
             scheduler.unscheduleJob(triggerName, null); // remove the existing trigger, if any
             SimpleTrigger trigger = new SimpleTrigger(triggerName);
             trigger.setJobName("esciDispatcherJob");

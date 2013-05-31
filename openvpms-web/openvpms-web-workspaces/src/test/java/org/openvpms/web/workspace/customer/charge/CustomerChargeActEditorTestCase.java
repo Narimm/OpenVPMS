@@ -120,7 +120,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         layoutContext.getContext().setClinician(clinician);
         layoutContext.getContext().setLocation(location);
 
-        records = new MedicalRecordRules();
+        records = ServiceHelper.getBean(MedicalRecordRules.class);
     }
 
     /**

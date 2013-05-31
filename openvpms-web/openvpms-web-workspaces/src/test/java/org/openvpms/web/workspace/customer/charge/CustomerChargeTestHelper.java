@@ -27,9 +27,11 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.property.ValidationHelper;
@@ -214,7 +216,8 @@ public class CustomerChargeTestHelper {
     public static ProductPrice createPrice(Product product, String shortName, BigDecimal cost, BigDecimal price,
                                            Party practice) {
         ProductPrice result = (ProductPrice) TestHelper.create(shortName);
-        ProductPriceRules rules = new ProductPriceRules();
+        ProductPriceRules rules = new ProductPriceRules(ArchetypeServiceHelper.getArchetypeService(),
+                                                        LookupServiceHelper.getLookupService());
         BigDecimal markup = rules.getMarkup(product, cost, price, practice);
         result.setName("XPrice");
         IMObjectBean bean = new IMObjectBean(result);

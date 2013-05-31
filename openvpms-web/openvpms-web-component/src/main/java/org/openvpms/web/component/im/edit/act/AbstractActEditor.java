@@ -71,7 +71,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
-     * @param context the layout context. May be {@code null}
+     * @param context the layout context
      */
     public AbstractActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);

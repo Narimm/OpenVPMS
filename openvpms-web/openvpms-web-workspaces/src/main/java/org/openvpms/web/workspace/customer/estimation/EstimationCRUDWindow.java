@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.customer.estimation;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -32,8 +32,6 @@ import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.workflow.DefaultTaskContext;
-import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workspace.CRUDWindowListener;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -44,9 +42,9 @@ import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerActCRUDWindow;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
-import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 
 import java.util.Date;
 
@@ -55,7 +53,7 @@ import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
 
 
 /**
- * CRUD window for estimation acts.
+ * CRUD window for estimate acts.
  *
  * @author Tim Anderson
  */
@@ -197,10 +195,10 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     }
 
     /**
-     * Determines if an estimation has expired.
+     * Determines if an estimate has expired.
      *
-     * @param act the estimation act
-     * @return the estimation act
+     * @param act the estimate act
+     * @return {@code true} if the estimate has expired
      */
     private boolean expired(Act act) {
         boolean result = false;
@@ -212,13 +210,13 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     }
 
     /**
-     * Invoice out an estimation to the customer.
+     * Invoice out an estimate to the customer.
      *
-     * @param estimation the estimation
+     * @param estimate the estimation
      */
-    private void invoice(final Act estimation) {
+    private void invoice(final Act estimate) {
         try {
-            final FinancialAct invoice = getInvoice(estimation);
+            final FinancialAct invoice = getInvoice(estimate);
             if (invoice != null) {
                 String title = Messages.get("customer.estimate.existinginvoice.title");
                 String message = Messages.get("customer.estimate.existinginvoice.message");
@@ -226,12 +224,12 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
-                        invoice(estimation, invoice);
+                        invoice(estimate, invoice);
                     }
                 });
                 dialog.show();
             } else {
-                invoice(estimation, invoice);
+                invoice(estimate, invoice);
             }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("customer.estimate.invoice.failed");
@@ -239,15 +237,21 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         }
     }
 
-    private void invoice(final Act estimation, FinancialAct invoice) {
+    /**
+     * Invoices an estimate.
+     *
+     * @param estimate the estimate
+     * @param invoice  the invoice to add items to
+     */
+    private void invoice(final Act estimate, FinancialAct invoice) {
         try {
             EstimationInvoicer invoicer = new EstimationInvoicer();
             HelpContext edit = getHelpContext().topic(invoice, "edit");
-            CustomerChargeActEditDialog editor = invoicer.invoice(estimation, invoice,
+            CustomerChargeActEditDialog editor = invoicer.invoice(estimate, invoice,
                                                                   new DefaultLayoutContext(true, getContext(), edit));
             editor.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
-                    onRefresh(estimation);
+                    onRefresh(estimate);
                 }
             });
         } catch (OpenVPMSException exception) {
@@ -256,17 +260,21 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         }
     }
 
-    private FinancialAct getInvoice(Act estimation) {
-        ActBean bean = new ActBean(estimation);
+    /**
+     * Returns the most recent IN_PROGRESS or COMPLETED invoice to add estimate items to.
+     *
+     * @param estimate the estimate
+     * @return the invoice, or {@code null} if none exists
+     */
+    private FinancialAct getInvoice(Act estimate) {
+        FinancialAct result = null;
+        ActBean bean = new ActBean(estimate);
         Party customer = (Party) bean.getNodeParticipant("customer");
         if (customer != null) {
-            TaskContext context = new DefaultTaskContext(getContext(), getHelpContext());
-            context.setCustomer(customer);
-            GetInvoiceTask task = new GetInvoiceTask();
-            task.execute(context);
-            return (FinancialAct) context.getObject(CustomerAccountArchetypes.INVOICE);
+            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
+            result = rules.getInvoice(customer);
         }
-        return null;
+        return result;
     }
 
 }

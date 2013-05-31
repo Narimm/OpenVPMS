@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -33,6 +33,7 @@ import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 
@@ -47,6 +48,11 @@ import java.math.BigDecimal;
 public abstract class ActItemEditor extends AbstractActEditor {
 
     /**
+     * The product price rules.
+     */
+    private final ProductPriceRules rules;
+
+    /**
      * Current nodes to display. May be {@code null}.
      */
     private ArchetypeNodes nodes;
@@ -55,6 +61,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * The product listener. May be {@code null}.
      */
     private ProductListener listener;
+
 
     /**
      * Constructs an {@link ActItemEditor}.
@@ -65,6 +72,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     public ActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        rules = ServiceHelper.getBean(ProductPriceRules.class);
 
         if (act.isNew() && parent != null) {
             // default the act start time to that of the parent
@@ -315,8 +323,28 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the corresponding product price, or {@code null} if none exists
      */
     protected ProductPrice getProductPrice(String shortName, Product product) {
-        ProductPriceRules rules = new ProductPriceRules();
         return rules.getProductPrice(product, shortName, getStartTime());
+    }
+
+    /**
+     * Returns the first product price with the specified short name and price.
+     *
+     * @param shortName the price short name
+     * @param price     the price
+     * @param product   the product
+     */
+    protected ProductPrice getProductPrice(String shortName, BigDecimal price, Product product) {
+        return rules.getProductPrice(product, price, shortName, getStartTime());
+    }
+
+    /**
+     * Returns the maximum discount for a product price, expressed as a percentage.
+     *
+     * @param price the price. May be {@code null}
+     * @return the maximum discount for the product price
+     */
+    protected BigDecimal getMaxDiscount(ProductPrice price) {
+        return (price != null) ? rules.getMaxDiscount(price) : ProductPriceRules.DEFAULT_MAX_DISCOUNT;
     }
 
     /**
@@ -380,8 +408,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * @return the clinician editor, or {@code null}  if none exists
      */
     protected ClinicianParticipationEditor getClinicianEditor(boolean create) {
-        ParticipationEditor<User> editor = getParticipationEditor("clinician",
-                                                                  create);
+        ParticipationEditor<User> editor = getParticipationEditor("clinician", create);
         return (ClinicianParticipationEditor) editor;
     }
 
