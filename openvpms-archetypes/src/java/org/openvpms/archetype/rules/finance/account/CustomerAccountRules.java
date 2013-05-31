@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -30,6 +31,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -332,6 +335,40 @@ public class CustomerAccountRules {
         reversal.setActivityStartTime(startTime);
         service.save(objects);
         return reversal;
+    }
+
+    /**
+     * Returns the latest {@code IN_PROGRESS} or {@code COMPLETED} invoice for a customer.
+     * <p/>
+     * Invoices with {@code IN_PROGRESS} will be returned in preference to {@code COMPLETED} ones.
+     *
+     * @param customer the customer
+     * @return the customer invoice, or {@code null} if none is found
+     */
+    public FinancialAct getInvoice(Party customer) {
+        FinancialAct result = getInvoice(customer, ActStatus.IN_PROGRESS);
+        if (result == null) {
+            result = getInvoice(customer, ActStatus.COMPLETED);
+        }
+        return result;
+    }
+
+    /**
+     * Return the latest invoice for a customer with the given status.
+     *
+     * @param customer the customer
+     * @param status   the act status
+     * @return the invoice, or {@code null} if none can be found
+     */
+    private FinancialAct getInvoice(Party customer, String status) {
+        ArchetypeQuery query = new ArchetypeQuery(CustomerAccountArchetypes.INVOICE, false, true);
+        query.setMaxResults(1);
+
+        query.add(Constraints.join("customer").add(Constraints.eq("entity", customer.getObjectReference())));
+        query.add(Constraints.eq("status", status));
+        query.add(Constraints.sort("startTime", false));
+        IMObjectQueryIterator<FinancialAct> iterator = new IMObjectQueryIterator<FinancialAct>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
 }
