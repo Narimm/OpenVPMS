@@ -931,6 +931,14 @@
         </properties>
     </style>
 
+    <style name="BorderGroove" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="border">
+                <border style="groove" size="2px" color="#cfdfff"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="Inset" type="nextapp.echo2.app.Row">
         <properties>
             <property name="insets" value="${padding.medium}"/>
@@ -989,7 +997,7 @@
         <properties>
             <property name="foreground" value="#0000ff"/>
             <property name="font">
-                <font size="${font.h2.size}" bold="true"/>
+                <font size="${font.h3.size}" bold="true"/>
             </property>
         </properties>
     </style>
@@ -1752,7 +1760,7 @@
             </property-->
             <property name="titleForeground" value="#ffffff"/>
             <property name="titleFont">
-                <font size="${font.h4.size}" bold="true">
+                <font size="${font.h5.size}" bold="true">
                     <typeface name="${font.typeface}"/>
                 </font>
             </property>
@@ -2000,6 +2008,56 @@
         <properties>
             <property name="font">
                 <font size="${font.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="h1" base-name="default" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="${font.h1.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="h2" base-name="default" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="${font.h2.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="h3" base-name="default" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="${font.h3.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="h4" base-name="default" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="${font.h4.size}" bold="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
+    <style name="h5" base-name="default" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="${font.h5.size}" bold="true">
                     <typeface name="${font.typeface}"/>
                 </font>
             </property>
