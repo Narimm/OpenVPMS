@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.finance.account;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -741,6 +742,31 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
+     * Tests the {@link CustomerAccountRules#getInvoice(Party)} method.
+     */
+    @Test
+    public void testGetInvoice() {
+        Party customer = getCustomer();
+        assertNull(rules.getInvoice(customer));
+
+        // verify posted, on hold invoices not returned
+        createInvoice(getDate("2013-05-02"), FinancialActStatus.POSTED);
+        createInvoice(getDate("2013-05-02"), FinancialActStatus.ON_HOLD);
+        assertNull(rules.getInvoice(customer));
+
+        FinancialAct invoice2 = createInvoice(getDate("2013-05-02"), FinancialActStatus.COMPLETED);
+        assertEquals(invoice2, rules.getInvoice(customer));
+
+        // verify back-dated IN_PROGRESS invoice returned in preference to COMPLETED invoice
+        FinancialAct invoice3 = createInvoice(getDate("2013-05-01"), FinancialActStatus.IN_PROGRESS);
+        assertEquals(invoice3, rules.getInvoice(customer));
+
+        // verify more recent IN_PROGRESS returned
+        FinancialAct invoice4 = createInvoice(getDate("2013-05-05"), FinancialActStatus.IN_PROGRESS);
+        assertEquals(invoice4, rules.getInvoice(customer));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -948,6 +974,22 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // check the balance
         checkBalance(BigDecimal.ZERO);
+    }
+
+    /**
+     * Helper to create an invoice with the specified start time and status.
+     *
+     * @param startTime the start time
+     * @param status    the status
+     * @return the invoice
+     */
+    private FinancialAct createInvoice(Date startTime, String status) {
+        List<FinancialAct> invoices = createChargesInvoice(Money.ZERO);
+        FinancialAct invoice = invoices.get(0);
+        invoice.setActivityStartTime(startTime);
+        invoice.setStatus(status);
+        save(invoices);
+        return invoice;
     }
 
 }
