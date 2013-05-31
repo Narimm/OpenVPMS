@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.discount;
@@ -38,9 +36,6 @@ import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.OrConstraint;
-import static org.openvpms.component.system.common.query.RelationalOp.GTE;
-import static org.openvpms.component.system.common.query.RelationalOp.IS_NULL;
-import static org.openvpms.component.system.common.query.RelationalOp.LTE;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.math.BigDecimal;
@@ -54,6 +49,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.openvpms.component.system.common.query.RelationalOp.GTE;
+import static org.openvpms.component.system.common.query.RelationalOp.IS_NULL;
+import static org.openvpms.component.system.common.query.RelationalOp.LTE;
 
 
 /**
@@ -160,12 +159,11 @@ public class DiscountRules {
     /**
      * Returns the discounts for a customer, patient and product.
      * <p/>
-     * This is the union of all <em>entity.discountType</em> entities associated
-     * with the customer and patient that are also associated with the product.
+     * This is the union of all <em>entity.discountType</em> entities associated with the customer and patient that are
+     * also associated with the product.
      * <p/>
-     * If a customer, patient or product has <em>entity.discountGroupType</em>
-     * entities, the associated <em>entity.discountType</em> entitieswill be
-     * included.
+     * If a customer, patient or product has <em>entity.discountGroupType</em> entities, the
+     * associated <em>entity.discountType</em> entities will be included.
      *
      * @param date     the date, used to determine if a discount applies
      * @param customer the customer
