@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.system;
@@ -21,7 +19,9 @@ package org.openvpms.web.system;
 import nextapp.echo2.app.ApplicationInstance;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.math.Currencies;
+import org.openvpms.archetype.rules.workflow.AppointmentService;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
+import org.openvpms.archetype.rules.workflow.TaskService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
@@ -41,8 +41,7 @@ import javax.sql.DataSource;
 /**
  * Helper for accessing services managed by Spring.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public final class ServiceHelper {
 
@@ -52,7 +51,8 @@ public final class ServiceHelper {
      * @return the archetype service
      */
     public static IArchetypeService getArchetypeService() {
-        return ArchetypeServiceHelper.getArchetypeService();
+        return (ApplicationInstance.getActive() instanceof SpringApplicationInstance) ?
+               getBean(IArchetypeRuleService.class) : ArchetypeServiceHelper.getArchetypeService();
     }
 
     /**
@@ -64,9 +64,9 @@ public final class ServiceHelper {
      */
     public static IArchetypeService getArchetypeService(boolean rules) {
         if (rules) {
-            return (IArchetypeRuleService) getArchetypeService();
+            return getArchetypeService();
         }
-        return (IArchetypeService) getContext().getBean("archetypeService");
+        return getContext().getBean("archetypeService", IArchetypeService.class);
     }
 
     /**
@@ -75,7 +75,7 @@ public final class ServiceHelper {
      * @return the lookup service
      */
     public static ILookupService getLookupService() {
-        return (ILookupService) getContext().getBean("lookupService");
+        return getBean(ILookupService.class);
     }
 
     /**
@@ -84,7 +84,7 @@ public final class ServiceHelper {
      * @return the data source
      */
     public static DataSource getDataSource() {
-        return (DataSource) getContext().getBean("dataSource");
+        return getBean(DataSource.class);
     }
 
     /**
@@ -93,7 +93,7 @@ public final class ServiceHelper {
      * @return the document handlers
      */
     public static DocumentHandlers getDocumentHandlers() {
-        return (DocumentHandlers) getContext().getBean("documentHandlers");
+        return getBean(DocumentHandlers.class);
     }
 
     /**
@@ -102,7 +102,7 @@ public final class ServiceHelper {
      * @return the mail sender
      */
     public static JavaMailSender getMailSender() {
-        return (JavaMailSender) getContext().getBean("mailSender");
+        return getBean(JavaMailSender.class);
     }
 
     /**
@@ -111,7 +111,7 @@ public final class ServiceHelper {
      * @return the currency cache
      */
     public static Currencies getCurrencies() {
-        return (Currencies) getContext().getBean("currencies");
+        return getBean(Currencies.class);
     }
 
     /**
@@ -120,7 +120,7 @@ public final class ServiceHelper {
      * @return the macros
      */
     public static Macros getMacros() {
-        return (Macros) getContext().getBean("macros");
+        return getBean(Macros.class);
     }
 
     /**
@@ -129,7 +129,7 @@ public final class ServiceHelper {
      * @return the transaction manager
      */
     public static PlatformTransactionManager getTransactionManager() {
-        return (PlatformTransactionManager) getContext().getBean("txnManager");
+        return getBean(PlatformTransactionManager.class);
     }
 
     /**
@@ -138,7 +138,7 @@ public final class ServiceHelper {
      * @return the appointment service
      */
     public static ScheduleService getAppointmentService() {
-        return (ScheduleService) getContext().getBean("appointmentService");
+        return getBean(AppointmentService.class);
     }
 
     /**
@@ -147,7 +147,7 @@ public final class ServiceHelper {
      * @return the task service
      */
     public static ScheduleService getTaskService() {
-        return (ScheduleService) getContext().getBean("taskService");
+        return getBean(TaskService.class);
     }
 
     /**
@@ -156,7 +156,7 @@ public final class ServiceHelper {
      * @return the order service
      */
     public static OrderServiceAdapter getOrderService() {
-        return (OrderServiceAdapter) getContext().getBean("orderService");
+        return getBean(OrderServiceAdapter.class);
     }
 
     /**
@@ -165,7 +165,7 @@ public final class ServiceHelper {
      * @return the supplier service locator
      */
     public static SupplierServiceLocator getSupplierServiceLocator() {
-        return (SupplierServiceLocator) getContext().getBean("supplierServiceLocator");
+        return getBean(SupplierServiceLocator.class);
     }
 
     /**
@@ -174,7 +174,17 @@ public final class ServiceHelper {
      * @return the SMS connection factory
      */
     public static ConnectionFactory getSMSConnectionFactory() {
-        return (ConnectionFactory) getContext().getBean("smsConnectionFactory");
+        return getBean(ConnectionFactory.class);
+    }
+
+    /**
+     * Return the bean instance that uniquely matches the given type, if any.
+     *
+     * @param type the bean type
+     * @return the matching bean
+     */
+    public static <T> T getBean(Class<T> type) {
+        return getContext().getBean(type);
     }
 
     /**
@@ -184,8 +194,7 @@ public final class ServiceHelper {
      * @return the application context associated with the current thread.
      */
     public static ApplicationContext getContext() {
-        SpringApplicationInstance app
-            = (SpringApplicationInstance) ApplicationInstance.getActive();
+        SpringApplicationInstance app = (SpringApplicationInstance) ApplicationInstance.getActive();
         return app.getApplicationContext();
     }
 

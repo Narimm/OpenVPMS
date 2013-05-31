@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient;
 
@@ -26,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.Retryable;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -33,8 +32,7 @@ import org.openvpms.web.component.retry.Retryable;
  * <p/>
  * This is required as there may be a lot of contention for a given set of patient records.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientMedicalRecordLinker implements Retryable {
 
@@ -60,7 +58,7 @@ public class PatientMedicalRecordLinker implements Retryable {
 
 
     /**
-     * Constructs a <tt>PatientMedicalRecordLinker</tt>.
+     * Constructs a {@link PatientMedicalRecordLinker}.
      *
      * @param event the patient clinical event
      * @param item  the patient record item
@@ -77,7 +75,7 @@ public class PatientMedicalRecordLinker implements Retryable {
         if (!TypeHelper.isA(event, PatientArchetypes.CLINICAL_EVENT)) {
             throw new IllegalArgumentException("Argument 'event' is invalid: " + event.getArchetypeId().getShortName());
         }
-        rules = new MedicalRecordRules();
+        rules = ServiceHelper.getBean(MedicalRecordRules.class);
     }
 
     /**

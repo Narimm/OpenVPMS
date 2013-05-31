@@ -1,29 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
 
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
@@ -54,11 +52,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * The unit price.
      */
     private ProductPrice unitProductPrice;
-
-    /**
-     * Default maximum discount.
-     */
-    private static final BigDecimal DEFAULT_MAX_DISCOUNT = new BigDecimal("100");
 
 
     /**
@@ -190,28 +183,11 @@ public abstract class PriceActItemEditor extends ActItemEditor {
             }
             ProductPrice fixedProductPrice = getFixedProductPrice(product);
             ProductPrice unitProductPrice = getUnitProductPrice(product);
-            amount = rules.calculateDiscount(
-                startTime, customer, patient, product, fixedPrice,
-                unitPrice, quantity, getMaxDiscount(fixedProductPrice),
-                getMaxDiscount(unitProductPrice));
+            amount = rules.calculateDiscount(startTime, customer, patient, product, fixedPrice,
+                                             unitPrice, quantity, getMaxDiscount(fixedProductPrice),
+                                             getMaxDiscount(unitProductPrice));
         }
         return amount;
-    }
-
-    /**
-     * Returns the maximum discount for a product price, expressed as a percentage.
-     *
-     * @param price the price. May be {@code null}
-     * @return the maximum discount for the product price, or {@link #DEFAULT_MAX_DISCOUNT} if there is no price or no
-     *         discount associated with the price.
-     */
-    protected BigDecimal getMaxDiscount(ProductPrice price) {
-        BigDecimal result = null;
-        if (price != null) {
-            IMObjectBean bean = new IMObjectBean(price);
-            result = bean.getBigDecimal("maxDiscount");
-        }
-        return (result == null) ? DEFAULT_MAX_DISCOUNT : result;
     }
 
     /**
@@ -232,8 +208,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected ProductPrice getFixedProductPrice(Product product) {
         ProductPrice result = fixedEditor.getProductPrice();
-        result = getProductPrice(product, ProductArchetypes.FIXED_PRICE,
-                                 result, getFixedPrice());
+        result = getProductPrice(product, ProductArchetypes.FIXED_PRICE, result, getFixedPrice());
         fixedEditor.setProductPrice(result);
         return result;
     }
@@ -255,9 +230,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the product price, or {@code null} if none is found
      */
     protected ProductPrice getUnitProductPrice(Product product) {
-        unitProductPrice = getProductPrice(product,
-                                           ProductArchetypes.UNIT_PRICE,
-                                           unitProductPrice, getUnitPrice());
+        unitProductPrice = getProductPrice(product, ProductArchetypes.UNIT_PRICE, unitProductPrice, getUnitPrice());
         return unitProductPrice;
     }
 
@@ -272,10 +245,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      *         or the first matching product price associated with the product,
      *         or {@code null} if none is found
      */
-    private ProductPrice getProductPrice(Product product,
-                                         String shortName,
-                                         ProductPrice current,
-                                         BigDecimal price) {
+    private ProductPrice getProductPrice(Product product, String shortName, ProductPrice current, BigDecimal price) {
         ProductPrice result = null;
         if (current != null && current.getProduct().equals(product)) {
             BigDecimal defaultValue = current.getPrice();
@@ -287,9 +257,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
             if (price.compareTo(BigDecimal.ZERO) == 0) {
                 result = getProductPrice(shortName, product);
             } else {
-                ProductPriceRules rules = new ProductPriceRules();
-                result = rules.getProductPrice(product, price, shortName,
-                                               getStartTime());
+                result = getProductPrice(shortName, price, product);
             }
         }
         return result;

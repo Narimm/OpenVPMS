@@ -90,7 +90,7 @@ public class PatientSummary extends PartySummary {
      */
     public PatientSummary(Context context, HelpContext help) {
         super(context, help);
-        rules = (PatientRules) ServiceHelper.getContext().getBean("patientRules");
+        rules = ServiceHelper.getBean(PatientRules.class);
         reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(), rules);
     }
 

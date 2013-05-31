@@ -275,7 +275,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         LayoutContext layout = getLayoutContext();
         Context context = layout.getContext();
         HelpContext help = layout.getHelpContext();
-        CustomerPatientSummaryFactory factory = ServiceHelper.getContext().getBean(CustomerPatientSummaryFactory.class);
+        CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
         AlertSummary alerts = factory.createPatientSummary(context, help).getAlertSummary(patient);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", "bold"),
