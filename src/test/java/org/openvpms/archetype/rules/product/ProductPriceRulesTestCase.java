@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -29,6 +29,8 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -51,6 +53,12 @@ import static org.openvpms.archetype.test.TestHelper.getDatetime;
  * @author Tim Anderson
  */
 public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The lookup service.
+     */
+    @Autowired
+    ILookupService lookupService;
 
     /**
      * The <em>party.organisationPractice</em>, for taxes.
@@ -162,6 +170,19 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link ProductPriceRules#getMaxDiscount(ProductPrice)} method.
+     */
+    @Test
+    public void testGetMaxDiscount() {
+        ProductPrice price = createPrice(FIXED_PRICE, new Date(), new Date());
+        checkEquals(new BigDecimal(100), rules.getMaxDiscount(price));
+
+        IMObjectBean bean = new IMObjectBean(price);
+        bean.setValue("maxDiscount", 10);
+        checkEquals(BigDecimal.TEN, rules.getMaxDiscount(price));
+    }
+
+    /**
      * Sets up the test case.
      * <p/>
      * This sets up the practice to have a 10% tax on all products.
@@ -169,7 +190,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         practice = createPractice();
-        rules = new ProductPriceRules();
+        rules = new ProductPriceRules(getArchetypeService(), lookupService);
         IMObjectBean bean = new IMObjectBean(practice);
         Currencies currencies = new Currencies();
         currency = currencies.getCurrency(bean.getString("currency"));
