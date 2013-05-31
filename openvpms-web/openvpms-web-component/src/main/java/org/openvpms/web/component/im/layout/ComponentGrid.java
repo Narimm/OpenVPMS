@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -60,7 +60,31 @@ public class ComponentGrid {
     }
 
     /**
+     * Adds components to the end of the grid, one component per column.
+     *
+     * @param components the component to add
+     */
+    public void add(Component... components) {
+        ComponentState[] states = new ComponentState[components.length];
+        for (int i = 0; i < components.length; ++i) {
+            states[i] = new ComponentState(components[i]);
+        }
+        add(states);
+    }
+
+    /**
+     * Adds components to the end of the grid, one component per column.
+     *
+     * @param states the component states to add
+     */
+    public void add(ComponentState... states) {
+        add(states, states.length, 1);
+    }
+
+    /**
      * Adds a set of components to the end of the grid.
+     * <p/>
+     * For sets of of {@code <= 2} components, one column will be used, otherwise 2 columns will be used.
      *
      * @param set the set of components
      */
@@ -88,21 +112,7 @@ public class ComponentGrid {
      */
     public void add(ComponentSet set, int columns, int columnSpan) {
         ComponentState[] states = set.getComponents().toArray(new ComponentState[set.getComponents().size()]);
-        int size = states.length;
-        int rows;
-        if (columns == 1) {
-            rows = size;
-        } else {
-            rows = (size / 2) + (size % 2);
-        }
-        int index = 0;
-        int start = components.size();
-        int end = start + rows;
-        for (int col = 0; col < columns; ++col) {
-            for (int row = start; row < end && index < states.length; ++row) {
-                set(row, col, columnSpan, states[index++]);
-            }
-        }
+        add(states, columns, columnSpan);
     }
 
     /**
@@ -157,34 +167,7 @@ public class ComponentGrid {
      * @return a new grid
      */
     public Grid createGrid(ComponentSet set) {
-        Grid grid = GridFactory.create(columns * 2);
-        for (int row = 0; row < rows; ++row) {
-            for (int col = 0; col < columns; ) {
-                State state = getState(row, col);
-                if (state != null && state.getComponentState() != null) {
-                    if (state.getComponentState() != null) {
-                        Component component = state.getComponent();
-                        if (component instanceof SelectField) {
-                            // workaround for render bug in firefox. See OVPMS-239
-                            component = RowFactory.create(component);
-                        }
-                        grid.add(state.getLabel());
-                        int span = state.getColumnSpan();
-                        if (span > 1) {
-                            GridLayoutData layout = new GridLayoutData();
-                            layout.setColumnSpan(span + 1);
-                            component.setLayoutData(layout);
-                        }
-                        grid.add(component);
-                        col += span;
-                    }
-                } else {
-                    grid.add(LabelFactory.create());
-                    grid.add(LabelFactory.create());
-                    col++;
-                }
-            }
-        }
+        Grid grid = createGrid();
         // set the focus traversal in column order
         for (int col = 0; col < columns; ++col) {
             for (int row = 0; row < rows; ++row) {
@@ -198,15 +181,110 @@ public class ComponentGrid {
     }
 
     /**
+     * Creates a grid.
+     *
+     * @return a new grid
+     */
+    public Grid createGrid() {
+        Grid grid = GridFactory.create(columns * 2);
+        for (int row = 0; row < rows; ++row) {
+            for (int col = 0; col < columns; ) {
+                State state = getState(row, col);
+                if (state != null && state.getComponentState() != null) {
+                    if (state.getComponentState() != null) {
+                        Component component = state.getComponent();
+                        if (component instanceof SelectField) {
+                            // workaround for render bug in firefox. See OVPMS-239
+                            component = RowFactory.create(component);
+                        }
+                        boolean hasLabel = state.getComponentState().hasLabel();
+                        if (hasLabel) {
+                            grid.add(state.getLabel());
+                        }
+                        int span = state.getColumnSpan();
+                        if (span <= 1) {
+                            span = getSpan(row, col); // calculate the span
+                        }
+                        if (span > 1) {
+                            GridLayoutData layout = new GridLayoutData();
+                            int realSpan = span * 2;
+                            if (hasLabel) {
+                                realSpan--;
+                            }
+                            layout.setColumnSpan(realSpan);
+                            component.setLayoutData(layout);
+                        }
+                        grid.add(component);
+                        col += span;
+                    }
+                } else {
+                    grid.add(LabelFactory.create());
+                    grid.add(LabelFactory.create());
+                    col++;
+                }
+            }
+        }
+        return grid;
+    }
+
+    /**
+     * Adds a set of components to the end of the grid.
+     *
+     * @param states     the component states to add
+     * @param columns    the number of columns to use
+     * @param columnSpan the number of columns the components span
+     */
+    protected void add(ComponentState[] states, int columns, int columnSpan) {
+        int size = states.length;
+        int rows;
+        if (columns == 1) {
+            rows = size;
+        } else {
+            rows = (size / 2) + (size % 2);
+        }
+        int index = 0;
+        int start = components.size();
+        int end = start + rows;
+        for (int col = 0; col < columns; ++col) {
+            for (int row = start; row < end && index < states.length; ++row) {
+                set(row, col, columnSpan, states[index++]);
+            }
+        }
+    }
+
+    /**
      * Returns the component at the specified row and column.
      *
      * @param row    the row
      * @param column the column
-     * @return the corresponding component, or <tt>null</tt> if none is found
+     * @return the corresponding component, or {@code null} if none is found
      */
     private State getState(int row, int column) {
         List<State> list = components.get(row);
         return (column < list.size()) ? list.get(column) : null;
+    }
+
+    /**
+     * Returns the span of a component.
+     *
+     * @param row    the component row
+     * @param column the component column
+     * @return the span
+     */
+    private int getSpan(int row, int column) {
+        List<State> list = components.get(row);
+        int span = 1;
+        if (column + 1 == list.size()) {
+            span = columns - column;
+        } else {
+            for (int i = column + 1; i < list.size(); ++i, ++span) {
+                State state = list.get(i);
+                if (state.getComponentState() != null) {
+                    break;
+                }
+            }
+        }
+        return span;
     }
 
     /**

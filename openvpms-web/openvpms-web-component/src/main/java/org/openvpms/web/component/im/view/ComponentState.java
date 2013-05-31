@@ -1,28 +1,29 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.edit.PropertyEditor;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusHelper;
 
 
 /**
@@ -163,6 +164,15 @@ public class ComponentState {
     }
 
     /**
+     * Determines if the component has a label.
+     *
+     * @return {@code true} if the component has a label
+     */
+    public boolean hasLabel() {
+        return label != null || !StringUtils.isEmpty(displayName);
+    }
+
+    /**
      * Returns a label for the component.
      */
     public Label getLabel() {
@@ -171,15 +181,6 @@ public class ComponentState {
             label.setText(displayName);
         }
         return label;
-    }
-
-    /**
-     * Sets the component label.
-     *
-     * @param label the label. May be {@code null}
-     */
-    public void setLabel(Label label) {
-        this.label = label;
     }
 
     /**
