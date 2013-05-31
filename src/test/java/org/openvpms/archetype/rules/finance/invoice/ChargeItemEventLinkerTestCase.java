@@ -114,8 +114,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         List<FinancialAct> items = Arrays.asList(item1, item2);
         linker.link(items);
 
-        MedicalRecordRules medRules = new MedicalRecordRules();
-        Act event = medRules.getEvent(patient, startTime);
+        Act event = rules.getEvent(patient, startTime);
         assertNotNull(event);
 
         checkEvent(item1, event, author, location);
@@ -142,9 +141,8 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         List<FinancialAct> items = Arrays.asList(item1, item2);
         linker1.link(items);
 
-        MedicalRecordRules medRules = new MedicalRecordRules();
-        Act event1 = medRules.getEvent(patient, startTime1);
-        Act event2 = medRules.getEvent(patient, startTime2);
+        Act event1 = rules.getEvent(patient, startTime1);
+        Act event2 = rules.getEvent(patient, startTime2);
         assertNotNull(event1);
         assertNotNull(event2);
         assertFalse(event1.equals(event2));
@@ -164,7 +162,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         Party location2 = TestHelper.createLocation();
         ChargeItemEventLinker linker2 = new ChargeItemEventLinker(author2, location2, getArchetypeService());
         linker2.link(item3);
-        Act event1Updated = medRules.getEvent(patient, startTime1);
+        Act event1Updated = rules.getEvent(patient, startTime1);
         assertEquals(event1Updated.getId(), event1.getId());
         checkEvent(item1, event1Updated, author, location);
         checkEvent(item3, event1Updated, author, location);
@@ -185,11 +183,10 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         List<FinancialAct> items = Arrays.asList(item1, item2);
         linker.link(items);
 
-        MedicalRecordRules medRules = new MedicalRecordRules();
-        Act event1 = medRules.getEvent(patient1, startTime);
+        Act event1 = rules.getEvent(patient1, startTime);
         assertNotNull(event1);
 
-        Act event2 = medRules.getEvent(patient2, startTime);
+        Act event2 = rules.getEvent(patient2, startTime);
         assertNotNull(event2);
         assertFalse(event1.equals(event2));
 
@@ -249,7 +246,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         author = TestHelper.createUser();
         clinician = TestHelper.createClinician();
         location = TestHelper.createLocation();
-        rules = new MedicalRecordRules();
+        rules = new MedicalRecordRules(getArchetypeService());
     }
 
     /**

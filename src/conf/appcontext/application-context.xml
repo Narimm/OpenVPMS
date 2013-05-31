@@ -61,12 +61,8 @@
                 <prop key="hibernate.max_fetch_depth">3</prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">false</prop>
                 <prop key="hibernate.cache.use_query_cache">true</prop>
-                <prop key="hibernate.cache.provider_class">
-                    ${hibernate.cache.provider_class}
-                </prop>
-                <prop key="hibernate.cache.use_second_level_cache">
-                    ${hibernate.cache.use_second_level_cache}
-                </prop>
+                <prop key="hibernate.cache.provider_class">${hibernate.cache.provider_class}</prop>
+                <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
                 <prop key="hibernate.jdbc.batch_size">
                     ${hibernate.jdbc.batch_size}
                 </prop>
