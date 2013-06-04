@@ -1,20 +1,18 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
     <archetype name="party.customerperson.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Customer">
@@ -72,7 +70,8 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-		<node displayName="Travel" name="travel" path="/details/travel" type="java.lang.String" minCardinality="0" maxLength="20"/>
+        <node displayName="Travel" name="travel" path="/details/travel" type="java.lang.String" minCardinality="0"
+              maxLength="20"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="createdDate" path="/details/createdDate" type="java.util.Date"
               minCardinality="0" defaultValue="java.util.Date.new()" hidden="true"/>
@@ -162,7 +161,7 @@
                 <errorMessage>Duplicate active discount customer relationship</errorMessage>
             </assertion>
         </node>
-        <node name="taxes" path="/classifications" parentChild="false"
+        <node name="taxes" displayName="Tax Exemptions" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
               filter="lookup.taxType">
             <assertion name="archetypeRange">
