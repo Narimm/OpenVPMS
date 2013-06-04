@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -32,8 +30,7 @@ import java.lang.reflect.Constructor;
 /**
  * Factory for {@link IMObjectCollectionViewer}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IMObjectCollectionViewerFactory {
 
@@ -45,8 +42,7 @@ public class IMObjectCollectionViewerFactory {
     /**
      * The logger.
      */
-    private static final Log log
-        = LogFactory.getLog(IMObjectCollectionViewerFactory.class);
+    private static final Log log = LogFactory.getLog(IMObjectCollectionViewerFactory.class);
 
 
     /**
@@ -60,11 +56,10 @@ public class IMObjectCollectionViewerFactory {
      *
      * @param collection the collection to view
      * @param object     the parent of the collection
-     * @param context    the layout context. May  be <tt>null</tt>
+     * @param context    the layout context. May  be {@code null}
      * @return a viewer for the collection
      */
-    public static IMObjectCollectionViewer create(CollectionProperty collection,
-                                                  IMObject object,
+    public static IMObjectCollectionViewer create(CollectionProperty collection, IMObject object,
                                                   LayoutContext context) {
         IMObjectCollectionViewer result = null;
 
@@ -77,7 +72,7 @@ public class IMObjectCollectionViewerFactory {
             if (ctor != null) {
                 try {
                     result = (IMObjectCollectionViewer) ctor.newInstance(
-                        collection, object, context);
+                            collection, object, context);
                 } catch (Throwable throwable) {
                     log.error(throwable, throwable);
                 }
@@ -98,12 +93,11 @@ public class IMObjectCollectionViewerFactory {
      *
      * @return the Viewers
      */
-    private static synchronized ArchetypeHandlers<IMObjectCollectionViewer>
-    getViewers() {
+    private static synchronized ArchetypeHandlers<IMObjectCollectionViewer> getViewers() {
         if (viewers == null) {
             viewers = new ArchetypeHandlers<IMObjectCollectionViewer>(
-                "IMObjectCollectionViewerFactory.properties",
-                IMObjectCollectionViewer.class);
+                    "IMObjectCollectionViewerFactory.properties", "DefaultIMObjectCollectionViewerFactory.properties",
+                    IMObjectCollectionViewer.class);
         }
         return viewers;
     }
@@ -114,9 +108,8 @@ public class IMObjectCollectionViewerFactory {
      * @param type       the Viewer type
      * @param collection the collection property
      * @param object     the parent of the collection
-     * @param context    the layout context. May be <tt>null</tt>
-     * @return a constructor to construct the viewer, or <code>null</code> if
-     *         none can be found
+     * @param context    the layout context. May be {@code null}
+     * @return a constructor to construct the viewer, or {@code null} if none can be found
      */
     private static Constructor getConstructor(Class type,
                                               CollectionProperty collection,
@@ -126,18 +119,16 @@ public class IMObjectCollectionViewerFactory {
 
         for (Constructor ctor : ctors) {
             // check parameters
-            Class[] ctorTypes = ctor.getParameterTypes();
+            Class<?>[] ctorTypes = ctor.getParameterTypes();
             if (ctorTypes.length == 3) {
-                Class ctorCollection = ctorTypes[0];
-                Class ctorObj = ctorTypes[1];
-                Class ctorCtx = ctorTypes[2];
+                Class<?> ctorCollection = ctorTypes[0];
+                Class<?> ctorObj = ctorTypes[1];
+                Class<?> ctorCtx = ctorTypes[2];
 
                 if (ctorCollection.isAssignableFrom(collection.getClass())
                     && ctorObj.isAssignableFrom(object.getClass())
-                    && ((context != null && ctorCtx.isAssignableFrom(
-                    context.getClass()))
-                        || (context == null
-                            && LayoutContext.class.isAssignableFrom(ctorCtx)))) {
+                    && ((context != null && ctorCtx.isAssignableFrom(context.getClass()))
+                        || (context == null && LayoutContext.class.isAssignableFrom(ctorCtx)))) {
                     return ctor;
                 }
             }

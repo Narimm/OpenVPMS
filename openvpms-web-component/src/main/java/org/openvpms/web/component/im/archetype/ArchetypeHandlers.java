@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.archetype;
@@ -39,8 +37,7 @@ import java.util.Set;
  * Loads properties resources containing a mapping of short names to the
  * implementation classes that can handle them.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
 
@@ -52,47 +49,50 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     /**
      * The logger.
      */
-    private static final Log log
-        = LogFactory.getLog(ArchetypeHandlers.class);
+    private static final Log log = LogFactory.getLog(ArchetypeHandlers.class);
 
     /**
      * Map of short names to their corresponding handlers.
      */
-    private Map<String, ArchetypeHandler<T>> handlers
-        = new HashMap<String, ArchetypeHandler<T>>();
+    private Map<String, ArchetypeHandler<T>> handlers = new HashMap<String, ArchetypeHandler<T>>();
 
     /**
      * Map of handlers not associated with any short name. These
      * can only be returned by class name.
      */
-    private Map<String, ArchetypeHandler<T>> anonymousHandlers
-        = new HashMap<String, ArchetypeHandler<T>>();
+    private Map<String, ArchetypeHandler<T>> anonymousHandlers = new HashMap<String, ArchetypeHandler<T>>();
 
 
     /**
-     * Construct a new <code>ArchetypeHandlers</code>.
+     * Construct an {@link ArchetypeHandlers}.
      *
      * @param name the resource name
      * @param type class the each handler must implement/extend
      */
     public ArchetypeHandlers(String name, Class<T> type) {
+        this(name, null, type);
+    }
+
+    /**
+     * Construct an {@link ArchetypeHandlers}.
+     *
+     * @param name         the resource name
+     * @param fallbackName the fallback resource name. May be {@code null}
+     * @param type         class the each handler must implement/extend
+     */
+    public ArchetypeHandlers(String name, String fallbackName, Class<T> type) {
         this.type = type;
-        if (name.endsWith(".properties")) {
-            readProperties(name);
-        } else if (name.endsWith(".xml")) {
-            readXML(name);
-        } else {
-            readProperties(name + ".properties");
-            readXML(name + ".xml");
+        if (fallbackName != null) {
+            read(fallbackName, false);
         }
+        read(name, true);
     }
 
     /**
      * Returns a handler that can handle an archetype.
      *
      * @param shortName the archetype short name
-     * @return an implemenation that supports <code>shortName</code> or
-     *         <code>null</code> if there is no match
+     * @return an implementation that supports {@code shortName} or {@code null} if there is no match
      */
     @Override
     public ArchetypeHandler<T> getHandler(String shortName) {
@@ -103,8 +103,7 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      * Returns a handler that can handle a set of archetypes.
      *
      * @param shortNames the archetype short names
-     * @return a handler that supports <code>shortNames</code> or
-     *         <code>null</code> if there is no match
+     * @return a handler that supports {@code shortNames} or {@code null} if there is no match
      */
     public ArchetypeHandler<T> getHandler(String[] shortNames) {
         ArchetypeHandler<T> result = null;
@@ -134,8 +133,7 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
                 } else if (!result.getType().equals(handler.getType())) {
                     result = null;
                     break;
-                } else if (!ObjectUtils.equals(result.getProperties(),
-                                               handler.getProperties())) {
+                } else if (!ObjectUtils.equals(result.getProperties(), handler.getProperties())) {
                     result = null;
                     break;
                 }
@@ -154,12 +152,29 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     }
 
     /**
+     * Reads a handler configuration resource.
+     *
+     * @param name    the resource name
+     * @param replace if {@code true}, replace any existing handler
+     */
+    private void read(String name, boolean replace) {
+        if (name.endsWith(".properties")) {
+            readProperties(name, replace);
+        } else if (name.endsWith(".xml")) {
+            readXML(name, replace);
+        } else {
+            readProperties(name + ".properties", replace);
+            readXML(name + ".xml", replace);
+        }
+    }
+
+    /**
      * Determines if one short name is more specific than another.
      * A short name is more specific than another if resolves fewer archetypes.
      *
      * @param shortName1 the first short name
      * @param shortName2 the second short name
-     * @return <code>true</code> if shortName1 is more specific than shortName2
+     * @return {@code true} if shortName1 is more specific than shortName2
      */
     private boolean moreSpecific(String shortName1, String shortName2) {
         String[] matches1 = DescriptorHelper.getShortNames(shortName1);
@@ -170,38 +185,34 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     /**
      * Registers a handler for a particular short name.
      *
-     * @param shortName  the archetype short name. May be <tt>null</tt>
+     * @param shortName  the archetype short name. May be {@code null}
      * @param type       the implementation class
-     * @param properties the configuration properties. May be <tt>null</tt>
+     * @param properties the configuration properties. May be {@code null}
      * @param path       the resource path
+     * @param replace    if {@code true} the handler can replace any existing handler
      */
-    private void addHandler(String shortName, Class<T> type,
-                            Map<String, Object> properties, String path) {
+    private void addHandler(String shortName, Class<T> type, Map<String, Object> properties, String path,
+                            boolean replace) {
         if (!StringUtils.isEmpty(shortName)) {
             String[] matches = DescriptorHelper.getShortNames(shortName, false);
             if (matches.length == 0) {
-                log.warn("No archetypes found matching short name=" + shortName
-                         + ", loaded from path=" + path);
+                log.warn("No archetypes found matching short name=" + shortName + ", loaded from path=" + path);
             } else {
-                if (handlers.get(shortName) != null) {
-                    log.warn("Duplicate sbort name=" + shortName
-                             + " from " + path + ": ignoring");
+                if (!replace && handlers.get(shortName) != null) {
+                    log.warn("Duplicate sbort name=" + shortName + " from " + path + ": ignoring");
                 } else {
-                    ArchetypeHandler<T> handler
-                        = new ArchetypeHandler<T>(shortName, type,
-                                                  properties);
+                    ArchetypeHandler<T> handler = new ArchetypeHandler<T>(shortName, type, properties);
                     handlers.put(shortName, handler);
                 }
             }
         } else {
             // got an anonymous handler
             String name = type.getName();
-            if (anonymousHandlers.get(name) != null) {
+            if (!replace && anonymousHandlers.get(name) != null) {
                 log.warn("Duplicate anonymous handler=" + name
                          + " from " + path + ": ignoring");
             } else {
-                ArchetypeHandler<T> handler
-                    = new ArchetypeHandler<T>(null, type, properties);
+                ArchetypeHandler<T> handler = new ArchetypeHandler<T>(null, type, properties);
                 anonymousHandlers.put(name, handler);
             }
         }
@@ -210,20 +221,22 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
     /**
      * Loads all XML resources with the specified name.
      *
-     * @param name the resource name
+     * @param name    the resource name
+     * @param replace if {@code true}, replace any existing handler
      */
-    private void readXML(String name) {
-        XMLConfigReader reader = new XMLConfigReader();
+    private void readXML(String name, boolean replace) {
+        XMLConfigReader reader = new XMLConfigReader(replace);
         reader.read(name);
     }
 
     /**
      * Loads all property resources with the specified name.
      *
-     * @param name the resource name
+     * @param name    the resource name
+     * @param replace if {@code true}, replace any existing handler
      */
-    private void readProperties(String name) {
-        Reader parser = new Reader();
+    private void readProperties(String name, boolean replace) {
+        Reader parser = new Reader(replace);
         parser.read(name);
     }
 
@@ -231,6 +244,20 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      * Reads handlers from a .properties file.
      */
     private class Reader extends PropertiesReader {
+
+        /**
+         * Determines if existing handlers should be replaced.
+         */
+        private final boolean replace;
+
+        /**
+         * Constructs a {@link Reader}.
+         *
+         * @param replace if {@code true}, replace any existing handler
+         */
+        public Reader(boolean replace) {
+            this.replace = replace;
+        }
 
         /**
          * Parse a property file entry.
@@ -243,32 +270,38 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
         protected void parse(String key, String value, String path) {
             String[] properties = value.split(",");
             if (properties.length == 0) {
-                log.warn("Invalid properties for short name=" + key
-                         + ", loaded from path=" + path);
+                log.warn("Invalid properties for short name=" + key + ", loaded from path=" + path);
             } else {
-                Class<T> clazz = (Class<T>) getClass(properties[0], type,
-                                                     path);
+                Class<T> clazz = (Class<T>) getClass(properties[0], type, path);
                 if (clazz != null) {
-
                     Map<String, Object> config = new HashMap<String, Object>();
                     for (int i = 1; i < properties.length; ++i) {
                         String[] pair = properties[i].split("=");
                         config.put(pair[0], pair[1]);
                     }
-                    addHandler(key, clazz, config, path);
+                    addHandler(key, clazz, config, path, replace);
                 }
             }
         }
     }
 
     /**
-     * Reads handlers from XML using <tt>XStream</tt>.
+     * Reads handlers from XML using {@code XStream}.
      */
     private class XMLConfigReader extends ConfigReader {
 
+        /**
+         * Determines if existing handlers should be replaced.
+         */
+        private final boolean replace;
+
+        /**
+         * The stream.
+         */
         private XStream stream;
 
-        public XMLConfigReader() {
+        public XMLConfigReader(boolean replace) {
+            this.replace = replace;
             stream = new XStream();
             stream.alias("handler", Handler.class);
             stream.alias("handlers", Handlers.class);
@@ -283,14 +316,11 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
         @SuppressWarnings("unchecked")
         protected void read(URL path) {
             try {
-                Handlers handlers = (Handlers) stream.fromXML(
-                    path.openStream());
+                Handlers handlers = (Handlers) stream.fromXML(path.openStream());
                 for (Handler handler : handlers) {
-                    Class<T> clazz = (Class<T>) getClass(handler.getType(),
-                                                         type, path.toString());
+                    Class<T> clazz = (Class<T>) getClass(handler.getType(), type, path.toString());
                     if (clazz != null) {
-                        addHandler(handler.getShortName(), clazz,
-                                   handler.getProperties(), path.toString());
+                        addHandler(handler.getShortName(), clazz, handler.getProperties(), path.toString(), replace);
                     }
                 }
             } catch (Throwable exception) {
