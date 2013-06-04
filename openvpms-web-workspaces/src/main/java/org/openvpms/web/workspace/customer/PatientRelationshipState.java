@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -27,10 +25,9 @@ import org.openvpms.web.component.im.relationship.PeriodRelationshipState;
 /**
  * Patient entity relationship state.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-class PatientRelationshipState extends PeriodRelationshipState {
+public class PatientRelationshipState extends PeriodRelationshipState {
 
     /**
      * Determines if the patient is deceased.
@@ -39,7 +36,7 @@ class PatientRelationshipState extends PeriodRelationshipState {
 
 
     /**
-     * Creates a new <tt>PatientRelationshipState</tt>.
+     * Constructs a {@code PatientRelationshipState}.
      *
      * @param relationship      the relationship
      * @param sourceId          the source entity id
@@ -61,7 +58,7 @@ class PatientRelationshipState extends PeriodRelationshipState {
     }
 
     /**
-     * Creates a new <tt>PatientRelationshipState</tt>.
+     * Creates a new {@code PatientRelationshipState}.
      *
      * @param entity       the parent entity
      * @param relationship the relationship
@@ -78,7 +75,7 @@ class PatientRelationshipState extends PeriodRelationshipState {
     /**
      * Determines if the patient is deceased.
      *
-     * @return <tt>true</tt> if the patient is deceased
+     * @return {@code true} if the patient is deceased
      */
     public boolean isDeceased() {
         return deceased;
@@ -87,7 +84,7 @@ class PatientRelationshipState extends PeriodRelationshipState {
     /**
      * Sets the deceased state of the patient.
      *
-     * @param deceased if <tt>true</tt> indicates the patient is deceased
+     * @param deceased if {@code true} indicates the patient is deceased
      */
     public void setDeceased(boolean deceased) {
         this.deceased = deceased;
@@ -104,7 +101,7 @@ class PatientRelationshipState extends PeriodRelationshipState {
      * <li>the patient isn't deceased
      * </ul>
      *
-     * @return <tt>true</tt> if this is active; otherwise <tt>false</tt>
+     * @return {@code true} if this is active; otherwise {@code false}
      */
     @Override
     public boolean isActive() {
