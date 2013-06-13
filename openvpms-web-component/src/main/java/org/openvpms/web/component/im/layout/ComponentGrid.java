@@ -205,7 +205,7 @@ public class ComponentGrid {
                         if (span <= 1) {
                             span = getSpan(row, col); // calculate the span
                         }
-                        if (span > 1) {
+                        if (span > 1 || !hasLabel) {
                             GridLayoutData layout = new GridLayoutData();
                             int realSpan = span * 2;
                             if (hasLabel) {
