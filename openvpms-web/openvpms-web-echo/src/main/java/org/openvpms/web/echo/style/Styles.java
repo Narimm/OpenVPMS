@@ -19,8 +19,7 @@ package org.openvpms.web.echo.style;
 /**
  * Stylesheet helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public final class Styles {
 
@@ -53,6 +52,11 @@ public final class Styles {
      * Cell spacing style name.
      */
     public static final String CELL_SPACING = "CellSpacing";
+
+    /**
+     * Inset cell spacing style name.
+     */
+    public static final String INSET_CELL_SPACING = "InsetCellSpacing";
 
     /**
      * Selected style name.
