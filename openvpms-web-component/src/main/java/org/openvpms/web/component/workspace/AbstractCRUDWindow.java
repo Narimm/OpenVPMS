@@ -64,6 +64,26 @@ import org.openvpms.web.resource.i18n.Messages;
 public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWindow<T> {
 
     /**
+     * Edit button identifier.
+     */
+    public static final String EDIT_ID = "edit";
+
+    /**
+     * New button identifier.
+     */
+    public static final String NEW_ID = "new";
+
+    /**
+     * Delete button identifier.
+     */
+    public static final String DELETE_ID = "delete";
+
+    /**
+     * Print button identifier.
+     */
+    public static final String PRINT_ID = "print";
+
+    /**
      * The object.
      */
     private T object;
@@ -107,27 +127,6 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Help context.
      */
     private final HelpContext help;
-
-    /**
-     * Edit button identifier.
-     */
-    protected static final String EDIT_ID = "edit";
-
-    /**
-     * New button identifier.
-     */
-    protected static final String NEW_ID = "new";
-
-    /**
-     * Delete button identifier.
-     */
-    protected static final String DELETE_ID = "delete";
-
-    /**
-     * Print button identifier.
-     */
-    protected static final String PRINT_ID = "print";
-
 
     /**
      * Constructs an {@code AbstractCRUDWindow}.
