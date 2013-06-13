@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Button;
@@ -20,13 +21,13 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
-import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.ResultSetIterator;
+import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
 
 
@@ -252,7 +253,8 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      * @param object the object to view
      */
     private void viewChild(IMObject object) {
-        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object, context);
+        HelpContext help = getHelpContext().topic(object, "view");
+        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object, context, help);
         dialog.show();
     }
 
