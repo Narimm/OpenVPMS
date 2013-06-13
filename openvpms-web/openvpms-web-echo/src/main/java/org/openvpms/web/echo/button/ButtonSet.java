@@ -284,6 +284,18 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
+     * Removes a button given its identifier.
+     *
+     * @param id the button identifier
+     */
+    public void remove(String id) {
+        Button button = getButton(id);
+        if (button != null) {
+            remove(button);
+        }
+    }
+
+    /**
      * Removes all buttons from the parent container.
      * Any other components will remain.
      */
