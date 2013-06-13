@@ -101,6 +101,14 @@
     </style>
 
 
+    <style name="MediumWidthHeightDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.medium.width}"/>
+            <property name="height" value="${dialog.medium.height}"/>
+        </properties>
+    </style>
+
     <style name="HelpDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
@@ -885,6 +893,12 @@
         </properties>
     </style>
 
+    <style name="InsetCellSpacing" base-name="CellSpacing" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="insets" value="${padding.medium}"/>
+        </properties>
+    </style>
+
     <style name="WideCellSpacing" type="nextapp.echo2.app.Row">
         <properties>
             <property name="cellSpacing" value="${padding.large}"/>
@@ -894,6 +908,12 @@
     <style name="CellSpacing" type="nextapp.echo2.app.Column">
         <properties>
             <property name="cellSpacing" value="${padding.medium}"/>
+        </properties>
+    </style>
+
+    <style name="InsetCellSpacing" base-name="CellSpacing" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="insets" value="${padding.medium}"/>
         </properties>
     </style>
 
