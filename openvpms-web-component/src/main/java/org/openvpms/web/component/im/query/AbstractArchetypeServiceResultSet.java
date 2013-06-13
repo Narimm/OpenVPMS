@@ -1,37 +1,31 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
-import org.apache.commons.collections.map.ReferenceMap;
-import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.util.ErrorHelper;
-
-import java.util.List;
 
 
 /**
@@ -41,10 +35,10 @@ import java.util.List;
  * @author Tim Anderson
  */
 public abstract class AbstractArchetypeServiceResultSet<T>
-    extends AbstractResultSet<T> {
+        extends AbstractCachingResultSet<T> {
 
     /**
-     * Additional constraints to associate with the query. May be <tt>null</tt>.
+     * Additional constraints to associate with the query. May be {@code null}.
      */
     private final IConstraint constraints;
 
@@ -54,12 +48,12 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     private boolean distinct;
 
     /**
-     * The sort criteria. May be <tt>null</tt>.
+     * The sort criteria. May be {@code null}.
      */
     private SortConstraint[] sort;
 
     /**
-     * The reference to constrain results to. May be <tt>null</tt>
+     * The reference to constrain results to. May be {@code null}
      */
     private IMObjectReference reference;
 
@@ -68,34 +62,12 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      */
     private final QueryExecutor<T> executor;
 
-    /**
-     * A cache of retrieved pages. These are referenced via soft references,
-     * so that they can be reclaimed by the garbage collector if necessary.
-     */
-    private ReferenceMap cache = new ReferenceMap();
 
     /**
-     * The count of results matching the criteria, or <tt>-1</tt> if it
-     * is not known.
-     */
-    private int count = -1;
-
-    /**
-     * Determines if the count is an estimation or the actual no. of results.
-     */
-    private boolean estimation = true;
-
-    /**
-     * The no. of pages to prefetch and cache.
-     */
-    private int prefetchPages = 4;
-
-
-    /**
-     * Construct a new <tt>AbstractArchetypeServiceResultSet</tt>.
+     * Construct a new {@code AbstractArchetypeServiceResultSet}.
      *
      * @param pageSize the maximum no. of results per page
-     * @param sort     the sort criteria. May be <tt>null</tt>
+     * @param sort     the sort criteria. May be {@code null}
      * @param executor the query executor
      */
     public AbstractArchetypeServiceResultSet(int pageSize,
@@ -105,11 +77,11 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     }
 
     /**
-     * Construct a new <tt>AbstractArchetypeServiceResultSet</tt>.
+     * Construct a new {@code AbstractArchetypeServiceResultSet}.
      *
-     * @param constraints query constraints. May be <tt>null</tt>
+     * @param constraints query constraints. May be {@code null}
      * @param pageSize    the maximum no. of results per page
-     * @param sort        the sort criteria. May be <tt>null</tt>
+     * @param sort        the sort criteria. May be {@code null}
      * @param executor    the query executor
      */
     public AbstractArchetypeServiceResultSet(IConstraint constraints,
@@ -123,63 +95,9 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     }
 
     /**
-     * Reset the iterator.
-     */
-    @Override
-    public void reset() {
-        cache.clear();
-        count = -1;
-        estimation = true;
-        super.reset();
-    }
-
-    /**
-     * Returns the total number of results matching the query criteria.
-     * For complex queries, this operation can be expensive. If an exact
-     * count is not required, use {@link #getEstimatedResults()}.
-     *
-     * @return the total number of results
-     */
-    public int getResults() {
-        if (count == -1 || estimation) {
-            ArchetypeQuery query = createQuery(0, 0);
-            query.setCountResults(true);
-            IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-            IPage<IMObject> results = service.get(query);
-            count = results.getTotalResults();
-            estimation = false;
-        }
-        return count;
-    }
-
-    /**
-     * Returns an estimation of the total no. of results matching the query
-     * criteria.
-     *
-     * @return an estimation of the total no. of results
-     */
-    public int getEstimatedResults() {
-        return (count == -1) ? 0 : count;
-    }
-
-    /**
-     * Determines if the estimated no. of results is the actual total, i.e
-     * if {@link #getEstimatedResults()} would return the same as
-     * {@link #getResults()}, and {@link #getEstimatedPages()} would return
-     * the same as {@link #getPages()}.
-     *
-     * @return <tt>true</tt> if the estimated results equals the actual no.
-     *         of results
-     */
-    public boolean isEstimatedActual() {
-        return !estimation;
-    }
-
-    /**
      * Sort the set. This resets the iterator.
      *
-     * @param sort the sort criteria. May be <tt>null</tt>
+     * @param sort the sort criteria. May be {@code null}
      */
     public void sort(SortConstraint[] sort) {
         setSortConstraint(sort);
@@ -189,8 +107,8 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <tt>true</tt> if the node is sorted ascending or no sort
-     *         constraint was specified; <tt>false</tt> if it is sorted
+     * @return {@code true} if the node is sorted ascending or no sort
+     *         constraint was specified; {@code false} if it is sorted
      *         descending
      */
     public boolean isSortedAscending() {
@@ -218,8 +136,8 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Determines if duplicate results should be filtered.
      *
-     * @return <tt>true</tt> if duplicate results should be removed;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if duplicate results should be removed;
+     *         otherwise {@code false}
      */
     public boolean isDistinct() {
         return distinct;
@@ -228,7 +146,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Sets a reference to constrain the query on.
      *
-     * @param reference the reference. May be <tt>null</tt>
+     * @param reference the reference. May be {@code null}
      */
     public void setReferenceConstraint(IMObjectReference reference) {
         this.reference = reference;
@@ -237,7 +155,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Returns the reference to constrain the query on.
      *
-     * @return the reference. May be <tt>null</tt>
+     * @return the reference. May be {@code null}
      */
     public IMObjectReference getReferenceConstraint() {
         return reference;
@@ -246,7 +164,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Sets the sort criteria.
      *
-     * @param sort the sort criteria. May be <tt>null</tt>
+     * @param sort the sort criteria. May be {@code null}
      */
     protected void setSortConstraint(SortConstraint[] sort) {
         this.sort = (sort != null) ? sort : new SortConstraint[0];
@@ -275,7 +193,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * invoking {@link #addSortConstraints}.
      *
      * @param firstResult the first result of the page to retrieve
-     * @param maxResults  the maximun no of results in the page
+     * @param maxResults  the maximum no of results in the page
      * @return a new query
      */
     protected ArchetypeQuery createQuery(int firstResult, int maxResults) {
@@ -319,99 +237,31 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     }
 
     /**
-     * Returns the specified page.
+     * Performs a query.
      *
-     * @param page the page no.
-     * @return the page, or <tt>null</tt> if there is no such page
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximum no. of results in the page
+     * @return the page, or {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    @SuppressWarnings("unchecked")
-    protected IPage<T> get(int page) {
-        IPage<T> result = (IPage<T>) cache.get(page);
-        if (result == null) {
-            if (page > 0 && getPageSize() == ArchetypeQuery.ALL_RESULTS) {
-                // nothing to do - results should have been returned in the first page
-            } else {
-                result = query(page);
-            }
-        }
-        return result;
+    @Override
+    protected IPage<T> query(int firstResult, int maxResults) {
+        ArchetypeQuery query = createQuery(firstResult, maxResults);
+        String[] nodes = getNodes();
+        return executor.query(query, nodes);
     }
 
     /**
-     * Queries the specified page.
+     * Counts the no. of results matching the query criteria.
      *
-     * @param page the page to query
-     * @return the page, or <tt>null</tt>
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return the total number of results
      */
-    private IPage<T> query(int page) {
-        IPage<T> result = null;
-        int firstResult = getFirstResult(page);
-        int pageSize = getPageSize();
-        int maxResults = pageSize;
-        int pages = 1;  // no. of requested pages
-        if (maxResults != ArchetypeQuery.ALL_RESULTS && prefetchPages != 0) {
-            maxResults = pageSize * prefetchPages;
-            pages = prefetchPages;
-        }
-        try {
-            ArchetypeQuery query = createQuery(firstResult, maxResults);
-            String[] nodes = getNodes();
-            IPage<T> matches = executor.query(query, nodes);
-
-            List<T> results = matches.getResults();
-            if (results.isEmpty()) {
-                cache.remove(page);
-            } else if (pages == 1) {
-                result = matches;
-                cache.put(page, result);
-            } else {
-                // need to split the matches into multiple pages.
-                // Each page will be cached, and the first returned.
-                for (int i = 0; i < pages; ++i) {
-                    int from = i * pageSize;
-                    int to;
-                    if (from < results.size()) {
-                        if (((from + pageSize) >= results.size())) {
-                            to = results.size();
-                        } else {
-                            to = from + pageSize;
-                        }
-                        List<T> subResults = results.subList(from, to);
-                        IPage<T> subPage = new Page<T>(
-                            subResults, firstResult + from, pageSize,
-                            count);
-                        if (i == 0) {
-                            result = subPage;
-                        }
-                        cache.put(page + i, subPage);
-                    } else {
-                        cache.remove(i);
-                    }
-                }
-            }
-
-            // update the count of total results if necessary
-            if (matches.getTotalResults() != -1) {
-                count = matches.getTotalResults();
-                estimation = false;
-            } else if (results.isEmpty()) {
-                if (count > firstResult) {
-                    count = firstResult - 1;
-                    estimation = true;
-                }
-            } else {
-                int lastResult = firstResult + results.size();
-                if (lastResult > count) {
-                    count = lastResult;
-                    estimation = (results.size() == maxResults);
-                }
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-        return result;
+    @Override
+    protected int countResults() {
+        ArchetypeQuery query = createQuery(0, 0);
+        query.setCountResults(true);
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        IPage<IMObject> results = service.get(query);
+        return results.getTotalResults();
     }
-
 }
