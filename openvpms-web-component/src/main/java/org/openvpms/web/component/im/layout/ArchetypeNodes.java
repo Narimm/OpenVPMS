@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.component.im.layout;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -315,9 +331,9 @@ public class ArchetypeNodes {
         for (int i = 0; i < order.size(); i += 2) {
             String node1 = order.get(i);
             String node2 = order.get(i + 1);
-            int index = indexOf(node2, descriptors);
+            int index = indexOf(node1, descriptors);
             if (index != -1) {
-                move(node1, index, descriptors);
+                move(node2, index + 1, descriptors);
             }
         }
     }
@@ -350,7 +366,11 @@ public class ArchetypeNodes {
         int pos = indexOf(node, descriptors);
         if (pos != -1 && pos != index) {
             NodeDescriptor descriptor = descriptors.remove(pos);
-            descriptors.add(index, descriptor);
+            if (pos > index) {
+                descriptors.add(index, descriptor);
+            } else {
+                descriptors.add(index - 1, descriptor);
+            }
         }
     }
 
