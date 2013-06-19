@@ -44,6 +44,6 @@ public class DocumentTemplateTableModel extends DescriptorTableModel<Entity> {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"id", "name", "description", "reportType", "userLevel"};
+        return new String[]{"id", "name", "description", "archetype", "reportType", "userLevel"};
     }
 }
