@@ -1,23 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
+import echopointng.DateField;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
@@ -30,11 +29,10 @@ import org.openvpms.web.echo.factory.ComponentFactory;
 /**
  * Abstract implementation of the {@link PropertyComponentFactory} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractPropertyComponentFactory
-    implements PropertyComponentFactory {
+        implements PropertyComponentFactory {
 
     /**
      * The style name to use.
@@ -77,7 +75,9 @@ public abstract class AbstractPropertyComponentFactory
      * @return a new component
      */
     protected Component createBoolean(Property property) {
-        return new BoundCheckBox(property);
+        BoundCheckBox result = new BoundCheckBox(property);
+        ComponentFactory.setStyle(result, getStyle());
+        return result;
     }
 
     /**
@@ -107,10 +107,11 @@ public abstract class AbstractPropertyComponentFactory
     protected Component createString(Property property, int columns) {
         TextComponent result;
         if (property.getMaxLength() > 255) {
-            if (property.getMaxLength() < 500)
+            if (property.getMaxLength() < 500) {
                 result = BoundTextComponentFactory.createTextArea(property, columns, 5);
-            else
+            } else {
                 result = BoundTextComponentFactory.createTextArea(property, 80, 15);
+            }
         } else {
             result = BoundTextComponentFactory.create(property, columns);
         }
@@ -138,7 +139,10 @@ public abstract class AbstractPropertyComponentFactory
      * @return a new component
      */
     protected Component createDate(Property property) {
-        return BoundDateFieldFactory.create(property);
+        DateField result = BoundDateFieldFactory.create(property);
+        ComponentFactory.setStyle(result, getStyle());
+        ComponentFactory.setStyle(result.getTextField(), getStyle());
+        return result;
     }
 
     /**
