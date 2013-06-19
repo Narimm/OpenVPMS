@@ -78,7 +78,7 @@ public class ComponentGrid {
      * @param states the component states to add
      */
     public void add(ComponentState... states) {
-        add(states, states.length, 1);
+        add(states, states.length, 1, 1);
     }
 
     /**
@@ -242,6 +242,18 @@ public class ComponentGrid {
         } else {
             rows = (size / 2) + (size % 2);
         }
+        add(states, columns, rows, columnSpan);
+    }
+
+    /**
+     * Adds a set of components to the end of the grid.
+     *
+     * @param states     the component states to add
+     * @param columns    the number of columns to use
+     * @param rows       the number of rows to use
+     * @param columnSpan the number of columns the components span
+     */
+    protected void add(ComponentState[] states, int columns, int rows, int columnSpan) {
         int index = 0;
         int start = components.size();
         int end = start + rows;
