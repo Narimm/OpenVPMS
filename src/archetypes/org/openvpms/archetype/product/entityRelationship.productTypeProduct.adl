@@ -13,11 +13,12 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="entityRelationship.productTypeProduct.1.0"
                latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityRelationship"
-               displayName="Product Type Product Relationship">
+               displayName="Product Type">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Product Type'"/>
