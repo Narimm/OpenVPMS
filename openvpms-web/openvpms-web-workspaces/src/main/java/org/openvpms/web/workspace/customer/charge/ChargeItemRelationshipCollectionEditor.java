@@ -39,7 +39,7 @@ import java.util.Date;
  * @author Tim Anderson
  */
 public class ChargeItemRelationshipCollectionEditor
-    extends AltModelActRelationshipCollectionEditor {
+        extends AltModelActRelationshipCollectionEditor {
 
     /**
      * Last Selected Item Date.
@@ -67,10 +67,19 @@ public class ChargeItemRelationshipCollectionEditor
     /**
      * Sets the popup editor manager.
      *
-     * @param manager the popup editor manager
+     * @param queue the popup editor manager. May be {@code null}
      */
-    public void setEditorQueue(EditorQueue manager) {
-        editorQueue = manager;
+    public void setEditorQueue(EditorQueue queue) {
+        editorQueue = queue;
+    }
+
+    /**
+     * Returns the popup editor manager.
+     *
+     * @return the popup editor manager. May be {@code null}
+     */
+    public EditorQueue getEditorQueue() {
+        return editorQueue;
     }
 
     /**
