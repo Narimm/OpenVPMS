@@ -314,5 +314,11 @@
               mimeType="text/xml"
               docType="document.other"/>
 
+    <template name="Message"
+              archetype="act.userMessage"
+              path="message a4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
 
 </templates>
