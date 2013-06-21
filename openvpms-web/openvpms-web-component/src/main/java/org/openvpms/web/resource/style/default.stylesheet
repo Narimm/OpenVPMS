@@ -1134,7 +1134,19 @@
         </properties>
     </style>
 
-    <style name="Table.EvenRow" type="nextapp.echo2.app.Component">
+    <style name="Table.Row" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="${padding.small} 1px"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="Table.EvenRow" base-name="Table.Row" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
@@ -1160,7 +1172,7 @@
         </properties>
     </style>
 
-    <style name="Table.OddRow" type="nextapp.echo2.app.Component">
+    <style name="Table.OddRow" base-name="Table.Row" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
