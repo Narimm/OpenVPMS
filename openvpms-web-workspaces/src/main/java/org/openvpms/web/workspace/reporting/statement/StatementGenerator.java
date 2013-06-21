@@ -77,7 +77,7 @@ class StatementGenerator extends AbstractStatementGenerator {
         super(Messages.get("reporting.statements.run.title"),
               Messages.get("reporting.statements.run.cancel.title"),
               Messages.get("reporting.statements.run.cancel.message"),
-              Messages.get("reporting.statements.run.retry.title"));
+              Messages.get("reporting.statements.run.retry.title"), help);
         List<Party> customers = new ArrayList<Party>();
         Party party = (Party) IMObjectHelper.getObject(customer, context);
         if (party != null) {
@@ -98,16 +98,16 @@ class StatementGenerator extends AbstractStatementGenerator {
         super(Messages.get("reporting.statements.run.title"),
               Messages.get("reporting.statements.run.cancel.title"),
               Messages.get("reporting.statements.run.cancel.message"),
-              Messages.get("reporting.statements.run.retry.title"));
+              Messages.get("reporting.statements.run.retry.title"), help);
         List<ObjectSet> balances = query.getObjects();
         List<Party> customers = new ArrayList<Party>();
         for (ObjectSet set : balances) {
             BigDecimal balance
-                = set.getBigDecimal(CustomerBalanceSummaryQuery.BALANCE);
+                    = set.getBigDecimal(CustomerBalanceSummaryQuery.BALANCE);
             if (BigDecimal.ZERO.compareTo(balance) != 0) {
                 // only include customers with non-zero balances
                 IMObjectReference ref = set.getReference(
-                    CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+                        CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
                 Party customer = (Party) IMObjectHelper.getObject(ref, context);
                 if (customer != null) {
                     customers.add(customer);

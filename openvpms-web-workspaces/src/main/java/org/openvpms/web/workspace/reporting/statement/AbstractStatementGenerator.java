@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -27,11 +27,11 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**
- * Abstract implementation of the {@link BatchProcessor} for statement
- * generation.
+ * Abstract implementation of the {@link BatchProcessor} for statement generation.
  *
  * @author Tim Anderson
  */
@@ -68,22 +68,27 @@ public abstract class AbstractStatementGenerator extends AbstractBatchProcessor 
     private final RetryListener<Party> retryListener;
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
      * The current generation dialog.
      */
     private BatchProcessorDialog dialog;
 
 
     /**
-     * Creates a new <tt>AbstractStatementGenerator</tt>.
+     * Constructs an {@link AbstractStatementGenerator}.
      *
      * @param title         the generation dialog title
      * @param cancelTitle   the cancel dialog title
      * @param cancelMessage the cancel dialog message
      * @param retryTitle    the retry dialog title
+     * @param help          the help context
      */
-    public AbstractStatementGenerator(String title, String cancelTitle,
-                                      String cancelMessage,
-                                      String retryTitle) {
+    public AbstractStatementGenerator(String title, String cancelTitle, String cancelMessage,
+                                      String retryTitle, HelpContext help) {
         this.title = title;
         this.cancelTitle = cancelTitle;
         this.cancelMessage = cancelMessage;
@@ -93,6 +98,7 @@ public abstract class AbstractStatementGenerator extends AbstractBatchProcessor 
             }
         };
         this.retryTitle = retryTitle;
+        this.help = help;
         retryListener = new RetryListener<Party>() {
             public void retry(Party customer, Vetoable action,
                               String reason) {
@@ -118,7 +124,7 @@ public abstract class AbstractStatementGenerator extends AbstractBatchProcessor 
         processor.setRetryListener(retryListener);
         if (processor.getCount() > 1) {
             // open a dialog to give the user the opportunity to cancel
-            dialog = new BatchProcessorDialog(title, processor);
+            dialog = new BatchProcessorDialog(title, processor, help);
             dialog.setCancelListener(cancelListener);
             dialog.show();
         } else {
@@ -178,7 +184,7 @@ public abstract class AbstractStatementGenerator extends AbstractBatchProcessor 
         final StatementProgressBarProcessor processor = getProcessor();
         processor.setCancel(true);
         final ConfirmationDialog dialog
-            = new ConfirmationDialog(cancelTitle, cancelMessage);
+                = new ConfirmationDialog(cancelTitle, cancelMessage);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
@@ -202,8 +208,8 @@ public abstract class AbstractStatementGenerator extends AbstractBatchProcessor 
      */
     private void onRetry(final Vetoable action, String reason) {
         final ConfirmationDialog dialog
-            = new ConfirmationDialog(retryTitle, reason,
-                                     ConfirmationDialog.RETRY_CANCEL);
+                = new ConfirmationDialog(retryTitle, reason,
+                                         ConfirmationDialog.RETRY_CANCEL);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent e) {
                 if (ConfirmationDialog.RETRY_ID.equals(dialog.getAction())) {
