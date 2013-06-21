@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -66,8 +64,7 @@ import java.util.List;
 /**
  * Customer balance query.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
 
@@ -151,9 +148,9 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     public CustomerBalanceQuery() {
         super(new String[]{"party.customer*"}, ObjectSet.class);
         balanceTypeItems = new String[]{
-            Messages.get("reporting.statements.balancetype.all"),
-            Messages.get("reporting.statements.balancetype.overdue"),
-            Messages.get("reporting.statements.balancetype.nonOverdue")
+                Messages.get("reporting.statements.balancetype.all"),
+                Messages.get("reporting.statements.balancetype.overdue"),
+                Messages.get("reporting.statements.balancetype.nonOverdue")
         };
     }
 
@@ -200,13 +197,13 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     protected void doLayout(Component container) {
         Grid grid = GridFactory.create(6);
         accountType = LookupFieldFactory.create(
-            new ArchetypeLookupQuery("lookup.customerAccountType"),
-            true);
+                new ArchetypeLookupQuery("lookup.customerAccountType"),
+                true);
         accountType.setSelected((Lookup) null);
         accountType.setCellRenderer(LookupListCellRenderer.INSTANCE);
 
         Label accountTypeLabel = LabelFactory.create(
-            "reporting.statements.accountType");
+                "reporting.statements.accountType");
 
         date = DateFieldFactory.create();
         date.addPropertyChangeListener(new PropertyChangeListener() {
@@ -223,61 +220,59 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
             }
         });
         Label balanceTypeLabel = LabelFactory.create(
-            "reporting.statements.balancetypes");
+                "reporting.statements.balancetypes");
 
         grid.add(accountTypeLabel);
         grid.add(accountType);
         grid.add(dateLabel);
         grid.add(date);
-        grid.add(balanceType);
         grid.add(balanceTypeLabel);
+        grid.add(balanceType);
 
         periodFromLabel = LabelFactory.create(
-            "reporting.statements.periodFrom");
+                "reporting.statements.periodFrom");
         periodFrom = TextComponentFactory.create();
         periodFrom.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent event) {
-                }
-            });
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                    }
+                });
 
         periodToLabel = LabelFactory.create("reporting.statements.periodTo");
         periodTo = TextComponentFactory.create();
         periodTo.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent event) {
-                }
-            });
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                    }
+                });
 
-        Label excludeCreditLabel
-            = LabelFactory.create("reporting.statements.excludeCredit");
-        excludeCredit = CheckBoxFactory.create(true);
+        excludeCredit = CheckBoxFactory.create("reporting.statements.excludeCredit", true);
 
         grid.add(periodFromLabel);
         grid.add(periodFrom);
         grid.add(periodToLabel);
         grid.add(periodTo);
         grid.add(excludeCredit);
-        grid.add(excludeCreditLabel);
+        grid.add(LabelFactory.create());
 
 
         Label customerFromLabel = LabelFactory.create(
-            "reporting.statements.customerFrom");
+                "reporting.statements.customerFrom");
         customerFrom = TextComponentFactory.create();
         customerFrom.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent event) {
-                }
-            });
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                    }
+                });
 
         Label customerToLabel = LabelFactory.create(
-            "reporting.statements.customerTo");
+                "reporting.statements.customerTo");
         customerTo = TextComponentFactory.create();
         customerTo.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent event) {
-                }
-            });
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                    }
+                });
 
         grid.add(customerFromLabel);
         grid.add(customerFrom);
@@ -315,9 +310,9 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
             int to = overdue ? getNumber(periodTo) : -1;
             boolean credit = excludeCredit.isSelected();
             query = new CustomerBalanceSummaryQuery(
-                getDate(), nonOverdue, from, to, credit, getAccountType(),
-                getWildcardedText(customerFrom),
-                getWildcardedText(customerTo));
+                    getDate(), nonOverdue, from, to, credit, getAccountType(),
+                    getWildcardedText(customerFrom),
+                    getWildcardedText(customerTo));
             while (query.hasNext()) {
                 sets.add(query.next());
             }
