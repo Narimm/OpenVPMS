@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -50,8 +48,7 @@ import java.math.BigDecimal;
 /**
  * Editor for <em>act.patientMedication</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientMedicationActEditor extends PatientActEditor {
 
@@ -72,11 +69,11 @@ public class PatientMedicationActEditor extends PatientActEditor {
 
 
     /**
-     * Constructs a <tt>PatientMedicationActEditor</tt>.
+     * Constructs a {@link PatientMedicationActEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent act. May be <tt>null</tt>
-     * @param context the layout context. May be <tt>null</tt>
+     * @param parent  the parent act. May be {@code null}
+     * @param context the layout context
      */
     public PatientMedicationActEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
@@ -113,7 +110,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     /**
      * Updates the product.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     public void setProduct(Product product) {
         if (setParticipant("product", product)) {
@@ -126,7 +123,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     /**
      * Returns the product.
      *
-     * @return the product. May be <tt>null</tt>
+     * @return the product. May be {@code null}
      */
     public Product getProduct() {
         return (Product) getParticipant("product");
@@ -144,7 +141,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     /**
      * Determines if the product should be displayed read-only.
      *
-     * @param readOnly if <tt>true</tt> display the product read-only.
+     * @param readOnly if {@code true} display the product read-only.
      */
     public void setProductReadOnly(boolean readOnly) {
         showProductReadOnly = readOnly;
@@ -193,7 +190,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     /**
      * Invoked when the product is modified.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void productModified(Product product) {
         if (product != null) {
@@ -210,7 +207,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     /**
      * Updates the dispensing units label.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updateDispensingUnits(Product product) {
         String units = "";
@@ -223,7 +220,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     /**
      * Updates the usage notes.
      *
-     * @param product the product. May be <tt>null</tt
+     * @param product the product. May be {@code null}
      */
     private void updateUsageNotes(Product product) {
         String notes = "";
@@ -238,7 +235,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
     /**
      * Returns the product editor.
      *
-     * @return the product editor, or <tt>null</tt> if none exists
+     * @return the product editor, or {@code null} if none exists
      */
     private ProductParticipationEditor getProductEditor() {
         ParticipationEditor<Product> editor = getParticipationEditor("product", false);
