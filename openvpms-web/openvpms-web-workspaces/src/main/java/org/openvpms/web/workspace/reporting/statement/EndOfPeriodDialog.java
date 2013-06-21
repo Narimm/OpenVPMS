@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -27,13 +25,13 @@ import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**
  * End of period confirmation dialog.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class EndOfPeriodDialog extends ConfirmationDialog {
 
@@ -44,21 +42,22 @@ class EndOfPeriodDialog extends ConfirmationDialog {
 
 
     /**
-     * Constructs a new <tt>EndOfPeriodDialog</tt>.
+     * Constructs a new {@code EndOfPeriodDialog}.
      *
      * @param title   the window title
      * @param message the message
+     * @param help    the help context
      */
-    public EndOfPeriodDialog(String title, String message) {
-        super(title, message, OK_CANCEL);
+    public EndOfPeriodDialog(String title, String message, HelpContext help) {
+        super(title, message, OK_CANCEL, help);
         postCompleted = CheckBoxFactory.create(
-            "reporting.statements.eop.postCompleted", true);
+                "reporting.statements.eop.postCompleted", true);
     }
 
     /**
      * Determines if completed invoices should be posted.
      *
-     * @return <tt>true</tt> if completed invoices should be posted
+     * @return {@code true} if completed invoices should be posted
      */
     public boolean postCompletedInvoices() {
         return postCompleted.isSelected();

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -29,6 +27,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Date;
@@ -37,8 +36,7 @@ import java.util.Date;
 /**
  * End-of-period generator.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class EndOfPeriodGenerator extends AbstractStatementGenerator {
 
@@ -49,36 +47,31 @@ class EndOfPeriodGenerator extends AbstractStatementGenerator {
 
 
     /**
-     * Creates a new <tt>EndOfPeriodGenerator</tt>.
+     * Constructs an {@link EndOfPeriodGenerator}.
      *
      * @param date                 the statement date
-     * @param postCompletedCharges if <tt>true</tt> post completed charge acts
+     * @param postCompletedCharges if {@code true} post completed charge acts
      * @param context              the context
+     * @param help                 the help context
      */
-    public EndOfPeriodGenerator(Date date, boolean postCompletedCharges,
-                                Context context) {
+    public EndOfPeriodGenerator(Date date, boolean postCompletedCharges, Context context, HelpContext help) {
         super(Messages.get("reporting.statements.eop.title"),
               Messages.get("reporting.statements.eop.cancel.title"),
               Messages.get("reporting.statements.eop.cancel.message"),
-              Messages.get("reporting.statements.eop.retry.title"));
+              Messages.get("reporting.statements.eop.retry.title"), help);
         Party practice = context.getPractice();
         if (practice == null) {
-            throw new StatementProcessorException(
-                StatementProcessorException.ErrorCode.InvalidConfiguration,
-                "Context has no practice");
+            throw new StatementProcessorException(StatementProcessorException.ErrorCode.InvalidConfiguration,
+                                                  "Context has no practice");
         }
 
-        ArchetypeQuery query
-            = new ArchetypeQuery("party.customer*", false, false);
+        ArchetypeQuery query = new ArchetypeQuery("party.customer*", false, false);
         int size = countCustomers(query);
         query.setMaxResults(1000);
 
-        IterableIMObjectQuery<Party> customers
-            = new IterableIMObjectQuery<Party>(query);
-        Processor<Party> processor = new EndOfPeriodProcessor(
-            date, postCompletedCharges, practice);
-        progressBarProcessor
-            = new StatementProgressBarProcessor(processor, customers, size);
+        IterableIMObjectQuery<Party> customers = new IterableIMObjectQuery<Party>(query);
+        Processor<Party> processor = new EndOfPeriodProcessor(date, postCompletedCharges, practice);
+        progressBarProcessor = new StatementProgressBarProcessor(processor, customers, size);
     }
 
     /**
@@ -99,7 +92,7 @@ class EndOfPeriodGenerator extends AbstractStatementGenerator {
     private int countCustomers(ArchetypeQuery query) {
         query.setMaxResults(0);
         IArchetypeService service
-            = ArchetypeServiceHelper.getArchetypeService();
+                = ArchetypeServiceHelper.getArchetypeService();
         query.setCountResults(true);
         IPage<IMObject> page = service.get(query);
         query.setCountResults(false);

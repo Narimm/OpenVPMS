@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.processor;
 
@@ -21,6 +21,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**
@@ -37,13 +38,14 @@ public class BatchProcessorDialog extends PopupDialog {
 
 
     /**
-     * Constructs a {@code BatchProcessorDialog}.
+     * Constructs a {@link BatchProcessorDialog}.
      *
      * @param title     the dialog title
      * @param processor the processor
+     * @param help      the help context
      */
-    public BatchProcessorDialog(String title, ProgressBarProcessor processor) {
-        super(title, CANCEL);
+    public BatchProcessorDialog(String title, ProgressBarProcessor processor, HelpContext help) {
+        super(title, CANCEL, help);
         setModal(true);
         Grid grid = new Grid();
         grid.setWidth(new Extent(100, Extent.PERCENT));

@@ -206,14 +206,14 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     private void onGenerate() {
         String title = Messages.get("supplier.order.generate.title");
-        HelpContext help = getHelpContext().subtopic("generate");
+        final HelpContext help = getHelpContext().subtopic("generate");
         final StockLocationSupplierDialog dialog = new StockLocationSupplierDialog(title, getContext(), help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
                 Party location = dialog.getStockLocation();
                 Party supplier = dialog.getSupplier();
-                generateOrders(location, supplier, dialog.getStockLocations(), dialog.getSuppliers());
+                generateOrders(location, supplier, dialog.getStockLocations(), dialog.getSuppliers(), help);
             }
         });
         dialog.show();
@@ -226,9 +226,10 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      * @param supplier      the selected supplier. May be {@code null} to indicate all suppliers
      * @param locations     the available stock locations
      * @param suppliers     the available suppliers
+     * @param help          the help context
      */
     private void generateOrders(Party stockLocation, Party supplier, List<IMObject> locations,
-                                List<IMObject> suppliers) {
+                                List<IMObject> suppliers, HelpContext help) {
         final String title = Messages.get("supplier.order.generate.title");
         if (stockLocation != null) {
             locations = Arrays.asList((IMObject) stockLocation);
@@ -237,8 +238,8 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             suppliers = Arrays.asList((IMObject) supplier);
         }
         final OrderProgressBarProcessor processor = new OrderProgressBarProcessor(
-            getContext().getPractice(), locations, suppliers, title);
-        final BatchProcessorDialog dialog = new BatchProcessorDialog(processor.getTitle(), processor);
+                getContext().getPractice(), locations, suppliers, title);
+        final BatchProcessorDialog dialog = new BatchProcessorDialog(processor.getTitle(), processor, help);
         processor.setListener(new BatchProcessorListener() {
             public void completed() {
                 dialog.close();

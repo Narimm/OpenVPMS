@@ -195,7 +195,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
                         HelpContext help = getHelpContext().subtopic("print");
                         MailContext mailContext = new CustomerMailContext(getContext(), help);
                         StatementGenerator generator = new StatementGenerator(
-                            ref, query.getDate(), true, getContext(), mailContext, help);
+                                ref, query.getDate(), true, getContext(), mailContext, help);
                         generator.setReprint(true);
                         generateStatements(generator, false);
                     }
@@ -213,11 +213,12 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
         if (checkStatementDate("reporting.statements.eop.invalidDate")) {
             String title = Messages.get("reporting.statements.eop.title");
             String message = Messages.get("reporting.statements.eop.message");
-            final EndOfPeriodDialog dialog = new EndOfPeriodDialog(title, message);
+            final HelpContext help = getHelpContext().subtopic("endperiod");
+            final EndOfPeriodDialog dialog = new EndOfPeriodDialog(title, message, help);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
-                    doEndPeriod(dialog.postCompletedInvoices());
+                    doEndPeriod(dialog.postCompletedInvoices(), help);
                 }
             });
             dialog.show();
@@ -228,11 +229,12 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * Runs end period.
      *
      * @param postCompletedInvoices if {@code true}, post completed invoices
+     * @param help                  the help context
      */
-    private void doEndPeriod(boolean postCompletedInvoices) {
+    private void doEndPeriod(boolean postCompletedInvoices, HelpContext help) {
         try {
             EndOfPeriodGenerator generator = new EndOfPeriodGenerator(query.getDate(), postCompletedInvoices,
-                                                                      getContext());
+                                                                      getContext(), help);
             generator.setListener(new BatchProcessorListener() {
                 public void completed() {
                     browser.query();
@@ -304,7 +306,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
     private void onReport() {
         try {
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
-                query.getObjects(), "CUSTOMER_BALANCE", getContext());
+                    query.getObjects(), "CUSTOMER_BALANCE", getContext());
             String type;
             if (query.queryAllBalances()) {
                 type = Messages.get("reporting.statements.print.all");
