@@ -108,6 +108,15 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     }
 
     /**
+     * Returns the event to link charge items to.
+     *
+     * @return the event to link charge items to
+     */
+    public Act getEvent() {
+        return event;
+    }
+
+    /**
      * Updates the amount and tax when an act item changes.
      */
     @Override
