@@ -317,6 +317,32 @@ public class VisitEditor {
     }
 
     /**
+     * Marks the charge IN_PROGRESS and saves it.
+     *
+     * @return {@code true} if the charge was updated
+     */
+    public boolean saveAsInProgress() {
+        boolean saved = chargeWindow.inProgress();
+        if (saved) {
+            updateVisitStatus();
+        }
+        return saved;
+    }
+
+    /**
+     * Marks the charge COMPLETED and saves it.
+     *
+     * @return {@code true} if the charge was updated
+     */
+    public boolean saveAsCompleted() {
+        boolean saved = chargeWindow.complete();
+        if (saved) {
+            updateVisitStatus();
+        }
+        return saved;
+    }
+
+    /**
      * Returns the patient.
      *
      * @return the patient
