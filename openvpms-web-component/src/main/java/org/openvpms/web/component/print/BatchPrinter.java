@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.print;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
@@ -160,7 +161,7 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
                     object = entry.getObject();
                     locator = new StaticDocumentTemplateLocator(entry.getTemplate());
                 } else {
-                    object = (T) iterator.next();
+                    object = (T) next;
                     locator = createDocumentTemplateLocator(object, context);
                 }
 
