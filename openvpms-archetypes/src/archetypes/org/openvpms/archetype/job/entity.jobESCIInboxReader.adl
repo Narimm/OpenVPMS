@@ -13,10 +13,11 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
-    <archetype name="entity.jobESCI.1.0" latest="true"
+    <archetype name="entity.jobESCIInboxReader.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity"
-               displayName="ESCI Inbox Reader">
+               displayName="Job Configuration: ESCI Inbox Reader">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" path="/name" type="java.lang.String" minCardinality="1"
               defaultValue="'ESCI Inbox Reader'"/>
