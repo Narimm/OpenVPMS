@@ -1,49 +1,43 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
-import echopointng.DateField;
-import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.web.component.bound.BoundCheckBox;
+import org.openvpms.web.component.bound.BoundDateFieldFactory;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Modifiable;
+import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.ComponentHelper;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.CheckBoxFactory;
-import org.openvpms.web.echo.factory.DateFieldFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Calendar;
 import java.util.Date;
 
 
 /**
  * Component for selecting a range of dates.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DateRange {
 
@@ -58,44 +52,38 @@ public class DateRange {
     private final boolean showAll;
 
     /**
-     * Indicates if all dates should be selected. If so, the from and to dates
-     * are ignored.
+     * Indicates if all dates should be selected. If so, the from and to dates are ignored.
      */
-    private CheckBox allDates;
+    private SimpleProperty all = new SimpleProperty("all", true, Boolean.class, Messages.get("daterange.all"));
 
     /**
-     * The date-from label.
+     * The from date.
      */
-    private Label fromLabel;
+    private SimpleProperty from = new SimpleProperty("from", null, Date.class, Messages.get("daterange.from"));
 
     /**
-     * The date-from date.
+     * The to date.
      */
-    private DateField from;
+    private SimpleProperty to = new SimpleProperty("to", null, Date.class, Messages.get("daterange.to"));
 
     /**
-     * The date-to label.
+     * The from-date component.
      */
-    private Label toLabel;
+    private ComponentState fromDate;
 
     /**
-     * The date-to date.
+     * The to-date component.
      */
-    private DateField to;
+    private ComponentState toDate;
 
     /**
      * The component.
      */
     private Component component;
 
-    /**
-     * The comonent style.
-     */
-    private static final String STYLE = "CellSpacing";
-
 
     /**
-     * Constructs a new <tt>DateRange</tt>
+     * Constructs a {@link DateRange}.
      *
      * @param focus the focus group
      */
@@ -104,7 +92,7 @@ public class DateRange {
     }
 
     /**
-     * Constructs a new <tt>DateRange</tt>
+     * Constructs a {@link DateRange}.
      *
      * @param focus   the focus group
      * @param showAll determines if an 'all' checkbox should be displayed to select all dates
@@ -112,13 +100,35 @@ public class DateRange {
     public DateRange(FocusGroup focus, boolean showAll) {
         this.focus = focus;
         this.showAll = showAll;
-        component = doLayout();
+        if (showAll) {
+            all.addModifiableListener(new ModifiableListener() {
+                @Override
+                public void modified(Modifiable modifiable) {
+                    onAllDatesChanged();
+                }
+            });
+        }
+        from.addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onFromChanged();
+            }
+        });
+        to.addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                onToChanged();
+            }
+        });
+        Date today = DateRules.getToday();
+        setFrom(today);
+        setTo(today);
     }
 
     /**
      * Returns the 'from' date.
      *
-     * @return the 'from' date, or <tt>null</tt> to query all dates
+     * @return the 'from' date, or {@code null} to query all dates
      */
     public Date getFrom() {
         return getAllDates() ? null : getDate(from);
@@ -130,13 +140,13 @@ public class DateRange {
      * @param date the 'from' date
      */
     public void setFrom(Date date) {
-        setDate(from, date);
+        from.setValue(date);
     }
 
     /**
      * Returns the 'to' date.
      *
-     * @return the 'to' date, or <tt>null</tt> to query all dates
+     * @return the 'to' date, or {@code null} to query all dates
      */
     public Date getTo() {
         return getAllDates() ? null : getDate(to);
@@ -148,7 +158,7 @@ public class DateRange {
      * @param date the 'to' date
      */
     public void setTo(Date date) {
-        setDate(to, date);
+        to.setValue(date);
     }
 
     /**
@@ -158,20 +168,18 @@ public class DateRange {
      */
     public void setAllDates(boolean selected) {
         if (showAll) {
-            allDates.setSelected(selected);
-            onAllDatesChanged();
+            all.setValue(selected);
         }
     }
 
     /**
      * Determines if all dates are being selected.
      *
-     * @return <tt>true</tt> if all dates are being seleced
+     * @return {@code true} if all dates are being selected
      */
     public boolean getAllDates() {
-        return showAll && allDates.isSelected();
+        return showAll && all.getValue() != null && (Boolean) all.getValue();
     }
-
 
     /**
      * Renders the component.
@@ -179,6 +187,9 @@ public class DateRange {
      * @return the component
      */
     public Component getComponent() {
+        if (component == null) {
+            component = doLayout();
+        }
         return component;
     }
 
@@ -188,69 +199,89 @@ public class DateRange {
      * @return the component
      */
     protected Component doLayout() {
+        fromDate = createFromDate(from);
+        toDate = createToDate(to);
+        ComponentState allDates;
         if (showAll) {
-            allDates = CheckBoxFactory.create("daterange.all", true);
-            allDates.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent e) {
-                    onAllDatesChanged();
-                }
-            });
+            allDates = createAllDates(all);
+        } else {
+            allDates = null;
         }
-
-        fromLabel = LabelFactory.create("daterange.from");
-        from = DateFieldFactory.create();
-        from.getDateChooser().addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent event) {
-                    onFromChanged();
-                }
-            });
-
-        toLabel = LabelFactory.create("daterange.to");
-        to = DateFieldFactory.create();
-        to.getDateChooser().addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent event) {
-                    onToChanged();
-                }
-            });
-        Row range = RowFactory.create(STYLE, fromLabel, from, toLabel, to);
-        Row result = RowFactory.create(STYLE);
-        if (showAll) {
-            result.add(allDates);
+        Component container = getContainer();
+        if (allDates != null) {
+            container.add(allDates.getLabel());
+            container.add(allDates.getComponent());
+            focus.add(allDates.getComponent());
         }
-        result.add(range);
+        container.add(fromDate.getLabel());
+        container.add(fromDate.getComponent());
+        container.add(toDate.getLabel());
+        container.add(toDate.getComponent());
 
         onAllDatesChanged();
 
-        if (showAll) {
-            focus.add(allDates);
-        }
-        focus.add(from);
-        focus.add(to);
-        return result;
+        focus.add(fromDate.getComponent());
+        focus.add(toDate.getComponent());
+        return container;
     }
 
     /**
-     * Invoked when the 'from' date changes. Sets the 'to' date = 'from' if
-     * 'from' is greater.
+     * Returns a container to render the component.
+     *
+     * @return the container
+     */
+    protected Component getContainer() {
+        return RowFactory.create(Styles.CELL_SPACING);
+    }
+
+    /**
+     * Creates a component to render the "all dates" property.
+     *
+     * @param allDates the "all dates" property
+     * @return a new component
+     */
+    protected ComponentState createAllDates(Property allDates) {
+        return new ComponentState(new BoundCheckBox(allDates), allDates);
+    }
+
+    /**
+     * Creates a component to render the "from date" property.
+     *
+     * @param from the "from date" property
+     * @return a new component
+     */
+    protected ComponentState createFromDate(Property from) {
+        return new ComponentState(BoundDateFieldFactory.create(from), from);
+    }
+
+    /**
+     * Creates a component to render the "to date" property.
+     *
+     * @param to the "to date" property
+     * @return a new component
+     */
+    protected ComponentState createToDate(Property to) {
+        return new ComponentState(BoundDateFieldFactory.create(to), to);
+    }
+
+    /**
+     * Invoked when the 'from' date changes. Sets the 'to' date = 'from' if 'from' is greater.
      */
     private void onFromChanged() {
         Date from = getFrom();
         Date to = getTo();
-        if (from != null && from.compareTo(to) > 0) {
+        if (from != null && to != null && DateRules.compareDates(from, to) > 0) {
             setTo(from);
         }
     }
 
     /**
-     * Invoked when the 'to' date changes. Sets the 'from' date = 'to' if
-     * 'from' is greater.
+     * Invoked when the 'to' date changes. Sets the 'from' date = 'to' if 'from' is greater.
      */
     private void onToChanged() {
         Date from = getFrom();
         Date to = getTo();
-        if (from != null && from.compareTo(to) > 0) {
+        if (from != null && to != null && DateRules.compareDates(from, to) > 0) {
             setFrom(to);
         }
     }
@@ -258,35 +289,23 @@ public class DateRange {
     /**
      * Invoked when the 'all dates' check box changes.
      */
-    private void onAllDatesChanged() {
+    protected void onAllDatesChanged() {
         boolean enabled = !getAllDates();
-        ComponentHelper.enable(fromLabel, enabled);
-        ComponentHelper.enable(from, enabled);
-        ComponentHelper.enable(toLabel, enabled);
-        ComponentHelper.enable(to, enabled);
+        ComponentHelper.enable(fromDate.getLabel(), enabled);
+        ComponentHelper.enable(fromDate.getComponent(), enabled);
+        ComponentHelper.enable(toDate.getLabel(), enabled);
+        ComponentHelper.enable(toDate.getComponent(), enabled);
     }
 
     /**
      * Returns the date of the given field.
      *
-     * @param field the date field
-     * @return the selected date from <tt>field</tt>
+     * @param property the date property
+     * @return the selected date
      */
-    private Date getDate(DateField field) {
-        Date date = field.getDateChooser().getSelectedDate().getTime();
+    private Date getDate(SimpleProperty property) {
+        Date date = (Date) property.getValue();
         return DateRules.getDate(date); // truncate any time component
-    }
-
-    /**
-     * Sets the date of the given field.
-     *
-     * @param field the date field
-     * @param date  the date to set
-     */
-    private void setDate(DateField field, Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        field.getDateChooser().setSelectedDate(calendar);
     }
 
 }
