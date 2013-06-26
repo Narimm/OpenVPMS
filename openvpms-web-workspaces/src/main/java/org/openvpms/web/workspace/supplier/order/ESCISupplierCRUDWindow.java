@@ -18,7 +18,12 @@ package org.openvpms.web.workspace.supplier.order;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.esci.adapter.dispatcher.DefaultESCIDispatcher;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -33,6 +38,7 @@ import org.quartz.Scheduler;
 import org.quartz.SimpleTrigger;
 
 import java.util.Date;
+import java.util.Iterator;
 
 
 /**
@@ -92,18 +98,38 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
      */
     protected void scheduleCheckInbox(boolean delay) {
         try {
-            String triggerName = "ESCIDispatcherAdhocTrigger";
-            Scheduler scheduler = ServiceHelper.getBean(Scheduler.class);
-            scheduler.unscheduleJob(triggerName, null); // remove the existing trigger, if any
-            SimpleTrigger trigger = new SimpleTrigger(triggerName);
-            trigger.setJobName("esciDispatcherJob");
-            if (delay) {
-                Date in30secs = new Date(System.currentTimeMillis() + 30 * 1000);
-                trigger.setStartTime(in30secs);
+            String name = getESCIJobName();
+            if (!StringUtils.isEmpty(name)) {
+                String triggerName = "ESCIDispatcherAdhocTrigger";
+                Scheduler scheduler = ServiceHelper.getBean(Scheduler.class);
+                scheduler.unscheduleJob(triggerName, null); // remove the existing trigger, if any
+                SimpleTrigger trigger = new SimpleTrigger(triggerName);
+                trigger.setJobName(name);
+                if (delay) {
+                    Date in30secs = new Date(System.currentTimeMillis() + 30 * 1000);
+                    trigger.setStartTime(in30secs);
+                }
+                scheduler.scheduleJob(trigger);
             }
-            scheduler.scheduleJob(trigger);
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Returns the ESCI job configuration name.
+     *
+     * @return the ESCI job configuration name, or {@code null} if none exists
+     */
+    private String getESCIJobName() {
+        String name = null;
+        ArchetypeQuery query = new ArchetypeQuery("entity.jobESCI", true);
+        query.setMaxResults(1);
+        query.add(new NodeSelectConstraint("name"));
+        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(query);
+        if (iterator.hasNext()) {
+            name = iterator.next().getString("name");
+        }
+        return name;
     }
 }

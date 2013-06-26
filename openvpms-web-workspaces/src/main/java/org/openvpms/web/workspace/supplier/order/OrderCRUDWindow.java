@@ -185,7 +185,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             try {
                 OrderServiceAdapter service = ServiceHelper.getOrderService();
                 service.submitOrder(act);
-                scheduleCheckInbox(true); // poll in 30 secs to see if there any responses
+                scheduleCheckInbox(true); // poll in 30 secs to see if there are any responses
                 InformationDialog.show(Messages.get("supplier.order.sent.title"),
                                        Messages.get("supplier.order.sent.message"));
             } catch (Throwable exception) {

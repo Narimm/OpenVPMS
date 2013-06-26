@@ -24,6 +24,7 @@
     <import resource="openvpms-framework.xml"/>
     <import resource="openvpms-archetypes.xml"/>
     <import resource="openvpms-reports.xml"/>
+    <import resource="openvpms-scheduling.xml"/>
     <import resource="openvpms-esci.xml"/>
     <import resource="openvpms-sms.xml"/>
     <import resource="openvpms-authentication.xml"/>

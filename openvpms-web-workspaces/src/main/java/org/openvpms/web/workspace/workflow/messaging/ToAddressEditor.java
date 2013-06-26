@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.workflow.messaging;
 
@@ -40,7 +40,6 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -113,20 +112,7 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
      * @return the selected users
      */
     public Set<User> getTo() {
-        Set<Entity> groups = new HashSet<Entity>();
-        Set<User> result = new HashSet<User>();
-        for (Entity entity : selector.getObjects()) {
-            if (entity instanceof User) {
-                result.add((User) entity);
-            } else if (entity != null) {
-                if (!groups.contains(entity)) {
-                    groups.add(entity);
-                    List<User> users = getUsers(entity);
-                    result.addAll(users);
-                }
-            }
-        }
-        return result;
+        return MessageHelper.getUsers(selector.getObjects());
     }
 
     /**
@@ -268,17 +254,6 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
             }
             participation.setEntity(ref);
         }
-    }
-
-    /**
-     * Returns all users in a group.
-     *
-     * @param group the <em>entity.userGroup</em>.
-     * @return the users
-     */
-    private List<User> getUsers(Entity group) {
-        EntityBean bean = new EntityBean(group);
-        return bean.getNodeTargetObjects("users", User.class);
     }
 
 }

@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
@@ -79,45 +95,6 @@
         <property name="supplierRules" ref="supplierRules"/>
         <property name="productRules" ref="productRules"/>
         <property name="currencies" ref="currencies"/>
-    </bean>
-
-    <!-- ================================================================== -->
-    <!-- Scheduling                                                         -->
-    <!-- ================================================================== -->
-
-    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <property name="jobFactory">
-            <bean class="org.springframework.scheduling.quartz.SpringBeanJobFactory"/>
-        </property>
-        <property name="schedulerContextAsMap">
-            <map>
-                <entry key="ESCIDispatcher" value-ref="esciDispatcher"/>
-                <entry key="ArchetypeService" value-ref="archetypeRuleService"/>
-                <entry key="runAs" value="admin"/>
-                <!-- change this to a valid user -->
-            </map>
-        </property>
-        <property name="triggers">
-            <list>
-                <ref bean="esciDispatcherCronTrigger"/>
-            </list>
-        </property>
-        <property name="quartzProperties">
-            <props>
-                <prop key="org.quartz.plugin.jobHistory.class">org.quartz.plugins.history.LoggingJobHistoryPlugin</prop>
-            </props>
-        </property>
-    </bean>
-
-    <bean name="esciDispatcherCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="esciDispatcherJob"/>
-        <!-- run every week day at 5:30 PM -->
-        <!-- See http://www.quartz-scheduler.org/docs/tutorials/crontrigger.html -->
-        <property name="cronExpression" value="0 30 17 ? * MON-FRI"/>
-    </bean>
-
-    <bean name="esciDispatcherJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass" value="org.openvpms.esci.adapter.dispatcher.quartz.ESCIDispatcherJob"/>
     </bean>
 
     <!-- ================================================================== -->
