@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
@@ -39,11 +39,11 @@ import static org.openvpms.web.component.im.layout.ArchetypeNodes.include;
 
 
 /**
- * Layout strategy for <em>act.userMessage</em>.
+ * Layout strategy for <em>act.systemMessage</em>.
  *
  * @author Tim Anderson
  */
-public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
+public class SystemMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
 
     /**
      * Apply the layout strategy.
@@ -58,16 +58,14 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        ComponentState from = createComponent(properties.get("from"), object, context);
         ComponentState to = createComponent(properties.get("to"), object, context);
         ComponentState description = createComponent(properties.get("description"), object, context);
-        ComponentState message = createMessage(properties, context, "UserMessage.message");
+        ComponentState message = createMessage(properties, context, !showItem(context, object));
 
         if (description.getComponent() instanceof TextComponent) {
             ((TextComponent) description.getComponent()).setWidth(FULL_WIDTH);
         }
 
-        addComponent(from);
         addComponent(to);
         addComponent(description);
         addComponent(message);
@@ -93,44 +91,27 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
         List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
 
-        List<NodeDescriptor> from = include(simple, "from");
-        List<NodeDescriptor> header = include(simple, "to", "description");
-        List<NodeDescriptor> customer = include(simple, "customer", "patient");
-        List<NodeDescriptor> fields = exclude(simple, "from", "to", "description", "startTime", "customer", "patient",
-                                              "message", "status");
-
-        if (!context.isEdit()) {
-            // hide empty customer and patient nodes in view layout
-            ActBean bean = new ActBean((Act) object);
-            if (bean.getNodeParticipantRef("customer") == null) {
-                customer = exclude(customer, "customer");
-            }
-            if (bean.getNodeParticipantRef("patient") == null) {
-                customer = exclude(customer, "patient");
-            }
-        }
+        List<NodeDescriptor> header = include(simple, "to", "description", "reason");
+        List<NodeDescriptor> fields = exclude(simple, "to", "description", "reason", "startTime", "message", "status");
         List<NodeDescriptor> message = include(simple, "message");
 
         ComponentGrid componentGrid = new ComponentGrid();
-        ComponentSet fromSet = createComponentSet(object, from, properties, context);
         ComponentSet headerSet = createComponentSet(object, header, properties, context);
-        ComponentSet customerSet = createComponentSet(object, customer, properties, context);
         ComponentSet fieldSet = createComponentSet(object, fields, properties, context);
         ComponentSet messageSet = createComponentSet(object, message, properties, context);
-        componentGrid.add(fromSet);
+        componentGrid.add(headerSet, 1, 2);
+        componentGrid.add(fieldSet, 2);
+        componentGrid.add(messageSet, 1, 2);
+
         if (!context.isEdit()) {
             ComponentState date = createDate((Act) object);
             componentGrid.set(0, 1, date);
         }
-        componentGrid.add(headerSet, 1, 2);
-        if (customerSet.size() != 0) {
-            // in view mode, display customer and patient on separate rows as it looks odd on wide-screens.
-            // In the dialog (width-constrained) it looks better on one row.
-            int columns = (context.isEdit()) ? customerSet.size() : 1;
-            componentGrid.add(customerSet, columns);
+
+        if (!showItem(context, object)) {
+            complex = exclude(complex, "item");
         }
-        componentGrid.add(fieldSet, 2);
-        componentGrid.add(messageSet, 1, 2);
+
         Grid grid = createGrid(componentGrid);
         grid.setWidth(FULL_WIDTH);
 
@@ -138,6 +119,35 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         doComplexLayout(object, parent, complex, properties, child, context);
 
         container.add(child);
+    }
+
+    /**
+     * Creates a component to display the message.
+     *
+     * @param properties the properties
+     * @param context    the layout context
+     * @param fullHeight if {@code true} display the message to its maximum
+     * @return a component to display the message
+     */
+    private ComponentState createMessage(PropertySet properties, LayoutContext context, boolean fullHeight) {
+        String styleName = (fullHeight) ? "UserMessage.message" : "SystemMessage.message";
+        return createMessage(properties, context, styleName);
+    }
+
+    /**
+     * Determines if the item node should be displayed.
+     *
+     * @param context the layout context
+     * @param object  the object to display
+     * @return {@code true} if the node should be displayed, otherwise {@code false}
+     */
+    private boolean showItem(LayoutContext context, IMObject object) {
+        boolean result = context.isEdit();
+        if (!result) {
+            IMObjectBean bean = new IMObjectBean(object);
+            result = !bean.getNodeTargetObjectRefs("item").isEmpty();
+        }
+        return result;
     }
 
 }

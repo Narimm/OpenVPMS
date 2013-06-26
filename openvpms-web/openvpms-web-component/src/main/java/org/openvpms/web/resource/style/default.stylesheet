@@ -753,6 +753,13 @@
         </properties>
     </style>
 
+    <style name="SystemMessage.message" type="nextapp.echo2.app.TextArea" base-name="default">
+        <properties>
+            <property name="width" value="100%"/>
+            <property name="height" value="${SystemMessage.message.height}"/>
+        </properties>
+    </style>
+
 
     <style name="SelectUserDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
