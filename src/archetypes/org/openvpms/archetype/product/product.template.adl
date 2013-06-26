@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="product.template.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.product.Product" displayName="Template">
@@ -23,10 +24,7 @@
             <assertion name="propercase"/>
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
-        <node name="printedName" path="/details/printedName" type="java.lang.String"
-              minCardinality="0">
-            <assertion name="propercase"/>
-        </node>
+        <node name="printedName" path="/details/printedName" type="java.lang.String" minCardinality="0" hidden="true"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="invoiceNote" path="/details/invoiceNote" type="java.lang.String" maxLength="300"/>
         <node name="visitNote" path="/details/visitNote" type="java.lang.String" maxLength="1000"/>
