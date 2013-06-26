@@ -122,9 +122,22 @@ public class SimpleProperty extends AbstractProperty {
      * @param type  the property type
      */
     public SimpleProperty(String name, Object value, Class type) {
+        this(name, value, type, null);
+    }
+
+    /**
+     * Constructs a {@code SimpleProperty}.
+     *
+     * @param name        the property name
+     * @param value       the property value. May be {@code null}
+     * @param type        the property type
+     * @param displayName the display name. May be {@code null}
+     */
+    public SimpleProperty(String name, Object value, Class type, String displayName) {
         this.name = name;
         this.value = value;
         this.type = type;
+        this.displayName = displayName;
     }
 
     /**
