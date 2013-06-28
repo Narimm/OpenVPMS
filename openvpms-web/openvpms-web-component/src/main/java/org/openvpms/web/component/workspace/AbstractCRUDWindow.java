@@ -464,7 +464,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         T object = getObject();
-        buttons.setEnabled(NEW_ID, enable && actions.canCreate());
+        buttons.setEnabled(NEW_ID, actions.canCreate());
         buttons.setEnabled(EDIT_ID, enable && actions.canEdit(object));
         buttons.setEnabled(DELETE_ID, enable && actions.canDelete(object));
     }
