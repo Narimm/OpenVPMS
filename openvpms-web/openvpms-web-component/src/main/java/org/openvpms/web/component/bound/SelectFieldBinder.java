@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -97,20 +97,25 @@ public class SelectFieldBinder extends Binder {
     /**
      * Updates the property from the field.
      *
-     * @param property the propery to update
+     * @param property the property to update
+     * @return {@code true} if the property was updated
      */
     @Override
-    protected void setProperty(Property property) {
+    protected boolean setProperty(Property property) {
+        boolean result = false;
         if (!property.isCollection()) {
-            super.setProperty(property);
+            result = super.setProperty(property);
         } else {
             // if its a collection property add the selected value to the collection, replacing any existing values
             CollectionProperty collection = (CollectionProperty) property;
             Collection values = collection.getValues();
             if (component.getSelectedIndex() == -1) {
                 // nothing selected, so remove any existing value
-                for (Object value : values) {
-                    collection.remove(value);
+                if (!values.isEmpty()) {
+                    for (Object value : values) {
+                        collection.remove(value);
+                    }
+                    result = true;
                 }
             } else {
                 // replace any existing values with the selected value
@@ -120,9 +125,11 @@ public class SelectFieldBinder extends Binder {
                         collection.remove(value);
                     }
                     collection.add(fieldValue);
+                    result = true;
                 }
             }
         }
+        return result;
     }
 
     /**
