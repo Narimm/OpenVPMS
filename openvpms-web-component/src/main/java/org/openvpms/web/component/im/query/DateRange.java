@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import echopointng.DateField;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.web.component.bound.BoundCheckBox;
@@ -292,9 +293,9 @@ public class DateRange {
     protected void onAllDatesChanged() {
         boolean enabled = !getAllDates();
         ComponentHelper.enable(fromDate.getLabel(), enabled);
-        ComponentHelper.enable(fromDate.getComponent(), enabled);
+        ComponentHelper.enable((DateField) fromDate.getComponent(), enabled);
         ComponentHelper.enable(toDate.getLabel(), enabled);
-        ComponentHelper.enable(toDate.getComponent(), enabled);
+        ComponentHelper.enable((DateField) toDate.getComponent(), enabled);
     }
 
     /**
