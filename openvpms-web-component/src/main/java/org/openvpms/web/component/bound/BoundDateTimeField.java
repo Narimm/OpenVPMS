@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -40,8 +38,7 @@ import java.util.GregorianCalendar;
 /**
  * Bound date/time field.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BoundDateTimeField extends AbstractPropertyEditor {
 
@@ -228,10 +225,12 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
                 /**
                  * Updates the property from the field.
                  *
-                 * @param property the propery to update
+                 * @param property the property to update
+                 * @return {@code true} if the property was updated
                  */
                 @Override
-                protected void setProperty(Property property) {
+                protected boolean setProperty(Property property) {
+                    boolean result;
                     Date date = getFieldValue();
                     Date currentDate = (Date) property.getValue();
                     if (date != null && currentDate != null) {
@@ -247,12 +246,14 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
                         date = calendar.getTime();
                     }
                     setDate(date);
-                    if (property.setValue(date)) {
+                    result = property.setValue(date);
+                    if (result) {
                         Object propertyValue = property.getValue();
                         if (!ObjectUtils.equals(date, propertyValue)) {
                             setField();
                         }
                     }
+                    return result;
                 }
             };
         }
