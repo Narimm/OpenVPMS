@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.messaging;
 
 import nextapp.echo2.app.Component;
@@ -91,22 +92,25 @@ public class SystemMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
         List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
 
-        List<NodeDescriptor> header = include(simple, "to", "description", "reason");
+        List<NodeDescriptor> to = include(simple, "to");
+        List<NodeDescriptor> header = include(simple, "description", "reason");
         List<NodeDescriptor> fields = exclude(simple, "to", "description", "reason", "startTime", "message", "status");
         List<NodeDescriptor> message = include(simple, "message");
 
         ComponentGrid componentGrid = new ComponentGrid();
+        ComponentSet toSet = createComponentSet(object, to, properties, context);
+        if (!context.isEdit()) {
+            ComponentState date = createDate((Act) object);
+            toSet.add(date);
+        }
+
         ComponentSet headerSet = createComponentSet(object, header, properties, context);
         ComponentSet fieldSet = createComponentSet(object, fields, properties, context);
         ComponentSet messageSet = createComponentSet(object, message, properties, context);
+        componentGrid.add(toSet, 2);
         componentGrid.add(headerSet, 1, 2);
         componentGrid.add(fieldSet, 2);
         componentGrid.add(messageSet, 1, 2);
-
-        if (!context.isEdit()) {
-            ComponentState date = createDate((Act) object);
-            componentGrid.set(0, 1, date);
-        }
 
         if (!showItem(context, object)) {
             complex = exclude(complex, "item");
