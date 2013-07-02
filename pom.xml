@@ -58,7 +58,6 @@
         <module>openvpms-web-component</module>
         <module>openvpms-web-workspaces</module>
         <module>openvpms-web-app</module>
-        <module>openvpms-scheduler</module>
     </modules>
 
 </project>
