@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -46,11 +44,9 @@ import static org.openvpms.component.system.common.query.ParticipationConstraint
 /**
  * Result set for performing queries on {@link Act}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public abstract class AbstractActResultSet<T>
-    extends AbstractArchetypeServiceResultSet<T> {
+public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceResultSet<T> {
 
     /**
      * The act archetype criteria.
@@ -63,22 +59,22 @@ public abstract class AbstractActResultSet<T>
     private ParticipantConstraint[] participants;
 
     /**
-     * The status criteria. May be <tt>null</tt>.
+     * The status criteria. May be {@code null}.
      */
     private final IConstraint statuses;
 
     /**
-     * The time criteria. May be <tt>null</tt>.
+     * The time criteria. May be {@code null}.
      */
     private final IConstraint times;
 
 
     /**
-     * Constructs a new <tt>AbstractActResultSet</tt>.
+     * Constructs a new {@code AbstractActResultSet}.
      *
      * @param archetypes the act archetype constraint
      * @param pageSize   the maximum no. of results per page
-     * @param sort       the sort criteria. May be <tt>null</tt>
+     * @param sort       the sort criteria. May be {@code null}
      * @param executor   the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
@@ -88,15 +84,15 @@ public abstract class AbstractActResultSet<T>
     }
 
     /**
-     * Constructs a new <tt>AbstractActResultSet</tt>.
+     * Constructs a new {@code AbstractActResultSet}.
      *
      * @param archetypes  the act archetype constraint
-     * @param participant the participant constraint. May be <tt>null</tt>
-     * @param from        the act from date. May be <tt>null</tt>
-     * @param to          the act to date, inclusive. May be <tt>null</tt>
+     * @param participant the participant constraint. May be {@code null}
+     * @param from        the act from date. May be {@code null}
+     * @param to          the act to date, inclusive. May be {@code null}
      * @param statuses    the act statuses. If empty, indicates all acts
      * @param pageSize    the maximum no. of results per page
-     * @param sort        the sort criteria. May be <tt>null</tt>
+     * @param sort        the sort criteria. May be {@code null}
      * @param executor    the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
@@ -111,19 +107,17 @@ public abstract class AbstractActResultSet<T>
     }
 
     /**
-     * Constructs a new <tt>AbstractActResultSet</tt>.
+     * Constructs a new {@code AbstractActResultSet}.
      *
      * @param archetypes  the act archetype constraint
-     * @param participant the participant constraint. May be <tt>null</tt>
-     * @param from        the act from date. May be <tt>null</tt>
-     * @param to          the act to date, inclusive. May be <tt>null</tt>
-     * @param statuses    the act statuses. If empty, indicates all acts
-     * @param exclude     if <tt>true</tt> exclude acts with status in
-     *                    <tt>statuses</tt>; otherwise include them.
-     * @param constraints additional query constraints. May be
-     *                    <code<null</tt>
+     * @param participant the participant constraint. May be {@code null}
+     * @param from        the act from date. May be {@code null}
+     * @param to          the act to date, inclusive. May be {@code null}
+     * @param statuses    the act statuses. If {@code null} or empty, indicates all acts
+     * @param exclude     if {@code true} exclude acts with status in {@code statuses}; otherwise include them.
+     * @param constraints additional query constraints. May be {@code null}
      * @param pageSize    the maximum no. of results per page
-     * @param sort        the sort criteria. May be <tt>null</tt>
+     * @param sort        the sort criteria. May be {@code null}
      * @param executor    the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
@@ -134,26 +128,22 @@ public abstract class AbstractActResultSet<T>
                                 IConstraint constraints, int pageSize,
                                 SortConstraint[] sort,
                                 QueryExecutor<T> executor) {
-        this(archetypes, (participant != null)
-                         ? new ParticipantConstraint[]{participant} : null,
-             from, to, statuses, exclude, constraints, pageSize, sort,
-             executor);
+        this(archetypes, (participant != null) ? new ParticipantConstraint[]{participant} : null,
+             from, to, statuses, exclude, constraints, pageSize, sort, executor);
     }
 
     /**
-     * Constructs a new <tt>AbstractActResultSet</tt>.
+     * Constructs a new {@code AbstractActResultSet}.
      *
      * @param archetypes   the act archetype constraint
-     * @param participants the participant constraints. May be <tt>null</tt>
-     * @param from         the act from date. May be <tt>null</tt>
-     * @param to           the act to date, inclusive. May be <tt>null</tt>
-     * @param statuses     the act statuses. If empty, indicates all acts
-     * @param exclude      if <tt>true</tt> exclude acts with status in
-     *                     <tt>statuses</tt>; otherwise include them.
-     * @param constraints  additional query constraints. May be
-     *                     <code<null</tt>
+     * @param participants the participant constraints. May be {@code null}
+     * @param from         the act from date. May be {@code null}
+     * @param to           the act to date, inclusive. May be {@code null}
+     * @param statuses     the act statuses. If {@code null} or empty, indicates all acts
+     * @param exclude      if {@code true} exclude acts with status in {@code statuses}; otherwise include them.
+     * @param constraints  additional query constraints. May be {@code null}
      * @param pageSize     the maximum no. of results per page
-     * @param sort         the sort criteria. May be <tt>null</tt>
+     * @param sort         the sort criteria. May be {@code null}
      * @param executor     the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
@@ -169,18 +159,16 @@ public abstract class AbstractActResultSet<T>
     }
 
     /**
-     * Constructs a new <tt>AbstractActResultSet</tt>.
+     * Constructs a new {@code AbstractActResultSet}.
      *
      * @param archetypes   the act archetype constraint
-     * @param participants the participant constraints. May be <tt>null</tt>
-     * @param times        the time constraints. May be <tt>null</tt>
-     * @param statuses     the act statuses. If empty, indicates all acts
-     * @param exclude      if <tt>true</tt> exclude acts with status in
-     *                     <tt>statuses</tt>; otherwise include them.
-     * @param constraints  additional query constraints. May be
-     *                     <code<null</tt>
+     * @param participants the participant constraints. May be {@code null}
+     * @param times        the time constraints. May be {@code null}
+     * @param statuses     the act statuses. If {@code null} or empty, indicates all acts
+     * @param exclude      if {@code true} exclude acts with status in {@code statuses}; otherwise include them.
+     * @param constraints  additional query constraints. May be {@code null}
      * @param pageSize     the maximum no. of results per page
-     * @param sort         the sort criteria. May be <tt>null</tt>
+     * @param sort         the sort criteria. May be {@code null}
      * @param executor     the query executor
      */
     public AbstractActResultSet(ShortNameConstraint archetypes,
@@ -193,29 +181,7 @@ public abstract class AbstractActResultSet<T>
         this.participants = participants;
         this.archetypes = archetypes;
 
-        if (statuses.length > 1) {
-            IConstraintContainer constraint;
-            RelationalOp op;
-            if (exclude) {
-                constraint = new AndConstraint();
-                op = RelationalOp.NE;
-            } else {
-                constraint = new OrConstraint();
-                op = RelationalOp.EQ;
-            }
-            for (String status : statuses) {
-                constraint.add(new NodeConstraint("status", op, status));
-            }
-            this.statuses = constraint;
-        } else if (statuses.length == 1) {
-            RelationalOp op = RelationalOp.EQ;
-            if (exclude) {
-                op = RelationalOp.NE;
-            }
-            this.statuses = new NodeConstraint("status", op, statuses[0]);
-        } else {
-            this.statuses = null;
-        }
+        this.statuses = createStatusConstraint(statuses, exclude);
         this.times = times;
     }
 
@@ -235,28 +201,24 @@ public abstract class AbstractActResultSet<T>
 
         if (participants != null) {
             String[] shortNames = DescriptorHelper.getShortNames(
-                archetypes.getShortNames(), archetypes.isPrimaryOnly());
+                    archetypes.getShortNames(), archetypes.isPrimaryOnly());
             try {
                 for (ParticipantConstraint participant : participants) {
-                    ParticipantConstraint p
-                        = (ParticipantConstraint) participant.clone();
+                    ParticipantConstraint p = (ParticipantConstraint) participant.clone();
                     if (shortNames.length > 1) {
                         OrConstraint or = new OrConstraint();
                         for (String shortName : shortNames) {
-                            or.add(new ParticipationConstraint(ActShortName,
-                                                               shortName));
+                            or.add(new ParticipationConstraint(ActShortName, shortName));
                         }
                         p.add(or);
                     } else if (shortNames.length == 1) {
-                        p.add(new ParticipationConstraint(ActShortName,
-                                                          shortNames[0]));
+                        p.add(new ParticipationConstraint(ActShortName, shortNames[0]));
                     }
                     query.add(p);
                 }
             } catch (CloneNotSupportedException exception) {
-                throw new ArchetypeQueryException(
-                    ArchetypeQueryException.ErrorCode.CloneNotSupported,
-                    exception);
+                throw new ArchetypeQueryException(ArchetypeQueryException.ErrorCode.CloneNotSupported,
+                                                  exception);
             }
         }
 
@@ -265,8 +227,7 @@ public abstract class AbstractActResultSet<T>
 
     /**
      * Returns a new archetype query.
-     * This implementation delegates creation to {@link #createQuery},
-     * before adding any {@link #getConstraints()} and
+     * This implementation delegates creation to {@link #createQuery}, before adding any {@link #getConstraints()} and
      * {@link #getSortConstraints()}.
      *
      * @param firstResult the first result of the page to retrieve
@@ -290,12 +251,12 @@ public abstract class AbstractActResultSet<T>
             if (sort instanceof NodeSortConstraint) {
                 NodeSortConstraint node = (NodeSortConstraint) sort;
                 NodeDescriptor descriptor
-                    = QueryHelper.getDescriptor(archetypes,
-                                                node.getNodeName());
+                        = QueryHelper.getDescriptor(archetypes,
+                                                    node.getNodeName());
                 if (descriptor != null
                     && QueryHelper.isParticipationNode(descriptor)) {
                     ShortNameConstraint shortNames = (ShortNameConstraint)
-                        query.getArchetypeConstraint();
+                            query.getArchetypeConstraint();
                     QueryHelper.addSortOnParticipation(shortNames, query,
                                                        descriptor,
                                                        node.isAscending());
@@ -321,13 +282,45 @@ public abstract class AbstractActResultSet<T>
     }
 
     /**
+     * Creates a status constraint.
+     *
+     * @param statuses the statuses. May be {@code null}
+     * @param exclude  if {@code true}, exclude acts with the status, otherwise include them
+     * @return the status constraint, or {@code null} if there are no statuses
+     */
+    protected IConstraint createStatusConstraint(String[] statuses, boolean exclude) {
+        IConstraint result = null;
+        if (statuses != null && statuses.length > 1) {
+            IConstraintContainer constraint;
+            RelationalOp op;
+            if (exclude) {
+                constraint = new AndConstraint();
+                op = RelationalOp.NE;
+            } else {
+                constraint = new OrConstraint();
+                op = RelationalOp.EQ;
+            }
+            for (String status : statuses) {
+                constraint.add(new NodeConstraint("status", op, status));
+            }
+            result = constraint;
+        } else if (statuses != null && statuses.length == 1) {
+            RelationalOp op = RelationalOp.EQ;
+            if (exclude) {
+                op = RelationalOp.NE;
+            }
+            result = new NodeConstraint("status", op, statuses[0]);
+        }
+        return result;
+    }
+
+    /**
      * Helper to create a constraint on startTime, if the from and to dates
      * are non-null.
      *
-     * @param from the act from date. May be <tt>null</tt>
-     * @param to   the act to date, inclusive. May be <tt>null</tt>
-     * @return a new constraint, if both dates are non-null, otherwise
-     *         <tt>null</tt>
+     * @param from the act from date. May be {@code null}
+     * @param to   the act to date, inclusive. May be {@code null}
+     * @return a new constraint, if both dates are non-null, otherwise {@code null}
      */
     private static IConstraint createTimeConstraint(Date from, Date to) {
         if (from != null && to != null) {
