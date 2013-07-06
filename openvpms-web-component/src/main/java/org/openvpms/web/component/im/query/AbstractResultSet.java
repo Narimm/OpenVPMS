@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -27,8 +25,7 @@ import java.util.NoSuchElementException;
 /**
  * Abstract implementation of the {@link ResultSet} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class AbstractResultSet<T> implements ResultSet<T> {
 
@@ -48,13 +45,13 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     private int cursor;
 
     /**
-     * The nodes to query. If <tt>null</tt> indicates to query all nodes.
+     * The nodes to query. If {@code null} indicates to query all nodes.
      */
     private String[] nodes;
 
 
     /**
-     * Construct a new <tt>AbstractResultSet</tt>.
+     * Construct an {@link AbstractResultSet}.
      *
      * @param pageSize the maximum no. of results per page
      */
@@ -74,7 +71,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Determines if a page exists.
      *
      * @param page the page no.
-     * @return <tt>true</tt> if the page exists
+     * @return {@code true} if the page exists
      */
     public boolean hasPage(int page) {
         return get(page) != null;
@@ -84,7 +81,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page corresponding to <tt>page</tt>. May be <tt>null</tt>
+     * @return the page corresponding to {@code page}. May be {@code null}
      */
     public IPage<T> getPage(int page) {
         int row = page * pageSize;
@@ -132,18 +129,17 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the number of results returned per page.
      *
-     * @return the maximum no. of results returned in each page, or {@link
-     *         ArchetypeQuery#ALL_RESULTS} for all results.
+     * @return the maximum no. of results returned in each page, or {@link ArchetypeQuery#ALL_RESULTS} for all results.
      */
     public int getPageSize() {
         return pageSize;
     }
 
     /**
-     * Sets the nodes to query. If <tt>null</tt> or empty, indicates
+     * Sets the nodes to query. If {@code null} or empty, indicates
      * to query all nodes.
      *
-     * @param nodes the nodes to query. May be <tt>null</tt>
+     * @param nodes the nodes to query. May be {@code null}
      */
     public void setNodes(String[] nodes) {
         this.nodes = nodes;
@@ -152,7 +148,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the nodes to query.
      *
-     * @return the nodes to query/ If <tt>null</tt> indicates to query
+     * @return the nodes to query/ If {@code null} indicates to query
      *         all nodes
      */
     public String[] getNodes() {
@@ -160,12 +156,12 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
-     * Returns <tt>true</tt> if this list iterator has more elements when
+     * Returns {@code true} if this list iterator has more elements when
      * traversing the list in the forward direction. (In other words, returns
-     * <tt>true</tt> if <tt>next</tt> would return an element rather than
+     * {@code true} if {@code next} would return an element rather than
      * throwing an exception.)
      *
-     * @return <tt>true</tt> if the list iterator has more elements when
+     * @return {@code true} if the list iterator has more elements when
      *         traversing the list in the forward direction.
      */
     public boolean hasNext() {
@@ -173,12 +169,12 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
-     * Returns <tt>true</tt> if this list iterator has more elements when
+     * Returns {@code true} if this list iterator has more elements when
      * traversing the list in the reverse direction.  (In other words, returns
-     * <tt>true</tt> if <tt>previous</tt> would return an element rather than
+     * {@code true} if {@code previous} would return an element rather than
      * throwing an exception.)
      *
-     * @return <tt>true</tt> if the list iterator has more elements when
+     * @return {@code true} if the list iterator has more elements when
      *         traversing the list in the reverse direction.
      */
     public boolean hasPrevious() {
@@ -188,8 +184,8 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the next element in the list.  This method may be called
      * repeatedly to iterate through the list, or intermixed with calls to
-     * <tt>previous</tt> to go back and forth.  (Note that alternating calls to
-     * <tt>next</tt> and <tt>previous</tt> will return the same element
+     * {@code previous} to go back and forth.  (Note that alternating calls to
+     * {@code next} and {@code previous} will return the same element
      * repeatedly.)
      *
      * @return the next element in the list.
@@ -200,6 +196,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
         if (page == null) {
             throw new NoSuchElementException();
         }
+        currentPage = page;
         ++cursor;
         return page;
     }
@@ -207,8 +204,8 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the previous element in the list.  This method may be called
      * repeatedly to iterate through the list backwards, or intermixed with
-     * calls to <tt>next</tt> to go back and forth.  (Note that alternating
-     * calls to <tt>next</tt> and <tt>previous</tt> will return the same element
+     * calls to {@code next} to go back and forth.  (Note that alternating
+     * calls to {@code next} and {@code previous} will return the same element
      * repeatedly.)
      *
      * @return the previous element in the list.
@@ -219,17 +216,18 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
         if (page == null) {
             throw new NoSuchElementException();
         }
+        currentPage = page;
         --cursor;
         return page;
     }
 
     /**
      * Returns the index of the element that would be returned by a subsequent
-     * call to <tt>next</tt>. (Returns list size if the list iterator is at the
+     * call to {@code next}. (Returns list size if the list iterator is at the
      * end of the list.)
      *
      * @return the index of the element that would be returned by a subsequent
-     *         call to <tt>next</tt>, or list size if list iterator is at end of
+     *         call to {@code next}, or list size if list iterator is at end of
      *         list.
      */
     public int nextIndex() {
@@ -238,11 +236,11 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
 
     /**
      * Returns the index of the element that would be returned by a subsequent
-     * call to <tt>previous</tt>. (Returns -1 if the list iterator is at the
+     * call to {@code previous}. (Returns -1 if the list iterator is at the
      * beginning of the list.)
      *
      * @return the index of the element that would be returned by a subsequent
-     *         call to <tt>previous</tt>, or -1 if list iterator is at beginning
+     *         call to {@code previous}, or -1 if list iterator is at beginning
      *         of list.
      */
     public int previousIndex() {
@@ -250,8 +248,8 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
-     * Removes from the list the last element that was returned by <tt>next</tt>
-     * or <tt>previous</tt> (optional operation).
+     * Removes from the list the last element that was returned by {@code next}
+     * or {@code previous} (optional operation).
      *
      * @throws UnsupportedOperationException if invoked
      */
@@ -260,11 +258,11 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
-     * Replaces the last element returned by <tt>next</tt> or <tt>previous</tt>
+     * Replaces the last element returned by {@code next} or {@code previous}
      * with the specified element (optional operation).
      *
      * @param object the element with which to replace the last element returned
-     *               by <tt>next</tt> or <tt>previous</tt>.
+     *               by {@code next} or {@code previous}.
      * @throws UnsupportedOperationException if invoked
      */
     public void set(IPage<T> object) {
@@ -284,7 +282,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the index of the last returned page.
      *
-     * @return the index of the last returned page, or <tt>-1</tt> if no page has been returned
+     * @return the index of the last returned page, or {@code -1} if no page has been returned
      */
     public int lastIndex() {
         int page = -1;
@@ -314,7 +312,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the no. of pages.
      *
-     * @param force if <tt>true</tt> force a calculation of the no. of pages
+     * @param force if {@code true} force a calculation of the no. of pages
      * @return the total no. of pages
      */
     protected int getPages(boolean force) {
@@ -338,14 +336,14 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page, or <tt>null</tt> if there is no such page
+     * @return the page, or {@code null} if there is no such page
      */
     protected abstract IPage<T> get(int page);
 
     /**
      * Returns the current page.
      *
-     * @return the current page or <tt>null</tt> if there is no current page
+     * @return the current page or {@code null} if there is no current page
      */
     protected IPage<T> getPage() {
         return currentPage;
