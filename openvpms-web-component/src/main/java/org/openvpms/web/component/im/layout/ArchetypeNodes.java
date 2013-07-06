@@ -22,7 +22,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
 
 import java.util.ArrayList;
@@ -214,11 +213,11 @@ public class ArchetypeNodes {
      *
      * @param archetype the archetype descriptor
      * @param object    the object to return nodes for
-     * @param filter    a filter to exclude nodes according to some criteria
+     * @param filter    a filter to exclude nodes according to some criteria. May be {@code null}
      * @return the simple nodes
      */
     public List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype, IMObject object, NodeFilter filter) {
-        return FilterHelper.filter(object, filter, getSimpleNodes(archetype));
+        return getNodes(archetype, object, includeSimpleNodes, new SimplePredicate(), filter);
     }
 
     /**
@@ -240,7 +239,7 @@ public class ArchetypeNodes {
      * @return the complex nodes
      */
     public List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype, IMObject object, NodeFilter filter) {
-        return FilterHelper.filter(object, filter, getComplexNodes(archetype));
+        return getNodes(archetype, object, includeComplexNodes, new ComplexPredicate(), filter);
     }
 
     /**
@@ -314,6 +313,35 @@ public class ArchetypeNodes {
         CollectionUtils.select(archetype.getAllNodeDescriptors(), predicate, result);
         reorder(result);
         return result;
+    }
+
+    /**
+     * Returns all nodes matching a predicate and filter, in appropriate order.
+     *
+     * @param archetype the archetype
+     * @param object    the object to return nodes for
+     * @param includes  nodes to explicitly include. These override any filter settings
+     * @param predicate the predicate to select nodes
+     * @param filter    the filter. May be {@code null}
+     * @return the matching nodes
+     */
+    private List<NodeDescriptor> getNodes(ArchetypeDescriptor archetype, IMObject object, Set<String> includes,
+                                          Predicate predicate, NodeFilter filter) {
+        List<NodeDescriptor> nodes = getNodes(archetype, predicate);
+        List<NodeDescriptor> result;
+        if (filter != null) {
+            result = new ArrayList<NodeDescriptor>();
+            for (NodeDescriptor node : nodes) {
+                if (includes.contains(node.getName()) || filter.include(node, object)) {
+                    result.add(node);
+                }
+            }
+
+        } else {
+            result = nodes;
+        }
+        return result;
+
     }
 
     /**
