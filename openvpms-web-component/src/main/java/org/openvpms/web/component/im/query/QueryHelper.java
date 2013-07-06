@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -65,7 +66,7 @@ public class QueryHelper {
         String[] shortNames = archetypes.getShortNames();
         if (shortNames.length > 0) {
             ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(shortNames[0]);
+                    = DescriptorHelper.getArchetypeDescriptor(shortNames[0]);
             if (archetype != null) {
                 return archetype.getNodeDescriptor(node);
             }
@@ -155,6 +156,45 @@ public class QueryHelper {
         }
         return result;
     }
+
+    /**
+     * Helper to create a constraint on a date node.
+     * <p/>
+     * NOTE: any time component is stripped from the date.
+     * <p/>
+     * If:
+     * <ul>
+     * <li>{@code from} and {@code to} are {@code null} no constraint is created</li>
+     * <li>{@code from} is non-null and {@code to} is {@code null}, a constraint {@code startTime >= from}
+     * is returned
+     * <li>{@code from} is null and {@code to} is {@code null}, a constraint {@code startTime <= to}
+     * is returned
+     * <li>{@code from} is non-null and {@code to} is {@code non-null}, a constraint
+     * {@code startTime >= from && startTime <= to} is returned
+     * </ul>
+     *
+     * @param from the act from date. May be {@code null}
+     * @param to   the act to date, inclusive. May be {@code null}
+     * @return a new constraint, or {@code null} if both dates are null
+     */
+    public static IConstraint createDateConstraint(String node, Date from, Date to) {
+        IConstraint result;
+        if (from == null && to == null) {
+            result = null;
+        } else if (from != null && to == null) {
+            from = DateRules.getDate(from);
+            result = Constraints.gte(node, from);
+        } else if (from == null) {
+            to = DateRules.getNextDate(to);
+            result = Constraints.lt(node, to);
+        } else {
+            from = DateRules.getDate(from);
+            to = DateRules.getNextDate(to);
+            result = Constraints.and(Constraints.gte(node, from), Constraints.lt(node, to));
+        }
+        return result;
+    }
+
 
     /**
      * Returns a unique alias for an entity constraint.

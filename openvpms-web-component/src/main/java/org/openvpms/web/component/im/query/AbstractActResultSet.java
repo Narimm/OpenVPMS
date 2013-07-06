@@ -16,7 +16,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -24,7 +23,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IConstraintContainer;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -77,8 +75,7 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
      * @param sort       the sort criteria. May be {@code null}
      * @param executor   the query executor
      */
-    public AbstractActResultSet(ShortNameConstraint archetypes,
-                                int pageSize, SortConstraint[] sort,
+    public AbstractActResultSet(ShortNameConstraint archetypes, int pageSize, SortConstraint[] sort,
                                 QueryExecutor<T> executor) {
         this(archetypes, null, null, null, null, pageSize, sort, executor);
     }
@@ -154,7 +151,7 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
                                 IConstraint constraints, int pageSize,
                                 SortConstraint[] sort,
                                 QueryExecutor<T> executor) {
-        this(archetypes, participants, createTimeConstraint(from, to),
+        this(archetypes, participants, createDateConstraint(from, to),
              statuses, exclude, constraints, pageSize, sort, executor);
     }
 
@@ -315,19 +312,24 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
     }
 
     /**
-     * Helper to create a constraint on startTime, if the from and to dates
-     * are non-null.
+     * Helper to create a constraint on startTime.
+     * <p/>
+     * If:
+     * <ul>
+     * <li>{@code from} and {@code to} are {@code null} no constraint is created</li>
+     * <li>{@code from} is non-null and {@code to} is {@code null}, a constraint {@code startTime >= from}
+     * is returned
+     * <li>{@code from} is null and {@code to} is {@code null}, a constraint {@code startTime <= to}
+     * is returned
+     * <li>{@code from} is non-null and {@code to} is {@code non-null}, a constraint
+     * {@code startTime >= from && startTime <= to} is returned
+     * </ul>
      *
      * @param from the act from date. May be {@code null}
      * @param to   the act to date, inclusive. May be {@code null}
-     * @return a new constraint, if both dates are non-null, otherwise {@code null}
+     * @return a new constraint, or {@code null} if both dates are null
      */
-    private static IConstraint createTimeConstraint(Date from, Date to) {
-        if (from != null && to != null) {
-            from = DateRules.getDate(from);
-            to = DateRules.getNextDate(to);
-            return Constraints.and(Constraints.gte("startTime", from), Constraints.lt("startTime", to));
-        }
-        return null;
+    private static IConstraint createDateConstraint(Date from, Date to) {
+        return QueryHelper.createDateConstraint("startTime", from, to);
     }
 }
