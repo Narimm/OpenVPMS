@@ -22,6 +22,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -34,6 +35,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.tabpane.TabPaneModel;
@@ -41,6 +43,8 @@ import org.openvpms.web.echo.tabpane.TabPaneModel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 
 
 /**
@@ -168,7 +172,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @return the component
      */
     protected Component doLayout(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        Column container = ColumnFactory.create("CellSpacing");
+        Column container = ColumnFactory.create(CELL_SPACING);
         doLayout(object, properties, parent, container, context);
         return container;
     }
@@ -185,7 +189,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected void doLayout(IMObject object, PropertySet properties, IMObject parent, Component container,
                             LayoutContext context) {
         ArchetypeDescriptor archetype = context.getArchetypeDescriptor(object);
-        ArchetypeNodes nodes = getArchetypeNodes();
+        ArchetypeNodes nodes = getArchetypeNodes(object);
         NodeFilter filter = getNodeFilter(object, context);
 
         List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
@@ -282,6 +286,16 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             pane.setSelectedIndex(0);
             container.add(pane);
         }
+    }
+
+    /**
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+     *
+     * @param object the object to display
+     * @return the archetype nodes
+     */
+    protected ArchetypeNodes getArchetypeNodes(IMObject object) {
+        return getArchetypeNodes();
     }
 
     /**
@@ -389,6 +403,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             text = getShortcut(text, model.size() + 1);
         }
         Component child = component.getComponent();
+        if (child instanceof SelectField) {
+            // workaround for render bug in firefox. See OVPMS-239
+            child = RowFactory.create(child);
+        }
+
         if (LayoutHelper.needsInset(child)) {
             child = ColumnFactory.create("Inset", child);
         }
