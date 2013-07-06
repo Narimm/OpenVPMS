@@ -1,38 +1,30 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.ShortNameConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -41,21 +33,15 @@ import static org.junit.Assert.fail;
  *
  * @author Tim Anderson
  */
-public class ResultSetIteratorTestCase extends AbstractResultSetTest {
-
-    /**
-     * The customer.
-     */
-    private Party customer;
-
+public class ResultSetIteratorTestCase {
 
     /**
      * Tests the behaviour of iterating an empty result set.
      */
     @Test
     public void testEmpty() {
-        ActResultSet<Act> set = createResultSet();
-        ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(set);
+        ResultSet<Integer> set = createResultSet(0, 10);
+        Iterator<Integer> iterator = new ResultSetIterator<Integer>(set);
         assertFalse(iterator.hasNext());
         try {
             iterator.next();
@@ -66,50 +52,61 @@ public class ResultSetIteratorTestCase extends AbstractResultSetTest {
     }
 
     /**
-     * Tests iteration.
+     * Tests forward iteration.
      */
     @Test
-    public void testIteration() {
-        Party patient = TestHelper.createPatient(true);
-        Product product = TestHelper.createProduct();
-
-        final int count = 10;
-        for (int i = 0; i < count; ++i) {
-            createEstimation(customer, patient, product);
-        }
-
-        ActResultSet<Act> set = createResultSet();
-        ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(set);
-        int acts = 0;
+    public void testForwardIteration() {
+        ResultSet<Integer> resultSet = createResultSet(50, 20);
+        ResultSetIterator<Integer> iterator = new ResultSetIterator<Integer>(resultSet);
+        int count = 0;
         while (iterator.hasNext()) {
-            acts++;
-            Act act = iterator.next();
-            assertNotNull(act);
-            assertTrue(TypeHelper.isA(act, "act.customerEstimation"));
+            int next = iterator.next();
+            assertEquals(count, next);
+            assertEquals(count, iterator.lastIndex());
+            assertEquals(count + 1, iterator.nextIndex());
+            ++count;
         }
-        assertEquals(count, acts);
-    }
-
-    private ActResultSet<Act> createResultSet() {
-        ShortNameConstraint archetypes = new ShortNameConstraint(
-            "act.customerEstimation", true, true);
-        Date from = null;       // query all dates
-        Date to = null;
-        String[] statuses = {}; // query all statuses
-        SortConstraint[] sort = null;
-        ParticipantConstraint participant = new ParticipantConstraint(
-            "customer", "participation.customer",
-            customer.getObjectReference());
-        return new ActResultSet<Act>(archetypes, participant,
-                                     from, to, statuses,
-                                     5, sort);
+        assertEquals(resultSet.getResults(), iterator.nextIndex());
+        assertEquals(resultSet.getResults(), count);
     }
 
     /**
-     * Sets up the test case.
+     * Tests reverse iteration.
      */
-    @Before
-    public void setUp() {
-        customer = TestHelper.createCustomer(true);
+    @Test
+    public void testReverseIteration() {
+        int size = 50;
+        int pageSize = 20;
+        ResultSet<Integer> resultSet = createResultSet(size, pageSize);
+        ResultSetIterator<Integer> iterator = new ResultSetIterator<Integer>(resultSet);
+        int count = 0;
+        while (iterator.hasNext()) {
+            iterator.next();
+            ++count;
+        }
+        assertEquals(size, count);
+        assertEquals(size, iterator.nextIndex());
+
+        while (iterator.hasPrevious()) {
+            --count;
+            assertEquals(count, iterator.previousIndex());
+            int previous = iterator.previous();
+            assertEquals(count, previous);
+        }
+    }
+
+    /**
+     * Creates a new result set.
+     *
+     * @param size     the size of the set
+     * @param pageSize the page size
+     * @return a new result set
+     */
+    private ListResultSet<Integer> createResultSet(int size, int pageSize) {
+        List<Integer> result = new ArrayList<Integer>();
+        for (int i = 0; i < size; ++i) {
+            result.add(i);
+        }
+        return new ListResultSet<Integer>(result, pageSize);
     }
 }
