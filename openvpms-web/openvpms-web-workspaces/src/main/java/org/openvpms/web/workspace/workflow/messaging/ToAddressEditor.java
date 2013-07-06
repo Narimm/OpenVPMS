@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.messaging;
 
 import nextapp.echo2.app.Component;
@@ -32,6 +33,7 @@ import org.openvpms.web.component.im.select.AbstractIMObjectSelectorListener;
 import org.openvpms.web.component.im.select.MultiIMObjectSelector;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
@@ -204,6 +206,26 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
      * @param listener the listener to remove
      */
     public void removeModifiableListener(ModifiableListener listener) {
+        // no-op
+    }
+
+    /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        // no-op
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
         // no-op
     }
 

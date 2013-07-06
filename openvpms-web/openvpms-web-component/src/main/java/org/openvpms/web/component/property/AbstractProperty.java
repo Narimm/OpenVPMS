@@ -35,6 +35,11 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     private ModifiableListeners listeners;
 
     /**
+     * The error listeners.
+     */
+    private ErrorListeners errorListeners;
+
+    /**
      * The property handler.
      */
     private PropertyTransformer transformer;
@@ -127,6 +132,31 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     }
 
     /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        if (errorListeners == null) {
+            errorListeners = new ErrorListeners();
+        }
+        errorListeners.addListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        if (errorListeners != null) {
+            errorListeners.removeListener(listener);
+        }
+    }
+
+    /**
      * Returns a hash code value for the object, based on the property name.
      *
      * @return a hash code value for this object.
@@ -140,8 +170,7 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
      * Indicates whether some other object is "equal to" this one.
      *
      * @param obj the reference object with which to compare.
-     * @return {@code true} if this object is the same as the obj
-     *         argument; {@code false} otherwise.
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
      */
     @Override
     public boolean equals(Object obj) {
@@ -188,8 +217,18 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
      */
     protected void checkModifiable() {
         if (isDerived()) {
-            throw new UnsupportedOperationException(
-                "Attenpt to modify derived property: " + getDisplayName());
+            throw new UnsupportedOperationException("Attenpt to modify derived property: " + getDisplayName());
+        }
+    }
+
+    /**
+     * Notify listeners of an error.
+     *
+     * @param message the error message
+     */
+    protected void onError(String message) {
+        if (errorListeners != null) {
+            errorListeners.notifyListeners(this, message);
         }
     }
 

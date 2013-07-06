@@ -25,6 +25,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -83,6 +85,11 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * The event listeners.
      */
     private final ModifiableListeners listeners = new ModifiableListeners();
+
+    /**
+     * The error listeners.
+     */
+    private final ErrorListeners errorListeners = new ErrorListeners();
 
     /**
      * Event broadcaster.
@@ -261,6 +268,26 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      */
     public void removeModifiableListener(ModifiableListener listener) {
         listeners.removeListener(listener);
+    }
+
+    /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        errorListeners.addListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        errorListeners.removeListener(listener);
     }
 
     /**

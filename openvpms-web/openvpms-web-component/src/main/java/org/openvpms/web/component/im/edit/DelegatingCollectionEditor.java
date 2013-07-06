@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
@@ -203,10 +204,29 @@ public abstract class DelegatingCollectionEditor
     }
 
     /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        editor.addErrorListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        editor.removeErrorListener(listener);
+    }
+
+    /**
      * Determines if the object is valid.
      *
-     * @return {@code true} if the object is valid; otherwise
-     *         {@code false}
+     * @return {@code true} if the object is valid; otherwise {@code false}
      */
     public boolean isValid() {
         return editor.isValid();
@@ -216,8 +236,7 @@ public abstract class DelegatingCollectionEditor
      * Validates the object.
      *
      * @param validator the validator
-     * @return {@code true} if the object and its descendents are valid
-     *         otherwise {@code false}
+     * @return {@code true} if the object and its descendents are valid otherwise {@code false}
      */
     public boolean validate(Validator validator) {
         return editor.validate(validator);
@@ -251,8 +270,7 @@ public abstract class DelegatingCollectionEditor
     /**
      * Returns the current editor.
      *
-     * @return the current editor, or {@code null} if there is no current
-     *         editor
+     * @return the current editor, or {@code null} if there is no current editor
      */
     public IMObjectEditor getCurrentEditor() {
         return editor.getCurrentEditor();

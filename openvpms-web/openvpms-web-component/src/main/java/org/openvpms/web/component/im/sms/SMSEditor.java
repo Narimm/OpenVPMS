@@ -28,6 +28,7 @@ import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
 import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -267,6 +268,26 @@ public class SMSEditor extends AbstractModifiable {
      */
     public void removeModifiableListener(ModifiableListener listener) {
         listeners.removeListener(listener);
+    }
+
+    /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        // no-op
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        // no-op
     }
 
     /**

@@ -39,6 +39,7 @@ import org.openvpms.sms.mail.template.MailTemplate;
 import org.openvpms.sms.mail.template.MailTemplateFactory;
 import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -225,6 +226,26 @@ class EmailSMSSampler extends AbstractModifiable {
      */
     public void removeModifiableListener(ModifiableListener listener) {
         listeners.removeListener(listener);
+    }
+
+    /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        // no-op
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        // no-op
     }
 
     /**
