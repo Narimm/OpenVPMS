@@ -1047,6 +1047,10 @@
 
     <style name="MessageDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.small.width}"/>
+            <property name="height" value="${dialog.small.height}"/>
+        </properties>
     </style>
 
     <style name="InformationDialog" base-name="MessageDialog"
