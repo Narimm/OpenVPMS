@@ -1,24 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: Editors.java 2034 2007-05-04 07:03:38Z tanderson $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.edit;
 
 import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -37,8 +37,7 @@ import java.util.Set;
 /**
  * Collection of {@link Editor} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2007-05-04 07:03:38Z $
+ * @author Tim Anderson
  */
 public class Editors extends AbstractModifiable {
 
@@ -53,9 +52,19 @@ public class Editors extends AbstractModifiable {
     private ModifiableListeners listeners;
 
     /**
+     * The error listeners.
+     */
+    private ErrorListeners errorListeners;
+
+    /**
      * The listener for property and editor modifications.
      */
     private ModifiableListener listener;
+
+    /**
+     * The listener for errors.
+     */
+    private ErrorListener errorListener;
 
     /**
      * The properties.
@@ -74,17 +83,25 @@ public class Editors extends AbstractModifiable {
 
 
     /**
-     * Constructs an <tt>Editors</tt>.
+     * Constructs an {@link Editors}.
      *
-     * @param properties the properties being edited
-     * @param listeners  the listeners
+     * @param properties     the properties being edited
+     * @param listeners      the listeners
+     * @param errorListeners the error listeners
      */
-    public Editors(PropertySet properties, ModifiableListeners listeners) {
+    public Editors(PropertySet properties, ModifiableListeners listeners, ErrorListeners errorListeners) {
         this.properties = properties;
         this.listeners = listeners;
+        this.errorListeners = errorListeners;
         listener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onModified(modifiable);
+            }
+        };
+        errorListener = new ErrorListener() {
+            @Override
+            public void error(Modifiable modifiable, String message) {
+                Editors.this.errorListeners.notifyListeners(modifiable, message);
             }
         };
 
@@ -92,6 +109,7 @@ public class Editors extends AbstractModifiable {
             // initially register the listener with each property. If an editor for a property is registered,
             // the listener will be moved to the editor, to avoid redundant notifications.
             property.addModifiableListener(listener);
+            property.addErrorListener(errorListener);
         }
     }
 
@@ -124,8 +142,7 @@ public class Editors extends AbstractModifiable {
      * Returns a property editor, given its name.
      *
      * @param name the property name
-     * @return the property editor associated with <tt>name</tt>, or
-     *         <tt>null</tt> if none exists
+     * @return the property editor associated with {@code name}, or {@code null} if none exists
      */
     public Editor getEditor(String name) {
         return propertyEditors.get(name);
@@ -139,6 +156,7 @@ public class Editors extends AbstractModifiable {
     public void remove(Editor editor) {
         resetValid(false);
         editor.removeModifiableListener(listener);
+        editor.removeErrorListener(errorListener);
         if (editor instanceof PropertyEditor) {
             PropertyEditor p = (PropertyEditor) editor;
             String name = p.getProperty().getName();
@@ -146,6 +164,7 @@ public class Editors extends AbstractModifiable {
             if (property != null) {
                 // if the property is registered, move the listener to property
                 property.addModifiableListener(listener);
+                property.addErrorListener(errorListener);
             }
             propertyEditors.remove(name);
         }
@@ -209,7 +228,7 @@ public class Editors extends AbstractModifiable {
     /**
      * Determines if the object has been modified.
      *
-     * @return <tt>true</tt> if the object has been modified
+     * @return {@code true} if the object has been modified
      */
     public boolean isModified() {
         if (!modified) {
@@ -264,6 +283,26 @@ public class Editors extends AbstractModifiable {
     }
 
     /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        errorListeners.addListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        errorListeners.removeListener(listener);
+    }
+
+    /**
      * Disposes of the editors.
      */
     public void dispose() {
@@ -276,7 +315,7 @@ public class Editors extends AbstractModifiable {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         boolean result = true;
@@ -304,7 +343,7 @@ public class Editors extends AbstractModifiable {
     /**
      * Resets the cached validity state of the object.
      *
-     * @param descendants if <tt>true</tt> reset the validity state of any descendants as well.
+     * @param descendants if {@code true} reset the validity state of any descendants as well.
      */
     @Override
     protected void resetValid(boolean descendants) {

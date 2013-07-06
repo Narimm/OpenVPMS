@@ -42,6 +42,8 @@ import org.openvpms.web.component.im.view.IMObjectView;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -71,7 +73,7 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public abstract class AbstractIMObjectEditor extends AbstractModifiable
-    implements IMObjectEditor {
+        implements IMObjectEditor {
 
     /**
      * The object being edited.
@@ -97,6 +99,11 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * The listeners.
      */
     private ModifiableListeners listeners = new ModifiableListeners();
+
+    /**
+     * The error listeners.
+     */
+    private ErrorListeners errorListeners = new ErrorListeners();
 
     /**
      * The child editors.
@@ -161,7 +168,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
         archetype = context.getArchetypeDescriptor(object);
         properties = new PropertySet(object, archetype, context.getVariables());
-        editors = new Editors(properties, listeners);
+        editors = new Editors(properties, listeners, errorListeners);
 
         IMObjectLayoutStrategyFactory strategyFactory = context.getLayoutStrategyFactory();
         if (strategyFactory == null || strategyFactory instanceof ViewLayoutStrategyFactory) {
@@ -353,6 +360,26 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        editors.addErrorListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        editors.removeErrorListener(listener);
+    }
+
+    /**
      * Cancel any edits. Once complete, query methods may be invoked, but the behaviour of other methods is undefined.
      */
     public void cancel() {
@@ -418,7 +445,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
                                              PropertyChangeListener listener) {
         if (propertyChangeNotifier != null) {
             propertyChangeNotifier.removePropertyChangeListener(
-                name, listener);
+                    name, listener);
         }
     }
 
@@ -654,7 +681,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      */
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         IMObjectLayoutStrategyFactory layoutStrategy
-            = context.getLayoutStrategyFactory();
+                = context.getLayoutStrategyFactory();
         return layoutStrategy.create(getObject(), getParent());
     }
 

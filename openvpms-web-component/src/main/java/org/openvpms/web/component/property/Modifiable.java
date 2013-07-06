@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id:Modifiable.java 2147 2007-06-21 04:16:11Z tanderson $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -22,15 +20,14 @@ package org.openvpms.web.component.property;
 /**
  * Interface to track the modified status of an object.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2007-06-21 04:16:11Z $
+ * @author Tim Anderson
  */
 public interface Modifiable {
 
     /**
      * Determines if the object has been modified.
      *
-     * @return <tt>true</tt> if the object has been modified
+     * @return {@code true} if the object has been modified
      */
     boolean isModified();
 
@@ -64,9 +61,23 @@ public interface Modifiable {
     void removeModifiableListener(ModifiableListener listener);
 
     /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    void addErrorListener(ErrorListener listener);
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    void removeErrorListener(ErrorListener listener);
+
+    /**
      * Determines if the object is valid.
      *
-     * @return <tt>true</tt> if the object is valid; otherwise <tt>false</tt>
+     * @return {@code true} if the object is valid; otherwise {@code false}
      */
     boolean isValid();
 
@@ -74,7 +85,7 @@ public interface Modifiable {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     boolean validate(Validator validator);
 

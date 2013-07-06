@@ -1,27 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -29,6 +21,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
@@ -48,11 +41,10 @@ import java.util.Set;
 /**
  * Abstract implementation of the {@link CollectionPropertyEditor} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractCollectionPropertyEditor extends AbstractModifiable
-    implements CollectionPropertyEditor {
+        implements CollectionPropertyEditor {
 
     /**
      * The property being edited.
@@ -77,7 +69,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
 
 
     /**
-     * Constructs an <tt>AbstractCollectionPropertyEditor</tt>.
+     * Constructs an {@code AbstractCollectionPropertyEditor}.
      *
      * @param property the collection property
      */
@@ -108,7 +100,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
-     * @return <tt>true</tt> if the object was added, otherwise <tt>false</tt>
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
     public boolean add(IMObject object) {
         boolean added = false;
@@ -126,7 +118,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      * will be responsible for saving/removing it.
      *
      * @param object the object
-     * @param editor the editor. Use <tt>null</tt> to remove an association
+     * @param editor the editor. Use {@code null} to remove an association
      */
     public void setEditor(IMObject object, IMObjectEditor editor) {
         resetValid();
@@ -141,7 +133,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      * Returns the editor associated with an object in the collection.
      *
      * @param object the object
-     * @return the associated editor, or <tt>null</tt> if none is found
+     * @return the associated editor, or {@code null} if none is found
      */
     public IMObjectEditor getEditor(IMObject object) {
         return editors.get(object);
@@ -164,7 +156,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      * This removes any associated editor.
      *
      * @param object the object to remove
-     * @return <tt>true</tt> if the object was removed
+     * @return {@code true} if the object was removed
      */
     public boolean remove(IMObject object) {
         boolean result = property.getValues().contains(object);
@@ -179,7 +171,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Determines if the collection has been modified.
      *
-     * @return <tt>true</tt> if the collection has been modified
+     * @return {@code true} if the collection has been modified
      */
     public boolean isModified() {
         boolean modified = property.isModified() || !edited.isEmpty();
@@ -233,9 +225,29 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     }
 
     /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        property.addErrorListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        property.removeErrorListener(listener);
+    }
+
+    /**
      * Saves any edits.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     public boolean save() {
         boolean saved = doSave();
@@ -248,7 +260,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Determines if any edits have been saved.
      *
-     * @return <tt>true</tt> if edits have been saved.
+     * @return {@code true} if edits have been saved.
      */
     public boolean isSaved() {
         return saved;
@@ -284,7 +296,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Returns the maximum cardinality.
      *
-     * @return the maximum cardinality, or <tt>-1</tt> if it is unbounded
+     * @return the maximum cardinality, or {@code -1} if it is unbounded
      */
     public int getMaxCardinality() {
         return property.getMaxCardinality();
@@ -294,7 +306,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
         boolean result = validator.validate(property);
@@ -319,7 +331,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Resets the cached validity state of the object.
      *
-     * @param descendants if <tt>true</tt> reset the validity state of any descendants as well.
+     * @param descendants if {@code true} reset the validity state of any descendants as well.
      */
     @Override
     protected void resetValid(boolean descendants) {
@@ -334,7 +346,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Saves the collection.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     protected boolean doSave() {
         saved = false;
@@ -368,7 +380,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Sets the saved state.
      *
-     * @param saved if <tt>true</tt> indicates that this has been saved
+     * @param saved if {@code true} indicates that this has been saved
      */
     protected void setSaved(boolean saved) {
         this.saved = saved;
@@ -391,7 +403,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      * This removes any associated editor.
      *
      * @param object the object to remove
-     * @return <tt>true</tt> if the the object was being edited
+     * @return {@code true} if the the object was being edited
      */
     protected boolean removeEdited(IMObject object) {
         boolean result = editors.remove(object) != null;

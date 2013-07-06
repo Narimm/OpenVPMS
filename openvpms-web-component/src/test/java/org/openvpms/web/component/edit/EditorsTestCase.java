@@ -1,31 +1,30 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
 import org.junit.Test;
-import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.echo.focus.FocusGroup;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,8 +34,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link Editors} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class EditorsTestCase {
 
@@ -49,7 +47,8 @@ public class EditorsTestCase {
         SimpleProperty property2 = new SimpleProperty("p2", String.class);
         PropertySet set = new PropertySet(property1, property2);
         ModifiableListeners listeners = new ModifiableListeners();
-        Editors editors = new Editors(set, listeners);
+        ErrorListeners errorListeners = new ErrorListeners();
+        Editors editors = new Editors(set, listeners, errorListeners);
 
         assertFalse(editors.isModified());
         property1.setValue("foo");
@@ -74,7 +73,8 @@ public class EditorsTestCase {
 
         PropertySet set = new PropertySet(property);
         ModifiableListeners listeners = new ModifiableListeners();
-        Editors editors = new Editors(set, listeners);
+        ErrorListeners errorListeners = new ErrorListeners();
+        Editors editors = new Editors(set, listeners, errorListeners);
 
         CountingListener editorsListener = new CountingListener();
         editors.addModifiableListener(editorsListener);

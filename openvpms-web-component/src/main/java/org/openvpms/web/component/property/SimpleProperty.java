@@ -483,6 +483,7 @@ public class SimpleProperty extends AbstractProperty {
         }
         validationErrors.add(new ValidatorError(this, cause.getMessage()));
         resetValid();
+        onError(cause.getMessage());
     }
 
     /**

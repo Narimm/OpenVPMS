@@ -384,10 +384,29 @@ public abstract class DelegatingProperty implements CollectionProperty {
     }
 
     /**
+     * Adds a listener to be notified of errors.
+     *
+     * @param listener the listener to add
+     */
+    @Override
+    public void addErrorListener(ErrorListener listener) {
+        property.addErrorListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    @Override
+    public void removeErrorListener(ErrorListener listener) {
+        property.removeErrorListener(listener);
+    }
+
+    /**
      * Determines if the object is valid.
      *
-     * @return {@code true} if the object is valid; otherwise
-     *         {@code false}
+     * @return {@code true} if the object is valid; otherwise {@code false}
      */
     public boolean isValid() {
         return property.isValid();
