@@ -242,4 +242,15 @@ public class DateRules {
         return d1.compareTo(d2);
     }
 
+    /**
+     * Compares the date portion of a date with today's date. Any time component is ignored.
+     *
+     * @param date the date
+     * @return the {@code 0} if {@code date} is equal to today's date;
+     *         a value less than {@code 0} if {@code date} is before today's date;
+     *         and a value greater than {@code 0} if {@code date} is after today's date
+     */
+    public static int compareDateToToday(Date date) {
+        return getDate(date).compareTo(getToday());
+    }
 }
