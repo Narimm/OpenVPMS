@@ -64,7 +64,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
     /**
      * Generate orders button identifier.
      */
-    private static final String GENERATE_ID = "generateOrders";
+    private static final String GENERATE_ID = "button.generateOrders";
 
 
     /**
@@ -213,7 +213,8 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             public void onOK() {
                 Party location = dialog.getStockLocation();
                 Party supplier = dialog.getSupplier();
-                generateOrders(location, supplier, dialog.getStockLocations(), dialog.getSuppliers(), help);
+                generateOrders(location, supplier, dialog.getStockLocations(), dialog.getSuppliers(),
+                               dialog.getBelowIdealQuantity(), help);
             }
         });
         dialog.show();
@@ -222,14 +223,16 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
     /**
      * Generates orders.
      *
-     * @param stockLocation the selected stock location. May be {@code null} to indicate all stock locations
-     * @param supplier      the selected supplier. May be {@code null} to indicate all suppliers
-     * @param locations     the available stock locations
-     * @param suppliers     the available suppliers
-     * @param help          the help context
+     * @param stockLocation      the selected stock location. May be {@code null} to indicate all stock locations
+     * @param supplier           the selected supplier. May be {@code null} to indicate all suppliers
+     * @param locations          the available stock locations
+     * @param suppliers          the available suppliers
+     * @param belowIdealQuantity if {@code true}, generate orders for stock below ideal quantity; else
+     *                           generate orders for stock at or below critical quantity
+     * @param help               the help context
      */
     private void generateOrders(Party stockLocation, Party supplier, List<IMObject> locations,
-                                List<IMObject> suppliers, HelpContext help) {
+                                List<IMObject> suppliers, boolean belowIdealQuantity, HelpContext help) {
         final String title = Messages.get("supplier.order.generate.title");
         if (stockLocation != null) {
             locations = Arrays.asList((IMObject) stockLocation);
@@ -238,7 +241,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             suppliers = Arrays.asList((IMObject) supplier);
         }
         final OrderProgressBarProcessor processor = new OrderProgressBarProcessor(
-                getContext().getPractice(), locations, suppliers, title);
+                getContext().getPractice(), locations, suppliers, belowIdealQuantity, title);
         final BatchProcessorDialog dialog = new BatchProcessorDialog(processor.getTitle(), processor, help);
         processor.setListener(new BatchProcessorListener() {
             public void completed() {
