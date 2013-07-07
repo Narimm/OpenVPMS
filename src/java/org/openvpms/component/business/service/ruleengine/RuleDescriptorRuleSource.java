@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.business.service.ruleengine;
 
@@ -27,6 +25,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,8 +37,7 @@ import java.util.Map;
  * Each rule contains a source and path attribute, which denotes how to load
  * the rule and the location of the rule respectively.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
 public class RuleDescriptorRuleSource extends BaseRuleSource {
 
@@ -99,36 +98,23 @@ public class RuleDescriptorRuleSource extends BaseRuleSource {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
             mapping.loadMapping(new InputSource(new InputStreamReader(
                     loader.getResourceAsStream(RULE_SOURCE_MAPPING))));
+            Unmarshaller unmarshaller = new Unmarshaller(mapping);
 
-            InputStreamReader is = new InputStreamReader(
-                    loader.getResourceAsStream(descriptorFileName));
-            rdescs = (RuleDescriptors) new Unmarshaller(mapping).unmarshal(is);
+            Enumeration<URL> urls = loader.getResources(descriptorFileName);
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                InputStreamReader is = new InputStreamReader(url.openStream());
+                rdescs = (RuleDescriptors) unmarshaller.unmarshal(is);
+                addRules(rdescs);
+            }
+        } catch (RuleEngineException exception) {
+            throw exception;
         } catch (Exception exception) {
             throw new RuleEngineException(
                     RuleEngineException.ErrorCode.FailedToRegisterRuleExecutionSets,
                     exception);
 
         }
-
-        // for each on process according to the source
-        for (RuleDescriptor rdesc : rdescs.getRuleDescriptors()) {
-            try {
-                switch (rdesc.getSource()) {
-                    case SYSTEM:
-                        registerFromFile(rdesc.getPath());
-                        break;
-
-                    case CLASSPATH:
-                        registerFromResource(rdesc.getPath());
-                        break;
-                }
-            } catch (Exception exception) {
-                throw new RuleEngineException(
-                        RuleEngineException.ErrorCode.FailedToProcessRuleDescriptor,
-                        exception, rdesc.getSource(), rdesc.getPath());
-            }
-        }
-
     }
 
     /**
@@ -179,6 +165,32 @@ public class RuleDescriptorRuleSource extends BaseRuleSource {
      */
     public boolean hasRuleExecutionSet(String uri) {
         return ruleSetNames.containsKey(uri);
+    }
+
+    /**
+     * Registers rules from their descriptors.
+     *
+     * @param descriptors the rule descriptors
+     */
+    private void addRules(RuleDescriptors descriptors) {
+        // for each on process according to the source
+        for (RuleDescriptor rdesc : descriptors.getRuleDescriptors()) {
+            try {
+                switch (rdesc.getSource()) {
+                    case SYSTEM:
+                        registerFromFile(rdesc.getPath());
+                        break;
+
+                    case CLASSPATH:
+                        registerFromResource(rdesc.getPath());
+                        break;
+                }
+            } catch (Exception exception) {
+                throw new RuleEngineException(
+                        RuleEngineException.ErrorCode.FailedToProcessRuleDescriptor,
+                        exception, rdesc.getSource(), rdesc.getPath());
+            }
+        }
     }
 
     /**
