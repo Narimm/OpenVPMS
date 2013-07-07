@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.table;
@@ -35,8 +33,7 @@ import java.util.Iterator;
 /**
  * Table helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TableHelper {
 
@@ -46,11 +43,11 @@ public class TableHelper {
     public static final String SPACER = "<div>&#160;</div>";
 
     /**
-     * Helper to return an <tt>XhtmlFragment</tt> for text.
+     * Helper to return an {@code XhtmlFragment} for text.
      * <p/>
      * Any XML characters are escaped.
      *
-     * @param text the text. May be <tt>null</tt>
+     * @param text the text. May be {@code null}
      * @return a new fragment
      */
     public static XhtmlFragment createFragment(String text) {
@@ -63,12 +60,11 @@ public class TableHelper {
     }
 
     /**
-     * Helper to return an <tt>XhtmlFragment</tt> for an object, using its
-     * <tt>toString()</tt> method.
+     * Helper to return an {@code XhtmlFragment} for an object, using its {@code toString()} method.
      * <p/>
      * Any XML characters are escaped.
      *
-     * @param object the object. May be <tt>null</tt>
+     * @param object the object. May be {@code null}
      * @return a new fragment
      */
     public static XhtmlFragment createFragment(Object object) {
@@ -79,7 +75,7 @@ public class TableHelper {
      * Returns the table layout data associated with a style.
      *
      * @param styleName the style name
-     * @return the table layout data, or <tt>null</tt> if none is found
+     * @return the table layout data, or {@code null} if none is found
      */
     public static TableLayoutDataEx getTableLayoutDataEx(String styleName) {
         TableLayoutDataEx result = null;
@@ -112,14 +108,11 @@ public class TableHelper {
      *
      * @param component the component
      * @param styleName the stylesheet style name
-     * @param overwrite if <tt>true</tt> overwrite existing component properties
-     *                  if the specified style has non-null corresponding
-     *                  properties
+     * @param overwrite if {@code true} overwrite existing component properties if the specified style has non-null
+     *                  corresponding properties
      */
-    public static void mergeStyle(Component component, String styleName,
-                                  boolean overwrite) {
-        if (component.getLayoutData() == null
-            && component.getStyleName() == null) {
+    public static void mergeStyle(Component component, String styleName, boolean overwrite) {
+        if (component.getLayoutData() == null && component.getStyleName() == null) {
             component.setStyleName(styleName);
         } else {
             ApplicationInstance app = ApplicationInstance.getActive();
@@ -131,22 +124,18 @@ public class TableHelper {
     }
 
     /**
-     * Merge the style of a component with that of a <tt>TableLayoutData</tt>.
+     * Merge the style of a component with that of a {@code TableLayoutData}.
      *
      * @param component  the component to merge with
      * @param layoutData the layout data to merge from
-     * @param overwrite  if <tt>true</tt> overwrite existing component properties
-     *                   if the specified style has non-null corresponding
-     *                   properties
+     * @param overwrite  if {@code true} overwrite existing component properties if the specified style has non-null
+     *                   corresponding properties
      */
-    public static void mergeStyle(Component component,
-                                  TableLayoutData layoutData,
-                                  boolean overwrite) {
+    public static void mergeStyle(Component component, TableLayoutData layoutData, boolean overwrite) {
         if (component.getLayoutData() == null) {
             component.setLayoutData(new TableLayoutData());
         }
-        mergeLayoutData((TableLayoutData) component.getLayoutData(), layoutData,
-                        overwrite);
+        mergeLayoutData((TableLayoutData) component.getLayoutData(), layoutData, overwrite);
     }
 
     /**
@@ -167,16 +156,14 @@ public class TableHelper {
     }
 
     /**
-     * Merge style from a stlessheet with a component's properties
+     * Merge style from a stylesheet with a component's properties
      *
      * @param style     the style
      * @param component the component
-     * @param overwrite if <tt>true</tt> overwrite existing component properties
-     *                  if the specified style has non-null corresponding
-     *                  properties
+     * @param overwrite if {@code true} overwrite existing component properties if the specified style has non-null
+     *                  corresponding properties
      */
-    private static void mergeStyle(Style style, Component component,
-                                   boolean overwrite) {
+    private static void mergeStyle(Style style, Component component, boolean overwrite) {
         Iterator names = style.getPropertyNames();
         while (names.hasNext()) {
             String name = (String) names.next();
@@ -208,12 +195,10 @@ public class TableHelper {
      *
      * @param to        the layout data to merge to
      * @param from      the layout data to merge from
-     * @param overwrite if <tt>true</tt> overwrite existing component properties
-     *                  if the specified style has non-null corresponding
+     * @param overwrite if {@code true} overwrite existing component properties if the specified style has non-null
+     *                  corresponding
      */
-    private static void mergeLayoutData(TableLayoutData to,
-                                        TableLayoutData from,
-                                        boolean overwrite) {
+    private static void mergeLayoutData(TableLayoutData to, TableLayoutData from, boolean overwrite) {
         if (from.getAlignment() != null
             && (overwrite || to.getAlignment() == null)) {
             to.setAlignment(from.getAlignment());
