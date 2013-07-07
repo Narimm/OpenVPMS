@@ -356,6 +356,19 @@
         </properties>
     </style>
 
+    <style name="PatientClinicalNote.note" type="nextapp.echo2.app.TextArea" base-name="default">
+        <properties>
+            <property name="width" value="100%"/>
+            <property name="height" value="${PatientClinicalNote.note.height}"/>
+        </properties>
+    </style>
+
+    <style name="PatientClinicalNote.inset" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="insets" value="0px 0px ${padding.large} 0px"/>
+        </properties>
+    </style>
+
     <style name="VisitEditor.TabbedPane" type="echopointng.TabbedPane">
         <properties>
             <property name="height" value="${VisitEditor.TabbedPane.height}"/>

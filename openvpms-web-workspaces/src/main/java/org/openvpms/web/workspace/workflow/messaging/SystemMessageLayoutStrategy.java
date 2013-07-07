@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class SystemMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         ComponentState message = createMessage(properties, context, !showItem(context, object));
 
         if (description.getComponent() instanceof TextComponent) {
-            ((TextComponent) description.getComponent()).setWidth(FULL_WIDTH);
+            ((TextComponent) description.getComponent()).setWidth(Styles.FULL_WIDTH);
         }
 
         addComponent(to);
@@ -117,7 +118,7 @@ public class SystemMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         }
 
         Grid grid = createGrid(componentGrid);
-        grid.setWidth(FULL_WIDTH);
+        grid.setWidth(Styles.FULL_WIDTH);
 
         Component child = ColumnFactory.create("Inset.Large", grid);
         doComplexLayout(object, parent, complex, properties, child, context);
