@@ -647,6 +647,11 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
         } else {
             notifySelected(selected);
         }
+
+        // deselect the row if displaying multiple schedules
+        if (!model.isSingleScheduleView()) {
+            table.getSelectionModel().clearSelection();
+        }
     }
 
     /**

@@ -109,7 +109,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
                 cutCell(table, component);
             } else if (canHighlightCell(table, column, row)) {
                 // highlight the selected cell.
-                highlightCell(table, component);
+                highlightCell(component);
             }
         }
         return component;
@@ -191,7 +191,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
                         if (renderNewPrompt(model, column, row)) {
                             component = LabelFactory.create(
                                     "workflow.scheduling.table.new");
-                            highlightCell(table, component);
+                            highlightCell(component);
                             newPrompt = true;
                         }
                     }
@@ -235,8 +235,9 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
     protected boolean canHighlightCell(Table table, int column, int row) {
         ScheduleTableModel model = (ScheduleTableModel) table.getModel();
         boolean highlight = false;
-        if (!model.isSingleScheduleView() && model.isSelectedCell(column, row)
-            && model.getAvailability(column, row) == Availability.BUSY) {
+        boolean single = model.isSingleScheduleView();
+        if ((single && model.getSelectedRow() == row) || (!single && model.isSelectedCell(column, row))
+                                                         && model.getAvailability(column, row) == Availability.BUSY) {
             highlight = true;
         }
         return highlight;
@@ -260,20 +261,11 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * <p/>
      * Ideally, this would be done by the table, however none of
      * the tables support cell selection.
-     * Also, it would be best if highlighting was done by changing
-     * the cell background, but due to a bug in TableEx, this
-     * results in all similar cells being updated with the highlight colour.
      *
-     * @param table     the table
      * @param component the cell component
      */
-    protected void highlightCell(Table table, Component component) {
-        Font font = getFont(table);
-        if (font != null) {
-            int style = Font.BOLD | Font.ITALIC;
-            font = new Font(font.getTypeface(), style, font.getSize());
-            component.setFont(font);
-        }
+    protected void highlightCell(Component component) {
+        TableHelper.mergeStyle(component, "ScheduleTable.Selected", true);
     }
 
     /**

@@ -497,9 +497,17 @@
     <style name="ScheduleTable.Selected" type="nextapp.echo2.app.Component">
         <properties>
             <property name="font">
-                <font size="${font.size}" bold="true">
+                <font size="${font.size}" bold="true" italic="true">
                     <typeface name="${font.typeface}"/>
                 </font>
+            </property>
+            <property name="foreground" value="#000000"/>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#f2f3b3"/>
+                    </properties>
+                </layout-data>
             </property>
         </properties>
     </style>
