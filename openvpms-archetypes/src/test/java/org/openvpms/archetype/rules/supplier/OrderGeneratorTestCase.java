@@ -1,11 +1,29 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.archetype.rules.supplier;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -24,7 +42,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tim Anderson
  */
-public class OrderGeneratorTest extends AbstractSupplierTest {
+public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
     /**
      * The tax rules.
@@ -38,7 +56,9 @@ public class OrderGeneratorTest extends AbstractSupplierTest {
     @Before
     public void setUp() {
         super.setUp();
-        Party practice = (Party) create("party.organisationPractice");
+        Party practice = (Party) create(PracticeArchetypes.PRACTICE);
+        Lookup gst = TestHelper.createTaxType(BigDecimal.TEN);
+        practice.addClassification(gst);
         taxRules = new TaxRules(practice);
     }
 
@@ -109,14 +129,16 @@ public class OrderGeneratorTest extends AbstractSupplierTest {
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
 
-        addRelationships(product1, stockLocation, supplier, true, 1, 10, 5);
-        addRelationships(product2, stockLocation, supplier, true, 1, 10, 5);
+        addRelationships(product1, stockLocation, supplier, true, 1, 10, 5, new BigDecimal("2.0"));
+        addRelationships(product2, stockLocation, supplier, true, 1, 10, 5, BigDecimal.ONE);
 
         List<FinancialAct> order = generator.createOrder(supplier, stockLocation);
         assertEquals(3, order.size());
         FinancialAct act = order.get(0);
         FinancialAct item1 = order.get(1);
         FinancialAct item2 = order.get(2);
+        checkEquals(act.getTotal(), new BigDecimal("29.70"));
+        checkEquals(act.getTaxAmount(), new BigDecimal("2.70"));
         assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
         assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
         assertTrue(TypeHelper.isA(item2, SupplierArchetypes.ORDER_ITEM));
@@ -177,6 +199,23 @@ public class OrderGeneratorTest extends AbstractSupplierTest {
      */
     private void addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
                                   int quantity, int idealQty, int criticalQty) {
+        addRelationships(product, stockLocation, supplier, preferred, quantity, idealQty, criticalQty, BigDecimal.ONE);
+    }
+
+    /**
+     * Creates relationships between a product and stock location and product and supplier.
+     *
+     * @param product       the product
+     * @param stockLocation the stock location
+     * @param supplier      the supplier
+     * @param preferred     indicates if the supplier is the preferred supplier
+     * @param quantity      the quantity
+     * @param idealQty      the ideal quantity
+     * @param criticalQty   the critical quantity
+     * @param unitPrice     the unit price
+     */
+    private void addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
+                                  int quantity, int idealQty, int criticalQty, BigDecimal unitPrice) {
         EntityBean bean = new EntityBean(product);
 
         IMObjectBean productStockLocation = new IMObjectBean(bean.addNodeRelationship("stockLocations", stockLocation));
@@ -187,6 +226,7 @@ public class OrderGeneratorTest extends AbstractSupplierTest {
         ProductSupplier ps = new ProductSupplier(bean.addNodeRelationship("suppliers", supplier));
         ps.setPreferred(preferred);
         ps.setPackageSize(1);
+        ps.setNettPrice(unitPrice);
 
         save(product, stockLocation, supplier);
     }
