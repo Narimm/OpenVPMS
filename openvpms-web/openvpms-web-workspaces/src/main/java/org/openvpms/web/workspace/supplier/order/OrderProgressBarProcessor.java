@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.supplier.order;
 
@@ -86,22 +86,31 @@ public class OrderProgressBarProcessor extends ProgressBarProcessor<OrderProgres
     private final OrderRules rules;
 
     /**
+     * If {@code true}, generate orders for stock below ideal quantity; else generate orders for stock at or
+     * below critical quantity.
+     */
+    private final boolean belowIdealQuantity;
+
+    /**
      * The no. of generated orders.
      */
     private int orders;
 
 
     /**
-     * Constructs an {@code OrderProgressBarProcessor}.
+     * Constructs an {@link OrderProgressBarProcessor}.
      *
-     * @param practice       the practice
-     * @param stockLocations the stock locations to generate orders for
-     * @param suppliers      the suppliers to generate orders for
-     * @param title          the processor title
+     * @param practice           the practice
+     * @param stockLocations     the stock locations to generate orders for
+     * @param suppliers          the suppliers to generate orders for
+     * @param belowIdealQuantity if {@code true}, generate orders for stock below ideal quantity; else
+     *                           generate orders for stock at or below critical quantity
+     * @param title              the processor title
      */
     public OrderProgressBarProcessor(Party practice, List<IMObject> stockLocations, List<IMObject> suppliers,
-                                     String title) {
+                                     boolean belowIdealQuantity, String title) {
         super(new LocationSuppliers(stockLocations, suppliers), stockLocations.size() * suppliers.size(), title);
+        this.belowIdealQuantity = belowIdealQuantity;
         rules = SupplierHelper.createOrderRules(practice);
     }
 
@@ -122,7 +131,7 @@ public class OrderProgressBarProcessor extends ProgressBarProcessor<OrderProgres
      */
     @Override
     protected void process(LocationSupplier pair) {
-        List<FinancialAct> order = rules.createOrder(pair.getSupplier(), pair.getStockLocation());
+        List<FinancialAct> order = rules.createOrder(pair.getSupplier(), pair.getStockLocation(), belowIdealQuantity);
         if (!order.isEmpty()) {
             if (!SaveHelper.save(order)) {
                 cancel();
