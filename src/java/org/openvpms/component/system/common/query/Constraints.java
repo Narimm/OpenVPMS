@@ -1,22 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.system.common.query;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+
+import java.util.Arrays;
 
 
 /**
@@ -353,28 +355,24 @@ public class Constraints {
     /**
      * Creates a new <em>and</em> constraint.
      *
-     * @param lhs the left hand side
-     * @param rhs the right hand side
+     * @param constraints the constraints to AND together
      * @return a new <em>and</em> constraint
      */
-    public static AndConstraint and(IConstraint lhs, IConstraint rhs) {
+    public static AndConstraint and(IConstraint... constraints) {
         AndConstraint result = new AndConstraint();
-        result.add(lhs);
-        result.add(rhs);
+        result.setConstraints(Arrays.asList(constraints));
         return result;
     }
 
     /**
      * Creates a new <em>or</em> constraint.
      *
-     * @param lhs the left hand side
-     * @param rhs the right hand side
+     * @param constraints the constraints to OR together
      * @return a new <em>or</em> constraint
      */
-    public static OrConstraint or(IConstraint lhs, IConstraint rhs) {
+    public static OrConstraint or(IConstraint... constraints) {
         OrConstraint result = new OrConstraint();
-        result.add(lhs);
-        result.add(rhs);
+        result.setConstraints(Arrays.asList(constraints));
         return result;
     }
 
