@@ -88,6 +88,7 @@ public class BatchPrintDialog extends PopupDialog {
      */
     public BatchPrintDialog(String title, String[] buttons, Map<IMObject, Boolean> objects, HelpContext help) {
         super(title, buttons, help);
+        setModal(true);
         table = new IMObjectTable<IMObject>(new PrintTableModel(new ArrayList<Boolean>(objects.values())));
         table.setObjects(new ArrayList<IMObject>(objects.keySet()));
         getLayout().add(table);
