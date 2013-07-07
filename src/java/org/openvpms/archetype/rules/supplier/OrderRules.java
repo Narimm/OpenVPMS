@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -220,13 +220,15 @@ public class OrderRules {
     /**
      * Creates an order for all products supplied by the supplier for the specified stock location.
      *
-     * @param supplier      the supplier
-     * @param stockLocation the stock location
+     * @param supplier           the supplier
+     * @param stockLocation      the stock location
+     * @param belowIdealQuantity if {@code true}, return stock that is {@code <=} the ideal quantity, else return stock
+     *                           that is {@code <=} the critical quantity
      * @return the order and its items, or an empty list if there are no products to order
      */
-    public List<FinancialAct> createOrder(Party supplier, Party stockLocation) {
+    public List<FinancialAct> createOrder(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
         OrderGenerator generator = new OrderGenerator(taxRules, service);
-        return generator.createOrder(supplier, stockLocation);
+        return generator.createOrder(supplier, stockLocation, belowIdealQuantity);
     }
 
     /**

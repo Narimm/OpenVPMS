@@ -34,6 +34,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -63,20 +65,40 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
     }
 
     /**
-     * Tests the {@link OrderGenerator#getOrderableStock(Party, Party)}  method.
+     * Tests the {@link OrderGenerator#getOrderableStock(Party, Party, boolean)}  method.
      */
     @Test
     public void testGetOrderableStock() {
         OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
         Party stockLocation = SupplierTestHelper.createStockLocation();
         Party supplier = TestHelper.createSupplier();
-        Product product = TestHelper.createProduct();
+        Product product1 = TestHelper.createProduct();
+        Product product2 = TestHelper.createProduct();
+        Product product3 = TestHelper.createProduct();
+        Product product4 = TestHelper.createProduct();
+        Product product5 = TestHelper.createProduct();
+        Product product6 = TestHelper.createProduct();
 
-        addRelationships(product, stockLocation, supplier, true, 1, 10, 5);
+        addRelationships(product1, stockLocation, supplier, true, 1, 10, 5);  // below critical level
+        addRelationships(product2, stockLocation, supplier, true, 5, 10, 5);  // at critical level
+        addRelationships(product3, stockLocation, supplier, true, 6, 10, 5);  // above critical level
+        addRelationships(product4, stockLocation, supplier, true, 9, 10, 5);  // below ideal level
+        addRelationships(product5, stockLocation, supplier, true, 10, 10, 5); // at ideal level
+        addRelationships(product6, stockLocation, supplier, true, 11, 10, 5); // above ideal level
 
-        List<Stock> stock = generator.getOrderableStock(supplier, stockLocation);
-        assertEquals(1, stock.size());
-        checkStock(stock.get(0), product, supplier, stockLocation, 1, 0, 9);
+        // check stock at or below critical levels
+        List<Stock> atOrBelowCritical = generator.getOrderableStock(supplier, stockLocation, false);
+        assertEquals(2, atOrBelowCritical.size());
+        checkStock(atOrBelowCritical, product1, supplier, stockLocation, 1, 0, 9);
+        checkStock(atOrBelowCritical, product2, supplier, stockLocation, 5, 0, 5);
+
+        // check stock at or below ideal levels
+        List<Stock> atOrBelowIdeal = generator.getOrderableStock(supplier, stockLocation, true);
+        assertEquals(4, atOrBelowIdeal.size());
+        checkStock(atOrBelowIdeal, product1, supplier, stockLocation, 1, 0, 9);
+        checkStock(atOrBelowIdeal, product2, supplier, stockLocation, 5, 0, 5);
+        checkStock(atOrBelowIdeal, product3, supplier, stockLocation, 6, 0, 4);
+        checkStock(atOrBelowIdeal, product4, supplier, stockLocation, 9, 0, 1);
     }
 
     /**
@@ -112,10 +134,10 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         createOrder(product3, supplier2, stockLocation, 1, OrderStatus.ACCEPTED);
 
         supplier1 = get(supplier1);
-        List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation);
+        List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation, false);
         assertEquals(2, stock.size());
-        checkStock(stock.get(0), product1, supplier1, stockLocation, 1, 5, 4);
-        checkStock(stock.get(1), product2, supplier1, stockLocation, 2, 3, 5);
+        checkStock(stock, product1, supplier1, stockLocation, 1, 5, 4);
+        checkStock(stock, product2, supplier1, stockLocation, 2, 3, 5);
     }
 
     /**
@@ -132,7 +154,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         addRelationships(product1, stockLocation, supplier, true, 1, 10, 5, new BigDecimal("2.0"));
         addRelationships(product2, stockLocation, supplier, true, 1, 10, 5, BigDecimal.ONE);
 
-        List<FinancialAct> order = generator.createOrder(supplier, stockLocation);
+        List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
         assertEquals(3, order.size());
         FinancialAct act = order.get(0);
         FinancialAct item1 = order.get(1);
@@ -145,6 +167,41 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         save(order);
     }
 
+    /**
+     * Verifies the values in a {@code Stock} match that expected.
+     *
+     * @param stock         the stock to check
+     * @param product       the expected product
+     * @param supplier      the expected supplier
+     * @param stockLocation the expected stock location
+     * @param quantity      the expected on-hand quantity
+     * @param onOrder       the expected on-order quantity
+     * @param toOrder       the expected to-order quantity
+     */
+    private void checkStock(List<Stock> stock, Product product, Party supplier, Party stockLocation, int quantity,
+                            int onOrder, int toOrder) {
+        Stock s = getStock(stock, product);
+        assertNotNull(s);
+        checkStock(s, product, supplier, stockLocation, quantity, onOrder, toOrder);
+    }
+
+    /**
+     * Returns a {@link Stock} corresponding to the supplied product.
+     *
+     * @param stock   the stock list
+     * @param product the product
+     * @return the corresponding stock, or {@code null} if none is found
+     */
+    private Stock getStock(List<Stock> stock, Product product) {
+        Stock result = null;
+        for (Stock s : stock) {
+            if (s.getProduct().equals(product)) {
+                assertNull(result);
+                result = s;
+            }
+        }
+        return result;
+    }
 
     /**
      * Verifies the values in a {@code Stock} match that expected.

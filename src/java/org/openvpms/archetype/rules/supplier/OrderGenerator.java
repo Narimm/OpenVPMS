@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.supplier;
 
 
@@ -86,11 +87,13 @@ class OrderGenerator {
     /**
      * Returns the orderable stock for the specified supplier and stock location.
      *
-     * @param supplier      the supplier
-     * @param stockLocation the stock location
+     * @param supplier           the supplier
+     * @param stockLocation      the stock location
+     * @param belowIdealQuantity if {@code true}, return stock that is {@code <=} the ideal quantity, else return stock
+     *                           that is {@code <=} the critical quantity
      * @return the orderable stock
      */
-    public List<Stock> getOrderableStock(Party supplier, Party stockLocation) {
+    public List<Stock> getOrderableStock(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
         List<Stock> result = new ArrayList<Stock>();
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("stockLocationId", stockLocation.getId());
@@ -127,9 +130,10 @@ class OrderGenerator {
                                   + "), location=" + stockLocation.getName() + " (" + stockLocation.getId()
                                   + "), supplier=" + supplier.getName() + " (" + supplier.getId()
                                   + "), onHand=" + quantity + ", onOrder=" + onOrder + ", toOrder=" + toOrder
-                                  + ", criticalQty=" + criticalQty);
+                                  + ", idealQty=" + idealQty + ", criticalQty=" + criticalQty);
                     }
-                    if (current.compareTo(criticalQty) <= 0 && !MathRules.equals(BigDecimal.ZERO, toOrder)) {
+                    if ((belowIdealQuantity && current.compareTo(idealQty) <= 0
+                         || (current.compareTo(criticalQty) <= 0)) && !MathRules.equals(BigDecimal.ZERO, toOrder)) {
                         result.add(new Stock(product, stockLocation, supplier, quantity, idealQty, onOrder, toOrder,
                                              reorderCode, reorderDesc, size, packageUnits, nettPrice, listPrice));
                     }
@@ -149,14 +153,16 @@ class OrderGenerator {
     /**
      * Creates an order for all products supplied by the supplier for the specified stock location.
      *
-     * @param supplier      the supplier
-     * @param stockLocation the stock location
+     * @param supplier           the supplier
+     * @param stockLocation      the stock location
+     * @param belowIdealQuantity if {@code true}, return stock that is {@code <=} the ideal quantity, else return stock
+     *                           that is {@code <=} the critical quantity
      * @return the order and its items, or an empty list if there are no products to order
      */
-    public List<FinancialAct> createOrder(Party supplier, Party stockLocation) {
+    public List<FinancialAct> createOrder(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
         ActCalculator calculator = new ActCalculator(service);
         List<FinancialAct> result = new ArrayList<FinancialAct>();
-        List<Stock> toOrder = getOrderableStock(supplier, stockLocation);
+        List<Stock> toOrder = getOrderableStock(supplier, stockLocation, belowIdealQuantity);
         if (!toOrder.isEmpty()) {
             FinancialAct order = (FinancialAct) service.create(SupplierArchetypes.ORDER);
             result.add(order);
@@ -195,10 +201,17 @@ class OrderGenerator {
         return result;
     }
 
+    /**
+     * Helper to return an object from a set.
+     *
+     * @param prefix the object reference prefix
+     * @param set    the set
+     * @return the corresponding object, or {@code null} if none is found
+     */
     private IMObject getObject(String prefix, ObjectSet set) {
         String shortName = set.getString(prefix + "ShortName");
-        long id = set.getLong(prefix + "Id");
         if (shortName != null) {
+            long id = set.getLong(prefix + "Id");
             return service.get(new IMObjectReference(new ArchetypeId(shortName), id));
         }
         return null;
