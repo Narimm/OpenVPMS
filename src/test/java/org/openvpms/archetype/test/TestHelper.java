@@ -607,6 +607,20 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Helper to create and save a new tax type classification.
+     *
+     * @return a new tax classification
+     */
+    public static Lookup createTaxType(BigDecimal rate) {
+        Lookup tax = (Lookup) create("lookup.taxType");
+        IMObjectBean bean = new IMObjectBean(tax);
+        bean.setValue("code", "XTAXTYPE" + System.nanoTime());
+        bean.setValue("rate", rate);
+        save(tax);
+        return tax;
+    }
+
+    /**
      * Helper to create a date-time given a string of the form
      * <em>yyyy-mm-dd hh:mm:ss</em>.
      *
