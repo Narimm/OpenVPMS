@@ -16,6 +16,8 @@
 
 package org.openvpms.web.echo.style;
 
+import nextapp.echo2.app.Extent;
+
 /**
  * Stylesheet helper.
  *
@@ -47,6 +49,11 @@ public final class Styles {
      * Inset style name.
      */
     public static final String INSET = "Inset";
+
+    /**
+     * Large inset style name.
+     */
+    public static final String LARGE_INSET = "Inset.Large";
 
     /**
      * Cell spacing style name.
@@ -87,4 +94,9 @@ public final class Styles {
      * Heading 5.
      */
     public static final String H5 = "h5";
+
+    /**
+     * An extent to fill the available width.
+     */
+    public static final Extent FULL_WIDTH = new Extent(100, Extent.PERCENT);
 }

@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.messaging;
 
 import nextapp.echo2.app.Component;
@@ -31,6 +32,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.List;
 
@@ -64,7 +66,7 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         ComponentState message = createMessage(properties, context, "UserMessage.message");
 
         if (description.getComponent() instanceof TextComponent) {
-            ((TextComponent) description.getComponent()).setWidth(FULL_WIDTH);
+            ((TextComponent) description.getComponent()).setWidth(Styles.FULL_WIDTH);
         }
 
         addComponent(from);
@@ -132,9 +134,9 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         componentGrid.add(fieldSet, 2);
         componentGrid.add(messageSet, 1, 2);
         Grid grid = createGrid(componentGrid);
-        grid.setWidth(FULL_WIDTH);
+        grid.setWidth(Styles.FULL_WIDTH);
 
-        Component child = ColumnFactory.create("Inset.Large", grid);
+        Component child = ColumnFactory.create(Styles.LARGE_INSET, grid);
         doComplexLayout(object, parent, complex, properties, child, context);
 
         container.add(child);

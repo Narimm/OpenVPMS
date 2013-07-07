@@ -17,7 +17,6 @@
 package org.openvpms.web.workspace.workflow.messaging;
 
 import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.text.TextComponent;
@@ -36,11 +35,6 @@ import org.openvpms.web.echo.factory.LabelFactory;
  * @author Tim Anderson
  */
 public class AbstractMessageLayoutStrategy extends AbstractLayoutStrategy {
-
-    /**
-     * Default extent - 100%.
-     */
-    protected static final Extent FULL_WIDTH = new Extent(100, Extent.PERCENT);
 
     /**
      * Creates a component to display the act date.
