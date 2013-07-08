@@ -17,8 +17,6 @@
  */
 package org.openvpms.esci.adapter.dispatcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -31,12 +29,14 @@ import org.openvpms.esci.adapter.map.order.AbstractOrderResponseTest;
 import org.openvpms.esci.adapter.map.order.OrderResponseMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 
 /**
  * Tests the {@link OrderResponseProcessor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
 

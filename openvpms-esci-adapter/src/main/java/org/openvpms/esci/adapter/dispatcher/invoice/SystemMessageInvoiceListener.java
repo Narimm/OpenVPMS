@@ -12,14 +12,13 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.esci.adapter.dispatcher.invoice;
 
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.esci.adapter.dispatcher.AbstractSystemMessageFactory;
+import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 
 
 /**
@@ -29,8 +28,7 @@ import org.openvpms.esci.adapter.dispatcher.AbstractSystemMessageFactory;
  * If the delivery has no author participation and there is no default author associated with the
  * delivery's stock location, then no message is created.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SystemMessageInvoiceListener extends AbstractSystemMessageFactory implements InvoiceListener {
 
@@ -40,6 +38,7 @@ public class SystemMessageInvoiceListener extends AbstractSystemMessageFactory i
      * @param delivery the delivery
      */
     public void receivedInvoice(FinancialAct delivery) {
-        createMessage(delivery, SystemMessageReason.ORDER_INVOICED);
+        String subject = ESCIAdapterMessages.orderInvoiced().getMessage();
+        createMessage(delivery, subject, SystemMessageReason.ORDER_INVOICED);
     }
 }

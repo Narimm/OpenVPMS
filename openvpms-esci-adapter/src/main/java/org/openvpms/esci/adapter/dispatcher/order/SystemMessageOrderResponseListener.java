@@ -12,16 +12,16 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.esci.adapter.dispatcher.order;
+
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.esci.adapter.dispatcher.AbstractSystemMessageFactory;
 
 import static org.openvpms.archetype.rules.supplier.OrderStatus.ACCEPTED;
 import static org.openvpms.archetype.rules.workflow.SystemMessageReason.ORDER_ACCEPTED;
 import static org.openvpms.archetype.rules.workflow.SystemMessageReason.ORDER_REJECTED;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.esci.adapter.dispatcher.AbstractSystemMessageFactory;
 
 
 /**
@@ -30,8 +30,7 @@ import org.openvpms.esci.adapter.dispatcher.AbstractSystemMessageFactory;
  * <p/>
  * If the order has no author participation, then no message is created.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SystemMessageOrderResponseListener extends AbstractSystemMessageFactory
         implements OrderResponseListener {
@@ -43,7 +42,9 @@ public class SystemMessageOrderResponseListener extends AbstractSystemMessageFac
      */
     public void receivedResponse(FinancialAct order) {
         String reason = ACCEPTED.equals(order.getStatus()) ? ORDER_ACCEPTED : ORDER_REJECTED;
-        createMessage(order, reason);
+        IMObjectBean bean = new IMObjectBean(order);
+        String subject = bean.getString("supplierResponse");
+        createMessage(order, subject, reason);
     }
 
 }
