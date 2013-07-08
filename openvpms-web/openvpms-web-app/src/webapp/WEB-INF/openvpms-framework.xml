@@ -370,6 +370,27 @@
     </bean>
 
     <!-- ================================================================== -->
+    <!-- Scheduling                                                         -->
+    <!-- ================================================================== -->
+
+    <bean id="jobScheduler" class="org.openvpms.component.business.service.scheduler.JobScheduler">
+        <constructor-arg ref="scheduler"/>
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="jobFactory">
+            <bean class="org.springframework.scheduling.quartz.SpringBeanJobFactory"/>
+        </property>
+        <property name="quartzProperties">
+            <props>
+                <prop key="org.quartz.plugin.jobHistory.class">org.quartz.plugins.history.LoggingJobHistoryPlugin</prop>
+            </props>
+        </property>
+    </bean>
+
+
+    <!-- ================================================================== -->
     <!--                        PROPER CASING                               -->
     <!-- ================================================================== -->
 

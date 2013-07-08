@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.scheduler;
+package org.openvpms.component.business.service.scheduler;
 
 import org.quartz.StatefulJob;
 

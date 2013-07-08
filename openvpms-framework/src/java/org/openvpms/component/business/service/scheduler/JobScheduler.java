@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.scheduler;
+package org.openvpms.component.business.service.scheduler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,13 +23,14 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.StatefulJob;
+import org.quartz.Trigger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -80,7 +81,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
 
 
     /**
-     * Constructs an {@link JobScheduler}.
+     * Constructs a {@link JobScheduler}.
      *
      * @param scheduler the Quartz scheduler
      * @param service   the archetype service
@@ -89,7 +90,6 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
         this.scheduler = scheduler;
         this.service = service;
     }
-
 
     /**
      * Set the ApplicationContext that this object runs in.
@@ -116,41 +116,84 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     }
 
     /**
-     * Schedules all active configured jobs.
+     * Schedules a job.
+     *
+     * @param configuration the job configuration
+     * @throws SchedulerException for any error
      */
-    private void scheduleJobs() {
-        ArchetypeQuery query = new ArchetypeQuery(JOB_SHORT_NAME, true);
-        Iterator<IMObject> iterator = new IMObjectQueryIterator<IMObject>(query);
-        while (iterator.hasNext()) {
-            schedule(iterator.next());
+    public void schedule(IMObject configuration) {
+        JobDetail job = createJobDetail(configuration);
+        Trigger trigger = createTrigger(configuration, job);
+        try {
+            scheduler.scheduleJob(job, trigger);
+        } catch (OpenVPMSException exception) {
+            throw exception;
+        } catch (Throwable exception) {
+            throw new SchedulerException(exception);
         }
     }
 
     /**
-     * Schedules a job.
+     * Schedules all active configured jobs.
+     */
+    protected void scheduleJobs() {
+        ArchetypeQuery query = new ArchetypeQuery(JOB_SHORT_NAME, true);
+        Iterator<IMObject> iterator = new IMObjectQueryIterator<IMObject>(query);
+        while (iterator.hasNext()) {
+            try {
+                schedule(iterator.next());
+            } catch (Throwable exception) {
+                log.error(exception, exception);
+            }
+        }
+    }
+
+    /**
+     * Creates a {@code JobDetail} from a job configuration.
      *
      * @param configuration the job configuration
+     * @return a new {@code JobDetail}
+     * @throws SchedulerException for any error
      */
-    private void schedule(IMObject configuration) {
+    protected JobDetail createJobDetail(IMObject configuration) {
+        IMObjectBean bean = new IMObjectBean(configuration, service);
+        JobDetail job = new JobDetail();
+        String name = bean.getString("name");
+        job.setName(name);
+        job.setGroup(Scheduler.DEFAULT_GROUP);
+        Class<?> type;
         try {
-            IMObjectBean bean = new IMObjectBean(configuration, service);
-            JobDetail job = new JobDetail();
-            String name = bean.getString("name");
-            job.setName(name);
-            job.setGroup(Scheduler.DEFAULT_GROUP);
-            Class<?> type = Class.forName(bean.getString("class"));
-            Class runner = type.isAssignableFrom(StatefulJob.class) ? StatefulJobRunner.class : JobRunner.class;
-            job.setJobClass(runner);
-            job.getJobDataMap().put("Configuration", configuration);
-            job.getJobDataMap().put("ApplicationContext", context);
-            job.getJobDataMap().put("ArchetypeService", service);
-            CronTrigger trigger = new CronTrigger(name, job.getGroup());
+            type = Class.forName(bean.getString("class"));
+        } catch (ClassNotFoundException exception) {
+            throw new SchedulerException(exception);
+        }
+        Class runner = type.isAssignableFrom(StatefulJob.class) ? StatefulJobRunner.class : JobRunner.class;
+        job.setJobClass(runner);
+        job.getJobDataMap().put("Configuration", configuration);
+        job.getJobDataMap().put("ApplicationContext", context);
+        job.getJobDataMap().put("ArchetypeService", service);
+        return job;
+    }
+
+    /**
+     * Creates a trigger for a job.
+     *
+     * @param configuration the job configuration
+     * @param job           the job
+     * @return a new trigger
+     * @throws SchedulerException for any error
+     */
+    protected Trigger createTrigger(IMObject configuration, JobDetail job) {
+        IMObjectBean bean = new IMObjectBean(configuration, service);
+        String name = bean.getString("name");
+        CronTrigger trigger = new CronTrigger(name, job.getGroup());
+        try {
             trigger.setJobName(name);
             trigger.setCronExpression(bean.getString("expression"));
-            scheduler.scheduleJob(job, trigger);
         } catch (Throwable exception) {
-            log.error(exception, exception);
+            throw new SchedulerException(exception);
         }
+        return trigger;
     }
 
     /**
@@ -163,7 +206,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
         String name = (existing != null) ? existing.getName() : configuration.getName();
         try {
             scheduler.unscheduleJob(name, null);
-        } catch (SchedulerException exception) {
+        } catch (org.quartz.SchedulerException exception) {
             log.error(exception, exception);
         }
         pending.remove(configuration.getId());
