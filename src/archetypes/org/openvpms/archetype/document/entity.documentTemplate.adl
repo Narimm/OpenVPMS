@@ -59,11 +59,12 @@
                     <property name="GROUPED_REMINDERS" value="Grouped Reminders"/>
                     <property name="REPORT" value="Report"/>
                     <property name="SUBREPORT" value="Sub Report"/>
+                    <property name="MAILING_LABEL" value="Mailing Label"/>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node dislayName="User Level" name="userLevel" path="/details/userLevel" type="java.lang.String" minCardinality="0"
+        <node dislayName="User Level" name="userLevel" path="/details/userLevel" type="java.lang.String"
+              minCardinality="0"
               defaultValue="'0'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
@@ -81,15 +82,17 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="reportType" displayName="Report Type" path="/details/reportType" type="java.lang.String" minCardinality="0">
+        <node name="reportType" displayName="Report Type" path="/details/reportType" type="java.lang.String"
+              minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.reportType"/>
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <node name="printMode" displayName="Preferred Print Mode" path="/details/printMode" type="java.lang.String" minCardinality="0"
-                defaultValue="'CHECK_OUT'">
+        <node name="printMode" displayName="Preferred Print Mode" path="/details/printMode" type="java.lang.String"
+              minCardinality="0"
+              defaultValue="'CHECK_OUT'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IMMEDIATE" value="Immediate"/>
@@ -98,7 +101,8 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="paperSize" displayName="Paper Size" path="/details/paperSize" type="java.lang.String" minCardinality="0">
+        <node name="paperSize" displayName="Paper Size" path="/details/paperSize" type="java.lang.String"
+              minCardinality="0">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="A4" value="A4"/>
@@ -124,7 +128,8 @@
               defaultValue="0.0"/>
         <node name="paperWidth" displayName="Paper Width" path="/details/paperWidth" type="java.math.BigDecimal"
               defaultValue="0.0"/>
-        <node name="paperUnits" displayName="Paper Units" path="/details/paperUnits" type="java.lang.String" minCardinality="0"
+        <node name="paperUnits" displayName="Paper Units" path="/details/paperUnits" type="java.lang.String"
+              minCardinality="0"
               defaultValue="'MM'">
             <assertion name="lookup.local">
                 <propertyList name="entries">
@@ -136,7 +141,8 @@
         </node>
         <node name="emailSubject" path="/details/emailSubject" type="java.lang.String" minCardinality="0"
               maxLength="80"/>
-        <node name="emailText" displayName="Email Body" path="/details/emailText" type="java.lang.String" minCardinality="0"
+        <node name="emailText" displayName="Email Body" path="/details/emailText" type="java.lang.String"
+              minCardinality="0"
               maxLength="1000"/>
         <node name="printers" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
