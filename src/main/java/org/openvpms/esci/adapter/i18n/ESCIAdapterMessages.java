@@ -12,14 +12,12 @@
  *  License.
  *
  *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 package org.openvpms.esci.adapter.i18n;
 
-import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 import java.math.BigDecimal;
 
@@ -27,8 +25,7 @@ import java.math.BigDecimal;
 /**
  * Messages reported by ESCI Adapter.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ESCIAdapterMessages {
 
@@ -547,7 +544,7 @@ public class ESCIAdapterMessages {
      *
      * @param supplier  the supplier
      * @param reference the document reference
-     * @param content the document content
+     * @param content   the document content
      * @return a new message
      */
     public static Message unsupportedDocument(Party supplier, DocumentReferenceType reference,
@@ -582,6 +579,15 @@ public class ESCIAdapterMessages {
         String id = (reference.getID()) != null ? reference.getID().getValue() : null;
         String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
         return messages.getMessage(802, supplier.getId(), supplier.getName(), id, docType);
+    }
+
+    /**
+     * Invoked when an order has been invoiced.
+     *
+     * @return a new message
+     */
+    public static Message orderInvoiced() {
+        return messages.getMessage(900);
     }
 
 }
