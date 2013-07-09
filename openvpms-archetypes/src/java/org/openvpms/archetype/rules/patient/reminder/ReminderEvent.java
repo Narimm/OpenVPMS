@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -27,8 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 /**
  * Reminder event.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderEvent {
 
@@ -39,6 +36,7 @@ public class ReminderEvent {
         EMAIL,       // indicates reminder should be emailed
         PHONE,       // indicates reminder should be phoned
         PRINT,       // indicates reminder should be printed
+        EXPORT,      // indicates reminder should be exported
         LIST         // indicates reminder has no or unrecognised contact
     }
 
@@ -58,27 +56,27 @@ public class ReminderEvent {
     private final ReminderType reminderType;
 
     /**
-     * The patient. May be <tt>null</tt>
+     * The patient. May be {@code null}
      */
     private final Party patient;
 
     /**
-     * The customer. May be <tt>null</tt>
+     * The customer. May be {@code null}
      */
     private final Party customer;
 
     /**
-     * The contact. May be <tt>null</tt>.
+     * The contact. May be {@code null}.
      */
     private final Contact contact;
 
     /**
-     * The document template. May be <tt>null</tt>.
+     * The document template. May be {@code null}.
      */
     private final Entity documentTemplate;
 
     /**
-     * Constructs a new <tt>ReminderEvent</tt>.
+     * Constructs a new {@code ReminderEvent}.
      *
      * @param action       the reminder action
      * @param reminder     the reminder
@@ -89,28 +87,28 @@ public class ReminderEvent {
     }
 
     /**
-     * Constructs a new <tt>ReminderEvent</tt>.
+     * Constructs a new {@code ReminderEvent}.
      *
      * @param action       the reminder action
      * @param reminder     the reminder
      * @param reminderType the reminder type
-     * @param patient      the patient. May be <tt>null</tt>
-     * @param customer     the customer. May be <tt>null</tt>
+     * @param patient      the patient. May be {@code null}
+     * @param customer     the customer. May be {@code null}
      */
     public ReminderEvent(Action action, Act reminder, ReminderType reminderType, Party patient, Party customer) {
         this(action, reminder, reminderType, patient, customer, null, null);
     }
 
     /**
-     * Constructs a new <tt>ReminderEvent</tt>.
+     * Constructs a new {@code ReminderEvent}.
      *
      * @param action           the reminder action
      * @param reminder         the reminder
      * @param reminderType     the reminder type
-     * @param patient          the patient. May be <tt>null</tt>
-     * @param customer         the customer. May be <tt>null</tt>
-     * @param contact          the reminder contact. May be <tt>null</tt>
-     * @param documentTemplate the document template. May be <tt>null</tt>
+     * @param patient          the patient. May be {@code null}
+     * @param customer         the customer. May be {@code null}
+     * @param contact          the reminder contact. May be {@code null}
+     * @param documentTemplate the document template. May be {@code null}
      */
     public ReminderEvent(Action action, Act reminder, ReminderType reminderType, Party patient, Party customer,
                          Contact contact, Entity documentTemplate) {
@@ -153,7 +151,7 @@ public class ReminderEvent {
     /**
      * Returns the patient.
      *
-     * @return the patient. May be <tt>null</tt>
+     * @return the patient. May be {@code null}
      */
     public Party getPatient() {
         return patient;
@@ -162,7 +160,7 @@ public class ReminderEvent {
     /**
      * Returns the customer.
      *
-     * @return the customer. May be <tt>null</tt>
+     * @return the customer. May be {@code null}
      */
     public Party getCustomer() {
         return customer;
@@ -171,7 +169,7 @@ public class ReminderEvent {
     /**
      * Returns the contact.
      *
-     * @return the contact. May be <tt>null</tt>
+     * @return the contact. May be {@code null}
      */
     public Contact getContact() {
         return contact;
@@ -180,7 +178,7 @@ public class ReminderEvent {
     /**
      * Returns the document template.
      *
-     * @return the document template. May be <tt>null</tt>
+     * @return the document template. May be {@code null}
      */
     public Entity getDocumentTemplate() {
         return documentTemplate;
