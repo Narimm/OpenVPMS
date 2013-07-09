@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -172,10 +172,11 @@ public class ReminderProcessor
             Entity documentTemplate = null;
             IMObjectBean templateBean = new IMObjectBean(template, service);
             boolean list = templateBean.getBoolean("list");
-            if (!list) {
+            boolean export = templateBean.getBoolean("export");
+            if (!list && !export) {
                 documentTemplate = getTemplate(template.getTarget());
             }
-            if (!list && documentTemplate == null) {
+            if (!list && !export && documentTemplate == null) {
                 // no template, so can't process
                 result = skip(reminder, reminderType, patient);
             } else {
@@ -184,7 +185,11 @@ public class ReminderProcessor
                 if (list) {
                     result = list(reminder, reminderType, patient, customer, contact, documentTemplate);
                 } else if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
-                    result = print(reminder, reminderType, patient, customer, contact, documentTemplate);
+                    if (export) {
+                        result = export(reminder, reminderType, patient, customer, contact, documentTemplate);
+                    } else {
+                        result = print(reminder, reminderType, patient, customer, contact, documentTemplate);
+                    }
                 } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
                     result = phone(reminder, reminderType, patient, customer, contact, documentTemplate);
                 } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
@@ -325,6 +330,28 @@ public class ReminderProcessor
     protected ReminderEvent list(Act reminder, ReminderType reminderType, Party patient, Party customer,
                                  Contact contact, Entity documentTemplate) {
         ReminderEvent event = new ReminderEvent(Action.LIST, reminder, reminderType, patient, customer, contact,
+                                                documentTemplate);
+        notifyListeners(event.getAction(), event);
+        return event;
+    }
+
+    /**
+     * Notifies listeners to export a reminder. This is for reminders that would normally be printed, but whose
+     * reminder type has its {@code export} node set to {@code true}.
+     *
+     * @param reminder         the reminder
+     * @param reminderType     the reminder type
+     * @param patient          the patient
+     * @param customer         the customer
+     * @param contact          the reminder contact. May be {@code null}
+     * @param documentTemplate the document template
+     * @return the reminder event
+     * @throws ArchetypeServiceException  for any archetype service error
+     * @throws ReminderProcessorException if the reminder cannot be processed
+     */
+    protected ReminderEvent export(Act reminder, ReminderType reminderType, Party patient, Party customer,
+                                   Contact contact, Entity documentTemplate) {
+        ReminderEvent event = new ReminderEvent(Action.EXPORT, reminder, reminderType, patient, customer, contact,
                                                 documentTemplate);
         notifyListeners(event.getAction(), event);
         return event;
