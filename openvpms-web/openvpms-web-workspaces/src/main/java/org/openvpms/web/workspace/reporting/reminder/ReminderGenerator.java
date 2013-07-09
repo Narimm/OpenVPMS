@@ -48,9 +48,11 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.ReportingException;
@@ -125,6 +127,9 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             case PRINT:
                 processors.add(createPrintProcessor(reminders, true, mailContext));
                 break;
+            case EXPORT:
+                processors.add(createExportProcessor(reminders));
+                break;
             case LIST:
             case PHONE:
                 processors.add(createListProcessor(reminders));
@@ -180,13 +185,14 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         ReminderCollector listCollector = new ReminderCollector();
         ReminderCollector emailCollector = new ReminderCollector();
         ReminderCollector printCollector = new ReminderCollector();
+        ReminderCollector exportCollector = new ReminderCollector();
 
         processor.addListener(ReminderEvent.Action.CANCEL, cancelCollector);
         processor.addListener(ReminderEvent.Action.EMAIL, emailCollector);
         processor.addListener(ReminderEvent.Action.PRINT, printCollector);
-
         processor.addListener(ReminderEvent.Action.PHONE, listCollector);
         processor.addListener(ReminderEvent.Action.LIST, listCollector);
+        processor.addListener(ReminderEvent.Action.EXPORT, exportCollector);
         // phone and list reminders get sent to the same report
 
         while (reminders.hasNext()) {
@@ -197,6 +203,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         List<List<ReminderEvent>> emailReminders = emailCollector.getReminders();
         List<List<ReminderEvent>> listReminders = listCollector.getReminders();
         List<List<ReminderEvent>> printReminders = printCollector.getReminders();
+        List<List<ReminderEvent>> exportReminders = exportCollector.getReminders();
 
         if (!cancelReminders.isEmpty()) {
             processors.add(createCancelProcessor(cancelReminders));
@@ -210,6 +217,9 @@ public class ReminderGenerator extends AbstractBatchProcessor {
         }
         if (!emailReminders.isEmpty()) {
             processors.add(createEmailProcessor(emailReminders));
+        }
+        if (!exportReminders.isEmpty()) {
+            processors.add(createExportProcessor(exportReminders));
         }
     }
 
@@ -348,10 +358,20 @@ public class ReminderGenerator extends AbstractBatchProcessor {
     private ReminderBatchProcessor createPrintProcessor(List<List<ReminderEvent>> reminders, boolean interactive,
                                                         MailContext mailContext) {
         ReminderPrintProgressBarProcessor result
-            = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics, context, help);
+                = new ReminderPrintProgressBarProcessor(reminders, groupTemplate, statistics, context, help);
         result.setInteractiveAlways(interactive);
         result.setMailContext(mailContext);
         return result;
+    }
+
+    /**
+     * Creates a new export processor.
+     *
+     * @param reminders the reminders to export
+     * @return a new processor
+     */
+    private ReminderBatchProcessor createExportProcessor(List<List<ReminderEvent>> reminders) {
+        return new ReminderExportProcessor(reminders, statistics);
     }
 
     /**
@@ -432,11 +452,14 @@ public class ReminderGenerator extends AbstractBatchProcessor {
                     || processor instanceof ReminderPrintProgressBarProcessor) {
                     Button button = addReprintButton(processor);
                     grid.add(button);
+                } else if (processor instanceof ReminderExportProcessor) {
+                    Button button = addExportButton(processor);
+                    grid.add(button);
                 } else {
                     grid.add(LabelFactory.create());
                 }
             }
-            getLayout().add(grid);
+            getLayout().add(ColumnFactory.create(Styles.INSET, grid));
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     onGenerationComplete();
@@ -505,6 +528,22 @@ public class ReminderGenerator extends AbstractBatchProcessor {
          */
         private Button addReprintButton(final ReminderBatchProcessor processor) {
             Button button = ButtonFactory.create("reprint", new ActionListener() {
+                public void onAction(ActionEvent e) {
+                    restart(processor);
+                }
+            });
+            restartButtons.add(button);
+            return button;
+        }
+
+        /**
+         * Adds a button to restart a processor to export reminders.
+         *
+         * @param processor the processor
+         * @return a new button
+         */
+        private Button addExportButton(final ReminderBatchProcessor processor) {
+            Button button = ButtonFactory.create("export", new ActionListener() {
                 public void onAction(ActionEvent e) {
                     restart(processor);
                 }

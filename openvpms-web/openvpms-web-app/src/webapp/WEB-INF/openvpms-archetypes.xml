@@ -127,4 +127,11 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
+    <bean id="reminderExporter" class="org.openvpms.archetype.rules.patient.reminder.ReminderCSVExporter">
+        <constructor-arg ref="partyRules"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="documentHandlers"/>
+    </bean>
+
 </beans>
