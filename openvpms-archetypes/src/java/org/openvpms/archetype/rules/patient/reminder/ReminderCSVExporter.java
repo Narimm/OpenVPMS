@@ -21,7 +21,9 @@ import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
@@ -45,17 +47,22 @@ public class ReminderCSVExporter implements ReminderExporter {
      * The CSV header line.
      */
     public static final String[] HEADER = {
-            "Customer Identifier", "Customer Title", "Customer First Name", "Customer Surname", "Company Name",
-            "Customer Street Address", "Customer Suburb", "Customer State", "Customer Postcode",
+            "Customer Identifier", "Customer Title", "Customer First Name", "Customer Initials", "Customer Surname",
+            "Company Name", "Customer Street Address", "Customer Suburb", "Customer State", "Customer Postcode",
             "Customer Phone", "Customer Email",
             "Patient Identifier", "Patient Name", "Patient Species", "Patient Breed", "Patient Sex", "Patient Colour",
             "Patient Date of Birth", "Reminder Type Identifier", "Reminder Type Name", "Reminder Due Date",
             "Reminder Count", "Reminder Last Sent Date"};
 
     /**
+     * The practice rules.
+     */
+    private final PracticeRules practiceRules;
+
+    /**
      * The party rules.
      */
-    private final PartyRules rules;
+    private final PartyRules partyRules;
 
     /**
      * The archetype service.
@@ -82,14 +89,16 @@ public class ReminderCSVExporter implements ReminderExporter {
     /**
      * Constructs a {@link ReminderCSVExporter}.
      *
-     * @param rules    the party rules
-     * @param service  the archetype service
-     * @param lookups  the lookup service
-     * @param handlers the document handlers
+     * @param practiceRules the practice rules
+     * @param partyRules    the party rules
+     * @param service       the archetype service
+     * @param lookups       the lookup service
+     * @param handlers      the document handlers
      */
-    public ReminderCSVExporter(PartyRules rules, IArchetypeService service, ILookupService lookups,
-                               DocumentHandlers handlers) {
-        this.rules = rules;
+    public ReminderCSVExporter(PracticeRules practiceRules, PartyRules partyRules, IArchetypeService service,
+                               ILookupService lookups, DocumentHandlers handlers) {
+        this.practiceRules = practiceRules;
+        this.partyRules = partyRules;
         this.service = service;
         this.lookups = lookups;
         this.handlers = handlers;
@@ -102,8 +111,9 @@ public class ReminderCSVExporter implements ReminderExporter {
      * @return the exported reminders
      */
     public Document export(List<ReminderEvent> reminders) {
+        char separator = getSeparator();
         StringWriter writer = new StringWriter();
-        CSVWriter csv = new CSVWriter(writer);
+        CSVWriter csv = new CSVWriter(writer, separator);
         csv.writeNext(HEADER);
         for (ReminderEvent event : reminders) {
             if (event.getReminderType() != null && event.getCustomer() != null
@@ -111,11 +121,28 @@ public class ReminderCSVExporter implements ReminderExporter {
                 export(event, csv);
             }
         }
-        String name = "reminders_" + new java.sql.Date(System.currentTimeMillis()).toString() + ".csv";
+        String name = "reminders-" + new java.sql.Date(System.currentTimeMillis()).toString() + ".csv";
 
         DocumentHandler handler = handlers.get("name", MIME_TYPE);
         byte[] buffer = writer.getBuffer().toString().getBytes(Charset.forName("UTF-8"));
         return handler.create(name, new ByteArrayInputStream(buffer), MIME_TYPE, buffer.length);
+    }
+
+    /**
+     * Returns the field separator.
+     *
+     * @return the field separator
+     */
+    public char getSeparator() {
+        char separator = ',';
+        Party practice = practiceRules.getPractice();
+        if (practice != null) {
+            IMObjectBean bean = new IMObjectBean(practice, service);
+            if ("TAB".equals(bean.getString("reminderExportFormat"))) {
+                separator = '\t';
+            }
+        }
+        return separator;
     }
 
     /**
@@ -134,14 +161,15 @@ public class ReminderCSVExporter implements ReminderExporter {
         String customerId = Long.toString(customer.getObject().getId());
         String title = getLookup(customer, "title");
         String firstName = customer.getString("firstName");
+        String initials = customer.getString("initials");
         String lastName = customer.getString("lastName");
         String companyName = customer.getString("companyName");
         String address = location.getString("address");
         String suburb = getLookup(location, "suburb");
         String state = getLookup(location, "state");
         String postCode = location.getString("postcode");
-        String phone = rules.getTelephone(event.getCustomer());
-        String email = rules.getEmailAddress(event.getCustomer());
+        String phone = partyRules.getTelephone(event.getCustomer());
+        String email = partyRules.getEmailAddress(event.getCustomer());
         String patientId = Long.toString(event.getPatient().getId());
         String patientName = patient.getString("name");
         String species = getLookup(patient, "species");
@@ -155,8 +183,8 @@ public class ReminderCSVExporter implements ReminderExporter {
         String reminderCount = reminder.getString("reminderCount");
         String lastSentDate = getDate(reminder.getDate("lastSent"));
 
-        String[] line = {customerId, title, firstName, lastName, companyName, address, suburb, state, postCode,
-                         phone, email, patientId, patientName, species, breed, sex, colour, dateOfBirth,
+        String[] line = {customerId, title, firstName, initials, lastName, companyName, address, suburb, state,
+                         postCode, phone, email, patientId, patientName, species, breed, sex, colour, dateOfBirth,
                          reminderTypeId, reminderTypeName, dueDate, reminderCount, lastSentDate};
         writer.writeNext(line);
     }
@@ -181,4 +209,5 @@ public class ReminderCSVExporter implements ReminderExporter {
     private String getLookup(IMObjectBean bean, String node) {
         return LookupHelper.getName(service, lookups, bean.getObject(), node);
     }
+
 }
