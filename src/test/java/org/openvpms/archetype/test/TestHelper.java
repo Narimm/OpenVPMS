@@ -150,6 +150,62 @@ public class TestHelper extends Assert {
     }
 
     /**
+     * Creates a new <em>contact.location</em>
+     * <p/>
+     * Any required lookups will be created and saved.
+     *
+     * @param address    the street address
+     * @param suburbCode the <em>lookup.suburb</em> code
+     * @param suburbName the suburb name. May be {@code null}
+     * @param stateCode  the <em>lookup.state</em> code
+     * @param stateName  the state name. May be {@code null}
+     * @param postCode   the post code
+     * @return a new location contact
+     */
+    public static Contact createLocationContact(String address, String suburbCode, String suburbName,
+                                                String stateCode, String stateName, String postCode) {
+        Lookup state = getLookup("lookup.state", stateCode, stateName, true);
+        Lookup suburb = getLookup("lookup.suburb", suburbCode, suburbName, state, "lookupRelationship.stateSuburb");
+        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("address", address);
+        bean.setValue("suburb", suburb.getCode());
+        bean.setValue("state", state.getCode());
+        bean.setValue("postcode", postCode);
+        return contact;
+    }
+
+    /**
+     * Creates a new <em>contact.phoneNumber</em>
+     *
+     * @param areaCode the area code
+     * @param number   the phone number
+     * @return a new phone contact
+     */
+    public static Contact createPhoneContact(String areaCode, String number) {
+        Contact contact = (Contact) create(ContactArchetypes.PHONE);
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("areaCode", areaCode);
+        bean.setValue("telephoneNumber", number);
+        bean.setValue("preferred", true);
+        return contact;
+    }
+
+    /**
+     * Creates a new <em>contact.email</em>
+     *
+     * @param address the phone number
+     * @return a new email contact
+     */
+    public static Contact createEmailContact(String address) {
+        Contact contact = (Contact) create(ContactArchetypes.EMAIL);
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("emailAddress", address);
+        bean.setValue("preferred", true);
+        return contact;
+    }
+
+    /**
      * Creates and saves a new <em>contact.location</em>
      * <p/>
      * Any required lookups will be created and saved.
@@ -161,15 +217,7 @@ public class TestHelper extends Assert {
      * @return a new location contact
      */
     public static Contact createLocationContact(String address, String suburbCode, String stateCode, String postCode) {
-        Lookup state = getLookup("lookup.state", stateCode);
-        Lookup suburb = getLookup("lookup.suburb", suburbCode, state, "lookupRelationship.stateSuburb");
-        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("address", address);
-        bean.setValue("suburb", suburb.getCode());
-        bean.setValue("state", state.getCode());
-        bean.setValue("postcode", postCode);
-        return contact;
+        return createLocationContact(address, suburbCode, null, stateCode, null, postCode);
     }
 
     /**
@@ -563,8 +611,7 @@ public class TestHelper extends Assert {
     }
 
     /**
-     * Returns a lookup that is the target in a lookup relationship, creating
-     * and saving it if it doesn't exist.
+     * Returns a lookup that is the target in a lookup relationship, creating and saving it if it doesn't exist.
      *
      * @param shortName             the target lookup short name
      * @param code                  the lookup code
@@ -574,9 +621,24 @@ public class TestHelper extends Assert {
      */
     public static Lookup getLookup(String shortName, String code, Lookup source,
                                    String relationshipShortName) {
-        Lookup target = getLookup(shortName, code);
-        for (LookupRelationship relationship
-                : source.getLookupRelationships()) {
+        return getLookup(shortName, code, code, source, relationshipShortName);
+    }
+
+    /**
+     * Returns a lookup that is the target in a lookup relationship, creating
+     * and saving it if it doesn't exist.
+     *
+     * @param shortName             the target lookup short name
+     * @param code                  the lookup code
+     * @param name                  the lookup name
+     * @param source                the source lookup
+     * @param relationshipShortName the lookup relationship short name
+     * @return the lookup
+     */
+    public static Lookup getLookup(String shortName, String code, String name, Lookup source,
+                                   String relationshipShortName) {
+        Lookup target = getLookup(shortName, code, name, true);
+        for (LookupRelationship relationship : source.getLookupRelationships()) {
             if (relationship.getTarget().equals(target.getObjectReference())) {
                 return target;
             }
