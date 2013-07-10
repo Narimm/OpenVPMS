@@ -39,8 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link PartyRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PartyRulesTestCase extends ArchetypeServiceTest {
 
@@ -101,7 +100,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
         phoneBean.setValue("preferred", false);
 
         Lookup state = TestHelper.getLookup("lookup.state", "VIC");
-        Lookup suburb = TestHelper.getLookup("lookup.suburb", "BAR", state,
+        Lookup suburb = TestHelper.getLookup("lookup.suburb", "BAR", "Bar", state,
                                              "lookupRelationship.stateSuburb");
 
         // expect no preferred contacts to result in empty string
@@ -463,7 +462,7 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
                                   String purpose) {
         IMObjectBean bean = new IMObjectBean(contact);
         Lookup state = TestHelper.getLookup("lookup.state", "VIC");
-        Lookup suburb = TestHelper.getLookup("lookup.suburb", "COBURG", state,
+        Lookup suburb = TestHelper.getLookup("lookup.suburb", "COBURG", "Coburg", state,
                                              "lookupRelationship.stateSuburb");
         bean.setValue("address", address);
         bean.setValue("suburb", suburb.getCode());
