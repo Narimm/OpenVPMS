@@ -128,6 +128,7 @@
     </bean>
 
     <bean id="reminderExporter" class="org.openvpms.archetype.rules.patient.reminder.ReminderCSVExporter">
+        <constructor-arg ref="practiceRules"/>
         <constructor-arg ref="partyRules"/>
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
