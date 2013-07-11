@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.Grid;
@@ -53,6 +54,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
+import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
 
 /**
  * Reminder resend dialog.
@@ -199,34 +202,26 @@ class ResendReminderDialog extends PopupDialog {
     private void generate(final int reminderCount, Contact contact) {
         try {
             ReminderEvent event = processor.process(reminder, reminderCount);
-            if (event.getDocumentTemplate() != null) {
-                if (!ObjectUtils.equals(contact, event.getContact())) {
-                    ReminderEvent.Action action = event.getAction();
+            Action action = event.getAction();
+            if (event.getDocumentTemplate() != null || Action.EXPORT.equals(action)) {
+                if (!Action.EXPORT.equals(action) && !ObjectUtils.equals(contact, event.getContact())) {
                     if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
-                        action = ReminderEvent.Action.PRINT;
+                        action = Action.PRINT;
                     } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-                        action = ReminderEvent.Action.EMAIL;
+                        action = Action.EMAIL;
                     }
                     event = new ReminderEvent(action, event.getReminder(), event.getReminderType(), event.getPatient(),
                                               event.getCustomer(), contact, event.getDocumentTemplate());
                 }
-                CustomerMailContext mailContext = CustomerMailContext.create(event.getCustomer(), event.getPatient(),
-                                                                             context, getHelpContext());
-                final ReminderGenerator generator = new ReminderGenerator(event, context, mailContext,
-                                                                          getHelpContext());
-                generator.setUpdateOnCompletion(false);
-                generator.setListener(new BatchProcessorListener() {
-                    public void completed() {
-                        if (generator.getProcessed() > 0 && generator.getErrors() == 0) {
-                            onGenerated(reminderCount);
-                        }
-                    }
-
-                    public void error(Throwable exception) {
-                        ErrorHelper.show(exception);
-                    }
-                });
-                generator.process();
+                generate(event, reminderCount);
+            } else if (action == Action.LIST) {
+                ErrorHelper.show(Messages.get(ERROR_TITLE),
+                                 Messages.get("patient.reminder.resend.list", event.getReminderType().getName(),
+                                              reminderCount));
+            } else if (action == Action.CANCEL) {
+                ErrorHelper.show(Messages.get(ERROR_TITLE),
+                                 Messages.get("patient.reminder.resend.cancel", event.getReminderType().getName(),
+                                              reminderCount));
             } else {
                 ErrorHelper.show(Messages.get(ERROR_TITLE),
                                  Messages.get("patient.reminder.resend.notemplate",
@@ -235,6 +230,31 @@ class ResendReminderDialog extends PopupDialog {
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Generates a reminder.
+     *
+     * @param event         the reminder event
+     * @param reminderCount the reminder count
+     */
+    private void generate(ReminderEvent event, final int reminderCount) {
+        CustomerMailContext mailContext = CustomerMailContext.create(event.getCustomer(), event.getPatient(),
+                                                                     context, getHelpContext());
+        final ReminderGenerator generator = new ReminderGenerator(event, context, mailContext, getHelpContext());
+        generator.setUpdateOnCompletion(false);
+        generator.setListener(new BatchProcessorListener() {
+            public void completed() {
+                if (generator.getProcessed() > 0 && generator.getErrors() == 0) {
+                    onGenerated(reminderCount);
+                }
+            }
+
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+        });
+        generator.process();
     }
 
     /**
@@ -248,8 +268,8 @@ class ResendReminderDialog extends PopupDialog {
     private void onGenerated(int count) {
         if (count == reminderCount - 1) {
             final ConfirmationDialog dialog = new ConfirmationDialog(
-                Messages.get("patient.reminder.resend.update.title"),
-                Messages.get("patient.reminder.resend.update"));
+                    Messages.get("patient.reminder.resend.update.title"),
+                    Messages.get("patient.reminder.resend.update"));
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 public void onOK() {
                     update();
@@ -273,9 +293,7 @@ class ResendReminderDialog extends PopupDialog {
      */
     private void update() {
         try {
-            ReminderRules rules = new ReminderRules(ServiceHelper.getArchetypeService(),
-                                                    new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                     ServiceHelper.getLookupService()));
+            ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
             rules.updateReminder(reminder, reminderCount, new Date());
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
