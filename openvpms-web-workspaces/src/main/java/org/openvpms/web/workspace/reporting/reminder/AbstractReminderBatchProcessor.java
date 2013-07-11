@@ -151,10 +151,11 @@ public abstract class AbstractReminderBatchProcessor extends AbstractBatchProces
      */
     @Override
     protected void notifyError(Throwable exception) {
-        if (update) {
-            for (ReminderEvent event : reminders) {
+        for (ReminderEvent event : reminders) {
+            if (update) {
                 ReminderHelper.setError(event.getReminder(), exception);
             }
+            statistics.incErrors();
         }
         super.notifyError(exception);
     }

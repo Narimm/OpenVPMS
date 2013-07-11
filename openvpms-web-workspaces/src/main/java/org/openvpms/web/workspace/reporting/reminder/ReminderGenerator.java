@@ -543,7 +543,7 @@ public class ReminderGenerator extends AbstractBatchProcessor {
          * @return a new button
          */
         private Button addExportButton(final ReminderBatchProcessor processor) {
-            Button button = ButtonFactory.create("export", new ActionListener() {
+            Button button = ButtonFactory.create("button.reexport", new ActionListener() {
                 public void onAction(ActionEvent e) {
                     restart(processor);
                 }
