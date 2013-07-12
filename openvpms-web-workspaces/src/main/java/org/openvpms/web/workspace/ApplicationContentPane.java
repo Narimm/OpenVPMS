@@ -18,6 +18,7 @@ package org.openvpms.web.workspace;
 
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.SplitPane;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
@@ -72,8 +73,9 @@ public class ApplicationContentPane extends ContentPane {
      */
     protected void doLayout() {
         SplitPane layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, LAYOUT_STYLE);
+        PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
         MessageMonitor messageMonitor = ServiceHelper.getBean(MessageMonitor.class);
-        layout.add(new TitlePane(context));
+        layout.add(new TitlePane(practiceRules, context));
         layout.add(new MainPane(messageMonitor, context, factory));
         add(layout);
     }

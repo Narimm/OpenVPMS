@@ -17,9 +17,14 @@
 package org.openvpms.web.component.property;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 
+import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 
 
 /**
@@ -302,6 +307,178 @@ public abstract class DelegatingProperty implements CollectionProperty {
      */
     public boolean isRequired() {
         return property.isRequired();
+    }
+
+    /**
+     * Returns the boolean value of the property.
+     *
+     * @return the value of the property, or {@code false} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public boolean getBoolean() {
+        return property.getBoolean();
+    }
+
+    /**
+     * Returns the boolean value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public boolean getBoolean(boolean defaultValue) {
+        return property.getBoolean(defaultValue);
+    }
+
+    /**
+     * Returns the integer value of the property.
+     *
+     * @return the value of the property, or {@code 0} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public int getInt() {
+        return property.getInt();
+    }
+
+    /**
+     * Returns the integer value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public int getInt(int defaultValue) {
+        return property.getInt(defaultValue);
+    }
+
+    /**
+     * Returns the long value of the property.
+     *
+     * @return the value of the property, or {@code 0} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public long getLong() {
+        return property.getLong();
+    }
+
+    /**
+     * Returns the long value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public long getLong(long defaultValue) {
+        return property.getLong(defaultValue);
+    }
+
+    /**
+     * Returns the string value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public String getString() {
+        return property.getString();
+    }
+
+    /**
+     * Returns the string value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public String getString(String defaultValue) {
+        return property.getString(defaultValue);
+    }
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public BigDecimal getBigDecimal() {
+        return property.getBigDecimal();
+    }
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public BigDecimal getBigDecimal(BigDecimal defaultValue) {
+        return property.getBigDecimal(defaultValue);
+    }
+
+    /**
+     * Returns the {@code Money} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public Money getMoney() {
+        return property.getMoney();
+    }
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public Money getMoney(Money defaultValue) {
+        return property.getMoney(defaultValue);
+    }
+
+    /**
+     * Returns the {@code Date} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public Date getDate() {
+        return property.getDate();
+    }
+
+    /**
+     * Returns the {@code Date} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public Date getDate(Date defaultValue) {
+        return property.getDate(defaultValue);
+    }
+
+    /**
+     * Returns the reference value of the property.
+     *
+     * @return the property value. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public IMObjectReference getReference() {
+        return property.getReference();
     }
 
     /**

@@ -17,6 +17,18 @@
 package org.openvpms.web.component.property;
 
 
+import org.apache.commons.jxpath.util.TypeConverter;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
+import org.openvpms.component.system.common.util.PropertySetException;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import static org.openvpms.component.system.common.util.PropertySetException.ErrorCode.ConversionFailed;
+
 /**
  * Abstract implementation of the {@link Property} interface.
  *
@@ -44,6 +56,11 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
      */
     private PropertyTransformer transformer;
 
+    /**
+     * Used to convert property values to a particular type.
+     */
+    private static final TypeConverter CONVERTER = new OpenVPMSTypeConverter();
+
 
     /**
      * Determines if the underlying object has been modified.
@@ -59,6 +76,178 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
      */
     public void clearModified() {
         dirty = false;
+    }
+
+    /**
+     * Returns the boolean value of the property.
+     *
+     * @return the value of the property, or {@code false} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public boolean getBoolean() {
+        return getBoolean(false);
+    }
+
+    /**
+     * Returns the boolean value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public boolean getBoolean(boolean defaultValue) {
+        return (Boolean) get(defaultValue, boolean.class);
+    }
+
+    /**
+     * Returns the integer value of the property.
+     *
+     * @return the value of the property, or {@code 0} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public int getInt() {
+        return getInt(0);
+    }
+
+    /**
+     * Returns the integer value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public int getInt(int defaultValue) {
+        return (Integer) get(defaultValue, int.class);
+    }
+
+    /**
+     * Returns the long value of the property.
+     *
+     * @return the value of the property, or {@code 0} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public long getLong() {
+        return getLong(0);
+    }
+
+    /**
+     * Returns the long value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public long getLong(long defaultValue) {
+        return (Long) get(defaultValue, long.class);
+    }
+
+    /**
+     * Returns the string value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public String getString() {
+        return getString(null);
+    }
+
+    /**
+     * Returns the string value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public String getString(String defaultValue) {
+        return (String) get(defaultValue, String.class);
+    }
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public BigDecimal getBigDecimal() {
+        return getBigDecimal(null);
+    }
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public BigDecimal getBigDecimal(BigDecimal defaultValue) {
+        return (BigDecimal) get(defaultValue, BigDecimal.class);
+    }
+
+    /**
+     * Returns the {@code Money} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public Money getMoney() {
+        return getMoney(null);
+    }
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public Money getMoney(Money defaultValue) {
+        return (Money) get(defaultValue, Money.class);
+    }
+
+    /**
+     * Returns the {@code Date} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public Date getDate() {
+        return getDate(null);
+    }
+
+    /**
+     * Returns the {@code Date} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public Date getDate(Date defaultValue) {
+        return (Date) get(defaultValue, Date.class);
+    }
+
+    /**
+     * Returns the reference value of the property.
+     *
+     * @return the property value. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    @Override
+    public IMObjectReference getReference() {
+        return (IMObjectReference) get(null, IMObjectReference.class);
     }
 
     /**
@@ -217,7 +406,7 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
      */
     protected void checkModifiable() {
         if (isDerived()) {
-            throw new UnsupportedOperationException("Attenpt to modify derived property: " + getDisplayName());
+            throw new UnsupportedOperationException("Attempt to modify derived property: " + getDisplayName());
         }
     }
 
@@ -230,6 +419,29 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
         if (errorListeners != null) {
             errorListeners.notifyListeners(this, message);
         }
+    }
+
+    /**
+     * Converts a value to a particular type.
+     *
+     * @param defaultValue the value to return if the node value is null
+     * @param type         the type to convert to if {@code defaultValue} is null
+     * @return the value of the node as an instance of {@code type}
+     * @throws OpenVPMSException if conversion fails
+     */
+    protected Object get(Object defaultValue, Class type) {
+        Object value = getValue();
+        Object result;
+        if (value != null) {
+            try {
+                result = CONVERTER.convert(value, type);
+            } catch (Throwable exception) {
+                throw new PropertySetException(ConversionFailed, exception, getName(), value, type);
+            }
+        } else {
+            result = defaultValue;
+        }
+        return result;
     }
 
 }

@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
+import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -27,6 +28,8 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.mr.Prescriptions;
 
 import java.util.Date;
 
@@ -38,8 +41,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public class ChargeItemRelationshipCollectionEditor
-        extends AltModelActRelationshipCollectionEditor {
+public class ChargeItemRelationshipCollectionEditor extends AltModelActRelationshipCollectionEditor {
 
     /**
      * Last Selected Item Date.
@@ -51,9 +53,13 @@ public class ChargeItemRelationshipCollectionEditor
      */
     private EditorQueue editorQueue;
 
+    /**
+     * The prescriptions.
+     */
+    private final Prescriptions prescriptions;
 
     /**
-     * Constructs a {@code ChargeItemRelationshipCollectionEditor}.
+     * Constructs a {@link ChargeItemRelationshipCollectionEditor}.
      *
      * @param property the collection property
      * @param act      the parent act
@@ -62,6 +68,7 @@ public class ChargeItemRelationshipCollectionEditor
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
         editorQueue = new DefaultEditorQueue(context.getContext());
+        prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
     }
 
     /**
@@ -97,13 +104,26 @@ public class ChargeItemRelationshipCollectionEditor
     }
 
     /**
+     * Removes an object from the collection.
+     *
+     * @param object the object to remove
+     */
+    @Override
+    public void remove(IMObject object) {
+        super.remove(object);
+        prescriptions.removeItem((Act) object);
+    }
+
+    /**
      * Initialises an editor.
      *
      * @param editor the editor
      */
     protected void initialiseEditor(final IMObjectEditor editor) {
         if (editor instanceof CustomerChargeActItemEditor) {
-            ((CustomerChargeActItemEditor) editor).setEditorQueue(editorQueue);
+            CustomerChargeActItemEditor itemEditor = (CustomerChargeActItemEditor) editor;
+            itemEditor.setEditorQueue(editorQueue);
+            itemEditor.setPrescriptions(prescriptions);
         }
 
         // Set startTime to to last used value
@@ -132,4 +152,17 @@ public class ChargeItemRelationshipCollectionEditor
         return set;
     }
 
+    /**
+     * Saves any current edits.
+     *
+     * @return {@code true} if edits were saved successfully, otherwise {@code false}
+     */
+    @Override
+    protected boolean doSave() {
+        boolean result = super.doSave();
+        if (result) {
+            result = prescriptions.save();
+        }
+        return result;
+    }
 }

@@ -17,7 +17,13 @@
 package org.openvpms.web.component.property;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -62,9 +68,136 @@ public interface Property extends Modifiable {
     /**
      * Returns the value of the property.
      *
-     * @return the property value
+     * @return the property value. May be {@code null}
      */
     Object getValue();
+
+    /**
+     * Returns the boolean value of the property.
+     *
+     * @return the value of the property, or {@code false} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    boolean getBoolean();
+
+    /**
+     * Returns the boolean value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    boolean getBoolean(boolean defaultValue);
+
+    /**
+     * Returns the integer value of the property.
+     *
+     * @return the value of the property, or {@code 0} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    int getInt();
+
+    /**
+     * Returns the integer value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    int getInt(int defaultValue);
+
+    /**
+     * Returns the long value of the property.
+     *
+     * @return the value of the property, or {@code 0} if the property is null
+     * @throws OpenVPMSException if conversion fails
+     */
+    long getLong();
+
+    /**
+     * Returns the long value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    long getLong(long defaultValue);
+
+    /**
+     * Returns the string value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    String getString();
+
+    /**
+     * Returns the string value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    String getString(String defaultValue);
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    BigDecimal getBigDecimal();
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    BigDecimal getBigDecimal(BigDecimal defaultValue);
+
+    /**
+     * Returns the {@code Money} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    Money getMoney();
+
+    /**
+     * Returns the {@code BigDecimal} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    Money getMoney(Money defaultValue);
+
+    /**
+     * Returns the {@code Date} value of the property.
+     *
+     * @return the value of the property. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    Date getDate();
+
+    /**
+     * Returns the {@code Date} value of the property.
+     *
+     * @param defaultValue the value to return if the property value is {@code null}
+     * @return the value of the property, or {@code defaultValue} if it is {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    Date getDate(Date defaultValue);
+
+    /**
+     * Returns the reference value of the property.
+     *
+     * @return the property value. May be {@code null}
+     * @throws OpenVPMSException if conversion fails
+     */
+    IMObjectReference getReference();
 
     /**
      * Returns the minimum length of the property.
@@ -192,7 +325,7 @@ public interface Property extends Modifiable {
     /**
      * Returns the property transformer.
      *
-     * @return the property transfoer. May be {@code null}
+     * @return the property transformer. May be {@code null}
      */
     PropertyTransformer getTransformer();
 

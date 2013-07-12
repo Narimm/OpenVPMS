@@ -151,6 +151,9 @@ public class VisitEditorDialog extends PopupDialog {
             case VisitEditor.DOCUMENT_INDEX:
                 onDocumentsSelected();
                 break;
+            case VisitEditor.PRESCRIPTION_INDEX:
+                onPrescriptionSelected();
+                break;
         }
     }
 
@@ -294,6 +297,16 @@ public class VisitEditorDialog extends PopupDialog {
      */
     private void onDocumentsSelected() {
         editor.setButtons(setDefaultButtons());
+    }
+
+    /**
+     * Invoked when the prescription tab is selected.
+     * <p/>
+     * Updates the dialog buttons
+     */
+    private void onPrescriptionSelected() {
+        ButtonSet buttons = setDefaultButtons();
+        editor.setButtons(buttons);
     }
 
     /**

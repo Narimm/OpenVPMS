@@ -91,7 +91,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Determines the operations that may be performed on the selected object.
      */
-    private final IMObjectActions<T> actions;
+    private IMObjectActions<T> actions;
 
     /**
      * The archetypes that this may create.
@@ -132,7 +132,8 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Constructs an {@code AbstractCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
-     * @param actions    determines the operations that may be performed on the selected object
+     * @param actions    determines the operations that may be performed on the selected object. If {@code null},
+     *                   actions should be registered via {@link #setActions(IMObjectActions)}
      * @param context    the context
      * @param help       the help context
      */
@@ -345,6 +346,15 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     protected Archetypes<T> getArchetypes() {
         return archetypes;
+    }
+
+    /**
+     * Determines the actions that may be performed on the selected object.
+     *
+     * @param actions the actions
+     */
+    protected void setActions(IMObjectActions<T> actions) {
+        this.actions = actions;
     }
 
     /**

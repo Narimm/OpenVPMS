@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -50,6 +50,11 @@ import java.util.List;
 public class TitlePane extends ContentPane {
 
     /**
+     * The practice rules.
+     */
+    private final PracticeRules practiceRules;
+
+    /**
      * The context.
      */
     private final Context context;
@@ -72,8 +77,12 @@ public class TitlePane extends ContentPane {
 
     /**
      * Construct a new {@code TitlePane}.
+     *
+     * @param practiceRules the practice rules
+     * @param context       the context
      */
-    public TitlePane(Context context) {
+    public TitlePane(PracticeRules practiceRules, Context context) {
+        this.practiceRules = practiceRules;
         this.context = context;
         doLayout();
     }
@@ -155,7 +164,6 @@ public class TitlePane extends ContentPane {
             if (locations.isEmpty()) {
                 Party practice = context.getPractice();
                 if (practice != null) {
-                    PracticeRules practiceRules = new PracticeRules();
                     locations = practiceRules.getLocations(practice);
                 }
             }
@@ -177,7 +185,6 @@ public class TitlePane extends ContentPane {
             if (location == null) {
                 Party practice = context.getPractice();
                 if (practice != null) {
-                    PracticeRules practiceRules = new PracticeRules();
                     location = practiceRules.getDefaultLocation(practice);
                 }
             }

@@ -135,4 +135,8 @@
         <constructor-arg ref="documentHandlers"/>
     </bean>
 
+    <bean id="prescriptionRules" class="org.openvpms.archetype.rules.patient.prescription.PrescriptionRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
 </beans>
