@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -20,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -31,7 +30,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -69,7 +67,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     private boolean addDefaultItem;
 
     /**
-     * Constructs an {@code AbstractCustomerChargeActEditor}.
+     * Constructs an {@link AbstractCustomerChargeActEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -183,6 +181,18 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Adds the object being edited to the collection, if it doesn't exist.
+     * <p/>
+     * The object will be selected.
+     *
+     * @param editor the editor
+     * @return {@code true} if the object was added, otherwise {@code false}
+     */
+    public boolean addEdited(CustomerChargeActItemEditor editor) {
+        return getItems().addEdited(editor);
+    }
+
+    /**
      * Sets the clinician.
      *
      * @param clinician the clinician. May be {@code null}
@@ -209,9 +219,7 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
 
             // mark reminders that match the new reminders completed
             if (!reminders.isEmpty()) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
-                ReminderRules rules = new ReminderRules(service,
-                                                        new PatientRules(service, ServiceHelper.getLookupService()));
+                ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
                 rules.markMatchingRemindersCompleted(reminders);
             }
         }

@@ -63,8 +63,8 @@ public class ChargeEditorQueue extends DefaultEditorQueue {
      * Invoked when the edit is completed.
      */
     @Override
-    protected void editCompleted() {
-        super.editCompleted();
+    protected void completed() {
+        super.completed();
         current = null;
     }
 }

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -63,6 +63,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private final Archetypes<DocumentAct> docArchetypes;
 
     /**
+     * The prescription archetypes.
+     */
+    private final Archetypes<Act> prescriptionArchetypes;
+
+    /**
      * The patient.
      */
     private Party patient;
@@ -93,6 +98,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private int chargesIndex;
 
     /**
+     * Prescription browser tab index.
+     */
+    private int prescriptionIndex;
+
+    /**
      * Patient charges shortnames supported by the workspace.
      */
     private static final String[] CHARGES_SHORT_NAMES = {
@@ -118,6 +128,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         this.patient = patient;
         docArchetypes = Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
                                           Messages.get("patient.document.createtype"));
+        prescriptionArchetypes = Archetypes.create(PatientArchetypes.PRESCRIPTION, Act.class);
 
         LayoutContext layout = new DefaultLayoutContext(context, help);
 
@@ -128,6 +139,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         remindersIndex = addBrowser(Messages.get("button.reminder"), createReminderAlertBrowser(patient, layout));
         documentsIndex = addBrowser(Messages.get("button.document"), createDocumentBrowser(patient, layout));
         chargesIndex = addBrowser(Messages.get("button.charges"), createChargeBrowser(patient, layout));
+        prescriptionIndex = addBrowser(Messages.get("button.prescriptions"),
+                                       createPrescriptionBrowser(patient, layout));
     }
 
     /**
@@ -148,6 +161,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
             result = createDocumentCRUDWindow(context, help);
         } else if (index == chargesIndex) {
             result = createChargesCRUDWindow(context, help);
+        } else if (index == prescriptionIndex) {
+            result = createPrescriptionCRUDWindow(context, help);
         } else {
             result = createHistoryCRUDWindow(context, help);
         }
@@ -297,6 +312,28 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     protected CRUDWindow<Act> createChargesCRUDWindow(Context context, HelpContext help) {
         return new ChargesCRUDWindow(context, help);
+    }
+
+    /**
+     * Creates a browser for prescriptions.
+     *
+     * @param patient the payment
+     * @param layout  the layout context
+     * @return a new browser
+     */
+    private Browser<Act> createPrescriptionBrowser(Party patient, LayoutContext layout) {
+        return BrowserFactory.create(new PatientPrescriptionQuery(patient), layout);
+    }
+
+    /**
+     * Creates a {@link CRUDWindow} for the prescriptions browser.
+     *
+     * @param context the context
+     * @param help    the help context
+     * @return a new {@link CRUDWindow}
+     */
+    protected CRUDWindow<Act> createPrescriptionCRUDWindow(Context context, HelpContext help) {
+        return new PatientPrescriptionCRUDWindow(prescriptionArchetypes, context, help);
     }
 
 }

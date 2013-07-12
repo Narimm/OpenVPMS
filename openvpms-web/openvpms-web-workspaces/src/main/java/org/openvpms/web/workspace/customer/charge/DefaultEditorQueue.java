@@ -16,11 +16,14 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -51,8 +54,9 @@ public class DefaultEditorQueue implements EditorQueue {
      */
     private boolean editing;
 
+
     /**
-     * Constructs a {@code DefaultEditorQueue}.
+     * Constructs a {@link DefaultEditorQueue}.
      *
      * @param context the context
      */
@@ -65,13 +69,21 @@ public class DefaultEditorQueue implements EditorQueue {
      *
      * @param editor   the editor to queue
      * @param skip     if {@code true}, indicates that the edit can be skipped
+     * @param cancel   if {@code true}, indicates that the edit can be cancelled
      * @param listener the listener to notify on completion
      */
-    public void queue(IMObjectEditor editor, boolean skip, Listener listener) {
-        queue.addLast(new State(editor, listener, skip));
-        if (!editing) {
-            editNext();
-        }
+    public void queue(IMObjectEditor editor, boolean skip, boolean cancel, Listener listener) {
+        queue(new EditorState(editor, listener, skip, cancel));
+    }
+
+    /**
+     * Queues a dialog.
+     *
+     * @param dialog the dialog to queue
+     */
+    @Override
+    public void queue(PopupDialog dialog) {
+        queue(new DialogState(dialog));
     }
 
     /**
@@ -79,36 +91,11 @@ public class DefaultEditorQueue implements EditorQueue {
      */
     protected void editNext() {
         if (queue.isEmpty()) {
-            editCompleted();
+            completed();
             return;
         }
         State state = queue.removeFirst();
-        final IMObjectEditor editor = state.editor;
-        final Listener listener = state.listener;
-        // create an edit dialog with OK and (for non-medication acts) Skip buttons
-        EditDialog dialog = new EditDialog(editor, false, false, false, state.skip, context);
-        dialog.setTitle(getTitle(editor));
-        dialog.setStyleName("ChildEditDialog");
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                doNext(false);
-            }
-
-            @Override
-            public void onSkip() {
-                doNext(true);
-            }
-
-            private void doNext(boolean skipped) {
-                editing = false;
-                listener.completed(skipped);
-                editNext();
-            }
-
-        });
-        editing = true;
-        edit(dialog);
+        state.show();
     }
 
     /**
@@ -130,10 +117,42 @@ public class DefaultEditorQueue implements EditorQueue {
     }
 
     /**
+     * Invoked when an edit is skipped. Performs the next edit, if any.
+     */
+    protected void skipped() {
+        editNext();
+    }
+
+    /**
      * Invoked when the edit is completed.
      */
-    protected void editCompleted() {
+    protected void completed() {
         editing = false;
+    }
+
+    /**
+     * Invoked when an edit is cancelled. Skips all subsequent edits.
+     */
+    protected void cancelled() {
+        while (!queue.isEmpty()) {
+            State state = queue.removeFirst();
+            if (state instanceof EditorState) {
+                ((EditorState) state).skip();
+            }
+        }
+        editing = false;
+    }
+
+    /**
+     * Queues a state.
+     *
+     * @param state the state
+     */
+    private void queue(State state) {
+        queue.addLast(state);
+        if (!editing) {
+            editNext();
+        }
     }
 
     /**
@@ -148,8 +167,7 @@ public class DefaultEditorQueue implements EditorQueue {
             PatientMedicationActEditor meditor = (PatientMedicationActEditor) editor;
             Party patient = meditor.getPatient();
             if (patient != null) {
-                PatientRules rules = new PatientRules(ServiceHelper.getArchetypeService(),
-                                                      ServiceHelper.getLookupService());
+                PatientRules rules = ServiceHelper.getBean(PatientRules.class);
                 String name = patient.getName();
                 String weight = rules.getPatientWeight(patient);
                 if (weight == null) {
@@ -161,19 +179,98 @@ public class DefaultEditorQueue implements EditorQueue {
         return title;
     }
 
-    /**
-     * Helper to associate an {@link IMObjectEditor} and {@link Listener}.
-     */
-    private static class State {
+    private interface State {
+
+        void show();
+    }
+
+    private class EditorState implements State {
+
         final IMObjectEditor editor;
         final Listener listener;
         final boolean skip;
+        final boolean cancel;
 
-        public State(IMObjectEditor editor, Listener listener, boolean skip) {
+        public EditorState(IMObjectEditor editor, Listener listener, boolean skip, boolean cancel) {
             this.editor = editor;
             this.listener = listener;
             this.skip = skip;
+            this.cancel = cancel;
+        }
+
+        @Override
+        public void show() {
+            EditDialog dialog = new EditDialog(editor, false, false, cancel, skip, context);
+            dialog.setTitle(getTitle(editor));
+            dialog.setStyleName("ChildEditDialog");
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    doNext(false, false);
+                }
+
+                @Override
+                public void onCancel() {
+                    doNext(false, true);
+                }
+
+                @Override
+                public void onSkip() {
+                    doNext(true, false);
+                }
+
+                private void doNext(boolean skipped, boolean cancelled) {
+                    editing = false;
+                    if (listener != null) {
+                        listener.completed(skipped, cancelled);
+                    }
+                    if (skipped) {
+                        skipped();
+                    } else if (cancelled) {
+                        cancelled();
+                    } else {
+                        editNext();
+                    }
+                }
+            });
+            editing = true;
+            edit(dialog);
+        }
+
+        public void skip() {
+            listener.completed(true, false);
         }
     }
+
+    private class DialogState implements State {
+
+        private final PopupDialog dialog;
+
+        private WindowPaneListener listener;
+
+        public DialogState(PopupDialog dialog) {
+            this.dialog = dialog;
+            listener = new WindowPaneListener() {
+                @Override
+                public void windowPaneClosing(WindowPaneEvent e) {
+                    onClose();
+                }
+            };
+        }
+
+        @Override
+        public void show() {
+            dialog.addWindowPaneListener(listener);
+            editing = true;
+            dialog.show();
+        }
+
+        private void onClose() {
+            dialog.removeWindowPaneListener(listener);
+            editing = false;
+            editNext();
+        }
+    }
+
 
 }

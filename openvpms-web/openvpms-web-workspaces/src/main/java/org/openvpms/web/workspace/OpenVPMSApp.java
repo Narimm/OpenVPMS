@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -27,6 +25,7 @@ import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 import nextapp.echo2.webrender.ClientConfiguration;
 import nextapp.echo2.webrender.Connection;
 import nextapp.echo2.webrender.WebRenderServlet;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
@@ -73,13 +72,14 @@ public class OpenVPMSApp extends ContextApplicationInstance {
 
 
     /**
-     * Constructs an {@code OpenVPMSApp}.
+     * Constructs an {@link OpenVPMSApp}.
      *
      * @param context the context
      * @param factory the workspaces factory
+     * @param rules   the practice rules
      */
-    public OpenVPMSApp(GlobalContext context, WorkspacesFactory factory) {
-        super(context);
+    public OpenVPMSApp(GlobalContext context, WorkspacesFactory factory, PracticeRules rules) {
+        super(context, rules);
         this.factory = factory;
         location = getLocation(context.getLocation());
         customer = getCustomer(context.getCustomer());

@@ -66,14 +66,19 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 import org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor;
 import org.openvpms.web.workspace.patient.mr.PatientMedicationActEditor;
+import org.openvpms.web.workspace.patient.mr.PrescriptionMedicationActEditor;
+import org.openvpms.web.workspace.patient.mr.Prescriptions;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -105,7 +110,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Dispensing act editor. May be {@code null}
      */
-    private ActRelationshipCollectionEditor dispensing;
+    private DispensingActRelationshipCollectionEditor dispensing;
 
     /**
      * Investigation act editor. May be {@code null}
@@ -120,7 +125,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * The medication, investigation and reminder act editor manager.
      */
-    private EditorQueue popupEditorMgr;
+    private EditorQueue editorQueue;
 
     /**
      * Listener for changes to the quantity.
@@ -163,6 +168,21 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private Label sellingUnits;
 
     /**
+     * The prescriptions.
+     */
+    private Prescriptions prescriptions;
+
+    /**
+     * If {@code true}, prompt to use prescriptions.
+     */
+    private boolean promptForPrescription = true;
+
+    /**
+     * If {@code true}, enable medication editing to be cancelled when it is being dispensed from a prescription.
+     */
+    private boolean cancelPrescription;
+
+    /**
      * Dispensing node name.
      */
     private static final String DISPENSING = "dispensing";
@@ -186,7 +206,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
 
     /**
-     * Constructs a {@code AbstractCustomerChargeActItemEditor}.
+     * Constructs a {@link CustomerChargeActItemEditor}.
      * <p/>
      * This recalculates the tax amount.
      *
@@ -201,7 +221,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                             CustomerAccountArchetypes.COUNTER_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
-        dispensing = createCollectionEditor(DISPENSING, act);
+        dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
 
@@ -294,16 +314,64 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     public boolean validate(Validator validator) {
-        return (popupEditorMgr == null || popupEditorMgr.isComplete()) && super.validate(validator);
+        return (editorQueue == null || editorQueue.isComplete()) && super.validate(validator);
     }
 
     /**
      * Sets the popup editor manager.
      *
-     * @param manager the popup editor manager. May be <code>null}
+     * @param manager the popup editor manager
      */
     public void setEditorQueue(EditorQueue manager) {
-        popupEditorMgr = manager;
+        editorQueue = manager;
+    }
+
+    /**
+     * Returns the popup editor manager.
+     *
+     * @return the popup editor manager
+     */
+    public EditorQueue getEditorQueue() {
+        return editorQueue;
+    }
+
+    /**
+     * Sets the prescriptions.
+     *
+     * @param prescriptions the prescriptions. May be {@code null}
+     */
+    public void setPrescriptions(Prescriptions prescriptions) {
+        this.prescriptions = prescriptions;
+        if (dispensing != null) {
+            dispensing.setPrescriptions(prescriptions);
+        }
+    }
+
+    /**
+     * Returns the prescriptions.
+     *
+     * @return the prescriptions. May be {@code null}
+     */
+    public Prescriptions getPrescriptions() {
+        return prescriptions;
+    }
+
+    /**
+     * Determines if prescriptions should be prompted for.
+     *
+     * @param prompt if {@code true}, prompt for prescriptions, otherwise use them automatically
+     */
+    public void setPromptForPrescriptions(boolean prompt) {
+        promptForPrescription = prompt;
+    }
+
+    /**
+     * Determines if prescription editing may be cancelled.
+     *
+     * @param cancel if {@code true}, prescription editing may be cancelled
+     */
+    public void setCancelPrescription(boolean cancel) {
+        cancelPrescription = cancel;
     }
 
     /**
@@ -532,27 +600,23 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void updatePatientMedication(Product product) {
         if (dispensing != null) {
             if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-                Set<PatientMedicationActEditor> medicationEditors = getMedicationActEditors();
+                Set<PrescriptionMedicationActEditor> medicationEditors = getMedicationActEditors();
                 if (!medicationEditors.isEmpty()) {
                     // set the product on the existing acts
-                    for (PatientMedicationActEditor editor : medicationEditors) {
+                    for (PrescriptionMedicationActEditor editor : medicationEditors) {
                         editor.setProduct(product);
+                        changePrescription(editor);
                     }
                     dispensing.refresh();
                 } else {
                     // add a new medication act
                     Act act = (Act) dispensing.create();
                     if (act != null) {
-                        boolean dispensingLabel = hasDispensingLabel(product);
-                        IMObjectEditor editor = createEditor(act, dispensing);
-                        if (editor instanceof PatientMedicationActEditor) {
-                            // display the product read-only to ensure it is consistent with the charge item
-                            ((PatientMedicationActEditor) editor).setProductReadOnly(true);
-                        }
-                        dispensing.addEdited(editor);
-                        if (dispensingLabel) {
-                            // queue editing of the act
-                            queuePatientActEditor(editor, false, dispensing);
+                        Act prescription = getPrescription();
+                        if (prescription != null) {
+                            checkUsePrescription(prescription, product, act);
+                        } else {
+                            createMedicationEditor(product, act);
                         }
                     }
                 }
@@ -562,6 +626,73 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     dispensing.remove(act);
                 }
             }
+        }
+    }
+
+    /**
+     * Returns the prescription for the current patient and product, if one exists.
+     *
+     * @return the prescription, or {@code null} if none exists
+     */
+    private Act getPrescription() {
+        return prescriptions != null ? prescriptions.getPrescription(getPatient(), getProduct()) : null;
+    }
+
+    /**
+     * Determines if a prescription should be dispensed.
+     *
+     * @param prescription the prescription
+     * @param product      the product being dispensed
+     * @param medication   the medication act
+     */
+    private void checkUsePrescription(final Act prescription, final Product product, final Act medication) {
+        if (promptForPrescription) {
+            ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.prescription.title"),
+                                                               Messages.get("customer.charge.prescription.message",
+                                                                            product.getName()));
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    createPrescriptionMedicationEditor(medication, prescription);
+                }
+
+                @Override
+                public void onCancel() {
+                    createMedicationEditor(product, medication);
+                }
+            });
+            editorQueue.queue(dialog);
+        } else {
+            createPrescriptionMedicationEditor(medication, prescription);
+        }
+    }
+
+    /**
+     * Creates an editor for an <em>act.patientMedication</em> that dispenses a prescription.
+     *
+     * @param medication   the medication
+     * @param prescription the prescription
+     */
+    private void createPrescriptionMedicationEditor(Act medication, Act prescription) {
+        PrescriptionMedicationActEditor editor = dispensing.createEditor(medication, createLayoutContext(medication));
+        editor.setPrescription(prescription);
+        dispensing.addEdited(editor);
+        queuePatientActEditor(editor, false, cancelPrescription, dispensing); // queue editing of the act
+    }
+
+    /**
+     * Creates an editor for an <em>act.patientMedication</em>.
+     *
+     * @param product the product
+     * @param act     the medication act
+     */
+    private void createMedicationEditor(Product product, Act act) {
+        boolean dispensingLabel = hasDispensingLabel(product);
+        IMObjectEditor editor = createEditor(act, dispensing);
+        dispensing.addEdited(editor);
+        if (dispensingLabel) {
+            // queue editing of the act
+            queuePatientActEditor(editor, false, false, dispensing);
         }
     }
 
@@ -589,7 +720,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                         investigations.addEdited(editor);
 
                         // queue editing of the act
-                        queuePatientActEditor(editor, true, investigations);
+                        queuePatientActEditor(editor, true, false, investigations);
                     }
                 }
             }
@@ -633,7 +764,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                         boolean interactive = bean.getBoolean("interactive");
                         if (interactive) {
                             // queue editing of the act
-                            queuePatientActEditor(editor, true, reminders);
+                            queuePatientActEditor(editor, true, false, reminders);
                         }
                     }
                 }
@@ -649,9 +780,18 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the editor
      */
     private IMObjectEditor createEditor(Act act, ActRelationshipCollectionEditor editors) {
+        return editors.createEditor(act, createLayoutContext(act));
+    }
+
+    /**
+     * Creates a layout context for editing an act.
+     *
+     * @param act the act being edited
+     * @return a new layout context
+     */
+    private LayoutContext createLayoutContext(Act act) {
         LayoutContext context = getLayoutContext();
-        LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().topic(act, "edit"));
-        return editors.createEditor(act, subContext);
+        return new DefaultLayoutContext(context, context.getHelpContext().topic(act, "edit"));
     }
 
     /**
@@ -665,11 +805,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         ArchetypeNodes expectedFilter = getFilterForProduct(productRef);
         if (!ObjectUtils.equals(currentNodes, expectedFilter)) {
             Component popupFocus = null;
-            if (popupEditorMgr != null && !popupEditorMgr.isComplete()) {
+            if (editorQueue != null && !editorQueue.isComplete()) {
                 popupFocus = FocusHelper.getFocus();
             }
             changeLayout(expectedFilter);  // this can move the focus away from the popups, if any
-            if (popupEditorMgr != null && popupEditorMgr.isComplete()) {
+            if (editorQueue != null && editorQueue.isComplete()) {
                 // no current popups, so move focus to the product
                 moveFocusToProduct();
             } else {
@@ -743,17 +883,18 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      *
      * @param editor     the editor to queue
      * @param skip       if {@code true}, indicates that the editor may be skipped
+     * @param cancel     if {@code true}, indicates that the editor may be cancelled
      * @param collection the collection to remove the object from, if the editor is skipped
      */
-    private void queuePatientActEditor(final IMObjectEditor editor, boolean skip,
+    private void queuePatientActEditor(final IMObjectEditor editor, boolean skip, boolean cancel,
                                        final ActRelationshipCollectionEditor collection) {
-        if (popupEditorMgr != null) {
-            popupEditorMgr.queue(editor, skip, new EditorQueue.Listener() {
-                public void completed(boolean skipped) {
-                    if (skipped) {
+        if (editorQueue != null) {
+            editorQueue.queue(editor, skip, cancel, new EditorQueue.Listener() {
+                public void completed(boolean skipped, boolean cancelled) {
+                    if (skipped || cancelled) {
                         collection.remove(editor.getObject());
                     }
-                    if (popupEditorMgr.isComplete()) {
+                    if (editorQueue.isComplete()) {
                         moveFocusToProduct();
 
                         // force the parent collection editor to re-check the validation status of
@@ -824,14 +965,41 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private void updatePatientActsPatient() {
         IMObjectReference patient = getPatientRef();
-        for (PatientActEditor editor : getMedicationActEditors()) {
+        for (PrescriptionMedicationActEditor editor : getMedicationActEditors()) {
             editor.setPatient(patient);
+            changePrescription(editor);
         }
         for (PatientInvestigationActEditor editor : getInvestigationActEditors()) {
             editor.setPatient(patient);
         }
         for (ReminderEditor editor : getReminderEditors()) {
             editor.setPatient(patient);
+        }
+    }
+
+    /**
+     * Changes the prescription for an editor, if one is available.
+     *
+     * @param editor the editor
+     */
+    private void changePrescription(final PrescriptionMedicationActEditor editor) {
+        Act prescription = getPrescription();
+        if (prescription != null) {
+            if (promptForPrescription) {
+                Product product = getProduct();
+                ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.prescription.title"),
+                                                                   Messages.get("customer.charge.prescription.message",
+                                                                                product.getName()));
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        editorQueue.queue(editor, true, cancelPrescription, null);
+                    }
+                });
+                editorQueue.queue(dialog);
+            } else {
+                editorQueue.queue(editor, true, cancelPrescription, null);
+            }
         }
     }
 
@@ -866,7 +1034,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      *
      * @return the editors
      */
-    private Set<PatientMedicationActEditor> getMedicationActEditors() {
+    private Set<PrescriptionMedicationActEditor> getMedicationActEditors() {
         return getActEditors(dispensing);
     }
 
@@ -1009,6 +1177,21 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
                     collection, act, getLayoutContext());
             editor.setExcludeDefaultValueObject(false);
+            getEditors().add(editor);
+        }
+        return editor;
+    }
+
+    /**
+     * Creates an editor for the "dispensing" node.
+     *
+     * @return a new editor
+     */
+    private DispensingActRelationshipCollectionEditor createDispensingCollectionEditor() {
+        DispensingActRelationshipCollectionEditor editor = null;
+        CollectionProperty collection = (CollectionProperty) getProperty("dispensing");
+        if (collection != null && !collection.isHidden()) {
+            editor = new DispensingActRelationshipCollectionEditor(collection, (Act) getObject(), getLayoutContext());
             getEditors().add(editor);
         }
         return editor;

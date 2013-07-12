@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.patient;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -70,7 +71,7 @@ public class PatientActEditor extends AbstractActEditor {
      * @param patient the patient. May be {@code null}
      */
     public void setPatient(Party patient) {
-        setParticipant("patient", patient);
+        setPatient(patient != null ? patient.getObjectReference() : null);
     }
 
     /**

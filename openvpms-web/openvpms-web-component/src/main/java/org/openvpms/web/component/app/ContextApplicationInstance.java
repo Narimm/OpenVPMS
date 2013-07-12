@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -54,7 +52,7 @@ import java.util.Map;
  * @version $LastChangedDate$
  */
 public abstract class ContextApplicationInstance
-    extends SpringApplicationInstance {
+        extends SpringApplicationInstance {
 
     /**
      * The context.
@@ -71,14 +69,20 @@ public abstract class ContextApplicationInstance
      */
     private UserStyleSheets styleSheets;
 
+    /**
+     * The practice rules.
+     */
+    private final PracticeRules rules;
 
     /**
      * Constructs a {@code ContextApplicationInstance}.
      *
      * @param context the context
+     * @param rules   the practice rules
      */
-    public ContextApplicationInstance(GlobalContext context) {
+    public ContextApplicationInstance(GlobalContext context, PracticeRules rules) {
         this.context = context;
+        this.rules = rules;
         initUser();
         initPractice();
         initLocation();
@@ -269,7 +273,6 @@ public abstract class ContextApplicationInstance
      * @throws ArchetypeServiceException for any archetype service error
      */
     private void initPractice() {
-        PracticeRules rules = new PracticeRules();
         context.setPractice(rules.getPractice());
     }
 
@@ -298,8 +301,7 @@ public abstract class ContextApplicationInstance
         // If no locations defined for user find default location for Practice
         // or the first location if no default.
         if (location == null) {
-            PracticeRules practiceRules = new PracticeRules();
-            location = practiceRules.getDefaultLocation(practice);
+            location = rules.getDefaultLocation(practice);
         }
 
         context.setLocation(location);
@@ -354,7 +356,7 @@ public abstract class ContextApplicationInstance
         IMObjectReference ref = rules.getDefaultStockLocationRef(location);
         if (ref != null) {
             ObjectRefConstraint constraint
-                = new ObjectRefConstraint("loc", ref);
+                    = new ObjectRefConstraint("loc", ref);
             ArchetypeQuery query = new ArchetypeQuery(constraint);
             query.add(new NodeSelectConstraint("loc.name"));
             query.add(new NodeSelectConstraint("loc.description"));

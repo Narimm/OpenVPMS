@@ -84,6 +84,11 @@ public class VisitEditor {
     public static final int DOCUMENT_INDEX = 3;
 
     /**
+     * The index of the prescription tab.
+     */
+    public static final int PRESCRIPTION_INDEX = 4;
+
+    /**
      * The CRUD window for editing events and their items.
      */
     private final VisitBrowserCRUDWindow visitWindow;
@@ -122,6 +127,11 @@ public class VisitEditor {
      * The patient CRUD window.
      */
     private PatientDocumentCRUDWindow documentWindow;
+
+    /**
+     * The prescription CRUD window.
+     */
+    private PrescriptionBrowserCRUDWindow prescriptionWindow;
 
     /**
      * The listener to notify of visit browser events. May be {@code null}
@@ -188,6 +198,8 @@ public class VisitEditor {
         reminderWindow = new ReminderBrowserCRUDWindow(patient, context, help.subtopic("reminder"));
 
         documentWindow = new VisitDocumentCRUDWindow(context, help.subtopic("document"));
+
+        prescriptionWindow = new PrescriptionBrowserCRUDWindow(patient, context, help.subtopic("prescription"));
     }
 
     /**
@@ -385,6 +397,8 @@ public class VisitEditor {
                 return reminderWindow.getWindow();
             case DOCUMENT_INDEX:
                 return documentWindow;
+            case PRESCRIPTION_INDEX:
+                return prescriptionWindow.getWindow();
         }
         return null;
     }
@@ -420,6 +434,7 @@ public class VisitEditor {
         addInvoiceTab(model);
         addRemindersAlertsTab(model);
         addDocumentsTab(model);
+        addPrescriptionsTab(model);
     }
 
     /**
@@ -454,6 +469,9 @@ public class VisitEditor {
             case DOCUMENT_INDEX:
                 onDocumentsSelected();
                 break;
+            case PRESCRIPTION_INDEX:
+                onPrescriptionsSelected();
+                break;
         }
     }
 
@@ -477,7 +495,7 @@ public class VisitEditor {
         // need to add the browser to a ContentPane to get scrollbars
         ContentPane pane = new ContentPane();
         pane.add(visitWindow.getComponent());
-        addTab(1, "button.summary", model, pane);
+        addTab(HISTORY_INDEX, "button.summary", model, pane);
     }
 
     /**
@@ -489,7 +507,7 @@ public class VisitEditor {
         // need to add the window to a ContentPane to get scrollbars
         ContentPane pane = new ContentPane();
         pane.add(chargeWindow.getComponent());
-        addTab(2, "button.invoice", model, pane);
+        addTab(INVOICE_INDEX, "button.invoice", model, pane);
     }
 
     /**
@@ -498,7 +516,7 @@ public class VisitEditor {
      * @param model the tab pane model to add to
      */
     private void addRemindersAlertsTab(TabPaneModel model) {
-        addTab(3, "button.reminder", model, reminderWindow.getComponent());
+        addTab(REMINDERS_INDEX, "button.reminder", model, reminderWindow.getComponent());
     }
 
     /**
@@ -510,7 +528,16 @@ public class VisitEditor {
         Query<DocumentAct> query = new PatientDocumentQuery<DocumentAct>(patient);
         documentBrowser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         BrowserCRUDWindow<DocumentAct> window = new BrowserCRUDWindow<DocumentAct>(documentBrowser, documentWindow);
-        addTab(4, "button.document", model, window.getComponent());
+        addTab(DOCUMENT_INDEX, "button.document", model, window.getComponent());
+    }
+
+    /**
+     * Adds a tab to display prescriptions.
+     *
+     * @param model the tab pane model to add to
+     */
+    private void addPrescriptionsTab(TabPaneModel model) {
+        addTab(PRESCRIPTION_INDEX, "button.prescriptions", model, prescriptionWindow.getComponent());
     }
 
     /**
@@ -559,6 +586,15 @@ public class VisitEditor {
             documentBrowser.setFocusOnResults();
         }
         notifyListener(DOCUMENT_INDEX);
+    }
+
+    /**
+     * Invoked when the prescriptions tab is selected.
+     */
+    private void onPrescriptionsSelected() {
+        prescriptionWindow.getBrowser().setFocusOnResults();
+        prescriptionWindow.setChargeEditor(getChargeEditor());
+        notifyListener(PRESCRIPTION_INDEX);
     }
 
     /**

@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow;
 
 import org.openvpms.component.business.domain.im.act.Act;
@@ -21,6 +22,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.workspace.customer.charge.EditorQueue;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.charge.VisitChargeItemRelationshipCollectionEditor;
@@ -65,7 +67,7 @@ public class TestVisitChargeEditor extends VisitChargeEditor {
     protected ActRelationshipCollectionEditor createItemsEditor(Act act,
                                                                 CollectionProperty items) {
         VisitChargeItemRelationshipCollectionEditor result
-            = new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
+                = new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
         result.setEditorQueue(new DelegatingEditorQueue());
         return result;
     }
@@ -77,10 +79,21 @@ public class TestVisitChargeEditor extends VisitChargeEditor {
          *
          * @param editor   the editor to queue
          * @param skip     if {@code true}, indicates that the edit can be skipped
+         * @param cancel   if {@code true}, indicates that the edit can be cancelled
          * @param listener the listener to notify on completion
          */
-        public void queue(IMObjectEditor editor, boolean skip, Listener listener) {
-            testEditVisitTask.getEditorQueue().queue(editor, skip, listener);
+        public void queue(IMObjectEditor editor, boolean skip, boolean cancel, Listener listener) {
+            testEditVisitTask.getEditorQueue().queue(editor, skip, cancel, listener);
+        }
+
+        /**
+         * Queues a dialog.
+         *
+         * @param dialog the dialog to queue
+         */
+        @Override
+        public void queue(PopupDialog dialog) {
+            testEditVisitTask.getEditorQueue().queue(dialog);
         }
 
         /**

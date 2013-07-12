@@ -13,9 +13,11 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.echo.dialog.PopupDialog;
 
 /**
  * Queues editors so that they can be displayed in a dialog, one at a time.
@@ -29,9 +31,17 @@ public interface EditorQueue {
      *
      * @param editor   the editor to queue
      * @param skip     if {@code true}, indicates that the edit can be skipped
+     * @param cancel   if {@code true}, indicates that the edit can be cancelled
      * @param listener the listener to notify on completion
      */
-    void queue(IMObjectEditor editor, boolean skip, Listener listener);
+    void queue(IMObjectEditor editor, boolean skip, boolean cancel, Listener listener);
+
+    /**
+     * Queues a dialog.
+     *
+     * @param dialog the dialog to queue
+     */
+    void queue(PopupDialog dialog);
 
     /**
      * Determines if editing is complete.
@@ -48,8 +58,9 @@ public interface EditorQueue {
         /**
          * Invoked when the edit is complete.
          *
-         * @param skipped if {@code true} indicates that the edit was skipped
+         * @param skipped   if {@code true} indicates that the edit was skipped
+         * @param cancelled if {@code true} indicates that the edit was cancelled
          */
-        void completed(boolean skipped);
+        void completed(boolean skipped, boolean cancelled);
     }
 }

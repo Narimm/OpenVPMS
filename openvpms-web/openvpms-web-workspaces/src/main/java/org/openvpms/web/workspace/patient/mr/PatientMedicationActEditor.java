@@ -139,6 +139,15 @@ public class PatientMedicationActEditor extends PatientActEditor {
     }
 
     /**
+     * Returns the quantity.
+     *
+     * @return the quantity
+     */
+    public BigDecimal getQuantity() {
+        return getProperty("quantity").getBigDecimal();
+    }
+
+    /**
      * Determines if the product should be displayed read-only.
      *
      * @param readOnly if {@code true} display the product read-only.
@@ -192,7 +201,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
      *
      * @param product the product. May be {@code null}
      */
-    private void productModified(Product product) {
+    protected void productModified(Product product) {
         if (product != null) {
             IMObjectBean bean = new IMObjectBean(product);
             if (bean.hasNode("dispInstructions")) {
