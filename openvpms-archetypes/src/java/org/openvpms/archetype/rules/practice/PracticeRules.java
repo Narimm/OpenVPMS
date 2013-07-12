@@ -1,41 +1,42 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
 
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 
+import java.util.Date;
 import java.util.List;
 
 
 /**
  * Practice rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PracticeRules {
 
@@ -44,16 +45,8 @@ public class PracticeRules {
      */
     private final IArchetypeService service;
 
-
     /**
-     * Creates a new <tt>PracticeRules</tt>.
-     */
-    public PracticeRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>PracticeRules</tt>.
+     * Constructs a {@link PracticeRules}.
      *
      * @param service the archetype service
      */
@@ -120,6 +113,24 @@ public class PracticeRules {
      */
     public Party getDefaultLocation(Party practice) {
         return (Party) EntityRelationshipHelper.getDefaultTarget(practice, "locations", service);
+    }
+
+    /**
+     * Returns the default prescription expiry date, based on the practice settings for the
+     * <em>prescriptionExpiryPeriod</em> and <em>prescriptionExpiryUnits</em> nodes.
+     *
+     * @param startDate the prescription start date
+     * @param practice  the practice configuration
+     * @return the prescription expiry date, or {@code startDate} if there are no default expiry settings
+     */
+    public Date getPrescriptionExpiryDate(Date startDate, Party practice) {
+        IMObjectBean bean = new IMObjectBean(practice, service);
+        int period = bean.getInt("prescriptionExpiryPeriod");
+        String units = bean.getString("prescriptionExpiryUnits");
+        if (!StringUtils.isEmpty(units)) {
+            return DateRules.getDate(startDate, period, DateUnits.valueOf(units));
+        }
+        return startDate;
     }
 
 }

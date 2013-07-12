@@ -86,6 +86,15 @@ public class DateRules {
     }
 
     /**
+     * Returns yesterday's date, minus any time component.
+     *
+     * @return yesterday's date
+     */
+    public static Date getYesterday() {
+        return getDate(getToday(), -1, DateUnits.DAYS);
+    }
+
+    /**
      * Returns the date part of a date-time, zero-ing out any time component.
      *
      * @param datetime the date/time. May be {@code null}
@@ -253,4 +262,5 @@ public class DateRules {
     public static int compareDateToToday(Date date) {
         return getDate(date).compareTo(getToday());
     }
+
 }
