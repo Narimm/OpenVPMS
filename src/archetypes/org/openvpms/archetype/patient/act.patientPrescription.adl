@@ -1,0 +1,53 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.patientPrescription.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Prescription">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Prescription'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
+              derivedValue="concat(openvpms:get(.,'product.entity.name'), ' - ','Qty : ',/details/quantity,' Expiry : ', date:formatDate(/activityEndTime))"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()"/>
+        <node displayName="Expiry Date" name="endTime" path="/activityEndTime" type="java.util.Date"
+              minCardinality="1"/>
+        <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" defaultValue="1.0"
+              minCardinality="1"/>
+        <node name="repeats" path="/details/repeats" type="java.lang.Integer" defaultValue="5" minCardinality="1"/>
+        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.patient" hidden="true"/>
+        <node name="product" displayName="Medication" path="/participations" type="java.util.HashSet" minCardinality="1"
+              maxCardinality="1" filter="participation.product"/>
+        <node name="label" path="/details/label" type="java.lang.String" maxLength="300"/>
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.clinician"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="dispensing" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.patientPrescriptionMedication" readOnly="true" parentChild="false">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.patientPrescriptionMedication"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+</archetypes>

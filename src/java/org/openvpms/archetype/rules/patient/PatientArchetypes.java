@@ -130,4 +130,14 @@ public class PatientArchetypes {
      * Patient alert act short name.
      */
     public static final String ALERT = "act.patientAlert";
+
+    /**
+     * Patient prescription act short name.
+     */
+    public static final String PRESCRIPTION = "act.patientPrescription";
+
+    /**
+     * Prescription medication relationship short name.
+     */
+    public static final String PRESCRIPTION_MEDICATION = "actRelationship.patientPrescriptionMedication";
 }
