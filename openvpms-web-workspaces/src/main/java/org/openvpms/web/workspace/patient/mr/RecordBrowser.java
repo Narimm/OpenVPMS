@@ -333,7 +333,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      * @return a new {@link CRUDWindow}
      */
     protected CRUDWindow<Act> createPrescriptionCRUDWindow(Context context, HelpContext help) {
-        return new PatientPrescriptionCRUDWindow(prescriptionArchetypes, context, help);
+        return new PatientPrescriptionCRUDWindow(prescriptionArchetypes, context, help.subtopic("prescription"));
     }
 
 }

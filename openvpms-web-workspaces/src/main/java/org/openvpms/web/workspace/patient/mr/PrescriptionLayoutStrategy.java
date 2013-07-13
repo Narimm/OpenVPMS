@@ -21,7 +21,9 @@ import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -31,17 +33,21 @@ import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * Layout strategy for <em>act.patientPrescription</em>.
  * <p/>
- * Renders a quantity dispensed field.
+ * Renders a field representing the no. of times dispensed.
  *
  * @author Tim Anderson
  */
 public class PrescriptionLayoutStrategy extends AbstractLayoutStrategy {
+
+    /**
+     * The archetype nodes, with the dispensing node excluded. Used when the prescription hasn't been dispensed.
+     */
+    private static final ArchetypeNodes EXCLUDE_DISPENSING = new ArchetypeNodes().exclude("dispensing");
 
     /**
      * Lays out components in a grid.
@@ -57,20 +63,32 @@ public class PrescriptionLayoutStrategy extends AbstractLayoutStrategy {
         ComponentSet set = createComponentSet(object, descriptors, properties, context);
 
         String displayName = Messages.get("patient.prescription.dispensed");
-        SimpleProperty quantityDispensed = new SimpleProperty(
-                "quantityDispensed", BigDecimal.ZERO, BigDecimal.class, displayName);
-        quantityDispensed.setReadOnly(true);
+        SimpleProperty dispensed = new SimpleProperty("dispensed", 0, int.class, displayName);
+        dispensed.setReadOnly(true);
 
         PrescriptionRules rules = ServiceHelper.getBean(PrescriptionRules.class);
-        BigDecimal quantity = rules.getDispensedQuantity((Act) object);
-        quantityDispensed.setValue(quantity);
-        ComponentState dispensed = createComponent(quantityDispensed, object, context);
-        set.add(dispensed);
+        int value = rules.getDispensed((Act) object);
+        dispensed.setValue(value);
+        ComponentState state = createComponent(dispensed, object, context);
+        set.add(state);
 
         ComponentGrid grid = new ComponentGrid();
         grid.add(set, columns);
         return createGrid(grid);
     }
 
-
+    /**
+     * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+     *
+     * @param object the object to display
+     * @return the archetype nodes
+     */
+    @Override
+    protected ArchetypeNodes getArchetypeNodes(IMObject object) {
+        IMObjectBean bean = new IMObjectBean(object);
+        if (bean.getValues("dispensing").isEmpty()) {
+            return EXCLUDE_DISPENSING;
+        }
+        return super.getArchetypeNodes(object);
+    }
 }

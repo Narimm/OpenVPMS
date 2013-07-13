@@ -111,8 +111,10 @@ public class Prescriptions {
         for (Prescription prescription : prescriptions.values()) {
             if (ObjectUtils.equals(patientRef, prescription.getPatient())
                 && ObjectUtils.equals(productRef, prescription.getProduct())) {
-                result = prescription;
-                break;
+                if (prescription.canDispense()) {
+                    result = prescription;
+                    break;
+                }
             }
         }
         if (result == null) {
@@ -120,10 +122,6 @@ public class Prescriptions {
             if (act != null) {
                 result = new Prescription(act, rules);
                 prescriptions.put(act.getObjectReference(), result);
-            }
-        } else {
-            if (!result.canDispense()) {
-                result = null;
             }
         }
         return (result != null) ? result.getAct() : null;

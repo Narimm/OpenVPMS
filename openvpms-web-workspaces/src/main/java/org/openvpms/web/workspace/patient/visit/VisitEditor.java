@@ -440,12 +440,13 @@ public class VisitEditor {
     /**
      * Helper to add a browser to the tab pane.
      *
-     * @param shortcut  the tab button shortcut no.
+     * @param index     the tab index. Used to determine the shortcut key
      * @param button    the button key
      * @param model     the tab model
      * @param component the component
      */
-    protected void addTab(int shortcut, String button, DefaultTabModel model, Component component) {
+    protected void addTab(int index, String button, DefaultTabModel model, Component component) {
+        int shortcut = index + 1;
         String text = "&" + shortcut + " " + Messages.get(button);
         model.addTab(text, component);
     }
