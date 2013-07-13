@@ -29,6 +29,7 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -107,6 +108,21 @@ public class PrescriptionRules {
     public int getRepeats(Act prescription) {
         IMObjectBean bean = new IMObjectBean(prescription, service);
         return bean.getInt("repeats");
+    }
+
+    /**
+     * Returns the number of times a prescription has been dispensed.
+     *
+     * @param prescription the prescription
+     * @return the number of remaining repeats
+     */
+    public int getDispensed(Act prescription) {
+        BigDecimal dispensedQuantity = getDispensedQuantity(prescription);
+        int result = 0;
+        if (dispensedQuantity.compareTo(BigDecimal.ZERO) > 0) {
+            result = dispensedQuantity.divide(getQuantity(prescription), 0, RoundingMode.CEILING).intValue();
+        }
+        return result;
     }
 
     /**

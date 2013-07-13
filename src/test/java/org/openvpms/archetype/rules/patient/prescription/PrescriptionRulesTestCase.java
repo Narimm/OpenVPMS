@@ -118,6 +118,33 @@ public class PrescriptionRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PrescriptionRules#getDispensed(Act)} method.
+     */
+    @Test
+    public void testDispensed() {
+        Act act1 = createPrescription(2, 0, DateRules.getTomorrow());
+        Act act2 = createPrescription(2, 5, DateRules.getTomorrow());
+        Act act3 = createPrescription(1, 2, DateRules.getTomorrow());
+
+        assertEquals(0, rules.getDispensed(act1));
+        dispense(act1, 2);
+        assertEquals(1, rules.getDispensed(act1));
+
+        dispense(act2, 12);
+        assertEquals(6, rules.getDispensed(act2));
+
+        // test dispensing of partial quantities.
+        dispense(act3, new BigDecimal("1.5"));
+        assertEquals(2, rules.getDispensed(act3));
+
+        dispense(act3, new BigDecimal("0.5"));
+        assertEquals(2, rules.getDispensed(act3));
+
+        dispense(act3, 1);
+        assertEquals(3, rules.getDispensed(act3));
+    }
+
+    /**
      * Tests the {@link PrescriptionRules#getTotalQuantity(Act)}, {@link PrescriptionRules#getDispensedQuantity(Act)}
      * and {@link PrescriptionRules#getRemainingQuantity(Act)} methods.
      */
@@ -173,6 +200,16 @@ public class PrescriptionRulesTestCase extends ArchetypeServiceTest {
      * @param quantity     the quantity to dispense
      */
     private void dispense(Act prescription, int quantity) {
+        dispense(prescription, BigDecimal.valueOf(quantity));
+    }
+
+    /**
+     * Dispenses a prescription.
+     *
+     * @param prescription the prescription
+     * @param quantity     the quantity to dispense
+     */
+    private void dispense(Act prescription, BigDecimal quantity) {
         Act medication = (Act) create(PatientArchetypes.PATIENT_MEDICATION);
         ActBean bean = new ActBean(prescription);
         bean.addNodeRelationship("dispensing", medication);
