@@ -1,20 +1,18 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
     <archetype name="act.supplierAccountPaymentCheque.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Cheque">
@@ -29,11 +27,12 @@
               path="/description" hidden="true" derived="true"
               derivedValue="concat(' Amount : ', /total,' Details : ',/details/drawer,
 			' ', /details/bsb,' ',openvpms:lookup(.,'bank'))"/>
-        <node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
+        <node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
+              defaultValue="1.0"/>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="true()" readOnly="true" hidden="true"/>
         <node name="drawer" path="/details/drawer" type="java.lang.String" maxLength="50"/>
-        <node name="bsb" path="/details/bsb" type="java.lang.String" maxLength="50"/>
+        <node name="bsb" displayName="Branch" path="/details/bsb" type="java.lang.String" maxLength="50"/>
         <node name="bank" path="/details/bank" type="java.lang.String"
               minCardinality="1" maxLength="30">
             <assertion name="lookup">
