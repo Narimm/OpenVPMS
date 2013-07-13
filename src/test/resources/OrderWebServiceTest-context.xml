@@ -46,13 +46,13 @@
     </bean>
 
     <bean name="delegatingOrderService" class="org.openvpms.esci.service.DelegatingOrderService"/>
-    
+
     <bean id="orderWebService" class="org.openvpms.esci.service.OrderWebService">
         <property name="orderService" ref="delegatingOrderService"/>
     </bean>
 
     <bean name="orderMapper" class="org.openvpms.esci.adapter.map.order.OrderMapperImpl"/>
-    
+
     <!-- ================================================================== -->
     <!-- Support for accessing supplier services                            -->
     <!-- ================================================================== -->
@@ -79,7 +79,9 @@
         <constructor-arg index="0" ref="archetypeService"/>
     </bean>
 
-    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules"/>
+    <bean id="practiceRules" class="org.openvpms.archetype.rules.practice.PracticeRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
 
     <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules"/>
 
