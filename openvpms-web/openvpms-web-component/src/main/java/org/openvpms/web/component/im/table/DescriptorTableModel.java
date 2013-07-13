@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -150,7 +151,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         List<ArchetypeDescriptor> archetypes = DescriptorHelper.getArchetypeDescriptors(shortNames);
         if (archetypes.isEmpty()) {
             throw new IllegalArgumentException(
-                "Argument 'shortNames' doesn't refer to a valid archetype");
+                    "Argument 'shortNames' doesn't refer to a valid archetype");
         }
         return createColumnModel(archetypes, context);
     }
@@ -172,7 +173,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
             addColumns(archetypes, names, columns);
             int index = getArchetypeColumnIndex();
             TableColumn column = createTableColumn(
-                ARCHETYPE_INDEX, "table.imobject.archetype");
+                    ARCHETYPE_INDEX, "table.imobject.archetype");
             columns.addColumn(column);
             columns.moveColumn(columns.getColumnCount() - 1, index);
         } else {
@@ -239,6 +240,30 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         return new DescriptorTableColumn(index, name, archetypes);
     }
 
+    /**
+     * Returns a column offset given its node name.
+     *
+     * @param model the model
+     * @param name  the node name
+     * @return the column offset, or {@code -1} if a column with the specified name doesn't exist
+     */
+    protected int getColumnOffset(TableColumnModel model, String name) {
+        int result = -1;
+        int offset = 0;
+        Iterator iterator = model.getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col instanceof DescriptorTableColumn) {
+                DescriptorTableColumn descriptorCol = (DescriptorTableColumn) col;
+                if (descriptorCol.getName().equals(name)) {
+                    result = offset;
+                    break;
+                }
+            }
+            ++offset;
+        }
+        return result;
+    }
 
     /**
      * Returns the node names for a set of archetypes.
@@ -290,7 +315,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     protected List<String> getNodeNames(ArchetypeDescriptor archetype, LayoutContext context) {
         List<String> result = new ArrayList<String>();
         List<NodeDescriptor> descriptors
-            = filter(archetype.getSimpleNodeDescriptors(), context);
+                = filter(archetype.getSimpleNodeDescriptors(), context);
         for (NodeDescriptor descriptor : descriptors) {
             result.add(descriptor.getName());
         }

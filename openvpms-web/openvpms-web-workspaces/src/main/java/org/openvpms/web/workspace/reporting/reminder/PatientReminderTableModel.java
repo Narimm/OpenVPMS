@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -45,7 +45,6 @@ import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
-import java.util.Iterator;
 
 
 /**
@@ -90,27 +89,29 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      */
     private ReminderEvent lastEvent;
 
+    /**
+     * The patient rules.
+     */
+    private final PatientRules patientRules;
+
 
     /**
-     * Constructs a <tt>PatientReminderTableModel</tt>.
+     * Constructs a {@code PatientReminderTableModel}.
      *
      * @param context the layout context
      */
     public PatientReminderTableModel(LayoutContext context) {
         super(new String[]{ReminderArchetypes.REMINDER}, context);
-        rules = new ReminderRules(ArchetypeServiceHelper.getArchetypeService(),
-                                  new ReminderTypeCache(), new PatientRules(ServiceHelper.getArchetypeService(),
-                                                                            ServiceHelper.getLookupService()));
+        patientRules = ServiceHelper.getBean(PatientRules.class);
+        rules = new ReminderRules(ArchetypeServiceHelper.getArchetypeService(), new ReminderTypeCache(), patientRules);
     }
 
     /**
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
-     *         sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         return null;
@@ -179,28 +180,20 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      * @return a new column model
      */
     @Override
-    protected TableColumnModel createColumnModel(String[] shortNames,
-                                                 LayoutContext context) {
-        DefaultTableColumnModel model
-            = (DefaultTableColumnModel) super.createColumnModel(shortNames,
-                                                                context);
+    protected TableColumnModel createColumnModel(String[] shortNames, LayoutContext context) {
+        DefaultTableColumnModel model = (DefaultTableColumnModel) super.createColumnModel(shortNames, context);
         nextDueIndex = getNextModelIndex(model);
-        TableColumn nextDueColumn = createTableColumn(
-            nextDueIndex, "patientremindertablemodel.nextDue");
+        TableColumn nextDueColumn = createTableColumn(nextDueIndex, "patientremindertablemodel.nextDue");
         model.addColumn(nextDueColumn);
-        model.moveColumn(model.getColumnCount() - 1,
-                         getColumnOffset(model, "reminderType"));
+        model.moveColumn(model.getColumnCount() - 1, getColumnOffset(model, "reminderType"));
 
         customerIndex = getNextModelIndex(model);
-        TableColumn customerColumn = createTableColumn(
-            customerIndex, "patientremindertablemodel.customer");
+        TableColumn customerColumn = createTableColumn(customerIndex, "patientremindertablemodel.customer");
         model.addColumn(customerColumn);
-        model.moveColumn(model.getColumnCount() - 1,
-                         getColumnOffset(model, "patient"));
+        model.moveColumn(model.getColumnCount() - 1, getColumnOffset(model, "patient"));
 
         actionIndex = getNextModelIndex(model);
-        TableColumn actionColumn = createTableColumn(
-            actionIndex, "patientremindertablemodel.action");
+        TableColumn actionColumn = createTableColumn(actionIndex, "patientremindertablemodel.action");
         model.addColumn(actionColumn);
 
         return model;
@@ -214,42 +207,14 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getNodeNames() {
-        return new String[]{"endTime", "reminderType", "patient",
-            "reminderCount", "lastSent", "error"};
-    }
-
-    /**
-     * Returns a column offset given its node name.
-     *
-     * @param model the model
-     * @param name  the node name
-     * @return the column offset, or <code>-1</code> if a column with the
-     *         specified name doesn't exist
-     */
-    private int getColumnOffset(TableColumnModel model, String name) {
-        int result = -1;
-        int offset = 0;
-        Iterator iterator = model.getColumns();
-        while (iterator.hasNext()) {
-            TableColumn col = (TableColumn) iterator.next();
-            if (col instanceof DescriptorTableColumn) {
-                DescriptorTableColumn descriptorCol
-                    = (DescriptorTableColumn) col;
-                if (descriptorCol.getName().equals(name)) {
-                    result = offset;
-                    break;
-                }
-            }
-            ++offset;
-        }
-        return result;
+        return new String[]{"endTime", "reminderType", "patient", "reminderCount", "lastSent", "error"};
     }
 
     /**
      * Returns a component for the due date of a reminder.
      *
      * @param act the reminder
-     * @return the due date. May be <tt>null</tt>
+     * @return the due date. May be {@code null}
      */
     private Component getDueDate(Act act) {
         Label result = null;
@@ -266,7 +231,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      *
      * @param act the reminder
      * @param row the current row
-     * @return the customer component, or <tt>null</tt>
+     * @return the customer component, or {@code null}
      */
     private Component getCustomer(Act act, int row) {
         Component result = null;
@@ -282,7 +247,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      *
      * @param act the reminder
      * @param row the current row
-     * @return the action component, or <tt>null</tt>
+     * @return the action component, or {@code null}
      */
     private Component getAction(Act act, int row) {
         Label result = LabelFactory.create();
@@ -301,7 +266,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      *
      * @param act the reminder
      * @param row the current row
-     * @return the corresponding reminder event, or <tt>null</tt> if the event can't be processed
+     * @return the corresponding reminder event, or {@code null} if the event can't be processed
      */
     private ReminderEvent getEvent(Act act, int row) {
         if (lastEvent == null || lastEvent.getReminder() != act) {
@@ -320,7 +285,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      *
      * @param act the reminder
      * @param row the current row
-     * @return the patient. May be <tt>null</tt>
+     * @return the patient. May be {@code null}
      */
     private Party getPatient(Act act, int row) {
         ReminderEvent event = getEvent(act, row);
@@ -332,7 +297,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      *
      * @param act the act
      * @param row the current row
-     * @return the patient owner, or <tt>null</tt>
+     * @return the patient owner, or {@code null}
      */
     private Party getPatientOwner(Act act, int row) {
         ReminderEvent event = getEvent(act, row);
@@ -343,7 +308,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
      * Creates an {@link IMObjectReferenceViewer} for an object.
      *
      * @param object the object
-     * @param link   if <tt>true</tt> enable hyperlinks
+     * @param link   if {@code true} enable hyperlinks
      * @return the viewer component
      */
     private Component createReferenceViewer(IMObject object, boolean link) {
@@ -365,8 +330,7 @@ public class PatientReminderTableModel extends AbstractActTableModel {
     private ReminderProcessor getProcessor(int row) {
         if (processor == null || row < lastRow) {
             processor = new ReminderProcessor(null, null, new Date(), ServiceHelper.getArchetypeService(),
-                                              new PatientRules(ServiceHelper.getArchetypeService(),
-                                                               ServiceHelper.getLookupService()));
+                                              patientRules);
             processor.setEvaluateFully(true);
         }
         lastRow = row;
