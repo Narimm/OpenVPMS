@@ -51,6 +51,7 @@
         <constructor-arg>
             <bean class="org.openvpms.web.workspace.DefaultWorkspacesFactory"/>
         </constructor-arg>
+        <constructor-arg ref="practiceRules"/>
         <property name="styleSheets" ref="userStyleSheets"/>
     </bean>
 
