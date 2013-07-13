@@ -13,11 +13,9 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.map.order;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -64,6 +62,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -324,7 +326,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
      */
     private OrderMapper createMapper() {
         OrderMapperImpl mapper = new OrderMapperImpl();
-        mapper.setPracticeRules(new PracticeRules());
+        mapper.setPracticeRules(new PracticeRules(getArchetypeService()));
         mapper.setLocationRules(new LocationRules());
         mapper.setPartyRules(new PartyRules(getArchetypeService()));
         mapper.setSupplierRules(new SupplierRules(getArchetypeService()));
