@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="act.patientClinicalNote.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.Act" displayName="Note">
@@ -26,7 +27,7 @@
               filter="participation.patient" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="note" path="/details/note" type="java.lang.String" maxLength="4500"/>
+        <node name="note" path="/details/note" type="java.lang.String" maxLength="5000"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node name="event" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
