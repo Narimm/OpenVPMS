@@ -124,7 +124,9 @@ public class SelectFieldBinder extends Binder {
                     for (Object value : values) {
                         collection.remove(value);
                     }
-                    collection.add(fieldValue);
+                    if (fieldValue != null) {
+                        collection.add(fieldValue);
+                    }
                     result = true;
                 }
             }
