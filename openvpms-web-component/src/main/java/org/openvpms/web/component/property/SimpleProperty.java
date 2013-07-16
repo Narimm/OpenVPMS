@@ -134,10 +134,24 @@ public class SimpleProperty extends AbstractProperty {
      * @param displayName the display name. May be {@code null}
      */
     public SimpleProperty(String name, Object value, Class type, String displayName) {
+        this(name, value, type, displayName, false);
+    }
+
+    /**
+     * Constructs a {@code SimpleProperty}.
+     *
+     * @param name        the property name
+     * @param value       the property value. May be {@code null}
+     * @param type        the property type
+     * @param displayName the display name. May be {@code null}
+     * @param readOnly    if {@code true}, the property is read-only
+     */
+    public SimpleProperty(String name, Object value, Class type, String displayName, boolean readOnly) {
         this.name = name;
         this.value = value;
         this.type = type;
         this.displayName = displayName;
+        this.readOnly = readOnly;
     }
 
     /**
