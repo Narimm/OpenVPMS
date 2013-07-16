@@ -97,7 +97,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         String displayName = DescriptorHelper.getDisplayName(act);
         String title = Messages.get("supplier.delivery.selectorders.title", displayName);
         String message = Messages.get("supplier.delivery.selectorders.message", displayName);
-        HelpContext help = getHelpContext().subtopic("order");
+        HelpContext help = getHelpContext().subtopic("select");
         PopupDialog dialog = new OrderSelectionBrowserDialog(title, message, browser, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             public void onOK() {
