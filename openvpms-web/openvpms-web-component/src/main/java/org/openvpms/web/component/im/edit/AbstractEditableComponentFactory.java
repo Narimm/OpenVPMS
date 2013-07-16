@@ -258,7 +258,8 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
             Component component;
             if (property.getMaxCardinality() == 1) {
                 // render as a dropdown when at most one element can be selected
-                IMObjectListModel model = new IMObjectListModel(identifiers, false, false);
+                boolean allowNone = property.getMinCardinality() == 0;
+                IMObjectListModel model = new IMObjectListModel(identifiers, false, allowNone);
                 SelectField selectField = BoundSelectFieldFactory.create(property, model);
                 selectField.setCellRenderer(IMObjectListCellRenderer.NAME);
                 component = selectField;
