@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.sms.mail.template;
@@ -36,8 +34,7 @@ import org.openvpms.sms.mail.SMSArchetypes;
 /**
  * Tests the {@link PracticeMailTemplateConfig} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
 
@@ -63,7 +60,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             bean.removeRelationship(relationship);
         }
         save(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules());
+        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService()));
     }
 
     /**
@@ -86,7 +83,7 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
     @Test
     public void testNoPractice() {
         remove(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules());
+        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService()));
         try {
             config.getTemplate();
             fail("Expected getTemplate() to fail");
