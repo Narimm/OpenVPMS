@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.alert;
 
 import nextapp.echo2.app.Alignment;
@@ -54,6 +55,11 @@ public class AlertSummary {
     private final List<Alert> alerts;
 
     /**
+     * The no. of alerts to show.
+     */
+    private int showCount = 4;
+
+    /**
      * The context.
      */
     private final Context context;
@@ -77,6 +83,15 @@ public class AlertSummary {
     }
 
     /**
+     * Sets the number of alerts to display.
+     *
+     * @param count the no. of alerts to display. Defaults to {@code 4}.
+     */
+    public void setShowCount(int count) {
+        showCount = count;
+    }
+
+    /**
      * Returns the component.
      *
      * @return the component
@@ -84,7 +99,7 @@ public class AlertSummary {
     public Component getComponent() {
         Column result = ColumnFactory.create();
         Collections.sort(alerts);
-        for (int i = 0; i < alerts.size() && i < 4; ++i) {
+        for (int i = 0; i < alerts.size() && i < showCount; ++i) {
             Alert element = alerts.get(i);
             result.add(getButton(element));
         }
@@ -103,7 +118,7 @@ public class AlertSummary {
         Row row;
         if (alerts.size() > 4) {
             Label more = LabelFactory.create("alerts.more", "small.bold");
-            row = RowFactory.create(more, right);
+            row = RowFactory.create("WideCellSpacing", more, right);
         } else {
             row = RowFactory.create(right);
             ColumnLayoutData col = new ColumnLayoutData();

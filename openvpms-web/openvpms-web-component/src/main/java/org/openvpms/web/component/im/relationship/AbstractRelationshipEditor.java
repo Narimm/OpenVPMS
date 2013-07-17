@@ -18,7 +18,6 @@ package org.openvpms.web.component.im.relationship;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -189,15 +188,15 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
             ArchetypeNodes nodes = getArchetypeNodes();
             NodeFilter filter = getNodeFilter(object, context);
 
-            List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
-            List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
+            List<Property> simple = nodes.getSimpleNodes(properties, archetype, object, filter);
+            List<Property> complex = nodes.getComplexNodes(properties, archetype, object, filter);
 
             if (simple.size() == 1 && complex.isEmpty()) {
-                ComponentSet set = createComponentSet(object, simple, properties, context);
+                ComponentSet set = createComponentSet(object, simple, context);
                 container.add(set.getComponents().get(0).getComponent());
             } else {
-                doSimpleLayout(object, parent, simple, properties, container, context);
-                doComplexLayout(object, parent, complex, properties, container, context);
+                doSimpleLayout(object, parent, simple, container, context);
+                doComplexLayout(object, parent, complex, container, context);
             }
         }
 

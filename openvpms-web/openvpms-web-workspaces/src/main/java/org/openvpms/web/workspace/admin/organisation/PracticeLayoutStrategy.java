@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.admin.organisation;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -108,17 +107,16 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Lays out child components in a tab model.
      *
-     * @param object      the parent object
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param model       the tab model
-     * @param context     the layout context
-     * @param shortcuts   if {@code true} include short cuts
+     * @param object     the parent object
+     * @param properties the properties
+     * @param model      the tab model
+     * @param context    the layout context
+     * @param shortcuts  if {@code true} include short cuts
      */
     @Override
-    protected void doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
+    protected void doTabLayout(IMObject object, List<Property> properties,
                                TabPaneModel model, LayoutContext context, boolean shortcuts) {
-        super.doTabLayout(object, descriptors, properties, model, context, shortcuts);
+        super.doTabLayout(object, properties, model, context, shortcuts);
         Component inset = ColumnFactory.create("Inset", subscription.getComponent());
 
         String label = Messages.get("admin.practice.subscription");

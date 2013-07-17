@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.workflow.scheduling;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -67,7 +66,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
                               LayoutContext layoutContext) {
         super(object, parent, layoutContext);
         expressionEditor = new ExpressionEditor(
-            getProperty("displayExpression"), object, getLayoutContext());
+                getProperty("displayExpression"), object, getLayoutContext());
         getEditors().add(expressionEditor);
     }
 
@@ -94,11 +93,12 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
             /**
              * Determines the no. of columns to display.
              *
-             * @param descriptors the node descriptors
+             *
+             * @param properties the node descriptors
              * @return the number of columns
              */
             @Override
-            protected int getColumns(List<NodeDescriptor> descriptors) {
+            protected int getColumns(List<Property> properties) {
                 return 1;
             }
         };
@@ -107,7 +107,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
     }
 
     private static class ExpressionEditor
-        extends AbstractPropertyEditor {
+            extends AbstractPropertyEditor {
 
         /**
          * The wrapper component.
@@ -141,7 +141,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
                                 LayoutContext context) {
             super(property);
             ComponentState state = context.getComponentFactory().create(
-                property, parent);
+                    property, parent);
             Component field = state.getComponent();
             Button test = ButtonFactory.create("test", new ActionListener() {
                 public void onAction(ActionEvent onEvent) {
@@ -152,7 +152,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
             focus.add(test);
             container = RowFactory.create("CellSpacing", field, test);
             boolean arrivalTime = TypeHelper.isA(
-                parent, "entity.organisationScheduleView");
+                    parent, "entity.organisationScheduleView");
             editor = new ScheduleViewExpressionEditor(property, arrivalTime);
             help = context.getHelpContext();
         }

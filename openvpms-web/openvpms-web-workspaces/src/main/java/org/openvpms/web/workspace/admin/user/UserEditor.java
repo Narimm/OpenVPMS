@@ -1,25 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.user;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
@@ -29,7 +26,6 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -42,8 +38,7 @@ import java.util.List;
 /**
  * Editor for <em>security.user</em> instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UserEditor extends AbstractIMObjectEditor {
 
@@ -162,16 +157,15 @@ public class UserEditor extends AbstractIMObjectEditor {
         /**
          * Creates a set of components to be rendered from the supplied descriptors.
          *
-         * @param object      the parent object
-         * @param descriptors the property descriptors
-         * @param properties  the properties
-         * @param context     the layout context
+         * @param object     the parent object
+         * @param properties the properties
+         * @param context    the layout context
          * @return the components
          */
         @Override
-        protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors,
-                                                  PropertySet properties, LayoutContext context) {
-            ComponentSet set = super.createComponentSet(object, descriptors, properties, context);
+        protected ComponentSet createComponentSet(IMObject object, List<Property> properties,
+                                                  LayoutContext context) {
+            ComponentSet set = super.createComponentSet(object, properties, context);
 
             int index = set.indexOf("password");
             if (index != -1) {

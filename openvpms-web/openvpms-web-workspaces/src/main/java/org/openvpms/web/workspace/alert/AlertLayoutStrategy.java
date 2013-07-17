@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -23,7 +21,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -31,7 +28,7 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 
@@ -42,8 +39,7 @@ import java.util.List;
  * Layout strategy for <em>act.customerAlert</em> and <em>act.patientAlert</em>.
  * This includes a field to display the associated alert type's priority and colour.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class AlertLayoutStrategy extends AbstractLayoutStrategy {
 
@@ -74,16 +70,14 @@ public class AlertLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Creates a set of components to be rendered from the supplied descriptors.
      *
-     * @param object      the parent object
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param context     the layout context
+     * @param object     the parent object
+     * @param properties the properties
+     * @param context    the layout context
      * @return the components
      */
     @Override
-    protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
-                                              LayoutContext context) {
-        ComponentSet set = super.createComponentSet(object, descriptors, properties, context);
+    protected ComponentSet createComponentSet(IMObject object, List<Property> properties, LayoutContext context) {
+        ComponentSet set = super.createComponentSet(object, properties, context);
 
         Lookup lookup = AlertHelper.getAlertType((Act) object);
 

@@ -21,7 +21,6 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -30,6 +29,7 @@ import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.style.Styles;
@@ -92,14 +92,14 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         ArchetypeNodes nodes = getArchetypeNodes();
         NodeFilter filter = getNodeFilter(object, context);
 
-        List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
-        List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
+        List<Property> simple = nodes.getSimpleNodes(properties, archetype, object, filter);
+        List<Property> complex = nodes.getComplexNodes(properties, archetype, object, filter);
 
-        List<NodeDescriptor> from = include(simple, "from");
-        List<NodeDescriptor> header = include(simple, "to", "description");
-        List<NodeDescriptor> customer = include(simple, "customer", "patient");
-        List<NodeDescriptor> fields = exclude(simple, "from", "to", "description", "startTime", "customer", "patient",
-                                              "message", "status");
+        List<Property> from = include(simple, "from");
+        List<Property> header = include(simple, "to", "description");
+        List<Property> customer = include(simple, "customer", "patient");
+        List<Property> fields = exclude(simple, "from", "to", "description", "startTime", "customer", "patient",
+                                        "message", "status");
 
         if (!context.isEdit()) {
             // hide empty customer and patient nodes in view layout
@@ -111,18 +111,18 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
                 customer = exclude(customer, "patient");
             }
         }
-        List<NodeDescriptor> message = include(simple, "message");
+        List<Property> message = include(simple, "message");
 
         ComponentGrid componentGrid = new ComponentGrid();
-        ComponentSet fromSet = createComponentSet(object, from, properties, context);
-        ComponentSet headerSet = createComponentSet(object, header, properties, context);
-        ComponentSet customerSet = createComponentSet(object, customer, properties, context);
-        ComponentSet fieldSet = createComponentSet(object, fields, properties, context);
-        ComponentSet messageSet = createComponentSet(object, message, properties, context);
+        ComponentSet fromSet = createComponentSet(object, from, context);
+        ComponentSet headerSet = createComponentSet(object, header, context);
+        ComponentSet customerSet = createComponentSet(object, customer, context);
+        ComponentSet fieldSet = createComponentSet(object, fields, context);
+        ComponentSet messageSet = createComponentSet(object, message, context);
         componentGrid.add(fromSet);
         if (!context.isEdit()) {
             ComponentState date = createDate((Act) object);
-            componentGrid.set(0, 1, date);
+            componentGrid.set(0, 2, date);
         }
         componentGrid.add(headerSet, 1, 2);
         if (customerSet.size() != 0) {
@@ -137,7 +137,7 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         grid.setWidth(Styles.FULL_WIDTH);
 
         Component child = ColumnFactory.create(Styles.LARGE_INSET, grid);
-        doComplexLayout(object, parent, complex, properties, child, context);
+        doComplexLayout(object, parent, complex, child, context);
 
         container.add(child);
     }

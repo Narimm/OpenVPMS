@@ -21,7 +21,6 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -30,6 +29,7 @@ import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.style.Styles;
@@ -90,24 +90,24 @@ public class SystemMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         ArchetypeNodes nodes = getArchetypeNodes();
         NodeFilter filter = getNodeFilter(object, context);
 
-        List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
-        List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
+        List<Property> simple = nodes.getSimpleNodes(properties, archetype, object, filter);
+        List<Property> complex = nodes.getComplexNodes(properties, archetype, object, filter);
 
-        List<NodeDescriptor> to = include(simple, "to");
-        List<NodeDescriptor> header = include(simple, "description", "reason");
-        List<NodeDescriptor> fields = exclude(simple, "to", "description", "reason", "startTime", "message", "status");
-        List<NodeDescriptor> message = include(simple, "message");
+        List<Property> to = include(simple, "to");
+        List<Property> header = include(simple, "description", "reason");
+        List<Property> fields = exclude(simple, "to", "description", "reason", "startTime", "message", "status");
+        List<Property> message = include(simple, "message");
 
         ComponentGrid componentGrid = new ComponentGrid();
-        ComponentSet toSet = createComponentSet(object, to, properties, context);
+        ComponentSet toSet = createComponentSet(object, to, context);
         if (!context.isEdit()) {
             ComponentState date = createDate((Act) object);
             toSet.add(date);
         }
 
-        ComponentSet headerSet = createComponentSet(object, header, properties, context);
-        ComponentSet fieldSet = createComponentSet(object, fields, properties, context);
-        ComponentSet messageSet = createComponentSet(object, message, properties, context);
+        ComponentSet headerSet = createComponentSet(object, header, context);
+        ComponentSet fieldSet = createComponentSet(object, fields, context);
+        ComponentSet messageSet = createComponentSet(object, message, context);
         componentGrid.add(toSet, 2);
         componentGrid.add(headerSet, 1, 2);
         componentGrid.add(fieldSet, 2);
@@ -121,7 +121,7 @@ public class SystemMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         grid.setWidth(Styles.FULL_WIDTH);
 
         Component child = ColumnFactory.create("Inset.Large", grid);
-        doComplexLayout(object, parent, complex, properties, child, context);
+        doComplexLayout(object, parent, complex, child, context);
 
         container.add(child);
     }

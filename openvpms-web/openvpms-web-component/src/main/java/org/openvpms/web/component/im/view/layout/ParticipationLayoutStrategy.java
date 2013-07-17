@@ -17,13 +17,12 @@
 package org.openvpms.web.component.im.view.layout;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Property;
 
 import java.util.List;
 
@@ -46,21 +45,20 @@ public class ParticipationLayoutStrategy extends AbstractLayoutStrategy {
      * If there is only one component, this will be rendered inline without any label.
      * Multiple components will be rendered with labels in a grid.
      *
-     * @param object      the object to lay out
-     * @param parent      the parent object. May be {@code null}
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container to use
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param parent     the parent object. May be {@code null}
+     * @param properties the properties
+     * @param container  the container to use
+     * @param context    the layout context
      */
     @Override
-    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                  PropertySet properties, Component container, LayoutContext context) {
-        if (descriptors.size() == 1) {
-            ComponentSet set = createComponentSet(object, descriptors, properties, context);
+    protected void doSimpleLayout(IMObject object, IMObject parent, List<Property> properties,
+                                  Component container, LayoutContext context) {
+        if (properties.size() == 1) {
+            ComponentSet set = createComponentSet(object, properties, context);
             container.add(set.getComponents().get(0).getComponent());
         } else {
-            super.doSimpleLayout(object, parent, descriptors, properties, container, context);
+            super.doSimpleLayout(object, parent, properties, container, context);
         }
     }
 
