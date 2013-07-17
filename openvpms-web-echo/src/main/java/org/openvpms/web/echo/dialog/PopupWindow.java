@@ -1,25 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
@@ -34,8 +33,7 @@ import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
 /**
  * Generic popup window.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class PopupWindow extends WindowPane {
 
@@ -61,7 +59,7 @@ public abstract class PopupWindow extends WindowPane {
 
 
     /**
-     * Construct a new <code>PopupWindow</code>.
+     * Constructs a {@link PopupWindow}.
      *
      * @param title the window title
      */
@@ -70,11 +68,11 @@ public abstract class PopupWindow extends WindowPane {
     }
 
     /**
-     * Construct a new <code>PopupWindow</code>
+     * Constructs a {@link PopupWindow}.
      *
-     * @param title the window title. May be <code>null</code>
-     * @param style the window style. May be <code>null</code>
-     * @param focus the focus group. May be <code>null</code>
+     * @param title the window title. May be {@code null}
+     * @param style the window style. May be {@code null}
+     * @param focus the focus group. May be {@code null}
      */
     public PopupWindow(String title, String style, FocusGroup focus) {
         super(title, null, null);
@@ -89,9 +87,11 @@ public abstract class PopupWindow extends WindowPane {
 
         row = new ButtonRow(focusGroup, "DialogButtonRow", ButtonRow.BUTTON_STYLE);
 
+        ContentPane root = new ContentPane();
         layout = createSplitPane();
         layout.add(row);
-        add(layout);
+        root.add(layout);
+        add(root);
     }
 
     /**
@@ -103,10 +103,7 @@ public abstract class PopupWindow extends WindowPane {
             DialogManager.show(this);
         }
         if (defaultButton != null) {
-            Button button = getButtons().getButton(defaultButton);
-            if (button != null) {
-                FocusHelper.setFocus(button);
-            }
+            getButtons().setFocus(defaultButton);
         }
     }
 
@@ -131,7 +128,7 @@ public abstract class PopupWindow extends WindowPane {
     /**
      * Returns the default button identifier.
      *
-     * @return the default button, or <code>null</code> if none has been set
+     * @return the default button, or {@code null} if none has been set
      */
     public String getDefaultButton() {
         return defaultButton;
@@ -187,7 +184,7 @@ public abstract class PopupWindow extends WindowPane {
      *
      * @param id              the button identifier
      * @param listener        the action listener
-     * @param disableShortcut if <code>true</code> disable any keyboard shortcut
+     * @param disableShortcut if {@code true} disable any keyboard shortcut
      * @return a new button
      */
     protected Button addButton(String id, ActionListener listener,
@@ -205,11 +202,9 @@ public abstract class PopupWindow extends WindowPane {
     }
 
     /**
-     * Notifies <tt>WindowPaneListener</tt>s that the user has requested
-     * to close this <tt>WindowPane</tt>.
+     * Notifies {@code WindowPaneListener}s that the user has requested to close this {@code WindowPane}.
      * <p/>
-     * This implementation re-registers keystroke listeners as a workaround
-     * to bugs in Firefox.
+     * This implementation re-registers keystroke listeners as a workaround to bugs in Firefox.
      *
      * @see KeyStrokeHelper#reregisterKeyStrokeListeners
      */
