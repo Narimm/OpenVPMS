@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.customer.estimation;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -241,12 +242,12 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      * Invoices an estimate.
      *
      * @param estimate the estimate
-     * @param invoice  the invoice to add items to
+     * @param invoice  the invoice to add items to. If {@code null}, one will be created
      */
     private void invoice(final Act estimate, FinancialAct invoice) {
         try {
             EstimationInvoicer invoicer = new EstimationInvoicer();
-            HelpContext edit = getHelpContext().topic(invoice, "edit");
+            HelpContext edit = getHelpContext().topic(CustomerAccountArchetypes.INVOICE + "/edit");
             CustomerChargeActEditDialog editor = invoicer.invoice(estimate, invoice,
                                                                   new DefaultLayoutContext(true, getContext(), edit));
             editor.addWindowPaneListener(new WindowPaneListener() {
