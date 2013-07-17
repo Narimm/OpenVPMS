@@ -16,10 +16,8 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
-import nextapp.echo2.app.Grid;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -28,7 +26,7 @@ import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -52,15 +50,13 @@ public class PrescriptionLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Lays out components in a grid.
      *
-     * @param object      the object to lay out
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param properties the properties
+     * @param context    the layout context
      */
     @Override
-    protected Grid createGrid(IMObject object, List<NodeDescriptor> descriptors,
-                              PropertySet properties, LayoutContext context, int columns) {
-        ComponentSet set = createComponentSet(object, descriptors, properties, context);
+    protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context, int columns) {
+        ComponentSet set = createComponentSet(object, properties, context);
 
         String displayName = Messages.get("patient.prescription.dispensed");
         SimpleProperty dispensed = new SimpleProperty("dispensed", 0, int.class, displayName);
@@ -74,7 +70,7 @@ public class PrescriptionLayoutStrategy extends AbstractLayoutStrategy {
 
         ComponentGrid grid = new ComponentGrid();
         grid.add(set, columns);
-        return createGrid(grid);
+        return grid;
     }
 
     /**

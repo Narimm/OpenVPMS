@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -25,11 +23,11 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.ComplexNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -143,22 +141,21 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Lays out child components in a 2x2 grid.
      *
-     * @param object      the object to lay out
-     * @param parent      the parent object. May be <tt>null</tt>
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container to use
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param parent     the parent object. May be <tt>null</tt>
+     * @param properties the properties
+     * @param container  the container to use
+     * @param context    the layout context
      */
     @Override
-    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                  PropertySet properties, Component container, LayoutContext context) {
+    protected void doSimpleLayout(IMObject object, IMObject parent, List<Property> properties,
+                                  Component container, LayoutContext context) {
         if (_button != null || !_showButton) {
-            super.doSimpleLayout(object, parent, descriptors, properties, container,
+            super.doSimpleLayout(object, parent, properties, container,
                                  context);
-        } else if (!descriptors.isEmpty()) {
+        } else if (!properties.isEmpty()) {
             Row group = RowFactory.create();
-            super.doSimpleLayout(object, parent, descriptors, properties, group,
+            super.doSimpleLayout(object, parent, properties, group,
                                  context);
             group.add(getButtonRow());
             container.add(group);
@@ -168,24 +165,23 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Lays out each child component in a tabbed pane.
      *
-     * @param object      the object to lay out
-     * @param parent      the parent object. May be <tt>null</tt>
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container to use
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param parent     the parent object. May be <tt>null</tt>
+     * @param properties the properties
+     * @param container  the container to use
+     * @param context    the layout context
      */
     @Override
-    protected void doComplexLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                   PropertySet properties, Component container, LayoutContext context) {
-        if (_button == null && _showButton && !descriptors.isEmpty()) {
+    protected void doComplexLayout(IMObject object, IMObject parent,
+                                   List<Property> properties, Component container, LayoutContext context) {
+        if (_button == null && _showButton && !properties.isEmpty()) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
             right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.TOP));
             row.setLayoutData(right);
             container.add(row);
         }
-        super.doComplexLayout(object, parent, descriptors, properties, container,
+        super.doComplexLayout(object, parent, properties, container,
                               context);
     }
 

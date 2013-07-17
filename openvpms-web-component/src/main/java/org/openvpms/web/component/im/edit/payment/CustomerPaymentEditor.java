@@ -20,7 +20,6 @@ import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -37,7 +36,6 @@ import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -54,13 +52,12 @@ import java.util.List;
  * An editor for {@link Act}s which have an archetype of
  * <em>act.customerAccountPayment</em> or <em>act.customerAccountRefund</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public class CustomerPaymentEditor extends PaymentEditor {
 
     /**
-     * Determines the expected payment amount. If <tt>null</tt>, there
+     * Determines the expected payment amount. If {@code null}, there
      * is no limit on the payment amount. If non-null, validation will fail
      * if the act total is not that specified.
      */
@@ -88,38 +85,31 @@ public class CustomerPaymentEditor extends PaymentEditor {
 
 
     /**
-     * Constructs a new <tt>CustomerPaymentEditor</tt>.
+     * Constructs a new {@code CustomerPaymentEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public CustomerPaymentEditor(Act act, IMObject parent,
-                                 LayoutContext context) {
+    public CustomerPaymentEditor(Act act, IMObject parent, LayoutContext context) {
         this(act, parent, context, BigDecimal.ZERO);
     }
 
     /**
-     * Creates a new <tt>CustomerPaymentEditor</tt>.
+     * Creates a new {@code CustomerPaymentEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <tt>null</tt>
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      * @param invoice the invoice amount
      */
-    public CustomerPaymentEditor(Act act, IMObject parent,
-                                 LayoutContext context,
-                                 BigDecimal invoice) {
+    public CustomerPaymentEditor(Act act, IMObject parent, LayoutContext context, BigDecimal invoice) {
         super(act, parent, context);
-        invoiceAmount = createProperty("invoiceAmount",
-                                       "customer.payment.currentInvoice");
+        invoiceAmount = createProperty("invoiceAmount", "customer.payment.currentInvoice");
         invoiceAmount.setValue(invoice);
-        previousBalance = createProperty("previousBalance",
-                                         "customer.payment.previousBalance");
-        overdueAmount = createProperty("overdueAmount",
-                                       "customer.payment.overdue");
-        totalBalance = createProperty("totalBalance",
-                                      "customer.payment.totalBalance");
+        previousBalance = createProperty("previousBalance", "customer.payment.previousBalance");
+        overdueAmount = createProperty("overdueAmount", "customer.payment.overdue");
+        totalBalance = createProperty("totalBalance", "customer.payment.totalBalance");
 
         initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
@@ -148,11 +138,11 @@ public class CustomerPaymentEditor extends PaymentEditor {
     }
 
     /**
-     * Determines the expected amount of the payment. If <tt>null</tt>, there
+     * Determines the expected amount of the payment. If {@code null}, there
      * is no limit on the payment amount. If non-null, validation will fail
      * if the act total is not that specified.
      *
-     * @param amount the expected payment amount. May be <tt>null</tt>
+     * @param amount the expected payment amount. May be {@code null}
      */
     public void setExpectedAmount(BigDecimal amount) {
         expectedAmount = amount;
@@ -161,7 +151,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
     /**
      * Sets the till.
      *
-     * @param till the till. May be <tt>null</tt>
+     * @param till the till. May be {@code null}
      */
     public void setTill(Entity till) {
         setParticipant("till", till);
@@ -173,7 +163,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
      * This extends validation by ensuring that the payment amount matches the expected amount, if present.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     protected boolean doValidation(Validator validator) {
@@ -280,7 +270,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
     private class LayoutStrategy extends ActLayoutStrategy {
 
         /**
-         * Creates a new <tt>LayoutStrategy</tt>.
+         * Creates a new {@code LayoutStrategy}.
          *
          * @param editor the act items editor
          */
@@ -291,22 +281,21 @@ public class CustomerPaymentEditor extends PaymentEditor {
         /**
          * Lays out child components in a grid.
          *
-         * @param object      the object to lay out
-         * @param parent      the parent object. May be <tt>null</tt>
-         * @param descriptors the property descriptors
-         * @param properties  the properties
-         * @param container   the container to use
-         * @param context     the layout context
+         * @param object     the object to lay out
+         * @param parent     the parent object. May be {@code null}
+         * @param properties the properties
+         * @param container  the container to use
+         * @param context    the layout context
          */
         @Override
-        protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                      PropertySet properties, Component container, LayoutContext context) {
-            ComponentSet set = createComponentSet(object, descriptors, properties, context);
+        protected void doSimpleLayout(IMObject object, IMObject parent, List<Property> properties,
+                                      Component container, LayoutContext context) {
+            ComponentSet set = createComponentSet(object, properties, context);
             ComponentGrid grid = new ComponentGrid();
             grid.set(0, 0, createComponent(invoiceAmount, object, context));
-            grid.set(0, 1, createComponent(previousBalance, object, context));
+            grid.set(0, 2, createComponent(previousBalance, object, context));
             grid.set(1, 0, createComponent(overdueAmount, object, context));
-            grid.set(1, 1, createComponent(totalBalance, object, context));
+            grid.set(1, 2, createComponent(totalBalance, object, context));
             grid.add(set);
             doGridLayout(grid, container);
         }

@@ -13,13 +13,13 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.text.TextComponent;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -62,16 +62,15 @@ public class PatientClinicalNoteLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Lays out child components in a grid.
      *
-     * @param object      the object to lay out
-     * @param parent      the parent object. May be {@code null}
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container to use
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param parent     the parent object. May be {@code null}
+     * @param properties the properties
+     * @param container  the container to use
+     * @param context    the layout context
      */
-    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                  PropertySet properties, Component container, LayoutContext context) {
-        Grid grid = createGrid(object, descriptors, properties, context);
+    protected void doSimpleLayout(IMObject object, IMObject parent, List<Property> properties,
+                                  Component container, LayoutContext context) {
+        Grid grid = createGrid(createGrid(object, properties, context));
         grid.setWidth(Styles.FULL_WIDTH);
         grid.setColumnWidth(1, new Extent(90, Extent.PERCENT));
         container.add(ColumnFactory.create(Styles.INSET, grid));

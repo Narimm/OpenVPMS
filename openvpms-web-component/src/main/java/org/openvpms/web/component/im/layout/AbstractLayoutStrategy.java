@@ -24,7 +24,6 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -192,59 +191,56 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         ArchetypeNodes nodes = getArchetypeNodes(object);
         NodeFilter filter = getNodeFilter(object, context);
 
-        List<NodeDescriptor> simple = nodes.getSimpleNodes(archetype, object, filter);
-        List<NodeDescriptor> complex = nodes.getComplexNodes(archetype, object, filter);
+        List<Property> simple = nodes.getSimpleNodes(properties, archetype, object, filter);
+        List<Property> complex = nodes.getComplexNodes(properties, archetype, object, filter);
 
-        doSimpleLayout(object, parent, simple, properties, container, context);
-        doComplexLayout(object, parent, complex, properties, container, context);
+        doSimpleLayout(object, parent, simple, container, context);
+        doComplexLayout(object, parent, complex, container, context);
     }
 
     /**
      * Lays out child components in a grid.
      *
-     * @param object      the object to lay out
-     * @param parent      the parent object. May be {@code null}
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container to use
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param parent     the parent object. May be {@code null}
+     * @param properties the properties
+     * @param container  the container to use
+     * @param context    the layout context
      */
-    protected void doSimpleLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                  PropertySet properties, Component container, LayoutContext context) {
-        if (!descriptors.isEmpty()) {
-            Grid grid = createGrid(object, descriptors, properties, context);
-            container.add(ColumnFactory.create("Inset", grid));
+    protected void doSimpleLayout(IMObject object, IMObject parent, List<Property> properties,
+                                  Component container, LayoutContext context) {
+        if (!properties.isEmpty()) {
+            ComponentGrid grid = createGrid(object, properties, context);
+            Component component = createGrid(grid);
+            container.add(ColumnFactory.create("Inset", component));
         }
     }
 
     /**
      * Lays out components in a grid.
      *
-     * @param object      the object to lay out
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param properties the properties
+     * @param context    the layout context
      */
-    protected Grid createGrid(IMObject object, List<NodeDescriptor> descriptors,
-                              PropertySet properties, LayoutContext context) {
-        int columns = getColumns(descriptors);
-        return createGrid(object, descriptors, properties, context, columns);
+    protected ComponentGrid createGrid(IMObject object, List<Property> properties,
+                                       LayoutContext context) {
+        int columns = getColumns(properties);
+        return createGrid(object, properties, context, columns);
     }
 
     /**
      * Lays out components in a grid.
      *
-     * @param object      the object to lay out
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param properties the properties
+     * @param context    the layout context
      */
-    protected Grid createGrid(IMObject object, List<NodeDescriptor> descriptors,
-                              PropertySet properties, LayoutContext context, int columns) {
-        ComponentSet set = createComponentSet(object, descriptors, properties, context);
+    protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context, int columns) {
+        ComponentSet set = createComponentSet(object, properties, context);
         ComponentGrid grid = new ComponentGrid();
         grid.add(set, columns);
-        return createGrid(grid);
+        return grid;
     }
 
     /**
@@ -260,27 +256,26 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Determines the no. of columns to display.
      *
-     * @param descriptors the node descriptors
+     * @param properties the node descriptors
      * @return the number of columns
      */
-    protected int getColumns(List<NodeDescriptor> descriptors) {
-        return (descriptors.size() <= 4) ? 1 : 2;
+    protected int getColumns(List<Property> properties) {
+        return (properties.size() <= 4) ? 1 : 2;
     }
 
     /**
      * Lays out each child component in a tabbed pane.
      *
-     * @param object      the object to lay out
-     * @param parent      the parent object. May be {@code null}
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container to use
-     * @param context     the layout context
+     * @param object     the object to lay out
+     * @param parent     the parent object. May be {@code null}
+     * @param properties the properties
+     * @param container  the container to use
+     * @param context    the layout context
      */
-    protected void doComplexLayout(IMObject object, IMObject parent, List<NodeDescriptor> descriptors,
-                                   PropertySet properties, Component container, LayoutContext context) {
-        if (!descriptors.isEmpty()) {
-            TabModel model = doTabLayout(object, descriptors, properties, container, context, false);
+    protected void doComplexLayout(IMObject object, IMObject parent, List<Property> properties, Component container,
+                                   LayoutContext context) {
+        if (!properties.isEmpty()) {
+            TabModel model = doTabLayout(object, properties, container, context, false);
             TabbedPane pane = TabbedPaneFactory.create(model);
 
             pane.setSelectedIndex(0);
@@ -333,7 +328,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Lays out child components in a tab model.
      *
      * @param object       the parent object
-     * @param descriptors  the property descriptors
      * @param properties   the properties
      * @param container    the container
      * @param context      the layout context
@@ -342,17 +336,17 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *                     is non-zero
      * @return the tab model
      */
-    protected TabPaneModel doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
-                                       Component container, LayoutContext context, boolean shortcutHint) {
+    protected TabPaneModel doTabLayout(IMObject object, List<Property> properties, Component container,
+                                       LayoutContext context, boolean shortcutHint) {
         TabPaneModel model;
         boolean shortcuts = false;
-        if (context.getLayoutDepth() == 0 && (descriptors.size() > 1 || shortcutHint)) {
+        if (context.getLayoutDepth() == 0 && (properties.size() > 1 || shortcutHint)) {
             model = createTabModel(container);
             shortcuts = true;
         } else {
             model = createTabModel(null);
         }
-        doTabLayout(object, descriptors, properties, model, context, shortcuts);
+        doTabLayout(object, properties, model, context, shortcuts);
         return model;
     }
 
@@ -369,17 +363,15 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Lays out child components in a tab model.
      *
-     * @param object      the parent object
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param model       the tab model
-     * @param context     the layout context
-     * @param shortcuts   if {@code true} include short cuts
+     * @param object     the parent object
+     * @param properties the properties
+     * @param model      the tab model
+     * @param context    the layout context
+     * @param shortcuts  if {@code true} include short cuts
      */
-    protected void doTabLayout(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
-                               TabPaneModel model, LayoutContext context, boolean shortcuts) {
-        for (NodeDescriptor nodeDesc : descriptors) {
-            Property property = properties.get(nodeDesc);
+    protected void doTabLayout(IMObject object, List<Property> properties, TabPaneModel model, LayoutContext context,
+                               boolean shortcuts) {
+        for (Property property : properties) {
             ComponentState child = createComponent(property, object, context);
             addTab(model, property, child, shortcuts);
         }
@@ -417,41 +409,34 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Creates a set of components to be rendered from the supplied descriptors.
      *
-     * @param object      the parent object
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param context     the layout context
+     * @param object     the parent object
+     * @param properties the properties
+     * @param context    the layout context
      * @return the components
      */
-    protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors, PropertySet properties,
+    protected ComponentSet createComponentSet(IMObject object, List<Property> properties,
                                               LayoutContext context) {
         ComponentSet result = new ComponentSet();
-        for (NodeDescriptor descriptor : descriptors) {
-            ComponentState component = createComponent(object, descriptor, properties, context);
+        for (Property property : properties) {
+            ComponentState component = createComponent(property, object, context);
             result.add(component);
         }
         return result;
     }
 
     /**
-     * Creates a components to render the property associated with the supplied descriptor.
+     * Helper to add a node to a grid.
      *
-     * @param object     the parent object
-     * @param descriptor the property descriptors
-     * @param properties the properties
-     * @param context    the layout context
-     * @return the components
+     * @param grid      the grid
+     * @param name      the node display name. May be {@code null}
+     * @param component the component representing the node
      */
-    protected ComponentState createComponent(IMObject object, NodeDescriptor descriptor, PropertySet properties,
-                                             LayoutContext context) {
-        Property property = properties.get(descriptor);
-        ComponentState component = createComponent(property, object, context);
-        String displayName = component.getDisplayName();
-        if (displayName == null) {
-            displayName = descriptor.getDisplayName();
-            component.setDisplayName(displayName);
+    protected void add(ComponentGrid grid, String name, Component component) {
+        Label label = LabelFactory.create();
+        if (name != null) {
+            label.setText(name);
         }
-        return component;
+        grid.add(label, component);
     }
 
     /**

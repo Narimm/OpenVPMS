@@ -23,6 +23,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -221,6 +223,23 @@ public class ArchetypeNodes {
     }
 
     /**
+     * Returns the simple node properties.
+     *
+     * @param archetype the archetype descriptor
+     * @param object    the object to return nodes for
+     * @param filter    a filter to exclude nodes according to some criteria. May be {@code null}
+     * @return the simple node properties
+     */
+    public List<Property> getSimpleNodes(PropertySet properties, ArchetypeDescriptor archetype, IMObject object,
+                                         NodeFilter filter) {
+        List<Property> result = new ArrayList<Property>();
+        for (NodeDescriptor descriptor : getSimpleNodes(archetype, object, filter)) {
+            result.add(properties.get(descriptor));
+        }
+        return result;
+    }
+
+    /**
      * Returns the complex nodes.
      *
      * @param archetype the archetype descriptor
@@ -240,6 +259,23 @@ public class ArchetypeNodes {
      */
     public List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype, IMObject object, NodeFilter filter) {
         return getNodes(archetype, object, includeComplexNodes, new ComplexPredicate(), filter);
+    }
+
+    /**
+     * Returns the complex node properties.
+     *
+     * @param archetype the archetype descriptor
+     * @param object    the object to return nodes for
+     * @param filter    a filter to exclude nodes according to some criteria. May be {@code null}
+     * @return the simple node properties
+     */
+    public List<Property> getComplexNodes(PropertySet properties, ArchetypeDescriptor archetype, IMObject object,
+                                          NodeFilter filter) {
+        List<Property> result = new ArrayList<Property>();
+        for (NodeDescriptor descriptor : getComplexNodes(archetype, object, filter)) {
+            result.add(properties.get(descriptor));
+        }
+        return result;
     }
 
     /**
@@ -266,18 +302,18 @@ public class ArchetypeNodes {
     }
 
     /**
-     * Filters the descriptors, only including those matching the specified names.
+     * Filters the properties, only including those matching the specified names.
      *
-     * @param descriptors the descriptors
-     * @param names       the names to include
-     * @return the matching descriptors
+     * @param properties the properties
+     * @param names      the names to include
+     * @return the matching properties
      */
-    public static List<NodeDescriptor> include(List<NodeDescriptor> descriptors, String... names) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
+    public static List<Property> include(List<Property> properties, String... names) {
+        List<Property> result = new ArrayList<Property>();
         List<String> values = Arrays.asList(names);
-        for (NodeDescriptor descriptor : descriptors) {
-            if (values.contains(descriptor.getName())) {
-                result.add(descriptor);
+        for (Property property : properties) {
+            if (values.contains(property.getName())) {
+                result.add(property);
             }
         }
         return result;
@@ -286,16 +322,16 @@ public class ArchetypeNodes {
     /**
      * Filters the descriptors, excluding those matching the specified names.
      *
-     * @param descriptors the descriptors
-     * @param names       the names to exclude
+     * @param properties the descriptors
+     * @param names      the names to exclude
      * @return the descriptors excluding those matching the specified names
      */
-    public static List<NodeDescriptor> exclude(List<NodeDescriptor> descriptors, String... names) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>(descriptors);
+    public static List<Property> exclude(List<Property> properties, String... names) {
+        List<Property> result = new ArrayList<Property>(properties);
         List<String> values = Arrays.asList(names);
-        for (NodeDescriptor descriptor : descriptors) {
-            if (values.contains(descriptor.getName())) {
-                result.remove(descriptor);
+        for (Property property : properties) {
+            if (values.contains(property.getName())) {
+                result.remove(property);
             }
         }
         return result;

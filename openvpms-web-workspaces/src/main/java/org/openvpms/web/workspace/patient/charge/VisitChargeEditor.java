@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.security.User;
@@ -39,7 +38,6 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -166,9 +164,9 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
             }
 
             @Override
-            protected ComponentSet createComponentSet(IMObject object, List<NodeDescriptor> descriptors,
-                                                      PropertySet properties, LayoutContext context) {
-                ComponentSet result = super.createComponentSet(object, descriptors, properties, context);
+            protected ComponentSet createComponentSet(IMObject object, List<Property> properties,
+                                                      LayoutContext context) {
+                ComponentSet result = super.createComponentSet(object, properties, context);
                 IMObjectComponentFactory factory = context.getComponentFactory();
 
                 ComponentState total = factory.create(visitTotal, object);
