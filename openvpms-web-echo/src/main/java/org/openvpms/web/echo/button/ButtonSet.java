@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 
 
@@ -340,7 +341,7 @@ public class ButtonSet implements KeyStrokeHandler {
     /**
      * Enables or disables a button.
      *
-     * @param id      the button identifer
+     * @param id      the button identifier
      * @param enabled if {@code true} enable the button, otherwise disable it
      */
     public void setEnabled(String id, boolean enabled) {
@@ -350,6 +351,18 @@ public class ButtonSet implements KeyStrokeHandler {
             if (hideDisabled) {
                 button.setVisible(enabled);
             }
+        }
+    }
+
+    /**
+     * Sets the focus on a button.
+     *
+     * @param id the button identifier
+     */
+    public void setFocus(String id) {
+        Button button = getButton(id);
+        if (button != null) {
+            FocusHelper.setFocus(button);
         }
     }
 
