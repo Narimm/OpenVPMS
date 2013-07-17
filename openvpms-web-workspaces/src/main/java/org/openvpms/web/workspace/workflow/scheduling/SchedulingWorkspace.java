@@ -145,6 +145,7 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      */
     protected void setScheduleView(Entity view, Date date) {
         location = getContext().getLocation();
+        getContext().setScheduleView(view);
         super.setObject(view);
         layoutWorkspace();
         initQuery(view, date);
