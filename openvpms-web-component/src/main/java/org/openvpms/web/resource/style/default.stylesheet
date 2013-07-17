@@ -383,6 +383,14 @@
         </properties>
     </style>
 
+    <style name="AlertsViewerTable" base-name="default" type="org.openvpms.web.echo.table.KeyTable">
+        <properties>
+            <!-- make the blur background the same as the selection background to avoid white-foreground text
+                 becoming hard to read -->
+            <property name="selectionBlurBackground" value="#85c1ff"/>
+        </properties>
+    </style>
+
     <!-- ================================================================== -->
     <!-- customer and patient alert type default colours                    -->
     <!-- NOTE: only the background is used. Any other properties will be    -->
