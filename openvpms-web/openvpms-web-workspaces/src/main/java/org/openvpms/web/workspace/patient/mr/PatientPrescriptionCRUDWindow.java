@@ -153,7 +153,6 @@ public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 }
             });
             item.setProductRef(prescriptionBean.getNodeParticipantRef("product"));
-            editor.addEdited(item);
         } else {
             ErrorHelper.show(Messages.get("patient.prescription.nocustomer"));
         }

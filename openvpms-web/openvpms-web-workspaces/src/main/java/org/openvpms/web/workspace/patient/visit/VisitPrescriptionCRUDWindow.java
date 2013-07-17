@@ -85,7 +85,6 @@ public class VisitPrescriptionCRUDWindow extends PatientPrescriptionCRUDWindow {
             }
         });
         item.setProductRef(prescriptionBean.getNodeParticipantRef("product"));
-        chargeEditor.addEdited(item);
     }
 
     /**
