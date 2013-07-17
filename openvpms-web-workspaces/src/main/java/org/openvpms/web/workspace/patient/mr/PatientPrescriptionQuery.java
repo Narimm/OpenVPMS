@@ -101,6 +101,7 @@ public class PatientPrescriptionQuery extends ActQuery<Act> {
                 onAllDatesChanged();
             }
         });
+        dateField = new ComponentState(BoundDateFieldFactory.create(expiryDate), expiryDate);
         onAllDatesChanged();
     }
 
@@ -112,7 +113,6 @@ public class PatientPrescriptionQuery extends ActQuery<Act> {
     @Override
     protected void doLayout(Component container) {
         ComponentState all = new ComponentState(new BoundCheckBox(allDates), allDates);
-        dateField = new ComponentState(BoundDateFieldFactory.create(expiryDate), expiryDate);
         Row row = RowFactory.create(Styles.CELL_SPACING, all.getLabel(), all.getComponent(), dateField.getLabel(),
                                     dateField.getComponent());
         container.add(row);

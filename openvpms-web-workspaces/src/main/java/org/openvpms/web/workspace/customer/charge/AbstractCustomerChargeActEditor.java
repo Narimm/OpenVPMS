@@ -181,18 +181,6 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
-     * Adds the object being edited to the collection, if it doesn't exist.
-     * <p/>
-     * The object will be selected.
-     *
-     * @param editor the editor
-     * @return {@code true} if the object was added, otherwise {@code false}
-     */
-    public boolean addEdited(CustomerChargeActItemEditor editor) {
-        return getItems().addEdited(editor);
-    }
-
-    /**
      * Sets the clinician.
      *
      * @param clinician the clinician. May be {@code null}
