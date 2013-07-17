@@ -1,66 +1,69 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005-2012 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
-	<archetype name="act.patientClinicalEvent.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.act.Act" displayName="Visit" >
-		<node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Visit'" />
-		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat(date:formatDate(/activityStartTime),' - ',date:formatDate(/activityEndTime),' : ', /reason)" />
-		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="endTime" displayName="Complete Time" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
-		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
-			filter="participation.patient" hidden="true" />
-		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
-			filter="participation.author" hidden="true" />
+    <archetype name="act.patientClinicalEvent.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Visit">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Visit'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
+              derivedValue="concat(date:formatDate(/activityStartTime),' - ',date:formatDate(/activityEndTime),' : ', /reason)"/>
+        <node name="startTime" displayName="Start Date" path="/activityStartTime" type="java.util.Date"
+              minCardinality="1" defaultValue="java.util.Date.new()"/>
+        <node name="endTime" displayName="Complete Date" path="/activityEndTime" type="java.util.Date"
+              minCardinality="0"/>
+        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.patient" hidden="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
         <node name="reason" path="/reason" type="java.lang.String" maxLength="50"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
-			filter="participation.clinician" />
+              filter="participation.clinician"/>
         <node name="location" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.location" hidden="true"/>
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'">
-			<assertion name="lookup.local">
-				<propertyList name="entries">
-					<property name="IN_PROGRESS" value="In Progress" />
-					<property name="COMPLETED" value="Completed" />
-				</propertyList>
-				<errorMessage>Invalid Visit Status</errorMessage>
-			</assertion>
-		</node>
-		<node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
-			minCardinality="0" maxCardinality="*"  filter="actRelationship.patientClinicalEventItem">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName" value="actRelationship.patientClinicalEventItem" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-        <node displayName="Charges" name="chargeItems" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
-              minCardinality="0" maxCardinality="*" hidden="true" filter="actRelationship.patientClinicalEventChargeItem">
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="IN_PROGRESS" value="In Progress"/>
+                    <property name="COMPLETED" value="Completed"/>
+                </propertyList>
+                <errorMessage>Invalid Visit Status</errorMessage>
+            </assertion>
+        </node>
+        <node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet"
+              baseName="SourceActRelationship"
+              minCardinality="0" maxCardinality="*" filter="actRelationship.patientClinicalEventItem">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName" value="actRelationship.patientClinicalEventChargeItem" />
+                        <property name="shortName" value="actRelationship.patientClinicalEventItem"/>
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node displayName="Charges" name="chargeItems" path="/sourceActRelationships" type="java.util.HashSet"
+              baseName="SourceActRelationship"
+              minCardinality="0" maxCardinality="*" hidden="true"
+              filter="actRelationship.patientClinicalEventChargeItem">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.patientClinicalEventChargeItem"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
