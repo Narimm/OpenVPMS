@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -75,6 +76,10 @@ public class PrescriptionMedicationActEditor extends PatientMedicationActEditor 
             setProduct((Product) getObject(prescription.getProduct()));
             setQuantity(prescription.getQuantityToDispense());
             this.prescription = prescription;
+            String label = prescription.getLabel();
+            if (!StringUtils.isEmpty(label)) {
+                setLabel(label);
+            }
         }
     }
 

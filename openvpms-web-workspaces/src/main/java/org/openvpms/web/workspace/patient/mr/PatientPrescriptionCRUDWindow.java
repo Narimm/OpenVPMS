@@ -32,9 +32,13 @@ import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -55,6 +59,11 @@ public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
      * The dispense button.
      */
     protected static final String DISPENSE_ID = "button.dispense";
+
+    /**
+     * The cancel button.
+     */
+    protected static final String CANCEL_ID = "button.cancel";
 
 
     /**
@@ -95,6 +104,12 @@ public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 onDispense();
             }
         }));
+        buttons.add(ButtonFactory.create(CANCEL_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onCancel();
+            }
+        }));
     }
 
     /**
@@ -106,8 +121,10 @@ public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
+        boolean dispense = enable && getActions().canDispense(getObject());
         buttons.setEnabled(PRINT_ID, enable);
-        buttons.setEnabled(DISPENSE_ID, getActions().canDispense(getObject()));
+        buttons.setEnabled(DISPENSE_ID, dispense);
+        buttons.setEnabled(CANCEL_ID, dispense); // if it can be dispensed, it can be cancelled
     }
 
     /**
@@ -158,6 +175,32 @@ public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
         }
     }
 
+    /**
+     * Cancels a prescription.
+     */
+    protected void onCancel() {
+        final Act object = IMObjectHelper.reload(getObject());
+        if (object == null) {
+            ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
+        } else if (!getActions().canDispense(object)) {
+            ErrorDialog.show(Messages.get("patient.prescription.nocancel"));
+        } else {
+            ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("patient.prescription.cancel.title"),
+                                                               Messages.get("patient.prescription.cancel.message"),
+                                                               ConfirmationDialog.YES_NO,
+                                                               getHelpContext().subtopic("cancel"));
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    PrescriptionRules rules = ServiceHelper.getBean(PrescriptionRules.class);
+                    rules.cancel(object);
+                    onSaved(object, false);
+                }
+            });
+            dialog.show();
+        }
+    }
+
     protected static class PrescriptionActions extends ActActions<Act> {
 
         /**
@@ -170,16 +213,27 @@ public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
         }
 
         /**
+         * Determines if an act can be edited.
+         *
+         * @param act the act to check
+         * @return {@code true} if the act can be dispensed
+         */
+        @Override
+        public boolean canEdit(Act act) {
+            return canDispense(act);
+        }
+
+        /**
          * Determines if a prescription can be deleted.
          * <br/>
-         * A prescription can be deleted if it hasn't been dispensed.
+         * A prescription can be deleted if it hasn't been dispensed and hasn't expired.
          *
          * @param prescription the prescription to check
          * @return {@code true} if it can be deleted
          */
         @Override
         public boolean canDelete(Act prescription) {
-            if (super.canDelete(prescription)) {
+            if (canDispense(prescription)) {
                 ActBean bean = new ActBean(prescription);
                 return bean.getRelationships(PatientArchetypes.PRESCRIPTION_MEDICATION).isEmpty();
             }

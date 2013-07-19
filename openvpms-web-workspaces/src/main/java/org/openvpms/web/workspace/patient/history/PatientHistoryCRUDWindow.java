@@ -232,7 +232,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
     }
 
     /**
-     * Creates and a new event, making it the current event.
+     * Creates a new event, making it the current event.
      */
     private void createEvent() {
         Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);

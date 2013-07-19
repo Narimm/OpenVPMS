@@ -136,6 +136,15 @@ public class Prescription {
     }
 
     /**
+     * Returns the prescription label.
+     *
+     * @return the prescription label. May be {@code null}
+     */
+    public String getLabel() {
+        return prescription.getString("label");
+    }
+
+    /**
      * Removes a medication act from the prescription.
      *
      * @param medication the medication
