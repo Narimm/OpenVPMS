@@ -29,7 +29,6 @@ import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
@@ -53,7 +52,7 @@ public class PatientPrescriptionEditor extends PatientActEditor {
         if (act.isNew()) {
             calculateEndTime();
         }
-        addStartEndTimeListeners();
+        addStartEndTimeListeners(); // startTime is read-only so only the end time listener will trigger
     }
 
     /**
@@ -71,19 +70,6 @@ public class PatientPrescriptionEditor extends PatientActEditor {
                     onProductChanged();
                 }
             });
-        }
-
-    }
-
-    /**
-     * Invoked when the start time changes. Sets the value to end time if start time > end time.
-     */
-    @Override
-    protected void onStartTimeChanged() {
-        try {
-            calculateEndTime();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
         }
     }
 

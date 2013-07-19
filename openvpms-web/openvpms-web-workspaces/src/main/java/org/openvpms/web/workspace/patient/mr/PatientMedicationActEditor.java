@@ -157,6 +157,16 @@ public class PatientMedicationActEditor extends PatientActEditor {
     }
 
     /**
+     * Sets the dispensing instructions label.
+     *
+     * @param instructions the dispensing instructions
+     */
+    public void setLabel(String instructions) {
+        Property label = getProperty("label");
+        label.setValue(instructions);
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -205,8 +215,8 @@ public class PatientMedicationActEditor extends PatientActEditor {
         if (product != null) {
             IMObjectBean bean = new IMObjectBean(product);
             if (bean.hasNode("dispInstructions")) {
-                Property label = getProperty("label");
-                label.setValue(bean.getValue("dispInstructions"));
+                String dispInstructions = bean.getString("dispInstructions");
+                setLabel(dispInstructions);
             }
         }
         updateDispensingUnits(product);
