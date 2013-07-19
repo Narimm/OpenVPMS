@@ -1,26 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.Color;
-import org.openvpms.web.component.echo.ColorSelect;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.colour.ColorSelect;
 import org.openvpms.web.echo.colour.ColourHelper;
 
 import java.beans.PropertyChangeEvent;
@@ -30,8 +28,7 @@ import java.beans.PropertyChangeListener;
 /**
  * Binds a property to a <tt>ColorSelect</tt>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BoundColorSelect extends ColorSelect {
 
@@ -39,6 +36,10 @@ public class BoundColorSelect extends ColorSelect {
      * The property binder.
      */
     private final Binder binder;
+
+    /**
+     * The property change listener.
+     */
     private PropertyChangeListener listener;
 
 
