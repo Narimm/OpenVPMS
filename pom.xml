@@ -55,7 +55,7 @@
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-web</artifactId>
+            <artifactId>openvpms-web-app</artifactId>
             <version>${pom.version}</version>
             <type>war</type>
         </dependency>
