@@ -51,11 +51,6 @@ import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PAR
  */
 public class RecordBrowser extends TabbedBrowser<Act> {
 
-    /**
-     * The reminder statuses to query.
-     */
-    private static final ActStatuses STATUSES = new ActStatuses(ReminderArchetypes.REMINDER);
-
 
     /**
      * The document archetypes.
@@ -115,6 +110,21 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     private static final SortConstraint[] DEFAULT_SORT
             = new SortConstraint[]{new NodeSortConstraint("startTime", false)};
+
+    /**
+     * The reminder statuses to query.
+     */
+    private static final ActStatuses REMINDER_STATUSES = new ActStatuses(ReminderArchetypes.REMINDER);
+
+    /**
+     * The problem statuses to query.
+     */
+    private static final ActStatuses PROBLEM_STATUSES;
+
+    static {
+        PROBLEM_STATUSES = new ActStatuses(PatientArchetypes.CLINICAL_PROBLEM);
+        PROBLEM_STATUSES.setDefault((String) null);
+    }
 
 
     /**
@@ -216,7 +226,9 @@ public class RecordBrowser extends TabbedBrowser<Act> {
      */
     protected Browser<Act> createProblemBrowser(Party patient, LayoutContext layout) {
         String[] shortNames = {PatientArchetypes.CLINICAL_PROBLEM};
-        DefaultActQuery<Act> query = new DefaultActQuery<Act>(patient, "patient", PATIENT_PARTICIPATION, shortNames);
+        DefaultActQuery<Act> query = new DefaultActQuery<Act>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
+                                                              PROBLEM_STATUSES);
+        query.setStatus(null);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return BrowserFactory.create(query, layout);
     }
@@ -246,7 +258,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         // act.patientReminder and act.patientAlert
         String[] shortNames = {ReminderArchetypes.REMINDER, PatientArchetypes.ALERT};
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
-                                                              STATUSES);
+                                                              REMINDER_STATUSES);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         IMObjectTableModel<Act> model = new ReminderActTableModel(query.getShortNames(), layout);
         return new DefaultIMObjectTableBrowser<Act>(query, model, layout);
