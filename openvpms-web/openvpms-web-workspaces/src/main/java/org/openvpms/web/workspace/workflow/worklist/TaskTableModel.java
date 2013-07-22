@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -87,12 +87,12 @@ public class TaskTableModel extends ScheduleTableModel {
             String patient = event.getString(ScheduleEvent.PATIENT_NAME);
             String status = event.getString(ScheduleEvent.ACT_STATUS_NAME);
             if (patient == null) {
-                text = Messages.get("workflow.scheduling.task.table.customer",
-                                    customer, status);
+                text = Messages.format("workflow.scheduling.task.table.customer",
+                                       customer, status);
             } else {
-                text = Messages.get(
-                    "workflow.scheduling.task.table.customerpatient",
-                    customer, patient, status);
+                text = Messages.format(
+                        "workflow.scheduling.task.table.customerpatient",
+                        customer, patient, status);
             }
         }
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);

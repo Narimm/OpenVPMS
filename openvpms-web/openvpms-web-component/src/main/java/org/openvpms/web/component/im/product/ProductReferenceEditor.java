@@ -103,7 +103,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
     protected void onUpdated(Product product) {
         if (product != null && hasSuppliers(product)) {
             List<EntityRelationship> relationships
-                = getSupplierRelationships(product);
+                    = getSupplierRelationships(product);
             if (relationships.isEmpty()) {
                 setProductSupplier(null);
             } else if (relationships.size() == 1) {
@@ -142,7 +142,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
             Party patient = editor.getPatient();
             if (patient != null) {
                 String species = (String) IMObjectHelper.getValue(
-                    patient, "species");
+                        patient, "species");
                 if (species != null) {
                     productQuery.setSpecies(species);
                 }
@@ -209,11 +209,11 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
         if (!rules.isSuppliedBy(editor.getSupplier(), product)
             && (otherSupplier = getSupplier(product)) != null) {
             String title = Messages.get("product.othersupplier.title");
-            String message = Messages.get("product.othersupplier.message",
-                                          product.getName(),
-                                          otherSupplier.getName());
+            String message = Messages.format("product.othersupplier.message",
+                                             product.getName(),
+                                             otherSupplier.getName());
             final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
+                    = new ConfirmationDialog(title, message);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
@@ -275,13 +275,13 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
             // preferred one selected
             EntityRelationship preferred = getPreferred(relationships);
             Query<EntityRelationship> query
-                = new ListQuery<EntityRelationship>(relationships, "entityRelationship.productSupplier",
-                                                    EntityRelationship.class);
+                    = new ListQuery<EntityRelationship>(relationships, "entityRelationship.productSupplier",
+                                                        EntityRelationship.class);
             String title = Messages.get("product.supplier.type");
             LayoutContext context = getLayoutContext();
             final Browser<EntityRelationship> browser = new ProductSupplierBrowser(query, context);
             final BrowserDialog<EntityRelationship> dialog
-                = new BrowserDialog<EntityRelationship>(title, browser, context.getHelpContext());
+                    = new BrowserDialog<EntityRelationship>(title, browser, context.getHelpContext());
 
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -308,7 +308,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      *         or {@code null} if there are no relationships
      */
     private EntityRelationship getPreferred(
-        List<EntityRelationship> relationships) {
+            List<EntityRelationship> relationships) {
         EntityRelationship result = null;
         if (!relationships.isEmpty()) {
             Predicate preferred = new NodeEquals("preferred", true);
@@ -338,7 +338,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
      * Browser to display a product supplier relationships.
      */
     private static class ProductSupplierBrowser
-        extends TableBrowser<EntityRelationship> {
+            extends TableBrowser<EntityRelationship> {
 
         /**
          * Constructs a TableBrowser} that queries objects using the specified query, displaying them in the table.

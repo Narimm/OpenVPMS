@@ -46,6 +46,6 @@ public class FromAddressFormatter extends AbstractAddressFormatter {
      */
     public String format(Contact contact) {
         Party party = contact.getParty();
-        return Messages.get("mail.contact.from", party.getName(), getAddress(contact));
+        return Messages.format("mail.contact.from", party.getName(), getAddress(contact));
     }
 }

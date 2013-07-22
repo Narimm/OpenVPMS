@@ -102,8 +102,8 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         String status = act.getStatus();
         if (POSTED.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();
-            String title = Messages.get("supplier.account.reverse.title", name);
-            String message = Messages.get("supplier.account.reverse.message", name);
+            String title = Messages.format("supplier.account.reverse.title", name);
+            String message = Messages.format("supplier.account.reverse.message", name);
             HelpContext help = getHelpContext().subtopic("reverse");
             final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
             dialog.addWindowPaneListener(new PopupDialogListener() {

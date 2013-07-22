@@ -4,6 +4,22 @@
 <%@ page import="org.openvpms.web.resource.subscription.SubscriptionHelper" %>
 <%@ page import="org.openvpms.web.resource.version.Version" %>
 <%@ page import="org.openvpms.web.system.ServiceHelper" %>
+<%--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  --%>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
@@ -217,7 +233,7 @@
 <div class="footer">
     <div><%=SubscriptionHelper.formatSubscription(ServiceHelper.getArchetypeService())%>
     </div>
-    <div class="version"><%=Messages.get("openvpms.version", Version.VERSION, Version.REVISION)%>
+    <div class="version"><%=Messages.format("openvpms.version", Version.VERSION, Version.REVISION)%>
     </div>
 </div>
 

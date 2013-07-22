@@ -173,7 +173,7 @@ public class DefaultEditorQueue implements EditorQueue {
                 if (weight == null) {
                     weight = Messages.get("patient.noweight");
                 }
-                title = Messages.get("patient.medication.dialog.title", title, name, weight);
+                title = Messages.format("patient.medication.dialog.title", title, name, weight);
             }
         }
         return title;

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -80,8 +80,8 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
     protected <T extends IMObject> void deactivate(final T object, final IMObjectDeletionListener<T> listener,
                                                    HelpContext help) {
         String type = DescriptorHelper.getDisplayName(object);
-        String title = Messages.get("imobject.deactivate.title", type);
-        String message = Messages.get("imobject.deactivate.message", object.getName());
+        String title = Messages.format("imobject.deactivate.title", type);
+        String message = Messages.format("imobject.deactivate.message", object.getName());
         final ConfirmationDialog dialog = new ConfirmationDialog(title, message, true, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
@@ -99,8 +99,8 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
      * @param help   the help context
      */
     protected <T extends IMObject> void deactivated(T object, HelpContext help) {
-        String message = Messages.get("imobject.delete.deactivated", DescriptorHelper.getDisplayName(object),
-                                      object.getName());
+        String message = Messages.format("imobject.delete.deactivated", DescriptorHelper.getDisplayName(object),
+                                         object.getName());
         ErrorDialog.show(message, help);
     }
 
@@ -115,9 +115,9 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
     private <T extends IMObject> void confirmDelete(final T object, final IMObjectDeletionListener<T> listener,
                                                     String messageKey, final HelpContext help) {
         String type = DescriptorHelper.getDisplayName(object);
-        String title = Messages.get("imobject.delete.title", type);
+        String title = Messages.format("imobject.delete.title", type);
         String name = (object.getName() != null) ? object.getName() : type;
-        String message = Messages.get(messageKey, name);
+        String message = Messages.format(messageKey, name);
         final ConfirmationDialog dialog = new ConfirmationDialog(title, message, true, help);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override

@@ -175,8 +175,8 @@ public class CustomerPaymentEditor extends PaymentEditor {
                 valid = false;
                 // need to pre-format the amounts as the Messages uses the browser's locale which may have different
                 // currency format
-                String msg = Messages.get("customer.payment.amountMismatch",
-                                          NumberFormatter.formatCurrency(expectedAmount));
+                String msg = Messages.format("customer.payment.amountMismatch",
+                                             NumberFormatter.formatCurrency(expectedAmount));
                 validator.add(property, new ValidatorError(msg));
             }
         }

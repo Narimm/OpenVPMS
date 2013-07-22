@@ -143,9 +143,9 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
             IPage<ObjectSet> set = new DepositQuery(object).query();
             Context context = getContext();
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context);
-            String title = Messages.get("imobject.print.title", getArchetypes().getDisplayName());
+            String title = Messages.format("imobject.print.title", getArchetypes().getDisplayName());
             InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(
-                title, printer, context, getHelpContext().subtopic("print"));
+                    title, printer, context, getHelpContext().subtopic("print"));
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

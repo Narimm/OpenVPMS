@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.property;
 
@@ -124,7 +122,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
                     if (!property.isRequired()) {
                         result = null;
                     } else {
-                        String msg = Messages.get("property.error.required", property.getDisplayName());
+                        String msg = Messages.format("property.error.required", property.getDisplayName());
                         throw new PropertyException(property, msg);
                     }
                 } else {
@@ -231,7 +229,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
                 formatDate = DateFormatter.formatDateTime(date, false);
                 formatMin = DateFormatter.formatDateTime(min, false);
             }
-            String msg = Messages.get("property.error.minDate", formatDate, formatMin);
+            String msg = Messages.format("property.error.minDate", formatDate, formatMin);
             throw new PropertyException(getProperty(), msg);
         }
         if (max != null && date.getTime() > max.getTime()) {
@@ -244,7 +242,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
                 formatDate = DateFormatter.formatDateTime(date, false);
                 formatMax = DateFormatter.formatDateTime(max, false);
             }
-            String msg = Messages.get("property.error.maxDate", formatDate, formatMax);
+            String msg = Messages.format("property.error.maxDate", formatDate, formatMax);
             throw new PropertyException(getProperty(), msg);
         }
     }
@@ -256,7 +254,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      * @return a new property exception
      */
     protected PropertyException getException(Throwable cause) {
-        String message = Messages.get("property.error.invalidtime", getProperty().getDisplayName());
+        String message = Messages.format("property.error.invalidtime", getProperty().getDisplayName());
         return new PropertyException(getProperty(), message, cause);
     }
 

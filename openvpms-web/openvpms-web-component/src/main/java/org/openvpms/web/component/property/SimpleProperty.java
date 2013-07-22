@@ -476,7 +476,7 @@ public class SimpleProperty extends AbstractProperty {
             errors = validationErrors;
         } else if (isRequired() && getValue() == null) {
             validationErrors = new ArrayList<ValidatorError>();
-            validationErrors.add(new ValidatorError(this, Messages.get("property.error.required", getDisplayName())));
+            validationErrors.add(new ValidatorError(this, Messages.format("property.error.required", getDisplayName())));
             errors = validationErrors;
         }
         if (errors != null) {

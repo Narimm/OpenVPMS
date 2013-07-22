@@ -152,8 +152,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     protected void onCopy() {
         Act object = getObject();
         try {
-            String title = Messages.get("customer.estimate.copy.title",
-                                        object.getTitle());
+            String title = Messages.format("customer.estimate.copy.title",
+                                           object.getTitle());
             Act copy = rules.copy(object, title);
             setObject(copy);
             CRUDWindowListener<Act> listener = getListener();
@@ -191,7 +191,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
                 dialog.show();
             }
         } else {
-            ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         }
     }
 

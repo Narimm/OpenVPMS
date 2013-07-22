@@ -221,7 +221,7 @@ public abstract class SingleIMObjectCollectionEditor
             component = editor.getComponent();
             mapObject();
         } else {
-            String message = Messages.get("imobject.create.failed", shortName);
+            String message = Messages.format("imobject.create.failed", shortName);
             Label label = LabelFactory.create();
             label.setText(message);
             component = label;

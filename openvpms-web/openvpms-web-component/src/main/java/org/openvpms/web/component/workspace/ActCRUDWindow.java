@@ -139,8 +139,8 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
             try {
                 HelpContext help = getHelpContext().subtopic("post");
                 String displayName = getArchetypes().getDisplayName();
-                String title = Messages.get("act.post.title", displayName);
-                String message = Messages.get("act.post.message", displayName);
+                String title = Messages.format("act.post.title", displayName);
+                String message = Messages.format("act.post.message", displayName);
                 final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
@@ -251,8 +251,8 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
         ArchetypeDescriptor descriptor = getArchetypeDescriptor();
         String name = (descriptor != null) ? descriptor.getDisplayName() : act.getArchetypeId().getShortName();
         String status = act.getStatus();
-        String title = Messages.get(titleKey, name);
-        String message = Messages.get(messageKey, name, status);
+        String title = Messages.format(titleKey, name);
+        String message = Messages.format(messageKey, name, status);
         ErrorDialog.show(title, message);
     }
 

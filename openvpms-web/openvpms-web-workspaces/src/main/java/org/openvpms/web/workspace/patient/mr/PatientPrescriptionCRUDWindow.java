@@ -181,7 +181,7 @@ public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
     protected void onCancel() {
         final Act object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         } else if (!getActions().canDispense(object)) {
             ErrorDialog.show(Messages.get("patient.prescription.nocancel"));
         } else {

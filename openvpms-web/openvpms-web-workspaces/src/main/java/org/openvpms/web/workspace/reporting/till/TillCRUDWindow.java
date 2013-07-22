@@ -238,10 +238,10 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             IPage<ObjectSet> set = new TillBalanceQuery(object).query();
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
             String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
-            String title = Messages.get("imobject.print.title", displayName);
+            String title = Messages.format("imobject.print.title", displayName);
             HelpContext help = getHelpContext().subtopic("print");
             InteractiveIMPrinter<ObjectSet> iPrinter =
-                new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(), help);
+                    new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(), help);
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {
@@ -312,7 +312,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         adjustment.setDescription(Messages.get("till.adjustment.description"));
         ActBean actBean = new ActBean(act);
         IMObjectReference till
-            = actBean.getParticipantRef("participation.till");
+                = actBean.getParticipantRef("participation.till");
         ActBean adjBean = new ActBean(adjustment);
         if (till != null) {
             adjBean.setParticipant("participation.till", till);

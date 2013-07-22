@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -106,7 +104,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param events the events
      */
     protected ScheduleEventGrid createEventGrid(
-        Date date, Map<Entity, List<PropertySet>> events) {
+            Date date, Map<Entity, List<PropertySet>> events) {
         Set<Entity> schedules = events.keySet();
         AppointmentGrid grid;
         if (schedules.size() == 1) {
@@ -162,8 +160,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
         Component column = ColumnFactory.create("WideCellSpacing", title, row);
         TableEx table = getTable();
         SplitPane component = SplitPaneFactory.create(
-            SplitPane.ORIENTATION_VERTICAL,
-            "AppointmentBrowser", column);
+                SplitPane.ORIENTATION_VERTICAL,
+                "AppointmentBrowser", column);
         if (getScheduleView() != null && table != null) {
             addTable(table, component);
         }
@@ -183,14 +181,14 @@ public class AppointmentBrowser extends ScheduleBrowser {
 
         String text;
         if (viewName != null && schedName != null) {
-            text = Messages.get(
-                "workflow.scheduling.appointment.viewscheduledate",
-                viewName, schedName, date);
+            text = Messages.format(
+                    "workflow.scheduling.appointment.viewscheduledate",
+                    viewName, schedName, date);
         } else if (viewName != null) {
-            text = Messages.get(
-                "workflow.scheduling.appointment.viewdate", viewName, date);
+            text = Messages.format(
+                    "workflow.scheduling.appointment.viewdate", viewName, date);
         } else {
-            text = Messages.get("workflow.scheduling.appointment.date", date);
+            text = Messages.format("workflow.scheduling.appointment.date", date);
         }
         title.setText(text);
     }
@@ -203,8 +201,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @return view a new grid view, based on the time range
      */
     private AppointmentGrid createGridView(
-        AppointmentGrid grid,
-        AppointmentQuery.TimeRange timeRange) {
+            AppointmentGrid grid,
+            AppointmentQuery.TimeRange timeRange) {
         int startMins = timeRange.getStartMins();
         int endMins = timeRange.getEndMins();
         if (startMins < grid.getStartMins()) {

@@ -87,8 +87,8 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
         } else {
             String name = getArchetypeDescriptor().getDisplayName();
             String status = act.getStatus();
-            String title = Messages.get("act.nodelete.title", name);
-            String message = Messages.get("act.nodelete.message", name, status);
+            String title = Messages.format("act.nodelete.title", name);
+            String message = Messages.format("act.nodelete.message", name, status);
             ErrorDialog.show(title, message);
         }
     }

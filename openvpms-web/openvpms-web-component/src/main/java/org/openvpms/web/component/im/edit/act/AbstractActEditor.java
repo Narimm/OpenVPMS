@@ -465,7 +465,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
             if (start.getTime() > end.getTime()) {
                 String startName = getDisplayName(START_TIME);
                 String endName = getDisplayName(END_TIME);
-                String message = Messages.get("act.validation.startGreaterThanEnd", startName, endName);
+                String message = Messages.format("act.validation.startGreaterThanEnd", startName, endName);
                 validator.add(this, new ValidatorError(message));
                 result = false;
             }

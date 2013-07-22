@@ -217,7 +217,7 @@ public class CustomerMailContext extends ContextMailContext {
             Party party = contact.getParty();
             if (TypeHelper.isA(party, SupplierArchetypes.SUPPLIER_VET, SupplierArchetypes.SUPPLIER_VET_PRACTICE)) {
                 String type = DescriptorHelper.getDisplayName(party);
-                return Messages.get("mail.contact.to.referring", party.getName(), getAddress(contact), type);
+                return Messages.format("mail.contact.to.referring", party.getName(), getAddress(contact), type);
             }
             return super.format(contact);
         }

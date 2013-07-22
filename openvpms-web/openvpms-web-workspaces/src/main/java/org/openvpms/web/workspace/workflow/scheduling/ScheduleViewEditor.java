@@ -201,7 +201,7 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
          * Pops up a dialog to test the expression.
          */
         private void onTest() {
-            String title = Messages.get("editor.edit.title", editor.getDisplayName());
+            String title = Messages.format("editor.edit.title", editor.getDisplayName());
             ScheduleViewExpressionDialog dialog = new ScheduleViewExpressionDialog(title, editor,
                                                                                    help.subtopic("test"));
             dialog.show();

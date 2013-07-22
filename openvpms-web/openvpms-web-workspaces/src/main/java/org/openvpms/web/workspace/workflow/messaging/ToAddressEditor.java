@@ -245,9 +245,9 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
             String message;
             String notFound = selector.getFirstNotFound();
             if (notFound != null) {
-                message = Messages.get("workflow.message.invaliduserorgroup", notFound);
+                message = Messages.format("workflow.message.invaliduserorgroup", notFound);
             } else {
-                message = Messages.get("property.error.required", property.getDisplayName());
+                message = Messages.format("property.error.required", property.getDisplayName());
             }
             validator.add(property, new ValidatorError(property, message));
         }

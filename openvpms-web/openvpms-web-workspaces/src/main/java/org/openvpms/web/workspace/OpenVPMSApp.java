@@ -225,7 +225,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * Updates the window title with the customer name.
      */
     private void updateTitle() {
-        window.setTitle(Messages.get("app.title", location, customer));
+        window.setTitle(Messages.format("app.title", location, customer));
     }
 
     /**

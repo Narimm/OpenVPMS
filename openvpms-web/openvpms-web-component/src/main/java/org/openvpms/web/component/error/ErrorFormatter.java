@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.error;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -49,7 +50,7 @@ public class ErrorFormatter {
             }
         }
         String key = error.getClass().getName() + ".formatted";
-        return Messages.get(key, archetypeName, nodeName, error.getMessage());
+        return Messages.format(key, archetypeName, nodeName, error.getMessage());
     }
 
     /**
@@ -92,7 +93,7 @@ public class ErrorFormatter {
         String result = null;
         if (displayName != null) {
             String key = exception.getClass().getName() + ".formatted";
-            result = Messages.format(key, true, displayName);
+            result = Messages.formatNull(key, displayName);
         }
         if (result == null) {
             result = Messages.get(exception.getClass().getName(), true);

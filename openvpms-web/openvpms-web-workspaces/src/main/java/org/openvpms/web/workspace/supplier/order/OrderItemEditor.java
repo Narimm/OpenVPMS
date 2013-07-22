@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -80,7 +78,7 @@ public class OrderItemEditor extends SupplierStockItemEditor {
         super(act, parent, context);
         if (!TypeHelper.isA(act, "act.supplierOrderItem")) {
             throw new IllegalArgumentException(
-                "Invalid act type: " + act.getArchetypeId().getShortName());
+                    "Invalid act type: " + act.getArchetypeId().getShortName());
         }
         if (parent != null) {
             String status = parent.getStatus();
@@ -141,7 +139,7 @@ public class OrderItemEditor extends SupplierStockItemEditor {
             if (cancelled.compareTo(quantity) > 0) {
                 valid = false;
                 Property property = getProperty(QUANTITY);
-                String message = Messages.get("supplier.order.invalidCancelledQuantity", quantity, cancelled);
+                String message = Messages.format("supplier.order.invalidCancelledQuantity", quantity, cancelled);
                 ValidatorError error = new ValidatorError(property, message);
                 validator.add(property, error);
             }

@@ -138,9 +138,9 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
             Act reminder = browser.getSelected();
             if (reminder != null) {
                 ReminderProcessor processor = new ReminderProcessor(
-                    reminder.getActivityStartTime(), reminder.getActivityEndTime(),
-                    reminder.getActivityStartTime(), ServiceHelper.getArchetypeService(),
-                    new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService()));
+                        reminder.getActivityStartTime(), reminder.getActivityEndTime(),
+                        reminder.getActivityStartTime(), ServiceHelper.getArchetypeService(),
+                        new PatientRules(ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService()));
                 IMObjectBean bean = new IMObjectBean(reminder);
                 int reminderCount = bean.getInt("reminderCount");
                 ReminderEvent event = processor.process(reminder, reminderCount);
@@ -156,13 +156,13 @@ public class ReminderWorkspace extends AbstractReportingWorkspace<Act> {
                         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, reminder,
                                                                                              context);
                         InteractivePrinter printer = new InteractivePrinter(
-                            new IMObjectReportPrinter<Act>(reminder, locator, context), context, help);
+                                new IMObjectReportPrinter<Act>(reminder, locator, context), context, help);
                         printer.setMailContext(mailContext);
                         printer.print();
                     }
                 } else {
-                    ErrorHelper.show(Messages.get("reporting.reminder.print.notemplate",
-                                                  event.getReminderType().getName(), reminderCount));
+                    ErrorHelper.show(Messages.format("reporting.reminder.print.notemplate",
+                                                     event.getReminderType().getName(), reminderCount));
                 }
             }
         } catch (OpenVPMSException exception) {

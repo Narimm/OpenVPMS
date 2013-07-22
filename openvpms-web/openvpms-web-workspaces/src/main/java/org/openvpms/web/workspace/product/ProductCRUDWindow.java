@@ -115,8 +115,8 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
             if (StringUtils.isEmpty(name)) {
                 name = displayName;
             }
-            String title = Messages.get("product.information.copy.title", displayName);
-            String message = Messages.get("product.information.copy.message", name);
+            String title = Messages.format("product.information.copy.title", displayName);
+            String message = Messages.format("product.information.copy.message", name);
             HelpContext help = getHelpContext().subtopic("copy");
             final ConfirmationDialog dialog = new ConfirmationDialog(title, message, help);
             dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -137,7 +137,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     private void copy(Product product) {
         try {
             ProductRules rules = new ProductRules();
-            String name = Messages.get("product.copy.name", product.getName());
+            String name = Messages.format("product.copy.name", product.getName());
             Product copy = rules.copy(product, name);
 
             // NOTE: can't use the parent edit(IMObject) method as it relies on the object being edited
@@ -147,7 +147,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
             IMObjectEditor editor = createEditor(copy, context);
             edit(editor);
         } catch (OpenVPMSException exception) {
-            String title = Messages.get("product.information.copy.failed", getArchetypeDescriptor().getDisplayName());
+            String title = Messages.format("product.information.copy.failed", getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
     }
