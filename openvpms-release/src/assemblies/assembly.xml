@@ -32,7 +32,7 @@
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <includes>
-                <include>org.openvpms:openvpms-web</include>
+                <include>org.openvpms:openvpms-web-app</include>
             </includes>
             <outputDirectory>webapps</outputDirectory>
             <outputFileNameMapping>openvpms.war</outputFileNameMapping>
