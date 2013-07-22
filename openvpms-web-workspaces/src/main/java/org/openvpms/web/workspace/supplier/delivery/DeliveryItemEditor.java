@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -135,7 +133,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
         boolean result = true;
         Property property = getProperty("product");
         if (getProductRef() == null) {
-            String message = Messages.get("property.error.required", property.getDisplayName());
+            String message = Messages.format("property.error.required", property.getDisplayName());
             validator.add(property, new ValidatorError(property, message));
             result = false;
         }
@@ -153,7 +151,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
         Property property = getProperty("packageSize");
         Number size = (Number) property.getValue();
         if (size.intValue() <= 0) {
-            String message = Messages.get("property.error.required", property.getDisplayName());
+            String message = Messages.format("property.error.required", property.getDisplayName());
             validator.add(property, new ValidatorError(property, message));
             result = false;
         }
@@ -171,7 +169,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
         Property property = getProperty("packageUnits");
         String units = (String) property.getValue();
         if (units == null) {
-            String message = Messages.get("property.error.required", property.getDisplayName());
+            String message = Messages.format("property.error.required", property.getDisplayName());
             validator.add(property, new ValidatorError(property, message));
             result = false;
         }

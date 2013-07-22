@@ -177,7 +177,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
         LayoutContext layout = new DefaultLayoutContext(context, help.subtopic("select"));
         Browser<T> browser = createBrowser(query, layout);
         if (title == null) {
-            title = Messages.get("imobject.select.title", type);
+            title = Messages.format("imobject.select.title", type);
         }
         String[] buttons = isRequired() ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
         boolean addNew = (createTask != null);

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.table;
@@ -287,13 +285,13 @@ public class TableNavigator extends Row {
         Label page = LabelFactory.create("navigation.page");
 
         first = ButtonFactory.create(
-            null, "navigation.first", new ActionListener() {
+                null, "navigation.first", new ActionListener() {
             public void onAction(ActionEvent event) {
                 first();
             }
         });
         previous = ButtonFactory.create(
-            null, "navigation.previous", new ActionListener() {
+                null, "navigation.previous", new ActionListener() {
             public void onAction(ActionEvent event) {
                 previous();
             }
@@ -311,14 +309,14 @@ public class TableNavigator extends Row {
         pageCount = LabelFactory.create();
 
         next = ButtonFactory.create(
-            null, "navigation.next", new ActionListener() {
+                null, "navigation.next", new ActionListener() {
             public void onAction(ActionEvent event) {
                 next();
             }
         });
 
         last = ButtonFactory.create(
-            null, "navigation.last", new ActionListener() {
+                null, "navigation.last", new ActionListener() {
             public void onAction(ActionEvent event) {
                 last();
             }
@@ -393,9 +391,9 @@ public class TableNavigator extends Row {
     private void setTotal(int pages) {
         String total;
         if (getModel().isEstimatedActual()) {
-            total = Messages.get("navigation.page.total", pages);
+            total = Messages.format("navigation.page.total", pages);
         } else {
-            total = Messages.get("navigation.page.totalunknown", pages);
+            total = Messages.format("navigation.page.totalunknown", pages);
         }
         pageCount.setText(total);
     }

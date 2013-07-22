@@ -171,7 +171,7 @@ public class UserEditor extends AbstractIMObjectEditor {
             if (index != -1) {
                 ComponentState passwordField = set.getComponents().get(index);
                 ComponentState confirmField = new ComponentState(BoundTextComponentFactory.createPassword(confirm));
-                String label = Messages.get("admin.user.password.confirm", passwordField.getDisplayName());
+                String label = Messages.format("admin.user.password.confirm", passwordField.getDisplayName());
                 confirmField.setDisplayName(label);
                 set.add(index + 1, confirmField);
             }

@@ -156,9 +156,9 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         if (!TypeHelper.isA(act, CustomerAccountArchetypes.OPENING_BALANCE, CustomerAccountArchetypes.CLOSING_BALANCE)
             && FinancialActStatus.POSTED.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();
-            String title = Messages.get("customer.account.reverse.title", name);
-            String message = Messages.get("customer.account.reverse.message",
-                                          name);
+            String title = Messages.format("customer.account.reverse.title", name);
+            String message = Messages.format("customer.account.reverse.message",
+                                             name);
             HelpContext reverse = getHelpContext().subtopic("reverse");
             final ConfirmationDialog dialog = new ConfirmationDialog(title, message, reverse);
             dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -178,12 +178,12 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     protected void onAdjust() {
         String[] shortNames = {"act.customerAccountDebitAdjust",
-            "act.customerAccountCreditAdjust",
-            "act.customerAccountInitialBalance",
-            "act.customerAccountBadDebt"};
+                               "act.customerAccountCreditAdjust",
+                               "act.customerAccountInitialBalance",
+                               "act.customerAccountBadDebt"};
         Archetypes<FinancialAct> archetypes = Archetypes.create(
-            shortNames, FinancialAct.class,
-            Messages.get("customer.account.createtype"));
+                shortNames, FinancialAct.class,
+                Messages.get("customer.account.createtype"));
         onCreate(archetypes);
     }
 
@@ -199,20 +199,20 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
                 BigDecimal actual = rules.getBalance(customer);
                 if (expected.compareTo(actual) == 0) {
                     String title = Messages.get(
-                        "customer.account.balancecheck.title");
+                            "customer.account.balancecheck.title");
                     String message = Messages.get(
-                        "customer.account.balancecheck.ok");
+                            "customer.account.balancecheck.ok");
                     InformationDialog.show(title, message);
                 } else {
-                    String message = Messages.get(
-                        "customer.account.balancecheck.error",
-                        NumberFormatter.formatCurrency(expected), NumberFormatter.formatCurrency(actual));
+                    String message = Messages.format(
+                            "customer.account.balancecheck.error",
+                            NumberFormatter.formatCurrency(expected), NumberFormatter.formatCurrency(actual));
                     confirmRegenerate(message, customer);
                 }
             } catch (CustomerAccountRuleException exception) {
-                String message = Messages.get(
-                    "customer.account.balancecheck.acterror",
-                    exception.getMessage());
+                String message = Messages.format(
+                        "customer.account.balancecheck.acterror",
+                        exception.getMessage());
                 confirmRegenerate(message, customer);
             }
         }
@@ -241,9 +241,9 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
             CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
             rules.reverse(act, new Date(), Messages.get("customer.account.reverse.notes"));
         } catch (OpenVPMSException exception) {
-            String title = Messages.get(
-                "customer.account.reverse.failed",
-                getArchetypeDescriptor().getDisplayName());
+            String title = Messages.format(
+                    "customer.account.reverse.failed",
+                    getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
         onRefresh(act);

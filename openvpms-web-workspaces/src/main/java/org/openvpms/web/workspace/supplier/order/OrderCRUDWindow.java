@@ -137,7 +137,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     @Override
     protected void onCreated(final FinancialAct act) {
-        String title = Messages.get("supplier.order.selectdetails.title", DescriptorHelper.getDisplayName(act));
+        String title = Messages.format("supplier.order.selectdetails.title", DescriptorHelper.getDisplayName(act));
         final SelectStockDetailsDialog dialog = new SelectStockDetailsDialog(title, getContext(),
                                                                              getHelpContext().subtopic("new"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -160,7 +160,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             OrderRules rules = SupplierHelper.createOrderRules(getContext().getPractice());
             FinancialAct object = getObject();
             FinancialAct copy = rules.copyOrder(object);
-            String notes = Messages.get("supplier.order.copy.notes", object.getTitle());
+            String notes = Messages.format("supplier.order.copy.notes", object.getTitle());
             copy.setTitle(notes);
             edit(copy);
         } catch (OpenVPMSException exception) {
@@ -246,7 +246,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         processor.setListener(new BatchProcessorListener() {
             public void completed() {
                 dialog.close();
-                String message = Messages.get("supplier.order.generated.message", processor.getOrders());
+                String message = Messages.format("supplier.order.generated.message", processor.getOrders());
                 InformationDialog.show(title, message);
                 onRefresh(null);
             }

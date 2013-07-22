@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -70,9 +70,9 @@ public class SaveHelperTestCase extends AbstractAppTest {
 
         // verify the ErrorHandler was called
         String lastName = bean.getDisplayName("lastName");
-        String expected = Messages.get("org.openvpms.component.business.service.archetype.ValidationError.formatted",
-                                       bean.getDisplayName(), lastName,
-                                       Messages.get("property.error.required", lastName));
+        String expected = Messages.format("org.openvpms.component.business.service.archetype.ValidationError.formatted",
+                                          bean.getDisplayName(), lastName,
+                                          Messages.format("property.error.required", lastName));
         assertEquals(1, errors.size());
         assertEquals(expected, errors.get(0));
 
@@ -90,7 +90,7 @@ public class SaveHelperTestCase extends AbstractAppTest {
         remove(customer);
         editor.getProperty("lastName").setValue("ZFoo2"); // need to modify it in order for save to proceed
         assertFalse(SaveHelper.save(editor));
-        expected = Messages.get("imobject.notfound", bean.getDisplayName());
+        expected = Messages.format("imobject.notfound", bean.getDisplayName());
         assertEquals(2, errors.size());
         assertEquals(expected, errors.get(0)); // Only care about the first exception. Second is a rollback exception
     }
@@ -111,8 +111,8 @@ public class SaveHelperTestCase extends AbstractAppTest {
 
         // verify the ErrorHandler was called
         String lastName = bean.getDisplayName("lastName");
-        String expected = Messages.get("org.openvpms.component.business.service.archetype.ValidationError.formatted",
-                                       bean.getDisplayName(), lastName, "value is required");
+        String expected = Messages.format("org.openvpms.component.business.service.archetype.ValidationError.formatted",
+                                          bean.getDisplayName(), lastName, "value is required");
         assertEquals(1, errors.size());
         assertEquals(expected, errors.get(0));
 
@@ -128,7 +128,7 @@ public class SaveHelperTestCase extends AbstractAppTest {
         // delete the object, and verify a subsequent save fails
         remove(customer);
         assertFalse(SaveHelper.save(customer));
-        expected = Messages.get("imobject.notfound", bean.getDisplayName());
+        expected = Messages.format("imobject.notfound", bean.getDisplayName());
         assertEquals(1, errors.size());
         assertEquals(expected, errors.get(0));
     }
@@ -153,7 +153,7 @@ public class SaveHelperTestCase extends AbstractAppTest {
         assertFalse(SaveHelper.delete(object));
 
         IMObjectBean bean = new IMObjectBean(object);
-        String expected = Messages.get("imobject.notfound", bean.getDisplayName());
+        String expected = Messages.format("imobject.notfound", bean.getDisplayName());
         assertEquals(1, errors.size());
         assertEquals(expected, errors.get(0));
     }

@@ -91,7 +91,7 @@ public class ErrorHelper {
         String message = ErrorFormatter.format(error, displayName);
         String logerror = message;
         if (context != null) {
-            logerror = Messages.get("logging.error.messageandcontext", message, context);
+            logerror = Messages.format("logging.error.messageandcontext", message, context);
         }
         log.error(logerror, error);
         ErrorHandler.getInstance().error(title, message, error, null);

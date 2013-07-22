@@ -315,7 +315,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             } else {
                 type = Messages.get("reporting.statements.print.nonOverdue");
             }
-            String title = Messages.get("imobject.print.title", type);
+            String title = Messages.format("imobject.print.title", type);
             HelpContext help = getHelpContext().subtopic("report");
             InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(),
                                                                                            help);

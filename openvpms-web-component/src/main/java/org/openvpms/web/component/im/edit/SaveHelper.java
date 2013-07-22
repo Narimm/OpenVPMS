@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -73,8 +71,8 @@ public class SaveHelper {
             IMObject object = editor.getObject();
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String user = (authentication != null) ? authentication.getName() : null;
-            String context = Messages.get("logging.error.editcontext", object.getObjectReference(),
-                                          editor.getClass().getName(), user);
+            String context = Messages.format("logging.error.editcontext", object.getObjectReference(),
+                                             editor.getClass().getName(), user);
             error(editor.getDisplayName(), context, exception);
         }
         return (result != null) && result;
@@ -246,7 +244,7 @@ public class SaveHelper {
      */
     private static void error(IMObject object, Throwable exception) {
         String displayName = DescriptorHelper.getDisplayName(object);
-        String context = Messages.get("imobject.save.failed", object.getObjectReference());
+        String context = Messages.format("imobject.save.failed", object.getObjectReference());
         error(displayName, context, exception);
     }
 
@@ -260,10 +258,10 @@ public class SaveHelper {
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     private static void error(String displayName, String context, Throwable exception) {
         Throwable cause = ExceptionHelper.getRootCause(exception);
-        String title = Messages.get("imobject.save.failed", displayName);
+        String title = Messages.format("imobject.save.failed", displayName);
         if (cause instanceof ObjectNotFoundException) {
             // Don't propagate the exception
-            String message = Messages.get("imobject.notfound", displayName);
+            String message = Messages.format("imobject.notfound", displayName);
             log.error(message, exception);
             ErrorHelper.show(title, message);
         } else {

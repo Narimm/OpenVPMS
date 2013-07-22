@@ -649,7 +649,7 @@ public class MailEditor extends AbstractModifiable {
         for (DocRef doc : documents) {
             size += doc.getSize();
         }
-        model.setColumnName(0, Messages.get("mail.attachments", documents.size()));
+        model.setColumnName(0, Messages.format("mail.attachments", documents.size()));
         model.setColumnName(1, getSize(size));
     }
 
@@ -856,7 +856,7 @@ public class MailEditor extends AbstractModifiable {
         } else if (size / FileUtils.ONE_KB > 0) {
             result = getSize(size, FileUtils.ONE_KB, "mail.size.KB");
         } else {
-            result = Messages.get("mail.size.bytes", size);
+            result = Messages.format("mail.size.bytes", size);
         }
         return result;
     }
@@ -871,7 +871,7 @@ public class MailEditor extends AbstractModifiable {
      */
     private String getSize(long size, long divisor, String key) {
         BigDecimal result = new BigDecimal(size).divide(BigDecimal.valueOf(divisor), BigDecimal.ROUND_CEILING);
-        return Messages.get(key, result);
+        return Messages.format(key, result);
     }
 
 

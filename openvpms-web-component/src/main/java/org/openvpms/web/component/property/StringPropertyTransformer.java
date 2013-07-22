@@ -144,7 +144,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         if (object instanceof String) {
             String str = (String) object;
             if (TextHelper.hasControlChars(str)) {
-                String msg = Messages.get("property.error.invalidchars", property.getDisplayName());
+                String msg = Messages.format("property.error.invalidchars", property.getDisplayName());
                 throw new PropertyException(property, msg);
             }
             if (expandMacros && macros != null) {
@@ -162,11 +162,11 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
         int maxLength = property.getMaxLength();
         if ((result == null && minLength > 0)
             || (result != null && result.length() < minLength)) {
-            String msg = Messages.get("property.error.minLength", minLength);
+            String msg = Messages.format("property.error.minLength", minLength);
             throw new PropertyException(property, msg);
         }
         if (result != null && maxLength != -1 && result.length() > maxLength) {
-            String msg = Messages.get("property.error.maxLength", maxLength);
+            String msg = Messages.format("property.error.maxLength", maxLength);
             throw new PropertyException(property, msg);
         }
 

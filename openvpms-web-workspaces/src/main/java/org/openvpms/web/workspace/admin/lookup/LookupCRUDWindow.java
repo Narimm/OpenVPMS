@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.admin.lookup;
 
 import nextapp.echo2.app.Button;
@@ -77,7 +78,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
     public void delete() {
         Lookup object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist", getArchetypes().getDisplayName()));
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
             IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
             deletor.delete(object, getHelpContext().subtopic("delete"), new LookupDeletorListener());
@@ -148,8 +149,8 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
      */
     private void confirmReplace(final Lookup source, final Lookup target, final boolean delete) {
         String title = Messages.get("lookup.replace.title");
-        String message = Messages.get(delete ? "lookup.replace.confirmDelete" : "lookup.replace.confirm",
-                                      source.getName(), target.getName());
+        String message = Messages.format(delete ? "lookup.replace.confirmDelete" : "lookup.replace.confirm",
+                                         source.getName(), target.getName());
         ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("confirmreplace"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override

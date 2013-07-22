@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -155,7 +156,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
         boolean result = true;
         if (editor != null && editor.isModified()) {
             String title = Messages.get("imobject.savechanges.title");
-            String message = Messages.get("imobject.savechanges.message", editor.getDisplayName());
+            String message = Messages.format("imobject.savechanges.message", editor.getDisplayName());
             ConfirmationDialog dialog = new ConfirmationDialog(title, message, CONFIRMATION);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
@@ -207,7 +208,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
         // make sure the latest instance is being used.
         IMObject current = IMObjectHelper.reload(object);
         if (current == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(object)));
+            ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(object)));
         } else {
             HelpContext help = getHelpContext().topic(object, "edit");
             LayoutContext context = new DefaultLayoutContext(true, this.context, help);

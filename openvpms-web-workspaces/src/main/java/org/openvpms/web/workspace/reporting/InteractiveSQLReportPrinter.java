@@ -131,7 +131,7 @@ public class InteractiveSQLReportPrinter extends InteractivePrinter {
      */
     @Override
     protected String getTitle() {
-        return Messages.get("reporting.run.title", getDisplayName());
+        return Messages.format("reporting.run.title", getDisplayName());
     }
 
     /**

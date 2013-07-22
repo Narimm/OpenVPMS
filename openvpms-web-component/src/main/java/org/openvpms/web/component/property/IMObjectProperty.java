@@ -577,7 +577,7 @@ public class IMObjectProperty extends AbstractProperty
      * @param args    an array of arguments to be inserted into the message
      */
     private void addError(String message, Object... args) {
-        message = Messages.get(message, args);
+        message = Messages.format(message, args);
         addError(message);
     }
 

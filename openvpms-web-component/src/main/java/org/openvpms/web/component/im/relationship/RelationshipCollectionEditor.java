@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -45,7 +43,7 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class RelationshipCollectionEditor
-    extends IMTableCollectionEditor<RelationshipState> {
+        extends IMTableCollectionEditor<RelationshipState> {
 
     /**
      * Determines if inactive relationships should be displayed.
@@ -61,8 +59,8 @@ public class RelationshipCollectionEditor
      * @param context the layout context
      */
     protected RelationshipCollectionEditor(
-        RelationshipCollectionPropertyEditor editor, IMObject object,
-        LayoutContext context) {
+            RelationshipCollectionPropertyEditor editor, IMObject object,
+            LayoutContext context) {
         super(editor, object, context);
     }
 
@@ -73,9 +71,9 @@ public class RelationshipCollectionEditor
      * @return a new table model
      */
     protected IMTableModel<RelationshipState> createTableModel(
-        LayoutContext context) {
+            LayoutContext context) {
         RelationshipCollectionPropertyEditor editor
-            = getCollectionPropertyEditor();
+                = getCollectionPropertyEditor();
         return new RelationshipStateTableModel(context,
                                                editor.parentIsSource());
     }
@@ -144,9 +142,9 @@ public class RelationshipCollectionEditor
      */
     protected ResultSet<RelationshipState> createResultSet() {
         RelationshipCollectionPropertyEditor editor
-            = getCollectionPropertyEditor();
+                = getCollectionPropertyEditor();
         List<RelationshipState> relationships
-            = new ArrayList<RelationshipState>(editor.getRelationships());
+                = new ArrayList<RelationshipState>(editor.getRelationships());
         return new RelationshipStateResultSet(relationships,
                                               editor.parentIsSource(), ROWS);
     }
@@ -160,7 +158,7 @@ public class RelationshipCollectionEditor
     protected Row createControls(FocusGroup focus) {
         Row row = super.createControls(focus);
         String name = getProperty().getDisplayName();
-        String label = Messages.get("relationship.hide.inactive", name);
+        String label = Messages.format("relationship.hide.inactive", name);
         hideInactive = CheckBoxFactory.create(null, true);
         hideInactive.setText(label);
         hideInactive.addActionListener(new ActionListener() {
@@ -181,7 +179,7 @@ public class RelationshipCollectionEditor
     @Override
     protected RelationshipCollectionPropertyEditor getCollectionPropertyEditor() {
         return (RelationshipCollectionPropertyEditor)
-            super.getCollectionPropertyEditor();
+                super.getCollectionPropertyEditor();
     }
 
     /**
@@ -189,7 +187,7 @@ public class RelationshipCollectionEditor
      */
     private void onHideInactiveChanged() {
         RelationshipCollectionPropertyEditor editor
-            = getCollectionPropertyEditor();
+                = getCollectionPropertyEditor();
         editor.setExcludeInactive(hideInactive.isSelected());
         refresh();
     }

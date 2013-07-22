@@ -99,7 +99,7 @@ public class TitlePane extends ContentPane {
         logo.setLayoutData(centre);
 
         Label user = LabelFactory.create(null, "small");
-        user.setText(Messages.get("label.user", getUserName()));
+        user.setText(Messages.format("label.user", getUserName()));
 
         Row locationUserRow = RowFactory.create("CellSpacing", user);
 

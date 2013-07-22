@@ -596,11 +596,11 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertFalse(editor.validate(validator));
         List<ValidatorError> list = validator.getErrors(editor);
         assertEquals(1, list.size());
-        String message = Messages.get("act.validation.totalMismatch", editor.getProperty("amount").getDisplayName(),
-                                      NumberFormatter.formatCurrency(charge.getTotal()),
-                                      editor.getProperty("items").getDisplayName(),
-                                      NumberFormatter.formatCurrency(itemTotal));
-        String expected = Messages.get(ValidatorError.MSG_KEY, message);
+        String message = Messages.format("act.validation.totalMismatch", editor.getProperty("amount").getDisplayName(),
+                                         NumberFormatter.formatCurrency(charge.getTotal()),
+                                         editor.getProperty("items").getDisplayName(),
+                                         NumberFormatter.formatCurrency(itemTotal));
+        String expected = Messages.format(ValidatorError.MSG_KEY, message);
         assertEquals(expected, list.get(0).toString());
 
     }

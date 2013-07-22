@@ -73,8 +73,8 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * performing any operations.
      *
      * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param context     the context
+     * @param workspaceId  the workspace localisation identifier
+     * @param context      the context
      */
     public AbstractViewWorkspace(String workspacesId, String workspaceId, Context context) {
         this(workspacesId, workspaceId, null, context);
@@ -87,9 +87,9 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * before performing any operations.
      *
      * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param archetypes  the archetype that this operates on. May be {@code null}
-     * @param context     the context
+     * @param workspaceId  the workspace localisation identifier
+     * @param archetypes   the archetype that this operates on. May be {@code null}
+     * @param context      the context
      */
     public AbstractViewWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
         this(workspacesId, workspaceId, archetypes, context, true);
@@ -100,7 +100,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * <p/>
      * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
-     * @param workspacesId  the workspace group localisation identifier
+     * @param workspacesId the workspace group localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @param archetypes   the archetype that this operates on. May be {@code null}
      * @param context      the context
@@ -291,7 +291,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
      * @return a new dialog
      */
     protected BrowserDialog<T> createBrowserDialog(Browser<T> browser, HelpContext help) {
-        String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
+        String title = Messages.format("imobject.select.title", getArchetypes().getDisplayName());
         return new BrowserDialog<T>(title, browser, help);
     }
 

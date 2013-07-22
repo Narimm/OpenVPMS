@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -36,7 +36,7 @@ import org.openvpms.web.resource.i18n.Messages;
  * @author Tim Anderson
  */
 public abstract class BasicCRUDWorkspace<T extends IMObject>
-    extends AbstractCRUDWorkspace<T, T> {
+        extends AbstractCRUDWorkspace<T, T> {
 
     /**
      * Constructs a{@code BasicCRUDWorkspace}, with a selector for  the object.
@@ -45,8 +45,8 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
      * that the workspace supports, before performing any operations.
      *
      * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param context     the context
+     * @param workspaceId  the workspace localisation identifier
+     * @param context      the context
      */
     public BasicCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
         this(workspacesId, workspaceId, null, context);
@@ -57,10 +57,10 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
      * the object.
      *
      * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param archetypes  the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
-     *                    method must be invoked to set a non-null value before performing any operation
-     * @param context     the context
+     * @param workspaceId  the workspace localisation identifier
+     * @param archetypes   the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                     method must be invoked to set a non-null value before performing any operation
+     * @param context      the context
      */
     public BasicCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
         super(workspacesId, workspaceId, archetypes, archetypes, context);
@@ -69,7 +69,7 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
     /**
      * Constructs a {@code BasicCRUDWorkspace}.
      *
-     * @param workspacesId  the workspaces localisation identifier
+     * @param workspacesId the workspaces localisation identifier
      * @param workspaceId  the workspace localisation identifier
      * @param archetypes   the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                     method must be invoked to set a non-null value before performing any operation
@@ -103,7 +103,7 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
      */
     @Override
     protected BrowserDialog<T> createBrowserDialog(Browser<T> browser, HelpContext help) {
-        String title = Messages.get("imobject.select.title", getArchetypes().getDisplayName());
+        String title = Messages.format("imobject.select.title", getArchetypes().getDisplayName());
         return new BrowserDialog<T>(title, browser, true, help);
     }
 

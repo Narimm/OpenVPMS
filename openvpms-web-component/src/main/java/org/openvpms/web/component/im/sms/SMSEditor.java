@@ -338,9 +338,9 @@ public class SMSEditor extends AbstractModifiable {
         String areaCode = bean.getString("areaCode");
         String phone = bean.getString("telephoneNumber");
         if (!StringUtils.isEmpty(areaCode)) {
-            phone = Messages.get("phone.withAreaCode", areaCode, phone);
+            phone = Messages.format("phone.withAreaCode", areaCode, phone);
         } else {
-            phone = Messages.get("phone.noAreaCode", phone);
+            phone = Messages.format("phone.noAreaCode", phone);
         }
         return phone;
     }

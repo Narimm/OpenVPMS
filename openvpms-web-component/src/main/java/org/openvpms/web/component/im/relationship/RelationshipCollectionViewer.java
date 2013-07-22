@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -46,7 +44,7 @@ import java.util.Map;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class RelationshipCollectionViewer
-    extends IMTableCollectionViewer<RelationshipState> {
+        extends IMTableCollectionViewer<RelationshipState> {
 
     /**
      * Determines if the parent is the source or target of the relationships.
@@ -58,7 +56,7 @@ public class RelationshipCollectionViewer
      * relationships.
      */
     private Map<IMObjectRelationship, RelationshipState> states
-        = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
+            = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
 
     /**
      * Determines if inactive relationships should be displayed.
@@ -90,7 +88,7 @@ public class RelationshipCollectionViewer
      * @return a new table model
      */
     protected IMTableModel<RelationshipState> createTableModel(
-        LayoutContext context) {
+            LayoutContext context) {
         return new RelationshipStateTableModel(context, parentIsSource);
     }
 
@@ -154,7 +152,7 @@ public class RelationshipCollectionViewer
      */
     protected RelationshipStateQuery createQuery(IMObject parent) {
         return new RelationshipStateQuery(
-            parent, getObjects(), getProperty().getArchetypeRange());
+                parent, getObjects(), getProperty().getArchetypeRange());
     }
 
     /**
@@ -173,7 +171,7 @@ public class RelationshipCollectionViewer
     @Override
     protected Component doLayout() {
         String name = getProperty().getDisplayName();
-        String label = Messages.get("relationship.hide.inactive", name);
+        String label = Messages.format("relationship.hide.inactive", name);
         hideInactive = CheckBoxFactory.create(null, true);
         hideInactive.setText(label);
         hideInactive.addActionListener(new ActionListener() {

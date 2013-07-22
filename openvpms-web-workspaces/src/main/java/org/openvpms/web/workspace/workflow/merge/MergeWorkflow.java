@@ -59,15 +59,15 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
         initial = createContext(help);
 
         String displayName = DescriptorHelper.getDisplayName(object);
-        String mergeTitle = Messages.get("workflow.merge.title", displayName);
-        String mergeMsg = Messages.get("workflow.merge.message", displayName);
+        String mergeTitle = Messages.format("workflow.merge.title", displayName);
+        String mergeMsg = Messages.format("workflow.merge.message", displayName);
 
         addTask(new ConfirmationTask(mergeTitle, mergeMsg, false, help));
         SelectIMObjectTask select = createSelectTask(initial);
-        select.setTitle(Messages.get("workflow.merge.select.title",
-                                     displayName, object.getName()));
-        select.setMessage(Messages.get("workflow.merge.select.message",
-                                       displayName));
+        select.setTitle(Messages.format("workflow.merge.select.title",
+                                        displayName, object.getName()));
+        select.setMessage(Messages.format("workflow.merge.select.message",
+                                          displayName));
         addTask(select);
         addTask(createMergeTask());
     }

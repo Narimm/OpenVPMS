@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -63,11 +63,11 @@ public final class IMObjectCreator {
             result = service.create(shortName);
             if (result == null) {
                 String title = Messages.get("imobject.create.failed.title");
-                String message = Messages.get("imobject.create.noarchetype", shortName);
+                String message = Messages.format("imobject.create.noarchetype", shortName);
                 ErrorHelper.show(title, message);
             }
         } catch (OpenVPMSException exception) {
-            String title = Messages.get("imobject.create.failed", shortName);
+            String title = Messages.format("imobject.create.failed", shortName);
             ErrorHelper.show(title, exception);
         }
         return result;
@@ -132,8 +132,8 @@ public final class IMObjectCreator {
             listener.cancelled();
         } else if (shortNames.length > 1) {
             final ShortNameListModel model = new ShortNameListModel(shortNames, false);
-            String title = Messages.get("imobject.create.title", type);
-            String message = Messages.get("imobject.create.message", type);
+            String title = Messages.format("imobject.create.title", type);
+            String message = Messages.format("imobject.create.message", type);
             ListBox list = new KeyListBox(model);
             list.setStyleName("default");
             list.setHeight(new Extent(12, Extent.EM));

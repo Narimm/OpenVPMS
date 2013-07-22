@@ -108,18 +108,18 @@ public class HelpDialog extends PopupDialog {
             if (topicURL == null) {
                 Label label = LabelFactory.create(true, true);
                 label.setStyleName(BOLD);
-                label.setText(Messages.get("helpdialog.nohelp.topic", topic));
+                label.setText(Messages.format("helpdialog.nohelp.topic", topic));
                 component = label;
             } else {
                 String parent = getExistingParent(topicURL);
                 StringBuilder content = new StringBuilder();
                 content.append("<div xmlns='http://www.w3.org/1999/xhtml'>");
                 content.append("<p>");
-                content.append(Messages.get("helpdialog.nohelp.create", topicURL));
+                content.append(Messages.format("helpdialog.nohelp.create", topicURL));
                 content.append("</p>");
                 if (parent != null) {
                     content.append("<p>");
-                    content.append(Messages.get("helpdialog.nohelp.parent", parent));
+                    content.append(Messages.format("helpdialog.nohelp.parent", parent));
                     content.append("</p>");
                 }
                 content.append("</div>");
@@ -151,7 +151,7 @@ public class HelpDialog extends PopupDialog {
     /**
      * Displays a help dialog for the specified help context.
      *
-     * @param help the help context. May be {@code null}
+     * @param help    the help context. May be {@code null}
      * @param service the archetype service
      */
     public static void show(HelpContext help, IArchetypeService service) {
@@ -250,7 +250,7 @@ public class HelpDialog extends PopupDialog {
         logo.setLayoutData(centre);
 
         Label label = LabelFactory.create(null, "small");
-        label.setText(Messages.get("helpdialog.version", Version.VERSION, Version.REVISION));
+        label.setText(Messages.format("helpdialog.version", Version.VERSION, Version.REVISION));
 
         Row labelRow = RowFactory.create("InsetX", label);
         RowLayoutData right = new RowLayoutData();

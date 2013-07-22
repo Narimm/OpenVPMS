@@ -182,9 +182,9 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
         editor.setTo(editor.getFrom());
         editor.setFrom(layoutContext.getContext().getUser());
-        String subject = Messages.get("workflow.messaging.reply.subject", message.getSubject());
-        String text = Messages.get("workflow.messaging.reply.body", message.getSent(), message.getFromName(),
-                                   message.getMessage());
+        String subject = Messages.format("workflow.messaging.reply.subject", message.getSubject());
+        String text = Messages.format("workflow.messaging.reply.body", message.getSent(), message.getFromName(),
+                                      message.getMessage());
         editor.setSubject(subject);
         editor.setMessage(text);
         edit(editor, Messages.get("workflow.messaging.reply.title"));
@@ -200,9 +200,9 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
         UserMessageEditor editor = new UserMessageEditor(forward, null, layoutContext);
         Message message = new Message(getObject());
 
-        String subject = Messages.get("workflow.messaging.forward.subject", message.getSubject());
-        String text = Messages.get("workflow.messaging.forward.body", message.getSubject(), message.getSent(),
-                                   message.getFromName(), message.getToName(), message.getMessage());
+        String subject = Messages.format("workflow.messaging.forward.subject", message.getSubject());
+        String text = Messages.format("workflow.messaging.forward.body", message.getSubject(), message.getSent(),
+                                      message.getFromName(), message.getToName(), message.getMessage());
         editor.setTo(null);
         editor.setSubject(subject);
         editor.setMessage(text);

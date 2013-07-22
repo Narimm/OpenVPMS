@@ -166,9 +166,9 @@ class ResendReminderDialog extends PopupDialog {
                     result = new ResendReminderDialog(reminder, contacts, counts, reminderCount, processor, context,
                                                       help);
                 } else {
-                    ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.get("patient.reminder.resend.notemplates",
-                                                                             event.getReminderType().getName(),
-                                                                             reminderCount));
+                    ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.format("patient.reminder.resend.notemplates",
+                                                                                event.getReminderType().getName(),
+                                                                                reminderCount));
                 }
             } else {
                 ErrorHelper.show(Messages.get(ERROR_TITLE), Messages.get("patient.reminder.resend.nocontacts"));
@@ -216,16 +216,16 @@ class ResendReminderDialog extends PopupDialog {
                 generate(event, reminderCount);
             } else if (action == Action.LIST) {
                 ErrorHelper.show(Messages.get(ERROR_TITLE),
-                                 Messages.get("patient.reminder.resend.list", event.getReminderType().getName(),
-                                              reminderCount));
+                                 Messages.format("patient.reminder.resend.list", event.getReminderType().getName(),
+                                                 reminderCount));
             } else if (action == Action.CANCEL) {
                 ErrorHelper.show(Messages.get(ERROR_TITLE),
-                                 Messages.get("patient.reminder.resend.cancel", event.getReminderType().getName(),
-                                              reminderCount));
+                                 Messages.format("patient.reminder.resend.cancel", event.getReminderType().getName(),
+                                                 reminderCount));
             } else {
                 ErrorHelper.show(Messages.get(ERROR_TITLE),
-                                 Messages.get("patient.reminder.resend.notemplate",
-                                              event.getReminderType().getName(), reminderCount));
+                                 Messages.format("patient.reminder.resend.notemplate",
+                                                 event.getReminderType().getName(), reminderCount));
             }
         } catch (Throwable exception) {
             ErrorHelper.show(exception);

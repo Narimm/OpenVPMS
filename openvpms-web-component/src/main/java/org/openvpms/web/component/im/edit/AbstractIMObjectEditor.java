@@ -213,9 +213,9 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     public String getTitle() {
         String title;
         if (object.isNew()) {
-            title = Messages.get("editor.new.title", getDisplayName());
+            title = Messages.format("editor.new.title", getDisplayName());
         } else {
-            title = Messages.get("editor.edit.title", getDisplayName());
+            title = Messages.format("editor.edit.title", getDisplayName());
         }
         return title;
     }

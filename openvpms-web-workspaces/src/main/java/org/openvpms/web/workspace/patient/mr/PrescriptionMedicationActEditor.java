@@ -124,7 +124,7 @@ public class PrescriptionMedicationActEditor extends PatientMedicationActEditor 
             BigDecimal remainingQuantity = prescription.getRemainingQuantity();
             if (getQuantity().compareTo(remainingQuantity) > 0) {
                 Property quantity = getProperty("quantity");
-                String message = Messages.get("patient.prescription.quantityexceeded", remainingQuantity);
+                String message = Messages.format("patient.prescription.quantityexceeded", remainingQuantity);
                 validator.add(quantity, new ValidatorError(quantity, message));
                 result = false;
             }

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -159,7 +157,7 @@ public class ValidatorError {
                 nodeName = descriptor.getDisplayName();
             }
         }
-        return Messages.get(NODE_KEY, archetypeName, nodeName, message);
+        return Messages.format(NODE_KEY, archetypeName, nodeName, message);
     }
 
     /**
@@ -170,7 +168,7 @@ public class ValidatorError {
      * @return the formatted message
      */
     public static String format(String property, String message) {
-        return Messages.get(PROP_KEY, property, message);
+        return Messages.format(PROP_KEY, property, message);
     }
 
     /**
@@ -179,6 +177,6 @@ public class ValidatorError {
      * @return the formatted message
      */
     private String formatMessage() {
-        return Messages.get(MSG_KEY, message);
+        return Messages.format(MSG_KEY, message);
     }
 }

@@ -129,7 +129,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         String reason = ArchetypeServiceFunctions.lookup(appointment, "reason", "Appointment");
         String notes = bean.getString("description", "");
-        String description = Messages.get("workflow.checkin.task.description", reason, notes);
+        String description = Messages.format("workflow.checkin.task.description", reason, notes);
 
         initialise(appointment, customer, patient, clinician, description, reason, context);
     }

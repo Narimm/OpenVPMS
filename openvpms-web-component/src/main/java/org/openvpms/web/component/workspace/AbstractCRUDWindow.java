@@ -256,13 +256,13 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
                     IMObject previous = object;
                     object = IMObjectHelper.reload(object);
                     if (object == null) {
-                        ErrorDialog.show(Messages.get("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
+                        ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
                     } else {
                         edit(object);
                     }
                 }
             } else {
-                ErrorDialog.show(Messages.get("imobject.noedit", DescriptorHelper.getDisplayName(object)));
+                ErrorDialog.show(Messages.format("imobject.noedit", DescriptorHelper.getDisplayName(object)));
             }
         }
     }
@@ -274,7 +274,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     public void delete() {
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.get("imobject.noexist", archetypes.getDisplayName()));
+            ErrorDialog.show(Messages.format("imobject.noexist", archetypes.getDisplayName()));
         } else {
             IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
             HelpContext delete = getHelpContext().subtopic("delete");

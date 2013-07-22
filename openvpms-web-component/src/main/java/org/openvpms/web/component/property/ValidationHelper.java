@@ -126,7 +126,7 @@ public class ValidationHelper {
                 ValidatorError error = errors.get(0);
                 String message = (formatted) ? error.toString() : error.getMessage();
                 if (key != null) {
-                    message = Messages.get(key, message);
+                    message = Messages.format(key, message);
                 }
                 ErrorHandler.getInstance().error(title, message, null, null);
             }

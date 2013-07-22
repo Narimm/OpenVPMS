@@ -53,25 +53,27 @@ public final class Messages {
      * @param arguments an array of arguments to be inserted into the message
      * @return the appropriate formatted localized text (if the key is not defined, the string "!key!" is returned)
      */
-    public static String get(String key, Object... arguments) {
-        return format(key, false, arguments);
+    public static String format(String key, Object... arguments) {
+        String result = null;
+        String pattern = get(key, false);
+        if (pattern != null) {
+            result = formatPattern(pattern, arguments);
+        }
+        return result;
     }
 
     /**
-     * Returns a localised, formatted message.
+     * Returns a localised, formatted message, if the specified key exists.
      *
      * @param key       the key of the message to be returned
-     * @param allowNull determines behaviour if the key doesn't exist
      * @param arguments an array of arguments to be inserted into the message
-     * @return the appropriate formatted localized text (if the key is not defined, the string "!key!" is returned)
+     * @return the appropriate formatted localized text, or {@code null} if the key doesn't exist
      */
-    public static String format(String key, boolean allowNull, Object... arguments) {
+    public static String formatNull(String key, Object... arguments) {
         String result = null;
-        Locale locale = getLocale();
-        String pattern = get(key, allowNull);
+        String pattern = get(key, true);
         if (pattern != null) {
-            MessageFormat format = new MessageFormat(pattern, locale);
-            result = format.format(arguments);
+            result = formatPattern(pattern, arguments);
         }
         return result;
     }
@@ -171,4 +173,20 @@ public final class Messages {
         }
         return result;
     }
+
+    /**
+     * Helper to format a string.
+     *
+     * @param pattern   the pattern
+     * @param arguments the arguments
+     * @return the formatted string
+     */
+    private static String formatPattern(String pattern, Object[] arguments) {
+        String result;
+        Locale locale = getLocale();
+        MessageFormat format = new MessageFormat(pattern, locale);
+        result = format.format(arguments);
+        return result;
+    }
+
 }

@@ -648,8 +648,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private void checkUsePrescription(final Act prescription, final Product product, final Act medication) {
         if (promptForPrescription) {
             ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.prescription.title"),
-                                                               Messages.get("customer.charge.prescription.message",
-                                                                            product.getName()));
+                                                               Messages.format("customer.charge.prescription.message",
+                                                                               product.getName()));
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -988,8 +988,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (promptForPrescription) {
                 Product product = getProduct();
                 ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("customer.charge.prescription.title"),
-                                                                   Messages.get("customer.charge.prescription.message",
-                                                                                product.getName()));
+                                                                   Messages.format("customer.charge.prescription.message",
+                                                                                   product.getName()));
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {

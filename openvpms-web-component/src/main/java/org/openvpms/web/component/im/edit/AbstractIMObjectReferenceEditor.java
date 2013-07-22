@@ -54,7 +54,7 @@ import org.openvpms.web.resource.i18n.Messages;
  * @author Tim Anderson
  */
 public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
-    extends AbstractPropertyEditor implements IMObjectReferenceEditor<T> {
+        extends AbstractPropertyEditor implements IMObjectReferenceEditor<T> {
 
     /**
      * The parent object. May be {@code null}
@@ -236,7 +236,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         if (!selector.inSelect()) {
             // only raise validation errors if a dialog is not displayed
             if (!selector.isValid()) {
-                String message = Messages.get("imobject.invalidreference", selector.getText());
+                String message = Messages.format("imobject.invalidreference", selector.getText());
                 validator.add(this, new ValidatorError(getProperty(), message));
             } else {
                 result = super.doValidation(validator) && isValidReference(validator);
@@ -441,7 +441,7 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
                 result = false;
                 ArchetypeId archetypeId = reference.getArchetypeId();
                 String displayName = DescriptorHelper.getDisplayName(archetypeId.getShortName());
-                String message = Messages.get("imobject.invalidreference", displayName);
+                String message = Messages.format("imobject.invalidreference", displayName);
                 validator.add(this, new ValidatorError(getProperty(), message));
             }
         }

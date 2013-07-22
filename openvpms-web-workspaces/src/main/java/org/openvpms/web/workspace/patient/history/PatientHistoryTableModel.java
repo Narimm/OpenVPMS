@@ -259,9 +259,9 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
 
         String text;
         if (completed == null || ObjectUtils.equals(started, completed)) {
-            text = Messages.get("patient.record.summary.singleDate", started, reason, clinician, status, age);
+            text = Messages.format("patient.record.summary.singleDate", started, reason, clinician, status, age);
         } else {
-            text = Messages.get("patient.record.summary.dateRange", started, completed, reason, clinician, status, age);
+            text = Messages.format("patient.record.summary.dateRange", started, completed, reason, clinician, status, age);
         }
         Label summary = LabelFactory.create(null, "bold");
         summary.setText(text);
@@ -392,8 +392,8 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         ActBean bean = new ActBean(act);
         IMObjectReference product = bean.getNodeParticipantRef("product");
         String name = IMObjectHelper.getName(product);
-        String text = Messages.get("patient.record.summary.invoiceitem", name, act.getQuantity(),
-                                   NumberFormatter.formatCurrency(act.getTotal()));
+        String text = Messages.format("patient.record.summary.invoiceitem", name, act.getQuantity(),
+                                      NumberFormatter.formatCurrency(act.getTotal()));
         return getDetail(text);
     }
 
@@ -408,8 +408,8 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         ActBean bean = new ActBean(act);
         FinancialAct item = (FinancialAct) bean.getNodeSourceObject("invoiceItem");
         if (item != null) {
-            text = Messages.get("patient.record.summary.medication", text,
-                                NumberFormatter.formatCurrency(item.getTotal()));
+            text = Messages.format("patient.record.summary.medication", text,
+                                   NumberFormatter.formatCurrency(item.getTotal()));
         }
         return getDetail(text);
     }
@@ -513,7 +513,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private String getValue(String value, ActBean bean, String node) {
         if (StringUtils.isEmpty(value)) {
-            return Messages.get("patient.record.summary.novalue", bean.getDisplayName(node));
+            return Messages.format("patient.record.summary.novalue", bean.getDisplayName(node));
         }
         return value;
     }

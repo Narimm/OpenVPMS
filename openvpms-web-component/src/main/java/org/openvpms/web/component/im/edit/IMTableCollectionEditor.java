@@ -606,8 +606,8 @@ public abstract class IMTableCollectionEditor<T>
      */
     private void confirmDelete(final IMObject object) {
         String displayName = DescriptorHelper.getDisplayName(object);
-        String title = Messages.get("imobject.collection.delete.title", displayName);
-        String message = Messages.get("imobject.collection.delete.message", displayName);
+        String title = Messages.format("imobject.collection.delete.title", displayName);
+        String message = Messages.format("imobject.collection.delete.message", displayName);
         final ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
