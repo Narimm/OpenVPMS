@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="entity.documentTemplate.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity" displayName="Document Template">
@@ -37,8 +38,10 @@
                     <property name="act.customerAccountChargesCounter" value="Customer Counter Sale"/>
                     <property name="act.customerEstimation" value="Customer Estimate"/>
                     <property name="act.patientMedication" value="Patient Medication Label"/>
+                    <property name="act.patientPrescription" value="Prescription"/>
                     <property name="act.patientReminder" value="Reminder Report"/>
                     <property name="act.patientClinicalEvent" value="Patient Visit"/>
+                    <property name="act.patientClinicalProblem" value="Patient Problem"/>
                     <property name="act.tillBalance" value="Till Balance"/>
                     <property name="act.bankDeposit" value="Bank Deposit"/>
                     <property name="act.customerAccountOpeningBalance" value="Customer Statement"/>
@@ -57,7 +60,6 @@
                     <property name="GROUPED_REMINDERS" value="Grouped Reminders"/>
                     <property name="REPORT" value="Report"/>
                     <property name="SUBREPORT" value="Sub Report"/>
-                    <property name="PRESCRIPTION" value="Prescription"/>
                 </propertyList>
             </assertion>
         </node>

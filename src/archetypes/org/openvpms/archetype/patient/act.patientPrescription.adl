@@ -23,7 +23,7 @@
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
               derivedValue="concat(openvpms:get(.,'product.entity.name'), ' - ','Qty : ',/details/quantity,' Expiry : ', date:formatDate(/activityEndTime))"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
-              defaultValue="java.util.Date.new()"/>
+              defaultValue="java.util.Date.new()" readOnly="true"/>
         <node displayName="Expiry Date" name="endTime" path="/activityEndTime" type="java.util.Date"
               minCardinality="1"/>
         <node name="quantity" path="/details/quantity" type="java.math.BigDecimal" defaultValue="1.0"

@@ -59,6 +59,26 @@ public class PrescriptionRules {
     }
 
     /**
+     * Cancels a prescription.
+     * <p/>
+     * This sets its expiry date to yesterday. <br/>
+     * A prescription may only be cancelled if it can be dispensed.
+     *
+     * @param prescription the prescription to cancel
+     * @return {@code true} if the prescription was cancelled, {@code false} if it has already expired, or has been
+     *         fully dispensed
+     */
+    public boolean cancel(Act prescription) {
+        boolean result = false;
+        if (canDispense(prescription)) {
+            prescription.setActivityEndTime(DateRules.getYesterday());
+            service.save(prescription);
+            result = true;
+        }
+        return result;
+    }
+
+    /**
      * Returns the total quantity that may be dispensed on a prescription.
      *
      * @param prescription the prescription
