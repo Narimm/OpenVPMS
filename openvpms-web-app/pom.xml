@@ -80,6 +80,12 @@
                 <targetPath>META-INF/</targetPath>
                 <filtering>true</filtering>
             </resource>
+            <resource>
+                <includes>
+                    <include>style/**</include>
+                </includes>
+                <directory>${basedir}/src/conf</directory>
+            </resource>
         </resources>
         <plugins>
             <plugin>
