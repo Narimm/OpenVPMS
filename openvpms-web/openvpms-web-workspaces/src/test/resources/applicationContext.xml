@@ -242,7 +242,7 @@
     </bean>
 
     <bean id="styleSheetCache" class="org.openvpms.web.component.style.StyleSheetCache">
-        <constructor-arg index="0" value="org/openvpms/web/resource/style/default"/>
+        <constructor-arg index="0" value="style/default"/>
     </bean>
 
     <bean id="userStyleSheets" class="org.openvpms.web.component.style.UserStyleSheets">

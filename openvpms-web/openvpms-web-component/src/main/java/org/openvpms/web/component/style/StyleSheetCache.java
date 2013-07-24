@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.style;
 
@@ -32,8 +30,7 @@ import java.util.regex.Pattern;
 /**
  * Caches style sheets loaded from resources.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StyleSheetCache extends AbstractStyleSheetCache {
 
@@ -54,7 +51,7 @@ public class StyleSheetCache extends AbstractStyleSheetCache {
 
 
     /**
-     * Constructs a <tt>StyleSheetCache</tt>.
+     * Constructs a {@link StyleSheetCache}.
      *
      * @param baseName the resource base name
      * @throws IOException         for any I/O error
@@ -80,7 +77,7 @@ public class StyleSheetCache extends AbstractStyleSheetCache {
     }
 
     /**
-     * Adds resolutions defined in a <tt><em>baseName</em>-resolutions.properties</tt> file, if present.
+     * Adds resolutions defined in a <em>baseName</em>-resolutions.properties file, if present.
      *
      * @throws StyleSheetException for any error
      * @throws IOException         for any I/O error
@@ -119,7 +116,7 @@ public class StyleSheetCache extends AbstractStyleSheetCache {
      *
      * @param name     the resource name
      * @param required determines if the resource is required or not
-     * @return the resource, or <tt>null</tt> if it does exist and wasn't required
+     * @return the resource, or {@code null} if it does exist and wasn't required
      * @throws IOException         if an I/O error occurs
      * @throws StyleSheetException if the resource cannot be found and is required
      */
@@ -142,11 +139,11 @@ public class StyleSheetCache extends AbstractStyleSheetCache {
      *
      * @param resource the resource path
      * @param required determines if the resource is required or not
-     * @return the stream, or <tt>null</tt> if its not required
+     * @return the stream, or {@code null} if its not required
      * @throws StyleSheetException if the resource cannot be found and is required
      */
     private InputStream getResource(String resource, boolean required) {
-        InputStream stream = StyleSheetCache.class.getClassLoader().getResourceAsStream(resource);
+        InputStream stream = getClass().getClassLoader().getResourceAsStream(resource);
         if (stream == null) {
             stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
         }
