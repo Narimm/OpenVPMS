@@ -21,24 +21,27 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
 
 /**
  * Mail service that configures the SMTP details from <em>party.organisationLocation</em> from
  * {@link Context#getLocation()}, if available.
+ * <p/>
+ * Note that instances of this must be per-session. It obtains the context from
+ * {@code ContextApplicationInstance#getInstance().getContext()}. A user may have multiple application instances,
+ * each with a different location selected, so mail sending is synchronized.
  *
  * @author Tim Anderson
  */
 public class MailService extends JavaMailSenderImpl {
-
-    /**
-     * The context.
-     */
-    private Context context;
 
     /**
      * Property name for STARTTLS flag.
@@ -50,22 +53,6 @@ public class MailService extends JavaMailSenderImpl {
      */
     private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
 
-
-    /**
-     * Constructs a {@code MailService}.
-     */
-    public MailService() {
-        this(null);
-    }
-
-    /**
-     * Constructs a {@code MailService}.
-     *
-     * @param context the context. If {@code null}, the global context will be used
-     */
-    public MailService(Context context) {
-        this.context = context;
-    }
 
     /**
      * Return the mail server host.
@@ -139,18 +126,35 @@ public class MailService extends JavaMailSenderImpl {
     }
 
     /**
+     * Actually send the given array of MimeMessages via JavaMail.
+     *
+     * @param mimeMessages     MimeMessage objects to send
+     * @param originalMessages corresponding original message objects
+     *                         that the MimeMessages have been created from (with same array
+     *                         length and indices as the "mimeMessages" array), if any
+     * @throws MailAuthenticationException in case of authentication failure
+     * @throws MailSendException           in case of failure when sending a message
+     */
+    @Override
+    protected synchronized void doSend(MimeMessage[] mimeMessages, Object[] originalMessages) throws MailException {
+        super.doSend(mimeMessages, originalMessages);
+    }
+
+    /**
      * Returns the <em>party.organisationLocation</em> wrapped in a bean, if one is present in the global context.
      *
      * @return the location, or <tt>null</tt> if none is present.
      */
     private IMObjectBean getLocationBean() {
-        if (context == null) {
-            // need to use the context associated with the current instance. Be nice if the context could be injected
-            // by Spring, but the context is scoped to the application instance, not the session, as there may be
-            // multiple application instances per session.
-            context = ContextApplicationInstance.getInstance().getContext();
+        // need to use the context associated with the current instance. Be nice if the context could be injected
+        // by Spring, but the context is scoped to the application instance, not the session, as there may be
+        // multiple application instances per session.
+        Party location = null;
+        ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
+        if (instance != null) {
+            Context context = instance.getContext();
+            location = context.getLocation();
         }
-        Party location = context.getLocation();
         return (location != null) ? new IMObjectBean(location) : null;
     }
 

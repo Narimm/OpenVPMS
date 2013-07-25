@@ -39,7 +39,7 @@
     <!-- ================================================================== -->
     <!--                        EMAIL                                       -->
     <!-- ================================================================== -->
-    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="prototype"/>
+    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="session"/>
 
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
