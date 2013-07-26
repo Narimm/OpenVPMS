@@ -63,7 +63,7 @@ public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
     /**
      * The cancel button.
      */
-    protected static final String CANCEL_ID = "button.cancel";
+    protected static final String CANCEL_ID = "button.cancelPrescription";
 
 
     /**
