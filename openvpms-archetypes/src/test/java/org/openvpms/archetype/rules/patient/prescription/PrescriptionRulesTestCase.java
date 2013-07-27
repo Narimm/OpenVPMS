@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
@@ -42,7 +43,6 @@ import static org.junit.Assert.assertTrue;
  * @author Tim Anderson
  */
 public class PrescriptionRulesTestCase extends ArchetypeServiceTest {
-
 
     /**
      * The rules.
@@ -89,7 +89,8 @@ public class PrescriptionRulesTestCase extends ArchetypeServiceTest {
         assertTrue(rules.canDispense(act2));
         assertFalse(rules.canDispense(act3));
 
-        dispense(act1, 2);
+        dispense(act1, 1);
+        dispense(act1, 1);
         assertFalse(rules.canDispense(act1));
 
         dispense(act2, 1);
@@ -124,72 +125,46 @@ public class PrescriptionRulesTestCase extends ArchetypeServiceTest {
     public void testDispensed() {
         Act act1 = createPrescription(2, 0, DateRules.getTomorrow());
         Act act2 = createPrescription(2, 5, DateRules.getTomorrow());
-        Act act3 = createPrescription(1, 2, DateRules.getTomorrow());
 
         assertEquals(0, rules.getDispensed(act1));
         dispense(act1, 2);
         assertEquals(1, rules.getDispensed(act1));
 
-        dispense(act2, 12);
-        assertEquals(6, rules.getDispensed(act2));
-
-        // test dispensing of partial quantities.
-        dispense(act3, new BigDecimal("1.5"));
-        assertEquals(2, rules.getDispensed(act3));
-
-        dispense(act3, new BigDecimal("0.5"));
-        assertEquals(2, rules.getDispensed(act3));
-
-        dispense(act3, 1);
-        assertEquals(3, rules.getDispensed(act3));
-    }
-
-    /**
-     * Tests the {@link PrescriptionRules#getTotalQuantity(Act)}, {@link PrescriptionRules#getDispensedQuantity(Act)}
-     * and {@link PrescriptionRules#getRemainingQuantity(Act)} methods.
-     */
-    @Test
-    public void testQuantities() {
-        Act act1 = createPrescription(2, 4, DateRules.getTomorrow());
-
-        checkEquals(new BigDecimal("10"), rules.getTotalQuantity(act1));
-
-        dispense(act1, 2);
-        dispense(act1, 4);
-        checkEquals(new BigDecimal("6"), rules.getDispensedQuantity(act1));
-        checkEquals(new BigDecimal("4"), rules.getRemainingQuantity(act1));
-
-        BigDecimal two = new BigDecimal("2");
-        Act act2 = createPrescription(2, 0, DateRules.getTomorrow());
-        checkEquals(two, rules.getTotalQuantity(act2));
-        checkEquals(BigDecimal.ZERO, rules.getDispensedQuantity(act2));
-        checkEquals(two, rules.getRemainingQuantity(act2));
         dispense(act2, 2);
-        checkEquals(two, rules.getDispensedQuantity(act2));
-        checkEquals(BigDecimal.ZERO, rules.getRemainingQuantity(act2));
+        dispense(act2, 2);
+        dispense(act2, 2);
+        assertEquals(3, rules.getDispensed(act2));
     }
 
     /**
-     * Tests the {@link PrescriptionRules#getPrescription(Party, Product)}
-     * and {@link PrescriptionRules#getPrescription(Party, Product, Date)} methods.
+     * Tests the {@link PrescriptionRules#getPrescription)} methods.
      */
     @Test
     public void testGetPrescription() {
         Date yesterday = DateRules.getYesterday();
-        Act act1 = createPrescription(1, 1, DateRules.getToday());
+        Date today = DateRules.getToday();
+        Act act1 = createPrescription(1, 1, today);
         Act act2 = createPrescription(1, 1, DateRules.getTomorrow());
         Act act3 = createPrescription(1, 1, yesterday); // expired
 
         assertEquals(act1, rules.getPrescription(patient, product));
-        dispense(act1, 2);
+        assertEquals(act1, rules.getPrescription(patient, product, today));
+
+        // check excluding act1
+        assertEquals(act2, rules.getPrescription(patient, product, Arrays.asList(act1)));
+        assertEquals(act2, rules.getPrescription(patient, product, today, Arrays.asList(act1)));
+        dispense(act1, 1);
+        dispense(act1, 1);
 
         assertEquals(act2, rules.getPrescription(patient, product));
-        dispense(act2, 2);
+        dispense(act2, 1);
+        dispense(act2, 1);
 
         assertNull(rules.getPrescription(patient, product));
 
         assertEquals(act3, rules.getPrescription(patient, product, yesterday));
-        dispense(act3, 2);
+        dispense(act3, 1);
+        dispense(act3, 1);
         assertNull(rules.getPrescription(patient, product, yesterday));
     }
 

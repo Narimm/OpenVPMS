@@ -25,13 +25,15 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.gte;
@@ -79,19 +81,6 @@ public class PrescriptionRules {
     }
 
     /**
-     * Returns the total quantity that may be dispensed on a prescription.
-     *
-     * @param prescription the prescription
-     * @return the total quantity
-     */
-    public BigDecimal getTotalQuantity(Act prescription) {
-        IMObjectBean bean = new IMObjectBean(prescription, service);
-        BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
-        BigDecimal repeats = bean.getBigDecimal("repeats", BigDecimal.ZERO);
-        return repeats.add(BigDecimal.ONE).multiply(quantity);
-    }
-
-    /**
      * Determines if a prescription can be dispensed.
      *
      * @param prescription the prescription
@@ -100,8 +89,7 @@ public class PrescriptionRules {
     public boolean canDispense(Act prescription) {
         boolean result = false;
         if (DateRules.compareDateToToday(prescription.getActivityEndTime()) >= 0) {
-            BigDecimal remaining = getRemainingQuantity(prescription);
-            if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+            if (getRemainingRepeats(prescription) > 0) {
                 result = true;
             }
         }
@@ -137,41 +125,20 @@ public class PrescriptionRules {
      * @return the number of remaining repeats
      */
     public int getDispensed(Act prescription) {
-        BigDecimal dispensedQuantity = getDispensedQuantity(prescription);
-        int result = 0;
-        if (dispensedQuantity.compareTo(BigDecimal.ZERO) > 0) {
-            result = dispensedQuantity.divide(getQuantity(prescription), 0, RoundingMode.CEILING).intValue();
-        }
-        return result;
-    }
-
-    /**
-     * Returns the quantity dispensed on a prescription.
-     *
-     * @param prescription the prescription
-     * @return the quantity remaining to be dispensed
-     */
-    public BigDecimal getDispensedQuantity(Act prescription) {
-        BigDecimal result = BigDecimal.ZERO;
         ActBean bean = new ActBean(prescription, service);
-        for (Act act : bean.getNodeActs("dispensing")) {
-            IMObjectBean medication = new IMObjectBean(act, service);
-            BigDecimal quantity = medication.getBigDecimal("quantity", BigDecimal.ZERO);
-            result = result.add(quantity);
-        }
-        return result;
+        return bean.getValues("dispensing").size();
     }
 
     /**
-     * Returns the quantity remaining to be dispensed on a prescription.
+     * Returns the remaining repeats on the prescription.
+     * <p/>
+     * This is {@code 1 + repeats - times dispensed}
      *
      * @param prescription the prescription
-     * @return the quantity remaining to be dispensed
+     * @return the remaining repeats
      */
-    public BigDecimal getRemainingQuantity(Act prescription) {
-        BigDecimal total = getTotalQuantity(prescription);
-        BigDecimal dispensed = getDispensedQuantity(prescription);
-        return total.subtract(dispensed);
+    public int getRemainingRepeats(Act prescription) {
+        return 1 + getRepeats(prescription) - getDispensed(prescription);
     }
 
     /**
@@ -183,9 +150,24 @@ public class PrescriptionRules {
      * @return a prescription for the patient and product, or {@code null} if none is found
      */
     public Act getPrescription(Party patient, Product product) {
-        return getPrescription(patient, product, new Date());
+        return getPrescription(patient, product, Collections.<Act>emptyList());
     }
 
+    /**
+     * Returns the first prescription for a patient and product that may be dispensed.
+     * Excludes all prescriptions that have an expiry date less than today.
+     * <p/>
+     * The {@code exclude} argument may be used to exclude prescriptions; use this if a prescription has been
+     * dispensed but not saved, and should not be considered.
+     *
+     * @param patient the patient
+     * @param product the product
+     * @param exclude exclude the specified prescriptions
+     * @return a prescription for the patient and product, or {@code null} if none is found
+     */
+    public Act getPrescription(Party patient, Product product, List<Act> exclude) {
+        return getPrescription(patient, product, new Date(), exclude);
+    }
 
     /**
      * Returns the first prescription for a patient and product that may be dispensed.
@@ -196,16 +178,37 @@ public class PrescriptionRules {
      * @return a prescription for the patient and product, or {@code null} if none is found
      */
     public Act getPrescription(Party patient, Product product, Date expiryDate) {
+        return getPrescription(patient, product, expiryDate, Collections.<Act>emptyList());
+    }
+
+    /**
+     * Returns the first prescription for a patient and product that may be dispensed.
+     * <p/>
+     * The {@code exclude} argument may be used to exclude prescriptions; use this if a prescription has been
+     * dispensed but not saved, and should not be considered.
+     *
+     * @param patient    the patient
+     * @param product    the product
+     * @param expiryDate excludes prescriptions that have an expiry date {@code < expiryDate}
+     * @param exclude    exclude the specified prescriptions
+     * @return a prescription for the patient and product, or {@code null} if none is found
+     */
+    public Act getPrescription(Party patient, Product product, Date expiryDate, List<Act> exclude) {
         Act result = null;
         ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.PRESCRIPTION);
         query.add(gte("endTime", DateRules.getDate(expiryDate)));
         query.add(join("patient").add(eq("entity", patient.getObjectReference())));
         query.add(join("product").add(eq("entity", product.getObjectReference())));
+        if (!exclude.isEmpty()) {
+            for (Act act : exclude) {
+                query.add(Constraints.ne("id", act.getId()));
+            }
+        }
         query.add(new NodeSortConstraint("id"));
         Iterator<Act> iterator = new IMObjectQueryIterator<Act>(service, query);
         while (iterator.hasNext()) {
             Act act = iterator.next();
-            if (getRemainingQuantity(act).compareTo(BigDecimal.ZERO) > 0) {
+            if (getRemainingRepeats(act) > 0) {
                 result = act;
                 break;
             }
