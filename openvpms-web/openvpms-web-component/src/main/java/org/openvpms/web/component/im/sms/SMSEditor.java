@@ -27,8 +27,10 @@ import org.openvpms.macro.Variables;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -38,7 +40,6 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
-import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.CountedTextArea;
@@ -118,15 +119,18 @@ public class SMSEditor extends AbstractModifiable {
     public SMSEditor(List<Contact> contacts, Variables variables) {
         int length = (contacts == null) ? 0 : contacts.size();
         if (length <= 1) {
-            phone = TextComponentFactory.create(20);
-            phone.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onModified();
-                }
-            });
+            SimpleProperty phoneProperty = new SimpleProperty("phone", String.class);
+            phone = BoundTextComponentFactory.create(phoneProperty, 20);
             if (length == 1) {
-                phone.setText(formatPhone(contacts.get(0)));
+                phoneProperty.setValue(formatPhone(contacts.get(0)));
                 phone.setEnabled(false);
+            } else {
+                phoneProperty.addModifiableListener(new ModifiableListener() {
+                    @Override
+                    public void modified(Modifiable modifiable) {
+                        onModified();
+                    }
+                });
             }
         } else {
             phoneSelector = SelectFieldFactory.create(formatPhones(contacts));
