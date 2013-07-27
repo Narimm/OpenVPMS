@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,8 +71,7 @@ public class Prescriptions {
                 IMObjectReference product = medBean.getNodeParticipantRef("product");
                 Act prescription = medBean.getSourceAct(PatientArchetypes.PRESCRIPTION_MEDICATION);
                 if (product != null && prescription != null) {
-                    prescriptions.put(prescription.getObjectReference(),
-                                      new Prescription(prescription, medication, rules));
+                    prescriptions.put(prescription.getObjectReference(), new Prescription(prescription, rules));
                     medications.put(medication.getObjectReference(), medication);
                 }
             }
@@ -108,17 +108,20 @@ public class Prescriptions {
         IMObjectReference productRef = product.getObjectReference();
         IMObjectReference patientRef = patient.getObjectReference();
 
+        List<Act> exclude = new ArrayList<Act>(); // unsaved prescriptions that have been fully dispensed
         for (Prescription prescription : prescriptions.values()) {
             if (ObjectUtils.equals(patientRef, prescription.getPatient())
                 && ObjectUtils.equals(productRef, prescription.getProduct())) {
                 if (prescription.canDispense()) {
                     result = prescription;
                     break;
+                } else {
+                    exclude.add(prescription.getAct());
                 }
             }
         }
         if (result == null) {
-            Act act = rules.getPrescription(patient, product);
+            Act act = rules.getPrescription(patient, product, exclude);
             if (act != null) {
                 result = new Prescription(act, rules);
                 prescriptions.put(act.getObjectReference(), result);
@@ -237,7 +240,7 @@ public class Prescriptions {
             if (result == null) {
                 Act act = (Act) IMObjectHelper.getObject(relationship.getSource(), null);
                 if (act != null) {
-                    result = new Prescription(act, medication, rules);
+                    result = new Prescription(act, rules);
                     prescriptions.put(act.getObjectReference(), result);
                 }
             }

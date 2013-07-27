@@ -21,12 +21,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.resource.i18n.Messages;
-
-import java.math.BigDecimal;
 
 /**
  * An editor for <em>act.patientMedication</em> that enables the medication to be dispensed from a prescription.
@@ -66,6 +60,8 @@ public class PrescriptionMedicationActEditor extends PatientMedicationActEditor 
      * @param act the prescription act. May be {@code null}
      */
     public void setPrescription(Act act) {
+        boolean changeLayout = (prescription != null && act == null) || (prescription == null && act != null);
+        boolean readOnly = act != null;
         if (prescription != null) {
             prescription.removeMedication((Act) getObject());
             prescription = null;
@@ -74,12 +70,16 @@ public class PrescriptionMedicationActEditor extends PatientMedicationActEditor 
             Prescription prescription = prescriptions.create(act);
             prescription.addMedication((Act) getObject());
             setProduct((Product) getObject(prescription.getProduct()));
-            setQuantity(prescription.getQuantityToDispense());
+            setQuantity(prescription.getQuantity());
             this.prescription = prescription;
             String label = prescription.getLabel();
             if (!StringUtils.isEmpty(label)) {
                 setLabel(label);
             }
+        }
+        if (changeLayout) {
+            setDispensedFromPrescription(readOnly);
+            onLayout();
         }
     }
 
@@ -107,29 +107,6 @@ public class PrescriptionMedicationActEditor extends PatientMedicationActEditor 
         if (prescription != null) {
             setPrescription(null); // remove the existing prescription
         }
-    }
-
-    /**
-     * Validates the object.
-     * <p/>
-     * This extends validation by ensuring that the start time is less than the end time, if non-null.
-     *
-     * @param validator the validator
-     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
-     */
-    @Override
-    protected boolean doValidation(Validator validator) {
-        boolean result = super.doValidation(validator);
-        if (result && prescription != null) {
-            BigDecimal remainingQuantity = prescription.getRemainingQuantity();
-            if (getQuantity().compareTo(remainingQuantity) > 0) {
-                Property quantity = getProperty("quantity");
-                String message = Messages.format("patient.prescription.quantityexceeded", remainingQuantity);
-                validator.add(quantity, new ValidatorError(quantity, message));
-                result = false;
-            }
-        }
-        return result;
     }
 
 }
