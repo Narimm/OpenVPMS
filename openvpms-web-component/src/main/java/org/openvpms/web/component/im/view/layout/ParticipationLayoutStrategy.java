@@ -22,6 +22,7 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 
 import java.util.List;
@@ -56,7 +57,9 @@ public class ParticipationLayoutStrategy extends AbstractLayoutStrategy {
                                   Component container, LayoutContext context) {
         if (properties.size() == 1) {
             ComponentSet set = createComponentSet(object, properties, context);
-            container.add(set.getComponents().get(0).getComponent());
+            ComponentState state = set.getComponents().get(0);
+            container.add(state.getComponent());
+            setFocusTraversal(state);
         } else {
             super.doSimpleLayout(object, parent, properties, container, context);
         }
