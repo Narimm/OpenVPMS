@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -23,6 +24,8 @@ import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
@@ -41,6 +44,11 @@ public class PrescriptionTableModel extends DescriptorTableModel<Act> {
      * The model index of no. of "Times Dispensed" column.
      */
     private int dispensedIndex;
+
+    /**
+     * Helper property to render the "Times Dispensed" column.
+     */
+    private SimpleProperty timesDispensed = new SimpleProperty("timesDispensed", int.class);
 
     /**
      * Constructs a {@link PrescriptionTableModel}.
@@ -64,7 +72,7 @@ public class PrescriptionTableModel extends DescriptorTableModel<Act> {
     protected Object getValue(Act object, TableColumn column, int row) {
         Object result;
         if (column.getModelIndex() == dispensedIndex) {
-            result = rules.getDispensed(object);
+            result = getDispensed(object);
         } else {
             result = super.getValue(object, column, row);
         }
@@ -88,4 +96,17 @@ public class PrescriptionTableModel extends DescriptorTableModel<Act> {
         model.moveColumn(model.getColumnCount() - 1, getColumnOffset(model, "repeats") + 1);
         return model;
     }
+
+    /**
+     * Returns a component that displays the number of times the prescription has been dispensed.
+     *
+     * @param object the prescription
+     * @return the component
+     */
+    private Component getDispensed(Act object) {
+        timesDispensed.setValue(rules.getDispensed(object));
+        IMObjectComponentFactory factory = getLayoutContext().getComponentFactory();
+        return factory.create(timesDispensed, object).getComponent();
+    }
+
 }

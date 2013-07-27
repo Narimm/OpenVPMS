@@ -67,6 +67,11 @@ public class PatientMedicationActEditor extends PatientActEditor {
      */
     private boolean showProductReadOnly = false;
 
+    /**
+     * Determines if the medication was dispensed from a prescription. If so, the quantity and label nodes should be
+     * displayed read-only.
+     */
+    private boolean prescription = false;
 
     /**
      * Constructs a {@link PatientMedicationActEditor}.
@@ -85,6 +90,9 @@ public class PatientMedicationActEditor extends PatientActEditor {
         String displayName = DescriptorHelper.getDisplayName(ProductArchetypes.MEDICATION, "usageNotes");
         usageNotes = new TitledTextArea(displayName);
         usageNotes.setEnabled(false);
+
+        ActBean medBean = new ActBean(act);
+        prescription = medBean.hasRelationship(PatientArchetypes.PRESCRIPTION_MEDICATION);
 
         if (parent != null) {
             ActBean bean = new ActBean(parent);
@@ -130,6 +138,15 @@ public class PatientMedicationActEditor extends PatientActEditor {
     }
 
     /**
+     * Determines if the product should be displayed read-only.
+     *
+     * @param readOnly if {@code true} display the product read-only.
+     */
+    public void setProductReadOnly(boolean readOnly) {
+        showProductReadOnly = readOnly;
+    }
+
+    /**
      * Sets the quantity.
      *
      * @param quantity the quantity
@@ -148,13 +165,15 @@ public class PatientMedicationActEditor extends PatientActEditor {
     }
 
     /**
-     * Determines if the product should be displayed read-only.
+     * Determines if the medication was dispensed from a prescription.
+     * If {@code true}, then the quantity and label should be displayed read-only.
      *
-     * @param readOnly if {@code true} display the product read-only.
+     * @param prescription if {@code true} display the quantity and label read-only
      */
-    public void setProductReadOnly(boolean readOnly) {
-        showProductReadOnly = readOnly;
+    public void setDispensedFromPrescription(boolean prescription) {
+        this.prescription = prescription;
     }
+
 
     /**
      * Sets the dispensing instructions label.
@@ -185,6 +204,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
             }
         };
         strategy.setProductReadOnly(showProductReadOnly);
+        strategy.setDispensedFromPrescription(prescription);
         strategy.setUsageNotes(usageNotes);
         return strategy;
     }

@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.ReadOnlyProperty;
 import org.openvpms.web.echo.factory.ColumnFactory;
 
 import java.util.List;
@@ -55,6 +56,12 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     private boolean showProductReadOnly;
 
     /**
+     * Determines if the medication was dispensed from a prescription.
+     * If so, then the quantity and label node should be displayed read-only.
+     */
+    private boolean prescription = false;
+
+    /**
      * A component to display usage notes. May be {@code null}.
      */
     private Component usageNotes;
@@ -63,6 +70,11 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * The nodes to display.
      */
     private ArchetypeNodes nodes;
+
+    /**
+     * Factory for read-only components.
+     */
+    private ReadOnlyComponentFactory factory;
 
 
     /**
@@ -73,7 +85,7 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     }
 
     /**
-     * Determines if the data should be displayed read-only.
+     * Determines if the date should be displayed read-only.
      *
      * @param readOnly if {@code true} display the date read-only.
      */
@@ -89,6 +101,16 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     public void setProductReadOnly(boolean readOnly) {
         showProduct = true;
         showProductReadOnly = readOnly;
+    }
+
+    /**
+     * Determines if the medication was dispensed from a prescription.
+     * If {@code true}, then the quantity and label should be displayed read-only.
+     *
+     * @param prescription if {@code true} display the quantity and label read-only
+     */
+    public void setDispensedFromPrescription(boolean prescription) {
+        this.prescription = prescription;
     }
 
     /**
@@ -115,16 +137,22 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        if (!showProductReadOnly) {
-            if (parent instanceof Act) {
-                ActBean bean = new ActBean((Act) parent);
-                showProduct = !bean.hasNode("product");
-            } else {
-                showProduct = true;
+        ComponentState result;
+        try {
+            if (!showProductReadOnly) {
+                if (parent instanceof Act) {
+                    ActBean bean = new ActBean((Act) parent);
+                    showProduct = !bean.hasNode("product");
+                } else {
+                    showProduct = true;
+                }
             }
+            nodes = (showProduct) ? DEFAULT_NODES : new ArchetypeNodes().exclude("product");
+            result = super.apply(object, properties, parent, context);
+        } finally {
+            factory = null;
         }
-        nodes = (showProduct) ? DEFAULT_NODES : new ArchetypeNodes().exclude("product");
-        return super.apply(object, properties, parent, context);
+        return result;
     }
 
     /**
@@ -161,6 +189,8 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
             result = getReadOnlyComponent(property, parent, context);
         } else if (showProductReadOnly && name.equals("product")) {
             result = getReadOnlyComponent(property, parent, context);
+        } else if (prescription && (name.equals("quantity") || name.equals("label"))) {
+            result = super.createComponent(new ReadOnlyProperty(property), parent, context);
         } else {
             result = super.createComponent(property, parent, context);
         }
@@ -178,7 +208,8 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     }
 
     /**
-     * Helper to return a read-only component.
+     * Helper to return a read-only component. This uses an {@link ReadOnlyComponentFactory} rather than the default
+     * factory as it renders differently (fields aren't greyed out).
      *
      * @param property the property
      * @param parent   the parent object
@@ -186,7 +217,9 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * @return a read-only component to display the property
      */
     private ComponentState getReadOnlyComponent(Property property, IMObject parent, LayoutContext context) {
-        ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(context);
+        if (factory == null) {
+            factory = new ReadOnlyComponentFactory(context);
+        }
         return factory.create(property, parent);
     }
 

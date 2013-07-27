@@ -29,9 +29,9 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.property.DelegatingProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.ReadOnlyProperty;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -581,13 +581,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @return a read-only version of the property
      */
     protected Property createReadOnly(Property property) {
-        property = new DelegatingProperty(property) {
-            @Override
-            public boolean isReadOnly() {
-                return true;
-            }
-        };
-        return property;
+        return new ReadOnlyProperty(property);
     }
 
 }
