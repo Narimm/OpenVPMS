@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.jxpath;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -27,8 +26,7 @@ import java.util.TimeZone;
 /**
  * Date formatting functions for use in xpath expressions.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DateFunctions {
 
@@ -58,6 +56,25 @@ public class DateFunctions {
      */
     private static ThreadLocal<TimeZone> threadZone = new ThreadLocal<TimeZone>();
 
+    /**
+     * Formats a date according to a {@code SimpleDateFormat} pattern.
+     *
+     * @param date    the date. May be {@code null}
+     * @param pattern the format pattern. May be {@code null}
+     * @return the formatted date, or {@code null} if the date is null
+     */
+    public static String format(Date date, String pattern) {
+        String result = null;
+        if (date != null) {
+            if (pattern == null) {
+                result = formatDateTime(date);
+            } else {
+                DateFormat format = new SimpleDateFormat(pattern, getLocale());
+                result = format.format(date);
+            }
+        }
+        return result;
+    }
 
     /**
      * Returns a formatted string for a date, using the locale associated
