@@ -1,25 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.service.jxpath;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.system.common.jxpath.DateFunctions;
@@ -30,12 +26,15 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link DateFunctions} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DateFunctionsTestCase {
 
@@ -49,6 +48,25 @@ public class DateFunctionsTestCase {
      */
     private static final Locale AU = new Locale("en", "AU");
 
+    /**
+     * Tests the {@link DateFunctions#format(Date, String)} method.
+     */
+    @Test
+    public void testFormat() {
+        DateFunctions.setLocale(AU);
+        assertEquals("Sep 2006", DateFunctions.format(dateTime, "MMM yyyy"));
+        assertEquals("September 2006", DateFunctions.format(dateTime, "MMMM yyyy"));
+
+        assertEquals("5:54 PM", DateFunctions.format(dateTime, "h:mm a"));
+
+        assertEquals("17:54 Sep 2006", DateFunctions.format(dateTime, "H:mm MMM yyyy"));
+
+        // test null handling
+        assertNull("September 2006", DateFunctions.format(null, null));
+        assertNull("September 2006", DateFunctions.format(null, "MMM yyyy"));
+        String value = DateFunctions.format(dateTime, null); // falls back to medium format when pattern is null
+        assertTrue("20/09/2006 17:54:22".equals(value) || "20/09/2006 5:54:22 PM".equals(value));
+    }
 
     /**
      * Tests the {@link DateFunctions#formatDate methods.
@@ -58,19 +76,15 @@ public class DateFunctionsTestCase {
         DateFunctions.setLocale(AU);
         assertEquals("20/09/2006", DateFunctions.formatDate(dateTime));
         assertEquals("20/09/06", DateFunctions.formatDate(dateTime, "short"));
-        assertEquals("20/09/2006",
-                     DateFunctions.formatDate(dateTime, "medium"));
-        assertEquals("20 September 2006",
-                     DateFunctions.formatDate(dateTime, "long"));
+        assertEquals("20/09/2006", DateFunctions.formatDate(dateTime, "medium"));
+        assertEquals("20 September 2006", DateFunctions.formatDate(dateTime, "long"));
 
         // change the locale
         DateFunctions.setLocale(Locale.UK);
         assertEquals("20-Sep-2006", DateFunctions.formatDate(dateTime));
         assertEquals("20/09/06", DateFunctions.formatDate(dateTime, "short"));
-        assertEquals("20-Sep-2006",
-                     DateFunctions.formatDate(dateTime, "medium"));
-        assertEquals("20 September 2006",
-                     DateFunctions.formatDate(dateTime, "long"));
+        assertEquals("20-Sep-2006", DateFunctions.formatDate(dateTime, "medium"));
+        assertEquals("20 September 2006", DateFunctions.formatDate(dateTime, "long"));
     }
 
     /**
