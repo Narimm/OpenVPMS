@@ -801,19 +801,31 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns a string form of a patients age.
+     * Returns the age of the patient.
+     * <p/>
+     * If the patient is deceased, the age of the patient when they died will be returned
      *
      * @param context the expression context. Expected to reference a party.
-     * @return the stringified form of the party's identities or
-     *         {@code null}
+     * @return the stringified form of the patient's age
      */
     public String getPatientAge(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
         if (pointer == null || !(pointer.getValue() instanceof Party)) {
             return null;
         }
-        Party party = (Party) pointer.getValue();
-        return patientRules.getPatientAge(party);
+        return getPatientAge((Party) pointer.getValue());
+    }
+
+    /**
+     * Returns the age of the patient.
+     * <p/>
+     * If the patient is deceased, the age of the patient when they died will be returned
+     *
+     * @param patient the patient
+     * @return the stringified form of the patient's age
+     */
+    public String getPatientAge(Party patient) {
+        return patientRules.getPatientAge(patient);
     }
 
     /**
