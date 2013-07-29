@@ -95,17 +95,24 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Recursively deletes children of <em>act.patientClinicalEvent</em> acts.
+     * Recursively deletes items of <em>act.patientClinicalEvent</em> acts.
      *
      * @param act the deleted act
      */
     public void deleteChildRecords(Act act) {
-        if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
-            for (ActRelationship relationship :
-                    act.getSourceActRelationships()) {
+        ActBean bean = new ActBean(act, service);
+        if (bean.isA(PatientArchetypes.CLINICAL_EVENT)) {
+            for (ActRelationship relationship : bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_ITEM)) {
                 Act child = get(relationship.getTarget());
                 if (child != null) {
-                    delete(child);
+                    ActBean childBean = new ActBean(child);
+                    if (childBean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
+                        if (!childBean.hasRelationship(CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP)) {
+                            delete(child);
+                        }
+                    } else {
+                        delete(child);
+                    }
                 }
             }
         }
@@ -496,18 +503,21 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Recursively deletes an act heirarchy, from the top down.
+     * Recursively deletes an act hierarchy, from the top down.
+     * <p/>
+     * Only those acts target where the relationship is a parent-child relationship will be deleted.
      *
      * @param act the act to delete
      * @throws ArchetypeServiceException for any error
      */
     private void delete(Act act) {
         service.remove(act);
-        for (ActRelationship relationship :
-                act.getSourceActRelationships()) {
-            Act child = get(relationship.getTarget());
-            if (child != null) {
-                delete(child);
+        for (ActRelationship relationship : act.getSourceActRelationships()) {
+            if (relationship.isParentChildRelationship()) {
+                Act child = get(relationship.getTarget());
+                if (child != null) {
+                    delete(child);
+                }
             }
         }
     }
