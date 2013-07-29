@@ -1,22 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.ActActions;
 
@@ -60,7 +62,21 @@ public class PatientHistoryActions extends ActActions<Act> {
      */
     @Override
     public boolean canDelete(Act act) {
-        return !TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM) && super.canDelete(act);
+        if (act == null) {
+            return false;
+        }
+        if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            return false;
+        } else if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT, PatientArchetypes.CLINICAL_PROBLEM)) {
+            return act.getSourceActRelationships().isEmpty();
+        } else {
+            for (ActRelationship rel : act.getTargetActRelationships()) {
+                if (TypeHelper.isA(rel.getSource(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

@@ -275,7 +275,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", archetypes.getDisplayName()));
-        } else {
+        } else if (getActions().canDelete(object)) {
             IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
             HelpContext delete = getHelpContext().subtopic("delete");
             deletor.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
