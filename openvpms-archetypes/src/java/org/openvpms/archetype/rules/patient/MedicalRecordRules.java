@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -92,30 +91,6 @@ public class MedicalRecordRules {
      */
     public MedicalRecordRules(IArchetypeService service) {
         this.service = service;
-    }
-
-    /**
-     * Recursively deletes items of <em>act.patientClinicalEvent</em> acts.
-     *
-     * @param act the deleted act
-     */
-    public void deleteChildRecords(Act act) {
-        ActBean bean = new ActBean(act, service);
-        if (bean.isA(PatientArchetypes.CLINICAL_EVENT)) {
-            for (ActRelationship relationship : bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_ITEM)) {
-                Act child = get(relationship.getTarget());
-                if (child != null) {
-                    ActBean childBean = new ActBean(child);
-                    if (childBean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
-                        if (!childBean.hasRelationship(CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP)) {
-                            delete(child);
-                        }
-                    } else {
-                        delete(child);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -500,26 +475,6 @@ public class MedicalRecordRules {
             eventBean.addNodeParticipation("clinician", clinician);
         }
         return event;
-    }
-
-    /**
-     * Recursively deletes an act hierarchy, from the top down.
-     * <p/>
-     * Only those acts target where the relationship is a parent-child relationship will be deleted.
-     *
-     * @param act the act to delete
-     * @throws ArchetypeServiceException for any error
-     */
-    private void delete(Act act) {
-        service.remove(act);
-        for (ActRelationship relationship : act.getSourceActRelationships()) {
-            if (relationship.isParentChildRelationship()) {
-                Act child = get(relationship.getTarget());
-                if (child != null) {
-                    delete(child);
-                }
-            }
-        }
     }
 
     /**
