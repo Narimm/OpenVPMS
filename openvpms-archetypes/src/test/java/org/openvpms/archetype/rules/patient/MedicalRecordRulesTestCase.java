@@ -71,28 +71,53 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Verifies that deletion of an <em>act.patientClinicalEvent</em>
-     * deletes all of the children.
+     * deletes all of the children, except invoice items.
      */
     @Test
     public void testDeleteClinicalEvent() {
         Act event = createEvent();
         Act problem = createProblem();
-        save(problem);
+        Act item = createInvoiceItem();
+        Act medication1 = createMedication(patient);
+        Act medication2 = createMedication(patient);
 
-        ActBean bean = new ActBean(event);
-        bean.addRelationship("actRelationship.patientClinicalEventItem",
-                             problem);
-        save(event);
+        // link each of the acts to the event
+        ActBean eventBean = new ActBean(event);
+        eventBean.addNodeRelationship("items", problem);
+        eventBean.addNodeRelationship("items", medication1);
+        eventBean.addNodeRelationship("items", medication2);
+        eventBean.addNodeRelationship("chargeItems", item);
+
+        // link medication2 to the invoice item
+        ActBean itemBean = new ActBean(item);
+        itemBean.addNodeRelationship("dispensing", medication2);
+
+        // save them all
+        save(event, problem, item, medication1, medication2);
+
 
         // make sure each of the objects can be retrieved
-        assertNotNull(get(event.getObjectReference()));
+        event = get(event);
+        assertNotNull(event);
+        eventBean = new ActBean(event);
+        assertTrue(eventBean.hasNodeTarget("items", problem));
+        assertTrue(eventBean.hasNodeTarget("items", medication1));
+        assertTrue(eventBean.hasNodeTarget("items", medication2));
+        assertTrue(eventBean.hasNodeTarget("chargeItems", item));
+
         assertNotNull(get(problem.getObjectReference()));
+        assertNotNull(get(item.getObjectReference()));
+        assertNotNull(get(medication1.getObjectReference()));
+        assertNotNull(get(medication2.getObjectReference()));
 
-        remove(event);  // remove should cascade to delete problem
+        // now remove the event
+        remove(event);
 
-        // make sure the event, but none of the child acts can be retrieved
+        // make sure the event, problem and medication1, are deleted, but the invoice item and medication2 remains
         assertNull(get(event.getObjectReference()));
         assertNull(get(problem.getObjectReference()));
+        assertNotNull(get(item.getObjectReference()));
+        assertNotNull(get(medication2.getObjectReference()));
     }
 
     /**
@@ -645,6 +670,17 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act act = (Act) create(shortName);
         assertNotNull(act);
         return act;
+    }
+
+
+    /**
+     * Helper to create an <em>act.customerAccountInvoiceItem</em>.
+     *
+     * @return a new act
+     */
+    private Act createInvoiceItem() {
+        return FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE, patient,
+                                              TestHelper.createProduct());
     }
 
     /**
