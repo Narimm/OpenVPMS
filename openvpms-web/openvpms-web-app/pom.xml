@@ -41,13 +41,6 @@
         <finalName>openvpms</finalName>
         <resources>
             <resource>
-                <directory>${basedir}/src/conf</directory>
-                <includes>
-                    <include>*.properties</include>
-                    <include>*.xml</include>
-                </includes>
-            </resource>
-            <resource>
                 <directory>${basedir}/src/conf/log4j</directory>
                 <includes>
                     <include>log4j.properties</include>
@@ -79,6 +72,12 @@
                 <directory>${basedir}/src/conf/version</directory>
                 <targetPath>META-INF/</targetPath>
                 <filtering>true</filtering>
+            </resource>
+            <resource>
+                <includes>
+                    <include>localisation/**</include>
+                </includes>
+                <directory>${basedir}/src/conf</directory>
             </resource>
             <resource>
                 <includes>

@@ -38,7 +38,7 @@ public final class Messages {
     /**
      * The help resource bundle name.
      */
-    public static final String HELP = "org.openvpms.web.resource.localisation.help";
+    public static final String HELP = "localisation.help";
 
     /**
      * Default resource bundle name.
