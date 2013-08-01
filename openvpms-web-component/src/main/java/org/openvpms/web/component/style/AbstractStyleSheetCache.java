@@ -1,25 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.style;
 
 import nextapp.echo2.app.StyleSheet;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -50,13 +48,27 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
     /**
      * Cached style sheets, keyed on resolution.
      */
-    private Map<Dimension, StyleSheet> stylesheets = new HashMap<Dimension, StyleSheet>();
+    private Map<Dimension, Style> stylesheets = new HashMap<Dimension, Style>();
 
     /**
      * The style property evaluator.
      */
     private StylePropertyEvaluator evaluator;
 
+
+    /**
+     * Returns a style for the specified screen resolution.
+     *
+     * @param width  the screen width
+     * @param height the screen height
+     * @return the style sheet for the specified resolution
+     * @throws StyleSheetException if the style sheet cannot be created
+     */
+    @Override
+    public Style getStyle(int width, int height) {
+        Dimension size = new Dimension(width, height);
+        return getStyle(size);
+    }
 
     /**
      * Returns a style sheet for the specified screen resolution.
@@ -66,8 +78,25 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
      * @return the style sheet for the specified resolution
      */
     public StyleSheet getStyleSheet(int width, int height) {
-        Dimension size = new Dimension(width, height);
-        return getStyleSheet(size);
+        return getStyle(width, height).getStylesheet();
+    }
+
+    /**
+     * Returns a style sheet for the specified screen resolution.
+     *
+     * @param size the screen resolution
+     * @return the style sheet for the specified resolution
+     * @throws StyleSheetException if the style sheet cannot be created
+     */
+    @Override
+    public Style getStyle(Dimension size) {
+        Style result = getCachedStyleSheet(size);
+        if (result == null) {
+            Map<String, String> properties = getProperties(size, true);
+            result = new Style(getStyleSheet(properties), size, properties);
+            stylesheets.put(size, result);
+        }
+        return result;
     }
 
     /**
@@ -77,13 +106,7 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
      * @return the style sheet for the specified resolution
      */
     public synchronized StyleSheet getStyleSheet(Dimension size) {
-        StyleSheet result = getCachedStyleSheet(size);
-        if (result == null) {
-            Map<String, String> properties = getProperties(size, true);
-            result = getStyleSheet(properties);
-            stylesheets.put(size, result);
-        }
-        return result;
+        return getStyle(size).getStylesheet();
     }
 
     /**
@@ -174,7 +197,7 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
      * Returns the unevaluated properties for the specified resolution.
      *
      * @param size the resolution
-     * @return the unevaluated properties, or <tt>null</tt> if none are found
+     * @return the unevaluated properties, or {@code null} if none are found
      */
     public synchronized Map<String, String> getResolution(Dimension size) {
         return resolutions.get(size);
@@ -228,7 +251,7 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
      * resolution.
      *
      * @param size the resolution
-     * @return the closest properties, or <tt>null</tt> if none are available
+     * @return the closest properties, or {@code null} if none are available
      */
     protected synchronized Map<String, String> getClosestResolution(Dimension size) {
         Map<String, String> result = getResolution(size);
@@ -264,9 +287,9 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
      *
      * @param width  the screen width
      * @param height the screen height
-     * @return the cached style sheet, or <tt>null</tt> if none is found
+     * @return the cached style sheet, or {@code null} if none is found
      */
-    protected StyleSheet getCachedStyleSheet(int width, int height) {
+    protected Style getCachedStyleSheet(int width, int height) {
         return getCachedStyleSheet(new Dimension(width, height));
     }
 
@@ -274,9 +297,9 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
      * Returns the cached style sheet for the specified resolution.
      *
      * @param size the screen resolution
-     * @return the cached style sheet, or <tt>null</tt> if none is found
+     * @return the cached style sheet, or {@code null} if none is found
      */
-    protected synchronized StyleSheet getCachedStyleSheet(Dimension size) {
+    protected synchronized Style getCachedStyleSheet(Dimension size) {
         return stylesheets.get(size);
     }
 
@@ -284,7 +307,7 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
      * Determines if the specified resolution has style sheet data.
      *
      * @param size the screen resolution
-     * @return <tt>true</tt> if properties exist for the resolution; otherwise <tt>false</tt>
+     * @return {@code true} if properties exist for the resolution; otherwise {@code false}
      */
     protected synchronized boolean hasResolution(Dimension size) {
         return resolutions.containsKey(size);

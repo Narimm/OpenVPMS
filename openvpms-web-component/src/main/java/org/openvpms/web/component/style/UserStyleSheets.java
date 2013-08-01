@@ -1,36 +1,35 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.style;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.StyleSheet;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 
 /**
  * A cache of style sheets that enables individual users to override the default styles.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UserStyleSheets extends AbstractStyleSheetCache {
 
@@ -44,9 +43,14 @@ public class UserStyleSheets extends AbstractStyleSheetCache {
      */
     private boolean overrideCacheDefaults = false;
 
+    /**
+     * Tracks the style for a given application instance.
+     */
+    private WeakHashMap<ApplicationInstance, Style> styles = new WeakHashMap<ApplicationInstance, Style>();
+
 
     /**
-     * Constructs an <tt>UserStyleSheets</tt>.
+     * Constructs an {@link UserStyleSheets}.
      *
      * @param cache the style sheet cache
      */
@@ -56,19 +60,38 @@ public class UserStyleSheets extends AbstractStyleSheetCache {
     }
 
     /**
+     * Registers the style of the specified application.
+     *
+     * @param app   the application
+     * @param style the application's style. May be {@code null}
+     */
+    public void setStyle(ApplicationInstance app, Style style) {
+        styles.put(app, style);
+    }
+
+    /**
+     * Returns the style of the current instance.
+     *
+     * @return the style. May be {@code null}
+     */
+    public Style getStyle() {
+        return styles.get(ApplicationInstance.getActive());
+    }
+
+    /**
      * Returns a style sheet for the specified screen resolution.
      *
      * @param size the screen resolution
      * @return the style sheet for the specified resolution
      */
     @Override
-    public StyleSheet getStyleSheet(Dimension size) {
-        StyleSheet result = getCachedStyleSheet(size);
+    public Style getStyle(Dimension size) {
+        Style result = getCachedStyleSheet(size);
         if (result == null) {
             if (overrideCacheDefaults || hasResolution(size)) {
-                result = super.getStyleSheet(size);
+                result = super.getStyle(size);
             } else {
-                result = cache.getStyleSheet(size);
+                result = cache.getStyle(size);
             }
         }
         return result;
@@ -140,7 +163,7 @@ public class UserStyleSheets extends AbstractStyleSheetCache {
      * Returns the unevaluated properties for the specified resolution.
      *
      * @param size the resolution
-     * @return the unevaluated properties, or <tt>null</tt> if none are found
+     * @return the unevaluated properties, or {@code null} if none are found
      */
     @Override
     public Map<String, String> getResolution(Dimension size) {

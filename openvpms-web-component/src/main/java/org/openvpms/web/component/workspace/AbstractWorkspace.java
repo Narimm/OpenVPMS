@@ -1,29 +1,30 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
 
 import echopointng.KeyStrokeListener;
-import echopointng.KeyStrokes;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.style.Style;
+import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.echo.dialog.HelpDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
@@ -40,7 +41,7 @@ import java.beans.PropertyChangeSupport;
  * @author Tim Anderson
  */
 public abstract class AbstractWorkspace<T extends IMObject>
-    implements Workspace<T> {
+        implements Workspace<T> {
 
     /**
      * The current object. May be {@code null}.
@@ -87,8 +88,8 @@ public abstract class AbstractWorkspace<T extends IMObject>
      * Constructs an {@code AbstractWorkspace}.
      *
      * @param workspacesId the workspace group localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param context     the context
+     * @param workspaceId  the workspace localisation identifier
+     * @param context      the context
      */
     public AbstractWorkspace(String workspacesId, String workspaceId, Context context) {
         this.workspacesId = workspacesId;
@@ -240,7 +241,13 @@ public abstract class AbstractWorkspace<T extends IMObject>
         if (help == null) {
             help = new HelpContext(getHelpTopic(), new HelpListener() {
                 public void show(HelpContext help) {
-                    HelpDialog.show(help, ServiceHelper.getArchetypeService());
+                    String features = null;
+                    UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
+                    Style style = styleSheets.getStyle();
+                    if (style != null) {
+                        features = style.getProperty("HelpBrowser.features");
+                    }
+                    HelpDialog.show(help, ServiceHelper.getArchetypeService(), features);
                 }
             });
         }
@@ -271,7 +278,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
                                              PropertyChangeListener listener) {
         if (propertyChangeNotifier != null) {
             propertyChangeNotifier.removePropertyChangeListener(
-                name, listener);
+                    name, listener);
         }
     }
 
@@ -306,7 +313,7 @@ public abstract class AbstractWorkspace<T extends IMObject>
     protected Component doLayout() {
         Component heading = Heading.getHeading(workspacesId, workspaceId);
         KeyStrokeListener listener = new KeyStrokeListener();
-        listener.addKeyCombination(KeyStrokes.VK_F1);
+        listener.addKeyCombination(getHelpContext().getKeyCode());
         listener.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
