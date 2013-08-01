@@ -17,7 +17,6 @@
 package org.openvpms.web.component.app;
 
 import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.StyleSheet;
 import nextapp.echo2.webcontainer.ContainerContext;
 import nextapp.echo2.webrender.ClientProperties;
 import org.openvpms.archetype.rules.practice.LocationRules;
@@ -34,6 +33,7 @@ import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.web.component.style.Style;
 import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
@@ -41,15 +41,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Resource;
-import java.awt.*;
+import java.awt.Dimension;
 import java.util.Map;
 
 
 /**
  * An {@code ApplicationInstance} associated with a {@link GlobalContext}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public abstract class ContextApplicationInstance
         extends SpringApplicationInstance {
@@ -73,6 +72,7 @@ public abstract class ContextApplicationInstance
      * The practice rules.
      */
     private final PracticeRules rules;
+
 
     /**
      * Constructs a {@code ContextApplicationInstance}.
@@ -184,32 +184,24 @@ public abstract class ContextApplicationInstance
      */
     public void setStyleSheet() {
         Dimension size = getResolution();
-        setStyleSheet(size.width, size.height);
+        setStyle(size.width, size.height);
     }
 
     /**
-     * Sets the style sheet based on the specified screen resolution
+     * Sets the style based on the specified screen resolution
      *
      * @param width  the screen width
      * @param height the screen height
      */
-    public void setStyleSheet(int width, int height) {
+    public void setStyle(int width, int height) {
         try {
-            StyleSheet styleSheet = styleSheets.getStyleSheet(width, height);
-            setStyleSheet(styleSheet);
-            setResolution(new Dimension(width, height));
+            Style style = styleSheets.getStyle(width, height);
+            styleSheets.setStyle(this, style);
+            setStyleSheet(style.getStylesheet());
+            setResolution(style.getSize());
         } catch (Throwable exception) {
             ErrorHelper.show(exception, true);
         }
-    }
-
-    /**
-     * Configures the style sheet.
-     */
-    protected void configureStyleSheet() {
-        Dimension size = getResolution();
-        StyleSheet styleSheet = styleSheets.getStyleSheet(size.width, size.height);
-        setStyleSheet(styleSheet);
     }
 
     /**

@@ -68,6 +68,11 @@ import static org.openvpms.web.echo.style.Styles.INSET;
 public class HelpDialog extends PopupDialog {
 
     /**
+     * Features to pass to window.open().
+     */
+    private final String features;
+
+    /**
      * The project logo.
      */
     private static final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
@@ -85,10 +90,11 @@ public class HelpDialog extends PopupDialog {
     /**
      * Constructs a {@code HelpDialog}.
      *
-     * @param service the archetype service
+     * @param service  the archetype service
+     * @param features browser feature string. May be {@code null}
      */
-    public HelpDialog(IArchetypeService service) {
-        this(null, null, service);
+    public HelpDialog(IArchetypeService service, String features) {
+        this(null, null, service, features);
     }
 
     /**
@@ -97,9 +103,11 @@ public class HelpDialog extends PopupDialog {
      * @param topic    the topic. May be {@code null}
      * @param topicURL the topic URL. May be {@code null}
      * @param service  the archetype service
+     * @param features browser feature string. May be {@code null}
      */
-    protected HelpDialog(String topic, final String topicURL, IArchetypeService service) {
+    protected HelpDialog(String topic, final String topicURL, IArchetypeService service, String features) {
         super(Messages.get("helpdialog.title"), "HelpDialog", OK);
+        this.features = features;
         setModal(true);
 
         Component component = null;
@@ -151,34 +159,36 @@ public class HelpDialog extends PopupDialog {
     /**
      * Displays a help dialog for the specified help context.
      *
-     * @param help    the help context. May be {@code null}
-     * @param service the archetype service
+     * @param help     the help context. May be {@code null}
+     * @param service  the archetype service
+     * @param features the browser features. May be {@code null}
      */
-    public static void show(HelpContext help, IArchetypeService service) {
+    public static void show(HelpContext help, IArchetypeService service, String features) {
         if (help == null) {
-            new HelpDialog(service).show();
+            new HelpDialog(service, features).show();
         } else {
-            show(help.getTopic(), service);
+            show(help.getTopic(), service, features);
         }
     }
 
     /**
      * Displays a help dialog for the specified topic.
      *
-     * @param topic   the topic identifier
-     * @param service the archetype service
+     * @param topic    the topic identifier
+     * @param service  the archetype service
+     * @param features the browser features. May be {@code null}
      */
-    public static void show(String topic, IArchetypeService service) {
+    public static void show(String topic, IArchetypeService service, String features) {
         String url = getTopicURL(topic);
         if (url != null) {
             if (exists(url)) {
-                ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, null, null));
+                openWindow(url, features);
             } else {
-                HelpDialog dialog = new HelpDialog(topic, url, service);
+                HelpDialog dialog = new HelpDialog(topic, url, service, features);
                 dialog.show();
             }
         } else {
-            HelpDialog dialog = new HelpDialog(topic, null, service);
+            HelpDialog dialog = new HelpDialog(topic, null, service, features);
             dialog.show();
         }
     }
@@ -267,8 +277,17 @@ public class HelpDialog extends PopupDialog {
      * @param url the URL
      */
     private void launch(String url) {
-        ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, null, null));
+        openWindow(url, features);
         close();
+    }
+
+    /**
+     * Opens a new window for the specified url.
+     *
+     * @param url the url
+     */
+    private static void openWindow(String url, String features) {
+        ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, null, features));
     }
 
     /**

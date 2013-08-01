@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.echo.help;
 
 import echopointng.KeyStrokeListener;
@@ -80,7 +81,7 @@ public class HelpContext {
         this.parent = parent;
         this.topic = topic;
         this.listener = listener;
-        this.keyCode = KeyStrokeListener.VK_F1;
+        this.keyCode = KeyStrokeListener.CONTROL_MASK | KeyStrokeListener.VK_F1;
     }
 
     /**

@@ -46,6 +46,8 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.component.style.Style;
+import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.workspace.Refreshable;
 import org.openvpms.web.component.workspace.Workspace;
 import org.openvpms.web.component.workspace.Workspaces;
@@ -250,7 +252,13 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
 
         menu.addButton("help", new ActionListener() {
             public void onAction(ActionEvent event) {
-                HelpDialog dialog = new HelpDialog(ServiceHelper.getArchetypeService());
+                String features = null;
+                UserStyleSheets styleSheets = ServiceHelper.getBean(UserStyleSheets.class);
+                Style style = styleSheets.getStyle();
+                if (style != null) {
+                    features = style.getProperty("HelpBrowser.features");
+                }
+                HelpDialog dialog = new HelpDialog(ServiceHelper.getArchetypeService(), features);
                 dialog.show();
             }
         });

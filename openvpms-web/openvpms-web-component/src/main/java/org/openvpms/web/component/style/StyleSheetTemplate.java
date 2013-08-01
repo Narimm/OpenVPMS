@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.style;
 
@@ -30,12 +28,11 @@ import java.util.Map;
 
 
 /**
- * A template for a <tt>StyleSheet</tt>.
+ * A template for a {@code StyleSheet}.
  * <p/>
  * This supports replacements of tokens defined using the format: ${name}
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StyleSheetTemplate {
 
@@ -45,7 +42,7 @@ public class StyleSheetTemplate {
     private final List<String> template;
 
     /**
-     * Constructs a <tt>StyleSheetTemplate</tt>.
+     * Constructs a {@code StyleSheetTemplate}.
      *
      * @param stream a stream to the template
      * @throws IOException if the stream cannot be read
@@ -57,7 +54,7 @@ public class StyleSheetTemplate {
     }
 
     /**
-     * Creates a <tt>StyleSheet</tt> from the template, after performing token replacement using the supplied
+     * Creates a {@code StyleSheet} from the template, after performing token replacement using the supplied
      * properties.
      *
      * @param properties the properties to perform token replacement with

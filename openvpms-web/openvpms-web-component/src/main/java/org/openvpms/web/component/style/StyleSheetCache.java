@@ -13,11 +13,12 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.style;
 
 import nextapp.echo2.app.StyleSheet;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -72,6 +73,7 @@ public class StyleSheetCache extends AbstractStyleSheetCache {
      * @return the style sheet for the specified properties
      * @throws StyleSheetException if the style sheet cannot be created
      */
+    @Override
     public StyleSheet getStyleSheet(Map<String, String> properties) {
         return template.getStyleSheet(properties);
     }
