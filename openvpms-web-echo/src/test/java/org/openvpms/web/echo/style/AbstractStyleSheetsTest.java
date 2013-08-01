@@ -13,7 +13,8 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.component.style;
+
+package org.openvpms.web.echo.style;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Color;
@@ -46,7 +47,7 @@ public abstract class AbstractStyleSheetsTest {
     private StyleSheets styleSheets;
 
     /**
-     * Tests the {@link org.openvpms.web.component.style.StyleSheets#getStyleSheet(int, int)} method.
+     * Tests the {@link StyleSheets#getStyleSheet(int, int)} method.
      */
     @Test
     public void testGetStyleSheet() {
@@ -72,7 +73,7 @@ public abstract class AbstractStyleSheetsTest {
     }
 
     /**
-     * Tests the {@link org.openvpms.web.component.style.StyleSheets#getProperties(int, int)} method.
+     * Tests the {@link StyleSheets#getProperties(int, int)} method.
      */
     @Test
     public void testGetProperties() {
@@ -85,7 +86,7 @@ public abstract class AbstractStyleSheetsTest {
     }
 
     /**
-     * Tests the {@link org.openvpms.web.component.style.StyleSheets#getProperties(int, int,
+     * Tests the {@link StyleSheets#getProperties(int, int,
      * boolean)} method where properties aren't evaluated.
      */
     @Test

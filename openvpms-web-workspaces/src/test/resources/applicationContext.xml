@@ -241,11 +241,11 @@
         <constructor-arg ref="practiceRules"/>
     </bean>
 
-    <bean id="styleSheetCache" class="org.openvpms.web.component.style.StyleSheetCache">
+    <bean id="styleSheetCache" class="org.openvpms.web.echo.style.StyleSheetCache">
         <constructor-arg index="0" value="style/default"/>
     </bean>
 
-    <bean id="userStyleSheets" class="org.openvpms.web.component.style.UserStyleSheets">
+    <bean id="userStyleSheets" class="org.openvpms.web.echo.style.UserStyleSheets">
         <constructor-arg index="0" ref="styleSheetCache"/>
     </bean>
 

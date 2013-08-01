@@ -13,7 +13,8 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.component.style;
+
+package org.openvpms.web.echo.style;
 
 import nextapp.echo2.app.StyleSheet;
 
@@ -28,10 +29,9 @@ import java.util.TreeSet;
 
 
 /**
- * Implementation of {@link org.openvpms.web.component.style.StyleSheets} that provides caching of style sheets.
+ * Implementation of {@link StyleSheets} that provides caching of style sheets.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractStyleSheetCache implements StyleSheets {
 

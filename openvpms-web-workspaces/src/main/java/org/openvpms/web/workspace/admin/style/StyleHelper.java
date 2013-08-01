@@ -1,20 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.admin.style;
 
 import nextapp.echo2.app.Grid;
@@ -22,10 +21,10 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.property.Property;
-import org.openvpms.web.component.style.StyleSheets;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.style.StyleSheets;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -34,8 +33,7 @@ import java.util.TreeMap;
 /**
  * Style workspace helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StyleHelper {
 

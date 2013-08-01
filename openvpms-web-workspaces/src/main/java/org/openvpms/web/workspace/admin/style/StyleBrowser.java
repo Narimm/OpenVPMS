@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.admin.style;
 
 import nextapp.echo2.app.Component;
@@ -31,26 +32,25 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.factory.TableFactory;
+import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.echo.table.EvenOddTableCellRenderer;
 import org.openvpms.web.resource.i18n.Messages;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.util.Map;
 
 
 /**
  * A browser for style sheet properties.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StyleBrowser {
 

@@ -23,12 +23,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.style.Style;
-import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.echo.dialog.HelpDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.help.HelpListener;
+import org.openvpms.web.echo.style.Style;
+import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeListener;
