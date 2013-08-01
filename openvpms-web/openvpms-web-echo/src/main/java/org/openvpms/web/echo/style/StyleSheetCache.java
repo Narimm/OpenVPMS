@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.style;
+package org.openvpms.web.echo.style;
 
 import nextapp.echo2.app.StyleSheet;
 

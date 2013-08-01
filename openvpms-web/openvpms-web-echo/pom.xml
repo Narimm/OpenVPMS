@@ -164,4 +164,24 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>${basedir}/src/test/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.stylesheet</include>
+                </includes>
+            </testResource>
+        </testResources>
+    </build>
+
 </project>

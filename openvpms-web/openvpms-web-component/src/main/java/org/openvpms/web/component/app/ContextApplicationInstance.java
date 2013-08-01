@@ -33,10 +33,10 @@ import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
-import org.openvpms.web.component.style.Style;
-import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
+import org.openvpms.web.echo.style.Style;
+import org.openvpms.web.echo.style.UserStyleSheets;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

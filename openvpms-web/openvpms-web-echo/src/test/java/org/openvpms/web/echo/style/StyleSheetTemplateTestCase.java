@@ -1,21 +1,20 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.component.style;
+
+package org.openvpms.web.echo.style;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Color;
@@ -36,8 +35,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests the {@link StyleSheetTemplate}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StyleSheetTemplateTestCase {
 
@@ -69,7 +67,7 @@ public class StyleSheetTemplateTestCase {
     /**
      * Valid style sheet resource path.
      */
-    private static final String VALID_STYLESHEET = "org/openvpms/web/component/style/valid.stylesheet";
+    private static final String VALID_STYLESHEET = "org/openvpms/web/echo/style/valid.stylesheet";
 
 
     /**
@@ -121,7 +119,7 @@ public class StyleSheetTemplateTestCase {
     @Test
     public void testUnterminatedProperty() throws Exception {
         try {
-            InputStream stream = getStyleSheet("org/openvpms/web/component/style/unterminatedproperty.stylesheet");
+            InputStream stream = getStyleSheet("org/openvpms/web/echo/style/unterminatedproperty.stylesheet");
             StyleSheetTemplate template = new StyleSheetTemplate(stream);
             Map<String, String> properties = new HashMap<String, String>();
             template.getStyleSheet(properties);

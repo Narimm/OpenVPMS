@@ -13,22 +13,23 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.admin.style;
 
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.style.StylePropertyEvaluator;
-import org.openvpms.web.component.style.UserStyleSheets;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.style.StylePropertyEvaluator;
+import org.openvpms.web.echo.style.UserStyleSheets;
 import org.openvpms.web.resource.i18n.Messages;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,8 +40,7 @@ import java.util.Map;
 /**
  * An editor for properties used in a stylesheet.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StyleEditor extends PopupDialog {
 
