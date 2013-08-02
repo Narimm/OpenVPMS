@@ -22,10 +22,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.macro.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.component.macro.MacroDialog;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.Map;
 import java.util.Set;
@@ -73,11 +75,22 @@ public class ParameterDialog extends PopupDialog {
                            HelpContext help, Variables variables) {
         super(title, null, OK_CANCEL, help);
         setModal(true);
-        this.parameters = new ReportParameters(parameters, object, variables);
+        int columns = 2;
+
+        // if there are string parameters, render the display in a single column. The string fields will fill
+        // the available width.
+        for (ParameterType parameter : parameters) {
+            if (parameter.getType() == String.class) {
+                columns = 1;
+                break;
+            }
+        }
+        this.parameters = new ReportParameters(parameters, object, variables, columns);
+        getFocusGroup().add(0, this.parameters.getFocusGroup());
         this.context = context;
-        String style = (parameters.size() >= 4) ? WIDE_STYLE : NARROW_STYLE;
+        String style = (columns == 2) ? WIDE_STYLE : NARROW_STYLE;
         setStyleName(style);
-        getLayout().add(this.parameters.getComponent());
+        getLayout().add(ColumnFactory.create(Styles.INSET, this.parameters.getComponent()));
 
         if (object != null) {
             getButtons().addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
