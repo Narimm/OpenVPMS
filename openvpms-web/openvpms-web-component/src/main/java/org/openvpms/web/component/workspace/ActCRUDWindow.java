@@ -30,7 +30,7 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.print.BasicPrinterListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
@@ -219,21 +219,11 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     @Override
     protected IMPrinter<T> createPrinter(final T object) {
         InteractiveIMPrinter<T> printer = (InteractiveIMPrinter<T>) super.createPrinter(object);
-        printer.setListener(new PrinterListener() {
+        printer.setListener(new BasicPrinterListener() {
             public void printed(String printer) {
                 if (getActions().setPrinted(object)) {
                     saved(object);
                 }
-            }
-
-            public void cancelled() {
-            }
-
-            public void skipped() {
-            }
-
-            public void failed(Throwable cause) {
-                ErrorHelper.show(cause);
             }
         });
         return printer;
