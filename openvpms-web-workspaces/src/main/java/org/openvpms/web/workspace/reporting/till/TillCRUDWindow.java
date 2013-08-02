@@ -50,6 +50,7 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.print.BasicPrinterListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -234,7 +235,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     @Override
     protected void onPrint() {
         try {
-            FinancialAct object = getObject();
+            final FinancialAct object = getObject();
             IPage<ObjectSet> set = new TillBalanceQuery(object).query();
             IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
             String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
@@ -243,6 +244,14 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             InteractiveIMPrinter<ObjectSet> iPrinter =
                     new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(), help);
             iPrinter.setMailContext(getMailContext());
+            iPrinter.setListener(new BasicPrinterListener() {
+                @Override
+                public void printed(String printer) {
+                    if (getActions().setPrinted(object)) {
+                        onSaved(object, false);
+                    }
+                }
+            });
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

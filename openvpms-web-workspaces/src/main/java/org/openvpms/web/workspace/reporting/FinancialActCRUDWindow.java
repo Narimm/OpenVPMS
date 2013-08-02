@@ -21,7 +21,8 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
+import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.DefaultActActions;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectViewer;
@@ -51,7 +52,17 @@ public class FinancialActCRUDWindow
      * @param help       the help context
      */
     public FinancialActCRUDWindow(Archetypes<FinancialAct> archetypes, Context context, HelpContext help) {
-        super(archetypes, DefaultIMObjectActions.<FinancialAct>getInstance(), context, help);
+        super(archetypes, DefaultActActions.<FinancialAct>getInstance(), context, help);
+    }
+
+    /**
+     * Determines the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected ActActions<FinancialAct> getActions() {
+        return (ActActions<FinancialAct>) super.getActions();
     }
 
     /**
