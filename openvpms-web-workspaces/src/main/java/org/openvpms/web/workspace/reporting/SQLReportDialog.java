@@ -64,7 +64,8 @@ public class SQLReportDialog extends PrintDialog {
     public SQLReportDialog(String title, Set<ParameterType> parameters, Variables variables, HelpContext help) {
         super(title, true, true, false, help);
         setStyleName("SQLReportDialog");
-        this.parameters = new ReportParameters(parameters, variables);
+        this.parameters = new ReportParameters(parameters, variables, 2);
+        getFocusGroup().add(0, this.parameters.getFocusGroup());
     }
 
     /**
@@ -182,7 +183,6 @@ public class SQLReportDialog extends PrintDialog {
                 onExportMail();
             }
         });
-
 
         Component component = GroupBoxFactory.create("reporting.run.parameters",
                                                      parameters.getComponent());

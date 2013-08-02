@@ -21,10 +21,12 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextArea;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.Variables;
 import org.openvpms.report.ParameterType;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.property.AbstractPropertyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertyComponentFactory;
@@ -34,6 +36,7 @@ import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -62,13 +65,19 @@ public class ReportParameters {
     private final List<Property> properties;
 
     /**
+     * The focus group.
+     */
+    private final FocusGroup focus = new FocusGroup(getClass().getSimpleName());
+
+    /**
      * Constructs a {@code ReportParameters}.
      *
      * @param parameters the parameters
      * @param variables  the variables for macro expansion
+     * @param columns    the number of columns to display the parameters in
      */
-    public ReportParameters(Set<ParameterType> parameters, Variables variables) {
-        this(parameters, null, variables);
+    public ReportParameters(Set<ParameterType> parameters, Variables variables, int columns) {
+        this(parameters, null, variables, columns);
     }
 
     /**
@@ -77,16 +86,20 @@ public class ReportParameters {
      * @param parameters the parameters
      * @param context    the parameter context, used for macro support. May be {@code null}
      * @param variables  the variables for macro expansion
+     * @param columns    the number of columns to display the parameters in
      */
-    public ReportParameters(Set<ParameterType> parameters, IMObject context, Variables variables) {
+    public ReportParameters(Set<ParameterType> parameters, IMObject context, Variables variables, int columns) {
         properties = createProperties(parameters, context, variables);
         if (properties.size() > 0) {
             Grid grid;
-            if (properties.size() <= 4) {
+            if (columns == 1) {
                 grid = GridFactory.create(2);
+                grid.setColumnWidth(0, new Extent(20, Extent.PERCENT));
+                grid.setColumnWidth(1, new Extent(80, Extent.PERCENT));
             } else {
-                grid = GridFactory.create(4);
+                grid = GridFactory.create(columns * 2);
             }
+            grid.setWidth(Styles.FULL_WIDTH);
             PropertyComponentFactory factory = ComponentFactory.INSTANCE;
             for (Property property : properties) {
                 if (property.isBoolean() || property.isString()
@@ -96,12 +109,22 @@ public class ReportParameters {
                     label.setText(property.getDisplayName());
                     grid.add(label);
                     grid.add(component);
+                    focus.add(component);
                 }
             }
             component = grid;
         } else {
             component = LabelFactory.create("reporting.run.noparameters");
         }
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group.
+     */
+    public FocusGroup getFocusGroup() {
+        return focus;
     }
 
     /**
@@ -174,10 +197,7 @@ public class ReportParameters {
                     // register a transformer that supports macro expansion
                     Macros macros = ServiceHelper.getMacros();
                     property.setTransformer(new StringPropertyTransformer(property, true, macros, context, variables));
-
-                    // a large value which will force the component factory
-                    // to create a TextArea, as opposed to a TextField
-                    property.setMaxLength(5000);
+                    property.setMaxLength(-1); // unlimited length
                 }
                 result.add(property);
             }
@@ -201,7 +221,7 @@ public class ReportParameters {
         }
 
         /**
-         * This implementation ensures that {@code TextAreas} never display more than 50x5 characters.
+         * This implementation creates TextAreas for long strings, that fill the available width.
          *
          * @param property the property to bind
          * @param columns  the maximum no, of columns to display
@@ -209,17 +229,13 @@ public class ReportParameters {
          */
         @Override
         protected Component createString(Property property, int columns) {
-            Component result = super.createString(property, columns);
-            if (result instanceof TextArea) {
-                TextArea text = (TextArea) result;
-                Extent width = text.getWidth();
-                if (width != null && width.getValue() > 50) {
-                    text.setWidth(new Extent(50, width.getUnits()));
-                }
-                Extent height = text.getHeight();
-                if (height != null && height.getValue() > 5) {
-                    text.setHeight(new Extent(5, height.getUnits()));
-                }
+            Component result;
+            if (property.getMaxLength() == -1 || property.getMaxLength() > NodeDescriptor.DEFAULT_MAX_LENGTH) {
+                TextArea text = BoundTextComponentFactory.createTextArea(property, columns, 5);
+                text.setWidth(Styles.FULL_WIDTH);
+                result = text;
+            } else {
+                result = super.createString(property, columns);
             }
             return result;
         }

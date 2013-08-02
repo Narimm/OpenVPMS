@@ -755,7 +755,6 @@
         <properties>
             <property name="width" value="${dialog.large.width}"/>
             <property name="height" value="${dialog.medium.height}"/>
-            <property name="insets" value="${padding.small}"/>
         </properties>
     </style>
 
@@ -764,7 +763,6 @@
         <properties>
             <property name="width" value="${dialog.medium.width}"/>
             <property name="height" value="${dialog.medium.height}"/>
-            <property name="insets" value="${padding.small}"/>
         </properties>
     </style>
 
