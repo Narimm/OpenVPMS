@@ -286,24 +286,28 @@
 
     <template name="Stock Adjustment"
               archetype="act.stockAdjust"
+              reportType="PRODUCT"
               path="stockAdjustmentA4.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Stock Adjustment Items"
               archetype="SUBREPORT"
+              reportType="PRODUCT"
               path="stockAdjustmentItemsA4.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Stock Transfer"
               archetype="act.stockTransfer"
+              reportType="PRODUCT"
               path="stockTransferA4.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
     <template name="Stock Transfer Items"
               archetype="SUBREPORT"
+              reportType="PRODUCT"
               path="stockTransferItemsA4.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
