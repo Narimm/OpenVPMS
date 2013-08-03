@@ -134,6 +134,12 @@
               mimeType="text/xml"
               docType="document.other"/>
 
+    <template name="Prescription"
+              path="Prescription.odt"
+              archetype="act.patientDocumentForm"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"/>
+
     <template name="Vaccination Certificate"
               path="Vaccination Certificate A5.odt"
               archetype="act.patientDocumentForm"
@@ -275,6 +281,30 @@
     <template name="Patient Sterilisation Report"
               archetype="REPORT"
               path="Patient Sterilisation Report.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Stock Adjustment"
+              archetype="act.stockAdjust"
+              path="stockAdjustmentA4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Stock Adjustment Items"
+              archetype="SUBREPORT"
+              path="stockAdjustmentItemsA4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Stock Transfer"
+              archetype="act.stockTransfer"
+              path="stockTransferA4.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Stock Transfer Items"
+              archetype="SUBREPORT"
+              path="stockTransferItemsA4.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
