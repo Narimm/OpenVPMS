@@ -15,7 +15,6 @@
 	<field name="target.product.entity.displayName" class="java.lang.String"/>
 	<field name="target.product.entity.printedName" class="java.lang.String"/>
 	<field name="target.startTime" class="java.sql.Timestamp"/>
-	<field name="[openvpms:get(openvpms:get(target.product.entity,&quot;stockLocations&quot;),&quot;quantity&quot;)]" class="java.lang.String"/>
 	<sortField name="target.startTime"/>
 	<variable name="SUM_target.quantity" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{target.quantity}]]></variableExpression>
