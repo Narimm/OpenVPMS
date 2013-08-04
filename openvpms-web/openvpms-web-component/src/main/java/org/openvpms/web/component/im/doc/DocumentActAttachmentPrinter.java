@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.PrintException;
 import org.openvpms.web.component.im.print.TemplatedIMPrinter;
@@ -92,6 +93,8 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
 
     /**
      * Returns a document corresponding to that which would be printed.
+     * <p/>
+     * If the document cannot be converted to the specified mime-type, it will be returned unchanged.
      *
      * @param mimeType the mime type. If {@code null} the default mime type associated with the report will be used.
      * @param email    if {@code true} indicates that the document will be emailed. Documents generated from templates
@@ -106,7 +109,8 @@ public class DocumentActAttachmentPrinter extends TemplatedIMPrinter<IMObject> {
         if (template == null) {
             DocumentAct act = (DocumentAct) getObject();
             result = (Document) IMObjectHelper.getObject(act.getDocument(), getContext());
-            if (result != null && mimeType != null && !mimeType.equals(result.getMimeType())) {
+            if (result != null && mimeType != null && !mimeType.equals(result.getMimeType()) &&
+                Converter.canConvert(result, mimeType)) {
                 result = DocumentHelper.convert(result, mimeType);
             }
         }
