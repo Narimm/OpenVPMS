@@ -78,6 +78,17 @@ public class ComponentGrid {
     }
 
     /**
+     * Adds a component to the end of the grid.
+     *
+     * @param state           the component state to add
+     * @param columnGroupSpan the number of column groups the component spans
+     */
+    public void add(ComponentState state, int columnGroupSpan) {
+        ComponentState[] states = new ComponentState[]{state};
+        add(states, 1, columnGroupSpan);
+    }
+
+    /**
      * Adds components to the end of the grid.
      * <p/>
      * Each state spans two grid columns. If a state has a label, then this is displayed in the first column, and

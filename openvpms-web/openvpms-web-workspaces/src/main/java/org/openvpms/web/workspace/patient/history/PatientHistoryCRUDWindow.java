@@ -40,6 +40,8 @@ import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -157,6 +159,29 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
                                              archetypes.getDisplayName());
         }
         super.onCreate(archetypes);
+    }
+
+    /**
+     * Invoked when a new object has been created.
+     *
+     * @param object the new object
+     */
+    @Override
+    protected void onCreated(final Act object) {
+        if (TypeHelper.isA(object, PatientArchetypes.PATIENT_MEDICATION)) {
+            ConfirmationDialog dialog = new ConfirmationDialog(Messages.get("patient.record.create.medication.title"),
+                                                               Messages.get("patient.record.create.medication.message"),
+                                                               getHelpContext().subtopic("newMedication"));
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    PatientHistoryCRUDWindow.super.onCreated(object);
+                }
+            });
+            dialog.show();
+        } else {
+            super.onCreated(object);
+        }
     }
 
     /**

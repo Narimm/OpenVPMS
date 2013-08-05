@@ -1838,7 +1838,7 @@
             <property name="closeIcon" type="nextapp.echo2.app.HttpImageReference">
                 <http-image-reference url="../images/${dialog.closeicon}"/>
             </property>
-            <property name="closeIconInsets" value="${padding.small}"/>
+            <property name="closeIconInsets" value="${padding.tiny}"/>
             <property name="border">
                 <fill-image-border content-insets="8px 8px 14px 14px"
                                    border-insets="17px 17px 23px 23px">

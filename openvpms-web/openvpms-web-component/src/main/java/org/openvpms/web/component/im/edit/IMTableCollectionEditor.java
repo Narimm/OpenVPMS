@@ -216,6 +216,23 @@ public abstract class IMTableCollectionEditor<T>
     }
 
     /**
+     * Adds a new item to the collection, subject to the constraints of {@link #create()}.
+     *
+     * @return the editor for the item, or {@code null} a new item cannot be created.
+     */
+    public IMObjectEditor add() {
+        IMObjectEditor editor = null;
+        if (addCurrentEdits(new Validator()) && shortName != null) {
+            IMObject object = create();
+            if (object != null) {
+                editor = edit(object);
+                addCurrentEdits(new Validator()); // add the object to the table if it is valid
+            }
+        }
+        return editor;
+    }
+
+    /**
      * Removes an object from the collection.
      *
      * @param object the object to remove
@@ -436,21 +453,18 @@ public abstract class IMTableCollectionEditor<T>
     }
 
     /**
+     * Returns the selected archetype short name.
+     */
+    protected String getShortName() {
+        return shortName;
+    }
+
+    /**
      * Invoked when the "New" button is pressed. Creates a new instance of the
      * selected archetype, and displays it in an editor.
-     *
-     * @return the new editor, or {@code null} if an object couldn't be created
      */
-    protected IMObjectEditor onNew() {
-        IMObjectEditor editor = null;
-        if (addCurrentEdits(new Validator()) && shortName != null) {
-            IMObject object = create();
-            if (object != null) {
-                editor = edit(object);
-                addCurrentEdits(new Validator()); // add the object to the table if it is valid
-            }
-        }
-        return editor;
+    protected void onNew() {
+        add();
     }
 
     /**
