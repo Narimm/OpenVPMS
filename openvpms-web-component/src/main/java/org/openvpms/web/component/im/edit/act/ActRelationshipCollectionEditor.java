@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -63,7 +61,7 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
  * @author Tim Anderson
  */
 public class ActRelationshipCollectionEditor
-    extends MultipleRelationshipCollectionTargetEditor {
+        extends MultipleRelationshipCollectionTargetEditor {
 
     /**
      * Determines if a new object has been modified since its editor was created (i.e has been user modified).
@@ -125,15 +123,6 @@ public class ActRelationshipCollectionEditor
             result.add((Act) current.getObject());
         }
         return new ArrayList<Act>(result);
-    }
-
-    /**
-     * Adds a new item to the collection.
-     *
-     * @return the editor for the item, or <tt>null</tt> a new item cannot be created.
-     */
-    public IMObjectEditor add() {
-        return onNew();
     }
 
     /**

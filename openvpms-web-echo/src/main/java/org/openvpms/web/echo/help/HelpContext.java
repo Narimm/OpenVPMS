@@ -81,7 +81,7 @@ public class HelpContext {
         this.parent = parent;
         this.topic = topic;
         this.listener = listener;
-        this.keyCode = KeyStrokeListener.CONTROL_MASK | KeyStrokeListener.VK_F1;
+        this.keyCode = KeyStrokeListener.ALT_MASK | KeyStrokeListener.VK_F1;
     }
 
     /**
