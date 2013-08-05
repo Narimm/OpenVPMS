@@ -79,6 +79,10 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="estimateRules" class="org.openvpms.archetype.rules.finance.estimate.EstimateRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>

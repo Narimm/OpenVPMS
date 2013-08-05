@@ -166,6 +166,16 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be {@code null}
+     */
+    @Override
+    public ActRelationshipCollectionEditor getItems() {
+        return super.getItems();
+    }
+
+    /**
      * Adds a new charge item, returning its editor.
      *
      * @return the charge item editor, or {@code null} if an item couldn't be created

@@ -230,7 +230,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      * @return the items collection editor. May be {@code null}
      */
     @Override
-    protected VisitChargeItemRelationshipCollectionEditor getItems() {
+    public VisitChargeItemRelationshipCollectionEditor getItems() {
         return (VisitChargeItemRelationshipCollectionEditor) super.getItems();
     }
 
