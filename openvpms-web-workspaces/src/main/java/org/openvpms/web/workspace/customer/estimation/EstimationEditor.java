@@ -1,30 +1,32 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimation;
 
+import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 
 import java.math.BigDecimal;
@@ -33,29 +35,39 @@ import java.util.List;
 
 
 /**
- * An editor for {@link Act}s which have an archetype of
- * <em>act.customerEstimation</em>.
+ * An editor for {@link Act}s which have an archetype of <em>act.customerEstimation</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public class EstimationEditor extends ActEditor {
 
     /**
-     * Construct a new <code>EstimationEditor</code>.
+     * Constructs an {@link EstimationEditor}.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
     public EstimationEditor(Act act, IMObject parent,
                             LayoutContext context) {
         super(act, parent, context);
-        if (!TypeHelper.isA(act, "act.customerEstimation")) {
-            throw new IllegalArgumentException(
-                "Invalid act type:" + act.getArchetypeId().getShortName());
+        if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE)) {
+            throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
         addStartEndTimeListeners();
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        IMObjectLayoutStrategyFactory layoutStrategy = getLayoutContext().getLayoutStrategyFactory();
+        IMObjectLayoutStrategy strategy = layoutStrategy.create(getObject(), getParent());
+        strategy.addComponent(new ComponentState(getItems()));
+        return strategy;
     }
 
     /**
