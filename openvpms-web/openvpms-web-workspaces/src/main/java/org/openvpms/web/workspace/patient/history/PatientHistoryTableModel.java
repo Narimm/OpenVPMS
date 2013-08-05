@@ -167,8 +167,11 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     public void setSelectedVisit(int row) {
         if (selectedVisit != row) {
+            if (selectedVisit != -1) {
+                fireTableCellUpdated(0, selectedVisit);
+            }
             selectedVisit = row;
-            refresh();
+            fireTableCellUpdated(0, row);
         }
     }
 
