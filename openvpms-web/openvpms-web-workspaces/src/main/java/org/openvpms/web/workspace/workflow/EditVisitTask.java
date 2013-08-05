@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -60,8 +61,7 @@ public class EditVisitTask extends AbstractTask {
      * failure.
      *
      * @param context the task context
-     * @throws org.openvpms.component.system.common.exception.OpenVPMSException
-     *          for any error
+     * @throws OpenVPMSException for any error
      */
     public void start(TaskContext context) {
         Act event = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
@@ -92,17 +92,22 @@ public class EditVisitTask extends AbstractTask {
      * @param context the task context
      */
     protected void edit(Act event, FinancialAct invoice, TaskContext context) {
-        ActBean bean = new ActBean(event);
-        User clinician = (User) IMObjectHelper.getObject(bean.getNodeParticipantRef("clinician"), context);
+        ActBean eventBean = new ActBean(event);
+        ActBean invoiceBean = new ActBean(invoice);
+        User clinician = (User) IMObjectHelper.getObject(eventBean.getNodeParticipantRef("clinician"), context);
         // If clinician is null then populate with current context clinician
         if (clinician == null && context.getClinician() != null) {
-            bean.addNodeParticipation("clinician", context.getClinician());
-            bean.save();
+            eventBean.addNodeParticipation("clinician", context.getClinician());
+            eventBean.save();
         }
-        Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"), context);
-        if (patient != null) {
+        Party customer = (Party) IMObjectHelper.getObject(invoiceBean.getNodeParticipantRef("customer"), context);
+        if (customer == null) {
+            customer = context.getCustomer();
+        }
+        Party patient = (Party) IMObjectHelper.getObject(eventBean.getNodeParticipantRef("patient"), context);
+        if (customer != null && patient != null) {
             HelpContext help = context.getHelpContext().topic("visit");
-            VisitEditor editor = createVisitEditor(event, invoice, patient, context, help);
+            VisitEditor editor = createVisitEditor(event, invoice, customer, patient, context, help);
             String title = Messages.get("workflow.visit.edit.title");
             dialog = createDialog(title, editor, help);
             dialog.addWindowPaneListener(new PopupDialogListener() {
@@ -131,16 +136,17 @@ public class EditVisitTask extends AbstractTask {
     /**
      * Creates a new visit editor.
      *
-     * @param event   the event
-     * @param invoice the invoice
-     * @param patient the patient
-     * @param context the task context
-     * @param help    the help context
+     * @param event    the event
+     * @param invoice  the invoice
+     * @param customer the customer
+     * @param patient  the patient
+     * @param context  the task context
+     * @param help     the help context
      * @return a new editor
      */
-    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, Party patient, TaskContext context,
-                                            HelpContext help) {
-        return new VisitEditor(patient, event, invoice, context, help);
+    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, Party customer, Party patient,
+                                            TaskContext context, HelpContext help) {
+        return new VisitEditor(customer, patient, event, invoice, context, help);
     }
 
     /**

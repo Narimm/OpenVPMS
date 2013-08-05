@@ -89,6 +89,11 @@ public class VisitEditor {
     public static final int PRESCRIPTION_INDEX = 4;
 
     /**
+     * The index of the estimates tab.
+     */
+    public static final int ESTIMATES_INDEX = 5;
+
+    /**
      * The CRUD window for editing events and their items.
      */
     private final VisitBrowserCRUDWindow visitWindow;
@@ -134,6 +139,11 @@ public class VisitEditor {
     private PrescriptionBrowserCRUDWindow prescriptionWindow;
 
     /**
+     * The estimates CRUD window.
+     */
+    private EstimateBrowserCRUDWindow estimateWindow;
+
+    /**
      * The listener to notify of visit browser events. May be {@code null}
      */
     private VisitEditorListener listener;
@@ -172,13 +182,15 @@ public class VisitEditor {
     /**
      * Constructs a {@code VisitEditor}.
      *
-     * @param patient the patient
-     * @param event   the <em>act.patientClinicalEvent</em>
-     * @param invoice the invoice
-     * @param context the context
-     * @param help    the help context
+     * @param customer the customer
+     * @param patient  the patient
+     * @param event    the <em>act.patientClinicalEvent</em>
+     * @param invoice  the invoice
+     * @param context  the context
+     * @param help     the help context
      */
-    public VisitEditor(Party patient, Act event, FinancialAct invoice, Context context, HelpContext help) {
+    public VisitEditor(Party customer, Party patient, Act event, FinancialAct invoice, Context context,
+                       HelpContext help) {
         this.patient = patient;
         this.event = event;
         this.context = context;
@@ -200,6 +212,9 @@ public class VisitEditor {
         documentWindow = new VisitDocumentCRUDWindow(context, help.subtopic("document"));
 
         prescriptionWindow = new PrescriptionBrowserCRUDWindow(patient, context, help.subtopic("prescription"));
+
+        estimateWindow = new EstimateBrowserCRUDWindow(customer, patient, chargeWindow, context,
+                                                       help.subtopic("estimate"));
     }
 
     /**
@@ -399,6 +414,8 @@ public class VisitEditor {
                 return documentWindow;
             case PRESCRIPTION_INDEX:
                 return prescriptionWindow.getWindow();
+            case ESTIMATES_INDEX:
+                return estimateWindow.getWindow();
         }
         return null;
     }
@@ -425,7 +442,7 @@ public class VisitEditor {
     }
 
     /**
-     * Adds the history, invoice, reminder and document tabs to the tab pane model.
+     * Adds the history, invoice, reminder, document, prescription and estimates tabs to the tab pane model.
      *
      * @param model the model to add to
      */
@@ -435,6 +452,7 @@ public class VisitEditor {
         addRemindersAlertsTab(model);
         addDocumentsTab(model);
         addPrescriptionsTab(model);
+        addEstimatesTab(model);
     }
 
     /**
@@ -472,6 +490,9 @@ public class VisitEditor {
                 break;
             case PRESCRIPTION_INDEX:
                 onPrescriptionsSelected();
+                break;
+            case ESTIMATES_INDEX:
+                onEstimatesSelected();
                 break;
         }
     }
@@ -542,6 +563,15 @@ public class VisitEditor {
     }
 
     /**
+     * Adds a tab to display estimates.
+     *
+     * @param model the tab pane model to add to
+     */
+    private void addEstimatesTab(TabPaneModel model) {
+        addTab(ESTIMATES_INDEX, "button.estimates", model, estimateWindow.getComponent());
+    }
+
+    /**
      * Invoked when the patient history tab is selected.
      * <p/>
      * This refreshes the history if the current event being displayed.
@@ -596,6 +626,14 @@ public class VisitEditor {
         prescriptionWindow.getBrowser().setFocusOnResults();
         prescriptionWindow.setChargeEditor(getChargeEditor());
         notifyListener(PRESCRIPTION_INDEX);
+    }
+
+    /**
+     * Invoked when the estimates tab is selected.
+     */
+    private void onEstimatesSelected() {
+        estimateWindow.getBrowser().setFocusOnResults();
+        notifyListener(ESTIMATES_INDEX);
     }
 
     /**

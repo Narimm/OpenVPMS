@@ -18,9 +18,9 @@ package org.openvpms.web.workspace.customer.estimation;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActCalculator;
-import org.openvpms.archetype.rules.act.EstimationActStatus;
+import org.openvpms.archetype.rules.act.EstimateActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
-import org.openvpms.archetype.rules.finance.estimation.EstimationArchetypes;
+import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -46,6 +46,7 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
 import org.openvpms.web.workspace.customer.charge.EditorQueue;
 
@@ -125,7 +126,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
         BigDecimal total = sum(amount1, amount2, amount3, amount4);
         BigDecimal tax = sum(tax1, tax2, tax3, tax4);
         assertTrue(total.compareTo(invoice.getTotal()) == 0);
-        assertEquals(EstimationActStatus.INVOICED, estimation.getStatus());
+        assertEquals(EstimateActStatus.INVOICED, estimation.getStatus());
 
         ActBean bean = new ActBean(invoice);
         List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
@@ -168,7 +169,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
      * @return a new estimation
      */
     private Act createEstimation(Party customer, User author, Act... items) {
-        Act estimation = (Act) create(EstimationArchetypes.ESTIMATION);
+        Act estimation = (Act) create(EstimateArchetypes.ESTIMATE);
         ActBean bean = new ActBean(estimation);
         bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
         bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
@@ -178,7 +179,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
             ActBean itemBean = new ActBean(item);
             lowTotal = lowTotal.add(itemBean.getBigDecimal("lowTotal"));
             highTotal = highTotal.add(itemBean.getBigDecimal("highTotal"));
-            bean.addRelationship(EstimationArchetypes.ESTIMATION_ITEM_RELATIONSHIP, item);
+            bean.addRelationship(EstimateArchetypes.ESTIMATE_ITEM_RELATIONSHIP, item);
         }
         bean.setValue("lowTotal", lowTotal);
         bean.setValue("highTotal", highTotal);
@@ -197,7 +198,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
      */
     private Act createEstimationItem(Party patient, Product product, User author, BigDecimal quantity,
                                      BigDecimal unitPrice) {
-        Act item = (Act) create(EstimationArchetypes.ESTIMATION_ITEM);
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
         ActBean itemBean = new ActBean(item);
         itemBean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
         itemBean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product);
@@ -218,16 +219,15 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
          * @return a new charge editor
          */
         @Override
-        protected ChargeEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-            final EditorQueue manager = new DefaultEditorQueue(context.getContext()
-            ) {
+        protected CustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
+            final EditorQueue manager = new DefaultEditorQueue(context.getContext()) {
                 @Override
                 protected void edit(EditDialog dialog) {
                     super.edit(dialog);
                     fireDialogButton(dialog, PopupDialog.OK_ID);
                 }
             };
-            return new ChargeEditor(invoice, context) {
+            return new CustomerChargeActEditor(invoice, null, context) {
                 @Override
                 protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
                     ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);

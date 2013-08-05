@@ -154,6 +154,9 @@ public class VisitEditorDialog extends PopupDialog {
             case VisitEditor.PRESCRIPTION_INDEX:
                 onPrescriptionSelected();
                 break;
+            case VisitEditor.ESTIMATES_INDEX:
+                onEstimatesSelected();
+                break;
         }
     }
 
@@ -302,9 +305,19 @@ public class VisitEditorDialog extends PopupDialog {
     /**
      * Invoked when the prescription tab is selected.
      * <p/>
-     * Updates the dialog buttons
+     * Updates the dialog buttons.
      */
     private void onPrescriptionSelected() {
+        ButtonSet buttons = setDefaultButtons();
+        editor.setButtons(buttons);
+    }
+
+    /**
+     * Invoked when the estimates tab is selected.
+     * <p/>
+     * Updates the dialog buttons.
+     */
+    private void onEstimatesSelected() {
         ButtonSet buttons = setDefaultButtons();
         editor.setButtons(buttons);
     }

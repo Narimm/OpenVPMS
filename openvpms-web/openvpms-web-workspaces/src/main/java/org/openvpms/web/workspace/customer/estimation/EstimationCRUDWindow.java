@@ -21,7 +21,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.finance.estimation.EstimationRules;
+import org.openvpms.archetype.rules.finance.estimate.EstimateRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -49,8 +49,8 @@ import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 
 import java.util.Date;
 
-import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
-import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
+import static org.openvpms.archetype.rules.act.ActStatus.CANCELLED;
+import static org.openvpms.archetype.rules.act.EstimateActStatus.INVOICED;
 
 
 /**
@@ -73,11 +73,11 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     /**
      * The rules.
      */
-    private EstimationRules rules;
+    private final EstimateRules rules;
 
 
     /**
-     * Constructs an {@code EstimationCRUDWindow}.
+     * Constructs an {@link EstimationCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param context    the context
@@ -85,7 +85,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      */
     public EstimationCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
         super(archetypes, new EstimateActions(), context, help);
-        rules = new EstimationRules();
+        rules = ServiceHelper.getBean(EstimateRules.class);
     }
 
     /**
@@ -172,12 +172,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     protected void onInvoice() {
         final Act act = IMObjectHelper.reload(getObject()); // make sure we have the latest version
         if (act != null) {
-            String status = act.getStatus();
-            if (CANCELLED.equals(status) || INVOICED.equals(status)) {
-                showStatusError(act, "customer.estimate.noinvoice.title", "customer.estimate.noinvoice.message");
-            } else if (expired(act)) {
-                showStatusError(act, "customer.estimate.expired.title", "customer.estimate.expired.message");
-            } else {
+            if (canInvoice(act)) {
                 String title = Messages.get("customer.estimate.invoice.title");
                 String message = Messages.get("customer.estimate.invoice.message");
                 HelpContext help = getHelpContext().subtopic("invoice");
@@ -193,6 +188,25 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
         } else {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         }
+    }
+
+    /**
+     * Determines if an estimate can be invoiced.
+     *
+     * @param act the estimate
+     * @return {@code true} if the estimate can be invoiced, otherwise {@code false}
+     */
+    protected boolean canInvoice(Act act) {
+        boolean result = false;
+        String status = act.getStatus();
+        if (CANCELLED.equals(status) || INVOICED.equals(status)) {
+            showStatusError(act, "customer.estimate.noinvoice.title", "customer.estimate.noinvoice.message");
+        } else if (expired(act)) {
+            showStatusError(act, "customer.estimate.expired.title", "customer.estimate.expired.message");
+        } else {
+            result = true;
+        }
+        return result;
     }
 
     /**
@@ -215,7 +229,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      *
      * @param estimate the estimation
      */
-    private void invoice(final Act estimate) {
+    protected void invoice(final Act estimate) {
         try {
             final FinancialAct invoice = getInvoice(estimate);
             if (invoice != null) {

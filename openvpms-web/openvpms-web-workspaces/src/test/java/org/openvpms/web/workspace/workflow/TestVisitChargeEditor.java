@@ -53,16 +53,6 @@ public class TestVisitChargeEditor extends VisitChargeEditor {
         this.testEditVisitTask = testEditVisitTask;
     }
 
-    /**
-     * Returns the items collection editor.
-     *
-     * @return the items collection editor. May be {@code null}
-     */
-    @Override
-    public VisitChargeItemRelationshipCollectionEditor getItems() {
-        return super.getItems();
-    }
-
     @Override
     protected ActRelationshipCollectionEditor createItemsEditor(Act act,
                                                                 CollectionProperty items) {

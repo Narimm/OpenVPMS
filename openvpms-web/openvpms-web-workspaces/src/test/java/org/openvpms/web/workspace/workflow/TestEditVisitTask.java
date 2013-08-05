@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow;
 
 import org.openvpms.component.business.domain.im.act.Act;
@@ -55,17 +56,18 @@ public class TestEditVisitTask extends EditVisitTask {
     /**
      * Creates a new visit editor.
      *
-     * @param event   the event
-     * @param invoice the invoice
-     * @param patient the patient
-     * @param context the task context
-     * @param help    the help context
+     * @param event    the event
+     * @param invoice  the invoice
+     * @param customer
+     * @param patient  the patient
+     * @param context  the task context
+     * @param help     the help context
      * @return a new editor
      */
     @Override
-    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, Party patient, TaskContext context,
+    protected VisitEditor createVisitEditor(Act event, FinancialAct invoice, Party customer, Party patient, TaskContext context,
                                             final HelpContext help) {
-        return new VisitEditor(patient, event, invoice, context, context.getHelpContext()) {
+        return new VisitEditor(customer, patient, event, invoice, context, context.getHelpContext()) {
             @Override
             protected VisitBrowserCRUDWindow createVisitBrowserCRUDWindow(Context context) {
                 return new TestVisitBrowserCRUDWindow(getQuery(), context);
