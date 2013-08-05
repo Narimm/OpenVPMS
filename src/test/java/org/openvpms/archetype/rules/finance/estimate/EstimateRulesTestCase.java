@@ -1,30 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.rules.finance.estimation;
+package org.openvpms.archetype.rules.finance.estimate;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.act.EstimationActStatus;
+import org.openvpms.archetype.rules.act.EstimateActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -42,23 +37,26 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
- * Tests the {@link EstimationRules} class.
+ * Tests the {@link EstimateRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class EstimationRulesTestCase extends ArchetypeServiceTest {
+public class EstimateRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * The rules.
      */
-    private EstimationRules rules;
+    private EstimateRules rules;
 
 
     /**
-     * Tests the {@link EstimationRules#copy(Act)} method.
+     * Tests the {@link EstimateRules#copy(Act)} method.
      */
     @Test
     public void testCopy() {
@@ -70,7 +68,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
 
         Act item = createEstimationItem(patient, product, author, fixedPrice);
         Act estimation = createEstimation(customer, author, item);
-        estimation.setStatus(EstimationActStatus.IN_PROGRESS);
+        estimation.setStatus(EstimateActStatus.IN_PROGRESS);
         save(estimation, item);
 
         ActBean bean = new ActBean(estimation);
@@ -82,14 +80,14 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
         ActBean copyBean = new ActBean(copy);
 
         assertEquals(title, copy.getTitle());
-        assertEquals(EstimationActStatus.COMPLETED, copy.getStatus());
+        assertEquals(EstimateActStatus.COMPLETED, copy.getStatus());
         checkParticipantRef(customer, copyBean, "customer");
         checkParticipantRef(author, copyBean, "author");
 
         checkEquals(bean.getBigDecimal("lowTotal"),
-                     copyBean.getBigDecimal("lowTotal"));
+                    copyBean.getBigDecimal("lowTotal"));
         checkEquals(bean.getBigDecimal("highTotal"),
-                     copyBean.getBigDecimal("highTotal"));
+                    copyBean.getBigDecimal("highTotal"));
 
         List<Act> acts = copyBean.getActs();
         assertEquals(1, acts.size());
@@ -98,18 +96,18 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
         ActBean itemCopyBean = new ActBean(itemCopy);
 
         checkEquals(itemBean.getBigDecimal("fixedPrice"),
-                     itemCopyBean.getBigDecimal("fixedPrice"));
+                    itemCopyBean.getBigDecimal("fixedPrice"));
         checkEquals(itemBean.getBigDecimal("lowTotal"),
-                     itemCopyBean.getBigDecimal("lowTotal"));
+                    itemCopyBean.getBigDecimal("lowTotal"));
         checkEquals(itemBean.getBigDecimal("highTotal"),
-                     itemCopyBean.getBigDecimal("highTotal"));
+                    itemCopyBean.getBigDecimal("highTotal"));
 
         checkParticipantRef(patient, itemCopyBean, "patient");
         checkParticipantRef(product, itemCopyBean, "product");
     }
 
     /**
-     * Tests the {@link EstimationRules#invoice(Act, User)} method.
+     * Tests the {@link EstimateRules#invoice(Act, User)} method.
      */
     @Test
     public void testInvoice() {
@@ -126,7 +124,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
 
         FinancialAct invoice = rules.invoice(estimation, clinician);
         assertEquals(ActStatus.IN_PROGRESS, invoice.getStatus());
-        assertEquals(EstimationActStatus.INVOICED, estimation.getStatus());
+        assertEquals(EstimateActStatus.INVOICED, estimation.getStatus());
 
         ActBean bean = new ActBean(invoice);
         ActBean estimationBean = new ActBean(estimation);
@@ -136,7 +134,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
         assertEquals(1, items.size());
         ActBean itemBean = new ActBean(items.get(0));
         checkEquals(estimationBean.getBigDecimal("highTotal"),
-                     bean.getBigDecimal("amount"));
+                    bean.getBigDecimal("amount"));
 
         checkParticipantRef(customer, bean, "customer");
         checkParticipantRef(author, bean, "author");
@@ -148,7 +146,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
         checkParticipantRef(clinician, itemBean, "clinician");
 
         checkEquals(itemBean.getBigDecimal("total"),
-                     estimationItemBean.getBigDecimal("highTotal"));
+                    estimationItemBean.getBigDecimal("highTotal"));
 
         // check the dispensing act
         List<Act> dispensing = itemBean.getNodeActs("dispensing");
@@ -178,7 +176,7 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new EstimationRules();
+        rules = new EstimateRules(getArchetypeService());
     }
 
     /**
@@ -190,14 +188,12 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
      * @return a new estimation
      */
     private Act createEstimation(Party customer, User author, Act item) {
-        Act estimation = (Act) create(EstimationArchetypes.ESTIMATION);
+        Act estimation = (Act) create(EstimateArchetypes.ESTIMATE);
         ActBean bean = new ActBean(estimation);
         ActBean itemBean = new ActBean(item);
-        bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION,
-                            customer);
+        bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
         bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
-        bean.addRelationship(EstimationArchetypes.ESTIMATION_ITEM_RELATIONSHIP,
-                             item);
+        bean.addRelationship(EstimateArchetypes.ESTIMATE_ITEM_RELATIONSHIP, item);
         bean.setValue("highTotal", itemBean.getBigDecimal("highTotal"));
         bean.setValue("lowTotal", itemBean.getBigDecimal("lowTotal"));
         return estimation;
@@ -214,14 +210,11 @@ public class EstimationRulesTestCase extends ArchetypeServiceTest {
      */
     private Act createEstimationItem(Party patient, Product product,
                                      User author, BigDecimal fixedPrice) {
-        Act item = (Act) create(EstimationArchetypes.ESTIMATION_ITEM);
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
         ActBean itemBean = new ActBean(item);
-        itemBean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION,
-                                patient);
-        itemBean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION,
-                                product);
-        itemBean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION,
-                                author);
+        itemBean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        itemBean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product);
+        itemBean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
         itemBean.setValue("fixedPrice", fixedPrice);
         getArchetypeService().deriveValues(item);
         return item;
