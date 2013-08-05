@@ -1,32 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.rules.finance.estimation;
+package org.openvpms.archetype.rules.finance.estimate;
 
 import org.openvpms.archetype.rules.act.ActCopyHandler;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
-import org.openvpms.archetype.rules.act.EstimationActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
-import static org.openvpms.archetype.rules.finance.estimation.EstimationArchetypes.*;
-import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_MEDICATION;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
-import static org.openvpms.archetype.rules.product.ProductArchetypes.PRODUCT_PARTICIPATION;
-import static org.openvpms.archetype.rules.user.UserArchetypes.CLINICIAN_PARTICIPATION;
+import org.openvpms.archetype.rules.act.EstimateActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -35,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -44,14 +35,25 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes.ESTIMATE;
+import static org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes.ESTIMATE_ITEM;
+import static org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes.ESTIMATE_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_MEDICATION;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.MEDICATION;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.PRODUCT_PARTICIPATION;
+import static org.openvpms.archetype.rules.user.UserArchetypes.CLINICIAN_PARTICIPATION;
+
 
 /**
- * Estimation Rules.
+ * Estimate Rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class EstimationRules {
+public class EstimateRules {
 
     /**
      * The archetype service.
@@ -60,47 +62,41 @@ public class EstimationRules {
 
 
     /**
-     * Creates a new <tt>EstimationRules</tt>.
-     */
-    public EstimationRules() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>EstimationRules</tt>.
+     * /**
+     * Constructs an {@link EstimateRules}.
      *
      * @param service the archetype service
      */
-    public EstimationRules(IArchetypeService service) {
+    public EstimateRules(IArchetypeService service) {
         this.service = service;
     }
 
     /**
-     * Copies an estimation.
+     * Copies an estimate.
      * <p/>
      * The copy is saved.
      *
-     * @param estimation the estimation to copy
+     * @param estimate the estimate to copy
      * @return the copy
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Act copy(Act estimation) {
-        return copy(estimation, estimation.getTitle());
+    public Act copy(Act estimate) {
+        return copy(estimate, estimate.getTitle());
     }
 
     /**
-     * Copies an estimation.
+     * Copies an estimate.
      * <p/>
      * The copy is saved.
      *
-     * @param estimation the estimation to copy
-     * @param title the title of the copy
+     * @param estimate the estimate to copy
+     * @param title    the title of the copy
      * @return the copy
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Act copy(Act estimation, String title) {
+    public Act copy(Act estimate, String title) {
         IMObjectCopier copier = new IMObjectCopier(new DefaultActCopyHandler());
-        List<IMObject> objects = copier.apply(estimation);
+        List<IMObject> objects = copier.apply(estimate);
         Act copy = (Act) objects.get(0);
         copy.setTitle(title);
         service.save(objects);
@@ -108,20 +104,18 @@ public class EstimationRules {
     }
 
     /**
-     * Invoices an estimation.
+     * Invoices an estimate.
      * <p/>
-     * The estimation's status is changed to <em>INVOICED</em> and both the
-     * estimation and invoice are saved.
+     * The estimate's status is changed to <em>INVOICED</em> and both the estimate and invoice are saved.
      *
-     * @param estimation the estimation to invoice
-     * @param clinician  the clinician to assign to the invoice. May be
-     *                   <tt>null</tt>
+     * @param estimate  the estimate to invoice
+     * @param clinician the clinician to assign to the invoice. May be {@code null}
      * @return the invoice
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public FinancialAct invoice(Act estimation, User clinician) {
-        IMObjectCopier copier = new IMObjectCopier(new EstimationHandler());
-        List<IMObject> objects = copier.apply(estimation);
+    public FinancialAct invoice(Act estimate, User clinician) {
+        IMObjectCopier copier = new IMObjectCopier(new EstimateHandler());
+        List<IMObject> objects = copier.apply(estimate);
         List<Act> items = new ArrayList<Act>();
         for (IMObject object : objects) {
             if (TypeHelper.isA(object, INVOICE_ITEM)) {
@@ -144,9 +138,9 @@ public class EstimationRules {
         List<IMObject> dispensing = addDispensingActs(items);
         objects.addAll(dispensing);
 
-        // update the estimation
-        estimation.setStatus(EstimationActStatus.INVOICED);
-        objects.add(estimation);
+        // update the estimate
+        estimate.setStatus(EstimateActStatus.INVOICED);
+        objects.add(estimate);
 
         service.save(objects);
         return invoice;
@@ -179,21 +173,21 @@ public class EstimationRules {
     }
 
 
-    private static class EstimationHandler extends ActCopyHandler {
+    private static class EstimateHandler extends ActCopyHandler {
 
         /**
-         * Map of estimation types to their corresponding invoice types.
+         * Map of estimate types to their corresponding invoice types.
          */
         private static final String[][] TYPE_MAP = {
-                {ESTIMATION, INVOICE},
-                {ESTIMATION_ITEM, INVOICE_ITEM},
-                {ESTIMATION_ITEM_RELATIONSHIP, INVOICE_ITEM_RELATIONSHIP},
+                {ESTIMATE, INVOICE},
+                {ESTIMATE_ITEM, INVOICE_ITEM},
+                {ESTIMATE_ITEM_RELATIONSHIP, INVOICE_ITEM_RELATIONSHIP},
         };
 
         /**
-         * Creates a new <tt>EstimationHandler</tt>.
+         * Creates a new {@code EstimateHandler}.
          */
-        public EstimationHandler() {
+        public EstimateHandler() {
             super(TYPE_MAP);
         }
 
@@ -203,7 +197,7 @@ public class EstimationRules {
          * @param source     the source archetype
          * @param sourceNode the source node
          * @param target     the target archetype
-         * @return a node to copy source to, or <tt>null</tt> if the node
+         * @return a node to copy source to, or {@code null} if the node
          *         shouldn't be copied
          */
         @Override
@@ -228,11 +222,10 @@ public class EstimationRules {
 
     private static class DispensingHandler extends ActCopyHandler {
 
-        private static String TYPE_MAP[][] = {{INVOICE_ITEM,
-                                               PATIENT_MEDICATION}};
+        private static String TYPE_MAP[][] = {{INVOICE_ITEM, PATIENT_MEDICATION}};
 
         /**
-         * Creates a new <tt>DispensingHandler</tt>.
+         * Constructs an {@link DispensingHandler}.
          */
         public DispensingHandler() {
             super(TYPE_MAP);
@@ -247,20 +240,17 @@ public class EstimationRules {
          *
          * @param archetype the archetype descriptor
          * @param node      the node descriptor
-         * @param source    if <tt>true</tt> the node is the source; otherwise
-         *                  its the target
-         * @return <tt>true</tt> if the node is copyable; otherwise
-         *         <tt>false</tt>
+         * @param source    if {@code true} the node is the source; otherwise its the target
+         * @return {@code true} if the node is copyable; otherwise {@code false}
          */
         @Override
-        protected boolean isCopyable(ArchetypeDescriptor archetype,
-                                     NodeDescriptor node, boolean source) {
+        protected boolean isCopyable(ArchetypeDescriptor archetype, NodeDescriptor node, boolean source) {
             boolean result = super.isCopyable(archetype, node, source);
             if (result && TypeHelper.isA(archetype, INVOICE_ITEM)) {
                 String name = node.getName();
                 result = "quantity".equals(name) || "patient".equals(name)
-                        || "product".equals(name) || "author".equals(name)
-                        || "clinician".equals(name);
+                         || "product".equals(name) || "author".equals(name)
+                         || "clinician".equals(name);
             }
             return result;
         }

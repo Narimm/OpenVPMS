@@ -1,22 +1,20 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.rules.finance.estimation;
+package org.openvpms.archetype.rules.finance.estimate;
 
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -58,7 +56,7 @@ public class EstimationItemTestCase extends ArchetypeServiceTest {
      * @param totalNode     the total node name
      */
     private void checkCalculate(String unitPriceNode, String quantityNode, String totalNode) {
-        Act item = (Act) create(EstimationArchetypes.ESTIMATION_ITEM);
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
 
         ActBean bean = new ActBean(item);
         checkEquals(BigDecimal.ZERO, bean.getBigDecimal(totalNode));
