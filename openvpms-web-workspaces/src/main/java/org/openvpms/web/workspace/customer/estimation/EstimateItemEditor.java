@@ -1,23 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimation;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -41,13 +42,15 @@ import org.openvpms.web.workspace.customer.PriceActItemEditor;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
+
 
 /**
  * An editor for {@link Act}s which have an archetype of <em>act.customerEstimationItem</em>.
  *
  * @author Tim Anderson
  */
-public class EstimationItemEditor extends PriceActItemEditor {
+public class EstimateItemEditor extends PriceActItemEditor {
 
     /**
      * Low quantity selling units.
@@ -63,20 +66,20 @@ public class EstimationItemEditor extends PriceActItemEditor {
      * Nodes to display when a product template is selected.
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
-        "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice",
-        "lowTotal", "highTotal");
+            "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice",
+            "lowTotal", "highTotal");
 
 
     /**
-     * Construct a new <tt>EstimationItemEditor</tt>.
+     * Constructs an {@link EstimateItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act
      * @param context the layout context
      */
-    public EstimationItemEditor(Act act, Act parent, LayoutContext context) {
+    public EstimateItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
-        if (!TypeHelper.isA(act, "act.customerEstimationItem")) {
+        if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
         if (act.isNew()) {
@@ -135,7 +138,7 @@ public class EstimationItemEditor extends PriceActItemEditor {
     /**
      * Invoked when the product is changed, to update prices.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     @Override
     protected void productModified(Product product) {
@@ -195,26 +198,13 @@ public class EstimationItemEditor extends PriceActItemEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
-        return new PriceItemLayoutStrategy(fixedPrice) {
-            @Override
-            protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-                ComponentState state = super.createComponent(property, parent, context);
-                if ("lowQty".equals(property.getName())) {
-                    Component component = RowFactory.create("CellSpacing", state.getComponent(), lowQtySellingUnits);
-                    state = new ComponentState(component, property);
-                } else if ("highQty".equals(property.getName())) {
-                    Component component = RowFactory.create("CellSpacing", state.getComponent(), highQtySellingUnits);
-                    state = new ComponentState(component, property);
-                }
-                return state;
-            }
-        };
+        return new EstimateItemLayoutStrategy(fixedPrice);
     }
 
     /**
      * Updates the selling units label.
      *
-     * @param product the product. May be <tt>null</tt>
+     * @param product the product. May be {@code null}
      */
     private void updateSellingUnits(Product product) {
         String units = "";
@@ -229,4 +219,22 @@ public class EstimationItemEditor extends PriceActItemEditor {
         highQtySellingUnits.setText(units);
     }
 
+    protected class EstimateItemLayoutStrategy extends PriceItemLayoutStrategy {
+        public EstimateItemLayoutStrategy(FixedPriceEditor fixedPrice) {
+            super(fixedPrice);
+        }
+
+        @Override
+        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
+            ComponentState state = super.createComponent(property, parent, context);
+            if ("lowQty".equals(property.getName())) {
+                Component component = RowFactory.create(CELL_SPACING, state.getComponent(), lowQtySellingUnits);
+                state = new ComponentState(component, property);
+            } else if ("highQty".equals(property.getName())) {
+                Component component = RowFactory.create(CELL_SPACING, state.getComponent(), highQtySellingUnits);
+                state = new ComponentState(component, property);
+            }
+            return state;
+        }
+    }
 }

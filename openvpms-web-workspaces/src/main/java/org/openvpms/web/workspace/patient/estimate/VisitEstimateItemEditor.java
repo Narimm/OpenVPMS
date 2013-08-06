@@ -17,16 +17,22 @@
 package org.openvpms.web.workspace.patient.estimate;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
-import org.openvpms.web.workspace.customer.estimation.EstimationItemEditor;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.workspace.customer.estimation.EstimateItemEditor;
 
 /**
  * Enter description.
  *
  * @author Tim Anderson
  */
-public class VisitEstimateItemEditor extends EstimationItemEditor {
+public class VisitEstimateItemEditor extends EstimateItemEditor {
 
     /**
      * Constructs an {@link VisitEstimateItemEditor}.
@@ -42,6 +48,17 @@ public class VisitEstimateItemEditor extends EstimationItemEditor {
 
 
     /**
+     * Creates the layout strategy.
+     *
+     * @param fixedPrice the fixed price editor
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
+        return new VisitEstimateLayoutStrategy(fixedPrice);
+    }
+
+    /**
      * Invoked when layout has completed.
      */
     @Override
@@ -55,5 +72,44 @@ public class VisitEstimateItemEditor extends EstimationItemEditor {
         }
     }
 
+    /**
+     * A layout strategy that filters the patient node.
+     */
+    private class VisitEstimateLayoutStrategy extends EstimateItemLayoutStrategy {
+
+        /**
+         * The nodes to display.
+         */
+        private ArchetypeNodes nodes;
+
+        public VisitEstimateLayoutStrategy(FixedPriceEditor fixedPrice) {
+            super(fixedPrice);
+        }
+
+        /**
+         * Apply the layout strategy.
+         *
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param context    the layout context
+         * @return the component containing the rendered {@code object}
+         */
+        @Override
+        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            nodes = new ArchetypeNodes(super.getArchetypeNodes()).exclude("patient");
+            return super.apply(object, properties, parent, context);
+        }
+
+        /**
+         * Returns {@link ArchetypeNodes} to determine which nodes will be displayed.
+         *
+         * @return the archetype nodes
+         */
+        @Override
+        protected ArchetypeNodes getArchetypeNodes() {
+            return nodes;
+        }
+    }
 
 }

@@ -34,7 +34,7 @@ import org.springframework.transaction.support.TransactionCallback;
 
 
 /**
- * Helper to create an invoice from an estimation.
+ * Helper to create an invoice from an estimate.
  * <p/>
  * The invoice is returned in a dialog to:
  * <ul>
@@ -44,23 +44,23 @@ import org.springframework.transaction.support.TransactionCallback;
  *
  * @author Tim Anderson
  */
-class EstimationInvoicer {
+class EstimateInvoicer {
 
     /**
-     * Creates an invoice for an estimation.
+     * Creates an invoice for an estimate.
      * <p/>
      * The editor is displayed in a visible dialog, in order for medication and reminder popups to be displayed
      * correctly.
      *
-     * @param estimation the estimation to invoice
-     * @param invoice    the invoice to add to, or {@code null} to create a new invoice
-     * @param context    the layout context
+     * @param estimate the estimate to invoice
+     * @param invoice  the invoice to add to, or {@code null} to create a new invoice
+     * @param context  the layout context
      * @return an editor for the invoice, or {@code null} if the editor cannot be created
      * @throws OpenVPMSException for any error
      */
-    public CustomerChargeActEditDialog invoice(Act estimation, FinancialAct invoice, LayoutContext context) {
-        estimation.setStatus(EstimateActStatus.INVOICED);
-        ActBean estimationBean = new ActBean(estimation);
+    public CustomerChargeActEditDialog invoice(Act estimate, FinancialAct invoice, LayoutContext context) {
+        estimate.setStatus(EstimateActStatus.INVOICED);
+        ActBean estimateBean = new ActBean(estimate);
 
         if (invoice == null) {
             invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
@@ -68,16 +68,16 @@ class EstimationInvoicer {
                 throw new IllegalStateException("Failed to create invoice");
             }
             ActBean invoiceBean = new ActBean(invoice);
-            invoiceBean.addNodeParticipation("customer", estimationBean.getNodeParticipantRef("customer"));
+            invoiceBean.addNodeParticipation("customer", estimateBean.getNodeParticipantRef("customer"));
         }
 
         CustomerChargeActEditor editor = createChargeEditor(invoice, context);
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        EditDialog dialog = new EditDialog(editor, estimation, context.getContext());
+        EditDialog dialog = new EditDialog(editor, estimate, context.getContext());
         dialog.show();
-        EstimateInvoicerHelper.invoice(estimation, editor);
+        EstimateInvoicerHelper.invoice(estimate, editor);
         return dialog;
     }
 
@@ -95,25 +95,25 @@ class EstimationInvoicer {
     private static class EditDialog extends CustomerChargeActEditDialog {
 
         /**
-         * The estimation.
+         * The estimate.
          */
-        private final Act estimation;
+        private final Act estimate;
 
         /**
          * Determines if the estimation has been saved.
          */
-        private boolean estimationSaved = false;
+        private boolean estimateSaved = false;
 
         /**
          * Constructs an {@code EditDialog}.
          *
-         * @param editor     the invoice editor
-         * @param estimation the estimation
-         * @param context    the context
+         * @param editor   the invoice editor
+         * @param estimate the estimate
+         * @param context  the context
          */
-        public EditDialog(CustomerChargeActEditor editor, Act estimation, Context context) {
+        public EditDialog(CustomerChargeActEditor editor, Act estimate, Context context) {
             super(editor, context);
-            this.estimation = estimation;
+            this.estimate = estimate;
         }
 
         /**
@@ -126,14 +126,14 @@ class EstimationInvoicer {
         protected boolean save(final IMObjectEditor editor) {
             boolean result;
 
-            if (!estimationSaved) {
+            if (!estimateSaved) {
                 TransactionCallback<Boolean> callback = new TransactionCallback<Boolean>() {
                     public Boolean doInTransaction(TransactionStatus status) {
-                        return SaveHelper.save(estimation) && SaveHelper.save(editor);
+                        return SaveHelper.save(estimate) && SaveHelper.save(editor);
                     }
                 };
                 result = SaveHelper.save(editor.getDisplayName(), callback);
-                estimationSaved = result;
+                estimateSaved = result;
             } else {
                 result = super.save(editor);
             }

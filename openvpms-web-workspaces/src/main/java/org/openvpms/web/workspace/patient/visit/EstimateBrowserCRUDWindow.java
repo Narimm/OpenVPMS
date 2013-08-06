@@ -89,6 +89,7 @@ public class EstimateBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
                 eq("entity", patient.getObjectReference()))));
         query.setDefaultSortConstraint(DEFAULT_SORT);
         query.setConstraints(add);
+        query.setDistinct(true);
         return query;
     }
 }

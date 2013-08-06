@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.customer.estimation;
 
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
@@ -27,11 +28,11 @@ import org.openvpms.web.workspace.customer.CustomerActWorkspace;
 
 
 /**
- * Estimation workspace.
+ * Estimate workspace.
  *
  * @author Tim Anderson
  */
-public class EstimationWorkspace extends CustomerActWorkspace<Act> {
+public class EstimateWorkspace extends CustomerActWorkspace<Act> {
 
     /**
      * The act statuses.
@@ -44,11 +45,11 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
     }
 
     /**
-     * Constructs an {@link EstimationWorkspace}.
+     * Constructs an {@link EstimateWorkspace}.
      *
      * @param context the context
      */
-    public EstimationWorkspace(Context context) {
+    public EstimateWorkspace(Context context) {
         super("customer", "estimate", context);
         setChildArchetypes(Act.class, EstimateArchetypes.ESTIMATE);
     }
@@ -60,7 +61,7 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      * @return a new CRUD window
      */
     protected CRUDWindow<Act> createCRUDWindow() {
-        return new EstimationCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
+        return new EstimateCRUDWindow(getChildArchetypes(), getContext(), getHelpContext());
     }
 
     /**
@@ -69,9 +70,7 @@ public class EstimationWorkspace extends CustomerActWorkspace<Act> {
      * @return a new query
      */
     protected ActQuery<Act> createQuery() {
-        return new DefaultActQuery<Act>(getObject(), "customer",
-                                        "participation.customer",
-                                        getChildArchetypes().getShortNames(),
-                                        STATUSES);
+        return new DefaultActQuery<Act>(getObject(), "customer", CustomerArchetypes.CUSTOMER_PARTICIPATION,
+                                        getChildArchetypes().getShortNames(), STATUSES);
     }
 }

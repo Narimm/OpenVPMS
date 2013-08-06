@@ -21,14 +21,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.workspace.customer.estimation.EstimationEditor;
+import org.openvpms.web.workspace.customer.estimation.EstimateEditor;
 
 /**
  * Estimate editor.
  *
  * @author Tim Anderson
  */
-public class VisitEstimateEditor extends EstimationEditor {
+public class VisitEstimateEditor extends EstimateEditor {
 
     /**
      * Constructs a {@link VisitEstimateEditor}.
