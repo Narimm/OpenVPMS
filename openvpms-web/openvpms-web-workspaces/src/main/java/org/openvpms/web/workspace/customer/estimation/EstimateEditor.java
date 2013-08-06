@@ -39,17 +39,17 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class EstimationEditor extends ActEditor {
+public class EstimateEditor extends ActEditor {
 
     /**
-     * Constructs an {@link EstimationEditor}.
+     * Constructs an {@link EstimateEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public EstimationEditor(Act act, IMObject parent,
-                            LayoutContext context) {
+    public EstimateEditor(Act act, IMObject parent,
+                          LayoutContext context) {
         super(act, parent, context);
         if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());

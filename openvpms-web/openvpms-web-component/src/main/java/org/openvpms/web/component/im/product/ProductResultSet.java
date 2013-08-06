@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.product;
 
@@ -31,14 +31,20 @@ import static org.openvpms.component.system.common.query.Constraints.or;
 import static org.openvpms.component.system.common.query.Constraints.subQuery;
 
 /**
- * Enter description.
+ * Product result set that supports queries filtering on species and/or stock location..
  *
  * @author Tim Anderson
  */
 public class ProductResultSet extends EntityResultSet<Product> {
 
+    /**
+     * The species lookup code. May be {@code null}
+     */
     private final String species;
 
+    /**
+     * The stock location. May be {@code null}
+     */
     private final Party stockLocation;
 
     /**
@@ -70,14 +76,12 @@ public class ProductResultSet extends EntityResultSet<Product> {
         if (species != null) {
             query.add(leftJoin("species", "s"));
             query.add(or(eq("s.code", species),
-                         notExists(
-                             subQuery(shortNames, "p2").add(join("species", "s2").add(idEq("p", "p2"))))));
+                         notExists(subQuery(shortNames, "p2").add(join("species", "s2").add(idEq("p", "p2"))))));
         }
         if (stockLocation != null) {
             query.add(leftJoin("stockLocations", "l"));
             query.add(or(eq("l.target", stockLocation.getObjectReference()),
-                         notExists(
-                             subQuery(shortNames, "p3").add(join("stockLocations", "l2").add(idEq("p", "p3"))))));
+                         notExists(subQuery(shortNames, "p3").add(join("stockLocations", "l2").add(idEq("p", "p3"))))));
         }
         return query;
     }

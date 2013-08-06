@@ -59,11 +59,11 @@ import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
 /**
- * Tests the {@link EstimationInvoicer} class.
+ * Tests the {@link EstimateInvoicer} class.
  *
  * @author Tim Anderson
  */
-public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorTest {
+public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTest {
 
     /**
      * Tests invoicing of estimations.
@@ -115,7 +115,7 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
 
         save(estimation, item1, item2, item3, item4);
 
-        EstimationInvoicer invoicer = new TestEstimationInvoicer();
+        EstimateInvoicer invoicer = new TestEstimateInvoicer();
 
         CustomerChargeActEditDialog dialog = invoicer.invoice(estimation, null, context);
         IMObjectEditor editor = dialog.getEditor();
@@ -209,10 +209,10 @@ public class EstimationInvoicerTestCase extends AbstractCustomerChargeActEditorT
         return item;
     }
 
-    private static class TestEstimationInvoicer extends EstimationInvoicer {
+    private static class TestEstimateInvoicer extends EstimateInvoicer {
 
         /**
-         * Constructs a {@code TestEstimationInvoicer}.
+         * Constructs a {@code TestEstimateInvoicer}.
          *
          * @param invoice the invoice
          * @param context the layout context

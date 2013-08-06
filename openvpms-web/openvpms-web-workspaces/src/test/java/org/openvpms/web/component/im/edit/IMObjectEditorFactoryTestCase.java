@@ -53,8 +53,8 @@ import org.openvpms.web.workspace.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.workspace.customer.account.AdjustmentActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor;
-import org.openvpms.web.workspace.customer.estimation.EstimationEditor;
-import org.openvpms.web.workspace.customer.estimation.EstimationItemEditor;
+import org.openvpms.web.workspace.customer.estimation.EstimateEditor;
+import org.openvpms.web.workspace.customer.estimation.EstimateItemEditor;
 import org.openvpms.web.workspace.patient.PatientEditor;
 import org.openvpms.web.workspace.patient.mr.PatientClinicalEventActEditor;
 import org.openvpms.web.workspace.patient.mr.PatientClinicalProblemActEditor;
@@ -161,22 +161,22 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link EstimationEditor} is returned for
+     * Verifies that a {@link EstimateEditor} is returned for
      * <em>act.customerEstimationEditor</em>.
      */
     @Test
     public void testCreateEstimationEditor() {
-        checkCreate("act.customerEstimation", EstimationEditor.class);
+        checkCreate("act.customerEstimation", EstimateEditor.class);
     }
 
     /**
-     * Verfies that a {@link EstimationItemEditor} is returned for
+     * Verfies that a {@link EstimateItemEditor} is returned for
      * <em>act.customerEstimationItem</em>
      */
     @Test
     public void testCreateEstimationItemEditor() {
         checkCreate("act.customerEstimationItem", "act.customerEstimation",
-                    EstimationItemEditor.class);
+                    EstimateItemEditor.class);
     }
 
     /**

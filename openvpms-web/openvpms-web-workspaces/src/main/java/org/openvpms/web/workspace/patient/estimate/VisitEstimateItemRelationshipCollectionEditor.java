@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.patient.estimate;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -68,15 +67,15 @@ public class VisitEstimateItemRelationshipCollectionEditor extends ActRelationsh
      *
      * @return the patient's acts
      */
-    public List<FinancialAct> getPatientActs() {
+    public List<Act> getPatientActs() {
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
         List<IMObject> objects = editor.getObjects();
-        List<FinancialAct> acts = new ArrayList<FinancialAct>();
+        List<Act> acts = new ArrayList<Act>();
         Party patient = getPatient();
         if (patient != null) {
             IMObjectReference patientRef = patient.getObjectReference();
             for (IMObject object : objects) {
-                FinancialAct act = (FinancialAct) object;
+                Act act = (Act) object;
                 ActBean bean = new ActBean(act);
                 if (ObjectUtils.equals(patientRef, bean.getNodeParticipantRef("patient"))) {
                     acts.add(act);

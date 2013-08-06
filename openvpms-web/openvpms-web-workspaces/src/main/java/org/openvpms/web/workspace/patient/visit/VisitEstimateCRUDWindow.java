@@ -22,11 +22,14 @@ import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.workspace.customer.estimation.EstimateCRUDWindow;
 import org.openvpms.web.workspace.customer.estimation.EstimateInvoicerHelper;
-import org.openvpms.web.workspace.customer.estimation.EstimationCRUDWindow;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
+import org.openvpms.web.workspace.patient.estimate.VisitEstimateEditor;
 
 
 /**
@@ -36,7 +39,7 @@ import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
  *
  * @author Tim Anderson
  */
-public class VisitEstimateCRUDWindow extends EstimationCRUDWindow {
+public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
 
     /**
      * The charge window.
@@ -68,6 +71,18 @@ public class VisitEstimateCRUDWindow extends EstimationCRUDWindow {
     @Override
     protected Component doLayout() {
         return getContainer();
+    }
+
+    /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit.
+     * @param context the layout context
+     * @return a new editor
+     */
+    @Override
+    protected IMObjectEditor createEditor(Act object, LayoutContext context) {
+        return new VisitEstimateEditor(object, null, context);
     }
 
     /**

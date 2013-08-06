@@ -58,7 +58,7 @@ import static org.openvpms.archetype.rules.act.EstimateActStatus.INVOICED;
  *
  * @author Tim Anderson
  */
-public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
+public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
 
     /**
      * Copy button identifier.
@@ -77,13 +77,13 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
 
 
     /**
-     * Constructs an {@link EstimationCRUDWindow}.
+     * Constructs an {@link EstimateCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param context    the context
      * @param help       the help context
      */
-    public EstimationCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
+    public EstimateCRUDWindow(Archetypes<Act> archetypes, Context context, HelpContext help) {
         super(archetypes, new EstimateActions(), context, help);
         rules = ServiceHelper.getBean(EstimateRules.class);
     }
@@ -152,8 +152,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     protected void onCopy() {
         Act object = getObject();
         try {
-            String title = Messages.format("customer.estimate.copy.title",
-                                           object.getTitle());
+            String title = Messages.format("customer.estimate.copy.title", object.getTitle());
             Act copy = rules.copy(object, title);
             setObject(copy);
             CRUDWindowListener<Act> listener = getListener();
@@ -227,7 +226,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
     /**
      * Invoice out an estimate to the customer.
      *
-     * @param estimate the estimation
+     * @param estimate the estimate
      */
     protected void invoice(final Act estimate) {
         try {
@@ -260,7 +259,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow<Act> {
      */
     private void invoice(final Act estimate, FinancialAct invoice) {
         try {
-            EstimationInvoicer invoicer = new EstimationInvoicer();
+            EstimateInvoicer invoicer = new EstimateInvoicer();
             HelpContext edit = getHelpContext().topic(CustomerAccountArchetypes.INVOICE + "/edit");
             CustomerChargeActEditDialog editor = invoicer.invoice(estimate, invoice,
                                                                   new DefaultLayoutContext(true, getContext(), edit));
