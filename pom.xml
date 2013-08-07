@@ -139,7 +139,7 @@
                         <jdk5>true</jdk5>
                         <configurationfile>src/test/resources/hibernate.cfg.xml</configurationfile>
                         <propertyfile>target/test-classes/hibernate.properties</propertyfile>
-                        <skip>${maven.test.skip}</skip>
+                        <skip>${skipTests}</skip>
                     </componentProperties>
                 </configuration>
                 <executions>
@@ -165,7 +165,7 @@
                 <configuration>
                     <dir>src/archetypes/org/openvpms/archetype</dir>
                     <propertyfile>target/test-classes/hibernate.properties</propertyfile>
-                    <skip>${maven.test.skip}</skip>
+                    <skip>${skipTests}</skip>
                 </configuration>
                 <executions>
                     <execution>
