@@ -183,6 +183,15 @@ public abstract class AbstractActResultSet<T> extends AbstractArchetypeServiceRe
     }
 
     /**
+     * Returns the archetypes.
+     *
+     * @return the archetypes
+     */
+    protected ShortNameConstraint getArchetypes() {
+        return archetypes;
+    }
+
+    /**
      * Creates a new archetype query.
      *
      * @return a new archetype query

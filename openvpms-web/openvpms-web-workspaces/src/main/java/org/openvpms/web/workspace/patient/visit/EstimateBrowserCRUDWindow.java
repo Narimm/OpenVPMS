@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
@@ -30,10 +29,8 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.help.HelpContext;
-
-import static org.openvpms.component.system.common.query.Constraints.eq;
-import static org.openvpms.component.system.common.query.Constraints.join;
 
 /**
  * Links an estimates browser to a CRUD window.
@@ -81,15 +78,17 @@ public class EstimateBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      * @param patient  the patient
      * @return a new query
      */
-    private Query<Act> createQuery(Party customer, Party patient) {
+    private Query<Act> createQuery(Party customer, final Party patient) {
         String[] shortNames = {EstimateArchetypes.ESTIMATE};
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(
-                customer, "customer", CustomerArchetypes.CUSTOMER_PARTICIPATION, shortNames, STATUSES);
-        JoinConstraint add = join("items").add(join("target").add(join("patient").add(
-                eq("entity", patient.getObjectReference()))));
+                customer, "customer", CustomerArchetypes.CUSTOMER_PARTICIPATION, shortNames, STATUSES) {
+            @Override
+            protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
+                return new VisitEstimateResultSet(patient, getArchetypeConstraint(), getParticipantConstraint(),
+                                                  getFrom(), getTo(), getStatuses(), getMaxResults(), sort);
+            }
+        };
         query.setDefaultSortConstraint(DEFAULT_SORT);
-        query.setConstraints(add);
-        query.setDistinct(true);
         return query;
     }
 }
