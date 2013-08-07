@@ -21,7 +21,7 @@ import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.customer.account.AccountWorkspace;
 import org.openvpms.web.workspace.customer.charge.ChargeWorkspace;
 import org.openvpms.web.workspace.customer.document.CustomerDocumentWorkspace;
-import org.openvpms.web.workspace.customer.estimation.EstimateWorkspace;
+import org.openvpms.web.workspace.customer.estimate.EstimateWorkspace;
 import org.openvpms.web.workspace.customer.info.InformationWorkspace;
 import org.openvpms.web.workspace.customer.note.NoteAlertWorkspace;
 import org.openvpms.web.workspace.customer.payment.PaymentWorkspace;

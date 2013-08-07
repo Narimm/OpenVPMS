@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.customer.estimation;
+package org.openvpms.web.workspace.customer.estimate;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
