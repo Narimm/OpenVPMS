@@ -1,3 +1,19 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
@@ -147,7 +163,7 @@
                         <jdk5>true</jdk5>
                         <configurationfile>test/resources/hibernate.cfg.xml</configurationfile>
                         <propertyfile>target/test-classes/hibernate.properties</propertyfile>
-                        <skip>${maven.test.skip}</skip>
+                        <skip>${skipTests}</skip>
                     </componentProperties>
                 </configuration>
                 <executions>
@@ -179,7 +195,7 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.2</version>
                 <configuration>
-                    <tasks unless="maven.test.skip">
+                    <tasks unless="skipTests">
                         <java classname="org.openvpms.tools.archetype.loader.ArchetypeLoader" failonerror="true"
                               fork="true">
                             <classpath>
