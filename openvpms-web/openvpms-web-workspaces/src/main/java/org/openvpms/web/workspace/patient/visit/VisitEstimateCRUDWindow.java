@@ -26,8 +26,8 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.customer.estimation.EstimateCRUDWindow;
-import org.openvpms.web.workspace.customer.estimation.EstimateInvoicerHelper;
+import org.openvpms.web.workspace.customer.estimate.EstimateCRUDWindow;
+import org.openvpms.web.workspace.customer.estimate.EstimateInvoicerHelper;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.estimate.VisitEstimateEditor;
 

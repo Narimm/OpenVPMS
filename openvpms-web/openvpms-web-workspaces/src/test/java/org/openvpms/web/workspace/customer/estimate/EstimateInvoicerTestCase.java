@@ -14,7 +14,7 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.customer.estimation;
+package org.openvpms.web.workspace.customer.estimate;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActCalculator;

@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.workspace.customer.estimation.EstimateEditor;
+import org.openvpms.web.workspace.customer.estimate.EstimateEditor;
 
 /**
  * Estimate editor.

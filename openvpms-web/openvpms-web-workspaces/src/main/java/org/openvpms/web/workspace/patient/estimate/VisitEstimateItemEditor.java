@@ -25,7 +25,7 @@ import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.workspace.customer.estimation.EstimateItemEditor;
+import org.openvpms.web.workspace.customer.estimate.EstimateItemEditor;
 
 /**
  * Enter description.
