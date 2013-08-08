@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -150,6 +151,35 @@ public class EstimateRulesTestCase extends ArchetypeServiceTest {
         checkParticipantRef(patient, medicationBean, "patient");
         checkParticipantRef(product, medicationBean, "product");
         checkParticipantRef(author, medicationBean, "author");
+    }
+
+    /**
+     * Tests the {@link EstimateRules#isPatientEstimate(Act, Party)} method.
+     */
+    @Test
+    public void testIsPatientEstimate() {
+        Party customer = TestHelper.createCustomer();
+        Product product = TestHelper.createProduct();
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+
+        User author = TestHelper.createClinician();
+        BigDecimal fixedPrice = new BigDecimal("10.00");
+        Act item1 = EstimateTestHelper.createEstimateItem(patient1, product, author, fixedPrice);
+        Act item2 = EstimateTestHelper.createEstimateItem(patient2, product, author, fixedPrice);
+        Act estimate1 = EstimateTestHelper.createEstimate(customer, author, item1, item2);
+        save(estimate1, item1, item2);
+
+        assertFalse(rules.isPatientEstimate(estimate1, patient1));
+        assertFalse(rules.isPatientEstimate(estimate1, patient2));
+
+        Act item3 = EstimateTestHelper.createEstimateItem(patient1, product, author, fixedPrice);
+        Act item4 = EstimateTestHelper.createEstimateItem(patient1, product, author, fixedPrice);
+        Act estimate2 = EstimateTestHelper.createEstimate(customer, author, item3, item4);
+        save(estimate2, item3, item4);
+
+        assertTrue(rules.isPatientEstimate(estimate2, patient1));
+        assertFalse(rules.isPatientEstimate(estimate2, patient2));
     }
 
     /**

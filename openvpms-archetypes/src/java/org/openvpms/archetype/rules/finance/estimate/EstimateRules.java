@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.finance.estimate;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActCopyHandler;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
 import org.openvpms.archetype.rules.act.EstimateActStatus;
@@ -25,6 +26,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -144,6 +146,26 @@ public class EstimateRules {
 
         service.save(objects);
         return invoice;
+    }
+
+    /**
+     * Determines if an estimate contains items for a single patient.
+     *
+     * @param estimate the estimate to check
+     * @param patient  the patient
+     * @return {@code true} if the estimate is for the specified patient, {@code false} if it contains one or more
+     *         items for other patients
+     */
+    public boolean isPatientEstimate(Act estimate, Party patient) {
+        ActBean bean = new ActBean(estimate, service);
+        IMObjectReference ref = patient.getObjectReference();
+        for (Act item : bean.getNodeActs("items")) {
+            ActBean itemBean = new ActBean(item, service);
+            if (!ObjectUtils.equals(ref, itemBean.getNodeParticipantRef("patient"))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
