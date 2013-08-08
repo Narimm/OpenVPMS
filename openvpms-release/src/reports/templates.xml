@@ -56,15 +56,15 @@
               mimeType="text/xml"
               docType="document.other"/>
 
-    <template name="Estimation"
+    <template name="Estimate"
               archetype="act.customerEstimation"
-              path="estimation a5.jrxml"
+              path="Estimate A5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
-    <template name="Estimation Items"
+    <template name="Estimate Items"
               archetype="SUBREPORT"
-              path="estimationitemsa5.jrxml"
+              path="Estimate Items A5.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
