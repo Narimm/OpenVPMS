@@ -56,18 +56,18 @@ public class EstimateBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
      *
      * @param customer the customer
      * @param patient  the patient
-     * @param window   the charge window
+     * @param editor   the visit editor
      * @param context  the context
      * @param help     the help context
      */
-    public EstimateBrowserCRUDWindow(Party customer, Party patient, VisitChargeCRUDWindow window, Context context,
+    public EstimateBrowserCRUDWindow(Party customer, Party patient, VisitEditor editor, Context context,
                                      HelpContext help) {
         Query<Act> query = createQuery(customer, patient);
         Browser<Act> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         setBrowser(browser);
 
         VisitEstimateCRUDWindow estimateWindow = new VisitEstimateCRUDWindow(context, help);
-        estimateWindow.setChargeWindow(window);
+        estimateWindow.setVisitEditor(editor);
         setWindow(estimateWindow);
     }
 

@@ -209,6 +209,15 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
     }
 
     /**
+     * Returns the estimate rules.
+     *
+     * @return the rules
+     */
+    protected EstimateRules getRules() {
+        return rules;
+    }
+
+    /**
      * Determines if an estimate has expired.
      *
      * @param act the estimate act

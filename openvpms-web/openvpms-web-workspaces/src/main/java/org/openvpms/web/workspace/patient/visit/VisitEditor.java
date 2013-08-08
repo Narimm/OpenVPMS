@@ -213,8 +213,7 @@ public class VisitEditor {
 
         prescriptionWindow = new PrescriptionBrowserCRUDWindow(patient, context, help.subtopic("prescription"));
 
-        estimateWindow = new EstimateBrowserCRUDWindow(customer, patient, chargeWindow, context,
-                                                       help.subtopic("estimate"));
+        estimateWindow = new EstimateBrowserCRUDWindow(customer, patient, this, context, help.subtopic("estimate"));
     }
 
     /**

@@ -454,9 +454,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * @return an editor to edit {@code object}
      */
     protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        IMObjectEditor editor = IMObjectEditorFactory.create(object, this.object, context);
-        editor.addModifiableListener(broadcaster);
-        return editor;
+        return IMObjectEditorFactory.create(object, this.object, context);
     }
 
     /**
@@ -466,6 +464,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * @param editor the editor for the object
      */
     protected void addEditor(IMObject object, IMObjectEditor editor) {
+        editor.addModifiableListener(broadcaster);
         collection.setEditor(object, editor);
     }
 

@@ -65,6 +65,7 @@ public class VisitEstimateResultSet extends AbstractActResultSet<Act> {
                                   Date from, Date to, String[] statuses, int pageSize, SortConstraint[] sort) {
         super(archetypes, participant, from, to, statuses, pageSize, sort, new DefaultQueryExecutor<Act>());
         this.patient = patient;
+        setDistinct(true);
     }
 
     /**

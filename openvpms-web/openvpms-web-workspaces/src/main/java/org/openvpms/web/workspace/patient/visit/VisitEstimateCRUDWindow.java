@@ -42,9 +42,9 @@ import org.openvpms.web.workspace.patient.estimate.VisitEstimateEditor;
 public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
 
     /**
-     * The charge window.
+     * The visit editor.
      */
-    private VisitChargeCRUDWindow chargeWindow;
+    private VisitEditor visitEditor;
 
     /**
      * Constructs a {@link VisitEstimateCRUDWindow}.
@@ -57,12 +57,12 @@ public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
     }
 
     /**
-     * Registers the charge window.
+     * Registers the visit editor.
      *
-     * @param window the charge window. May be {@code null}
+     * @param editor the editor. May be {@code null}
      */
-    public void setChargeWindow(VisitChargeCRUDWindow window) {
-        chargeWindow = window;
+    public void setVisitEditor(VisitEditor editor) {
+        visitEditor = editor;
     }
 
     /**
@@ -95,19 +95,26 @@ public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
     protected boolean canInvoice(Act act) {
         boolean result = super.canInvoice(act);
         if (result) {
-            result = chargeWindow != null && chargeWindow.getEditor() != null;
+            if (visitEditor == null || visitEditor.getChargeEditor() == null) {
+                showStatusError(act, "patient.estimate.invoice.title", "patient.estimate.invoice.noinvoice");
+                result = false;
+            } else if (!getRules().isPatientEstimate(act, getContext().getPatient())) {
+                showStatusError(act, "patient.estimate.invoice.title", "patient.estimate.invoice.toomanypets");
+                result = false;
+            }
         }
         return result;
     }
 
     /**
-     * Invoice out an estimate to the customer.
+     * Invoices an estimate.
      *
      * @param estimate the estimation
      */
     @Override
     protected void invoice(Act estimate) {
-        VisitChargeEditor editor = chargeWindow.getEditor();
+        visitEditor.selectCharges();
+        VisitChargeEditor editor = visitEditor.getChargeEditor();
         EstimateInvoicerHelper.invoice(estimate, editor);
         estimate.setStatus(EstimateActStatus.INVOICED);
         SaveHelper.save(estimate);
