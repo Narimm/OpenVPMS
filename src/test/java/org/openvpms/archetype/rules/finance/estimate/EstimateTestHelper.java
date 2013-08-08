@@ -73,13 +73,48 @@ public class EstimateTestHelper {
      * @return a new estimate item
      */
     public static Act createEstimateItem(Party patient, Product product, User author, BigDecimal fixedPrice) {
-        Act item = (Act) TestHelper.create(EstimateArchetypes.ESTIMATE_ITEM);
-        ActBean itemBean = new ActBean(item);
-        itemBean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        itemBean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product);
-        itemBean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
-        itemBean.setValue("fixedPrice", fixedPrice);
+        ActBean bean = createEstimateItem(patient, product, author);
+        bean.setValue("fixedPrice", fixedPrice);
+        Act item = bean.getAct();
         ArchetypeServiceHelper.getArchetypeService().deriveValues(item);
         return item;
     }
+
+    /**
+     * Creates an estimate item.
+     *
+     * @param patient   the patient
+     * @param product   the product
+     * @param author    the author
+     * @param quantity  the quantity
+     * @param unitPrice the unit price
+     * @return a new estimation item
+     */
+    public static Act createEstimateItem(Party patient, Product product, User author, BigDecimal quantity,
+                                         BigDecimal unitPrice) {
+        ActBean bean = createEstimateItem(patient, product, author);
+        bean.setValue("highQty", quantity);
+        bean.setValue("highUnitPrice", unitPrice);
+        Act item = bean.getAct();
+        ArchetypeServiceHelper.getArchetypeService().deriveValues(item);
+        return item;
+    }
+
+    /**
+     * Creates an estimate item.
+     *
+     * @param patient the patient
+     * @param product the product
+     * @param author  the author
+     * @return a bean wrapping the estimate item
+     */
+    private static ActBean createEstimateItem(Party patient, Product product, User author) {
+        Act item = (Act) TestHelper.create(EstimateArchetypes.ESTIMATE_ITEM);
+        ActBean bean = new ActBean(item);
+        bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        bean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product);
+        bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
+        return bean;
+    }
+
 }
