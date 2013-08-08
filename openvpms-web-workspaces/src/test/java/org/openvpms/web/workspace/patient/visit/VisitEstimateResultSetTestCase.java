@@ -70,13 +70,15 @@ public class VisitEstimateResultSetTestCase extends ArchetypeServiceTest {
 
         // create estimate2, with acts for patient1 only
         Act item3 = EstimateTestHelper.createEstimateItem(patient1, product1, author, BigDecimal.ONE);
-        Act estimate2 = EstimateTestHelper.createEstimate(customer, author, item3);
+        Act item4 = EstimateTestHelper.createEstimateItem(patient1, product2, author, BigDecimal.ONE);
+        Act estimate2 = EstimateTestHelper.createEstimate(customer, author, item3, item4);
 
         // create estimate3, with acts for patient2 only
-        Act item4 = EstimateTestHelper.createEstimateItem(patient2, product2, author, BigDecimal.ONE);
-        Act estimate3 = EstimateTestHelper.createEstimate(customer, author, item4);
+        Act item5 = EstimateTestHelper.createEstimateItem(patient2, product1, author, BigDecimal.ONE);
+        Act item6 = EstimateTestHelper.createEstimateItem(patient2, product2, author, BigDecimal.ONE);
+        Act estimate3 = EstimateTestHelper.createEstimate(customer, author, item5, item6);
 
-        save(item1, item2, item3, item4, estimate1, estimate2, estimate3);
+        save(item1, item2, item3, item4, item4, item5, item6, estimate1, estimate2, estimate3);
 
         // verify the result set only returns estimate2
         set.reset();

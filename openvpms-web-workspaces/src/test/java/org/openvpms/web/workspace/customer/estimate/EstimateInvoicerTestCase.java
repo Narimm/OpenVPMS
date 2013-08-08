@@ -19,13 +19,10 @@ package org.openvpms.web.workspace.customer.estimate;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.EstimateActStatus;
-import org.openvpms.archetype.rules.customer.CustomerArchetypes;
-import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
+import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -66,7 +63,7 @@ import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTest {
 
     /**
-     * Tests invoicing of estimations.
+     * Tests invoicing of estimates.
      */
     @Test
     public void testInvoice() {
@@ -107,11 +104,11 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
         BigDecimal tax3 = taxRules.calculateTax(amount3, product3, true);
         BigDecimal tax4 = taxRules.calculateTax(amount4, product4, true);
 
-        Act item1 = createEstimationItem(patient, product1, author, quantity1, price1);
-        Act item2 = createEstimationItem(patient, product2, author, quantity2, price2);
-        Act item3 = createEstimationItem(patient, product3, author, quantity3, price3);
-        Act item4 = createEstimationItem(patient, product4, author, quantity4, price4);
-        Act estimation = createEstimation(customer, author, item1, item2, item3, item4);
+        Act item1 = EstimateTestHelper.createEstimateItem(patient, product1, author, quantity1, price1);
+        Act item2 = EstimateTestHelper.createEstimateItem(patient, product2, author, quantity2, price2);
+        Act item3 = EstimateTestHelper.createEstimateItem(patient, product3, author, quantity3, price3);
+        Act item4 = EstimateTestHelper.createEstimateItem(patient, product4, author, quantity4, price4);
+        Act estimation = EstimateTestHelper.createEstimate(customer, author, item1, item2, item3, item4);
 
         save(estimation, item1, item2, item3, item4);
 
@@ -158,55 +155,6 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
             result = result.add(MathRules.round(amount));
         }
         return result;
-    }
-
-    /**
-     * Creates an estimation.
-     *
-     * @param customer the customer
-     * @param author   the author
-     * @param items    the estimation items
-     * @return a new estimation
-     */
-    private Act createEstimation(Party customer, User author, Act... items) {
-        Act estimation = (Act) create(EstimateArchetypes.ESTIMATE);
-        ActBean bean = new ActBean(estimation);
-        bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
-        bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
-        BigDecimal lowTotal = BigDecimal.ZERO;
-        BigDecimal highTotal = BigDecimal.ZERO;
-        for (Act item : items) {
-            ActBean itemBean = new ActBean(item);
-            lowTotal = lowTotal.add(itemBean.getBigDecimal("lowTotal"));
-            highTotal = highTotal.add(itemBean.getBigDecimal("highTotal"));
-            bean.addRelationship(EstimateArchetypes.ESTIMATE_ITEM_RELATIONSHIP, item);
-        }
-        bean.setValue("lowTotal", lowTotal);
-        bean.setValue("highTotal", highTotal);
-        return estimation;
-    }
-
-    /**
-     * Creates an estimation item.
-     *
-     * @param patient   the patient
-     * @param product   the product
-     * @param author    the author
-     * @param quantity  the quantity
-     * @param unitPrice the unit price
-     * @return a new estimation item
-     */
-    private Act createEstimationItem(Party patient, Product product, User author, BigDecimal quantity,
-                                     BigDecimal unitPrice) {
-        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
-        ActBean itemBean = new ActBean(item);
-        itemBean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        itemBean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product);
-        itemBean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
-        itemBean.setValue("highQty", quantity);
-        itemBean.setValue("highUnitPrice", unitPrice);
-        getArchetypeService().deriveValues(item);
-        return item;
     }
 
     private static class TestEstimateInvoicer extends EstimateInvoicer {
