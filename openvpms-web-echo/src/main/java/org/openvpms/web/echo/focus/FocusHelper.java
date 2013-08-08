@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.focus;
@@ -23,6 +21,7 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ListBox;
+import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.echo.table.KeyTable;
@@ -31,17 +30,15 @@ import org.openvpms.web.echo.table.KeyTable;
 /**
  * Focus helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class FocusHelper {
 
     /**
      * Returns the first component that may have focus set.
      *
-     * @param component the component. May be <tt>null</tt>
-     * @return the first child component that may have focus set, or
-     *         <tt>null</tt> if none may have focus set
+     * @param component the component. May be {@code null}
+     * @return the first child component that may have focus set, or {@code null} if none may have focus set
      */
     public static Component getFocusable(Component component) {
         Component result = null;
@@ -69,7 +66,7 @@ public class FocusHelper {
      * Sets the focus on the first component that may have focus set.
      *
      * @param component the component
-     * @return the focussed component or <tt>null</tt> if no component may
+     * @return the focussed component or {@code null} if no component may
      *         receive the focus
      */
     public static Component setFocus(Component component) {
@@ -84,7 +81,7 @@ public class FocusHelper {
     /**
      * Returns the component with the focus.
      *
-     * @return the focussed component, or <tt>null</tt> if no component currently has the focus.
+     * @return the focussed component, or {@code null} if no component currently has the focus.
      */
     public static Component getFocus() {
         ApplicationInstance active = ApplicationInstance.getActive();
@@ -95,8 +92,7 @@ public class FocusHelper {
      * Determines if a component is one that may receive focus.
      *
      * @param component the component
-     * @return <code>true</code> if the component is a focusable component;
-     *         otherwise <code>false</code>
+     * @return {@code true} if the component is a focusable component; otherwise {@code false}
      */
     private static boolean isFocusable(Component component) {
         return (component instanceof TextComponent
@@ -104,7 +100,8 @@ public class FocusHelper {
                 || component instanceof DateField
                 || component instanceof AbstractButton
                 || component instanceof KeyTable
-                || component instanceof ListBox);
+                || component instanceof ListBox
+                || component instanceof SelectField);
     }
 
 }
