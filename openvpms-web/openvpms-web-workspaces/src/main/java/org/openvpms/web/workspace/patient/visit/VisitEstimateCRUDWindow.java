@@ -74,6 +74,18 @@ public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
     }
 
     /**
+     * Creates a layout context for viewing objects.
+     *
+     * @return a new layout context
+     */
+    @Override
+    protected LayoutContext createViewLayoutContext() {
+        LayoutContext context = super.createViewLayoutContext();
+        context.setContextSwitchListener(null);
+        return context;
+    }
+
+    /**
      * Creates a new editor.
      *
      * @param object  the object to edit.
