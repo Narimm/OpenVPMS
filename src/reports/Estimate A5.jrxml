@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="estimationA5 Logo" pageWidth="421" pageHeight="595" columnWidth="393" leftMargin="14" rightMargin="14" topMargin="8" bottomMargin="20">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Estimate A5" pageWidth="421" pageHeight="595" columnWidth="393" leftMargin="14" rightMargin="14" topMargin="8" bottomMargin="20">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
@@ -21,7 +21,7 @@
 	<field name="startTime" class="java.util.Date"/>
 	<field name="id" class="java.lang.Long"/>
 	<field name="title" class="java.lang.String">
-		<fieldDescription><![CDATA[Estimation Title]]></fieldDescription>
+		<fieldDescription><![CDATA[Estimate Title]]></fieldDescription>
 	</field>
 	<field name="endTime" class="java.util.Date"/>
 	<field name="[party:getBillingAddress(.)]" class="java.lang.String"/>
@@ -61,7 +61,7 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<text><![CDATA[Estimation of Costs for Professional Services for:]]></text>
+				<text><![CDATA[Estimate of Costs for Professional Services for:]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField" x="246" y="108" width="147" height="18"/>
@@ -87,7 +87,7 @@
 				<textElement textAlignment="Center">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<text><![CDATA[Estimation]]></text>
+				<text><![CDATA[Estimate]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-1" x="56" y="46" width="176" height="15"/>
@@ -216,7 +216,7 @@
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-1" x="0" y="0" width="387" height="50"/>
 				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
-				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA["estimationItemsA5.jrxml"]]></subreportExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA["Estimate Items A5.jrxml"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
@@ -239,7 +239,7 @@
 				<textElement>
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<text><![CDATA[This Estimation is Valid until  : ]]></text>
+				<text><![CDATA[This Estimate is Valid until  : ]]></text>
 			</staticText>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
 				<reportElement key="textField" x="166" y="5" width="118" height="20"/>
