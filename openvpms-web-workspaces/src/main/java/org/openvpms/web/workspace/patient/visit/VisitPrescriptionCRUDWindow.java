@@ -22,6 +22,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
@@ -93,6 +94,18 @@ public class VisitPrescriptionCRUDWindow extends PatientPrescriptionCRUDWindow {
     @Override
     protected Component doLayout() {
         return getContainer();
+    }
+
+    /**
+     * Creates a layout context for viewing objects.
+     *
+     * @return a new layout context
+     */
+    @Override
+    protected LayoutContext createViewLayoutContext() {
+        LayoutContext context = super.createViewLayoutContext();
+        context.setContextSwitchListener(null);
+        return context;
     }
 
     private class Actions extends PrescriptionActions {
