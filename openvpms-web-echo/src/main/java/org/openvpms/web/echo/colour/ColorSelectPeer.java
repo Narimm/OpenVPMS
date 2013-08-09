@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.echo.colour;
 
@@ -57,31 +55,31 @@ public class ColorSelectPeer implements ComponentSynchronizePeer, PropertyUpdate
      * Service to provide supporting JavaScript library.
      */
     public static final Service COLOR_SELECT_SERVICE = JavaScriptService.forResource("Echo2Extras.Fixed.ColorSelect",
-                                                                                     "/org/openvpms/web/resource/js/ColorSelect.js");
+                                                                                     "/org/openvpms/web/echo/js/ColorSelect.js");
 
     private static final Service ARROW_DOWN_IMAGE_SERVICE = StaticBinaryService.forResource(
-        "Echo2Extras.Fixed.ColorSelect.ArrowDown", "image/gif",
-        ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectArrowDown.gif");
+            "Echo2Extras.Fixed.ColorSelect.ArrowDown", "image/gif",
+            ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectArrowDown.gif");
 
     private static final Service ARROW_LEFT_IMAGE_SERVICE = StaticBinaryService.forResource(
-        "Echo2Extras.Fixed.ColorSelect.ArrowLeft", "image/gif",
-        ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectArrowLeft.gif");
+            "Echo2Extras.Fixed.ColorSelect.ArrowLeft", "image/gif",
+            ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectArrowLeft.gif");
 
     private static final Service ARROW_RIGHT_IMAGE_SERVICE = StaticBinaryService.forResource(
-        "Echo2Extras.Fixed.ColorSelect.ArrowRight", "image/gif",
-        ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectArrowRight.gif");
+            "Echo2Extras.Fixed.ColorSelect.ArrowRight", "image/gif",
+            ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectArrowRight.gif");
 
     private static final Service ARROW_UP_IMAGE_SERVICE = StaticBinaryService.forResource(
-        "Echo2Extras.Fixed.ColorSelect.ArrowUp", "image/gif",
-        ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectArrowUp.gif");
+            "Echo2Extras.Fixed.ColorSelect.ArrowUp", "image/gif",
+            ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectArrowUp.gif");
 
     private static final Service H_GRADIENT_IMAGE_SERVICE = StaticBinaryService.forResource(
-        "Echo2Extras.Fixed.ColorSelect.HGradient", "image/png",
-        ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectHGradient.png");
+            "Echo2Extras.Fixed.ColorSelect.HGradient", "image/png",
+            ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectHGradient.png");
 
     private static final Service SV_GRADIENT_IMAGE_SERVICE = StaticBinaryService.forResource(
-        "Echo2Extras.Fixed.ColorSelect.SVGradient", "image/png",
-        ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectSVGradient.png");
+            "Echo2Extras.Fixed.ColorSelect.SVGradient", "image/png",
+            ExtrasUtil.IMAGE_RESOURCE_PATH + "ColorSelectSVGradient.png");
 
     static {
         ServiceRegistry services = WebRenderServlet.getServiceRegistry();
@@ -235,7 +233,7 @@ public class ColorSelectPeer implements ComponentSynchronizePeer, PropertyUpdate
 
     /**
      * @see nextapp.echo2.webcontainer.PropertyUpdateProcessor#processPropertyUpdate(nextapp.echo2.webcontainer
-     * .ContainerInstance,
+     *      .ContainerInstance,
      *      nextapp.echo2.app.Component, org.w3c.dom.Element)
      */
     public void processPropertyUpdate(ContainerInstance ci, Component component, Element element) {

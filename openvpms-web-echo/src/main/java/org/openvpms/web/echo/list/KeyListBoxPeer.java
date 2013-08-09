@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.echo.list;
 
@@ -70,7 +68,7 @@ import java.util.Map;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class KeyListBoxPeer
-    implements ActionProcessor, ComponentSynchronizePeer, FocusSupport, PropertyUpdateProcessor {
+        implements ActionProcessor, ComponentSynchronizePeer, FocusSupport, PropertyUpdateProcessor {
 
     /**
      * Service to provide supporting JavaScript library.
@@ -78,7 +76,7 @@ public class KeyListBoxPeer
     private static final Service SERVICE;
 
     static {
-        InputStream stream = KeyListBoxPeer.class.getResourceAsStream("/org/openvpms/web/resource/js/KeyList.js");
+        InputStream stream = KeyListBoxPeer.class.getResourceAsStream("/org/openvpms/web/echo/js/KeyList.js");
         try {
             String content = IOUtils.toString(stream);
             SERVICE = new JavaScriptService("KeyListComponent", content);
@@ -105,7 +103,7 @@ public class KeyListBoxPeer
      * RenderedModelData instances to ids.
      */
     private static final String RENDERED_MODEL_MAP_KEY
-        = "nextapp.echo2.webcontainer.syncpeer.ListComponentPeer.RenderedModelMap";
+            = "nextapp.echo2.webcontainer.syncpeer.ListComponentPeer.RenderedModelMap";
 
     private PartialUpdateManager partialUpdateManager;
 
@@ -262,9 +260,9 @@ public class KeyListBoxPeer
         } else {
             border = (Border) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_BORDER);
             foreground =
-                (Color) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_FOREGROUND, DEFAULT_FOREGROUND);
+                    (Color) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_FOREGROUND, DEFAULT_FOREGROUND);
             background =
-                (Color) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_BACKGROUND, DEFAULT_BACKGROUND);
+                    (Color) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_BACKGROUND, DEFAULT_BACKGROUND);
             font = (Font) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_FONT);
         }
 
@@ -299,9 +297,9 @@ public class KeyListBoxPeer
     private CssStyle createRolloverCssStyle(AbstractListComponent listComponent) {
         CssStyle style = new CssStyle();
         Color rolloverForeground =
-            (Color) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_ROLLOVER_FOREGROUND);
+                (Color) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_ROLLOVER_FOREGROUND);
         Color rolloverBackground =
-            (Color) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_ROLLOVER_BACKGROUND);
+                (Color) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_ROLLOVER_BACKGROUND);
         ColorRender.renderToStyle(style, rolloverForeground, rolloverBackground);
         FontRender.renderToStyle(style,
                                  (Font) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_ROLLOVER_FONT));
@@ -326,7 +324,7 @@ public class KeyListBoxPeer
 
     /**
      * @see nextapp.echo2.webcontainer.PropertyUpdateProcessor#processPropertyUpdate(nextapp.echo2.webcontainer
-     * .ContainerInstance,
+     *      .ContainerInstance,
      *      nextapp.echo2.app.Component, org.w3c.dom.Element)
      */
     public void processPropertyUpdate(ContainerInstance ci, Component component, Element propertyElement) {
@@ -339,7 +337,7 @@ public class KeyListBoxPeer
             }
             ci.getUpdateManager().getClientUpdateManager().setComponentProperty(component,
                                                                                 AbstractListComponent
-                                                                                    .SELECTION_CHANGED_PROPERTY,
+                                                                                        .SELECTION_CHANGED_PROPERTY,
                                                                                 selectedIndices);
         }
     }
@@ -469,7 +467,7 @@ public class KeyListBoxPeer
         initElement.setAttribute("style", cssStyle.renderInline());
 
         Boolean rolloverEnabled =
-            (Boolean) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_ROLLOVER_ENABLED);
+                (Boolean) listComponent.getRenderProperty(AbstractListComponent.PROPERTY_ROLLOVER_ENABLED);
         if (Boolean.TRUE.equals(rolloverEnabled)) {
             CssStyle rolloverCssStyle = createRolloverCssStyle(listComponent);
             initElement.setAttribute("rollover-style", rolloverCssStyle.renderInline());
@@ -519,7 +517,7 @@ public class KeyListBoxPeer
 
     /**
      * @see nextapp.echo2.webcontainer.FocusSupport#renderSetFocus(nextapp.echo2.webcontainer.RenderContext,
-     * nextapp.echo2.app.Component)
+     *      nextapp.echo2.app.Component)
      */
     public void renderSetFocus(RenderContext rc, Component component) {
         if (component.isEnabled()) {
