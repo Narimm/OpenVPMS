@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.table;
@@ -77,8 +75,8 @@ import java.io.InputStream;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
-    ImageRenderSupport, FocusSupport,
-    PropertyUpdateProcessor {
+        ImageRenderSupport, FocusSupport,
+        PropertyUpdateProcessor {
 
     /**
      * A string of periods used for the IE 100% Table Width workaround.
@@ -88,7 +86,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
                                               ". . . . . . . . . . . ";
 
     private static final String[] TABLE_INIT_KEYS =
-        new String[]{"rollover-style", "selection-style", "selection-blur-style"};
+            new String[]{"rollover-style", "selection-style", "selection-blur-style"};
 
     private static final String PROPERTY_SELECTION = "selection";
 
@@ -101,8 +99,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
     private static final Service TABLE_SERVICE;
 
     static {
-        InputStream stream = KeyTablePeer.class.getResourceAsStream(
-            "/org/openvpms/web/resource/js/KeyTable.js");
+        InputStream stream = KeyTablePeer.class.getResourceAsStream("/org/openvpms/web/echo/js/KeyTable.js");
         try {
             String content = IOUtils.toString(stream);
             TABLE_SERVICE = new JavaScriptService("KeyTable", content);
@@ -119,7 +116,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
      */
     public String getContainerId(Component child) {
         return ContainerInstance.getElementId(
-            child.getParent()) + "_cell_" + child.getRenderId();
+                child.getParent()) + "_cell_" + child.getRenderId();
     }
 
     /**
@@ -128,8 +125,8 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
     public ImageReference getImage(Component component, String imageId) {
         if (IMAGE_ID_ROLLOVER_BACKGROUND.equals(imageId)) {
             FillImage backgroundImage
-                = (FillImage) component.getRenderProperty(
-                Table.PROPERTY_ROLLOVER_BACKGROUND_IMAGE);
+                    = (FillImage) component.getRenderProperty(
+                    Table.PROPERTY_ROLLOVER_BACKGROUND_IMAGE);
             if (backgroundImage == null) {
                 return null;
             } else {
@@ -137,8 +134,8 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
             }
         } else if (IMAGE_ID_SELECTION_BACKGROUND.equals(imageId)) {
             FillImage backgroundImage
-                = (FillImage) component.getRenderProperty(
-                Table.PROPERTY_SELECTION_BACKGROUND_IMAGE);
+                    = (FillImage) component.getRenderProperty(
+                    Table.PROPERTY_SELECTION_BACKGROUND_IMAGE);
             if (backgroundImage == null) {
                 return null;
             } else {
@@ -147,7 +144,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
         } else {
             // Retrieve CellLayoutData background image if applicable.
             return CellLayoutDataRender.getCellLayoutDataBackgroundImage(
-                component, imageId);
+                    component, imageId);
         }
     }
 
@@ -162,14 +159,14 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
      */
     private TableLayoutData getLayoutData(Component child) {
         LayoutData layoutData = (LayoutData) child.getRenderProperty(
-            Component.PROPERTY_LAYOUT_DATA);
+                Component.PROPERTY_LAYOUT_DATA);
         if (layoutData == null) {
             return null;
         } else if (layoutData instanceof TableLayoutData) {
             return (TableLayoutData) layoutData;
         } else {
             throw new RuntimeException(
-                "Invalid LayoutData for Table Child: " + layoutData.getClass().getName());
+                    "Invalid LayoutData for Table Child: " + layoutData.getClass().getName());
         }
     }
 
@@ -182,7 +179,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
         String name = actionElement.getAttribute(ActionProcessor.ACTION_NAME);
         String value = actionElement.getAttribute(ActionProcessor.ACTION_VALUE);
         ClientUpdateManager mgr
-            = ci.getUpdateManager().getClientUpdateManager();
+                = ci.getUpdateManager().getClientUpdateManager();
         if (KeyTable.PAGE_ACTION.equals(name)) {
             mgr.setComponentAction(component, KeyTable.PAGE_ACTION, value);
         } else {
@@ -200,7 +197,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
     public void renderSetFocus(RenderContext rc, Component component) {
         WindowUpdate.renderSetFocus(rc.getServerMessage(),
                                     ContainerInstance.getElementId(
-                                        component) + "_focus");
+                                            component) + "_focus");
     }
 
     /**
@@ -210,18 +207,18 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
     public void processPropertyUpdate(ContainerInstance ci, Component component,
                                       Element propertyElement) {
         String propertyName = propertyElement.getAttribute(
-            PropertyUpdateProcessor.PROPERTY_NAME);
+                PropertyUpdateProcessor.PROPERTY_NAME);
         if (PROPERTY_SELECTION.equals(propertyName)) {
             Element[] optionElements = DomUtil.getChildElementsByTagName(
-                propertyElement, "row");
+                    propertyElement, "row");
             int[] selectedIndices = new int[optionElements.length];
             for (int i = 0; i < optionElements.length; ++i) {
                 selectedIndices[i] = Integer.parseInt(
-                    optionElements[i].getAttribute("index"));
+                        optionElements[i].getAttribute("index"));
             }
             ci.getUpdateManager().getClientUpdateManager().setComponentProperty(
-                component,
-                Table.SELECTION_CHANGED_PROPERTY, selectedIndices);
+                    component,
+                    Table.SELECTION_CHANGED_PROPERTY, selectedIndices);
         }
     }
 
@@ -234,7 +231,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
         Table table = (Table) component;
         Border border = (Border) table.getRenderProperty(Table.PROPERTY_BORDER);
         Insets tableInsets = (Insets) table.getRenderProperty(
-            Table.PROPERTY_INSETS);
+                Table.PROPERTY_INSETS);
         String defaultInsetsAttributeValue = tableInsets == null
                                              ? "0px" : InsetsRender.renderCssAttributeValue(tableInsets);
         CssStyle styleCss = new CssStyle();
@@ -245,7 +242,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
                                           styleCss.renderInline());
 
         Element domAddTableElement = DomUpdate.renderElementAdd(
-            rc.getServerMessage());
+                rc.getServerMessage());
         DocumentFragment htmlFragment = rc.getServerMessage().getDocument().createDocumentFragment();
         renderHtml(rc, update, htmlFragment, component);
         DomUpdate.renderElementAddContent(rc.getServerMessage(),
@@ -268,7 +265,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
             return;
         }
         ComponentSynchronizePeer syncPeer = SynchronizePeerFactory.getPeerForComponent(
-            child.getClass());
+                child.getClass());
         if (syncPeer instanceof DomUpdateSupport) {
             ((DomUpdateSupport) syncPeer).renderHtml(rc, update, parentElement,
                                                      child);
@@ -302,9 +299,9 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
 
         ServerMessage serverMessage = rc.getServerMessage();
         Element itemizedUpdateElement = serverMessage.getItemizedDirective(
-            ServerMessage.GROUP_ID_PREREMOVE,
-            "KeyTable.MessageProcessor", "dispose", new String[0],
-            new String[0]);
+                ServerMessage.GROUP_ID_PREREMOVE,
+                "KeyTable.MessageProcessor", "dispose", new String[0],
+                new String[0]);
         Element itemElement = serverMessage.getDocument().createElement("item");
         itemElement.setAttribute("eid", ContainerInstance.getElementId(table));
         itemizedUpdateElement.appendChild(itemElement);
@@ -336,7 +333,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
         focus.setAttribute("id", elementId + "_focus");
         if (component.isFocusTraversalParticipant()) {
             focus.setAttribute("tabindex", Integer.toString(
-                component.getFocusTraversalIndex()));
+                    component.getFocusTraversalIndex()));
         } else {
             focus.setAttribute("tabindex", "-1");
         }
@@ -353,27 +350,27 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
         }
 
         Insets tableInsets = (Insets) table.getRenderProperty(
-            Table.PROPERTY_INSETS);
+                Table.PROPERTY_INSETS);
 
         String defaultInsetsAttributeValue = tableInsets == null ? "0px" : InsetsRender.renderCssAttributeValue(
-            tableInsets);
+                tableInsets);
 
         ColorRender.renderToStyle(tableCssStyle, component);
         FontRender.renderToStyle(tableCssStyle, component);
         BorderRender.renderToStyle(tableCssStyle, border);
         if (borderSize != null) {
             if (!rc.getContainerInstance().getClientProperties().getBoolean(
-                ClientProperties.QUIRK_CSS_BORDER_COLLAPSE_INSIDE)) {
+                    ClientProperties.QUIRK_CSS_BORDER_COLLAPSE_INSIDE)) {
                 tableCssStyle.setAttribute("margin",
                                            ExtentRender.renderCssAttributeValueHalf(
-                                               borderSize));
+                                                   borderSize));
             }
         }
 
         Extent width = (Extent) table.getRenderProperty(Table.PROPERTY_WIDTH);
         boolean render100PercentWidthWorkaround = false;
         if (rc.getContainerInstance().getClientProperties().getBoolean(
-            ClientProperties.QUIRK_IE_TABLE_PERCENT_WIDTH_SCROLLBAR_ERROR)) {
+                ClientProperties.QUIRK_IE_TABLE_PERCENT_WIDTH_SCROLLBAR_ERROR)) {
             if (width != null && width.getUnits() == Extent.PERCENT && width.getValue() == 100) {
                 width = null;
                 render100PercentWidthWorkaround = true;
@@ -406,7 +403,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
                 if (columnWidth != null) {
                     colElement.setAttribute("width",
                                             ExtentRender.renderCssAttributeValue(
-                                                columnWidth));
+                                                    columnWidth));
                 }
                 colGroupElement.appendChild(colElement);
             }
@@ -449,7 +446,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
                 sizingDivElement.setAttribute("style",
                                               "font-size:50px;height:0px;overflow:hidden;");
                 sizingDivElement.appendChild(
-                    document.createTextNode(SIZING_DOTS));
+                        document.createTextNode(SIZING_DOTS));
                 tdElement.appendChild(sizingDivElement);
             }
         }
@@ -469,27 +466,27 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
         Document document = serverMessage.getDocument();
 
         boolean rolloverEnabled = ((Boolean) table.getRenderProperty(
-            Table.PROPERTY_ROLLOVER_ENABLED,
-            Boolean.FALSE));
+                Table.PROPERTY_ROLLOVER_ENABLED,
+                Boolean.FALSE));
         boolean selectionEnabled = ((Boolean) table.getRenderProperty(
-            Table.PROPERTY_SELECTION_ENABLED,
-            Boolean.FALSE));
+                Table.PROPERTY_SELECTION_ENABLED,
+                Boolean.FALSE));
 
         String rolloverStyle = "";
         if (rolloverEnabled) {
             CssStyle rolloverCssStyle = new CssStyle();
             ColorRender.renderToStyle(rolloverCssStyle,
                                       (Color) table.getRenderProperty(
-                                          Table.PROPERTY_ROLLOVER_FOREGROUND),
+                                              Table.PROPERTY_ROLLOVER_FOREGROUND),
                                       (Color) table.getRenderProperty(
-                                          Table.PROPERTY_ROLLOVER_BACKGROUND));
+                                              Table.PROPERTY_ROLLOVER_BACKGROUND));
             FontRender.renderToStyle(rolloverCssStyle,
                                      (Font) table.getRenderProperty(
-                                         Table.PROPERTY_ROLLOVER_FONT));
+                                             Table.PROPERTY_ROLLOVER_FONT));
             FillImageRender.renderToStyle(rolloverCssStyle, rc, this, table,
                                           IMAGE_ID_ROLLOVER_BACKGROUND,
                                           (FillImage) table.getRenderProperty(
-                                              Table.PROPERTY_ROLLOVER_BACKGROUND_IMAGE),
+                                                  Table.PROPERTY_ROLLOVER_BACKGROUND_IMAGE),
                                           FillImageRender.FLAG_DISABLE_FIXED_MODE);
             if (rolloverCssStyle.hasAttributes()) {
                 rolloverStyle = rolloverCssStyle.renderInline();
@@ -502,16 +499,16 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
             CssStyle selectionCssStyle = new CssStyle();
             ColorRender.renderToStyle(selectionCssStyle,
                                       (Color) table.getRenderProperty(
-                                          Table.PROPERTY_SELECTION_FOREGROUND),
+                                              Table.PROPERTY_SELECTION_FOREGROUND),
                                       (Color) table.getRenderProperty(
-                                          Table.PROPERTY_SELECTION_BACKGROUND));
+                                              Table.PROPERTY_SELECTION_BACKGROUND));
             FontRender.renderToStyle(selectionCssStyle,
                                      (Font) table.getRenderProperty(
-                                         Table.PROPERTY_SELECTION_FONT));
+                                             Table.PROPERTY_SELECTION_FONT));
             FillImageRender.renderToStyle(selectionCssStyle, rc, this, table,
                                           IMAGE_ID_SELECTION_BACKGROUND,
                                           (FillImage) table.getRenderProperty(
-                                              Table.PROPERTY_SELECTION_BACKGROUND_IMAGE),
+                                                  Table.PROPERTY_SELECTION_BACKGROUND_IMAGE),
                                           FillImageRender.FLAG_DISABLE_FIXED_MODE);
             if (selectionCssStyle.hasAttributes()) {
                 selectionStyle = selectionCssStyle.renderInline();
@@ -520,16 +517,16 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
             CssStyle selectionBlurCssStyle = new CssStyle();
             ColorRender.renderToStyle(selectionBlurCssStyle,
                                       (Color) table.getRenderProperty(
-                                          KeyTable.PROPERTY_SELECTION_BLUR_FOREGROUND),
+                                              KeyTable.PROPERTY_SELECTION_BLUR_FOREGROUND),
                                       (Color) table.getRenderProperty(
-                                          KeyTable.PROPERTY_SELECTION_BLUR_BACKGROUND));
+                                              KeyTable.PROPERTY_SELECTION_BLUR_BACKGROUND));
             FontRender.renderToStyle(selectionBlurCssStyle,
                                      (Font) table.getRenderProperty(
-                                         KeyTable.PROPERTY_SELECTION_BLUR_FONT));
+                                             KeyTable.PROPERTY_SELECTION_BLUR_FONT));
             FillImageRender.renderToStyle(selectionCssStyle, rc, this, table,
                                           IMAGE_ID_SELECTION_BACKGROUND,
                                           (FillImage) table.getRenderProperty(
-                                              Table.PROPERTY_SELECTION_BACKGROUND_IMAGE),
+                                                  Table.PROPERTY_SELECTION_BACKGROUND_IMAGE),
                                           FillImageRender.FLAG_DISABLE_FIXED_MODE);
             if (selectionBlurCssStyle.hasAttributes()) {
                 selectionBlurStyle = selectionBlurCssStyle.renderInline();
@@ -537,9 +534,9 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
         }
 
         Element itemizedUpdateElement = serverMessage.getItemizedDirective(
-            ServerMessage.GROUP_ID_POSTUPDATE,
-            "KeyTable.MessageProcessor", "init", TABLE_INIT_KEYS,
-            new String[]{rolloverStyle, selectionStyle, selectionBlurStyle});
+                ServerMessage.GROUP_ID_POSTUPDATE,
+                "KeyTable.MessageProcessor", "init", TABLE_INIT_KEYS,
+                new String[]{rolloverStyle, selectionStyle, selectionBlurStyle});
         Element itemElement = document.createElement("item");
         itemElement.setAttribute("eid", elementId);
         if (table.isHeaderVisible()) {
@@ -618,7 +615,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
         String className = "c-" + table.getRenderId();
 
         boolean inlineStyleRequired = rc.getContainerInstance().getClientProperties().getBoolean(
-            ClientProperties.NOT_SUPPORTED_CSS_MANIPULATION);
+                ClientProperties.NOT_SUPPORTED_CSS_MANIPULATION);
         Border border = null;
         if (inlineStyleRequired) {
             border = (Border) table.getRenderProperty(Table.PROPERTY_BORDER);
@@ -640,7 +637,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
                                                              tdCssStyle,
                                                              childComponent,
                                                              getLayoutData(
-                                                                 childComponent),
+                                                                     childComponent),
                                                              defaultInsetsAttributeValue);
             } else {
                 tdElement.setAttribute("class", className);
@@ -648,7 +645,7 @@ public class KeyTablePeer implements ActionProcessor, ComponentSynchronizePeer,
                                                              tdCssStyle,
                                                              childComponent,
                                                              getLayoutData(
-                                                                 childComponent),
+                                                                     childComponent),
                                                              null);
             }
 

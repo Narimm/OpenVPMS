@@ -48,7 +48,7 @@ public class CountedTextAreaPeer extends TextAreaPeer {
      * Service to provide supporting JavaScript library.
      */
     static final Service SERVICE = JavaScriptService.forResource(
-            "CountedTextArea", "/org/openvpms/web/resource/js/CountedTextArea.js");
+            "CountedTextArea", "/org/openvpms/web/echo/js/CountedTextArea.js");
 
     static {
         WebRenderServlet.getServiceRegistry().add(SERVICE);

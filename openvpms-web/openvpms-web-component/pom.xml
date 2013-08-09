@@ -42,7 +42,6 @@
                     <include>**/*.gif</include>
                     <include>**/*.png</include>
                     <include>**/*.stylesheet</include>
-                    <include>**/*.js</include>
                     <include>**/*.properties</include>
                 </includes>
             </resource>

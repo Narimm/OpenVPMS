@@ -46,7 +46,7 @@ public abstract class TextComponentPeer extends nextapp.echo2.webcontainer.syncp
      * Service to provide supporting JavaScript library.
      */
     public static final Service TEXT_COMPONENT_SERVICE = JavaScriptService.forResource(
-            "Echo.TextComponent", "/org/openvpms/web/resource/js/TextComponent.js");
+            "Echo.TextComponent", "/org/openvpms/web/echo/js/TextComponent.js");
 
     static {
         // NOTE: as this extends TextFieldPeer, the broken TextComponent.js script will always be registered prior to
