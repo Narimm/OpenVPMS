@@ -18,12 +18,12 @@ package org.openvpms.web.component.property;
 
 import echopointng.DateField;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.text.TextComponent;
+import org.openvpms.web.echo.text.TextField;
 
 
 /**

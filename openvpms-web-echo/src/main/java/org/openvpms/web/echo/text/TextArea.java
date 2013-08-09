@@ -20,54 +20,48 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.text.Document;
 import nextapp.echo2.app.text.StringDocument;
 
-
 /**
- * A single-line text input field.
- * Workaround for a bug in the echo2 TextComponent javascript implementation.
+ * A multiple-line text input field.
  * <p/>
- * This should be used instead of the echo2 class.
- * <p/>
- * This exists to enable {@link TextFieldPeer} to be used to specify a corrected javascript file,
- * <em>org/openvpms/web/resource/js/TextComponent.js</em>.
- * The binding is specified in <em>META-INF\nextapp\echo2\SynchronizePeerBindings.properties</em>
- * <p/>
- * See http://jira.openvpms.org/jira/browse/OVPMS-1017 for more details.
+ * This replaces the echo2 implementation.
  *
  * @author Tim Anderson
  */
-public class TextField extends TextComponent {
+public class TextArea extends TextComponent {
 
     /**
-     * Constructs a {@link TextField} with an empty {@code StringDocument} as its model, and default width
-     * setting.
+     * Creates a new {@code TextArea} with an empty {@code StringDocument} as its model, and default width and
+     * height settings.
      */
-    public TextField() {
+    public TextArea() {
         super(new StringDocument());
     }
 
     /**
-     * Constructs a {@link TextField}  with the specified {@code Document} model.
+     * Creates a new {@code TextArea} with the specified {@code Document} model.
      *
      * @param document the document
      */
-    public TextField(Document document) {
+    public TextArea(Document document) {
         super(document);
     }
 
     /**
-     * Constructs a {@link TextField}  with the specified {@code Document} model, initial text, and column width.
+     * Creates a new {@code TextArea} with the specified {@code Document} model, initial text, width
+     * and height settings.
      *
      * @param document the document
      * @param text     the initial text (may be null)
      * @param columns  the number of columns to display
+     * @param rows     the number of rows to display
      */
-    public TextField(Document document, String text, int columns) {
+    public TextArea(Document document, String text, int columns, int rows) {
         super(document);
         if (text != null) {
             document.setText(text);
         }
-        setWidth(new Extent(columns, Extent.EX));
+        setWidth(new Extent(columns, Extent.EM));
+        setHeight(new Extent(rows, Extent.EM));
     }
 
 }
-                                                           

@@ -21,7 +21,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.ClassUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,6 +30,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 
 

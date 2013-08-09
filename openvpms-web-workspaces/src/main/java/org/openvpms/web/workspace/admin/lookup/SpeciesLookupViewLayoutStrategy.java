@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.lookup;
 
-import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -26,6 +23,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.TextComponentFactory;
+import org.openvpms.web.echo.text.TextField;
 
 
 /**
@@ -34,8 +32,7 @@ import org.openvpms.web.echo.factory.TextComponentFactory;
  * Displays the display name of any archetype specified for the
  * <em>customFields</em> node.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SpeciesLookupViewLayoutStrategy extends AbstractLayoutStrategy {
 
@@ -56,7 +53,7 @@ public class SpeciesLookupViewLayoutStrategy extends AbstractLayoutStrategy {
             component.setEnabled(false);
             if (shortName != null) {
                 String displayName
-                    = DescriptorHelper.getDisplayName(shortName);
+                        = DescriptorHelper.getDisplayName(shortName);
                 if (displayName == null) {
                     displayName = shortName;
                 }
