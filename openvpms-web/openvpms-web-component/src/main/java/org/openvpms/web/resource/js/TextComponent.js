@@ -1,20 +1,4 @@
 /*
- * Version: 1.0
- *
- * The contents of this file are subject to the OpenVPMS License Version
- * 1.0 (the 'License'); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.openvpms.org/license/
- *
- * Software distributed under the License is distributed on an 'AS IS' basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
- */
-
-/*
  * This file is part of the Echo Web Application Framework (hereinafter "Echo").
  * Copyright (C) 2002-2009 NextApp, Inc.
  *
@@ -50,401 +34,394 @@
  * Object/namespace for Text Component support.
  * This object/namespace should not be used externally.
  */
-EchoTextComponent = Core.extend({
+EchoTextComponent = Core.extend(
+        {
 
-                                    $static: {
+            $static: {
 
-                                        /**
-                                         * Returns the TextComponent data object instance based on the root element id
-                                         * of the TextComponent.
-                                         *
-                                         * @param element the root element or element id of the TextComponent
-                                         * @return the relevant TextComponent instance
-                                         */
-                                        getComponent: function (element) {
-                                            return EchoDomPropertyStore.getPropertyValue(element, "component");
-                                        },
+                /**
+                 * Returns the TextComponent data object instance based on the root element id
+                 * of the TextComponent.
+                 *
+                 * @param element the root element or element id of the TextComponent
+                 * @return the relevant TextComponent instance
+                 */
+                getComponent: function (element) {
+                    return EchoDomPropertyStore.getPropertyValue(element, "component");
+                },
 
-                                        /**
-                                         * Processes a focus blur event:
-                                         * Records the current state of the text field to the ClientMessage.
-                                         * Delegates to data object method.
-                                         *
-                                         * @param echoEvent the event, preprocessed by the
-                                         *        <code>EchoEventProcessor</code>
-                                         */
-                                        processBlur: function (echoEvent) {
-                                            var textComponent = EchoTextComponent.getComponent(echoEvent.registeredTarget);
-                                            textComponent.processBlur(echoEvent);
-                                        },
+                /**
+                 * Processes a focus blur event:
+                 * Records the current state of the text field to the ClientMessage.
+                 * Delegates to data object method.
+                 *
+                 * @param echoEvent the event, preprocessed by the
+                 *        <code>EchoEventProcessor</code>
+                 */
+                processBlur: function (echoEvent) {
+                    var textComponent = EchoTextComponent.getComponent(echoEvent.registeredTarget);
+                    textComponent.processBlur(echoEvent);
+                },
 
-                                        /**
-                                         * Processes a text change event:
-                                         * Records the current state of the text field to the ClientMessage.
-                                         * Delegates to data object method.
-                                         *
-                                         * @param echoEvent the event, preprocessed by the
-                                         *        <code>EchoEventProcessor</code>
-                                         */
-                                        processChange: function (echoEvent) {
-                                            var textComponent = EchoTextComponent.getComponent(echoEvent.registeredTarget);
-                                            textComponent.processChange(echoEvent);
-                                        },
+                /**
+                 * Processes a text change event:
+                 * Records the current state of the text field to the ClientMessage.
+                 * Delegates to data object method.
+                 *
+                 * @param echoEvent the event, preprocessed by the
+                 *        <code>EchoEventProcessor</code>
+                 */
+                processChange: function (echoEvent) {
+                    var textComponent = EchoTextComponent.getComponent(echoEvent.registeredTarget);
+                    textComponent.processChange(echoEvent);
+                },
 
-                                        /**
-                                         * Processes a focus event:
-                                         * Notes focus state in ClientMessage.
-                                         * Delegates to data object method.
-                                         *
-                                         * @param echoEvent the event, preprocessed by the
-                                         *        <code>EchoEventProcessor</code>
-                                         */
-                                        processFocus: function (echoEvent) {
-                                            var textComponent = EchoTextComponent.getComponent(echoEvent.registeredTarget);
-                                            textComponent.processFocus(echoEvent);
-                                        },
+                /**
+                 * Processes a focus event:
+                 * Notes focus state in ClientMessage.
+                 * Delegates to data object method.
+                 *
+                 * @param echoEvent the event, preprocessed by the
+                 *        <code>EchoEventProcessor</code>
+                 */
+                processFocus: function (echoEvent) {
+                    var textComponent = EchoTextComponent.getComponent(echoEvent.registeredTarget);
+                    textComponent.processFocus(echoEvent);
+                },
 
-                                        /**
-                                         * Processes a key press event:
-                                         * Initiates an action in the event that the key pressed was the
-                                         * ENTER key.
-                                         * Delegates to data object method.
-                                         *
-                                         * @param e the DOM Level 2 event, if available
-                                         */
-                                        processKeyPress: function (e) {
-                                            e = e ? e : window.event;
-                                            var target = EchoDomUtil.getEventTarget(e);
-                                            var textComponent = EchoTextComponent.getComponent(target);
-                                            textComponent.processKeyPress(e);
-                                        },
+                /**
+                 * Processes a key press event:
+                 * Initiates an action in the event that the key pressed was the
+                 * ENTER key.
+                 * Delegates to data object method.
+                 *
+                 * @param e the DOM Level 2 event, if available
+                 */
+                processKeyPress: function (e) {
+                    e = e ? e : window.event;
+                    var target = EchoDomUtil.getEventTarget(e);
+                    var textComponent = EchoTextComponent.getComponent(target);
+                    textComponent.processKeyPress(e);
+                },
 
-                                        /**
-                                         * Processes a key up event:
-                                         * Records the current state of the text field to the ClientMessage.
-                                         * Delegates to data object method.
-                                         *
-                                         * @param echoEvent the event, preprocessed by the
-                                         *        <code>EchoEventProcessor</code>
-                                         */
-                                        processKeyUp: function (echoEvent) {
-                                            var textComponent = EchoTextComponent.getComponent(echoEvent.registeredTarget);
-                                            textComponent.processKeyUp(echoEvent);
-                                        }
-                                    },
+                /**
+                 * Processes a key up event:
+                 * Records the current state of the text field to the ClientMessage.
+                 * Delegates to data object method.
+                 *
+                 * @param echoEvent the event, preprocessed by the
+                 *        <code>EchoEventProcessor</code>
+                 */
+                processKeyUp: function (echoEvent) {
+                    var textComponent = EchoTextComponent.getComponent(echoEvent.registeredTarget);
+                    textComponent.processKeyUp(echoEvent);
+                }
+            },
 
-                                    /**
-                                     * Creates a new text component support object.
-                                     *
-                                     * @param elementId the id of the supported text component element
-                                     */
-                                    $construct: function (elementId) {
-                                        this.elementId = elementId;
-                                        this.hash = 0;
-                                    },
+            /**
+             * Creates a new text component support object.
+             *
+             * @param elementId the id of the supported text component element
+             */
+            $construct: function (elementId) {
+                this.elementId = elementId;
+                this.hash = 0;
+            },
 
-                                    /**
-                                     * Disposes of resources used by the support object.
-                                     */
-                                    dispose: function () {
-                                        var element = this.getElement();
-                                        EchoEventProcessor.removeHandler(element, "mouseout");
-                                        EchoEventProcessor.removeHandler(element, "blur");
-                                        EchoEventProcessor.removeHandler(element, "focus");
-                                        EchoEventProcessor.removeHandler(element, "keyup");
-                                        EchoDomUtil.removeEventListener(element, "keypress", EchoTextComponent.processKeyPress, false);
+            /**
+             * Disposes of resources used by the support object.
+             */
+            dispose: function () {
+                var element = this.getElement();
+                EchoEventProcessor.removeHandler(element, "mouseout");
+                EchoEventProcessor.removeHandler(element, "blur");
+                EchoEventProcessor.removeHandler(element, "focus");
+                EchoEventProcessor.removeHandler(element, "keyup");
+                EchoDomUtil.removeEventListener(element, "keypress", EchoTextComponent.processKeyPress, false);
 
-                                        // Remove any updates to text component that occurred during client/server transaction.
-                                        EchoClientMessage.removePropertyElement(element.id, "text");
+                // Remove any updates to text component that occurred during client/server transaction.
+                EchoClientMessage.removePropertyElement(element.id, "text");
 
-                                        EchoDomPropertyStore.dispose(element);
-                                    },
+                EchoDomPropertyStore.dispose(element);
+            },
 
-                                    /**
-                                     * Processes a user "action request" on the text component i.e., the pressing
-                                     * of the ENTER key when the the component is focused.
-                                     * If any server-side <code>ActionListener</code>s are registered, an action
-                                     * will be set in the ClientMessage and a client-server connection initiated.
-                                     */
-                                    doAction: function () {
-                                        if (!this.serverNotify) {
-                                            return;
-                                        }
+            /**
+             * Processes a user "action request" on the text component i.e., the pressing
+             * of the ENTER key when the the component is focused.
+             * If any server-side <code>ActionListener</code>s are registered, an action
+             * will be set in the ClientMessage and a client-server connection initiated.
+             */
+            doAction: function () {
+                if (!this.serverNotify) {
+                    return;
+                }
 
-                                        if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), false)) {
-                                            // Don't process actions when client/server transaction in progress.
-                                            return;
-                                        }
+                if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), false)) {
+                    // Don't process actions when client/server transaction in progress.
+                    return;
+                }
 
-                                        this.updateClientMessage();
-                                        EchoClientMessage.setActionValue(this.elementId, "action");
-                                        EchoServerTransaction.connect();
-                                    },
+                this.updateClientMessage();
+                EchoClientMessage.setActionValue(this.elementId, "action");
+                EchoServerTransaction.connect();
+            },
 
-                                    /**
-                                     * Returns the text component's DOM element.
-                                     */
-                                    getElement: function () {
-                                        return document.getElementById(this.elementId);
-                                    },
+            /**
+             * Returns the text component's DOM element.
+             */
+            getElement: function () {
+                return document.getElementById(this.elementId);
+            },
 
-                                    $virtual: {
+            $virtual: {
 
-                                        /**
-                                         * Initializes the text component support object.
-                                         */
-                                        init: function () {
-                                            var element = this.getElement();
+                /**
+                 * Initializes the text component support object.
+                 */
+                init: function () {
+                    var element = this.getElement();
 
-                                            if (!this.enabled) {
-                                                element.readOnly = true;
-                                            }
+                    if (!this.enabled) {
+                        element.readOnly = true;
+                    }
 
-                                            if (this.text) {
-                                                this.setText(this.text);
-                                            } else {
-                                                this.hash = this.hashCode(element.value);
-                                            }
+                    if (this.text) {
+                        this.setText(this.text);
+                    } else {
+                        this.hash = this.hashCode(element.value);
+                    }
 
-                                            if (this.cursorPosition !== 0) {
-                                                this.setCursorPosition(element, this.cursorPosition);
-                                            }
+                    if (this.cursorPosition !== 0) {
+                        this.setCursorPosition(element, this.cursorPosition);
+                    }
 
-                                            if (this.horizontalScroll !== 0) {
-                                                element.scrollLeft = this.horizontalScroll;
-                                            }
+                    if (this.horizontalScroll !== 0) {
+                        element.scrollLeft = this.horizontalScroll;
+                    }
 
-                                            this.multipleLines = element.nodeName.toLowerCase() != "input";
+                    this.multipleLines = element.nodeName.toLowerCase() != "input";
 
-                                            if (this.verticalScroll !== 0) {
-                                                if (EchoClientProperties.get("quirkIERepaint")) {
-                                                    // Avoid IE quirk where browser will fail to set scroll bar position.
-                                                    var originalWidth = element.style.width;
-                                                    var temporaryWidth = parseInt(element.clientWidth, 10) - 1;
-                                                    element.style.width = temporaryWidth + "px";
-                                                    element.style.width = originalWidth;
-                                                }
-                                                element.scrollTop = this.verticalScroll;
-                                            }
+                    if (this.verticalScroll !== 0) {
+                        if (EchoClientProperties.get("quirkIERepaint")) {
+                            // Avoid IE quirk where browser will fail to set scroll bar position.
+                            var originalWidth = element.style.width;
+                            var temporaryWidth = parseInt(element.clientWidth, 10) - 1;
+                            element.style.width = temporaryWidth + "px";
+                            element.style.width = originalWidth;
+                        }
+                        element.scrollTop = this.verticalScroll;
+                    }
 
-                                            if (EchoClientProperties.get("quirkMozillaTextInputRepaint")) {
-                                                // Avoid Mozilla quirk where text will be rendered outside of text field
-                                                // (this appears to be a Mozilla bug).
-                                                var noValue = !element.value;
-                                                if (noValue) {
-                                                    element.value = "-";
-                                                }
-                                                var currentWidth = element.style.width;
-                                                element.style.width = "20px";
-                                                element.style.width = currentWidth;
-                                                if (noValue) {
-                                                    element.value = "";
-                                                }
-                                            }
+                    if (EchoClientProperties.get("quirkMozillaTextInputRepaint")) {
+                        // Avoid Mozilla quirk where text will be rendered outside of text field
+                        // (this appears to be a Mozilla bug).
+                        var noValue = !element.value;
+                        if (noValue) {
+                            element.value = "-";
+                        }
+                        var currentWidth = element.style.width;
+                        element.style.width = "20px";
+                        element.style.width = currentWidth;
+                        if (noValue) {
+                            element.value = "";
+                        }
+                    }
 
-                                            EchoEventProcessor.addHandler(element, "mouseout", "EchoTextComponent.processChange");
-                                            EchoEventProcessor.addHandler(element, "blur", "EchoTextComponent.processBlur");
-                                            EchoEventProcessor.addHandler(element, "focus", "EchoTextComponent.processFocus");
-                                            EchoEventProcessor.addHandler(element, "keyup", "EchoTextComponent.processKeyUp");
+                    EchoEventProcessor.addHandler(element, "mouseout", "EchoTextComponent.processChange");
+                    EchoEventProcessor.addHandler(element, "blur", "EchoTextComponent.processBlur");
+                    EchoEventProcessor.addHandler(element, "focus", "EchoTextComponent.processFocus");
+                    EchoEventProcessor.addHandler(element, "keyup", "EchoTextComponent.processKeyUp");
 
-                                            EchoDomUtil.addEventListener(element, "keypress", EchoTextComponent.processKeyPress, false);
+                    EchoDomUtil.addEventListener(element, "keypress", EchoTextComponent.processKeyPress, false);
 
-                                            EchoDomPropertyStore.setPropertyValue(element, "component", this);
-                                        },
+                    EchoDomPropertyStore.setPropertyValue(element, "component", this);
+                },
 
-                                        setText: function (text) {
-                                            var element = this.getElement();
-                                            this.hash = this.hashCode(text);
-                                            element.value = text;
-                                        },
+                setText: function (text) {
+                    var element = this.getElement();
+                    this.hash = this.hashCode(text);
+                    element.value = text;
+                },
 
-                                        /**
-                                         * Processes a focus blur event:
-                                         * Records the current state of the text field to the ClientMessage.
-                                         *
-                                         * @param echoEvent the event, preprocessed by the
-                                         *        <code>EchoEventProcessor</code>
-                                         */
-                                        processBlur: function (echoEvent) {
-                                            if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
-                                                return;
-                                            }
+                /**
+                 * Processes a focus blur event:
+                 * Records the current state of the text field to the ClientMessage.
+                 *
+                 * @param echoEvent the event, preprocessed by the
+                 *        <code>EchoEventProcessor</code>
+                 */
+                processBlur: function (echoEvent) {
+                    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+                        return;
+                    }
 
-                                            this.updateClientMessage();
-                                            EchoFocusManager.setFocusedState(this.elementId, false);
-                                        },
+                    this.updateClientMessage();
+                    EchoFocusManager.setFocusedState(this.elementId, false);
+                },
 
-                                        /**
-                                         * Processes a text change event.
-                                         * Records the current state of the text field to the ClientMessage.
-                                         *
-                                         * @param echoEvent the event, preprocessed by the
-                                         *        <code>EchoEventProcessor</code>
-                                         */
-                                        processChange: function (echoEvent) {
-                                            if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
-                                                return;
-                                            }
-                                            this.updateClientMessage();
-                                        },
+                /**
+                 * Processes a text change event.
+                 * Records the current state of the text field to the ClientMessage.
+                 *
+                 * @param echoEvent the event, preprocessed by the
+                 *        <code>EchoEventProcessor</code>
+                 */
+                processChange: function (echoEvent) {
+                    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+                        return;
+                    }
+                    this.updateClientMessage();
+                },
 
-                                        /**
-                                         * Processes a focus event:
-                                         * Notes focus state in ClientMessage.
-                                         *
-                                         * @param echoEvent the event, preprocessed by the
-                                         *        <code>EchoEventProcessor</code>
-                                         */
-                                        processFocus: function (echoEvent) {
-                                            if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
-                                                return;
-                                            }
+                /**
+                 * Processes a focus event:
+                 * Notes focus state in ClientMessage.
+                 *
+                 * @param echoEvent the event, preprocessed by the
+                 *        <code>EchoEventProcessor</code>
+                 */
+                processFocus: function (echoEvent) {
+                    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement())) {
+                        return;
+                    }
 
-                                            EchoFocusManager.setFocusedState(this.elementId, true);
-                                            this.updateClientMessage(); // update cursor position
-                                        },
+                    EchoFocusManager.setFocusedState(this.elementId, true);
+                    this.updateClientMessage(); // update cursor position
+                },
 
-                                        /**
-                                         * Processes a key press event:
-                                         * Initiates an action in the event that the key pressed was the
-                                         * ENTER key.
-                                         *
-                                         * @param e the DOM Level 2 event
-                                         */
-                                        processKeyPress: function (e) {
-                                            if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), true)) {
-                                                EchoDomUtil.preventEventDefault(e);
-                                                return;
-                                            }
-                                            if (e.keyCode == 13) {
-                                                if (!this.multipleLines) {
-                                                    EchoDomUtil.preventEventDefault(e);
-                                                }
-                                                this.doAction();
-                                            }
-                                        },
+                /**
+                 * Processes a key press event:
+                 * Initiates an action in the event that the key pressed was the
+                 * ENTER key.
+                 *
+                 * @param e the DOM Level 2 event
+                 */
+                processKeyPress: function (e) {
+                    if (!this.enabled || !EchoClientEngine.verifyInput(this.getElement(), true)) {
+                        EchoDomUtil.preventEventDefault(e);
+                        return;
+                    }
+                    if (e.keyCode == 13) {
+                        if (!this.multipleLines) {
+                            EchoDomUtil.preventEventDefault(e);
+                        }
+                        this.doAction();
+                    }
+                },
 
-                                        /**
-                                         * Processes a key up event:
-                                         * Records the current state of the text field to the ClientMessage.
-                                         *
-                                         * @param echoEvent the event, preprocessed by the
-                                         *        <code>EchoEventProcessor</code>
-                                         */
-                                        processKeyUp: function (echoEvent) {
-                                            var element = this.getElement();
-                                            if (!this.enabled || !EchoClientEngine.verifyInput(element, true)) {
-                                                EchoDomUtil.preventEventDefault(echoEvent);
-                                                return;
-                                            }
+                /**
+                 * Processes a key up event:
+                 * Records the current state of the text field to the ClientMessage.
+                 *
+                 * @param echoEvent the event, preprocessed by the
+                 *        <code>EchoEventProcessor</code>
+                 */
+                processKeyUp: function (echoEvent) {
+                    var element = this.getElement();
+                    if (!this.enabled || !EchoClientEngine.verifyInput(element, true)) {
+                        EchoDomUtil.preventEventDefault(echoEvent);
+                        return;
+                    }
 
-                                            if (this.maximumLength >= 0) {
-                                                if (element.value && element.value.length > this.maximumLength) {
-                                                    element.value = element.value.substring(0, this.maximumLength);
-                                                }
-                                            }
+                    if (this.maximumLength >= 0) {
+                        if (element.value && element.value.length > this.maximumLength) {
+                            element.value = element.value.substring(0, this.maximumLength);
+                        }
+                    }
 
-                                            this.updateClientMessage();
-                                        },
+                    this.updateClientMessage();
+                },
 
-                                        /**
-                                         * Updates the component state in the outgoing <code>ClientMessage</code>.
-                                         */
-                                        updateClientMessage: function () {
-                                            var element = this.getElement();
-                                            var newHash = this.hashCode(element.value);
-                                            this.cursorPosition = this.getCursorPosition(element);
+                /**
+                 * Updates the component state in the outgoing <code>ClientMessage</code>.
+                 */
+                updateClientMessage: function () {
+                    var element = this.getElement();
+                    var newHash = this.hashCode(element.value);
+                    this.cursorPosition = this.getCursorPosition(element);
 
-                                            if (this.hash != newHash) {
-                                                var textPropertyElement = EchoClientMessage.createPropertyElement(this.elementId, "text");
+                    if (this.hash != newHash) {
+                        var textPropertyElement = EchoClientMessage.createPropertyElement(this.elementId, "text");
 
-                                                if (textPropertyElement.firstChild) {
-                                                    textPropertyElement.firstChild.nodeValue = element.value;
-                                                } else {
-                                                    textPropertyElement.appendChild(EchoClientMessage.messageDocument.createTextNode(element.value));
-                                                }
-                                                this.hash = newHash;
-                                            }
+                        if (textPropertyElement.firstChild) {
+                            textPropertyElement.firstChild.nodeValue = element.value;
+                        } else {
+                            textPropertyElement.appendChild(EchoClientMessage.messageDocument.createTextNode(element.value));
+                        }
+                        this.hash = newHash;
+                    }
 
-                                            EchoClientMessage.setPropertyValue(this.elementId, "horizontalScroll", element.scrollLeft);
-                                            EchoClientMessage.setPropertyValue(this.elementId, "verticalScroll", element.scrollTop);
-                                            EchoClientMessage.setPropertyValue(this.elementId, "cursorPosition", this.cursorPosition);
-                                        }
-                                    },
+                    EchoClientMessage.setPropertyValue(this.elementId, "horizontalScroll", element.scrollLeft);
+                    EchoClientMessage.setPropertyValue(this.elementId, "verticalScroll", element.scrollTop);
+                    EchoClientMessage.setPropertyValue(this.elementId, "cursorPosition", this.cursorPosition);
+                }
+            },
 
-                                    hashCode: function (text) {
-                                        var hash = 0;
-                                        if (text) {
-                                            for (i = 0; i < text.length; i++) {
-                                                var ch = text.charCodeAt(i);
-                                                hash = 31 * hash + ch;
-                                                hash = hash & hash; // convert to 32 bit integer
-                                            }
-                                        }
-                                        return hash;
-                                    },
+            hashCode: function (text) {
+                var hash = 0;
+                if (text) {
+                    for (i = 0; i < text.length; i++) {
+                        var ch = text.charCodeAt(i);
+                        hash = 31 * hash + ch;
+                        hash = hash & hash; // convert to 32 bit integer
+                    }
+                }
+                return hash;
+            },
 
-                                    // Adapted from http://stackoverflow.com/questions/235411/is-there-an-internet-explorer-approved-substitute-for-selectionstart-and-selecti
-                                    getCursorPosition: function (element) {
-                                        var result = 0;
-                                        if (typeof element.selectionEnd == "number") {
-                                            result = element.selectionEnd;
-                                        } else {
-                                            range = document.selection.createRange();
-                                            if (range && range.parentElement() == el) {
-                                                len = element.value.length;
-                                                normalizedValue = element.value.replace(/\r\n/g, "\n");
+            // From http://stackoverflow.com/questions/235411/is-there-an-internet-explorer-approved-substitute-for-selectionstart-and-selecti
+            getCursorPosition: function (element) {
+                var result = 0;
+                if (typeof element.selectionEnd == "number") {
+                    result = element.selectionEnd;
+                } else {
+                    var range = document.selection.createRange();
+                    if (range && range.parentElement() == element) {
+                        var len = element.value.length;
+                        var normalizedValue = element.value.replace(/\r\n/g, "\n");
+                        var textInputRange = element.createTextRange();
+                        textInputRange.moveToBookmark(range.getBookmark());
+                        var endRange = element.createTextRange();
+                        endRange.collapse(false);
+                        if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
+                            result = len;
+                        }
+                        else {
+                            result = -textInputRange.moveStart("character", -len);
+                            result += normalizedValue.slice(0, result).split("\n").length - 1;
+                        }
+                    }
+                }
+                return result;
+            },
 
-                                                // Create a working TextRange that lives only in the input
-                                                textInputRange = element.createTextRange();
-                                                textInputRange.moveToBookmark(range.getBookmark());
+            // From http://stackoverflow.com/questions/512528/set-cursor-position-in-html-textbox
+            setCursorPosition: function (element, cursorPos) {
+                element.value = element.value;
+                // ^ this is used to not only get "focus", but
+                // to make sure we don't have it everything -selected-
+                // (it causes an issue in chrome, and having it doesn't hurt any other browser)
 
-                                                // Check if the start and end of the selection are at the very end
-                                                // of the input, since moveStart/moveEnd doesn't return what we want
-                                                // in those cases
-                                                endRange = element.createTextRange();
-                                                endRange.collapse(false);
-
-                                                if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
-                                                    result = len;
-                                                } else if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
-                                                    result = len;
-                                                } else {
-                                                    result = -textInputRange.moveEnd("character", -len);
-                                                    result += normalizedValue.slice(0, end).split("\n").length - 1;
-                                                }
-                                            }
-                                        }
-                                        return result;
-                                    },
-
-                                    setCursorPosition: function (element, cursorPos) {
-                                        element.value = element.value;
-                                        // ^ this is used to not only get "focus", but
-                                        // to make sure we don't have it everything -selected-
-                                        // (it causes an issue in chrome, and having it doesn't hurt any other browser)
-
-                                        if (element.createTextRange) {
-                                            // IE
-                                            var range = element.createTextRange();
-                                            range.move('character', cursorPos);
-                                            range.select();
-                                            return true;
-                                        }
-                                        else {
-                                            // (el.selectionStart === 0 added for Firefox bug)
-                                            if (element.selectionStart || element.selectionStart === 0) {
-                                                element.focus();
-                                                element.setSelectionRange(cursorPos, cursorPos);
-                                                return true;
-                                            }
-                                            else {
-                                                element.focus();
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                });
+                if (element.createTextRange) {
+                    // IE
+                    var range = element.createTextRange();
+                    range.move('character', cursorPos);
+                    range.select();
+                    return true;
+                }
+                else {
+                    if (element.selectionStart || element.selectionStart === 0) {
+                        element.focus();
+                        element.setSelectionRange(cursorPos, cursorPos);
+                        return true;
+                    }
+                    else {
+                        element.focus();
+                        return false;
+                    }
+                }
+            }
+        });
 
 /**
  * Static object/namespace for Text Component MessageProcessor
