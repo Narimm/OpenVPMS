@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.reporting.till;
 
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -35,6 +34,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.math.BigDecimal;

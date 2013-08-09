@@ -1,29 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
 
-import echopointng.RichTextArea;
 import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.PasswordField;
-import nextapp.echo2.app.TextArea;
-import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.NumericPropertyFormatter;
 import org.openvpms.web.echo.factory.TextComponentFactory;
+import org.openvpms.web.echo.text.PasswordField;
+import org.openvpms.web.echo.text.TextArea;
+import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.echo.text.TextField;
 
 import java.text.Format;
@@ -103,19 +102,6 @@ public class BoundTextComponentFactory extends TextComponentFactory {
      */
     public static TextArea createTextArea(Property property, int columns, int rows) {
         TextArea text = new BoundTextArea(property, columns, rows);
-        setDefaultStyle(text);
-        return text;
-    }
-
-    /**
-     * Create a new bound text area.
-     *
-     * @param property the property to bind
-     * @param columns  the no. of columns to display
-     * @return a new bound text field
-     */
-    public static RichTextArea createRichTextArea(Property property, int columns) {
-        RichTextArea text = new BoundRichTextArea(property, columns);
         setDefaultStyle(text);
         return text;
     }

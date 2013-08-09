@@ -356,7 +356,7 @@
         </properties>
     </style>
 
-    <style name="PatientClinicalNote.note" type="nextapp.echo2.app.TextArea" base-name="default">
+    <style name="PatientClinicalNote.note" type="org.openvpms.web.echo.text.TextArea" base-name="default">
         <properties>
             <property name="width" value="100%"/>
             <property name="height" value="${PatientClinicalNote.note.height}"/>
@@ -714,7 +714,7 @@
         </properties>
     </style>
 
-    <style name="MailEditor.message" type="nextapp.echo2.app.TextArea" base-name="default">
+    <style name="MailEditor.message" type="org.openvpms.web.echo.text.TextArea" base-name="default">
         <properties>
             <property name="width" value="100%"/>
             <property name="height" value="${MailEditor.message.height}"/>
@@ -773,14 +773,14 @@
         </properties>
     </style>
 
-    <style name="UserMessage.message" type="nextapp.echo2.app.TextArea" base-name="default">
+    <style name="UserMessage.message" type="org.openvpms.web.echo.text.TextArea" base-name="default">
         <properties>
             <property name="width" value="100%"/>
             <property name="height" value="${UserMessage.message.height}"/>
         </properties>
     </style>
 
-    <style name="SystemMessage.message" type="nextapp.echo2.app.TextArea" base-name="default">
+    <style name="SystemMessage.message" type="org.openvpms.web.echo.text.TextArea" base-name="default">
         <properties>
             <property name="width" value="100%"/>
             <property name="height" value="${SystemMessage.message.height}"/>
@@ -2236,7 +2236,7 @@
     <!--  Text component defaults                                            -->
     <!-- =================================================================== -->
 
-    <style name="default" type="nextapp.echo2.app.TextArea">
+    <style name="default" type="org.openvpms.web.echo.text.TextArea">
         <properties>
             <property name="background" value="#ffff99"/>
             <property name="foreground" value="#000000"/>
@@ -2253,7 +2253,7 @@
         </properties>
     </style>
 
-    <style name="edit" base-name="default" type="nextapp.echo2.app.TextArea">
+    <style name="edit" base-name="default" type="org.openvpms.web.echo.text.TextArea">
         <properties>
             <property name="disabledBackground" value="#e1e1e1"/>
         </properties>

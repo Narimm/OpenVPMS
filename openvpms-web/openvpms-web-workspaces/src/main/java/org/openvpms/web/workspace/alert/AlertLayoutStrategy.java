@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.alert;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -31,6 +30,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.factory.TextComponentFactory;
+import org.openvpms.web.echo.text.TextField;
 
 import java.util.List;
 

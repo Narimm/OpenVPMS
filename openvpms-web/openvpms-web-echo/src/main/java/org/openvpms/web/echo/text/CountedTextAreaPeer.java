@@ -1,25 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.text;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.TextArea;
-import nextapp.echo2.app.text.TextComponent;
 import nextapp.echo2.app.update.ServerComponentUpdate;
 import nextapp.echo2.webcontainer.ContainerInstance;
 import nextapp.echo2.webcontainer.DomUpdateSupport;
@@ -40,13 +38,13 @@ import org.w3c.dom.Node;
  *
  * @author Tim Anderson
  */
-public class CountedTextAreaPeer extends TextFieldPeer {
+public class CountedTextAreaPeer extends TextAreaPeer {
 
     /**
      * Service to provide supporting JavaScript library.
      */
     static final Service SERVICE = JavaScriptService.forResource(
-        "CountedTextArea", "/org/openvpms/web/resource/js/CountedTextArea.js");
+            "CountedTextArea", "/org/openvpms/web/resource/js/CountedTextArea.js");
 
     static {
         WebRenderServlet.getServiceRegistry().add(SERVICE);
@@ -84,7 +82,7 @@ public class CountedTextAreaPeer extends TextFieldPeer {
         String value = textArea.getText();
         if (value != null) {
             if (!rc.getContainerInstance().getClientProperties().getBoolean(
-                ClientProperties.QUIRK_TEXTAREA_CONTENT)) {
+                    ClientProperties.QUIRK_TEXTAREA_CONTENT)) {
                 textAreaElement.appendChild(rc.getServerMessage().getDocument().createTextNode(value));
             }
         }
@@ -115,8 +113,8 @@ public class CountedTextAreaPeer extends TextFieldPeer {
         ServerMessage serverMessage = rc.getServerMessage();
 
         Element itemizedUpdateElement = serverMessage.getItemizedDirective(
-            ServerMessage.GROUP_ID_POSTUPDATE, "CountedTextArea.MessageProcessor", "init", new String[0],
-            new String[0]);
+                ServerMessage.GROUP_ID_POSTUPDATE, "CountedTextArea.MessageProcessor", "init", new String[0],
+                new String[0]);
         Element itemElement = serverMessage.getDocument().createElement("item");
         itemElement.setAttribute("eid", elementId);
         if (horizontalScroll != null && horizontalScroll.getValue() != 0) {

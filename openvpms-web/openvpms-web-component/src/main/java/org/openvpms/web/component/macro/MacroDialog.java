@@ -13,12 +13,12 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.macro;
 
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -31,6 +31,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.resource.i18n.Messages;
 
 
@@ -98,8 +99,8 @@ public class MacroDialog extends PopupDialog {
     /**
      * Invoked when a macro is selected.
      * <p/>
-     * If the focussed component prior to the dialog being opened is an editable text component, the macro's
-     * code is added to the end of the text.
+     * If the focused component prior to the dialog being opened is an editable text component, the macro's
+     * code is inserted into the text at the cursor position.
      * <p/>
      * Finally, the dialog is closed.
      *
@@ -110,9 +111,23 @@ public class MacroDialog extends PopupDialog {
         if (component != null && component instanceof TextComponent) {
             TextComponent text = (TextComponent) component;
             if (text.isEnabled() && text.isVisible()) {
+                int position = text.getCursorPosition();
                 String value = text.getText();
-                value = (value == null) ? macro.getCode() : value + macro.getCode();
+                String code = macro.getCode();
+                if (value != null) {
+                    if (position < value.length()) {
+                        value = value.substring(0, position) + code + value.substring(position);
+                    } else {
+                        value += code;
+                    }
+                } else {
+                    value = code;
+                }
                 text.setText(value);
+
+                // move the cursor along to either the end of the macro (if it fails to expand), or the end of
+                // the macro expansion
+                text.setCursorPosition(text.getCursorPosition() + code.length());
             }
         }
         onClose();

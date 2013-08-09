@@ -1,27 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.DocumentEvent;
-import nextapp.echo2.app.text.TextComponent;
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.DocumentListener;
-import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.text.TextComponent;
 
 
 /**
@@ -43,7 +44,7 @@ class TextComponentBinder extends Binder {
 
 
     /**
-     * Construct a new <code>TextComponentBinder</code>.
+     * Constructs a {@link TextComponentBinder}.
      *
      * @param component the component to bind
      * @param property  the property to bind
@@ -89,5 +90,33 @@ class TextComponentBinder extends Binder {
         String text = (value != null) ? value.toString() : null;
         component.setText(text);
         component.getDocument().addDocumentListener(listener);
+    }
+
+    /**
+     * Updates the property from the field.
+     * <p/>
+     * This moves the cursor position by the change in length, if a macro is expanded.
+     *
+     * @param property the property to update
+     * @return {@code true} if the property was updated
+     */
+    @Override
+    protected boolean setProperty(Property property) {
+        Object fieldValue = getFieldValue();
+        String oldValue = (fieldValue != null) ? fieldValue.toString() : "";
+        boolean result = property.setValue(fieldValue);
+        if (result) {
+            String newValue = property.getString();
+            if (!ObjectUtils.equals(fieldValue, newValue)) {
+                setField();
+                int oldLength = (oldValue != null) ? oldValue.length() : 0;
+                int newLength = (newValue != null) ? newValue.length() : 0;
+                if (oldLength < newLength) {
+                    int diff = newLength - oldLength;
+                    component.setCursorPosition(component.getCursorPosition() + diff);
+                }
+            }
+        }
+        return result;
     }
 }

@@ -18,7 +18,6 @@ package org.openvpms.web.component.im.product;
 
 import echopointng.DropDown;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -34,6 +33,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;

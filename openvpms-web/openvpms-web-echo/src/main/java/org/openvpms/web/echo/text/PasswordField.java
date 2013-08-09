@@ -13,27 +13,15 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
-package org.openvpms.web.component.bound;
 
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.echo.text.TextField;
-
+package org.openvpms.web.echo.text;
 
 /**
- * Tests the {@link BoundTextField} class.
+ * Password field.
+ * <p/>
+ * This replaces the echo2 implementation.
  *
  * @author Tim Anderson
  */
-public class BoundTextFieldTestCase extends AbstractBoundTextComponentTest {
-
-    /**
-     * Creates a new bound field.
-     *
-     * @param property the property to bind to
-     * @return a new bound field
-     */
-    protected TextField createField(Property property) {
-        return new BoundTextField(property, 10);
-    }
-
+public class PasswordField extends TextField {
 }
