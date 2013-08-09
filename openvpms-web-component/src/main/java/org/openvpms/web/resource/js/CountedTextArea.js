@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 //_________________________
@@ -32,13 +32,16 @@ CountedTextArea = Core.extend(EchoTextComponent, {
 
         var element = document.getElementById(this.elementId);
         var containerElement = document.getElementById(this.elementId + "_container");
-
-        var label = document.createElement("div");
-        label.id = this.elementId + "_label";
-        label.style.textAlign = "right";
-        label.style.fontFamily = element.style.fontFamily;
-        label.style.fontSize = element.style.fontSize;
-        containerElement.insertBefore(label, element);
+        var labelId = this.elementId + "_label";
+        var label = document.getElementById(labelId);
+        if (!label) {
+            label = document.createElement("div");
+            label.id = this.elementId + "_label";
+            label.style.textAlign = "right";
+            label.style.fontFamily = element.style.fontFamily;
+            label.style.fontSize = element.style.fontSize;
+            containerElement.insertBefore(label, element);
+        }
         this.updateCount();
     },
 
@@ -141,9 +144,11 @@ CountedTextArea.MessageProcessor = {
             textComponent.serverNotify = item.getAttribute("server-notify") == "true";
             textComponent.maximumLength = item.getAttribute("maximum-length") ? item.getAttribute("maximum-length") : 255;
             textComponent.horizontalScroll = item.getAttribute("horizontal-scroll") ?
-                parseInt(item.getAttribute("horizontal-scroll"), 10) : 0;
+                                             parseInt(item.getAttribute("horizontal-scroll"), 10) : 0;
             textComponent.verticalScroll = item.getAttribute("vertical-scroll") ?
-                parseInt(item.getAttribute("vertical-scroll"), 10) : 0;
+                                           parseInt(item.getAttribute("vertical-scroll"), 10) : 0;
+            textComponent.cursorPosition = item.getAttribute("cursor-position") ?
+                                           parseInt(item.getAttribute("cursor-position"), 10) : 0;
 
             textComponent.init();
         }

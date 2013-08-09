@@ -19,6 +19,7 @@ package org.openvpms.web.echo.text;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.update.ServerComponentUpdate;
+import nextapp.echo2.webcontainer.ComponentSynchronizePeer;
 import nextapp.echo2.webcontainer.ContainerInstance;
 import nextapp.echo2.webcontainer.DomUpdateSupport;
 import nextapp.echo2.webcontainer.RenderContext;
@@ -28,9 +29,12 @@ import nextapp.echo2.webrender.ServerMessage;
 import nextapp.echo2.webrender.Service;
 import nextapp.echo2.webrender.WebRenderServlet;
 import nextapp.echo2.webrender.output.CssStyle;
+import nextapp.echo2.webrender.servermessage.DomUpdate;
 import nextapp.echo2.webrender.service.JavaScriptService;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import static org.openvpms.web.echo.text.TextComponent.PROPERTY_CURSOR_POSITION;
 
 
 /**
@@ -134,6 +138,11 @@ public class CountedTextAreaPeer extends TextAreaPeer {
                 itemElement.setAttribute("text", value);
             }
         }
+        Integer cursorPos = (Integer) textComponent.getRenderProperty(PROPERTY_CURSOR_POSITION);
+        if (cursorPos != null) {
+            itemElement.setAttribute("cursor-position", cursorPos.toString());
+        }
+
         if (!textComponent.isRenderEnabled()) {
             itemElement.setAttribute("enabled", "false");
         }
@@ -172,5 +181,16 @@ public class CountedTextAreaPeer extends TextAreaPeer {
         itemizedUpdateElement.appendChild(itemElement);
     }
 
-
+    /**
+     * @see ComponentSynchronizePeer#renderUpdate(RenderContext,
+     *      ServerComponentUpdate, String)
+     */
+    @Override
+    public boolean renderUpdate(RenderContext rc, ServerComponentUpdate update, String targetId) {
+        String elementId = ContainerInstance.getElementId(update.getParent());
+        String containerId = elementId + "_container";
+        DomUpdate.renderElementRemove(rc.getServerMessage(), containerId);
+        renderAdd(rc, update, targetId, update.getParent());
+        return false;
+    }
 }
