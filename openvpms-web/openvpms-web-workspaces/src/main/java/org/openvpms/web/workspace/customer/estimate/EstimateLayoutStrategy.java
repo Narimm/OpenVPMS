@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.customer.estimate;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.TextArea;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
@@ -29,6 +28,7 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.text.TextArea;
 
 import java.util.List;
 
