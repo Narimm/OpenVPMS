@@ -67,6 +67,10 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="discountRules" class="org.openvpms.archetype.rules.finance.discount.DiscountRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
