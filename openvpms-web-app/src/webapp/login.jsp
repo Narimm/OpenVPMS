@@ -31,6 +31,8 @@
             font-family: arial, sans-serif;
             width: 100%;
             height: 100%;
+            overflow: hidden;
+            margin: 0;
         }
 
         .border-bl {
@@ -142,6 +144,7 @@
             position: absolute;
             bottom: 20px;
             width: 100%;
+            overflow: hidden;
         }
 
         .version {
