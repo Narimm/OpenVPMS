@@ -43,6 +43,11 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
     private boolean haveCursorPosition;
 
     /**
+     * Determines if the text has been received from the client. Note that the text may be null.
+     */
+    private boolean haveText;
+
+    /**
      * Constructs a {@link TextComponent} with the specified {@code Document} as its model.
      *
      * @param document the desired model
@@ -70,6 +75,7 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
                 haveCursorPosition = false;
             } else {
                 pending = (String) inputValue;
+                haveText = true;
             }
         } else if (PROPERTY_CURSOR_POSITION.equals(inputName)) {
             setProperty(PROPERTY_CURSOR_POSITION, inputValue);
@@ -114,11 +120,12 @@ public abstract class TextComponent extends nextapp.echo2.app.text.TextComponent
      * @return if there was pending text
      */
     private boolean commitPending() {
-        if (pending != null) {
+        if (haveText) {
             try {
                 setText(pending);
             } finally {
                 pending = null;
+                haveText = false;
             }
             return true;
         }
