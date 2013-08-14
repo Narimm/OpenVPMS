@@ -920,6 +920,8 @@ public class PartyFunctions {
 
     /**
      * Returns the patient weight, in kilos.
+     * <p/>
+     * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient. May be {@code null}
      * @return the patient weight, in kilos
@@ -930,6 +932,8 @@ public class PartyFunctions {
 
     /**
      * Returns the patient weight, in the specified units.
+     * <p/>
+     * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient. May be {@code null}
      * @param units   the units. One of {@code KILOGRAMS}, {@code GRAMS}, or {@code POUNDS}
@@ -941,6 +945,8 @@ public class PartyFunctions {
 
     /**
      * Returns the patient weight, in kilos, for the patient associated with an act.
+     * <p/>
+     * This uses the most recent recorded weight for the patient.
      *
      * @param act the act. May be {@code null}.
      * @return the patient weight, in kilos
@@ -952,6 +958,8 @@ public class PartyFunctions {
 
     /**
      * Returns the patient weight, in kilos, for the patient associated with an act.
+     * <p/>
+     * This uses the most recent recorded weight for the patient.
      *
      * @param act   the act. May be {@code null}.
      * @param units the units. One of {@code KILOGRAMS}, {@code GRAMS}, or {@code POUNDS}
