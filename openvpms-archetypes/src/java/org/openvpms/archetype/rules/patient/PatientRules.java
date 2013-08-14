@@ -463,7 +463,7 @@ public class PatientRules {
 
     /**
      * Returns the description node of the most recent
-     * <em>act.patientWeight</em> for a patient asscoaited with an Act.
+     * <em>act.patientWeight</em> for a patient associated with an Act.
      *
      * @param act the act linked to the patient
      * @return the description node or {@code null} if no act can be found
@@ -476,6 +476,8 @@ public class PatientRules {
 
     /**
      * Returns the patient's weight, in kilograms.
+     * <p/>
+     * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient
      * @return the patient's weight in kilograms, or {@code 0} if its weight is not known
@@ -486,6 +488,8 @@ public class PatientRules {
 
     /**
      * Returns the patient's weight, in the specified units.
+     * <p/>
+     * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient
      * @param units   the weight units
