@@ -18,6 +18,7 @@ package org.openvpms.archetype.rules.patient;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -173,11 +174,11 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         assertNull(rules.getPatientWeight(patient));
 
         Date date1 = getDate("2006-12-22");
-        createWeight(date1, patient, new BigDecimal("5.0"), "KILOGRAMS");
+        TestHelper.createWeight(patient, date1, new BigDecimal("5.0"), WeightUnits.KILOGRAMS);
         assertEquals("5 Kilograms", rules.getPatientWeight(patient));
 
         Date date2 = getDate("2007-02-25");
-        createWeight(date2, patient, new BigDecimal("13"), "POUNDS");
+        TestHelper.createWeight(patient, date2, new BigDecimal("13"), WeightUnits.POUNDS);
         assertEquals("13 Pounds", rules.getPatientWeight(patient));
     }
 
@@ -337,25 +338,6 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         } catch (InterruptedException ignore) {
             // do nothing
         }
-    }
-
-    /**
-     * Creates a new <em>act.patientWeight</em> for a patient and saves it.
-     *
-     * @param date    the date
-     * @param patient the patient
-     * @param weight  the weight
-     * @param units   the weight units
-     */
-    private void createWeight(Date date, Party patient, BigDecimal weight,
-                              String units) {
-        Act act = (Act) create("act.patientWeight");
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        bean.setValue("startTime", date);
-        bean.setValue("weight", weight);
-        bean.setValue("units", units);
-        save(act);
     }
 
     /**

@@ -19,6 +19,7 @@ package org.openvpms.archetype.function.party;
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -708,8 +709,7 @@ public class PartyFunctions {
         Party vet = null;
         if (act != null) {
             Date startTime = act.getActivityStartTime();
-            ActBean bean = new ActBean(act, service);
-            Party patient = (Party) bean.getParticipant("participation.patient");
+            Party patient = getPatient(act);
             if (patient != null && startTime != null) {
                 PatientRules rules = patientRules;
                 vet = rules.getReferralVet(patient, startTime);
@@ -846,8 +846,7 @@ public class PartyFunctions {
      * @return the microchip, or an empty string if none is found
      */
     public String getPatientMicrochip(Act act) {
-        ActBean bean = new ActBean(act, service);
-        Party patient = (Party) bean.getParticipant("participation.patient");
+        Party patient = getPatient(act);
         return (patient != null) ? getPatientMicrochip(patient) : "";
     }
 
@@ -869,8 +868,7 @@ public class PartyFunctions {
      * @return the pet tag, or an empty string if none is found
      */
     public String getPatientPetTag(Act act) {
-        ActBean bean = new ActBean(act, service);
-        Party patient = (Party) bean.getParticipant("participation.patient");
+        Party patient = getPatient(act);
         return (patient != null) ? getPatientPetTag(patient) : "";
     }
 
@@ -918,6 +916,50 @@ public class PartyFunctions {
             return patientRules.getPatientWeight(act);
         }
         return "";
+    }
+
+    /**
+     * Returns the patient weight, in kilos.
+     *
+     * @param patient the patient. May be {@code null}
+     * @return the patient weight, in kilos
+     */
+    public BigDecimal getWeight(Party patient) {
+        return (patient != null) ? patientRules.getWeight(patient) : BigDecimal.ZERO;
+    }
+
+    /**
+     * Returns the patient weight, in the specified units.
+     *
+     * @param patient the patient. May be {@code null}
+     * @param units   the units. One of {@code KILOGRAMS}, {@code GRAMS}, or {@code POUNDS}
+     * @return the patient weight in the specified units
+     */
+    public BigDecimal getWeight(Party patient, String units) {
+        return (patient != null) ? patientRules.getWeight(patient, WeightUnits.valueOf(units)) : BigDecimal.ZERO;
+    }
+
+    /**
+     * Returns the patient weight, in kilos, for the patient associated with an act.
+     *
+     * @param act the act. May be {@code null}.
+     * @return the patient weight, in kilos
+     */
+    public BigDecimal getWeight(Act act) {
+        Party patient = getPatient(act);
+        return getWeight(patient);
+    }
+
+    /**
+     * Returns the patient weight, in kilos, for the patient associated with an act.
+     *
+     * @param act   the act. May be {@code null}.
+     * @param units the units. One of {@code KILOGRAMS}, {@code GRAMS}, or {@code POUNDS}
+     * @return the patient weight in the specified units
+     */
+    public BigDecimal getWeight(Act act, String units) {
+        Party patient = getPatient(act);
+        return getWeight(patient, units);
     }
 
     /**
@@ -1063,4 +1105,19 @@ public class PartyFunctions {
         }
         return null;
     }
+
+    /**
+     * Helper to return the patient associated with an act.
+     *
+     * @param act the act. May be {@code null}
+     * @return the patient, or {@code null} if none is found
+     */
+    private Party getPatient(Act act) {
+        if (act != null) {
+            ActBean bean = new ActBean(act, service);
+            return (Party) bean.getParticipant("participation.patient");
+        }
+        return null;
+    }
+
 }

@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillArchetypes;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -28,6 +29,7 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -39,6 +41,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
@@ -273,6 +276,38 @@ public class TestHelper extends Assert {
         }
         return patient;
     }
+
+    /**
+     * Creates a new <em>act.patientWeight</em> for a patient for the current date, and saves it.
+     *
+     * @param patient the patient
+     * @param weight  the weight
+     * @return the weight act
+     */
+    public static Act createWeight(Party patient, BigDecimal weight, WeightUnits units) {
+        return createWeight(patient, new Date(), weight, units);
+    }
+
+    /**
+     * Creates a new <em>act.patientWeight</em> for a patient and saves it.
+     *
+     * @param patient the patient
+     * @param date    the date
+     * @param weight  the weight
+     * @param units   the weight units
+     * @return the weight act
+     */
+    public static Act createWeight(Party patient, Date date, BigDecimal weight, WeightUnits units) {
+        Act act = (Act) create(PatientArchetypes.PATIENT_WEIGHT);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        bean.setValue("startTime", date);
+        bean.setValue("weight", weight);
+        bean.setValue("units", units.toString());
+        save(act);
+        return act;
+    }
+
 
     /**
      * Creates and saves a new user.
