@@ -19,6 +19,7 @@ package org.openvpms.archetype.function.party;
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Test;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -33,8 +34,15 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
+import java.math.BigDecimal;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.openvpms.archetype.rules.math.MathRules.ONE_POUND_IN_GRAMS;
+import static org.openvpms.archetype.rules.math.MathRules.ONE_POUND_IN_KILOS;
+import static org.openvpms.archetype.rules.math.MathRules.ONE_THOUSAND;
 
 /**
  * Tests the {@link PartyFunctions} class.
@@ -171,6 +179,72 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         patient.addIdentity(microchip);
 
         assertEquals("1234567", ctx.getValue("party:getPatientMicrochip(.)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getWeight(Party)} and {@link PartyFunctions#getWeight(Party, String)} methods.
+     */
+    @Test
+    public void testGetWeight() {
+        Party patient = TestHelper.createPatient();
+        JXPathContext ctx = JXPathHelper.newContext(patient);
+        assertEquals(ZERO, ctx.getValue("party:getWeight(.)"));
+
+        Act weight1 = TestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
+        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
+        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
+
+        remove(weight1);
+        Act weight2 = TestHelper.createWeight(patient, ONE_THOUSAND, WeightUnits.GRAMS);
+        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
+        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
+
+        remove(weight2);
+
+        TestHelper.createWeight(patient, ONE, WeightUnits.POUNDS);
+        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(.)"));
+        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_POUND_IN_GRAMS, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(ONE, ctx.getValue("party:getWeight(., 'POUNDS')"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getWeight(Act)} and {@link PartyFunctions#getWeight(Act, String)} methods.
+     */
+    @Test
+    public void testActGetWeight() {
+        Party patient = TestHelper.createPatient();
+        Act visit = (Act) create(PatientArchetypes.CLINICAL_EVENT);
+        ActBean bean = new ActBean(visit);
+        bean.addNodeParticipation("patient", patient);
+
+        JXPathContext ctx = JXPathHelper.newContext(visit);
+        assertEquals(ZERO, ctx.getValue("party:getWeight(.)"));
+
+        Act weight1 = TestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
+        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
+        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
+
+        remove(weight1);
+        Act weight2 = TestHelper.createWeight(patient, ONE_THOUSAND, WeightUnits.GRAMS);
+        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
+        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
+
+        remove(weight2);
+
+        TestHelper.createWeight(patient, ONE, WeightUnits.POUNDS);
+        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(.)"));
+        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_POUND_IN_GRAMS, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(ONE, ctx.getValue("party:getWeight(., 'POUNDS')"));
     }
 
     /**
