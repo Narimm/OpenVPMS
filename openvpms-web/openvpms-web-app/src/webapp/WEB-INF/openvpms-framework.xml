@@ -280,6 +280,11 @@
                         <constructor-arg ref="macros"/>
                     </bean>
                 </entry>
+                <entry key="expr">
+                    <bean class="org.openvpms.archetype.function.expression.ExpressionFunctions">
+                        <constructor-arg value="expr"/>
+                    </bean>
+                </entry>
             </map>
         </constructor-arg>
     </bean>
