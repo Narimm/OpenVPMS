@@ -96,10 +96,13 @@ public class MathFunctionsTestCase {
     public void testPow() {
         assertEquals(BigDecimal.valueOf(16), math.pow(BigDecimal.valueOf(2), 4));
         assertEquals(new BigDecimal("9.8596"), math.pow(BigDecimal.valueOf(3.14), 2));
+        assertEquals(new BigDecimal("9.8596"), math.pow(BigDecimal.valueOf(3.14), 2));
+        assertEquals(new BigDecimal("2"), math.pow(BigDecimal.valueOf(4), new BigDecimal("0.5")));
 
         // test evaluation using JXPath
         assertEquals(BigDecimal.valueOf(16), (BigDecimal) ctx.getValue("math:pow(2, 4)"));
         assertEquals(new BigDecimal("9.8596"), (BigDecimal) ctx.getValue("math:pow(3.14, 2)"));
+        assertEquals(new BigDecimal("2"), (BigDecimal) ctx.getValue("math:pow(4, 0.5)"));
     }
 
     /**
