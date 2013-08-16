@@ -24,8 +24,7 @@ import java.math.BigDecimal;
 /**
  * JXPath math extension functions.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class MathFunctions {
 
@@ -64,5 +63,22 @@ public class MathFunctions {
      */
     public BigDecimal pow(BigDecimal value, int exponent) {
         return value.pow(exponent);
+    }
+
+    /**
+     * Returns <tt>value<sup>exponent</sup></tt>.
+     *
+     * @param value    the value
+     * @param exponent the exponent
+     * @return <tt>value<sup>exponent</sup></tt>
+     */
+    public BigDecimal pow(BigDecimal value, BigDecimal exponent) {
+        try {
+            return pow(value, exponent.intValueExact());
+        } catch (ArithmeticException overflow) {
+            // exponent isn't an integer, or is too big. Use the imprecise double conversion instead.
+            double result = Math.pow(value.doubleValue(), exponent.doubleValue());
+            return new BigDecimal(result);
+        }
     }
 }
