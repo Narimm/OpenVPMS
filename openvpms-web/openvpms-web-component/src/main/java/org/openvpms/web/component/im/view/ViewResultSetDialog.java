@@ -30,6 +30,8 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
 
+import java.util.List;
+
 
 /**
  * A dialog that allows the results from an {@link ResultSet} to be iterated through and viewed.
@@ -128,6 +130,15 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      */
     public T getSelected() {
         return selected;
+    }
+
+    /**
+     * Returns the selected object selection path.
+     *
+     * @return the path. May be {@code null}
+     */
+    public List<Selection> getSelectionPath() {
+        return (viewer != null) ? viewer.getSelectionPath() : null;
     }
 
     /**

@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.workspace;
 
 import nextapp.echo2.app.Button;
@@ -26,6 +27,7 @@ import org.openvpms.web.component.im.edit.EditResultSetDialog;
 import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.im.view.ViewResultSetDialog;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
@@ -36,6 +38,7 @@ import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 
+import java.util.List;
 
 /**
  * A {@code CRUDWindow} that supports iteration over a {@link ResultSet}.
@@ -136,7 +139,7 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
                     if (ViewResultSetDialog.EDIT_ID.equals(action)) {
                         T selected = dialog.getSelected();
                         if (selected != null) {
-                            edit(selected);
+                            edit(selected, dialog.getSelectionPath());
                         }
                     }
                 }
@@ -168,11 +171,12 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
      * Edits an object.
      *
      * @param object the object to edit
+     * @param path   the selection path. May be {@code null}
      */
     @Override
-    protected void edit(final T object) {
+    protected void edit(final T object, List<Selection> path) {
         if (object.isNew()) {
-            super.edit(object);
+            super.edit(object, path);
         } else {
             final FocusCommand focus = new FocusCommand();
             String title = Messages.format("editor.edit.title", getArchetypes().getDisplayName());

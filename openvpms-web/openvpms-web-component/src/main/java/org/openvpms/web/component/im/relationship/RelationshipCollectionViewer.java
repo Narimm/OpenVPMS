@@ -82,13 +82,22 @@ public class RelationshipCollectionViewer
     }
 
     /**
+     * Returns the selected object.
+     *
+     * @return the selected object. May be {@code null}
+     */
+    public IMObject getSelected() {
+        RelationshipState state = getTable().getTable().getSelected();
+        return (state != null) ? state.getRelationship() : null;
+    }
+
+    /**
      * Create a new table model.
      *
      * @param context the layout context
      * @return a new table model
      */
-    protected IMTableModel<RelationshipState> createTableModel(
-            LayoutContext context) {
+    protected IMTableModel<RelationshipState> createTableModel(LayoutContext context) {
         return new RelationshipStateTableModel(context, parentIsSource);
     }
 
@@ -101,16 +110,6 @@ public class RelationshipCollectionViewer
     protected void setSelected(IMObject object) {
         RelationshipState state = states.get(object);
         getTable().getTable().setSelected(state);
-    }
-
-    /**
-     * Returns the selected object.
-     *
-     * @return the selected object. May be <tt>null</tt>
-     */
-    protected IMObject getSelected() {
-        RelationshipState state = getTable().getTable().getSelected();
-        return (state != null) ? state.getRelationship() : null;
     }
 
     /**
@@ -151,8 +150,7 @@ public class RelationshipCollectionViewer
      * @return a new query
      */
     protected RelationshipStateQuery createQuery(IMObject parent) {
-        return new RelationshipStateQuery(
-                parent, getObjects(), getProperty().getArchetypeRange());
+        return new RelationshipStateQuery(parent, getObjects(), getProperty().getArchetypeRange());
     }
 
     /**

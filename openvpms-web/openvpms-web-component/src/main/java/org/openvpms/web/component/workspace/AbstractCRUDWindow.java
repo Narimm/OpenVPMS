@@ -44,6 +44,7 @@ import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectDeletor;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonRow;
@@ -54,6 +55,8 @@ import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+
+import java.util.List;
 
 
 /**
@@ -87,6 +90,11 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * The object.
      */
     private T object;
+
+    /**
+     * The selection path. May be {@code null}
+     */
+    private List<Selection> selectionPath;
 
     /**
      * Determines the operations that may be performed on the selected object.
@@ -181,6 +189,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     public void setObject(T object) {
         this.object = object;
+        this.selectionPath = null;
         context.setCurrent(object);
         getComponent();
         ButtonSet buttons = getButtons();
@@ -200,6 +209,16 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     public T getObject() {
         return object;
+    }
+
+    /**
+     * Sets the selection path.
+     *
+     * @param path the path. May be {@code null}
+     */
+    @Override
+    public void setSelectionPath(List<Selection> path) {
+        selectionPath = path;
     }
 
     /**
@@ -246,19 +265,30 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Edits the current object.
      */
     public void edit() {
+        edit(selectionPath);
+    }
+
+    /**
+     * Edits the current object.
+     *
+     * @param path the path to view. May be {@code null}
+     */
+    @Override
+    public void edit(List<Selection> path) {
         T object = getObject();
         if (object != null) {
             if (canEdit()) {
                 if (object.isNew()) {
-                    edit(object);
+                    edit(object, path);
                 } else {
                     // make sure the latest instance is being used.
                     IMObject previous = object;
                     object = IMObjectHelper.reload(object);
                     if (object == null) {
-                        ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
+                        ErrorDialog.show(Messages.format("imobject.noexist",
+                                                         DescriptorHelper.getDisplayName(previous)));
                     } else {
-                        edit(object);
+                        edit(object, path);
                     }
                 }
             } else {
@@ -506,19 +536,24 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param object the new object
      */
     protected void onCreated(T object) {
-        edit(object);
+        edit(object, null);
     }
 
     /**
      * Edits an object.
      *
      * @param object the object to edit
+     * @param path   the selection path. May be {@code null}
      */
-    protected void edit(T object) {
+    protected void edit(T object, List<Selection> path) {
         try {
             HelpContext edit = createEditTopic(object);
             LayoutContext context = createLayoutContext(edit);
             IMObjectEditor editor = createEditor(object, context);
+            editor.getComponent();
+            if (path != null) {
+                editor.setSelectionPath(path);
+            }
             edit(editor);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

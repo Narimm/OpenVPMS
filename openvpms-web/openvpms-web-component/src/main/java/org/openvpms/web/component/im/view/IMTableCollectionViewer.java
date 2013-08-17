@@ -21,6 +21,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -35,6 +36,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GroupBoxFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.SortableTableModel;
 
 import java.util.ArrayList;
@@ -157,13 +159,6 @@ public abstract class IMTableCollectionViewer<T>
     protected abstract void setSelected(IMObject object);
 
     /**
-     * Returns the selected object.
-     *
-     * @return the selected object. May be {@code null}
-     */
-    protected abstract IMObject getSelected();
-
-    /**
      * Creates a new result set.
      *
      * @return a new result set
@@ -176,7 +171,9 @@ public abstract class IMTableCollectionViewer<T>
      * @return a new component
      */
     protected Component doLayout() {
-        Column column = ColumnFactory.create("WideCellSpacing", getTable());
+        Column column = new IMObjectCollectionComponent();
+        column.setStyleName("WideCellSpacing");
+        column.add(getTable());
         populateTable();
         return column;
     }
@@ -217,7 +214,7 @@ public abstract class IMTableCollectionViewer<T>
         box.setTitle(viewer.getTitle());
         Component child = viewer.getComponent();
         if (LayoutHelper.needsInset(child)) {
-            child = ColumnFactory.create("Inset", child);
+            child = ColumnFactory.create(Styles.INSET, child);
         }
         box.add(child);
     }
@@ -277,6 +274,40 @@ public abstract class IMTableCollectionViewer<T>
             if (sortable.getSortColumn() == -1 && sortable.getDefaultSortColumn() != -1) {
                 sortable.sort(sortable.getDefaultSortColumn(), true);
             }
+        }
+    }
+
+    /**
+     * The root viewer component. This hooks the collection viewer into the component hierarchy.
+     */
+    private class IMObjectCollectionComponent extends Column implements IMObjectComponent {
+
+        @Override
+        public IMObjectComponent getSelected() {
+            IMObject object = getObject();
+            return object != null ? new DefaultIMObjectComponent(object, box) : null;
+        }
+
+        @Override
+        public boolean select(Selection selection) {
+            IMObject object = selection.getObject();
+            setSelected(object);
+            return object != null && ObjectUtils.equals(object, IMTableCollectionViewer.this.getSelected());
+        }
+
+        @Override
+        public IMObject getObject() {
+            return null;
+        }
+
+        @Override
+        public String getNode() {
+            return IMTableCollectionViewer.this.getProperty().getName();
+        }
+
+        @Override
+        public Component getComponent() {
+            return box;
         }
     }
 

@@ -146,7 +146,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
                 Party supplier = dialog.getSupplier();
                 Party location = dialog.getStockLocation();
                 addParticipations(act, supplier, location);
-                edit(act);
+                edit(act, null);
             }
         });
         dialog.show();
@@ -162,7 +162,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
             FinancialAct copy = rules.copyOrder(object);
             String notes = Messages.format("supplier.order.copy.notes", object.getTitle());
             copy.setTitle(notes);
-            edit(copy);
+            edit(copy, null);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("supplier.order.copy.failed");
             ErrorHelper.show(title, exception);

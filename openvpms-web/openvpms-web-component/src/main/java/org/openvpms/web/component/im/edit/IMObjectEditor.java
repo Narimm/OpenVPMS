@@ -22,10 +22,12 @@ import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.help.HelpContext;
 
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 
 /**
@@ -33,8 +35,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author Tim Anderson
  */
-public interface IMObjectEditor extends Editor, Saveable, Deletable,
-    Cancellable {
+public interface IMObjectEditor extends Editor, Saveable, Deletable, Cancellable {
 
     /**
      * Property name for event indicating that the component has changed.
@@ -72,14 +73,14 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable,
     /**
      * Deletes the current object.
      *
-     * @return <code>true</code> if the object was deleted successfully
+     * @return {@code true} if the object was deleted successfully
      */
     boolean delete();
 
     /**
      * Determines if the object has been deleted.
      *
-     * @return <code>true</code> if the object has been deleted
+     * @return {@code true} if the object has been deleted
      */
     boolean isDeleted();
 
@@ -92,16 +93,22 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable,
     /**
      * Determines if editing was cancelled.
      *
-     * @return <code>true</code> if editing was cancelled
+     * @return {@code true} if editing was cancelled
      */
     boolean isCancelled();
+
+    /**
+     * Sets the selection path.
+     *
+     * @param path the path
+     */
+    void setSelectionPath(List<Selection> path);
 
     /**
      * Returns a property, given its node descriptor's name.
      *
      * @param name the descriptor's name
-     * @return the property corresponding to <tt>name</tt> or <tt>null</tt> if
-     *         none exists
+     * @return the property corresponding to {@code name} or {@code null} if none exists
      */
     Property getProperty(String name);
 
@@ -111,8 +118,7 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable,
      * @param name     the property name to listen on
      * @param listener the listener
      */
-    void addPropertyChangeListener(String name,
-                                   PropertyChangeListener listener);
+    void addPropertyChangeListener(String name, PropertyChangeListener listener);
 
     /**
      * Remove a property change listener.
@@ -120,8 +126,7 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable,
      * @param name     the property name to remove the listener for
      * @param listener the listener to remove
      */
-    void removePropertyChangeListener(String name,
-                                      PropertyChangeListener listener);
+    void removePropertyChangeListener(String name, PropertyChangeListener listener);
 
     /**
      * Returns the help context for the editor.

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -39,7 +37,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class IMObjectTableCollectionViewer
-    extends IMTableCollectionViewer<IMObject> {
+        extends IMTableCollectionViewer<IMObject> {
 
     /**
      * Constructs a new <tt>IMObjectTableCollectionViewer</tt>.
@@ -55,6 +53,15 @@ public abstract class IMObjectTableCollectionViewer
     }
 
     /**
+     * Returns the selected object.
+     *
+     * @return the selected object. May be {@code null}
+     */
+    public IMObject getSelected() {
+        return getTable().getTable().getSelected();
+    }
+
+    /**
      * Create a new table model.
      *
      * @param context the layout context
@@ -62,7 +69,7 @@ public abstract class IMObjectTableCollectionViewer
      */
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
         return IMObjectTableModelFactory.create(
-            getProperty().getArchetypeRange(), context);
+                getProperty().getArchetypeRange(), context);
     }
 
     /**
@@ -72,15 +79,6 @@ public abstract class IMObjectTableCollectionViewer
      */
     protected void setSelected(IMObject object) {
         getTable().getTable().setSelected(object);
-    }
-
-    /**
-     * Returns the selected object.
-     *
-     * @return the selected object. May be <tt>null</tt>
-     */
-    protected IMObject getSelected() {
-        return getTable().getTable().getSelected();
     }
 
     /**

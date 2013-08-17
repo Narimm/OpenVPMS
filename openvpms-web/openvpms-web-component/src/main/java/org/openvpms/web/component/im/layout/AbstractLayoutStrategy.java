@@ -16,8 +16,6 @@
 
 package org.openvpms.web.component.im.layout;
 
-import echopointng.TabbedPane;
-import echopointng.tabbedpane.TabModel;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
@@ -35,9 +33,7 @@ import org.openvpms.web.component.property.ReadOnlyProperty;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.tabpane.TabPaneModel;
 
 import java.util.HashMap;
 import java.util.List;
@@ -275,8 +271,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected void doComplexLayout(IMObject object, IMObject parent, List<Property> properties, Component container,
                                    LayoutContext context) {
         if (!properties.isEmpty()) {
-            TabModel model = doTabLayout(object, properties, container, context, false);
-            TabbedPane pane = TabbedPaneFactory.create(model);
+            IMObjectTabPaneModel model = doTabLayout(object, properties, container, context, false);
+            IMObjectTabPane pane = new IMObjectTabPane(model);
 
             pane.setSelectedIndex(0);
             container.add(pane);
@@ -336,9 +332,9 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *                     is non-zero
      * @return the tab model
      */
-    protected TabPaneModel doTabLayout(IMObject object, List<Property> properties, Component container,
-                                       LayoutContext context, boolean shortcutHint) {
-        TabPaneModel model;
+    protected IMObjectTabPaneModel doTabLayout(IMObject object, List<Property> properties, Component container,
+                                               LayoutContext context, boolean shortcutHint) {
+        IMObjectTabPaneModel model;
         boolean shortcuts = false;
         if (context.getLayoutDepth() == 0 && (properties.size() > 1 || shortcutHint)) {
             model = createTabModel(container);
@@ -356,8 +352,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param container the tab container. May be {@code null}
      * @return a new tab model
      */
-    protected TabPaneModel createTabModel(Component container) {
-        return new TabPaneModel(container);
+    protected IMObjectTabPaneModel createTabModel(Component container) {
+        return new IMObjectTabPaneModel(container);
     }
 
     /**
@@ -369,8 +365,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param context    the layout context
      * @param shortcuts  if {@code true} include short cuts
      */
-    protected void doTabLayout(IMObject object, List<Property> properties, TabPaneModel model, LayoutContext context,
-                               boolean shortcuts) {
+    protected void doTabLayout(IMObject object, List<Property> properties, IMObjectTabPaneModel model,
+                               LayoutContext context, boolean shortcuts) {
         for (Property property : properties) {
             ComponentState child = createComponent(property, object, context);
             addTab(model, property, child, shortcuts);
@@ -385,7 +381,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param component   the component to add
      * @param addShortcut if {@code true} add a tab shortcut
      */
-    protected void addTab(TabPaneModel model, Property property, ComponentState component, boolean addShortcut) {
+    protected void addTab(IMObjectTabPaneModel model, Property property, ComponentState component,
+                          boolean addShortcut) {
         setFocusTraversal(component);
         String text = component.getDisplayName();
         if (text == null) {
@@ -403,7 +400,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         if (LayoutHelper.needsInset(child)) {
             child = ColumnFactory.create("Inset", child);
         }
-        model.addTab(text, child);
+        model.addTab(property, text, child);
     }
 
     /**

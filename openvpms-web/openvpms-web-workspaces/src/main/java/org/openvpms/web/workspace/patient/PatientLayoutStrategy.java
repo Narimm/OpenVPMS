@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -27,13 +25,13 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.echo.tabpane.TabPaneModel;
 
 import java.util.Collection;
 import java.util.List;
@@ -45,8 +43,7 @@ import java.util.List;
  * Renders the <em>customField</em> node inline if there is an
  * <em>entity.customPatient*</em> associated with it.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientLayoutStrategy extends AbstractLayoutStrategy {
 
@@ -58,7 +55,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * The tab model containing the customFields node.
      */
-    private TabPaneModel tabModel;
+    private IMObjectTabPaneModel tabModel;
 
     /**
      * The current custom field editor state.
@@ -175,7 +172,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      * @return a new tab model
      */
     @Override
-    protected TabPaneModel createTabModel(Component container) {
+    protected IMObjectTabPaneModel createTabModel(Component container) {
         tabModel = super.createTabModel(container);
         return tabModel;
     }
@@ -189,7 +186,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
      * @param addShortcut if {@code true} add a tab shortcut
      */
     @Override
-    protected void addTab(TabPaneModel model, Property property, ComponentState component, boolean addShortcut) {
+    protected void addTab(IMObjectTabPaneModel model, Property property, ComponentState component, boolean addShortcut) {
         super.addTab(model, property, component, addShortcut);
         if ("customFields".equals(property.getName())) {
             customFieldsTab = model.size() - 1;
@@ -214,7 +211,7 @@ public class PatientLayoutStrategy extends AbstractLayoutStrategy {
             IMObjectReference ref = relationship.getTarget();
             if (ref != null) {
                 String displayName = DescriptorHelper.getDisplayName(
-                    ref.getArchetypeId().getShortName());
+                        ref.getArchetypeId().getShortName());
                 result.setDisplayName(displayName);
             }
         }

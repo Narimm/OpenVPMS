@@ -16,36 +16,54 @@
 
 package org.openvpms.web.component.im.view;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * Read-only viewer for a collection of {@link IMObject}s.
+ * Represents a selected object or node.
  *
  * @author Tim Anderson
+ * @see IMObjectComponent
  */
-public interface IMObjectCollectionViewer {
+public class Selection {
 
     /**
-     * Returns the collection property.
-     *
-     * @return the collection property
+     * The selected node. May be {@code null}
      */
-    CollectionProperty getProperty();
+    private final String node;
 
     /**
-     * Returns the view component.
-     *
-     * @return the view component
+     * The selected object. May be {@code null}
      */
-    Component getComponent();
+    private final IMObject object;
+
+    /**
+     * Constructs a {@link Selection}.
+     *
+     * @param node   the selected node. May be {@code null}
+     * @param object the selected object. May be {@code null}
+     */
+    public Selection(String node, IMObject object) {
+        this.node = node;
+        this.object = object;
+    }
+
+    /**
+     * Returns the selected node.
+     *
+     * @return the selected node. May be {@code null}
+     */
+    public String getNode() {
+        return node;
+    }
 
     /**
      * Returns the selected object.
      *
      * @return the selected object. May be {@code null}
      */
-    IMObject getSelected();
+    public IMObject getObject() {
+        return object;
+    }
+
 }

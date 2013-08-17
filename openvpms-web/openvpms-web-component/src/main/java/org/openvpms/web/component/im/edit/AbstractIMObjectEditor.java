@@ -39,6 +39,7 @@ import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
@@ -403,6 +404,16 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
+     * Sets the selection path.
+     *
+     * @param path the path
+     */
+    @Override
+    public void setSelectionPath(List<Selection> path) {
+        getView().setSelectionPath(path);
+    }
+
+    /**
      * Returns the rendered object.
      *
      * @return the rendered object
@@ -462,8 +473,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Returns a property, given its node descriptor's name.
      *
      * @param name the descriptor's name
-     * @return the property corresponding to {@code name} or {@code null} if
-     *         none exists
+     * @return the property corresponding to {@code name} or {@code null} if none exists
      */
     public Property getProperty(String name) {
         return properties.get(name);
@@ -561,7 +571,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Deletes the object.
      *
-     * @return {@code true} if the delete was successfule
+     * @return {@code true} if the delete was successful
      */
     protected boolean deleteObject() {
         IMObject object = getObject();
@@ -599,11 +609,9 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * @param oldValue the old value of the property
      * @param newValue the new value of the property
      */
-    protected void firePropertyChange(String name, Object oldValue,
-                                      Object newValue) {
+    protected void firePropertyChange(String name, Object oldValue, Object newValue) {
         if (propertyChangeNotifier != null) {
-            propertyChangeNotifier.firePropertyChange(name, oldValue,
-                                                      newValue);
+            propertyChangeNotifier.firePropertyChange(name, oldValue, newValue);
         }
     }
 
@@ -793,8 +801,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Helper to return a node descriptor from the archetype, given its name.
      *
      * @param name the node descriptor's name
-     * @return the corresponding node descriptor, or {@code null} if it
-     *         doesn't exist
+     * @return the corresponding node descriptor, or {@code null} if it doesn't exist
      */
     protected NodeDescriptor getDescriptor(String name) {
         return getArchetypeDescriptor().getNodeDescriptor(name);
@@ -804,12 +811,10 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Helper to return an editor associated with a property, given the property
      * name.
      * <p/>
-     * This performs a layout of the component if it hasn't already been done,
-     * to ensure the editors are created
+     * This performs a layout of the component if it hasn't already been done, to ensure the editors are created
      *
      * @param name the property name
-     * @return the editor corresponding to {@code name} or }null} if
-     *         none exists
+     * @return the editor corresponding to {@code name} or {@code null} if none exists
      */
     protected Editor getEditor(String name) {
         return getEditor(name, true);
@@ -820,10 +825,8 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * name.
      *
      * @param name   the property name
-     * @param create if {@code true} force creation of the edit components if
-     *               it hasn't already been done
-     * @return the editor corresponding to {@code name} or }null} if
-     *         none exists or hasn't been created
+     * @param create if {@code true} force creation of the edit components if it hasn't already been done
+     * @return the editor corresponding to {@code name} or {@code null} if none exists or hasn't been created
      */
     protected Editor getEditor(String name, boolean create) {
         if (create) {
@@ -874,8 +877,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
          * @return a component to edit the property
          */
         @Override
-        protected Editor createLookupEditor(Property property,
-                                            IMObject context) {
+        protected Editor createLookupEditor(Property property, IMObject context) {
             Editor editor = super.createLookupEditor(property, context);
             final LookupField lookup = (LookupField) editor.getComponent();
             ModifiableListener listener = new ModifiableListener() {
