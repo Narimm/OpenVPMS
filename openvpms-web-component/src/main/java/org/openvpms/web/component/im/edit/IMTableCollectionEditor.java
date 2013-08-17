@@ -24,6 +24,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -40,6 +41,9 @@ import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.view.DefaultIMObjectComponent;
+import org.openvpms.web.component.im.view.IMObjectComponent;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -53,6 +57,7 @@ import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.keyboard.KeyStrokeHelper;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.SortableTableModel;
 import org.openvpms.web.echo.table.TableNavigator;
 import org.openvpms.web.resource.i18n.Messages;
@@ -115,11 +120,6 @@ public abstract class IMTableCollectionEditor<T>
      * Determines if the current editor has been modified since being displayed.
      */
     private boolean editorModified;
-
-    /**
-     * The column style.
-     */
-    private static final String COLUMN_STYLE = "CellSpacing";
 
     /**
      * The no. of rows to display.
@@ -327,7 +327,8 @@ public abstract class IMTableCollectionEditor<T>
      * @return the component
      */
     protected Component doLayout(LayoutContext context) {
-        container = ColumnFactory.create(COLUMN_STYLE);
+        container = new IMObjectCollectionComponent();
+        container.setStyleName(Styles.CELL_SPACING);
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
 
         table = new PagedIMTable<T>(createTableModel(context));
@@ -710,4 +711,44 @@ public abstract class IMTableCollectionEditor<T>
         focusGroup.add(index, editorFocusGroup);
         editorFocusGroup.setFocus();
     }
+
+    /**
+     * The root editor component. This hooks the collection editor into the component hierarchy.
+     */
+    private class IMObjectCollectionComponent extends Column implements IMObjectComponent {
+
+        @Override
+        public IMObject getObject() {
+            return IMTableCollectionEditor.this.getSelected();
+        }
+
+        @Override
+        public String getNode() {
+            return IMTableCollectionEditor.this.getProperty().getName();
+        }
+
+        @Override
+        public IMObjectComponent getSelected() {
+            IMObject object = getObject();
+            return object != null ? new DefaultIMObjectComponent(object, editBox) : null;
+        }
+
+        @Override
+        public boolean select(Selection selection) {
+            boolean result = false;
+            IMObject object = selection.getObject();
+            setSelected(object);
+            if (ObjectUtils.equals(object, IMTableCollectionEditor.this.getSelected())) {
+                onEdit();
+                result = true;
+            }
+            return result;
+        }
+
+        @Override
+        public Component getComponent() {
+            return editBox;
+        }
+    }
+
 }

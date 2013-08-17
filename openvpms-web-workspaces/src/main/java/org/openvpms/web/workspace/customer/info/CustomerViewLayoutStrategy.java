@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.customer.info;
 
 import nextapp.echo2.app.Component;
@@ -22,6 +23,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserListener;
@@ -32,7 +34,6 @@ import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.List;
@@ -55,7 +56,7 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
      * @param shortcuts  if <tt>true</tt> include short cuts
      */
     @Override
-    protected void doTabLayout(IMObject object, List<Property> properties, TabPaneModel model, LayoutContext context,
+    protected void doTabLayout(IMObject object, List<Property> properties, IMObjectTabPaneModel model, LayoutContext context,
                                boolean shortcuts) {
         super.doTabLayout(object, properties, model, context, shortcuts);
         Browser<Act> appointments = getAppointments((Party) object, context);

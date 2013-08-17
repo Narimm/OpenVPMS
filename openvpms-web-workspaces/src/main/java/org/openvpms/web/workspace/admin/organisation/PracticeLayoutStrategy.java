@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
@@ -34,7 +35,6 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.subscription.SubscriptionHelper;
 import org.openvpms.web.system.ServiceHelper;
@@ -115,7 +115,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      */
     @Override
     protected void doTabLayout(IMObject object, List<Property> properties,
-                               TabPaneModel model, LayoutContext context, boolean shortcuts) {
+                               IMObjectTabPaneModel model, LayoutContext context, boolean shortcuts) {
         super.doTabLayout(object, properties, model, context, shortcuts);
         Component inset = ColumnFactory.create("Inset", subscription.getComponent());
 

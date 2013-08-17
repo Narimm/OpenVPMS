@@ -19,16 +19,17 @@ package org.openvpms.web.component.im.view;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+
+import java.util.List;
 
 
 /**
  * Represents a view of an {@link IMObject}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public interface IMObjectView {
 
@@ -49,22 +50,21 @@ public interface IMObjectView {
     /**
      * Determines if the view has been rendered.
      *
-     * @return <tt>true</tt> if the view has been rendered, otherwise  <tt>false</tt>
+     * @return {@code true} if the view has been rendered, otherwise  {@code false}
      */
     boolean hasComponent();
 
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <code>null</code> if the component hasn't been
-     *         rendered
+     * @return the focus group, or {@code null} if the component hasn't been rendered
      */
     FocusGroup getFocusGroup();
 
     /**
      * Returns the current layout.
      *
-     * @return the layout. May be <code>null</code>
+     * @return the layout. May be {@code null}
      */
     IMObjectLayoutStrategy getLayout();
 
@@ -81,6 +81,20 @@ public interface IMObjectView {
      * @param listener the listener
      */
     void setLayoutListener(ActionListener listener);
+
+    /**
+     * Returns the selection path.
+     * <p/>
+     * This is the list of {@link Selection}s that the user has made, drilling down through the object hierarchy.
+     */
+    List<Selection> getSelectionPath();
+
+    /**
+     * Sets the selection path.
+     *
+     * @param path the path
+     */
+    void setSelectionPath(List<Selection> path);
 
     /**
      * Returns the help context for the view.

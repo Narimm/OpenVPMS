@@ -20,11 +20,15 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.help.HelpContext;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -160,6 +164,37 @@ public abstract class AbstractIMObjectView implements IMObjectView {
     }
 
     /**
+     * Returns the selection path.
+     * <p/>
+     * This is the list of {@link Selection}s that the user has made, drilling down through the object hierarchy.
+     */
+    @Override
+    public List<Selection> getSelectionPath() {
+        if (component != null) {
+            return SelectionHelper.getSelectionPath(component);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Sets the selection path.
+     *
+     * @param path the path
+     */
+    @Override
+    public void setSelectionPath(List<Selection> path) {
+        IMObjectComponent current = (component != null) ? SelectionHelper.getComponent(component) : null;
+        Iterator<Selection> iterator = path.iterator();
+        while (current != null && iterator.hasNext()) {
+            if (current.select(iterator.next())) {
+                current = current.getSelected();
+            } else {
+                break;
+            }
+        }
+    }
+
+    /**
      * Returns the help context for the view.
      *
      * @return the help context
@@ -175,8 +210,7 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      */
     protected Component createComponent() {
         LayoutContext context = getLayoutContext();
-        ComponentState component = layout.apply(object, properties, parent,
-                                                context);
+        ComponentState component = layout.apply(object, properties, parent, context);
         focusGroup = component.getFocusGroup();
         return component.getComponent();
     }
