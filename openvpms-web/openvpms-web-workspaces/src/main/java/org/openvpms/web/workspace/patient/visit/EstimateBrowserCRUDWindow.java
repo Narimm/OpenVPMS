@@ -42,7 +42,12 @@ public class EstimateBrowserCRUDWindow extends BrowserCRUDWindow<Act> {
     /**
      * The estimate statuses to query.
      */
-    private static final ActStatuses STATUSES = new ActStatuses(EstimateArchetypes.ESTIMATE);
+    private static final ActStatuses STATUSES;
+
+    static {
+        STATUSES = new ActStatuses(EstimateArchetypes.ESTIMATE);
+        STATUSES.setDefault((String) null);
+    }
 
     /**
      * The default sort constraint.
