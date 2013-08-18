@@ -300,6 +300,21 @@ public abstract class IMTableCollectionEditor<T>
     protected abstract IMObject getSelected();
 
     /**
+     * Returns the target of a selection.
+     * <p/>
+     * This is to support situations where a selection path from a viewer uses a related object to that used by the
+     * editor.
+     * <p/>
+     * This implementation returns {@code object}.
+     *
+     * @param object the selected object
+     * @return the selection target
+     */
+    protected IMObject getSelectionTarget(IMObject object) {
+        return object;
+    }
+
+    /**
      * Selects the object prior to the selected object, if one is available.
      *
      * @return the prior object. May be {@code null}
@@ -736,9 +751,9 @@ public abstract class IMTableCollectionEditor<T>
         @Override
         public boolean select(Selection selection) {
             boolean result = false;
-            IMObject object = selection.getObject();
+            IMObject object = getSelectionTarget(selection.getObject());
             setSelected(object);
-            if (ObjectUtils.equals(object, IMTableCollectionEditor.this.getSelected())) {
+            if (object != null && ObjectUtils.equals(object, IMTableCollectionEditor.this.getSelected())) {
                 onEdit();
                 result = true;
             }
