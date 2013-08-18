@@ -284,7 +284,7 @@ public abstract class IMTableCollectionViewer<T>
 
         @Override
         public IMObjectComponent getSelected() {
-            IMObject object = getObject();
+            IMObject object = IMTableCollectionViewer.this.getSelected();
             return object != null ? new DefaultIMObjectComponent(object, box) : null;
         }
 
