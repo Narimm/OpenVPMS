@@ -84,6 +84,13 @@ public class VisitPrescriptionCRUDWindow extends PatientPrescriptionCRUDWindow {
                 SaveHelper.save(chargeEditor);
                 onSaved(getObject(), false);
             }
+
+            @Override
+            protected void cancelled() {
+                super.cancelled();
+                // need to remove the item from the invoice
+                chargeEditor.removeItem((Act) item.getObject());
+            }
         });
         item.setProductRef(prescriptionBean.getNodeParticipantRef("product"));
     }
