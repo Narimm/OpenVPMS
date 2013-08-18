@@ -70,29 +70,43 @@ public class VisitPrescriptionCRUDWindow extends PatientPrescriptionCRUDWindow {
     protected void onDispense() {
         Act prescription = getObject();
         ActBean prescriptionBean = new ActBean(prescription);
-        final CustomerChargeActItemEditor item = chargeEditor.addItem();
-        item.getComponent();
-        item.setPromptForPrescriptions(false);
-        item.setCancelPrescription(true);
-        item.getPrescriptions().add(prescription);
-        final EditorQueue existing = item.getEditorQueue();
-        item.setEditorQueue(new DefaultEditorQueue(getContext()) {
-            @Override
-            protected void completed() {
-                super.completed();
-                item.setEditorQueue(existing);
-                SaveHelper.save(chargeEditor);
-                onSaved(getObject(), false);
-            }
+        if (chargeEditor == null) {
+            showStatusError(prescription, "patient.prescription.dispense", "patient.prescription.noinvoice");
+        } else {
+            if (!chargeEditor.isValid()) {
+                // don't add prescription to invalid invoice
+                showStatusError(prescription, "patient.prescription.dispense", "patient.prescription.saveinvoice");
+            } else {
+                final CustomerChargeActItemEditor item = chargeEditor.addItem();
+                if (item == null) {
+                    // shouldn't happen, but prompt user to save just in case
+                    showStatusError(prescription, "patient.prescription.dispense", "patient.prescription.saveinvoice");
+                } else {
+                    item.getComponent();
+                    item.setPromptForPrescriptions(false);
+                    item.setCancelPrescription(true);
+                    item.getPrescriptions().add(prescription);
+                    final EditorQueue existing = item.getEditorQueue();
+                    item.setEditorQueue(new DefaultEditorQueue(getContext()) {
+                        @Override
+                        protected void completed() {
+                            super.completed();
+                            item.setEditorQueue(existing);
+                            SaveHelper.save(chargeEditor);
+                            onSaved(getObject(), false);
+                        }
 
-            @Override
-            protected void cancelled() {
-                super.cancelled();
-                // need to remove the item from the invoice
-                chargeEditor.removeItem((Act) item.getObject());
+                        @Override
+                        protected void cancelled() {
+                            super.cancelled();
+                            // need to remove the item from the invoice
+                            chargeEditor.removeItem((Act) item.getObject());
+                        }
+                    });
+                    item.setProductRef(prescriptionBean.getNodeParticipantRef("product"));
+                }
             }
-        });
-        item.setProductRef(prescriptionBean.getNodeParticipantRef("product"));
+        }
     }
 
     /**

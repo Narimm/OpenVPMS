@@ -34,7 +34,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.workspace.AbstractViewCRUDWindow;
+import org.openvpms.web.component.workspace.ActCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
@@ -53,7 +53,7 @@ import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
  *
  * @author Tim Anderson
  */
-public class PatientPrescriptionCRUDWindow extends AbstractViewCRUDWindow<Act> {
+public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
 
     /**
      * The dispense button.
