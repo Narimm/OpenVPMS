@@ -183,6 +183,15 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     public CustomerChargeActItemEditor addItem() {
         ActRelationshipCollectionEditor items = getItems();
         CustomerChargeActItemEditor result = (CustomerChargeActItemEditor) items.add();
+        if (result == null) {
+            // the existing editor is invalid, preventing a new item being added, so force creation of the editor.
+            // Note that this won't be made the current editor
+            IMObject object = items.create();
+            if (object != null) {
+                result = (CustomerChargeActItemEditor) items.getEditor(object);
+                items.addEdited(result);
+            }
+        }
         if (result != null && items.getCurrentEditor() == result) {
             // set the default focus to that of the item editor
             getFocusGroup().setDefault(result.getFocusGroup().getDefaultFocus());
