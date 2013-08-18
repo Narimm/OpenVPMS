@@ -1,27 +1,19 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
@@ -38,23 +30,19 @@ import java.util.Map;
 
 
 /**
- * A {@link CollectionPropertyEditor} for collections of
- * {@link ActRelationship}s.
+ * A {@link CollectionPropertyEditor} for collections of {@link ActRelationship}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class ActRelationshipCollectionPropertyEditor
-    extends RelationshipCollectionTargetPropertyEditor {
+public class ActRelationshipCollectionPropertyEditor extends RelationshipCollectionTargetPropertyEditor {
 
     /**
-     * Creates a new <tt>ActRelationshipCollectionPropertyEditor</tt>.
+     * Constructs an {@link ActRelationshipCollectionPropertyEditor}.
      *
      * @param property the property to edit
      * @param act      the parent act
      */
-    public ActRelationshipCollectionPropertyEditor(
-        CollectionProperty property, Act act) {
+    public ActRelationshipCollectionPropertyEditor(CollectionProperty property, Act act) {
         super(property, act);
     }
 
@@ -91,14 +79,15 @@ public class ActRelationshipCollectionPropertyEditor
      * @param source       the source of the relationship.
      * @param target       the target of the relationship
      * @param relationship the relationship to remove
+     * @return {@code true} if the relationship was removed
      */
-    protected void removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
+    protected boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
         Act targetAct = ((Act) target);
         ActRelationship actRel = (ActRelationship) relationship;
         targetAct.removeActRelationship(actRel);
 
         // Remove the relationship from the source act. This will generate events, so invoke last
-        getProperty().remove(relationship);
+        return getProperty().remove(relationship);
     }
 }
 

@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
@@ -82,5 +83,28 @@ public class MultipleRelationshipCollectionTargetEditor
      */
     protected RelationshipCollectionTargetPropertyEditor getEditor() {
         return (RelationshipCollectionTargetPropertyEditor) getCollectionPropertyEditor();
+    }
+
+    /**
+     * Returns the target of a selection.
+     *
+     * @param object the selected object
+     * @return the selection target
+     */
+    @Override
+    protected IMObject getSelectionTarget(IMObject object) {
+        IMObject result = null;
+        if (object instanceof IMObjectRelationship) {
+            IMObjectReference target = ((IMObjectRelationship) object).getTarget();
+            for (IMObject o : getEditor().getObjects()) {
+                if (o.getObjectReference().equals(target)) {
+                    result = o;
+                    break;
+                }
+            }
+        } else {
+            result = object;
+        }
+        return result;
     }
 }
