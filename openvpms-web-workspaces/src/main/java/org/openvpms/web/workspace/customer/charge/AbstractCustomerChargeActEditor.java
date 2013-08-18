@@ -191,6 +191,18 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Removes an item.
+     *
+     * @param item the item to remove
+     */
+    public void removeItem(Act item) {
+        getItems().remove(item);
+
+        // if the item wasn't committed, then removal doesn't trigger onItemsChanged(), so do it manually.
+        onItemsChanged();
+    }
+
+    /**
      * Sets the clinician.
      *
      * @param clinician the clinician. May be {@code null}
