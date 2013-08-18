@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -36,7 +34,7 @@ import org.openvpms.web.system.ServiceHelper;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class LookupRelationshipCollectionTargetPropertyEditor
-    extends RelationshipCollectionTargetPropertyEditor {
+        extends RelationshipCollectionTargetPropertyEditor {
 
     /**
      * Constructs a <tt>LookupRelationshipCollectionTargetPropertyEditor</tt>.
@@ -77,13 +75,14 @@ public class LookupRelationshipCollectionTargetPropertyEditor
      * @param source       the source object to remove from
      * @param target       the target object to remove from
      * @param relationship the relationship to remove
+     * @return {@code true} if the relationship was removed
      */
-    protected void removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
+    protected boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
         Lookup tgt = (Lookup) target;
         LookupRelationship rel = (LookupRelationship) relationship;
         tgt.removeLookupRelationship(rel);
 
         // Remove the relationship from the lookup entity. This will generate events, so invoke last
-        getProperty().remove(relationship);
+        return getProperty().remove(relationship);
     }
 }

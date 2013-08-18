@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -75,18 +75,16 @@ public abstract class RelationshipCollectionTargetPropertyEditor
     /**
      * The logger.
      */
-    private static final Log log = LogFactory.getLog(
-            RelationshipCollectionTargetPropertyEditor.class);
+    private static final Log log = LogFactory.getLog(RelationshipCollectionTargetPropertyEditor.class);
 
 
     /**
-     * Creates a new <tt>RelationshipCollectionTargetPropertyEditor</tt>.
+     * Constructs a {@link RelationshipCollectionTargetPropertyEditor}.
      *
      * @param property the property to edit
      * @param parent   the parent object
      */
-    public RelationshipCollectionTargetPropertyEditor(
-            CollectionProperty property, IMObject parent) {
+    public RelationshipCollectionTargetPropertyEditor(CollectionProperty property, IMObject parent) {
         super(property);
         // @todo - no support for multiple relationship archetypes
         relationshipType = property.getArchetypeRange()[0];
@@ -110,8 +108,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      */
     @Override
     public String[] getArchetypeRange() {
-        ArchetypeDescriptor relationship
-                = DescriptorHelper.getArchetypeDescriptor(relationshipType);
+        ArchetypeDescriptor relationship = DescriptorHelper.getArchetypeDescriptor(relationshipType);
         NodeDescriptor target = relationship.getNodeDescriptor("target");
         return DescriptorHelper.getShortNames(target);
     }
@@ -127,8 +124,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
         IMObjectRelationship relationship = getTargets().get(object);
         if (relationship == null) {
             try {
-                relationship = addRelationship(parent, object,
-                                               relationshipType);
+                relationship = addRelationship(parent, object, relationshipType);
                 if (relationship != null) {
                     getTargets().put(object, relationship);
                     getProperty().add(relationship);
@@ -146,6 +142,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * Removes an object from the collection.
      *
      * @param object the object to remove
+     * @return {@code true} if the object was removed
      */
     @Override
     public boolean remove(IMObject object) {
@@ -173,12 +170,10 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * @param source    the source object
      * @param target    the target object
      * @param shortName the relationship short name
-     * @return the new relationship, or <tt>null</tt> if it couldn't be created
+     * @return the new relationship, or {@code null} if it couldn't be created
      * @throws ArchetypeServiceException for any error
      */
-    protected abstract IMObjectRelationship addRelationship(IMObject source,
-                                                            IMObject target,
-                                                            String shortName);
+    protected abstract IMObjectRelationship addRelationship(IMObject source, IMObject target, String shortName);
 
     /**
      * Removes a relationship.
@@ -191,13 +186,14 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * @param source       the source object to remove from
      * @param target       the target object to remove from
      * @param relationship the relationship to remove
+     * @return {@code true} if the relationship was removed
      */
-    protected abstract void removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship);
+    protected abstract boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship);
 
     /**
      * Saves the collection.
      *
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     @Override
     protected boolean doSave() {
@@ -262,7 +258,7 @@ public abstract class RelationshipCollectionTargetPropertyEditor
      * Flags an object for removal when the collection is saved.
      *
      * @param object the object to remove
-     * @return <tt>true</tt> if the object was removed
+     * @return {@code true} if the object was removed
      */
     protected boolean queueRemove(IMObject object) {
         if (!object.isNew()) {

@@ -62,9 +62,10 @@ public abstract class DelegatingProperty implements CollectionProperty {
      * Remove a value.
      *
      * @param value the value to remove
+     * @return {@code true} if the value was removed
      */
-    public void remove(Object value) {
-        ((CollectionProperty) property).remove(value);
+    public boolean remove(Object value) {
+        return ((CollectionProperty) property).remove(value);
     }
 
     /**

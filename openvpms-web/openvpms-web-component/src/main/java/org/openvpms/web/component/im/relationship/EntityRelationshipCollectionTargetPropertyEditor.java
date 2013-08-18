@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -32,20 +30,19 @@ import org.openvpms.web.component.property.CollectionProperty;
  * A {@link CollectionPropertyEditor} for collections of
  * {@link EntityRelationship}s where the targets are being added and removed.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EntityRelationshipCollectionTargetPropertyEditor
-    extends RelationshipCollectionTargetPropertyEditor {
+        extends RelationshipCollectionTargetPropertyEditor {
 
     /**
-     * Creates a new <tt>EntityRelationshipCollectionTargetPropertyEditor</tt>.
+     * Constructs an {@link EntityRelationshipCollectionTargetPropertyEditor}.
      *
      * @param property the property to edit
      * @param parent   the parent object
      */
     public EntityRelationshipCollectionTargetPropertyEditor(
-        CollectionProperty property, Entity parent) {
+            CollectionProperty property, Entity parent) {
         super(property, parent);
     }
 
@@ -71,13 +68,14 @@ public class EntityRelationshipCollectionTargetPropertyEditor
      * @param source       the source object to remove from
      * @param target       the target object to remove from
      * @param relationship the relationship to remove
+     * @return {@code true} if the relationship was removed
      */
-    protected void removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
+    protected boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
         Entity targetEntity = (Entity) target;
         EntityRelationship rel = (EntityRelationship) relationship;
         targetEntity.removeEntityRelationship(rel);
 
         // Remove the relationship from the source entity. This will generate events, so invoke last
-        getProperty().remove(relationship);
+        return getProperty().remove(relationship);
     }
 }

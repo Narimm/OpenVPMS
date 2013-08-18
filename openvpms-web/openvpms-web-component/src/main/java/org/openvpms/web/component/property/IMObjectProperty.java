@@ -365,14 +365,17 @@ public class IMObjectProperty extends AbstractProperty
      * Remove a value.
      *
      * @param value the value to remove
+     * @return {@code true} if the value was removed
      */
-    public void remove(Object value) {
+    public boolean remove(Object value) {
+        boolean result = false;
         checkModifiable();
         try {
             int size = size();
             value = getTransformer().apply(value);
             descriptor.removeChildFromCollection(object, value);
             if (size != size()) {
+                result = true;
                 modified();
             }
         } catch (ValidationException exception) {
@@ -382,6 +385,7 @@ public class IMObjectProperty extends AbstractProperty
         } catch (PropertyException exception) {
             invalidate(exception);
         }
+        return result;
     }
 
     /**
