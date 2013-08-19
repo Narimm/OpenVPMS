@@ -206,16 +206,6 @@ public class PrescriptionRulesTestCase extends ArchetypeServiceTest {
      * @return a new prescription
      */
     private Act createPrescription(int quantity, int repeats, Date expiryDate) {
-        Act act = (Act) create(PatientArchetypes.PRESCRIPTION);
-        ActBean bean = new ActBean(act);
-        bean.setValue("quantity", quantity);
-        bean.setValue("repeats", repeats);
-        bean.setValue("endTime", expiryDate);
-        bean.addNodeParticipation("patient", patient);
-        bean.addNodeParticipation("product", product);
-        bean.addNodeParticipation("clinician", clinician);
-        bean.addNodeParticipation("author", clinician);
-        bean.save();
-        return act;
+        return PrescriptionTestHelper.createPrescription(patient, product, clinician, quantity, repeats, expiryDate);
     }
 }
