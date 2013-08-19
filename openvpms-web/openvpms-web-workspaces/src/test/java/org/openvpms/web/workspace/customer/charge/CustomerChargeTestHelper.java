@@ -36,14 +36,15 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 /**
  * Helper routines for customer charge tests.
@@ -115,34 +116,42 @@ public class CustomerChargeTestHelper {
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             // invoice items have a dispensing node
             assertFalse(itemEditor.isValid());  // not valid while popup is displayed
-            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
+
+            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION, true);
             // save the popup editor - should be a medication
         }
 
         EntityBean bean = new EntityBean(product);
         for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
+            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION, false);
         }
         for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, ReminderArchetypes.REMINDER);
+            checkSavePopup(mgr, ReminderArchetypes.REMINDER, false);
         }
     }
 
     /**
      * Saves the current popup editor.
      *
-     * @param mgr       the popup editor manager
-     * @param shortName the expected archetype short name of the object being edited
+     * @param mgr          the popup editor manager
+     * @param shortName    the expected archetype short name of the object being edited
+     * @param prescription if {@code true} process prescription prompts
      */
-    public static void checkSavePopup(ChargeEditorQueue mgr, String shortName) {
-        EditDialog dialog = mgr.getCurrent();
-        assertNotNull(dialog);
-        IMObjectEditor editor = dialog.getEditor();
+    public static void checkSavePopup(ChargeEditorQueue mgr, String shortName, boolean prescription) {
+        if (prescription) {
+            PopupDialog dialog = mgr.getCurrent();
+            if (dialog instanceof ConfirmationDialog) {
+                fireDialogButton(dialog, PopupDialog.OK_ID);
+            }
+        }
+        PopupDialog dialog = mgr.getCurrent();
+        assertTrue(dialog instanceof EditDialog);
+        IMObjectEditor editor = ((EditDialog) dialog).getEditor();
         assertTrue(TypeHelper.isA(editor.getObject(), shortName));
         assertTrue(editor.isValid());
-        org.openvpms.web.test.EchoTestHelper.fireDialogButton(dialog, PopupDialog.OK_ID);
+        fireDialogButton(dialog, PopupDialog.OK_ID);
     }
 
     /**

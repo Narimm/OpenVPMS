@@ -385,15 +385,15 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             if (TypeHelper.isA(product1, ProductArchetypes.MEDICATION)) {
                 // invoice items have a dispensing node
                 assertFalse(editor.isValid()); // not valid while popup is displayed
-                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION);
+                checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION, false);
                 // save the popup editor - should be a medication
             }
 
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION);
+            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION, false);
 
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, ReminderArchetypes.REMINDER);
+            checkSavePopup(mgr, ReminderArchetypes.REMINDER, false);
         }
 
         // editor should now be valid
