@@ -24,6 +24,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.DefaultIMObjectActions;
 import org.openvpms.web.component.im.edit.EditResultSetDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.query.AbstractArchetypeQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -181,6 +182,10 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
             final FocusCommand focus = new FocusCommand();
             String title = Messages.format("editor.edit.title", getArchetypes().getDisplayName());
             EditResultSetDialog<T> dialog = createEditResultSetDialog(object, title);
+            if (path != null) {
+                IMObjectEditor editor = dialog.getEditor();
+                editor.setSelectionPath(path);
+            }
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 protected void onAction(PopupDialog dialog) {

@@ -33,6 +33,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.workflow.DefaultTaskListener;
 import org.openvpms.web.component.workflow.TaskEvent;
 import org.openvpms.web.component.workflow.Workflow;
@@ -48,6 +49,7 @@ import org.openvpms.web.workspace.workflow.WorkflowFactory;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleCRUDWindow;
 
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -101,15 +103,16 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
      * Edits an object.
      *
      * @param editor the object editor
+     * @param path   the selection path. May be {@code null}
      * @return the edit dialog
      */
     @Override
-    protected EditDialog edit(IMObjectEditor editor) {
+    protected EditDialog edit(IMObjectEditor editor, List<Selection> path) {
         Date startTime = browser.getSelectedTime();
         if (startTime != null && editor.getObject().isNew() && editor instanceof AppointmentActEditor) {
             ((AppointmentActEditor) editor).setStartTime(startTime);
         }
-        return super.edit(editor);
+        return super.edit(editor, path);
     }
 
     /**
@@ -354,8 +357,8 @@ public class AppointmentCRUDWindow extends ScheduleCRUDWindow {
         HelpContext edit = createEditTopic(appointment);
         DefaultLayoutContext context = new DefaultLayoutContext(getContext(), edit);
         AppointmentActEditor editor = new AppointmentActEditor(appointment, null, context);
-        EditDialog dialog = edit(editor);  // NOTE: need to update the start time after dialog is created
-        editor.setSchedule(schedule);      //       See AppointmentEditDialog.timesModified().
+        EditDialog dialog = edit(editor, null);  // NOTE: need to update the start time after dialog is created
+        editor.setSchedule(schedule);            //       See AppointmentEditDialog.timesModified().
         editor.setStartTime(startTime); // will recalc end time
         dialog.save(true);              // checks for overlapping appointments
         browser.setSelected(browser.getEvent(appointment));

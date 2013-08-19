@@ -81,15 +81,18 @@ public class IMObjectTabPane extends TabPane implements IMObjectComponent {
      */
     @Override
     public IMObjectComponent getSelected() {
+        IMObjectComponent result = null;
         int selectedIndex = getSelectedIndex();
         if (selectedIndex != -1) {
             Component component = getModel().getTabContentAt(selectedIndex);
             if (component != null) {
-                return SelectionHelper.getComponent(component);
+                result = SelectionHelper.getComponent(component);
             }
-            return new DefaultIMObjectComponent(getNode(), null);
+            if (result == null) {
+                result = new DefaultIMObjectComponent(getNode(), null);
+            }
         }
-        return null;
+        return result;
     }
 
     /**

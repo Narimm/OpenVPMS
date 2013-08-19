@@ -734,7 +734,7 @@ public abstract class IMTableCollectionEditor<T>
 
         @Override
         public IMObject getObject() {
-            return IMTableCollectionEditor.this.getSelected();
+            return null;
         }
 
         @Override
@@ -744,7 +744,7 @@ public abstract class IMTableCollectionEditor<T>
 
         @Override
         public IMObjectComponent getSelected() {
-            IMObject object = getObject();
+            IMObject object = IMTableCollectionEditor.this.getSelected();
             return object != null ? new DefaultIMObjectComponent(object, editBox) : null;
         }
 

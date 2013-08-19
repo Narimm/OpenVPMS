@@ -551,10 +551,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             LayoutContext context = createLayoutContext(edit);
             IMObjectEditor editor = createEditor(object, context);
             editor.getComponent();
-            if (path != null) {
-                editor.setSelectionPath(path);
-            }
-            edit(editor);
+            edit(editor, path);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -586,8 +583,19 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param editor the object editor
      * @return the edit dialog
      */
+    protected EditDialog edit(IMObjectEditor editor) {
+        return edit(editor, null);
+    }
+
+    /**
+     * Edits an object.
+     *
+     * @param editor the object editor
+     * @param path   the selection path. May be {@code null}
+     * @return the edit dialog
+     */
     @SuppressWarnings("unchecked")
-    protected EditDialog edit(final IMObjectEditor editor) {
+    protected EditDialog edit(final IMObjectEditor editor, List<Selection> path) {
         T object = (T) editor.getObject();
         final boolean isNew = object.isNew();
         EditDialog dialog = createEditDialog(editor);
@@ -598,6 +606,10 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         });
         context.setCurrent(object);
         dialog.show();
+        if (path != null) {
+            // set the selection path after showing the dialog so the focus moves to the leaf of the selection path
+            editor.setSelectionPath(path);
+        }
         return dialog;
     }
 

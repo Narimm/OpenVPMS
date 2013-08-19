@@ -92,7 +92,7 @@ public class DefaultIMObjectComponent implements IMObjectComponent {
      */
     @Override
     public IMObjectComponent getSelected() {
-        return SelectionHelper.getSelected(component);
+        return component != null ? SelectionHelper.getSelected(component) : null;
     }
 
     /**

@@ -283,6 +283,16 @@ public abstract class IMTableCollectionViewer<T>
     private class IMObjectCollectionComponent extends Column implements IMObjectComponent {
 
         @Override
+        public IMObject getObject() {
+            return null;
+        }
+
+        @Override
+        public String getNode() {
+            return IMTableCollectionViewer.this.getProperty().getName();
+        }
+
+        @Override
         public IMObjectComponent getSelected() {
             IMObject object = IMTableCollectionViewer.this.getSelected();
             return object != null ? new DefaultIMObjectComponent(object, box) : null;
@@ -293,16 +303,6 @@ public abstract class IMTableCollectionViewer<T>
             IMObject object = selection.getObject();
             setSelected(object);
             return object != null && ObjectUtils.equals(object, IMTableCollectionViewer.this.getSelected());
-        }
-
-        @Override
-        public IMObject getObject() {
-            return null;
-        }
-
-        @Override
-        public String getNode() {
-            return IMTableCollectionViewer.this.getProperty().getName();
         }
 
         @Override
