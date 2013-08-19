@@ -99,11 +99,18 @@ public class DefaultIMObjectComponent implements IMObjectComponent {
      * Selects the object/node identified by the supplied selection.
      *
      * @param selection the selection
-     * @return {@code false}
+     * @return {@code true} if the selection was successful
      */
     @Override
     public boolean select(Selection selection) {
-        return false;
+        boolean result = false;
+        if (component != null) {
+            IMObjectComponent child = SelectionHelper.getComponent(component);
+            if (child != null) {
+                result = child.select(selection);
+            }
+        }
+        return result;
     }
 
     /**
