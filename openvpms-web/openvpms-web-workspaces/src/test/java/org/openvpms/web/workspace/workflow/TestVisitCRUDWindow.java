@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -23,6 +24,7 @@ import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.patient.visit.VisitCRUDWindow;
@@ -70,18 +72,19 @@ public class TestVisitCRUDWindow extends VisitCRUDWindow {
         assertNotNull(act);
         LayoutContext context = createLayoutContext(getHelpContext());
         IMObjectEditor editor = createEditor(act, context);
-        edit(editor);
+        edit(editor, null);
     }
 
     /**
      * Edits an object.
      *
      * @param editor the object editor
+     * @param path   the selection path. May be {@code null}
      * @return the edit dialog
      */
     @Override
-    protected EditDialog edit(IMObjectEditor editor) {
-        EditDialog dialog = super.edit(editor);
+    protected EditDialog edit(IMObjectEditor editor, List<Selection> path) {
+        EditDialog dialog = super.edit(editor, path);
         fireDialogButton(dialog, PopupDialog.OK_ID);
         return dialog;
     }
