@@ -90,6 +90,7 @@ public class DefaultEditorQueue implements EditorQueue {
      * Creates and edits the next act, if any.
      */
     protected void editNext() {
+        editing = false;
         if (queue.isEmpty()) {
             completed();
             return;
@@ -113,6 +114,25 @@ public class DefaultEditorQueue implements EditorQueue {
      * @param dialog the dialog
      */
     protected void edit(EditDialog dialog) {
+        show(dialog);
+    }
+
+    /**
+     * Displays a dialog.
+     *
+     * @param dialog the dialog
+     */
+    protected void prompt(PopupDialog dialog) {
+        show(dialog);
+    }
+
+    /**
+     * Displays a dialog.
+     *
+     * @param dialog the dialog to display
+     */
+    protected void show(PopupDialog dialog) {
+        editing = true;
         dialog.show();
     }
 
@@ -233,7 +253,6 @@ public class DefaultEditorQueue implements EditorQueue {
                     }
                 }
             });
-            editing = true;
             edit(dialog);
         }
 
@@ -261,13 +280,11 @@ public class DefaultEditorQueue implements EditorQueue {
         @Override
         public void show() {
             dialog.addWindowPaneListener(listener);
-            editing = true;
-            dialog.show();
+            prompt(dialog);
         }
 
         private void onClose() {
             dialog.removeWindowPaneListener(listener);
-            editing = false;
             editNext();
         }
     }

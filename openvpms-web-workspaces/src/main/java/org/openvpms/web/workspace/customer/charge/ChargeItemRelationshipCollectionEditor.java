@@ -159,9 +159,11 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
      */
     @Override
     protected boolean doSave() {
-        boolean result = super.doSave();
+        boolean result = prescriptions.save();
+        // Need to save prescriptions first, as invoice item deletion can cause StaleObjectStateExceptions otherwise
+
         if (result) {
-            result = prescriptions.save();
+            result = super.doSave();
         }
         return result;
     }

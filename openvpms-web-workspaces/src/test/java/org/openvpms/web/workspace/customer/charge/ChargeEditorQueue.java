@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.echo.dialog.PopupDialog;
 
 
 /**
@@ -28,9 +28,9 @@ import org.openvpms.web.component.im.edit.EditDialog;
 public class ChargeEditorQueue extends DefaultEditorQueue {
 
     /**
-     * The current edit dialog.
+     * The current dialog.
      */
-    private EditDialog current;
+    private PopupDialog current;
 
     /**
      * Constructs a {@code ChargeEditorQueue}.
@@ -44,18 +44,18 @@ public class ChargeEditorQueue extends DefaultEditorQueue {
      *
      * @return the current popup dialog. May be {@code null}
      */
-    public EditDialog getCurrent() {
+    public PopupDialog getCurrent() {
         return current;
     }
 
     /**
-     * Displays an edit dialog.
+     * Displays a dialog.
      *
-     * @param dialog the dialog
+     * @param dialog the dialog to display
      */
     @Override
-    protected void edit(EditDialog dialog) {
-        super.edit(dialog);
+    protected void show(PopupDialog dialog) {
+        super.show(dialog);
         current = dialog;
     }
 
