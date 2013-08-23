@@ -91,7 +91,7 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="type" path="/entityRelationships"
+        <node name="type" path="/targetEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" hidden="true" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.productTypeProduct">
             <assertion name="archetypeRange">

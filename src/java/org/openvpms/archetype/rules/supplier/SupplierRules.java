@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -33,6 +32,8 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
 
 
 /**
@@ -80,9 +81,7 @@ public class SupplierRules {
      */
     public boolean isSuppliedBy(Party supplier, Product product) {
         EntityBean bean = new EntityBean(supplier, service);
-        Predicate predicate = AndPredicate.getInstance(
-                IsActiveRelationship.ACTIVE_NOW,
-                RefEquals.getSourceEquals(product));
+        Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getSourceEquals(product));
         return bean.getNodeRelationship("products", predicate) != null;
     }
 
@@ -96,9 +95,7 @@ public class SupplierRules {
     public List<ProductSupplier> getProductSuppliers(Party supplier) {
         List<ProductSupplier> result = new ArrayList<ProductSupplier>();
         EntityBean bean = new EntityBean(supplier, service);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("products",
-                                            IsActiveRelationship.ACTIVE_NOW);
+        List<EntityRelationship> relationships = bean.getNodeRelationships("products", isActiveNow());
         for (EntityRelationship relationship : relationships) {
             result.add(new ProductSupplier(relationship, service));
         }
@@ -128,8 +125,7 @@ public class SupplierRules {
      */
     public EntityRelationship getSupplierStockLocation(Party supplier, Party stockLocation) {
         EntityBean bean = new EntityBean(supplier, service);
-        Predicate active = AndPredicate.getInstance(IsActiveRelationship.ACTIVE_NOW,
-                                                    RefEquals.getTargetEquals(stockLocation));
+        Predicate active = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
         List<EntityRelationship> relationships = bean.getNodeRelationships("stockLocations", active);
         return (!relationships.isEmpty()) ? relationships.get(0) : null;
     }

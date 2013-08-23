@@ -41,6 +41,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
+
 
 /**
  * Product price rules.
@@ -66,7 +71,7 @@ public class ProductPriceRules {
 
 
     /**
-     * Constructs a {@code ProductPriceRules}.
+     * Constructs a {@link ProductPriceRules}.
      *
      * @param service the archetype service
      * @param lookups the lookup service
@@ -77,16 +82,14 @@ public class ProductPriceRules {
     }
 
     /**
-     * Returns the first price with the specified short name, active at the
-     * specified date.
+     * Returns the first price with the specified short name, active at the specified date.
      *
      * @param product   the product
      * @param shortName the price short name
      * @param date      the date
      * @return the first matching price, or {@code null} if none is found
      */
-    public ProductPrice getProductPrice(Product product, String shortName,
-                                        Date date) {
+    public ProductPrice getProductPrice(Product product, String shortName, Date date) {
         Predicate predicate = new ShortNameDatePredicate(shortName, date);
         return getProductPrice(shortName, product, predicate, date);
     }
@@ -101,30 +104,81 @@ public class ProductPriceRules {
      * @param date      the date
      * @return the first matching price, or {@code null} if none is found
      */
-    public ProductPrice getProductPrice(Product product, BigDecimal price,
-                                        String shortName, Date date) {
+    public ProductPrice getProductPrice(Product product, BigDecimal price, String shortName, Date date) {
         Predicate predicate = new PricePredicate(price, shortName, date);
         return getProductPrice(shortName, product, predicate, date);
     }
 
     /**
-     * Returns all prices matching the specified short name, active at the * specified date.
+     * Returns all prices matching the specified short name.
+     *
+     * @param product   the product
+     * @param shortName the price short name
+     * @return the first matching price, or {@code null} if none is found
+     */
+    public Set<ProductPrice> getProductPrices(Product product, String shortName) {
+        Set<ProductPrice> result = new HashSet<ProductPrice>();
+        ShortNamePredicate predicate = new ShortNamePredicate(shortName);
+        List<ProductPrice> prices = findPrices(product, predicate);
+        result.addAll(prices);
+        if (FIXED_PRICE.equals(shortName)) {
+            // see if there is a fixed price in linked products
+            EntityBean bean = new EntityBean(product, service);
+            if (bean.hasNode("linked")) {
+                for (Entity linked : bean.getNodeTargetEntities("linked")) {
+                    prices = findPrices((Product) linked, predicate);
+                    result.addAll(prices);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all prices matching the specified short name, active at the specified date.
      *
      * @param product   the product
      * @param shortName the price short name
      * @param date      the date
-     * @return the first matching price, or {@code null} if none is found
+     * @return all prices matching the criteria
      */
     public Set<ProductPrice> getProductPrices(Product product, String shortName, Date date) {
         Set<ProductPrice> result = new HashSet<ProductPrice>();
         ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
-        if (ProductArchetypes.FIXED_PRICE.equals(shortName)) {
+        if (FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
             EntityBean bean = new EntityBean(product, service);
             if (bean.hasNode("linked")) {
                 for (Entity linked : bean.getNodeTargetEntities("linked", date)) {
+                    prices = findPrices((Product) linked, predicate);
+                    result.addAll(prices);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all prices matching the specified short name, active between a date range.
+     *
+     * @param product   the product
+     * @param shortName the price short name
+     * @param from      the start of the date range. May be {@code null}
+     * @param to        the end of the date range. May be {@code null}
+     * @return all prices matching the criteria
+     */
+    public Set<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to) {
+        Set<ProductPrice> result = new HashSet<ProductPrice>();
+        ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to);
+        List<ProductPrice> prices = findPrices(product, predicate);
+        result.addAll(prices);
+        if (FIXED_PRICE.equals(shortName)) {
+            // see if there is a fixed price in linked products
+            EntityBean bean = new EntityBean(product, service);
+            if (bean.hasNode("linked")) {
+                for (Entity linked : bean.getNodeTargetEntities("linked", isActive(from, to))) {
                     prices = findPrices((Product) linked, predicate);
                     result.addAll(prices);
                 }
@@ -146,16 +200,12 @@ public class ProductPriceRules {
      * @return the price
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal getPrice(Product product, BigDecimal cost,
-                               BigDecimal markup, Party practice,
-                               Currency currency) {
-        BigDecimal price = BigDecimal.ZERO;
-        if (cost.compareTo(BigDecimal.ZERO) != 0) {
+    public BigDecimal getPrice(Product product, BigDecimal cost, BigDecimal markup, Party practice, Currency currency) {
+        BigDecimal price = ZERO;
+        if (cost.compareTo(ZERO) != 0) {
             BigDecimal markupDec = getRate(markup);
             BigDecimal taxRate = getTaxRate(product, practice);
-            price = cost.multiply(
-                    BigDecimal.ONE.add(markupDec)).multiply(
-                    BigDecimal.ONE.add(taxRate));
+            price = cost.multiply(ONE.add(markupDec)).multiply(ONE.add(taxRate));
             price = currency.round(price);
         }
         return price;
@@ -169,24 +219,22 @@ public class ProductPriceRules {
      * @param product  the product
      * @param cost     the product cost
      * @param price    the price
-     * @param practice the <em>party.organisationPractice</em> used to determine
-     *                 product taxes
+     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
      * @return the markup
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal getMarkup(Product product, BigDecimal cost,
-                                BigDecimal price, Party practice) {
-        BigDecimal markup = BigDecimal.ZERO;
-        if (cost.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal taxRate = BigDecimal.ZERO;
+    public BigDecimal getMarkup(Product product, BigDecimal cost, BigDecimal price, Party practice) {
+        BigDecimal markup = ZERO;
+        if (cost.compareTo(ZERO) != 0) {
+            BigDecimal taxRate = ZERO;
             if (product != null) {
                 taxRate = getTaxRate(product, practice);
             }
             markup = price.divide(
-                    cost.multiply(BigDecimal.ONE.add(taxRate)), 3,
-                    RoundingMode.HALF_UP).subtract(BigDecimal.ONE).multiply(MathRules.ONE_HUNDRED);
-            if (markup.compareTo(BigDecimal.ZERO) < 0) {
-                markup = BigDecimal.ZERO;
+                    cost.multiply(ONE.add(taxRate)), 3,
+                    RoundingMode.HALF_UP).subtract(ONE).multiply(MathRules.ONE_HUNDRED);
+            if (markup.compareTo(ZERO) < 0) {
+                markup = ZERO;
             }
         }
         return markup;
@@ -204,20 +252,15 @@ public class ProductPriceRules {
      * @param currency the currency, for rounding conventions
      * @return the list of any updated prices
      */
-    public List<ProductPrice> updateUnitPrices(Product product,
-                                               BigDecimal cost,
-                                               Party practice,
-                                               Currency currency) {
+    public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, Party practice, Currency currency) {
         List<ProductPrice> result = null;
         IMObjectBean bean = new IMObjectBean(product, service);
-        List<ProductPrice> prices
-                = bean.getValues("prices", ProductPrice.class);
+        List<ProductPrice> prices = bean.getValues("prices", ProductPrice.class);
         if (!prices.isEmpty()) {
             cost = currency.round(cost);
             for (ProductPrice price : prices) {
                 if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
-                    if (updateUnitPrice(price, product, cost, practice,
-                                        currency)) {
+                    if (updateUnitPrice(price, product, cost, practice, currency)) {
                         if (result == null) {
                             result = new ArrayList<ProductPrice>();
                         }
@@ -255,14 +298,13 @@ public class ProductPriceRules {
      * @param currency the currency, for rounding conventions
      * @return {@code true} if the price was updated
      */
-    private boolean updateUnitPrice(ProductPrice price, Product product,
-                                    BigDecimal cost, Party practice,
+    private boolean updateUnitPrice(ProductPrice price, Product product, BigDecimal cost, Party practice,
                                     Currency currency) {
         IMObjectBean priceBean = new IMObjectBean(price, service);
-        BigDecimal old = priceBean.getBigDecimal("cost", BigDecimal.ZERO);
+        BigDecimal old = priceBean.getBigDecimal("cost", ZERO);
         if (!MathRules.equals(old, cost)) {
             priceBean.setValue("cost", cost);
-            BigDecimal markup = priceBean.getBigDecimal("markup", BigDecimal.ZERO);
+            BigDecimal markup = priceBean.getBigDecimal("markup", ZERO);
             BigDecimal newPrice = getPrice(product, cost, markup, practice, currency);
             price.setPrice(newPrice);
             return true;
@@ -290,10 +332,10 @@ public class ProductPriceRules {
      * @return {@code percent / 100 }
      */
     private BigDecimal getRate(BigDecimal percent) {
-        if (percent.compareTo(BigDecimal.ZERO) != 0) {
+        if (percent.compareTo(ZERO) != 0) {
             return MathRules.divide(percent, MathRules.ONE_HUNDRED, 3);
         }
-        return BigDecimal.ZERO;
+        return ZERO;
     }
 
     /**
@@ -306,7 +348,7 @@ public class ProductPriceRules {
      * @return a price matching the predicate, or {@code null} if none is found
      */
     private ProductPrice getProductPrice(String shortName, Product product, Predicate predicate, Date date) {
-        boolean useDefault = ProductArchetypes.FIXED_PRICE.equals(shortName);
+        boolean useDefault = FIXED_PRICE.equals(shortName);
         ProductPrice result = findPrice(product, predicate, useDefault);
         if (useDefault && (result == null || !isDefault(result))) {
             // see if there is a fixed price in linked products
@@ -393,15 +435,27 @@ public class ProductPriceRules {
         return bean.getBoolean("default");
     }
 
-    /**
-     * Predicate to determine if a price matches a short name and date.
-     */
-    private static class ShortNameDatePredicate implements Predicate {
-
+    private static class ShortNamePredicate implements Predicate {
         /**
          * The price short name.
          */
         private final String shortName;
+
+        public ShortNamePredicate(String shortName) {
+            this.shortName = shortName;
+        }
+
+        @Override
+        public boolean evaluate(Object object) {
+            ProductPrice price = (ProductPrice) object;
+            return TypeHelper.isA(price, shortName) && price.isActive();
+        }
+    }
+
+    /**
+     * Predicate to determine if a price matches a short name and date.
+     */
+    private static class ShortNameDatePredicate extends ShortNamePredicate {
 
         /**
          * The date.
@@ -409,20 +463,50 @@ public class ProductPriceRules {
         private final Date date;
 
         public ShortNameDatePredicate(String shortName, Date date) {
-            this.shortName = shortName;
+            super(shortName);
             this.date = date;
         }
 
         public boolean evaluate(Object object) {
-            ProductPrice price = (ProductPrice) object;
-            if (TypeHelper.isA(price, shortName) && price.isActive()) {
+            boolean result = super.evaluate(object);
+            if (result) {
+                ProductPrice price = (ProductPrice) object;
                 Date from = price.getFromDate();
                 Date to = price.getToDate();
-                if (DateRules.betweenDates(date, from, to)) {
-                    return true;
-                }
+                result = DateRules.betweenDates(date, from, to);
             }
-            return false;
+            return result;
+        }
+    }
+
+    /**
+     * Predicate to determine if a price matches a short name and date range.
+     */
+    private static class ShortNameDateRangePredicate extends ShortNamePredicate {
+
+        /**
+         * The from date.
+         */
+        private final Date from;
+
+        /**
+         * The to date.
+         */
+        private final Date to;
+
+        public ShortNameDateRangePredicate(String shortName, Date from, Date to) {
+            super(shortName);
+            this.from = from;
+            this.to = to;
+        }
+
+        public boolean evaluate(Object object) {
+            boolean result = super.evaluate(object);
+            if (result) {
+                ProductPrice price = (ProductPrice) object;
+                result = DateRules.intersects(from, to, price.getFromDate(), price.getToDate());
+            }
+            return result;
         }
     }
 

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -28,13 +26,14 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
 
 /**
  * Product rules.
@@ -107,9 +106,7 @@ public class ProductRules {
                                                      Party supplier) {
         List<ProductSupplier> result = new ArrayList<ProductSupplier>();
         EntityBean bean = new EntityBean(product, service);
-        Predicate predicate = AndPredicate.getInstance(
-                IsActiveRelationship.ACTIVE_NOW,
-                RefEquals.getTargetEquals(supplier));
+        Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(supplier));
         List<EntityRelationship> relationships
                 = bean.getNodeRelationships("suppliers", predicate);
         for (EntityRelationship relationship : relationships) {
@@ -185,9 +182,7 @@ public class ProductRules {
     public List<ProductSupplier> getProductSuppliers(Product product) {
         List<ProductSupplier> result = new ArrayList<ProductSupplier>();
         EntityBean bean = new EntityBean(product, service);
-        List<EntityRelationship> relationships
-                = bean.getNodeRelationships("suppliers",
-                                            IsActiveRelationship.ACTIVE_NOW);
+        List<EntityRelationship> relationships = bean.getNodeRelationships("suppliers", isActiveNow());
         for (EntityRelationship relationship : relationships) {
             result.add(new ProductSupplier(relationship, service));
         }
