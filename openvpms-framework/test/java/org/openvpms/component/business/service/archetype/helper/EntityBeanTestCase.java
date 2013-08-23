@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -37,13 +35,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
 
 
 /**
  * Tests the {@link EntityBean} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
 public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
@@ -196,7 +195,7 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
 
         assertEquals(customer, pet1Bean.getSourceEntity(SHORT_NAMES));
         assertEquals(pet1, bean.getTargetEntity(SHORT_NAMES));
-        
+
         // check inactive relationships
         pet1Bean.removeRelationship(location);
         bean.removeRelationship(location);
@@ -210,7 +209,7 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
 
     /**
      * Tests the {@link EntityBean#getSourceEntity(String, Date)},
-     * {@link EntityBean#getSourceEntity(String[], Date)}, 
+     * {@link EntityBean#getSourceEntity(String[], Date)},
      * {@link EntityBean#getTargetEntity(String, Date)} and
      * {@link EntityBean#getTargetEntity(String[], Date)} methods.
      */
@@ -513,9 +512,9 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
 
         // verify methods that require the relationship to be active now return null
         assertNull(personBean.getNodeTargetEntity(patients));
-        assertNull(personBean.getNodeTargetEntity(patients, new IsActiveRelationship()));
+        assertNull(personBean.getNodeTargetEntity(patients, isActiveNow()));
         assertNull(pet1Bean.getNodeSourceEntity(customers));
-        assertNull(pet1Bean.getNodeSourceEntity(customers, new IsActiveRelationship()));
+        assertNull(pet1Bean.getNodeSourceEntity(customers, isActiveNow()));
 
         // ... while those that don't get the right entities
         assertEquals(pet1, personBean.getNodeTargetEntity(patients, rel1Active));
@@ -538,12 +537,12 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
         assertEquals(pet2, personBean.getNodeTargetEntity(patients, rel2Active));
         assertEquals(pet2, personBean.getNodeTargetEntity(patients, true));
         assertEquals(pet2, personBean.getNodeTargetEntity(patients, rel2Active, false));
-        assertEquals(pet2, personBean.getNodeTargetEntity(patients, new IsActiveRelationship(rel2Active), false));
+        assertEquals(pet2, personBean.getNodeTargetEntity(patients, isActive(rel2Active), false));
         assertEquals(person, pet2Bean.getNodeSourceEntity(customers));
         assertEquals(person, pet2Bean.getNodeSourceEntity(customers, rel2Active));
         assertEquals(person, pet2Bean.getNodeSourceEntity(customers, true));
         assertEquals(person, pet2Bean.getNodeSourceEntity(customers, rel2Active, false));
-        assertEquals(person, pet2Bean.getNodeSourceEntity(customers, new IsActiveRelationship(rel2Active), false));
+        assertEquals(person, pet2Bean.getNodeSourceEntity(customers, isActive(rel2Active), false));
     }
 
     /**
@@ -816,9 +815,9 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
 
         // deactivate the relationship
         deactivateRelationship(rel);
-        checkEquals(personBean.getNodeSourceEntities("patients", new IsActiveRelationship()), person);
+        checkEquals(personBean.getNodeSourceEntities("patients", IsActiveRelationship.isActiveNow()), person);
         checkEquals(personBean.getNodeSourceEntities("patients", new IsA(OWNER), false), person, person);
-        checkEquals(personBean.getNodeTargetEntities("patients", new IsActiveRelationship()), pet2);
+        checkEquals(personBean.getNodeTargetEntities("patients", IsActiveRelationship.isActiveNow()), pet2);
         checkEquals(personBean.getNodeTargetEntities("patients", new IsA(OWNER), false), pet1, pet2);
     }
 
@@ -894,6 +893,7 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
         return new EntityBean(createCustomer());
 
     }
+
     /**
      * Helper to deactivate a relationship and sleep for a second, so that
      * subsequent isActive() checks return false. The sleep in between

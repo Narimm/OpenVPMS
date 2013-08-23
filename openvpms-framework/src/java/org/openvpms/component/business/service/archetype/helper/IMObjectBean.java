@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -49,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.ACTIVE_NOW;
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
 import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.SOURCE;
 import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.TARGET;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
@@ -597,7 +595,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, Date time, boolean active) {
-        return getNodeSourceObject(node, new IsActiveRelationship(time), active);
+        return getNodeSourceObject(node, isActive(time), active);
     }
 
     /**
@@ -626,7 +624,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, Date time, boolean active) {
-        return getNodeTargetObject(node, new IsActiveRelationship(time), active);
+        return getNodeTargetObject(node, isActive(time), active);
     }
 
     /**
@@ -651,7 +649,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Class<T> type) {
-        return getRelatedObjects(node, ACTIVE_NOW, SOURCE, true, type);
+        return getRelatedObjects(node, IsActiveRelationship.isActiveNow(), SOURCE, true, type);
     }
 
     /**
@@ -692,7 +690,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeSourceObjects(String node, Date time, boolean active) {
-        return getNodeSourceObjects(node, new IsActiveRelationship(time), active);
+        return getNodeSourceObjects(node, isActive(time), active);
     }
 
     /**
@@ -707,7 +705,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Date time, boolean active, Class<T> type) {
-        return getNodeSourceObjects(node, new IsActiveRelationship(time), active, type);
+        return getNodeSourceObjects(node, isActive(time), active, type);
     }
 
     /**
@@ -805,7 +803,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Class<T> type) {
-        return getNodeTargetObjects(node, ACTIVE_NOW, true, type);
+        return getNodeTargetObjects(node, IsActiveRelationship.isActiveNow(), true, type);
     }
 
     /**
@@ -861,7 +859,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Date time, boolean active, Class<T> type) {
-        return getNodeTargetObjects(node, new IsActiveRelationship(time), active, type);
+        return getNodeTargetObjects(node, isActive(time), active, type);
     }
 
     /**
@@ -958,7 +956,7 @@ public class IMObjectBean {
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeSourceObjectRefs(String node) {
-        return getNodeSourceObjectRefs(node, ACTIVE_NOW);
+        return getNodeSourceObjectRefs(node, IsActiveRelationship.isActiveNow());
     }
 
     /**
@@ -970,7 +968,7 @@ public class IMObjectBean {
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeSourceObjectRefs(String node, Date time) {
-        return getNodeSourceObjectRefs(node, new IsActiveRelationship(time));
+        return getNodeSourceObjectRefs(node, isActive(time));
     }
 
     /**
@@ -992,7 +990,7 @@ public class IMObjectBean {
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeTargetObjectRefs(String node) {
-        return getNodeTargetObjectRefs(node, ACTIVE_NOW);
+        return getNodeTargetObjectRefs(node, IsActiveRelationship.isActiveNow());
     }
 
     /**
@@ -1004,7 +1002,7 @@ public class IMObjectBean {
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeTargetObjectRefs(String node, Date time) {
-        return getNodeTargetObjectRefs(node, new IsActiveRelationship(time));
+        return getNodeTargetObjectRefs(node, isActive(time));
     }
 
     /**
@@ -1907,7 +1905,7 @@ public class IMObjectBean {
      * @return a new predicate
      */
     protected Predicate getIsActiveRelationship(Date time, String... shortNames) {
-        return new AndPredicate(new IsActiveRelationship(time), new IsA(shortNames));
+        return new AndPredicate(isActive(time), new IsA(shortNames));
     }
 
     /**
@@ -1921,7 +1919,7 @@ public class IMObjectBean {
      */
     protected Predicate getActiveIsA(boolean active, String... shortNames) {
         IsA isA = new IsA(shortNames);
-        return (active) ? new AndPredicate(ACTIVE_NOW, isA) : isA;
+        return (active) ? new AndPredicate(IsActiveRelationship.isActiveNow(), isA) : isA;
     }
 
     /**
@@ -1932,7 +1930,7 @@ public class IMObjectBean {
      * @return a new predicate
      */
     protected Predicate getActiveIsA(String... shortNames) {
-        return new AndPredicate(ACTIVE_NOW, new IsA(shortNames));
+        return new AndPredicate(IsActiveRelationship.isActiveNow(), new IsA(shortNames));
     }
 
     /**
@@ -1942,7 +1940,7 @@ public class IMObjectBean {
      * @return the default predicate
      */
     protected Predicate getDefaultPredicate(boolean active) {
-        return (active) ? ACTIVE_NOW : PredicateUtils.truePredicate();
+        return (active) ? IsActiveRelationship.isActiveNow() : PredicateUtils.truePredicate();
     }
 
     /**
