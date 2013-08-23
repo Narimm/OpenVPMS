@@ -1,28 +1,26 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathInvalidAccessException;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -30,8 +28,6 @@ import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
-import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
-import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidProperty;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -39,12 +35,19 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collection;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
+import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidProperty;
+
 
 /**
  * {@link ArchetypeServiceFunctions} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServiceFunctionsTestCase extends AbstractArchetypeServiceTest {
@@ -220,6 +223,17 @@ public class ArchetypeServiceFunctionsTestCase extends AbstractArchetypeServiceT
     }
 
     /**
+     * Tests openvpms:get() methods, when a {@code null} is supplied.
+     */
+    @Test
+    public void testNullObject() {
+        ActBean act = createAct("act.customerEstimation");
+        JXPathContext context = JXPathHelper.newContext(act.getObject());
+        assertNull(context.getValue("openvpms:get(openvpms:get(.,'customer.entity'), 'foo')"));
+        assertEquals("Foo", context.getValue("openvpms:get(openvpms:get(.,'customer.entity'), 'invalidNode', 'Foo')"));
+    }
+
+    /**
      * Tests the openvpms:set() function.
      */
     @Test
@@ -241,7 +255,7 @@ public class ArchetypeServiceFunctionsTestCase extends AbstractArchetypeServiceT
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setStatus("IN_PROGRESS");
-        act.setParticipant("participation.customer", party);
+        Participation participation = act.setParticipant("participation.customer", party);
 
         JXPathContext context = JXPathHelper.newContext(act.getAct());
 
@@ -257,9 +271,15 @@ public class ArchetypeServiceFunctionsTestCase extends AbstractArchetypeServiceT
         }
 
         // test invalid node with default
-        Object value = context.getValue(
-                "openvpms:lookup(., 'displayName', 'default')");
+        Object value = context.getValue("openvpms:lookup(., 'displayName', 'default')");
         assertEquals("default", value);
+
+        // test null
+        Party unsavedCustomer = createCustomer(false);
+        participation.setEntity(unsavedCustomer.getObjectReference());
+        assertNull(context.getValue("openvpms:lookup(openvpms:get(.,'customer.entity'), 'title')"));
+
+        assertEquals("Foo", context.getValue("openvpms:lookup(openvpms:get(.,'customer.entity'), 'title', 'Foo')"));
     }
 
     /**
@@ -356,6 +376,16 @@ public class ArchetypeServiceFunctionsTestCase extends AbstractArchetypeServiceT
      * @return a new customer
      */
     private Party createCustomer() {
+        return createCustomer(true);
+    }
+
+    /**
+     * Helper to create a customer.
+     *
+     * @param save if {@code true} save it
+     * @return a new customer
+     */
+    private Party createCustomer(boolean save) {
         IMObjectBean bean = createBean("party.customerperson");
         bean.setValue("title", "MR");
         bean.setValue("firstName", "J");
@@ -363,7 +393,9 @@ public class ArchetypeServiceFunctionsTestCase extends AbstractArchetypeServiceT
         Contact contact = (Contact) create("contact.phoneNumber");
         assertNotNull(contact);
         bean.addValue("contacts", contact);
-        bean.save();
+        if (save) {
+            bean.save();
+        }
         return (Party) bean.getObject();
     }
 }
