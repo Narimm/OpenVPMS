@@ -123,7 +123,7 @@ public class ReminderCSVExporter implements ReminderExporter {
         }
         String name = "reminders-" + new java.sql.Date(System.currentTimeMillis()).toString() + ".csv";
 
-        DocumentHandler handler = handlers.get("name", MIME_TYPE);
+        DocumentHandler handler = handlers.get(name, MIME_TYPE);
         byte[] buffer = writer.getBuffer().toString().getBytes(Charset.forName("UTF-8"));
         return handler.create(name, new ByteArrayInputStream(buffer), MIME_TYPE, buffer.length);
     }

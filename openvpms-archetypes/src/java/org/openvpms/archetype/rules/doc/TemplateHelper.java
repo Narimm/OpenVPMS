@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
@@ -29,7 +27,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -42,12 +39,13 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
+
 
 /**
  * Document template helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TemplateHelper {
 
@@ -133,7 +131,7 @@ public class TemplateHelper {
     public Entity getTemplateForArchetype(String shortName, Party organisation) {
         Entity result = null;
         EntityBean bean = new EntityBean(organisation, service);
-        List<EntityRelationship> list = bean.getNodeRelationships("templates", IsActiveRelationship.ACTIVE_NOW);
+        List<EntityRelationship> list = bean.getNodeRelationships("templates", isActiveNow());
         Collections.sort(list, new Comparator<EntityRelationship>() {
             public int compare(EntityRelationship o1, EntityRelationship o2) {
                 long id1 = (o1.getSource() != null) ? o1.getSource().getId() : -1;
@@ -253,7 +251,7 @@ public class TemplateHelper {
     /**
      * Determine if a template is for a particular archetype.
      *
-     * @param template the template
+     * @param template  the template
      * @param shortName the archetype short name
      * @return <tt>true</tt> if the template has the archetype short name, otherwise <tt>false</tt>
      */

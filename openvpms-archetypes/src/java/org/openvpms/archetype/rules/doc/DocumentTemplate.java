@@ -1,27 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.archetype.rules.doc;
 
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidOrientation;
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidPaperSize;
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -38,12 +33,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidOrientation;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidPaperSize;
+import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidUnits;
+
 
 /**
  * Wrapper for <em>entity.documentTemplate</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentTemplate {
 
@@ -471,7 +469,7 @@ public class DocumentTemplate {
      */
     public DocumentTemplatePrinter getPrinter(Entity location) {
         Predicate predicate = AndPredicate.getInstance(
-                IsActiveRelationship.ACTIVE_NOW, RefEquals.getTargetEquals(location.getObjectReference()));
+                IsActiveRelationship.isActiveNow(), RefEquals.getTargetEquals(location.getObjectReference()));
         EntityRelationship printer = bean.getNodeRelationship("printers", predicate);
         return (printer != null) ? new DocumentTemplatePrinter(printer, service) : null;
     }

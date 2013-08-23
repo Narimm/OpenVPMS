@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.util;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.component.system.common.util.DateHelper;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -138,9 +139,7 @@ public class DateRules {
      *         {@code 0} if {@code lhs} is after {@code rhs}.
      */
     public static int compareTo(Date lhs, Date rhs) {
-        long lhsTime = lhs.getTime();
-        long rhsTime = rhs.getTime();
-        return (lhsTime < rhsTime ? -1 : (lhsTime == rhsTime ? 0 : 1));
+        return DateHelper.compareTo(lhs, rhs);
     }
 
     /**
@@ -172,19 +171,14 @@ public class DateRules {
     /**
      * Determines if two date ranges intersect.
      *
-     * @param from1 the start of the first date range
-     * @param to1   the end of the first date range
-     * @param from2 the start of the second date range
-     * @param to2   the end of the second date range
+     * @param from1 the start of the first date range. May be {@code null}
+     * @param to1   the end of the first date range. May be {@code null}
+     * @param from2 the start of the second date range. May be {@code null}
+     * @param to2   the end of the second date range. May be {@code null}
      * @return {@code true} if the date ranges intersect
      */
-    public static boolean intersects(Date from1, Date to1,
-                                     Date from2, Date to2) {
-        int f1f2 = compareTo(from1, from2);
-        int t1t2 = compareTo(to1, to2);
-        return (f1f2 < 0 && compareTo(to1, from2) > 0)
-               || (compareTo(from1, to2) < 0 && t1t2 > 0)
-               || (f1f2 >= 0 && t1t2 <= 0);
+    public static boolean intersects(Date from1, Date to1, Date from2, Date to2) {
+        return DateHelper.intersects(from1, to1, from2, to2);
     }
 
     /**
@@ -196,7 +190,7 @@ public class DateRules {
      * @return {@code true} if the date falls between the lower and upper bounds, otherwise {@code false}
      */
     public static boolean between(Date date, Date lowerBound, Date upperBound) {
-        return (compareTo(date, lowerBound) >= 0 && compareTo(date, upperBound) <= 0);
+        return DateHelper.between(date, lowerBound, upperBound);
     }
 
     /**
