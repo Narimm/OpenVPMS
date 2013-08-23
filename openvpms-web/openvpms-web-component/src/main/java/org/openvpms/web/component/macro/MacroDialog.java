@@ -31,6 +31,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -75,13 +76,14 @@ public class MacroDialog extends PopupDialog {
             public void query() {
             }
         });
-        getLayout().add(ColumnFactory.create("Inset", browser.getComponent()));
+        getLayout().add(ColumnFactory.create(Styles.INSET, browser.getComponent()));
         getFocusGroup().add(0, browser.getFocusGroup());
         getButtons().addKeyListener(KeyStrokes.VK_ESCAPE, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onClose();
             }
         });
+        query.setFocus();
         setModal(true);
     }
 

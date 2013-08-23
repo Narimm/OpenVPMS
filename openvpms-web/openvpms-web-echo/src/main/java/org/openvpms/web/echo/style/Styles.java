@@ -61,6 +61,11 @@ public final class Styles {
     public static final String CELL_SPACING = "CellSpacing";
 
     /**
+     * Wide cell spacing style name.
+     */
+    public static final String WIDE_CELL_SPACING = "WideCellSpacing";
+
+    /**
      * Inset cell spacing style name.
      */
     public static final String INSET_CELL_SPACING = "InsetCellSpacing";

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -33,11 +31,10 @@ import java.util.List;
 /**
  * Paged table model.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
-    implements PageableTableModel, SortableTableModel {
+public class PagedIMTableModel<T, K> extends DelegatingIMTableModel<T, K>
+        implements PageableTableModel, SortableTableModel {
 
     /**
      * The result set.
@@ -65,7 +62,7 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      *
      * @param model the underlying model
      */
-    public PagedIMTableModel(IMTableModel<T> model) {
+    public PagedIMTableModel(IMTableModel<K> model) {
         super(model);
         Iterator iter = model.getColumnModel().getColumns();
         while (iter.hasNext()) {
@@ -302,6 +299,6 @@ public class PagedIMTableModel<T> extends DelegatingIMTableModel<T, T>
      * @param objects the objects to set
      */
     protected void setPage(List<T> objects) {
-        getModel().setObjects(objects);
+        getModel().setObjects(convertTo(objects));
     }
 }

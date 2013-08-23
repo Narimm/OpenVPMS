@@ -16,14 +16,22 @@
 
 package org.openvpms.web.workspace.product;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.io.FilterResult;
+import org.openvpms.archetype.rules.product.io.ProductCSVReader;
+import org.openvpms.archetype.rules.product.io.ProductData;
+import org.openvpms.archetype.rules.product.io.ProductDataFilter;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.doc.DocumentUploadListener;
+import org.openvpms.web.component.im.doc.UploadDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
@@ -33,11 +41,19 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.product.io.ProductExportDialog;
+import org.openvpms.web.workspace.product.io.ProductImportDialog;
+import org.openvpms.web.workspace.product.io.ProductImportErrorDialog;
+import org.openvpms.web.workspace.product.io.ProductImporter;
+
+import java.util.List;
 
 
 /**
@@ -51,6 +67,16 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * Copy button identifier.
      */
     private static final String COPY_ID = "copy";
+
+    /**
+     * Export button identifier.
+     */
+    private static final String EXPORT_ID = "button.export";
+
+    /**
+     * Import button identifier.
+     */
+    private static final String IMPORT_ID = "button.import";
 
 
     /**
@@ -81,12 +107,23 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
         if (admin) {
             buttons.add(createEditButton());
             buttons.add(createDeleteButton());
-            Button copy = ButtonFactory.create(COPY_ID, new ActionListener() {
+            buttons.add(ButtonFactory.create(COPY_ID, new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onCopy();
                 }
-            });
-            buttons.add(copy);
+            }));
+            buttons.add(ButtonFactory.create(EXPORT_ID, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onExport();
+                }
+            }));
+            buttons.add(ButtonFactory.create(IMPORT_ID, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onImport();
+                }
+            }));
         }
     }
 
@@ -152,4 +189,56 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
         }
     }
 
+    private void onExport() {
+        HelpContext help = getHelpContext();
+        ProductExportDialog dialog = new ProductExportDialog(Messages.get("product.io.export.title"),
+                                                             createLayoutContext(help), help);
+        dialog.show();
+    }
+
+
+    private void onImport() {
+        DocumentUploadListener listener = new DocumentUploadListener() {
+
+            @Override
+            protected void upload(Document document) {
+                ProductCSVReader importer = new ProductCSVReader(ServiceHelper.getBean(DocumentHandlers.class));
+                try {
+                    List<ProductData> data = importer.read(document);
+                    ProductDataFilter filter = new ProductDataFilter(ServiceHelper.getArchetypeService(),
+                                                                     ServiceHelper.getBean(ProductPriceRules.class));
+                    FilterResult result = filter.filter(data);
+                    if (result.getErrors().isEmpty()) {
+                        final List<ProductData> output = result.getData();
+                        if (!output.isEmpty()) {
+                            ProductImportDialog dialog = new ProductImportDialog(output);
+                            dialog.show();
+                            dialog.addWindowPaneListener(new PopupDialogListener() {
+                                @Override
+                                public void onOK() {
+                                    onImport(output);
+                                }
+                            });
+                        } else {
+                            InformationDialog.show(Messages.get("product.io.import.title"),
+                                                   Messages.get("product.io.import.nochanges"));
+                        }
+                    } else {
+                        List<ProductData> errors = result.getErrors();
+                        ProductImportErrorDialog dialog = new ProductImportErrorDialog(errors);
+                        dialog.show();
+                    }
+                } catch (Throwable exception) {
+                    ErrorHelper.show(exception);
+                }
+            }
+        };
+        UploadDialog dialog = new UploadDialog(listener, getHelpContext());
+        dialog.show();
+    }
+
+    private void onImport(List<ProductData> data) {
+        ProductImporter importer = new ProductImporter();
+        importer.run(data);
+    }
 }

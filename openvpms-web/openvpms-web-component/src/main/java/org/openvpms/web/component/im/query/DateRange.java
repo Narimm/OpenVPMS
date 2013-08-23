@@ -68,6 +68,10 @@ public class DateRange {
     private SimpleProperty to = new SimpleProperty("to", null, Date.class, Messages.get("daterange.to"));
 
     /**
+     * The all-dates component.
+     */
+    private ComponentState allDates;
+    /**
      * The from-date component.
      */
     private ComponentState fromDate;
@@ -174,6 +178,22 @@ public class DateRange {
     }
 
     /**
+     * Sets the enabled state of the date range.
+     *
+     * @param enabled if {@code true} enable the component otherwise disable it
+     */
+    public void setEnabled(boolean enabled) {
+        if (allDates != null) {
+            allDates.getComponent().setEnabled(enabled);
+        }
+        if (enabled && !getAllDates()) {
+            setDateFieldsEnabled(true);
+        } else {
+            setDateFieldsEnabled(false);
+        }
+    }
+
+    /**
      * Determines if all dates are being selected.
      *
      * @return {@code true} if all dates are being selected
@@ -202,7 +222,6 @@ public class DateRange {
     protected Component doLayout() {
         fromDate = createFromDate(from);
         toDate = createToDate(to);
-        ComponentState allDates;
         if (showAll) {
             allDates = createAllDates(all);
         } else {
@@ -292,6 +311,15 @@ public class DateRange {
      */
     protected void onAllDatesChanged() {
         boolean enabled = !getAllDates();
+        setDateFieldsEnabled(enabled);
+    }
+
+    /**
+     * Enables/disables the date fields.
+     *
+     * @param enabled if {@code true}, enable them, else disable them
+     */
+    private void setDateFieldsEnabled(boolean enabled) {
         ComponentHelper.enable(fromDate.getLabel(), enabled);
         ComponentHelper.enable((DateField) fromDate.getComponent(), enabled);
         ComponentHelper.enable(toDate.getLabel(), enabled);

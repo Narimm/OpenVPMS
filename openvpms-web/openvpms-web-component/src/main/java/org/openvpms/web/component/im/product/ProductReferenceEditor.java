@@ -330,7 +330,7 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
     private List<EntityRelationship> getSupplierRelationships(Product product) {
         EntityBean bean = new EntityBean(product);
         Party supplier = editor.getSupplier();
-        Predicate predicate = new AndPredicate(IsActiveRelationship.ACTIVE_NOW, RefEquals.getTargetEquals(supplier));
+        Predicate predicate = new AndPredicate(IsActiveRelationship.isActiveNow(), RefEquals.getTargetEquals(supplier));
         return bean.getNodeRelationships("suppliers", predicate);
     }
 
