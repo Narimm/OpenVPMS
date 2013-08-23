@@ -147,4 +147,9 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean class="org.openvpms.archetype.rules.product.io.ProductCSVWriter">
+        <constructor-arg ref="productPriceRules"/>
+        <constructor-arg ref="documentHandlers"/>
+    </bean>
+
 </beans>

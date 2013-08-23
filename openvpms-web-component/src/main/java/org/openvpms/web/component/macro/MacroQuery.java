@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.macro;
 
 import nextapp.echo2.app.Component;
@@ -51,6 +52,13 @@ public class MacroQuery extends AbstractIMObjectQuery<Lookup> {
     public MacroQuery() {
         super(SHORT_NAMES, Lookup.class);
         setDefaultSortConstraint(new NodeSortConstraint[]{new NodeSortConstraint("code")});
+    }
+
+    /**
+     * Sets the focus to the search field.
+     */
+    public void setFocus() {
+        FocusHelper.setFocus(getSearchField());
     }
 
     /**

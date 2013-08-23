@@ -21,7 +21,6 @@ import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
@@ -41,6 +40,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
 
 /**
  * Clear Till dialog.
@@ -137,7 +137,7 @@ public class ClearTillDialog extends PopupDialog {
         IMObject selected = null;
         List<IMObject> accounts = new ArrayList<IMObject>();
         IMObjectBean bean = new IMObjectBean(location);
-        List<EntityRelationship> relationships = bean.getValues("depositAccounts", IsActiveRelationship.ACTIVE_NOW,
+        List<EntityRelationship> relationships = bean.getValues("depositAccounts", isActiveNow(),
                                                                 EntityRelationship.class);
         for (EntityRelationship relationship : relationships) {
             IMObject account = IMObjectHelper.getObject(relationship.getTarget(), context);

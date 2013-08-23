@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -26,14 +26,14 @@ import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTable;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.focus.FocusHelper;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -194,7 +194,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
             // TODO - not ideal. Need to query first before any sorting or page setting can take place.
             // This results in redundant queries.
             PagedIMTable<T> pagedTable = getTable();
-            PagedIMTableModel<T> model = pagedTable.getModel();
+            PagedIMTableModel<T, T> model = pagedTable.getModel();
             int sortColumn = memento.getSortColumn();
             boolean ascending = memento.isSortedAscending();
             if (sortColumn != model.getSortColumn() || ascending != model.isSortedAscending()) {
