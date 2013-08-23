@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -31,7 +29,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
@@ -50,6 +47,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 
@@ -57,11 +55,11 @@ import static org.openvpms.component.business.service.archetype.helper.IMObjectB
 /**
  * Tests the {@link IMObjectBean} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
 public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
+
     /**
      * Tests the {@link IMObjectBean#isA} method.
      */
@@ -519,9 +517,9 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         checkEquals(bean.getNodeSourceObjects("customers", now, true, Party.class), customer2);
         checkEquals(bean.getNodeSourceObjects("customers", now, false, Party.class), customer2, customer3);
 
-        checkEquals(bean.getNodeSourceObjects("customers", new IsActiveRelationship(now)), customer2);
-        checkEquals(bean.getNodeSourceObjects("customers", new IsActiveRelationship(now), false), customer2, customer3);
-        checkEquals(bean.getNodeSourceObjects("customers", new IsActiveRelationship(now), false, Party.class),
+        checkEquals(bean.getNodeSourceObjects("customers", isActive(now)), customer2);
+        checkEquals(bean.getNodeSourceObjects("customers", isActive(now), false), customer2, customer3);
+        checkEquals(bean.getNodeSourceObjects("customers", isActive(now), false, Party.class),
                     customer2, customer3);
 
         Map<EntityRelationship, Entity> expected1 = new HashMap<EntityRelationship, Entity>();
@@ -643,10 +641,9 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         checkEquals(bean.getNodeTargetObjects("patients", now, true, Party.class), patient2);
         checkEquals(bean.getNodeTargetObjects("patients", now, false, Party.class), patient2, patient3);
 
-        checkEquals(bean.getNodeTargetObjects("patients", new IsActiveRelationship(now)), patient2);
-        checkEquals(bean.getNodeTargetObjects("patients", new IsActiveRelationship(now), false), patient2, patient3);
-        checkEquals(bean.getNodeTargetObjects("patients", new IsActiveRelationship(now), false, Party.class),
-                    patient2, patient3);
+        checkEquals(bean.getNodeTargetObjects("patients", isActive(now)), patient2);
+        checkEquals(bean.getNodeTargetObjects("patients", isActive(now), false), patient2, patient3);
+        checkEquals(bean.getNodeTargetObjects("patients", isActive(now), false, Party.class), patient2, patient3);
 
         Map<EntityRelationship, Entity> expected1 = new HashMap<EntityRelationship, Entity>();
         expected1.put(rel2, patient2);

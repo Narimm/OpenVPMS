@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -24,12 +22,12 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
 import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.SOURCE;
 import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.TARGET;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
@@ -38,13 +36,12 @@ import static org.openvpms.component.business.service.archetype.helper.IMObjectB
 /**
  * Helper to access an {@link Entity}'s properties via their names.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EntityBean extends IMObjectBean {
 
     /**
-     * Constructs a new <tt>EntityBean</tt>.
+     * Constructs a new {@link EntityBean}.
      *
      * @param entity the entity
      */
@@ -53,7 +50,7 @@ public class EntityBean extends IMObjectBean {
     }
 
     /**
-     * Constructs a new <tt>EntityBean</tt>.
+     * Constructs a new {@link EntityBean}.
      *
      * @param entity  the entity
      * @param service the archetype service
@@ -100,8 +97,8 @@ public class EntityBean extends IMObjectBean {
      * @param target the target entity
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if <tt>name</tt> is an invalid node, there is no relationship that supports
-     *                                   <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     * @throws IMObjectBeanException     if {@code name} is an invalid node, there is no relationship that supports
+     *                                   {@code target}, or multiple relationships can support {@code target}
      */
     public EntityRelationship addNodeRelationship(String name, Entity target) {
         String shortName = getRelationshipShortName(name, target, "target");
@@ -113,8 +110,8 @@ public class EntityBean extends IMObjectBean {
      * target.
      *
      * @param target the target entity
-     * @return the first entity relationship with <tt>target</tt> as its
-     *         target or <tt>null</tt> if none is found
+     * @return the first entity relationship with {@code target} as its
+     *         target or {@code null} if none is found
      */
     public EntityRelationship getRelationship(Entity target) {
         return getRelationship(target.getObjectReference());
@@ -125,8 +122,8 @@ public class EntityBean extends IMObjectBean {
      * target.
      *
      * @param target the target entity
-     * @return the first entity relationship with <tt>target</tt> as its
-     *         target or <tt>null</tt> if none is found
+     * @return the first entity relationship with {@code target} as its
+     *         target or {@code null} if none is found
      */
     public EntityRelationship getRelationship(IMObjectReference target) {
         Entity entity = getEntity();
@@ -175,7 +172,7 @@ public class EntityBean extends IMObjectBean {
      * node.
      *
      * @param node the entity relationship node name
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeSourceEntity(String node) {
@@ -189,7 +186,7 @@ public class EntityBean extends IMObjectBean {
      * @param node   the entity relationship node name
      * @param active determines if the relationship and source entity must be
      *               active
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeSourceEntity(String node, boolean active) {
@@ -202,7 +199,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param node      the entity relationship node name
      * @param predicate the predicate
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeSourceEntity(String node, Predicate predicate) {
@@ -215,7 +212,7 @@ public class EntityBean extends IMObjectBean {
      * @param node      the entity relationship node name
      * @param predicate the predicate
      * @param active    determines if the entity must be active or not
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeSourceEntity(String node, Predicate predicate, boolean active) {
@@ -227,7 +224,7 @@ public class EntityBean extends IMObjectBean {
      * node.
      *
      * @param node the entity relationship node name
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeTargetEntity(String node) {
@@ -239,7 +236,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param node   the entity relationship node
      * @param active determines if the relationship and target entity must be active
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeTargetEntity(String node, boolean active) {
@@ -252,7 +249,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param node      the entity relationship node name
      * @param predicate the predicate
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeTargetEntity(String node, Predicate predicate) {
@@ -265,7 +262,7 @@ public class EntityBean extends IMObjectBean {
      * @param node      the entity relationship node name
      * @param predicate the predicate
      * @param active    determines if the entity must be active or not
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getNodeTargetEntity(String node, Predicate predicate, boolean active) {
@@ -278,7 +275,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param node the entity relationship node name
      * @param time the time
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -293,7 +290,7 @@ public class EntityBean extends IMObjectBean {
      * @param node   the entity relationship node
      * @param time   the time
      * @param active determines if the entity must be active
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -307,7 +304,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param node the entity relationship node
      * @param time the time
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -322,7 +319,7 @@ public class EntityBean extends IMObjectBean {
      * @param node   the entity relationship node
      * @param time   the time
      * @param active determines if the entity must be active
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -363,7 +360,7 @@ public class EntityBean extends IMObjectBean {
      * @param node   the entity relationship node
      * @param time   the time
      * @param active determines if the entities must be active
-     * @return a list of source entities. May contain inactive entities if <tt>active</tt> is <tt>false</tt>
+     * @return a list of source entities. May contain inactive entities if {@code active} is {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeSourceEntities(String node, Date time, boolean active) {
@@ -430,7 +427,7 @@ public class EntityBean extends IMObjectBean {
      * @param node   the entity relationship node
      * @param time   the time
      * @param active determines if the entities must be active
-     * @return a list of target entities. May contain inactive entities if <tt>active</tt> is <tt>false</tt>
+     * @return a list of target entities. May contain inactive entities if {@code active} is {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeTargetEntities(String node, Date time, boolean active) {
@@ -498,7 +495,7 @@ public class EntityBean extends IMObjectBean {
      */
     @Deprecated
     public List<IMObjectReference> getNodeSourceEntityRefs(String node, Date time, boolean active) {
-        return getRelatedObjectRefs(node, new IsActiveRelationship(time), SOURCE);
+        return getRelatedObjectRefs(node, isActive(time), SOURCE);
     }
 
     /**
@@ -548,7 +545,7 @@ public class EntityBean extends IMObjectBean {
      */
     @Deprecated
     public List<IMObjectReference> getNodeTargetEntityRefs(String node, Date time, boolean active) {
-        return getRelatedObjectRefs(node, new IsActiveRelationship(time), TARGET);
+        return getRelatedObjectRefs(node, isActive(time), TARGET);
     }
 
     /**
@@ -600,7 +597,7 @@ public class EntityBean extends IMObjectBean {
      * relationship short name.
      *
      * @param shortName the entity relationship short name
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getSourceEntity(String shortName) {
@@ -612,7 +609,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortName the entity relationship short name
      * @param active    determines if the relationship and entity must be active
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getSourceEntity(String shortName, boolean active) {
@@ -624,7 +621,7 @@ public class EntityBean extends IMObjectBean {
      * names and having an active source entity.
      *
      * @param shortNames the entity relationship short names
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getSourceEntity(String[] shortNames) {
@@ -636,7 +633,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortNames the entity relationship short names
      * @param active     determines if the relationship and source entity must be active
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getSourceEntity(String[] shortNames, boolean active) {
@@ -648,7 +645,7 @@ public class EntityBean extends IMObjectBean {
      * relationship short name.
      *
      * @param shortName the entity relationship short names
-     * @return the active entity, or <tt>null</tt> if none is found
+     * @return the active entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getTargetEntity(String shortName) {
@@ -660,7 +657,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortName the entity relationship short names
      * @param active    determines if the relationship and entity must be active
-     * @return the entity, or <tt>null</tt> if none is found
+     * @return the entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getTargetEntity(String shortName, boolean active) {
@@ -672,7 +669,7 @@ public class EntityBean extends IMObjectBean {
      * names and having an active target entity.
      *
      * @param shortNames the entity relationship short names
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getTargetEntity(String[] shortNames) {
@@ -684,7 +681,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortNames the entity relationship short names
      * @param active     determines if the relationship and target entity must be active
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Entity getTargetEntity(String[] shortNames, boolean active) {
@@ -697,7 +694,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortName the entity relationship short name
      * @param time      the time
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -712,7 +709,7 @@ public class EntityBean extends IMObjectBean {
      * @param shortName the entity relationship short name
      * @param time      the time
      * @param active    determines if the entity must be active
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -726,7 +723,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortNames the entity relationship short names
      * @param time       the time
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -741,7 +738,7 @@ public class EntityBean extends IMObjectBean {
      * @param shortNames the entity relationship short names
      * @param time       the time
      * @param active     determines if the entity must be active
-     * @return the source entity, or <tt>null</tt> if none is found
+     * @return the source entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -755,7 +752,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortName the entity relationship short name
      * @param time      the time
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -770,7 +767,7 @@ public class EntityBean extends IMObjectBean {
      * @param shortName the entity relationship short name
      * @param time      the time
      * @param active    determines if the entity must be active
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -784,7 +781,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortNames the entity relationship short names
      * @param time       the time
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -799,7 +796,7 @@ public class EntityBean extends IMObjectBean {
      * @param shortNames the entity relationship short names
      * @param time       the time
      * @param active     determines if the relationship must be active
-     * @return the target entity, or <tt>null</tt> if none is found
+     * @return the target entity, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -811,7 +808,7 @@ public class EntityBean extends IMObjectBean {
      * Returns the source entity reference from the first active entity relationship matching the specified short name.
      *
      * @param shortName the entity relationship short name
-     * @return the source reference, or <tt>null</tt> if none is found
+     * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getSourceEntityRef(String shortName) {
@@ -823,7 +820,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortName the entity relationship short name
      * @param active    determines if the relationship must be active
-     * @return the source reference, or <tt>null</tt> if none is found
+     * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getSourceEntityRef(String shortName, boolean active) {
@@ -835,7 +832,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortNames the entity relationship short names
      * @param active     determines if the relationship must be active
-     * @return the source reference, or <tt>null</tt> if none is found
+     * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getSourceEntityRef(String[] shortNames, boolean active) {
@@ -846,7 +843,7 @@ public class EntityBean extends IMObjectBean {
      * Returns the target entity reference from the first active entity relationship matching the specified short name.
      *
      * @param shortName the entity relationship short name
-     * @return the target reference, or <tt>null</tt> if none is found
+     * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getTargetEntityRef(String shortName) {
@@ -858,7 +855,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortName the entity relationship short name
      * @param active    determines if the relationship must be active
-     * @return the target reference, or <tt>null</tt> if none is found
+     * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getTargetEntityRef(String shortName, boolean active) {
@@ -870,7 +867,7 @@ public class EntityBean extends IMObjectBean {
      *
      * @param shortNames the entity relationship short names
      * @param active     determines if the relationship must be active
-     * @return the target reference, or <tt>null</tt> if none is found
+     * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObjectReference getTargetEntityRef(String[] shortNames, boolean active) {
