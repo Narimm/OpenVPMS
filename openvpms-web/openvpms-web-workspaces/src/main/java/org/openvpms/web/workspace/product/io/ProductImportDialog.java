@@ -98,11 +98,13 @@ public class ProductImportDialog extends PopupDialog {
         private static final int NAME = 1;
         private static final int PRINTED_NAME = 2;
         private static final int FIXED_PRICE = 3;
-        private static final int FIXED_START_DATE = 4;
-        private static final int FIXED_END_DATE = 5;
-        private static final int UNIT_PRICE = 6;
-        private static final int UNIT_START_DATE = 7;
-        private static final int UNIT_END_DATE = 8;
+        private static final int FIXED_COST = 4;
+        private static final int FIXED_START_DATE = 5;
+        private static final int FIXED_END_DATE = 6;
+        private static final int UNIT_PRICE = 7;
+        private static final int UNIT_COST = 8;
+        private static final int UNIT_START_DATE = 9;
+        private static final int UNIT_END_DATE = 10;
 
         public ProductPriceDataModel() {
             DefaultTableColumnModel model = new DefaultTableColumnModel();
@@ -110,9 +112,11 @@ public class ProductImportDialog extends PopupDialog {
             model.addColumn(createTableColumn(NAME, "product.io.import.name"));
             model.addColumn(createTableColumn(PRINTED_NAME, "product.io.import.printedName"));
             model.addColumn(createTableColumn(FIXED_PRICE, "product.io.import.fixedPrice"));
+            model.addColumn(createTableColumn(FIXED_COST, "product.io.import.fixedCost"));
             model.addColumn(createTableColumn(FIXED_START_DATE, "product.io.import.fixedPriceStartDate"));
             model.addColumn(createTableColumn(FIXED_END_DATE, "product.io.import.fixedPriceEndDate"));
             model.addColumn(createTableColumn(UNIT_PRICE, "product.io.import.unitPrice"));
+            model.addColumn(createTableColumn(UNIT_COST, "product.io.import.unitCost"));
             model.addColumn(createTableColumn(UNIT_START_DATE, "product.io.import.unitPriceStartDate"));
             model.addColumn(createTableColumn(UNIT_END_DATE, "product.io.import.unitPriceEndDate"));
             setTableColumnModel(model);
@@ -145,6 +149,9 @@ public class ProductImportDialog extends PopupDialog {
                 case FIXED_PRICE:
                     result = (fixedPrice != null) ? fixedPrice.getPrice() : null;
                     break;
+                case FIXED_COST:
+                    result = (fixedPrice != null) ? fixedPrice.getCost() : null;
+                    break;
                 case FIXED_START_DATE:
                     result = (fixedPrice != null) ? formatDate(fixedPrice.getFrom()) : null;
                     break;
@@ -153,6 +160,9 @@ public class ProductImportDialog extends PopupDialog {
                     break;
                 case UNIT_PRICE:
                     result = (unitPrice != null) ? unitPrice.getPrice() : null;
+                    break;
+                case UNIT_COST:
+                    result = (unitPrice != null) ? unitPrice.getCost() : null;
                     break;
                 case UNIT_START_DATE:
                     result = (unitPrice != null) ? formatDate(unitPrice.getFrom()) : null;
@@ -164,10 +174,6 @@ public class ProductImportDialog extends PopupDialog {
                     result = null;
             }
             return result;
-        }
-
-        private String formatDate(Date date) {
-            return date != null ? DateFormatter.formatDate(date, false) : null;
         }
 
         /**
@@ -183,6 +189,11 @@ public class ProductImportDialog extends PopupDialog {
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
             return null;
         }
+
+        private String formatDate(Date date) {
+            return date != null ? DateFormatter.formatDate(date, false) : null;
+        }
+
     }
 
 }

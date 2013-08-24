@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.product.io.FilterResult;
 import org.openvpms.archetype.rules.product.io.ProductCSVReader;
 import org.openvpms.archetype.rules.product.io.ProductData;
 import org.openvpms.archetype.rules.product.io.ProductDataFilter;
+import org.openvpms.archetype.rules.product.io.ProductImporter;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -51,7 +52,6 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.product.io.ProductExportDialog;
 import org.openvpms.web.workspace.product.io.ProductImportDialog;
 import org.openvpms.web.workspace.product.io.ProductImportErrorDialog;
-import org.openvpms.web.workspace.product.io.ProductImporter;
 
 import java.util.List;
 
@@ -238,7 +238,8 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     }
 
     private void onImport(List<ProductData> data) {
-        ProductImporter importer = new ProductImporter();
-        importer.run(data);
+        ProductImporter importer = new ProductImporter(ServiceHelper.getArchetypeService(),
+                                                       ServiceHelper.getBean(ProductPriceRules.class));
+        importer.run(data, getContext().getPractice());
     }
 }

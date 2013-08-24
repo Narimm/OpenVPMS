@@ -39,7 +39,7 @@ import org.openvpms.web.system.ServiceHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 
@@ -207,7 +207,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
             if (rules == null) {
                 rules = ServiceHelper.getBean(ProductPriceRules.class);
             }
-            Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date);
+            List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, date);
             if (!prices.isEmpty()) {
                 table = createPriceTable(prices);
             }
@@ -233,7 +233,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * @param prices the prices
      * @return a new price table
      */
-    private PagedIMTable<ProductPrice> createPriceTable(Set<ProductPrice> prices) {
+    private PagedIMTable<ProductPrice> createPriceTable(List<ProductPrice> prices) {
         ResultSet<ProductPrice> set = new IMObjectListResultSet<ProductPrice>(
                 new ArrayList<ProductPrice>(prices), 20);
         final PagedIMTable<ProductPrice> table = new PagedIMTable<ProductPrice>(new PriceTableModel(context), set);
