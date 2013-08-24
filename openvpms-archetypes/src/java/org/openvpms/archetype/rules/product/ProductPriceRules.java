@@ -16,7 +16,9 @@
 
 package org.openvpms.archetype.rules.product;
 
+import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
@@ -36,10 +38,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -114,10 +115,10 @@ public class ProductPriceRules {
      *
      * @param product   the product
      * @param shortName the price short name
-     * @return the first matching price, or {@code null} if none is found
+     * @return the matching prices, sorted on descending time
      */
-    public Set<ProductPrice> getProductPrices(Product product, String shortName) {
-        Set<ProductPrice> result = new HashSet<ProductPrice>();
+    public List<ProductPrice> getProductPrices(Product product, String shortName) {
+        List<ProductPrice> result = new ArrayList<ProductPrice>();
         ShortNamePredicate predicate = new ShortNamePredicate(shortName);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
@@ -131,7 +132,7 @@ public class ProductPriceRules {
                 }
             }
         }
-        return result;
+        return sort(result);
     }
 
     /**
@@ -142,8 +143,8 @@ public class ProductPriceRules {
      * @param date      the date
      * @return all prices matching the criteria
      */
-    public Set<ProductPrice> getProductPrices(Product product, String shortName, Date date) {
-        Set<ProductPrice> result = new HashSet<ProductPrice>();
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date) {
+        List<ProductPrice> result = new ArrayList<ProductPrice>();
         ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
@@ -157,7 +158,7 @@ public class ProductPriceRules {
                 }
             }
         }
-        return result;
+        return sort(result);
     }
 
     /**
@@ -167,10 +168,10 @@ public class ProductPriceRules {
      * @param shortName the price short name
      * @param from      the start of the date range. May be {@code null}
      * @param to        the end of the date range. May be {@code null}
-     * @return all prices matching the criteria
+     * @return the matching prices, sorted on descending time
      */
-    public Set<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to) {
-        Set<ProductPrice> result = new HashSet<ProductPrice>();
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to) {
+        List<ProductPrice> result = new ArrayList<ProductPrice>();
         ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
@@ -184,7 +185,7 @@ public class ProductPriceRules {
                 }
             }
         }
-        return result;
+        return sort(result);
     }
 
     /**
@@ -286,6 +287,20 @@ public class ProductPriceRules {
         IMObjectBean bean = new IMObjectBean(price);
         BigDecimal result = bean.getBigDecimal("maxDiscount");
         return (result == null) ? DEFAULT_MAX_DISCOUNT : result;
+    }
+
+    /**
+     * Sorts prices on descending time.
+     * <p/>
+     * NOTE: this modifies the input list.
+     *
+     * @param prices the prices to sort
+     * @return the prices
+     */
+    @SuppressWarnings("unchecked")
+    public List<ProductPrice> sort(List<ProductPrice> prices) {
+        Collections.sort(prices, ComparatorUtils.reversedComparator(ProductPriceComparator.INSTANCE));
+        return prices;
     }
 
     /**
@@ -532,4 +547,37 @@ public class ProductPriceRules {
         }
     }
 
+    private static class ProductPriceComparator implements Comparator<ProductPrice> {
+
+        /**
+         * The singleton instance.
+         */
+        public static Comparator<ProductPrice> INSTANCE = new ProductPriceComparator();
+
+        @Override
+        public int compare(ProductPrice o1, ProductPrice o2) {
+            int result;
+            if (ObjectUtils.equals(o1.getToDate(), o2.getToDate())) {
+                result = 0;
+            } else if (o1.getToDate() == null) {
+                result = 1;
+            } else if (o2.getToDate() == null) {
+                result = -1;
+            } else {
+                result = DateRules.compareTo(o1.getToDate(), o2.getToDate());
+            }
+            if (result == 0) {
+                if (!ObjectUtils.equals(o1.getFromDate(), o2.getFromDate())) {
+                    if (o1.getFromDate() == null) {
+                        result = 1;
+                    } else if (o2.getFromDate() == null) {
+                        result = -1;
+                    } else {
+                        result = DateRules.compareDates(o1.getFromDate(), o2.getFromDate());
+                    }
+                }
+            }
+            return result;
+        }
+    }
 }

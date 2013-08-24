@@ -17,23 +17,20 @@
 package org.openvpms.archetype.rules.product.io;
 
 import au.com.bytecode.opencsv.CSVWriter;
-import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -49,8 +46,14 @@ public class ProductCSVWriter implements ProductWriter {
      * The file header.
      */
     public static final String[] HEADER = {
-            "Product Identifier", "Product Name", "Product Printed Name", "Fixed Price", "Fixed Price Start Date",
-            "Fixed Price End Date", "Unit Price", "Unit Price Start Date", "Unit Price End Date"};
+            "Product Identifier", "Product Name", "Product Printed Name", "Fixed Price", "Fixed Cost",
+            "Fixed Price Start Date", "Fixed Price End Date", "Unit Price", "Unit Cost",
+            "Unit Price Start Date", "Unit Price End Date"};
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * The product price rules.
@@ -85,7 +88,8 @@ public class ProductCSVWriter implements ProductWriter {
      * @param rules    the price rules
      * @param handlers the document handlers
      */
-    public ProductCSVWriter(ProductPriceRules rules, DocumentHandlers handlers) {
+    public ProductCSVWriter(IArchetypeService service, ProductPriceRules rules, DocumentHandlers handlers) {
+        this.service = service;
         this.rules = rules;
         this.handlers = handlers;
     }
@@ -168,23 +172,29 @@ public class ProductCSVWriter implements ProductWriter {
             ProductPrice fixedPrice = i < fixedPrices.size() ? fixedPrices.get(i) : null;
             ProductPrice unitPrice = i < unitPrices.size() ? unitPrices.get(i) : null;
             String fixed = null;
+            String fixedCost = null;
             String fixedStartDate = null;
             String fixedEndDate = null;
             if (fixedPrice != null) {
+                IMObjectBean fixedBean = new IMObjectBean(fixedPrice, service);
                 fixed = fixedPrice.getPrice().toString();
+                fixedCost = fixedBean.getBigDecimal("cost").toString();
                 fixedStartDate = getDate(fixedPrice.getFromDate());
                 fixedEndDate = getDate(fixedPrice.getToDate());
             }
             String unit = null;
+            String unitCost = null;
             String unitStartDate = unitPrice != null ? getDate(unitPrice.getFromDate()) : null;
             String unitEndDate = unitPrice != null ? getDate(unitPrice.getToDate()) : null;
             if (unitPrice != null) {
+                IMObjectBean unitBean = new IMObjectBean(unitPrice, service);
                 unit = unitPrice.getPrice().toString();
+                unitCost = unitBean.getBigDecimal("cost").toString();
                 unitStartDate = getDate(unitPrice.getFromDate());
                 unitEndDate = getDate(unitPrice.getToDate());
             }
-            String[] line = {productId, name, printedName, fixed, fixedStartDate, fixedEndDate, unit, unitStartDate,
-                             unitEndDate};
+            String[] line = {productId, name, printedName, fixed, fixedCost, fixedStartDate, fixedEndDate,
+                             unit, unitCost, unitStartDate, unitEndDate};
             writer.writeNext(line);
         }
     }
@@ -212,54 +222,17 @@ public class ProductCSVWriter implements ProductWriter {
     private List<ProductPrice> getPrices(Product product, String shortName, Prices prices, Date from, Date to) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
         if (prices == Prices.LATEST) {
-            ProductPrice price = rules.getProductPrice(product, shortName, new Date());
-            if (price != null) {
-                result.add(price);
+            List<ProductPrice> list = rules.getProductPrices(product, shortName);
+            if (!list.isEmpty()) {
+                result.add(list.get(0));
             }
         } else if (prices == Prices.ALL) {
             result.addAll(rules.getProductPrices(product, shortName));
         } else {
             result.addAll(rules.getProductPrices(product, shortName, from, to));
         }
-        if (result.size() > 1) {
-            sort(result);
-        }
         return result;
     }
 
-    /**
-     * Sorts prices.
-     *
-     * @param result the sorted prices
-     */
-    private void sort(List<ProductPrice> result) {
-        Collections.sort(result, new Comparator<ProductPrice>() {
-            @Override
-            public int compare(ProductPrice o1, ProductPrice o2) {
-                int result;
-                if (ObjectUtils.equals(o1.getToDate(), o2.getToDate())) {
-                    result = 0;
-                } else if (o1.getToDate() == null) {
-                    result = -1;
-                } else if (o2.getToDate() == null) {
-                    result = 1;
-                } else {
-                    result = DateRules.compareDates(o1.getToDate(), o2.getToDate());
-                }
-                if (result == 0) {
-                    if (!ObjectUtils.equals(o1.getFromDate(), o2.getFromDate())) {
-                        if (o1.getFromDate() == null) {
-                            result = -1;
-                        } else if (o2.getFromDate() == null) {
-                            result = 1;
-                        } else {
-                            result = DateRules.compareDates(o1.getFromDate(), o2.getFromDate());
-                        }
-                    }
-                }
-                return result;
-            }
-        });
-    }
 
 }

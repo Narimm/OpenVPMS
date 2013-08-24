@@ -30,7 +30,6 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.InvalidName;
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.NotFound;
@@ -112,8 +111,8 @@ public class ProductDataFilter {
         ProductData result = null;
         List<PriceData> fixedPrices = new ArrayList<PriceData>();
         List<PriceData> unitPrices = new ArrayList<PriceData>();
-        Set<ProductPrice> currentFixedPrices = rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE);
-        Set<ProductPrice> currentUnitPrices = rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE);
+        List<ProductPrice> currentFixedPrices = rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE);
+        List<ProductPrice> currentUnitPrices = rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE);
         for (PriceData price : data.getFixedPrices()) {
             if (!hasPrice(currentFixedPrices, price)) {
                 fixedPrices.add(price);
@@ -152,7 +151,7 @@ public class ProductDataFilter {
      * @param data   the price
      * @return {@code true} if the price is present
      */
-    private boolean hasPrice(Set<ProductPrice> prices, PriceData data) {
+    private boolean hasPrice(List<ProductPrice> prices, PriceData data) {
         boolean result = false;
         for (ProductPrice price : prices) {
             if (datesEquals(price.getFromDate(), data.getFrom())

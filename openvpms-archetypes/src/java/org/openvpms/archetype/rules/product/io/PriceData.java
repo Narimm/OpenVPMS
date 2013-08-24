@@ -34,7 +34,12 @@ public class PriceData {
     /**
      * The price.
      */
-    private final BigDecimal price;
+    private BigDecimal price;
+
+    /**
+     * The cost price.
+     */
+    private BigDecimal cost;
 
     /**
      * The price start date. May be {@code null}
@@ -47,16 +52,18 @@ public class PriceData {
     private final Date to;
 
     /**
-     * Constructs an {@link PriceData}.
+     * Constructs a {@link PriceData}.
      *
      * @param shortName the price archetype short name
      * @param price     the price
+     * @param cost      the cost price
      * @param from      the price start date. May be {@code null}
      * @param to        the price end date. May be {@code null}
      */
-    public PriceData(String shortName, BigDecimal price, Date from, Date to) {
+    public PriceData(String shortName, BigDecimal price, BigDecimal cost, Date from, Date to) {
         this.shortName = shortName;
         this.price = price;
+        this.cost = cost;
         this.from = from;
         this.to = to;
     }
@@ -77,6 +84,33 @@ public class PriceData {
      */
     public BigDecimal getPrice() {
         return price;
+    }
+
+    /**
+     * Sets the price.
+     *
+     * @param price the price
+     */
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    /**
+     * Returns the cost price.
+     *
+     * @return the cost price
+     */
+    public BigDecimal getCost() {
+        return cost;
+    }
+
+    /**
+     * Sets the cost price.
+     *
+     * @param cost the cost price
+     */
+    public void setCost(BigDecimal cost) {
+        this.cost = cost;
     }
 
     /**
