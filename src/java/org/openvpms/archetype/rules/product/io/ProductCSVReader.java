@@ -65,29 +65,39 @@ public class ProductCSVReader implements ProductReader {
     private static final int FIXED_PRICE = 3;
 
     /**
+     * The product fixed cost column.
+     */
+    private static final int FIXED_COST = 4;
+
+    /**
      * The product fixed price start date column.
      */
-    private static final int FIXED_PRICE_START_DATE = 4;
+    private static final int FIXED_PRICE_START_DATE = 5;
 
     /**
      * The product fixed price end date column.
      */
-    private static final int FIXED_PRICE_END_DATE = 5;
+    private static final int FIXED_PRICE_END_DATE = 6;
 
     /**
      * The product unit price column.
      */
-    private static final int UNIT_PRICE = 6;
+    private static final int UNIT_PRICE = 7;
+
+    /**
+     * The product unit cost column.
+     */
+    private static final int UNIT_COST = 8;
 
     /**
      * The product unit price start date column.
      */
-    private static final int UNIT_PRICE_START_DATE = 7;
+    private static final int UNIT_PRICE_START_DATE = 9;
 
     /**
      * The product unit price end date column.
      */
-    private static final int UNIT_PRICE_END_DATE = 8;
+    private static final int UNIT_PRICE_END_DATE = 10;
 
     private static final String[] DATE_FORMATS = {
             "yyyy-MM-dd", "yy-MM-dd", "dd/MM/yyyy", "dd/MM/yy"
@@ -133,23 +143,24 @@ public class ProductCSVReader implements ProductReader {
                 String name = getName(line, lineNo);
                 String printedName = line[PRINTED_NAME];
                 if (data == null || id != data.getId()) {
-                    if (data != null) {
-                        result.add(data);
-                    }
                     data = new ProductData(id, name, printedName, lineNo);
+                    result.add(data);
                 }
-                BigDecimal fixedPrice = getPrice(line, FIXED_PRICE, lineNo);
+                BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo);
+                BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo);
                 Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo);
                 Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo);
-                BigDecimal unitPrice = getPrice(line, UNIT_PRICE, lineNo);
+                BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
+                BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
                 Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo);
                 Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo);
                 if (fixedPrice != null) {
-                    data.addFixedPrice(fixedPrice, fixedStartDate, fixedEndDate);
+                    data.addFixedPrice(fixedPrice, fixedCost, fixedStartDate, fixedEndDate);
                 }
                 if (unitPrice != null) {
-                    data.addUnitPrice(unitPrice, unitStartDate, unitEndDate);
+                    data.addUnitPrice(unitPrice, unitCost, unitStartDate, unitEndDate);
                 }
+                ++lineNo;
             }
         } catch (IOException exception) {
             throw new ProductIOException(ProductIOException.ErrorCode.ReadError, exception);
@@ -187,14 +198,14 @@ public class ProductCSVReader implements ProductReader {
     }
 
     /**
-     * Returns the product price at the specified line.
+     * Returns a decimal value at the specified line.
      *
      * @param line   the line
      * @param index  the price column index
      * @param lineNo the line no.
-     * @return the price, or {@code null} if there is no price
+     * @return the value, or {@code null} if there is no value
      */
-    private BigDecimal getPrice(String[] line, int index, int lineNo) {
+    private BigDecimal getDecimal(String[] line, int index, int lineNo) {
         String value = line[index];
         BigDecimal result = null;
         try {
@@ -243,7 +254,7 @@ public class ProductCSVReader implements ProductReader {
     private String getRequired(String[] line, int index, int lineNo) {
         String value = StringUtils.trimToNull(line[index]);
         if (value == null) {
-            throw new ProductIOException(ProductIOException.ErrorCode.InvalidValue,
+            throw new ProductIOException(ProductIOException.ErrorCode.RequiredValue,
                                          ProductCSVWriter.HEADER[index], lineNo);
         }
         return value;
@@ -258,7 +269,7 @@ public class ProductCSVReader implements ProductReader {
      * @throws ProductIOException
      */
     private void reportInvalid(String name, String value, int lineNo) {
-        throw new ProductIOException(ProductIOException.ErrorCode.RequiredValue, name, value, lineNo);
+        throw new ProductIOException(ProductIOException.ErrorCode.InvalidValue, name, value, lineNo);
     }
 
 

@@ -36,7 +36,9 @@ public class ProductIOException extends OpenVPMSException {
         NotFound,
         UnrecognisedDocument,
         InvalidColumn,
-        ReadError
+        ReadError,
+        FixedPriceOverlap,
+        UnitPriceOverlap
     }
 
     /**

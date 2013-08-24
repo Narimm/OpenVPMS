@@ -721,21 +721,21 @@ public class TestHelper extends Assert {
      * Helper to create a date-time given a string of the form
      * <em>yyyy-mm-dd hh:mm:ss</em>.
      *
-     * @param value the value
-     * @return the corresponding date-time
+     * @param value the value. May be {@code null}
+     * @return the corresponding date-time or {@code null} if {@code value} is null
      */
     public static Date getDatetime(String value) {
-        return new Date(Timestamp.valueOf(value).getTime()); // use Date, for easy comparison
+        return value != null ? new Date(Timestamp.valueOf(value).getTime()) : null; // use Date, for easy comparison
     }
 
     /**
      * Helper to create a date given a string of the form <em>yyyy-mm-dd</em>.
      *
-     * @param value the value
-     * @return the corresponding date
+     * @param value the value. May be {@code null}
+     * @return the corresponding date, or {@code null} if {@code value} is null
      */
     public static Date getDate(String value) {
-        return getDatetime(value + " 0:0:0");
+        return value != null ? getDatetime(value + " 0:0:0") : null;
     }
 
 }

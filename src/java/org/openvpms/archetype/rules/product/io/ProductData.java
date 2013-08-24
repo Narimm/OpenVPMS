@@ -136,22 +136,24 @@ public class ProductData {
      * Adds a fixed price.
      *
      * @param price the price
+     * @param cost  the cost price
      * @param from  the price start date. May be {@code null}
      * @param to    the price end date. May be {@code null}
      */
-    public void addFixedPrice(BigDecimal price, Date from, Date to) {
-        fixedPrices.add(new PriceData(ProductArchetypes.FIXED_PRICE, price, from, to));
+    public void addFixedPrice(BigDecimal price, BigDecimal cost, Date from, Date to) {
+        fixedPrices.add(new PriceData(ProductArchetypes.FIXED_PRICE, price, cost, from, to));
     }
 
     /**
      * Adds a unit price.
      *
      * @param price the price
+     * @param cost  the cost price
      * @param from  the price start date. May be {@code null}
      * @param to    the price end date. May be {@code null}
      */
-    public void addUnitPrice(BigDecimal price, Date from, Date to) {
-        unitPrices.add(new PriceData(ProductArchetypes.UNIT_PRICE, price, from, to));
+    public void addUnitPrice(BigDecimal price, BigDecimal cost, Date from, Date to) {
+        unitPrices.add(new PriceData(ProductArchetypes.UNIT_PRICE, price, cost, from, to));
     }
 
     /**

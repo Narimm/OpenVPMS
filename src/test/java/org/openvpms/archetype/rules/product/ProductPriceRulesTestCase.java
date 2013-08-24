@@ -34,8 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,6 +43,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
+import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
+import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
@@ -174,7 +176,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testGetMaxDiscount() {
-        ProductPrice price = createPrice(FIXED_PRICE, new Date(), new Date());
+        ProductPrice price = ProductPriceTestHelper.createPrice(FIXED_PRICE, new Date(), new Date());
         checkEquals(new BigDecimal(100), rules.getMaxDiscount(price));
 
         IMObjectBean bean = new IMObjectBean(price);
@@ -207,8 +209,8 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
         ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
 
-        ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-01-01", "2008-01-10");
-        ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-02-01", null);
+        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit2 = createUnitPrice("2008-02-01", null);
 
         assertNull(rules.getProductPrice(product, FIXED_PRICE, new Date()));
         assertNull(rules.getProductPrice(product, UNIT_PRICE, new Date()));
@@ -272,8 +274,8 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         fixed2.setPrice(two);
         fixed3.setPrice(three);
 
-        ProductPrice unit1 = createPrice(UNIT_PRICE, "2008-01-01", "2008-01-10");
-        ProductPrice unit2 = createPrice(UNIT_PRICE, "2008-02-01", null);
+        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit2 = createUnitPrice("2008-02-01", null);
 
         unit1.setPrice(one);
         unit2.setPrice(two);
@@ -333,8 +335,8 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param product the product
      */
     private void checkGetProductPrices(Product product) {
-        ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-01-01", "2008-01-31");
-        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-01-01", "2008-12-31");
+        ProductPrice fixed1 = ProductPriceTestHelper.createPrice(FIXED_PRICE, "2008-01-01", "2008-01-31");
+        ProductPrice fixed2 = ProductPriceTestHelper.createPrice(FIXED_PRICE, "2008-01-01", "2008-12-31");
 
         product.addProductPrice(fixed1);
         product.addProductPrice(fixed2);
@@ -342,7 +344,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
         product = get(product);
 
-        Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"));
+        List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"));
         assertTrue(prices.isEmpty());
 
         prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"));
@@ -366,9 +368,9 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      * @param product the product. Either a medication, merchandise or service
      */
     private void checkGetProductPricesForProductWithPriceTemplate(Product product) {
-        ProductPrice fixed1 = createPrice(FIXED_PRICE, "2008-01-01", "2008-01-31");
-        ProductPrice fixed2 = createPrice(FIXED_PRICE, "2008-01-01", "2008-12-31");
-        ProductPrice fixed3 = createPrice(FIXED_PRICE, "2008-02-01", null);
+        ProductPrice fixed1 = ProductPriceTestHelper.createPrice(FIXED_PRICE, "2008-01-01", "2008-01-31");
+        ProductPrice fixed2 = ProductPriceTestHelper.createPrice(FIXED_PRICE, "2008-01-01", "2008-12-31");
+        ProductPrice fixed3 = ProductPriceTestHelper.createPrice(FIXED_PRICE, "2008-02-01", null);
 
         product.addProductPrice(fixed1);
         product.addProductPrice(fixed2);
@@ -386,7 +388,7 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
 
         product = get(product);
 
-        Set<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"));
+        List<ProductPrice> prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2007-01-01"));
         assertTrue(prices.isEmpty());
 
         prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-01-01"));
@@ -537,66 +539,6 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      */
     private void checkPrice(ProductPrice expected, BigDecimal price, String shortName, Date date, Product product) {
         assertEquals(expected, rules.getProductPrice(product, price, shortName, date));
-    }
-
-    /**
-     * Helper to create a new fixed price.
-     *
-     * @param from         the active from date. May be <tt>null</tt>
-     * @param to           the active to date. May be <tt>null</tt>
-     * @param defaultPrice <tt>true</tt> if the price is the default
-     * @return a new fixed price
-     */
-    private ProductPrice createFixedPrice(String from, String to, boolean defaultPrice) {
-        Date fromDate = (from != null) ? getDate(from) : null;
-        Date toDate = (to != null) ? getDate(to) : null;
-        return createFixedPrice(fromDate, toDate, defaultPrice);
-    }
-
-    /**
-     * Helper to create a new fixed price.
-     *
-     * @param from         the active from date. May be <tt>null</tt>
-     * @param to           the active to date. May be <tt>null</tt>
-     * @param defaultPrice <tt>true</tt> if the price is the default
-     * @return a new fixed price
-     */
-    private ProductPrice createFixedPrice(Date from, Date to, boolean defaultPrice) {
-        ProductPrice result = createPrice(ProductArchetypes.FIXED_PRICE, from, to);
-        IMObjectBean bean = new IMObjectBean(result);
-        bean.setValue("default", defaultPrice);
-        return result;
-    }
-
-    /**
-     * Helper to create a new price.
-     *
-     * @param shortName the short name
-     * @param from      the active from date. May be <tt>null</tt>
-     * @param to        the active to date. May be <tt>null</tt>
-     * @return a new price
-     */
-    private ProductPrice createPrice(String shortName, String from, String to) {
-        Date fromDate = (from != null) ? getDate(from) : null;
-        Date toDate = (to != null) ? getDate(to) : null;
-        return createPrice(shortName, fromDate, toDate);
-    }
-
-    /**
-     * Helper to create a new price.
-     *
-     * @param shortName the short name
-     * @param from      the active from date. May be <tt>null</tt>
-     * @param to        the active to date. May be <tt>null</tt>
-     * @return a new price
-     */
-    private ProductPrice createPrice(String shortName, Date from, Date to) {
-        ProductPrice result = (ProductPrice) create(shortName);
-        result.setName("XPrice");
-        result.setPrice(BigDecimal.ONE);
-        result.setFromDate(from);
-        result.setToDate(to);
-        return result;
     }
 
     /**
