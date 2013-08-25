@@ -47,31 +47,52 @@ import org.openvpms.web.resource.i18n.Messages;
 import java.util.Date;
 
 /**
- * Enter description.
+ * A product query for exporting products.
  *
  * @author Tim Anderson
  */
 public class ProductExportQuery extends ProductQuery {
 
-    private DateRange range;
-
+    /**
+     * Determines the prices to export.
+     */
     public enum Prices {
         LATEST, ALL, RANGE
     }
 
+    /**
+     * The date range component.
+     */
+    private DateRange range;
+
+    /**
+     * The product type to restrict products to. May be {@code null}
+     */
     private Entity productType;
+
+    /**
+     * The prices to export.
+     */
     private Prices prices = Prices.LATEST;
 
-
+    /**
+     * The archetype short names to query.
+     */
     private static final String[] SHORT_NAMES = new String[]{
             ProductArchetypes.MEDICATION, ProductArchetypes.SERVICE, ProductArchetypes.MERCHANDISE,
-            ProductArchetypes.TEMPLATE, ProductArchetypes.PRICE_TEMPLATE};
+            ProductArchetypes.PRICE_TEMPLATE};
 
-
+    /**
+     * The prices.
+     */
     private static final Prices[] PRICES = {Prices.LATEST, Prices.ALL, Prices.RANGE};
 
+    /**
+     * The labels used in the price selector. The order corresponds to {@link #PRICES}.
+     */
     private final String[] PRICE_LABELS = {Messages.get("product.io.prices.latest"),
-                                           Messages.get("product.io.prices.all"), Messages.get("product.io.prices.range")};
+                                           Messages.get("product.io.prices.all"),
+                                           Messages.get("product.io.prices.range")};
 
     /**
      * Constructs a {@link ProductExportQuery}.
@@ -82,10 +103,20 @@ public class ProductExportQuery extends ProductQuery {
         super(SHORT_NAMES);
     }
 
+    /**
+     * Determines the prices to export.
+     *
+     * @return the prices
+     */
     public Prices getPrices() {
         return prices;
     }
 
+    /**
+     * Sets the prices to export.
+     *
+     * @param prices the prices
+     */
     public void setPrices(Prices prices) {
         this.prices = prices;
         if (range != null) {
@@ -93,10 +124,26 @@ public class ProductExportQuery extends ProductQuery {
         }
     }
 
+    /**
+     * Returns the price start date.
+     * <p/>
+     * Only prices active at the start date will be returned. This is only applicable when {@link #getPrices}
+     * is {@link Prices#RANGE}.
+     *
+     * @return the price start date. May be {@code null}
+     */
     public Date getFrom() {
         return (range != null) ? range.getFrom() : null;
     }
 
+    /**
+     * Returns the price end date.
+     * <p/>
+     * Only prices active at the end date will be returned. This is only applicable when {@link #getPrices}
+     * is {@link Prices#RANGE}.
+     *
+     * @return the price end date. May be {@code null}
+     */
     public Date getTo() {
         return (range != null) ? range.getTo() : null;
     }
@@ -127,7 +174,6 @@ public class ProductExportQuery extends ProductQuery {
         addDateRange(container);
     }
 
-
     /**
      * Creates the result set.
      *
@@ -140,7 +186,11 @@ public class ProductExportQuery extends ProductQuery {
                                           productType, getStockLocation(), sort, getMaxResults());
     }
 
-
+    /**
+     * Adds a selector to restrict products by product type.
+     *
+     * @param container the container to add the component to
+     */
     private void addProductTypeSelector(Component container) {
         ArchetypeQuery query = new ArchetypeQuery(ProductArchetypes.PRODUCT_TYPE, true)
                 .add(Constraints.sort("name"))
@@ -164,6 +214,11 @@ public class ProductExportQuery extends ProductQuery {
         this.productType = type;
     }
 
+    /**
+     * Adds a selector to constrain the products by the species they are for.
+     *
+     * @param container the container to add the component to
+     */
     private void addSpeciesSelector(Component container) {
         LookupQuery query = new ArchetypeLookupQuery("lookup.species");
         final SelectField field = SelectFieldFactory.create(new LookupListModel(query, true));
@@ -180,6 +235,11 @@ public class ProductExportQuery extends ProductQuery {
         getFocusGroup().add(field);
     }
 
+    /**
+     * Adds a selector to determine which prices are exported.
+     *
+     * @param container the container to add the component to
+     */
     private void addPriceSelector(Component container) {
         final SelectField field = SelectFieldFactory.create(PRICES);
         field.addActionListener(new ActionListener() {
@@ -199,6 +259,11 @@ public class ProductExportQuery extends ProductQuery {
         getFocusGroup().add(field);
     }
 
+    /**
+     * Adds the date range component, used when the price selector is "RANGE",
+     *
+     * @param container the container to add the range to
+     */
     private void addDateRange(Component container) {
         range = new DateRange(getFocusGroup(), false);
         range.getComponent();

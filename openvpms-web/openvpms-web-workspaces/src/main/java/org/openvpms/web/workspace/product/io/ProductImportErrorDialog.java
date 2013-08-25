@@ -35,7 +35,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import java.util.List;
 
 /**
- * Enter description.
+ * Dialog to report product import errors.
  *
  * @author Tim Anderson
  */
@@ -54,7 +54,6 @@ public class ProductImportErrorDialog extends PopupDialog {
         Label message = LabelFactory.create("product.io.import.error.message");
         getLayout().add(ColumnFactory.create(Styles.INSET,
                                              ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, table)));
-
     }
 
     private static class ErrorTableModel extends AbstractIMTableModel<ProductData> {
@@ -112,10 +111,8 @@ public class ProductImportErrorDialog extends PopupDialog {
          * Returns the sort criteria.
          *
          * @param column    the primary sort column
-         * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-         *                  sort in <tt>descending</tt> order
-         * @return the sort criteria, or <tt>null</tt> if the column isn't
-         *         sortable
+         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+         * @return the sort criteria, or {@code null} if the column isn't sortable
          */
         @Override
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
