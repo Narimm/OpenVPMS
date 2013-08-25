@@ -31,17 +31,24 @@ import org.openvpms.web.system.ServiceHelper;
 import java.util.Iterator;
 
 /**
- * Enter description.
+ * Product export dialog.
  *
  * @author Tim Anderson
  */
 public class ProductExportDialog extends BrowserDialog<Product> {
 
+    /**
+     * The export button identifier.
+     */
     private static final String EXPORT_ID = "button.export";
+
+    /**
+     * The dialog buttons.
+     */
     private static final String[] BUTTONS = {EXPORT_ID, CLOSE_ID};
 
     /**
-     * Constructs a {@code ProductExportDialog}.
+     * Constructs a {@link ProductExportDialog}.
      *
      * @param title the dialog title
      * @param help  the help context
@@ -66,6 +73,12 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         }
     }
 
+    /**
+     * Invoked when the "export" button is pressed.
+     * <p/>
+     * This runs the {@link ProductWriter} against the products returned by the {@link ProductExportQuery},
+     * and starts a download of the resulting document.
+     */
     private void onExport() {
         ProductExportQuery query = (ProductExportQuery) ((QueryBrowser<Product>) getBrowser()).getQuery();
         ProductWriter exporter = ServiceHelper.getBean(ProductWriter.class);

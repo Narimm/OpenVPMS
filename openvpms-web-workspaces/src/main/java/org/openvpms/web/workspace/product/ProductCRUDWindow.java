@@ -102,7 +102,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     protected void layoutButtons(ButtonSet buttons) {
         buttons.add(createNewButton());
         buttons.add(createViewButton());
-        // If the logged in user is an admin, show the copy, edit and delete buttons
+        // If the logged in user is an admin, show the copy, edit, delete, import and export buttons
         boolean admin = UserHelper.isAdmin(getContext().getUser());
         if (admin) {
             buttons.add(createEditButton());
@@ -241,5 +241,6 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
         ProductImporter importer = new ProductImporter(ServiceHelper.getArchetypeService(),
                                                        ServiceHelper.getBean(ProductPriceRules.class));
         importer.run(data, getContext().getPractice());
+        InformationDialog.show(Messages.get("product.io.import.title"), Messages.get("product.io.import.imported"));
     }
 }

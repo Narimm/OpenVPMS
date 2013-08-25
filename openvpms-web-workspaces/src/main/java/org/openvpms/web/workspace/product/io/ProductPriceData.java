@@ -20,32 +20,63 @@ import org.openvpms.archetype.rules.product.io.PriceData;
 import org.openvpms.archetype.rules.product.io.ProductData;
 
 /**
- * Enter description.
+ * Product price data.
  *
  * @author Tim Anderson
  */
-public class ProductPriceData {
+class ProductPriceData {
 
+    /**
+     * The product.
+     */
     private final ProductData product;
 
+    /**
+     * The fixed price. May be {@code null}
+     */
     private final PriceData fixedPrice;
 
+    /**
+     * The unit price. May be {@code null}
+     */
     private final PriceData unitPrice;
 
+    /**
+     * Constructs an {@link ProductPriceData}.
+     *
+     * @param product    the product
+     * @param fixedPrice the fixed price. May be {@code null}
+     * @param unitPrice  the unit price. May be {@code null}
+     */
     public ProductPriceData(ProductData product, PriceData fixedPrice, PriceData unitPrice) {
         this.product = product;
         this.fixedPrice = fixedPrice;
         this.unitPrice = unitPrice;
     }
 
+    /**
+     * Returns the product.
+     *
+     * @return the product
+     */
     public ProductData getProduct() {
         return product;
     }
 
+    /**
+     * Returns the fixed price.
+     *
+     * @return the fixed price. May be {@code null}
+     */
     public PriceData getFixedPrice() {
         return fixedPrice;
     }
 
+    /**
+     * Returns the unit price.
+     *
+     * @return the unit price. May be {@code null}
+     */
     public PriceData getUnitPrice() {
         return unitPrice;
     }

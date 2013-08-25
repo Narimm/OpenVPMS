@@ -37,7 +37,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Enter description.
+ * Product import dialog.
  *
  * @author Tim Anderson
  */
@@ -59,7 +59,7 @@ public class ProductImportDialog extends PopupDialog {
     private static final class PagedProductDataTableModel extends PagedIMTableModel<ProductData, ProductPriceData> {
 
         /**
-         * Constructs a <tt>PagedProductDataTableModel</tt>.
+         * Constructs a {@code PagedProductDataTableModel}.
          */
         public PagedProductDataTableModel() {
             super(new ProductPriceDataModel());
@@ -180,10 +180,8 @@ public class ProductImportDialog extends PopupDialog {
          * Returns the sort criteria.
          *
          * @param column    the primary sort column
-         * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-         *                  sort in <tt>descending</tt> order
-         * @return the sort criteria, or <tt>null</tt> if the column isn't
-         *         sortable
+         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+         * @return the sort criteria, or {@code null} if the column isn't sortable
          */
         @Override
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
