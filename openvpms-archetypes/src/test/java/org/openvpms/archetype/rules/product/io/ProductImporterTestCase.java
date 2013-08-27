@@ -16,27 +16,21 @@
 
 package org.openvpms.archetype.rules.product.io;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
 import static org.openvpms.archetype.test.TestHelper.getDate;
@@ -46,18 +40,13 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  *
  * @author Tim Anderson
  */
-public class ProductImporterTestCase extends ArchetypeServiceTest {
+public class ProductImporterTestCase extends AbstractProductIOTest {
 
     /**
      * The lookup service.
      */
     @Autowired
     private ILookupService lookups;
-
-    /**
-     * The price rules.
-     */
-    private ProductPriceRules rules;
 
     /**
      * The first test product.
@@ -104,12 +93,11 @@ public class ProductImporterTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        rules = new ProductPriceRules(getArchetypeService(), lookups);
-
+        ProductPriceRules rules = new ProductPriceRules(getArchetypeService(), lookups);
         importer = new ProductImporter(getArchetypeService(), rules);
         practice = (Party) create(PracticeArchetypes.PRACTICE);
-        product1 = ProductIOTestHelper.createProduct("Product 1", "P1");
-        product2 = ProductIOTestHelper.createProduct("Product 2", "P2");
+        product1 = createProduct("Product 1", "P1");
+        product2 = createProduct("Product 2", "P2");
 
         fixed1 = createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2013-04-01", true);
         unit1 = createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-04-02");
@@ -171,16 +159,18 @@ public class ProductImporterTestCase extends ArchetypeServiceTest {
         product1 = get(product1);
         assertEquals(2, product1.getProductPrices().size());
 
-        checkPrice(product1, ProductArchetypes.FIXED_PRICE, fixedPrice, fixedCost, markup, fixed.getFrom(),
-                   fixed.getTo());
-        checkPrice(product1, ProductArchetypes.UNIT_PRICE, unitPrice, unitCost, markup, unit.getFrom(), unit.getTo());
+        checkFixedPrice(product1, fixedPrice, fixedCost, markup, fixed.getFrom(), fixed.getTo());
+        checkUnitPrice(product1, unitPrice, unitCost, markup, unit.getFrom(), unit.getTo());
     }
 
     /**
-     * Verifies that a new price closes modifies the end time of an existing price, to avoid overlaps.
+     * Verifies that a new price closes the end time of an existing price, to avoid overlaps.
      */
     @Test
-    public void testCreateNewUndatedPrice() {
+    public void testCreatePrice() {
+        fixed1.setToDate(null);
+        unit1.setToDate(null);
+        save(product1);
         ProductData data = createProduct(product1);
         BigDecimal fixedPrice = new BigDecimal("2.0");
         BigDecimal fixedCost = new BigDecimal("1.0");
@@ -188,65 +178,18 @@ public class ProductImporterTestCase extends ArchetypeServiceTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         BigDecimal unitCost = new BigDecimal("0.5");
 
-        data.addFixedPrice(fixedPrice, fixedCost, null, null);
-        data.addUnitPrice(unitPrice, unitCost, null, null);
+        data.addFixedPrice(-1, fixedPrice, fixedCost, getDate("2013-06-02"), null, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, getDate("2013-06-03"), null, 1);
 
         importProducts(data);
 
         product1 = get(product1);
         assertEquals(4, product1.getProductPrices().size());
 
-        checkPrice(product1, fixed1);
-        checkPrice(product1, unit1);
-        checkPrice(product1, ProductArchetypes.FIXED_PRICE, fixedPrice, fixedCost, markup, getDate("2013-04-02"), null);
-        checkPrice(product1, ProductArchetypes.UNIT_PRICE, unitPrice, unitCost, markup, getDate("2013-04-03"), null);
-    }
-
-    /**
-     * Verifies that a product contains the expected price.
-     *
-     * @param product  the product
-     * @param expected the expected price
-     */
-    private void checkPrice(Product product, ProductPrice expected) {
-        IMObjectBean bean = new IMObjectBean(expected);
-        BigDecimal expectedPrice = expected.getPrice();
-        BigDecimal expectedCost = bean.getBigDecimal("cost");
-        BigDecimal expectedMarkup = bean.getBigDecimal("markup");
-        Date expectedFrom = expected.getFromDate();
-        Date expectedTo = expected.getToDate();
-
-        String shortName = expected.getArchetypeId().getShortName();
-        checkPrice(product, shortName, expectedPrice, expectedCost, expectedMarkup, expectedFrom, expectedTo);
-    }
-
-    /**
-     * Verifies that a product contains the expected price.
-     *
-     * @param product        the product
-     * @param shortName      the price archetype short name
-     * @param expectedPrice  the expected price
-     * @param expectedCost   the expected cost
-     * @param expectedMarkup the expected markup
-     * @param expectedFrom   the expected price start date
-     * @param expectedTo     the expected price end date
-     */
-    private void checkPrice(Product product, String shortName, BigDecimal expectedPrice, BigDecimal expectedCost,
-                            BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo) {
-        boolean found = false;
-        for (ProductPrice price : product.getProductPrices()) {
-            IMObjectBean priceBean = new IMObjectBean(price);
-            if (price.getArchetypeId().getShortName().equals(shortName)
-                && price.getPrice().compareTo(expectedPrice) == 0
-                && priceBean.getBigDecimal("cost").compareTo(expectedCost) == 0
-                && priceBean.getBigDecimal("markup").compareTo(expectedMarkup) == 0
-                && ObjectUtils.equals(expectedFrom, price.getFromDate())
-                && ObjectUtils.equals(expectedTo, price.getToDate())) {
-                found = true;
-                break;
-            }
-        }
-        assertTrue("Failed to find price", found);
+        checkPrice(product1, createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2013-06-01", true));
+        checkPrice(product1, createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-06-02"));
+        checkFixedPrice(product1, fixedPrice, fixedCost, markup, getDate("2013-06-02"), null);
+        checkUnitPrice(product1, unitPrice, unitCost, markup, getDate("2013-06-03"), null);
     }
 
     /**
@@ -259,27 +202,5 @@ public class ProductImporterTestCase extends ArchetypeServiceTest {
         importer.run(products, practice);
     }
 
-    /**
-     * Creates a new {@link ProductData} from a {@link Product}.
-     *
-     * @param product the product
-     * @return the corresponding product data
-     */
-    private ProductData createProduct(Product product) {
-        IMObjectBean bean = new IMObjectBean(product);
-        ProductData result = new ProductData(product.getId(), product.getName(), bean.getString("printedName"), 1);
-        result.setReference(product.getObjectReference());
-        for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE)) {
-            IMObjectBean priceBean = new IMObjectBean(price);
-            result.addFixedPrice(price.getPrice(), priceBean.getBigDecimal("cost"), price.getFromDate(),
-                                 price.getToDate());
-        }
-        for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE)) {
-            IMObjectBean priceBean = new IMObjectBean(price);
-            result.addUnitPrice(price.getPrice(), priceBean.getBigDecimal("cost"), price.getFromDate(),
-                                price.getToDate());
-        }
-        return result;
-    }
 
 }

@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.product.io;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -46,9 +47,9 @@ public class ProductCSVWriter implements ProductWriter {
      * The file header.
      */
     public static final String[] HEADER = {
-            "Product Identifier", "Product Name", "Product Printed Name", "Fixed Price", "Fixed Cost",
-            "Fixed Price Start Date", "Fixed Price End Date", "Unit Price", "Unit Cost",
-            "Unit Price Start Date", "Unit Price End Date"};
+            "Product Id", "Product Name", "Product Printed Name", "Fixed Price Id", "Fixed Price", "Fixed Cost",
+            "Fixed Price Start Date", "Fixed Price End Date", "Unit Price Id", "Unit Price", "Unit Cost",
+            "Unit Price Start Date", "Unit Price End Date", "Notes"};
 
     /**
      * The archetype service.
@@ -171,30 +172,40 @@ public class ProductCSVWriter implements ProductWriter {
         for (int i = 0; i < count; ++i) {
             ProductPrice fixedPrice = i < fixedPrices.size() ? fixedPrices.get(i) : null;
             ProductPrice unitPrice = i < unitPrices.size() ? unitPrices.get(i) : null;
+            String fixedId = null;
             String fixed = null;
             String fixedCost = null;
             String fixedStartDate = null;
             String fixedEndDate = null;
+            String notes = null;
             if (fixedPrice != null) {
                 IMObjectBean fixedBean = new IMObjectBean(fixedPrice, service);
+                fixedId = fixedBean.getString("id");
                 fixed = fixedPrice.getPrice().toString();
                 fixedCost = fixedBean.getBigDecimal("cost").toString();
                 fixedStartDate = getDate(fixedPrice.getFromDate());
                 fixedEndDate = getDate(fixedPrice.getToDate());
+                if (!ObjectUtils.equals(fixedPrice.getProduct(), product)) {
+                    notes = new ProductIOException(ProductIOException.ErrorCode.LinkedPrice,
+                                                   fixedPrice.getProduct().getName(),
+                                                   fixedPrice.getProduct().getId()).getMessage();
+                }
             }
+            String unitId = null;
             String unit = null;
             String unitCost = null;
-            String unitStartDate = unitPrice != null ? getDate(unitPrice.getFromDate()) : null;
-            String unitEndDate = unitPrice != null ? getDate(unitPrice.getToDate()) : null;
+            String unitStartDate = null;
+            String unitEndDate = null;
             if (unitPrice != null) {
                 IMObjectBean unitBean = new IMObjectBean(unitPrice, service);
+                unitId = unitBean.getString("id");
                 unit = unitPrice.getPrice().toString();
                 unitCost = unitBean.getBigDecimal("cost").toString();
                 unitStartDate = getDate(unitPrice.getFromDate());
                 unitEndDate = getDate(unitPrice.getToDate());
             }
-            String[] line = {productId, name, printedName, fixed, fixedCost, fixedStartDate, fixedEndDate,
-                             unit, unitCost, unitStartDate, unitEndDate};
+            String[] line = {productId, name, printedName, fixedId, fixed, fixedCost, fixedStartDate, fixedEndDate,
+                             unitId, unit, unitCost, unitStartDate, unitEndDate, notes};
             writer.writeNext(line);
         }
     }

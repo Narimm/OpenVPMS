@@ -60,44 +60,55 @@ public class ProductCSVReader implements ProductReader {
     private static final int PRINTED_NAME = 2;
 
     /**
+     * The product fixed price id.
+     */
+    private static final int FIXED_PRICE_ID = 3;
+
+    /**
      * The product fixed price column.
      */
-    private static final int FIXED_PRICE = 3;
+    private static final int FIXED_PRICE = 4;
 
     /**
      * The product fixed cost column.
      */
-    private static final int FIXED_COST = 4;
+    private static final int FIXED_COST = 5;
 
     /**
      * The product fixed price start date column.
      */
-    private static final int FIXED_PRICE_START_DATE = 5;
+    private static final int FIXED_PRICE_START_DATE = 6;
 
     /**
      * The product fixed price end date column.
      */
-    private static final int FIXED_PRICE_END_DATE = 6;
+    private static final int FIXED_PRICE_END_DATE = 7;
+
+    /**
+     * The product unit price id column.
+     */
+    private static final int UNIT_PRICE_ID = 8;
 
     /**
      * The product unit price column.
      */
-    private static final int UNIT_PRICE = 7;
+    private static final int UNIT_PRICE = 9;
 
     /**
      * The product unit cost column.
      */
-    private static final int UNIT_COST = 8;
+    private static final int UNIT_COST = 10;
 
     /**
      * The product unit price start date column.
      */
-    private static final int UNIT_PRICE_START_DATE = 9;
+    private static final int UNIT_PRICE_START_DATE = 11;
 
     /**
      * The product unit price end date column.
      */
-    private static final int UNIT_PRICE_END_DATE = 10;
+    private static final int UNIT_PRICE_END_DATE = 12;
+
 
     private static final String[] DATE_FORMATS = {
             "yyyy-MM-dd", "yy-MM-dd", "dd/MM/yyyy", "dd/MM/yy"
@@ -139,26 +150,28 @@ public class ProductCSVReader implements ProductReader {
             String[] line;
             ProductData data = null;
             while ((line = reader.readNext()) != null) {
-                long id = getProductId(line, lineNo);
+                long id = getId(line, ID, lineNo, true);
                 String name = getName(line, lineNo);
                 String printedName = line[PRINTED_NAME];
                 if (data == null || id != data.getId()) {
                     data = new ProductData(id, name, printedName, lineNo);
                     result.add(data);
                 }
+                long fixedId = getId(line, FIXED_PRICE_ID, lineNo, false);
                 BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo);
                 BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo);
-                Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo);
-                Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo);
+                Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, true);
+                Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false);
+                long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
                 BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
                 BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
-                Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo);
-                Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo);
+                Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, true);
+                Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false);
                 if (fixedPrice != null) {
-                    data.addFixedPrice(fixedPrice, fixedCost, fixedStartDate, fixedEndDate);
+                    data.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedStartDate, fixedEndDate, lineNo);
                 }
                 if (unitPrice != null) {
-                    data.addUnitPrice(unitPrice, unitCost, unitStartDate, unitEndDate);
+                    data.addUnitPrice(unitId, unitPrice, unitCost, unitStartDate, unitEndDate, lineNo);
                 }
                 ++lineNo;
             }
@@ -169,19 +182,22 @@ public class ProductCSVReader implements ProductReader {
     }
 
     /**
-     * Returns the product identifier at the specified line.
+     * Returns the identifier at the specified line.
      *
-     * @param line   the line
-     * @param lineNo the line no.
-     * @return the product identifier
+     * @param line     the line
+     * @param lineNo   the line no.
+     * @param required if {@code true}, the id is required
+     * @return the identifier, or {@code -1} if it is optional and not present
      */
-    private long getProductId(String[] line, int lineNo) {
-        String value = getRequired(line, ID, lineNo);
+    private long getId(String[] line, int index, int lineNo, boolean required) {
+        String value = (required) ? getRequired(line, index, lineNo) : line[index];
         long result = -1;
-        try {
-            result = Long.valueOf(value);
-        } catch (NumberFormatException exception) {
-            reportInvalid(ProductCSVWriter.HEADER[ID], value, lineNo);
+        if (!StringUtils.isEmpty(value)) {
+            try {
+                result = Long.valueOf(value);
+            } catch (NumberFormatException exception) {
+                reportInvalid(ProductCSVWriter.HEADER[index], value, lineNo);
+            }
         }
         return result;
     }
@@ -224,13 +240,14 @@ public class ProductCSVReader implements ProductReader {
      * Note that this currently doesn't handle formats where the month is first.
      * Either need to scan the data to determine the date format, or specify it upfront. TODO
      *
-     * @param line   the line
-     * @param index  the date column index
-     * @param lineNo the line no.
+     * @param line     the line
+     * @param index    the date column index
+     * @param lineNo   the line no.
+     * @param required if {@code true}, the date is required
      * @return the date, or {@code null} if there is no date
      */
-    private Date getDate(String[] line, int index, int lineNo) {
-        String value = line[index];
+    private Date getDate(String[] line, int index, int lineNo, boolean required) {
+        String value = (required) ? getRequired(line, index, lineNo) : line[index];
         Date result = null;
         try {
             if (!StringUtils.isEmpty(value)) {

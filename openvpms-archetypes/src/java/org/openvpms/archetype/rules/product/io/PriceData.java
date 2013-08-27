@@ -16,6 +16,8 @@
 
 package org.openvpms.archetype.rules.product.io;
 
+import org.apache.commons.lang.ObjectUtils;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -25,6 +27,11 @@ import java.util.Date;
  * @author Tim Anderson
  */
 public class PriceData {
+
+    /**
+     * The price identifier.
+     */
+    private final long id;
 
     /**
      * The price archetype short name.
@@ -52,20 +59,38 @@ public class PriceData {
     private final Date to;
 
     /**
+     * The line that the price was read from.
+     */
+    private final int line;
+
+    /**
      * Constructs a {@link PriceData}.
      *
+     * @param id        the price identifier, or {@code -1} if it is a new price
      * @param shortName the price archetype short name
      * @param price     the price
      * @param cost      the cost price
      * @param from      the price start date. May be {@code null}
      * @param to        the price end date. May be {@code null}
+     * @param line      the line that the price was read from
      */
-    public PriceData(String shortName, BigDecimal price, BigDecimal cost, Date from, Date to) {
+    public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, Date from, Date to, int line) {
+        this.id = id;
         this.shortName = shortName;
         this.price = price;
         this.cost = cost;
         this.from = from;
         this.to = to;
+        this.line = line;
+    }
+
+    /**
+     * Returns the price identifier.
+     *
+     * @return the price id. If {@code -1}, indicates the price is a new price
+     */
+    public long getId() {
+        return id;
     }
 
     /**
@@ -130,4 +155,43 @@ public class PriceData {
     public Date getTo() {
         return to;
     }
+
+    /**
+     * Returns the line that the price was read from.
+     *
+     * @return the line
+     */
+    public int getLine() {
+        return line;
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof PriceData) {
+            PriceData o = (PriceData) obj;
+            return id == o.id && shortName.equals(o.shortName) && price.compareTo(o.price) == 0
+                   && cost.compareTo(o.cost) == 0 && ObjectUtils.equals(from, o.from) && ObjectUtils.equals(to, o.to);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        return (int) id ^ shortName.hashCode() ^ price.hashCode() ^ cost.hashCode();
+    }
+
 }

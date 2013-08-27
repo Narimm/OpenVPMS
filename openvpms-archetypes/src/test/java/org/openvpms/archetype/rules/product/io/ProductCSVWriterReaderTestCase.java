@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -42,7 +41,7 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  *
  * @author Tim Anderson
  */
-public class ProductCSVWriterReaderTestCase extends ArchetypeServiceTest {
+public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
 
     /**
      * The lookup service.
@@ -93,7 +92,7 @@ public class ProductCSVWriterReaderTestCase extends ArchetypeServiceTest {
         rules = new ProductPriceRules(getArchetypeService(), lookups);
         handlers = new DocumentHandlers();
 
-        product = ProductIOTestHelper.createProduct("Product A", "A");
+        product = createProduct("Product A", "A");
         fixed1 = createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2013-04-01", false);
         fixed2 = createFixedPrice("1.08", "0.6", "80", "2013-04-02", "2013-06-01", true);
         unit1 = createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-04-02");

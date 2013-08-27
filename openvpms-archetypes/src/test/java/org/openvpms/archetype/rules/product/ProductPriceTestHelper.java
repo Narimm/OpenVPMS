@@ -17,7 +17,10 @@
 package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
@@ -173,5 +176,39 @@ public class ProductPriceTestHelper {
      */
     public static ProductPrice createUnitPrice(String price, String cost, String markup, String from, String to) {
         return createUnitPrice(new BigDecimal(price), new BigDecimal(cost), new BigDecimal(markup), from, to);
+    }
+
+    /**
+     * Helper to create a price template with the specified prices.
+     *
+     * @param prices the prices
+     * @return a new price template
+     */
+    public static Product createPriceTemplate(ProductPrice... prices) {
+        Product product = (Product) TestHelper.create(ProductArchetypes.PRICE_TEMPLATE);
+        product.setName("XProduct-" + System.currentTimeMillis());
+        for (ProductPrice price : prices) {
+            product.addProductPrice(price);
+        }
+        return product;
+    }
+
+    /**
+     * Helper to add a price template relationship to a product.
+     * <p/>
+     * Both product and price template will be saved.
+     *
+     * @param product       the product
+     * @param priceTemplate the price template
+     * @param from          the from date. May be {@code null}
+     * @param to            the to date. May be {@code null}
+     */
+    public static void addPriceTemplate(Product product, Product priceTemplate, String from, String to) {
+        EntityBean bean = new EntityBean(product);
+        EntityRelationship relationship = bean.addRelationship(ProductArchetypes.PRODUCT_LINK_RELATIONSHIP,
+                                                               priceTemplate);
+        relationship.setActiveStartTime(getDate(from));
+        relationship.setActiveEndTime(getDate(to));
+        TestHelper.save(product, priceTemplate);
     }
 }

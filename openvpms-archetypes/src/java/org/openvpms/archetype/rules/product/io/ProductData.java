@@ -45,7 +45,7 @@ public class ProductData {
     /**
      * The printed name. May be {@code null}
      */
-    private final String printedName;
+    private String printedName;
 
     /**
      * The fixed prices.
@@ -133,27 +133,48 @@ public class ProductData {
     }
 
     /**
+     * Sets the product printed name.
+     *
+     * @param printedName the printed name. May be {@code null}
+     */
+    public void setPrintedName(String printedName) {
+        this.printedName = printedName;
+    }
+
+    public void addPrice(PriceData price) {
+        if (ProductArchetypes.FIXED_PRICE.equals(price.getShortName())) {
+            fixedPrices.add(price);
+        } else {
+            unitPrices.add(price);
+        }
+    }
+
+    /**
      * Adds a fixed price.
      *
+     * @param id    the price identifier, or {@code -1} if it is a new price
      * @param price the price
      * @param cost  the cost price
      * @param from  the price start date. May be {@code null}
      * @param to    the price end date. May be {@code null}
+     * @param line  the line the price was read from
      */
-    public void addFixedPrice(BigDecimal price, BigDecimal cost, Date from, Date to) {
-        fixedPrices.add(new PriceData(ProductArchetypes.FIXED_PRICE, price, cost, from, to));
+    public void addFixedPrice(long id, BigDecimal price, BigDecimal cost, Date from, Date to, int line) {
+        fixedPrices.add(new PriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, from, to, line));
     }
 
     /**
      * Adds a unit price.
      *
+     * @param id    the price identifier, or {@code -1} if it is a new price
      * @param price the price
      * @param cost  the cost price
      * @param from  the price start date. May be {@code null}
      * @param to    the price end date. May be {@code null}
+     * @param line  the line the price was read from
      */
-    public void addUnitPrice(BigDecimal price, BigDecimal cost, Date from, Date to) {
-        unitPrices.add(new PriceData(ProductArchetypes.UNIT_PRICE, price, cost, from, to));
+    public void addUnitPrice(long id, BigDecimal price, BigDecimal cost, Date from, Date to, int line) {
+        unitPrices.add(new PriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, from, to, line));
     }
 
     /**
@@ -204,7 +225,7 @@ public class ProductData {
     /**
      * Sets an error message to indicate that the product is invalid.
      *
-     * @return the error message. May be {@code null}
+     * @param error the error message. May be {@code null}
      */
     public void setError(String error) {
         this.error = error;
@@ -218,4 +239,5 @@ public class ProductData {
     public int getLine() {
         return line;
     }
+
 }
