@@ -160,12 +160,12 @@ public class ProductCSVReader implements ProductReader {
                 long fixedId = getId(line, FIXED_PRICE_ID, lineNo, false);
                 BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo);
                 BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo);
-                Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, true);
+                Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null);
                 Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false);
                 long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
                 BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
                 BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
-                Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, true);
+                Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null);
                 Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false);
                 if (fixedPrice != null) {
                     data.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedStartDate, fixedEndDate, lineNo);
