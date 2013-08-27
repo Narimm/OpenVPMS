@@ -28,7 +28,6 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.InvalidName;
@@ -154,31 +153,12 @@ public class ProductDataFilter {
     private boolean hasPrice(List<ProductPrice> prices, PriceData data) {
         boolean result = false;
         for (ProductPrice price : prices) {
-            if (datesEquals(price.getFromDate(), data.getFrom())
-                && datesEquals(price.getToDate(), data.getTo())
+            if (DateRules.dateEquals(price.getFromDate(), data.getFrom())
+                && DateRules.dateEquals(price.getToDate(), data.getTo())
                 && price.getPrice().compareTo(data.getPrice()) == 0) {
                 result = true;
                 break;
             }
-        }
-        return result;
-    }
-
-    /**
-     * Determines if two dates are equal.
-     * <p/>
-     * This handles nulls and ignores any time component.
-     *
-     * @param date1 the first date. May be {@code null}
-     * @param date2 the second date. May be {@code null}
-     * @return {@code true} if the dates are equal
-     */
-    private boolean datesEquals(Date date1, Date date2) {
-        boolean result;
-        if (date1 == null || date2 == null) {
-            result = (date1 == null && date2 == null);
-        } else {
-            result = DateRules.compareDates(date1, date2) == 0;
         }
         return result;
     }

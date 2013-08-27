@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -112,31 +113,42 @@ public class ProductPriceRules {
 
     /**
      * Returns all prices matching the specified short name.
+     * <p/>
+     * This will examine linked products if {@code shortName} is <em>productPrice.fixedPrice</em>.
      *
      * @param product   the product
      * @param shortName the price short name
      * @return the matching prices, sorted on descending time
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName) {
+        return getProductPrices(product, shortName, true);
+    }
+
+    /**
+     * Returns all prices matching the specified short name.
+     *
+     * @param product       the product
+     * @param shortName     the price short name
+     * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
+     *                      products will be searched
+     * @return the matching prices, sorted on descending time
+     */
+    public List<ProductPrice> getProductPrices(Product product, String shortName, boolean includeLinked) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
         ShortNamePredicate predicate = new ShortNamePredicate(shortName);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
-        if (FIXED_PRICE.equals(shortName)) {
+        if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
-            EntityBean bean = new EntityBean(product, service);
-            if (bean.hasNode("linked")) {
-                for (Entity linked : bean.getNodeTargetEntities("linked")) {
-                    prices = findPrices((Product) linked, predicate);
-                    result.addAll(prices);
-                }
-            }
+            result.addAll(findLinkedPrices(product, predicate, IsActiveRelationship.isActiveNow()));
         }
         return sort(result);
     }
 
     /**
      * Returns all prices matching the specified short name, active at the specified date.
+     * <p/>
+     * This will examine linked products if {@code shortName} is <em>productPrice.fixedPrice</em>.
      *
      * @param product   the product
      * @param shortName the price short name
@@ -144,25 +156,35 @@ public class ProductPriceRules {
      * @return all prices matching the criteria
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, Date date) {
+        return getProductPrices(product, shortName, date, true);
+    }
+
+    /**
+     * Returns all prices matching the specified short name, active at the specified date.
+     *
+     * @param product       the product
+     * @param shortName     the price short name
+     * @param date          the date
+     * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
+     *                      products will be searched
+     * @return all prices matching the criteria
+     */
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, boolean includeLinked) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
         ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
-        if (FIXED_PRICE.equals(shortName)) {
+        if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
-            EntityBean bean = new EntityBean(product, service);
-            if (bean.hasNode("linked")) {
-                for (Entity linked : bean.getNodeTargetEntities("linked", date)) {
-                    prices = findPrices((Product) linked, predicate);
-                    result.addAll(prices);
-                }
-            }
+            result.addAll(findLinkedPrices(product, predicate, isActive(date)));
         }
         return sort(result);
     }
 
     /**
      * Returns all prices matching the specified short name, active between a date range.
+     * <p/>
+     * This will examine linked products if {@code shortName} is <em>productPrice.fixedPrice</em>.
      *
      * @param product   the product
      * @param shortName the price short name
@@ -171,19 +193,29 @@ public class ProductPriceRules {
      * @return the matching prices, sorted on descending time
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to) {
+        return getProductPrices(product, shortName, from, to, true);
+    }
+
+    /**
+     * Returns all prices matching the specified short name, active between a date range.
+     *
+     * @param product       the product
+     * @param shortName     the price short name
+     * @param from          the start of the date range. May be {@code null}
+     * @param to            the end of the date range. May be {@code null}
+     * @param includeLinked if {@code true} and the requested prices are <em>productPrice.fixedPrice</em>, linked
+     *                      products will be searched
+     * @return the matching prices, sorted on descending time
+     */
+    public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to,
+                                               boolean includeLinked) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
         ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to);
         List<ProductPrice> prices = findPrices(product, predicate);
         result.addAll(prices);
-        if (FIXED_PRICE.equals(shortName)) {
+        if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
-            EntityBean bean = new EntityBean(product, service);
-            if (bean.hasNode("linked")) {
-                for (Entity linked : bean.getNodeTargetEntities("linked", isActive(from, to))) {
-                    prices = findPrices((Product) linked, predicate);
-                    result.addAll(prices);
-                }
-            }
+            result.addAll(findLinkedPrices(product, predicate, isActive(from, to)));
         }
         return sort(result);
     }
@@ -437,6 +469,29 @@ public class ProductPriceRules {
             result = Collections.emptyList();
         }
         return result;
+    }
+
+    /**
+     * Adds any prices from linked products active at time determined by the {@code active} predicate.
+     *
+     * @param product the product
+     * @param price   the predicate to select prices
+     * @param active  the predicate to select active linked products
+     */
+    private List<ProductPrice> findLinkedPrices(Product product, Predicate price, Predicate active) {
+        List<ProductPrice> result = null;
+        List<ProductPrice> prices;
+        EntityBean bean = new EntityBean(product, service);
+        if (bean.hasNode("linked")) {
+            for (Entity linked : bean.getNodeTargetEntities("linked", active)) {
+                prices = findPrices((Product) linked, price);
+                if (result == null) {
+                    result = new ArrayList<ProductPrice>();
+                }
+                result.addAll(prices);
+            }
+        }
+        return (result != null) ? result : Collections.<ProductPrice>emptyList();
     }
 
     /**

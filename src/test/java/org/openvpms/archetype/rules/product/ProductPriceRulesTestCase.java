@@ -43,7 +43,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
+import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.addPriceTemplate;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
+import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createPriceTemplate;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
@@ -235,18 +237,11 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
         checkPrice(unit2, UNIT_PRICE, "2010-02-01", product); // unbounded
 
         if (usePriceTemplate) {
-            // verify that linked products are used if there are no matching prices
-            // for the date
-            Product priceTemplate = createPriceTemplate();
-            priceTemplate.addProductPrice(fixed3);
+            // verify that linked products are used if there are no matching prices for the date
+            Product priceTemplate = createPriceTemplate(fixed3);
             priceTemplate.setName("XPriceTemplate");
-            save(priceTemplate);
 
-            EntityBean bean = new EntityBean(product);
-            EntityRelationship relationship = bean.addRelationship(
-                    ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-            relationship.setActiveStartTime(getDate("2008-01-01"));
-            bean.save();
+            addPriceTemplate(product, priceTemplate, "2008-01-01", null);
 
             checkPrice(fixed2, FIXED_PRICE, "2008-02-01", product);
 
@@ -459,15 +454,6 @@ public class ProductPriceRulesTestCase extends ArchetypeServiceTest {
      */
     private Product createService() {
         return createProduct(ProductArchetypes.SERVICE);
-    }
-
-    /**
-     * Helper to create a new price template product.
-     *
-     * @return a new price template product
-     */
-    private Product createPriceTemplate() {
-        return createProduct(ProductArchetypes.PRICE_TEMPLATE);
     }
 
     /**

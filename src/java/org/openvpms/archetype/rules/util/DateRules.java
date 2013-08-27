@@ -257,4 +257,22 @@ public class DateRules {
         return getDate(date).compareTo(getToday());
     }
 
+    /**
+     * Determines if two dates are equal.
+     * <p/>
+     * This handles nulls and ignores any time component.
+     *
+     * @param date1 the first date. May be {@code null}
+     * @param date2 the second date. May be {@code null}
+     * @return {@code true} if the dates are equal
+     */
+    public static boolean dateEquals(Date date1, Date date2) {
+        boolean result;
+        if (date1 == null || date2 == null) {
+            result = (date1 == null && date2 == null);
+        } else {
+            result = compareDates(date1, date2) == 0;
+        }
+        return result;
+    }
 }
