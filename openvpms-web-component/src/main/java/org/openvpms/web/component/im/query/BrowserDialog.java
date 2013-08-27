@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -23,10 +23,11 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 
 
 /**
@@ -55,7 +56,7 @@ public class BrowserDialog<T> extends PopupDialog {
     /**
      * The browser.
      */
-    private final Browser<T> browser;
+    private Browser<T> browser;
 
     /**
      * Determines if the dialog should close on selection.
@@ -115,20 +116,24 @@ public class BrowserDialog<T> extends PopupDialog {
      */
     public BrowserDialog(String title, String message, String[] buttons,
                          Browser<T> browser, boolean addNew, HelpContext help) {
-        super(title, STYLE, buttons, help, browser.getFocusGroup());
-        setModal(true);
+        this(title, buttons, addNew, help);
+        init(browser, message);
+    }
 
-        Component component = browser.getComponent();
-        if (message != null) {
-            Label label = LabelFactory.create(null, "bold");
-            label.setText(message);
-            Row inset = RowFactory.create("Inset", label);
-            Column column = ColumnFactory.create("CellSpacing", inset,
-                                                 component);
-            getLayout().add(column);
-        } else {
-            getLayout().add(component);
-        }
+    /**
+     * Constructs a {@link BrowserDialog}.
+     * <p/>
+     * Subclasses may use this constructor to lazily initialise the browser. They can invoke {@link #init} to
+     * initialise it after construction.
+     *
+     * @param title   the dialog title
+     * @param buttons the buttons to display
+     * @param addNew  if {@code true} add a 'new' button
+     * @param help    the help context
+     */
+    protected BrowserDialog(String title, String[] buttons, boolean addNew, HelpContext help) {
+        super(title, STYLE, buttons, help);
+        setModal(true);
 
         if (addNew) {
             addButton(NEW_ID, new ActionListener() {
@@ -137,19 +142,6 @@ public class BrowserDialog<T> extends PopupDialog {
                 }
             });
         }
-        browser.addBrowserListener(new BrowserListener<T>() {
-            public void query() {
-            }
-
-            public void selected(T object) {
-                onSelected(object);
-            }
-
-            public void browsed(T object) {
-                onBrowsed(object);
-            }
-        });
-        this.browser = browser;
     }
 
     /**
@@ -198,6 +190,42 @@ public class BrowserDialog<T> extends PopupDialog {
      */
     public boolean createNew() {
         return createNew;
+    }
+
+    /**
+     * Initialise the dialog.
+     * <p/>
+     * This method may only be invoked once.
+     *
+     * @param browser the browser
+     * @param message the dialog message. May be {@code null}
+     */
+    protected void init(Browser<T> browser, String message) {
+        Component component = browser.getComponent();
+        if (message != null) {
+            Label label = LabelFactory.create(null, Styles.BOLD);
+            label.setText(message);
+            Row inset = RowFactory.create(Styles.INSET, label);
+            Column column = ColumnFactory.create(Styles.CELL_SPACING, inset, component);
+            getLayout().add(column);
+        } else {
+            getLayout().add(component);
+        }
+
+        browser.addBrowserListener(new BrowserListener<T>() {
+            public void query() {
+            }
+
+            public void selected(T object) {
+                onSelected(object);
+            }
+
+            public void browsed(T object) {
+                onBrowsed(object);
+            }
+        });
+        getFocusGroup().add(0, browser.getFocusGroup());
+        this.browser = browser;
     }
 
     /**

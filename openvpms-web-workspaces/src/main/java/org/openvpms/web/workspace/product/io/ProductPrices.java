@@ -16,39 +16,39 @@
 
 package org.openvpms.web.workspace.product.io;
 
-import org.openvpms.archetype.rules.product.io.PriceData;
-import org.openvpms.archetype.rules.product.io.ProductData;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 
 /**
- * Product price data.
+ * Links a product with an optional fixed and unit price.
  *
  * @author Tim Anderson
  */
-class ProductPriceData {
+class ProductPrices {
 
     /**
      * The product.
      */
-    private final ProductData product;
+    private final Product product;
 
     /**
      * The fixed price. May be {@code null}
      */
-    private final PriceData fixedPrice;
+    private final ProductPrice fixedPrice;
 
     /**
      * The unit price. May be {@code null}
      */
-    private final PriceData unitPrice;
+    private final ProductPrice unitPrice;
 
     /**
-     * Constructs a {@link ProductPriceData}.
+     * Constructs a {@link ProductPrices}.
      *
      * @param product    the product
      * @param fixedPrice the fixed price. May be {@code null}
      * @param unitPrice  the unit price. May be {@code null}
      */
-    public ProductPriceData(ProductData product, PriceData fixedPrice, PriceData unitPrice) {
+    public ProductPrices(Product product, ProductPrice fixedPrice, ProductPrice unitPrice) {
         this.product = product;
         this.fixedPrice = fixedPrice;
         this.unitPrice = unitPrice;
@@ -59,7 +59,7 @@ class ProductPriceData {
      *
      * @return the product
      */
-    public ProductData getProduct() {
+    public Product getProduct() {
         return product;
     }
 
@@ -68,7 +68,7 @@ class ProductPriceData {
      *
      * @return the fixed price. May be {@code null}
      */
-    public PriceData getFixedPrice() {
+    public ProductPrice getFixedPrice() {
         return fixedPrice;
     }
 
@@ -77,7 +77,8 @@ class ProductPriceData {
      *
      * @return the unit price. May be {@code null}
      */
-    public PriceData getUnitPrice() {
+    public ProductPrice getUnitPrice() {
         return unitPrice;
     }
+
 }

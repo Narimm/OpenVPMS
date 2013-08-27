@@ -66,7 +66,7 @@ public class ProductImportDialog extends PopupDialog {
         }
 
         /**
-         * Converts to the delegate type. This implementation does a simple cast.
+         * Converts to the delegate type.
          *
          * @param list the list to convert
          * @return the converted list

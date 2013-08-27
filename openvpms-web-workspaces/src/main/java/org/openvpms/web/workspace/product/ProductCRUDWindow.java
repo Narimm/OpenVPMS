@@ -191,8 +191,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
 
     private void onExport() {
         HelpContext help = getHelpContext();
-        ProductExportDialog dialog = new ProductExportDialog(Messages.get("product.io.export.title"),
-                                                             createLayoutContext(help), help);
+        ProductExportDialog dialog = new ProductExportDialog(createLayoutContext(help), help);
         dialog.show();
     }
 
