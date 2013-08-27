@@ -57,7 +57,7 @@ public class ProductExportQuery extends ProductQuery {
      * Determines the prices to export.
      */
     public enum Prices {
-        LATEST, ALL, RANGE
+        CURRENT, ALL, RANGE
     }
 
     /**
@@ -73,7 +73,7 @@ public class ProductExportQuery extends ProductQuery {
     /**
      * The prices to export.
      */
-    private Prices prices = Prices.LATEST;
+    private Prices prices = Prices.CURRENT;
 
     /**
      * The archetype short names to query.
@@ -85,12 +85,12 @@ public class ProductExportQuery extends ProductQuery {
     /**
      * The prices.
      */
-    private static final Prices[] PRICES = {Prices.LATEST, Prices.ALL, Prices.RANGE};
+    private static final Prices[] PRICES = {Prices.CURRENT, Prices.ALL, Prices.RANGE};
 
     /**
      * The labels used in the price selector. The order corresponds to {@link #PRICES}.
      */
-    private final String[] PRICE_LABELS = {Messages.get("product.io.prices.latest"),
+    private final String[] PRICE_LABELS = {Messages.get("product.io.prices.current"),
                                            Messages.get("product.io.prices.all"),
                                            Messages.get("product.io.prices.range")};
 
