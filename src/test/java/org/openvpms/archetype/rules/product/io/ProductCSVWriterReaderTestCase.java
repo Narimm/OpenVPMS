@@ -171,6 +171,52 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     }
 
     /**
+     * Tests writing a product that contains just unit prices.
+     */
+    @Test
+    public void testWriteUnitPrices() {
+        product.removeProductPrice(fixed1);
+        product.removeProductPrice(fixed2);
+        save(product);
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
+        Document document = writer.write(Arrays.asList(product).iterator(), false);
+
+        ProductCSVReader reader = new ProductCSVReader(handlers);
+        List<ProductData> products = reader.read(document);
+        assertEquals(1, products.size());
+
+        ProductData data = products.get(0);
+        checkProduct(data, product);
+        assertEquals(0, data.getFixedPrices().size());
+        assertEquals(2, data.getUnitPrices().size());
+        checkPrice(data.getUnitPrices().get(0), unit2);
+        checkPrice(data.getUnitPrices().get(1), unit1);
+    }
+
+    /**
+     * Tests writing a product that contains just fixed  prices.
+     */
+    @Test
+    public void testWriteFixedPrices() {
+        product.removeProductPrice(unit1);
+        product.removeProductPrice(unit2);
+        save(product);
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
+        Document document = writer.write(Arrays.asList(product).iterator(), false);
+
+        ProductCSVReader reader = new ProductCSVReader(handlers);
+        List<ProductData> products = reader.read(document);
+        assertEquals(1, products.size());
+
+        ProductData data = products.get(0);
+        checkProduct(data, product);
+        assertEquals(2, data.getFixedPrices().size());
+        assertEquals(0, data.getUnitPrices().size());
+        checkPrice(data.getFixedPrices().get(0), fixed2);
+        checkPrice(data.getFixedPrices().get(1), fixed1);
+    }
+
+    /**
      * Verifies a product matches that expected.
      *
      * @param data     the product data
