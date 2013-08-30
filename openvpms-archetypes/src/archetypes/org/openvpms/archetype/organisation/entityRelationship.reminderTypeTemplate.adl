@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="entityRelationship.reminderTypeTemplate.1.0"
                latest="true"
@@ -21,10 +22,10 @@
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
-              derivedValue="concat('Reminder Type Template', '')"/>
+              derivedValue="'Reminder Type Template'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat('Reminder Count: ',/details/reminderCount,', Overdue Interval: ',/details/interval, ' ',/details/units)"/>
+              derivedValue="concat('Reminder Count: ',/details/reminderCount,', Overdue Interval: ',/details/interval, ' ',openvpms:lookup(., 'units'))"/>
         <node name="activeStartTime" path="/activeStartTime"
               type="java.util.Date" minCardinality="1"
               hidden="true" defaultValue="java.util.Date.new()"/>
