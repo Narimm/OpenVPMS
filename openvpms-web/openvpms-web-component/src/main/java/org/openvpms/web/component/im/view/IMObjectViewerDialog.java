@@ -70,16 +70,14 @@ public class IMObjectViewerDialog extends PopupDialog {
 
 
     /**
-     * Constructs an {@code IMObjectViewerDialog}.
+     * Constructs an {@link IMObjectViewerDialog}.
      *
      * @param viewer  the viewer to display. May be {@code null}
      * @param context the context
      * @param help    the help context
      */
     public IMObjectViewerDialog(IMObjectViewer viewer, Context context, HelpContext help) {
-        super(null, STYLE, BUTTONS, help);
-        this.context = context;
-        setModal(true);
+        this(context, help);
         if (viewer != null) {
             setViewer(viewer);
         } else {
@@ -88,21 +86,32 @@ public class IMObjectViewerDialog extends PopupDialog {
     }
 
     /**
-     * Constructs an {@code IMObjectViewerDialog}.
+     * Constructs an {@link IMObjectViewerDialog}.
      *
      * @param object  the object to display. May be {@code null}
      * @param context the context
      * @param help    the help context
      */
     public IMObjectViewerDialog(IMObject object, Context context, HelpContext help) {
-        super(null, STYLE, BUTTONS, help);
-        this.context = context;
-        setModal(true);
+        this(context, help);
         if (object != null) {
             setObject(object);
         } else {
             enableButtons();
         }
+    }
+
+    /**
+     * Constructs an {@link IMObjectViewerDialog}.
+     *
+     * @param context the context
+     * @param help    the help context
+     */
+    private IMObjectViewerDialog(Context context, HelpContext help) {
+        super(null, STYLE, BUTTONS, help);
+        this.context = context;
+        setModal(true);
+        setDefaultCloseAction(CANCEL_ID);
     }
 
     /**
