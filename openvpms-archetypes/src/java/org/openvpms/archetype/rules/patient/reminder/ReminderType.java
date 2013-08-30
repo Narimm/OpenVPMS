@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -25,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -36,10 +33,9 @@ import java.util.List;
 
 
 /**
- * Wrapper around an <em>entity.reminderType</tt>.
+ * Wrapper around an <em>entity.reminderType}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReminderType {
 
@@ -88,17 +84,9 @@ public class ReminderType {
      */
     private final boolean interactive;
 
-    /**
-     * Constructs a <tt>ReminderType</tt>.
-     *
-     * @param reminderType the <em>entity.reminderType</em>
-     */
-    public ReminderType(Entity reminderType) {
-        this(reminderType, ArchetypeServiceHelper.getArchetypeService());
-    }
 
     /**
-     * Creates a new <tt>ReminderType</tt>.
+     * Constructs a {@link ReminderType}.
      *
      * @param reminderType the <em>entity.reminderType</em>
      * @param service      the archetype service
@@ -112,7 +100,10 @@ public class ReminderType {
         templates = new ArrayList<Template>();
         for (EntityRelationship template
                 : bean.getValues("templates", EntityRelationship.class)) {
-            templates.add(new Template(template, service));
+            Entity documentTemplate = template.getTarget() != null ? (Entity) service.get(template.getTarget()) : null;
+            if (documentTemplate != null && documentTemplate.isActive()) {
+                templates.add(new Template(template, documentTemplate, service));
+            }
         }
         canGroup = bean.getBoolean("group");
         groups = bean.getValues("groups", Lookup.class);
@@ -141,7 +132,7 @@ public class ReminderType {
     /**
      * Determines if the reminder type is active or inactive.
      *
-     * @return <tt>true</tt> if the remidner type is active, <tt>false</tt> if
+     * @return {@code true} if the remidner type is active, {@code false} if
      *         it is inactive
      */
     public boolean isActive() {
@@ -172,12 +163,12 @@ public class ReminderType {
      * Determines if a reminder needs to be cancelled, based on its due date
      * and the specified date. Reminders should be cancelled if:
      * <p/>
-     * <tt>dueDate + (cancelInterval * cancelUnits) &lt;= date</tt>
+     * {@code dueDate + (cancelInterval * cancelUnits) &lt;= date}
      *
      * @param dueDate the due date
      * @param date    the date
-     * @return <tt>true</tt> if the reminder needs to be cancelled,
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if the reminder needs to be cancelled,
+     *         otherwise {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean shouldCancel(Date dueDate, Date date) {
@@ -225,7 +216,7 @@ public class ReminderType {
      * Returns the template relationship for a particular reminder count.
      *
      * @param reminderCount the reminder count
-     * @return the template relationship or <tt>null</tt> if none is found
+     * @return the template relationship or {@code null} if none is found
      */
     public EntityRelationship getTemplateRelationship(int reminderCount) {
         Template template = getTemplate(reminderCount);
@@ -233,11 +224,22 @@ public class ReminderType {
     }
 
     /**
+     * Returns the document template for a particular reminder count.
+     *
+     * @param reminderCount the reminder count
+     * @return the document template, or {@code null} if none is found
+     */
+    public Entity getDocumentTemplate(int reminderCount) {
+        Template template = getTemplate(reminderCount);
+        return (template != null) ? template.getDocumentTemplate() : null;
+    }
+
+    /**
      * Calculates the next due date for a reminder.
      *
      * @param dueDate       the due date
      * @param reminderCount the no. of times a reminder has been sent
-     * @return the next due date for the reminder, or <tt>null</tt> if the reminder has no next due date
+     * @return the next due date for the reminder, or {@code null} if the reminder has no next due date
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Date getNextDueDate(Date dueDate, int reminderCount) {
@@ -256,9 +258,9 @@ public class ReminderType {
      *
      * @param dueDate       the reminder's due date
      * @param reminderCount the no. of times the reminder has been sent
-     * @param from          the 'from' due date. May be <tt>null</tt>
-     * @param to            the 'to' due date. May be <tt>null</tt>
-     * @return <tt>true</tt> if the reminder is due, otherwise <tt>false</tt>
+     * @param from          the 'from' due date. May be {@code null}
+     * @param to            the 'to' due date. May be {@code null}
+     * @return {@code true} if the reminder is due, otherwise {@code false}
      */
     public boolean isDue(Date dueDate, int reminderCount, Date from, Date to) {
         Template template = getTemplate(reminderCount);
@@ -284,7 +286,7 @@ public class ReminderType {
     /**
      * Determines if the reminder can be grouped with other reminders in a single report.
      *
-     * @return <tt>true</tt> if the reminder can be grouped, otherwise <tt>false</tt>
+     * @return {@code true} if the reminder can be grouped, otherwise {@code false}
      */
     public boolean canGroup() {
         return canGroup;
@@ -302,7 +304,7 @@ public class ReminderType {
     /**
      * Determines if the reminder is interactive.
      *
-     * @return <tt>true</tt> if the reminder is interactive, otherwise <tt>false</tt>
+     * @return {@code true} if the reminder is interactive, otherwise {@code false}
      */
     public boolean isInteractive() {
         return interactive;
@@ -312,7 +314,7 @@ public class ReminderType {
      * Returns the template for a reminder count
      *
      * @param reminderCount the reminder count
-     * @return the template relationship or <tt>null</tt> if none is found
+     * @return the template relationship or {@code null} if none is found
      */
     private Template getTemplate(int reminderCount) {
         for (Template template : templates) {
@@ -337,13 +339,13 @@ public class ReminderType {
     }
 
     /**
-     * Wrapper around an <tt>entityRelationship.reminderTypeTemplate</tt> to
+     * Wrapper around an {@code entityRelationship.reminderTypeTemplate} to
      * improve performance.
      */
     private static class Template {
 
         /**
-         * The <tt>entityRelationship.reminderTypeTemplate</tt>.
+         * The {@code entityRelationship.reminderTypeTemplate}.
          */
         private final EntityRelationship relationship;
 
@@ -363,27 +365,41 @@ public class ReminderType {
         private final DateUnits units;
 
         /**
-         * Creates a new <tt>Template</tt>.
+         * The entity.documentTemplate.
+         */
+        private final Entity documentTemplate;
+
+        /**
+         * Creates a new {@code Template}.
          *
          * @param relationship the relationship
          * @param service      the archetype service
          */
-        public Template(EntityRelationship relationship,
-                        IArchetypeService service) {
+        public Template(EntityRelationship relationship, Entity documentTemplate, IArchetypeService service) {
             IMObjectBean templateBean = new IMObjectBean(relationship, service);
             reminderCount = templateBean.getInt("reminderCount");
             interval = templateBean.getInt("interval");
             units = getDateUnits(templateBean, "units", DateUnits.DAYS);
             this.relationship = relationship;
+            this.documentTemplate = documentTemplate;
         }
 
         /**
-         * Returns the <tt>entityRelationship.reminderTypeTemplate</tt>.
+         * Returns the {@code entityRelationship.reminderTypeTemplate}.
          *
-         * @return the <tt>entityRelationship.reminderTypeTemplate</tt>
+         * @return the {@code entityRelationship.reminderTypeTemplate}
          */
         public EntityRelationship getRelationship() {
             return relationship;
+        }
+
+        /**
+         * Returns the <em>entity.documentTemplate</em>.
+         *
+         * @return the <em>entity.documentTemplate</em>
+         */
+        public Entity getDocumentTemplate() {
+            return documentTemplate;
         }
 
         /**
