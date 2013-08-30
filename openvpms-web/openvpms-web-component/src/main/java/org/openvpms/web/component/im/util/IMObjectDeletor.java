@@ -1,26 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
 
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -28,11 +26,11 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -52,7 +50,7 @@ public abstract class IMObjectDeletor {
     private final Context context;
 
     /**
-     * Constructs an {@code IMObjectDeletor}.
+     * Constructs an {@link IMObjectDeletor}.
      *
      * @param context the context
      */
@@ -77,14 +75,12 @@ public abstract class IMObjectDeletor {
                 } else {
                     participations = "participation.*";
                 }
-                if (hasParticipations(entity, participations)) {
+                if (hasParticipations(entity, participations) || hasRelationships(entity)) {
                     if (object.isActive()) {
                         deactivate(object, listener, help);
                     } else {
                         deactivated(object, help);
                     }
-                } else if (hasRelationships(entity)) {
-                    removeWithRelationships(object, listener, help);
                 } else {
                     remove(object, listener, help);
                 }
@@ -105,16 +101,6 @@ public abstract class IMObjectDeletor {
      */
     protected abstract <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener,
                                                         HelpContext help);
-
-    /**
-     * Invoked to remove an object that has {@link EntityRelationship}s to other objects.
-     *
-     * @param object   the object to remove
-     * @param listener the listener to notify
-     * @param help     the help context
-     */
-    protected abstract <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener,
-                                                                         HelpContext help);
 
     /**
      * Invoked to deactivate an object.
@@ -205,26 +191,20 @@ public abstract class IMObjectDeletor {
     }
 
     /**
-     * Determines if an entity has any relationships where it is the source
+     * Determines if an entity has any relationships where it is the source.
      *
      * @param entity the entity
-     * @return {@code true} if the entity has relationships where it is the source, ortherwise {@code false}
+     * @return {@code true} if the entity has relationships where it is the source, otherwise {@code false}
      */
     protected boolean hasRelationships(Entity entity) {
-        IMObjectReference ref = entity.getObjectReference();
-        for (EntityRelationship r : entity.getEntityRelationships()) {
-            if (r.getSource() != null && r.getSource().equals(ref)) {
-                return true;
-            }
-        }
-        return false;
+        return !entity.getSourceEntityRelationships().isEmpty();
     }
 
     /**
      * Deletion listener that ensures type parameters aren't violated.
      */
     private static class DeletionListenerAdapter<T extends IMObject>
-        implements IMObjectDeletionListener<IMObject> {
+            implements IMObjectDeletionListener<IMObject> {
 
         /**
          * The object to pass to the listener.

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -24,7 +24,6 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -75,7 +74,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         deletor.delete(customer, help, listener);
 
         // verify the customer has been deactivated rather than deleted
-        checkDeletor(deletor, false, false, true, false);
+        checkDeletor(deletor, false, true, false);
         checkListener(listener, false);
 
         customer = get(customer);
@@ -86,13 +85,12 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         deletor = new TestDeletor();
         listener = new TestListener();
         deletor.delete(customer, help, listener);
-        checkDeletor(deletor, false, false, false, true);
+        checkDeletor(deletor, false, false, true);
         checkListener(listener, false);
     }
 
     /**
-     * Verifies that attempting to delete an entity which is the source of a relationship
-     * invokes {@link IMObjectDeletor#removeWithRelationships}, and performs the removal.
+     * Verifies that attempting to delete an entity which is the source of a relationship deactivates it instead.
      */
     @Test
     public void testDeleteSourceWithEntityRelationships() {
@@ -103,11 +101,13 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         TestListener listener = new TestListener();
         deletor.delete(customer, help, listener);
 
-        // verify the customer has been deleted
-        checkDeletor(deletor, false, true, false, false);
-        checkListener(listener, true);
+        // verify the customer has been deactivated
+        checkDeletor(deletor, false, true, false);
+        checkListener(listener, false);
 
-        assertNull(get(customer));
+        customer = get(customer);
+        assertNotNull(customer);
+        assertFalse(customer.isActive());
         assertNotNull(get(pet));
     }
 
@@ -125,7 +125,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         deletor.delete(pet, help, listener);
 
         // verify the customer has been deleted
-        checkDeletor(deletor, true, false, false, false);
+        checkDeletor(deletor, true, false, false);
         checkListener(listener, true);
 
         assertNull(get(pet));
@@ -146,7 +146,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         deletor.delete(template, help, listener);
 
         // verify the template has been deleted
-        checkDeletor(deletor, true, false, false, false);
+        checkDeletor(deletor, true, false, false);
         checkListener(listener, true);
 
         assertNull(get(template));
@@ -172,7 +172,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         deletor.delete(template, help, listener);
 
         // verify the template has been deactivated
-        checkDeletor(deletor, false, false, true, false);
+        checkDeletor(deletor, false, true, false);
         checkListener(listener, false);
 
         template = get(template);
@@ -183,23 +183,21 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         deletor = new TestDeletor();
         listener = new TestListener();
         deletor.delete(template, help, listener);
-        checkDeletor(deletor, false, false, false, true);
+        checkDeletor(deletor, false, false, true);
         checkListener(listener, false);
     }
 
     /**
      * Verifies that the appropriate deletor methods have been invoked.
      *
-     * @param deletor                 the deletor to check
-     * @param remove                  if <tt>true</tt> expect remove() to have been invoked
-     * @param removeWithRelationships if <tt>true</tt> expect removeWithRelationships() to have been invoked
-     * @param deactivate              if <tt>true</tt> expect deactivate() to have been invoked
-     * @param deactivated             if <tt>true</tt> expect deactivated() to have been invoked
+     * @param deletor     the deletor to check
+     * @param remove      if {@code true} expect remove() to have been invoked
+     * @param deactivate  if {@code true} expect deactivate() to have been invoked
+     * @param deactivated if {@code true} expect deactivated() to have been invoked
      */
-    private void checkDeletor(TestDeletor deletor, boolean remove, boolean removeWithRelationships, boolean deactivate,
+    private void checkDeletor(TestDeletor deletor, boolean remove, boolean deactivate,
                               boolean deactivated) {
         assertEquals(remove, deletor.removeInvoked());
-        assertEquals(removeWithRelationships, deletor.removeWithRelationshipsInvoked());
         assertEquals(deactivate, deletor.deactivateInvoked());
         assertEquals(deactivated, deletor.deactivatedInvoked());
     }
@@ -208,7 +206,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
      * Verifies that the appropriate listener methods have been invoked.
      *
      * @param listener the listener to check
-     * @param deleted  if <tt>true</tt> expect the deleted() method to have been invoked
+     * @param deleted  if {@code true} expect the deleted() method to have been invoked
      */
     private void checkListener(TestListener listener, boolean deleted) {
         assertEquals(deleted, listener.deletedInvoked());
@@ -221,11 +219,6 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
          * Determines if remove() was invoked.
          */
         private boolean remove;
-
-        /**
-         * Determines if removeWithRelationships() has been invoked.
-         */
-        private boolean removeWithRelationships;
 
         /**
          * Determines if deactivate() has been invoked.
@@ -247,25 +240,16 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         /**
          * Determines if remove() has been invoked.
          *
-         * @return <tt>true</tt> if remove() was invoked
+         * @return {@code true} if remove() was invoked
          */
         public boolean removeInvoked() {
             return remove;
         }
 
         /**
-         * Determines if removeWithRelationships() has been invoked.
-         *
-         * @return <tt>true</tt> if removeWithRelationships() was invoked
-         */
-        public boolean removeWithRelationshipsInvoked() {
-            return removeWithRelationships;
-        }
-
-        /**
          * Determines if deactivate() has been invoked.
          *
-         * @return <tt>true</tt> if deactivate() was invoked
+         * @return {@code true} if deactivate() was invoked
          */
         public boolean deactivateInvoked() {
             return deactivate;
@@ -274,7 +258,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         /**
          * Determines if deactivated() has been invoked.
          *
-         * @return <tt>true</tt> if deactivated() was invoked
+         * @return {@code true} if deactivated() was invoked
          */
         public boolean deactivatedInvoked() {
             return deactivated;
@@ -289,19 +273,6 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
          */
         protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
             remove = true;
-            doRemove(object, listener, help);
-        }
-
-        /**
-         * Invoked to remove anobject that has {@link EntityRelationship}s to other objects.
-         *
-         * @param object   the object to remove
-         * @param listener the listener to notify
-         * @param help     the help context
-         */
-        protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener,
-                                                                    HelpContext help) {
-            removeWithRelationships = true;
             doRemove(object, listener, help);
         }
 
@@ -344,7 +315,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         /**
          * Determines if deleted() was invoked.
          *
-         * @return <tt>true</tt> if deleted() was invoked
+         * @return {@code true} if deleted() was invoked
          */
         public boolean deletedInvoked() {
             return deleted;
@@ -353,7 +324,7 @@ public class IMObjectDeletorTestCase extends AbstractAppTest {
         /**
          * Determines if one of the failed*() methods was invoked.
          *
-         * @return <tt>true</tt> if a failed*() method was invoked
+         * @return {@code true} if a failed*() method was invoked
          */
         public boolean failedInvoked() {
             return failed;

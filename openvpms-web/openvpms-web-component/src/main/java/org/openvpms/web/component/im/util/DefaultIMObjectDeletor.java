@@ -16,7 +16,6 @@
 
 package org.openvpms.web.component.im.util;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
@@ -52,19 +51,6 @@ public class DefaultIMObjectDeletor extends IMObjectDeletor {
      */
     protected <T extends IMObject> void remove(T object, IMObjectDeletionListener<T> listener, HelpContext help) {
         confirmDelete(object, listener, "imobject.delete.message", help);
-    }
-
-    /**
-     * Invoked to remove an object that has {@link EntityRelationship}s to other objects.
-     *
-     * @param object   the object to remove
-     * @param listener the listener to notify
-     * @param help     the help context
-     */
-    @Override
-    protected <T extends IMObject> void removeWithRelationships(T object, IMObjectDeletionListener<T> listener,
-                                                                HelpContext help) {
-        confirmDelete(object, listener, "imobject.delete.withrelationships.message", help);
     }
 
     /**
