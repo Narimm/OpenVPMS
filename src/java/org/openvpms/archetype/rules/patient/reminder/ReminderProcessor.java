@@ -32,8 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.openvpms.archetype.rules.patient.reminder.ReminderEvent.Action;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException.ErrorCode.NoReminderType;
@@ -86,11 +84,6 @@ public class ReminderProcessor
     private final ReminderTypeCache reminderTypes;
 
     /**
-     * Template cache.
-     */
-    private final Map<IMObjectReference, Entity> templates = new HashMap<IMObjectReference, Entity>();
-
-    /**
      * Determines if evaluation of patients and customers should occur, even if the reminder must be cancelled or
      * skipped.
      */
@@ -98,7 +91,7 @@ public class ReminderProcessor
 
 
     /**
-     * Constructs a new {@code ReminderProcessor}.
+     * Constructs a {@link ReminderProcessor}.
      *
      * @param from           the 'from' date. May be {@code null}
      * @param to             the 'to' date. Nay be {@code null}
@@ -158,26 +151,26 @@ public class ReminderProcessor
     /**
      * Generates a reminder.
      *
-     * @param reminder     the reminder
-     * @param reminderType the reminder type
-     * @param template     the template. An instance of <em>entityRelationship.reminderTypeTemplate</em>
+     * @param reminder         the reminder
+     * @param reminderType     the reminder type
+     * @param template         the template. An instance of <em>entityRelationship.reminderTypeTemplate</em>
+     * @param documentTemplate the document template. An instance of <em>entity.documentTemplate</em>.
+     *                         May be {@code null}
      * @return the reminder event
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException if the reminder cannot be processed
      */
-    protected ReminderEvent generate(Act reminder, ReminderType reminderType, EntityRelationship template) {
+    protected ReminderEvent generate(Act reminder, ReminderType reminderType, EntityRelationship template,
+                                     Entity documentTemplate) {
         ReminderEvent result;
         Party patient = getPatient(reminder);
         if (patient != null) {
-            Entity documentTemplate = null;
             IMObjectBean templateBean = new IMObjectBean(template, service);
             boolean list = templateBean.getBoolean("list");
             boolean export = templateBean.getBoolean("export");
-            if (!list && !export) {
-                documentTemplate = getTemplate(template.getTarget());
-            }
             if (!list && !export && documentTemplate == null) {
-                // no template, so can't process
+                // no template, so can't process. Strictly speaking this shouldn't happen - a template relationship
+                // should always have a template
                 result = skip(reminder, reminderType, patient);
             } else {
                 Party customer = getCustomer(patient);
@@ -387,7 +380,8 @@ public class ReminderProcessor
             if (ignoreDueDate || reminderType.isDue(dueDate, reminderCount, from, to)) {
                 EntityRelationship template = reminderType.getTemplateRelationship(reminderCount);
                 if (template != null) {
-                    result = generate(reminder, reminderType, template);
+                    result = generate(reminder, reminderType, template,
+                                      reminderType.getDocumentTemplate(reminderCount));
                 } else {
                     // no template, so skip the reminder
                     result = skip(reminder, reminderType, null);
@@ -423,27 +417,6 @@ public class ReminderProcessor
         ReminderEvent event = new ReminderEvent(action, reminder, reminderType, patient, customer, contact, null);
         notifyListeners(event.getAction(), event);
         return event;
-    }
-
-    /**
-     * Returns the template for the specified template reference.
-     *
-     * @param reference the reference. May be {@code null}
-     * @return the corresponding template, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private Entity getTemplate(IMObjectReference reference) {
-        Entity result = null;
-        if (reference != null) {
-            result = templates.get(reference);
-            if (result == null) {
-                result = (Entity) service.get(reference);
-                if (result != null) {
-                    templates.put(reference, result);
-                }
-            }
-        }
-        return result;
     }
 
     /**
