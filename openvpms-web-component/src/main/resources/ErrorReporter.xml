@@ -56,4 +56,7 @@
     <exclude-exception>
         <className>org.openvpms.web.workspace.workflow.otc.OTCException</className>
     </exclude-exception>
+    <exclude-exception>
+        <className>com.mysql.jdbc.PacketTooBigException</className>
+    </exclude-exception>
 </error-reporter-config>

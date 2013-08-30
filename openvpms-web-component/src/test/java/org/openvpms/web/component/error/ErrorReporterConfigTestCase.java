@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.error;
 
@@ -43,8 +41,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link ErrorReporterConfig} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ErrorReporterConfigTestCase {
 
@@ -236,13 +233,32 @@ public class ErrorReporterConfigTestCase {
         Throwable inc1 = new NullPointerException();
         Throwable inc2 = new ReportException(ReportException.ErrorCode.FailedToCreateReport);
         Throwable inc3
-            = new StatementProcessorException(StatementProcessorException.ErrorCode.FailedToProcessStatement);
+                = new StatementProcessorException(StatementProcessorException.ErrorCode.FailedToProcessStatement);
         Throwable inc4 = new ReportException(new JRException(new PrinterException("Some error message.")),
                                              ReportException.ErrorCode.FailedToGenerateReport);
         assertFalse(config.isExcluded(inc1));
         assertFalse(config.isExcluded(inc2));
         assertFalse(config.isExcluded(inc3));
         assertFalse(config.isExcluded(inc4));
+    }
+
+    /**
+     * Verifies that exceptions may be excluded by their root cause.
+     */
+    @Test
+    @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+    public void testIsExcludedByRootCause() {
+        // exclude NullPointerException
+        ExceptionConfig npe = createConfig(NullPointerException.class);
+        ErrorReporterConfig config = new ErrorReporterConfig();
+        config.setExcludes(Arrays.asList(npe));
+
+        Throwable notExcluded = new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToCreateObject);
+        Throwable excluded = new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToCreateObject,
+                                                           new NullPointerException());
+
+        assertFalse(config.isExcluded(notExcluded));
+        assertTrue(config.isExcluded(excluded));
     }
 
     /**

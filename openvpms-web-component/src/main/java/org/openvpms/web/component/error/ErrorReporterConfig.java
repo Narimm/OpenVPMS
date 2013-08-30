@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.error;
 
@@ -31,8 +29,7 @@ import java.util.Map;
 /**
  * Configuration for {@link ErrorReporter}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ErrorReporterConfig {
 
@@ -85,12 +82,19 @@ public class ErrorReporterConfig {
      * Determines if the exception is excluded or not.
      *
      * @param exception the exception to check
-     * @return <tt>true</tt> if the exception is excluded
+     * @return {@code true} if the exception is excluded
      */
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     public boolean isExcluded(Throwable exception) {
         boolean result = false;
         Map<String, ExceptionConfig> map = getExcludesMap();
         ExceptionConfig config = map.get(exception.getClass().getName());
+        if (config == null) {
+            Throwable root = ExceptionHelper.getRootCause(exception);
+            if (root.getClass() != exception.getClass()) {
+                config = map.get(root.getClass().getName());
+            }
+        }
         if (config != null) {
             result = config.isExcluded(exception);
         }
