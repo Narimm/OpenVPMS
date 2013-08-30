@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -29,13 +27,12 @@ import org.openvpms.web.component.app.Context;
  * constrained to only include those patients associated with the current
  * customer.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
 
     /**
-     * Constructs a <tt>PatientQuery</tt> that queries patients instances with the specified short names.
+     * Constructs a {@link PatientQuery} that queries patients instances with the specified short names.
      *
      * @param shortNames the short names
      * @param context    the context
@@ -46,10 +43,10 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
     }
 
     /**
-     * Constructs a <tt>PatientQuery</tt> that queries patients instances with the specified short names.
+     * Constructs a {@code PatientQuery} that queries patients instances with the specified short names.
      *
      * @param shortNames the short names
-     * @param customer   the customer. May be <tt>null</tt>
+     * @param customer   the customer. May be {@code null}
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public PatientQuery(String[] shortNames, Party customer) {
@@ -59,7 +56,7 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
     /**
      * Determines if the 'all patients' checkbox should be displayed.
      *
-     * @param show if <tt>true</tt>, display the 'all patients' checkbox
+     * @param show if {@code true}, display the 'all patients' checkbox
      */
     public void setShowAllPatients(boolean show) {
         ((PatientObjectSetQuery) getQuery()).setShowAllPatients(show);
@@ -68,9 +65,9 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
     /**
      * Determines if all patients should be returned by the query.
      * <p/>
-     * Only applies if {@link #setShowAllPatients} has been invoked i.e. <tt>setShowAllPatients(true)</tt>
+     * Only applies if {@link #setShowAllPatients} has been invoked i.e. {@code setShowAllPatients(true)}
      *
-     * @param all if <tt>true</tt> query all patients, otherwise query patients associated with the customer
+     * @param all if {@code true} query all patients, otherwise query patients associated with the customer
      */
     public void setQueryAllPatients(boolean all) {
         ((PatientObjectSetQuery) getQuery()).setQueryAllPatients(all);
@@ -79,11 +76,20 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
     /**
      * Determines if all patients are being queried.
      *
-     * @return <tt>true</tt> if all patients are being queried, <tt>false</tt> if only those patient associated with
+     * @return {@code true} if all patients are being queried, {@code false} if only those patient associated with
      *         the customer are being queried
      */
     public boolean isQueryAllPatients() {
         return ((PatientObjectSetQuery) getQuery()).isQueryAllPatients();
+    }
+
+    /**
+     * Determines if patients must be active.
+     *
+     * @param active if {@code true} only query active objects, otherwise query both active and inactive objects
+     */
+    public void setActiveOnly(boolean active) {
+        ((PatientObjectSetQuery) getQuery()).setActiveOnly(active);
     }
 
     /**

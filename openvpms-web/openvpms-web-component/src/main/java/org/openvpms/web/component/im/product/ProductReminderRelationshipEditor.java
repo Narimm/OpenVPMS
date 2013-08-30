@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -27,6 +25,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -34,8 +33,7 @@ import org.openvpms.web.component.property.ModifiableListener;
  * <p/>
  * Defaults the interactive node value to that of the associated <em>entity.reminderType</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ProductReminderRelationshipEditor extends EntityRelationshipEditor {
 
@@ -65,7 +63,7 @@ public class ProductReminderRelationshipEditor extends EntityRelationshipEditor 
         IMObjectReference reference = (IMObjectReference) getTarget().getValue();
         Entity reminderType = (Entity) getObject(reference);
         if (reminderType != null) {
-            ReminderType type = new ReminderType(reminderType);
+            ReminderType type = new ReminderType(reminderType, ServiceHelper.getArchetypeService());
             getProperty("period").setValue(type.getDefaultInterval());
             getProperty("periodUom").setValue(type.getDefaultUnits().toString());
             getProperty("interactive").setValue(type.isInteractive());

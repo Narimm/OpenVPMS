@@ -1,29 +1,29 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.query;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.LocalContext;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -139,6 +139,65 @@ public class PatientQueryTestCase extends AbstractEntityQueryTest<Party> {
         assertTrue(query.selects(pet1));
         assertTrue(query.selects(pet2));
         assertFalse(query.selects(pet3));
+    }
+
+    /**
+     * Tests the behaviour of querying patient by customer when a patient has an inactive owner relationship.
+     */
+    @Test
+    public void testQueryByCustomerWithInactivePatientOwner() {
+        Party customer = TestHelper.createCustomer(false);
+        Party pet1 = TestHelper.createPatient(customer, false);
+        Party pet2 = TestHelper.createPatient(customer, false);
+
+        // mark the pet1 owner relationship inactive
+        EntityRelationship ownerRelationship = pet1.getEntityRelationships().iterator().next();
+        ownerRelationship.setActiveEndTime(new Date(System.currentTimeMillis() - 1000));
+
+        save(customer, pet1, pet2);
+
+        // verify pet1 not returned
+        PatientQuery query = new PatientQuery(SHORT_NAMES, customer);
+
+        List<IMObjectReference> matches = getObjectRefs(query);
+        assertEquals(1, matches.size());
+        checkExists(pet1, query, matches, false);
+        checkExists(pet2, query, matches, true);
+
+        // now include inactive patients
+        query.setActiveOnly(false);
+        matches = getObjectRefs(query);
+        assertEquals(2, matches.size());
+        checkExists(pet1, query, matches, true);
+        checkExists(pet2, query, matches, true);
+    }
+
+    /**
+     * Tests the behaviour of querying patient by customer when a patient is inactive.
+     */
+    @Test
+    public void testQueryByCustomerWithInactivePatient() {
+        Party customer = TestHelper.createCustomer(false);
+        Party pet1 = TestHelper.createPatient(customer, false);
+        Party pet2 = TestHelper.createPatient(customer, false);
+
+        pet1.setActive(false);
+        save(customer, pet1, pet2);
+
+        // verify pet1 not returned
+        PatientQuery query = new PatientQuery(SHORT_NAMES, customer);
+
+        List<IMObjectReference> matches = getObjectRefs(query);
+        assertEquals(1, matches.size());
+        checkExists(pet1, query, matches, false);
+        checkExists(pet2, query, matches, true);
+
+        // now include inactive patients
+        query.setActiveOnly(false);
+        matches = getObjectRefs(query);
+        assertEquals(2, matches.size());
+        checkExists(pet1, query, matches, true);
+        checkExists(pet2, query, matches, true);
     }
 
     /**
