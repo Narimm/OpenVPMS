@@ -321,7 +321,6 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testActGetPatientReferralVetPractice() {
-        Act act = (Act) create("act.customerEstimationItem");
         Party patient = TestHelper.createPatient();
         Party vet = TestHelper.createSupplierVet();
         Party practice = TestHelper.createSupplierVetPractice();
@@ -333,6 +332,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         practiceBean.addNodeRelationship("veterinarians", vet);
         save(patient, vet, practice);
 
+        Act act = (Act) create("act.customerEstimationItem");
         JXPathContext ctx = JXPathHelper.newContext(act);
 
         // verify that if the patient can't be resolved, null is returned
@@ -342,7 +342,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertNull(ctx.getValue("party:getPatientReferralVetPractice(.)"));
         // invokes getPatientReferralVetPractice(Act)
 
-        // add the patient tto the act, and verify the practice can be retrieved
+        // add the patient to the act, and verify the practice can be retrieved
         ActBean actBean = new ActBean(act);
         actBean.addNodeParticipation("patient", patient);
 
