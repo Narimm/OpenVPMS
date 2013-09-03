@@ -18,6 +18,7 @@ package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.collections.Predicate;
 import org.junit.Test;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -48,6 +49,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 
@@ -655,6 +657,22 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         expected2.put(rel3, patient3);
         assertEquals(expected1, bean.getNodeTargetObjects("patients", Party.class, EntityRelationship.class, true));
         assertEquals(expected2, bean.getNodeTargetObjects("patients", Party.class, EntityRelationship.class, false));
+    }
+
+    /**
+     * Verifies that an exception is thrown if the archetype associated with an object cannot be found.
+     */
+    @Test
+    public void testArchetypeNotFound() {
+        IMObject object = new IMObject();
+        object.setArchetypeId(new ArchetypeId("entity.badShortName"));
+        IMObjectBean bean = new IMObjectBean(object);
+        try {
+            bean.getValue("foo");
+            fail("Expected IMObjectBeanException to be thrown");
+        } catch (IMObjectBeanException exception) {
+            assertEquals(ArchetypeNotFound, exception.getErrorCode());
+        }
     }
 
 }

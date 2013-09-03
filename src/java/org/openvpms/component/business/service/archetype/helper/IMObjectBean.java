@@ -50,6 +50,7 @@ import java.util.Set;
 import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
 import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.SOURCE;
 import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.TARGET;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.InvalidClassCast;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 
@@ -84,7 +85,7 @@ public class IMObjectBean {
 
 
     /**
-     * Constructs a new <tt>IMObjectBean</tt>.
+     * Constructs an {@link IMObjectBean}.
      *
      * @param object the object
      */
@@ -93,12 +94,15 @@ public class IMObjectBean {
     }
 
     /**
-     * Constructs a new <tt>IMObjectBean</tt>.
+     * Constructs an {@link IMObjectBean}.
      *
      * @param object  the object
-     * @param service the archetype service. May be <tt>null</tt>
+     * @param service the archetype service. May be {@code null}
      */
     public IMObjectBean(IMObject object, IArchetypeService service) {
+        if (object == null) {
+            throw new IllegalArgumentException("Argument 'object' may not be null");
+        }
         this.object = object;
         this.service = service;
         this.properties = new NodePropertySet();
@@ -126,7 +130,7 @@ public class IMObjectBean {
      * Determines if the object is one of a set of archetypes.
      *
      * @param shortNames the archetype short names. May contain wildcards
-     * @return <tt>true</tt> if the object is one of <tt>shortNames</tt>
+     * @return {@code true} if the object is one of {@code shortNames}
      */
     public boolean isA(String... shortNames) {
         return TypeHelper.isA(object, shortNames);
@@ -136,8 +140,8 @@ public class IMObjectBean {
      * Determines if a node exists.
      *
      * @param name the node name
-     * @return <tt>true</tt> if the node exists, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the node exists, otherwise
+     *         {@code false}
      */
     public boolean hasNode(String name) {
         return (getDescriptor(name) != null);
@@ -147,8 +151,8 @@ public class IMObjectBean {
      * Returns the named node's descriptor.
      *
      * @param name the node name
-     * @return the descriptor corresponding to <tt>name</tt> or
-     *         <tt>null</tt> if none exists.
+     * @return the descriptor corresponding to {@code name} or
+     *         {@code null} if none exists.
      */
     public NodeDescriptor getDescriptor(String name) {
         return getArchetype().getNodeDescriptor(name);
@@ -168,7 +172,7 @@ public class IMObjectBean {
      *
      * @param name the node name
      * @return the node display name
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public String getDisplayName(String name) {
         NodeDescriptor node = getNode(name);
@@ -181,7 +185,7 @@ public class IMObjectBean {
      * @param name the node name
      * @return the archetype range associated with a node, or an empty array if there is none
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the node does't exist
+     * @throws IMObjectBeanException     if the node doesn't exist
      */
     public String[] getArchetypeRange(String name) {
         NodeDescriptor node = getNode(name);
@@ -192,8 +196,8 @@ public class IMObjectBean {
      * Returns the boolean value of a node.
      *
      * @param name the node name
-     * @return the value of the node, or <tt>false</tt> if the node is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @return the value of the node, or {@code false} if the node is null
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public boolean getBoolean(String name) {
         return properties.getBoolean(name);
@@ -204,9 +208,9 @@ public class IMObjectBean {
      *
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
-     * @return the value of the node, or <tt>defaultValue</tt> if it
+     * @return the value of the node, or {@code defaultValue} if it
      *         is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public boolean getBoolean(String name, boolean defaultValue) {
         return properties.getBoolean(name, defaultValue);
@@ -216,8 +220,8 @@ public class IMObjectBean {
      * Returns the integer value of a node.
      *
      * @param name the node name
-     * @return the value of the node, or <tt>0</tt> if the node is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @return the value of the node, or {@code 0} if the node is null
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public int getInt(String name) {
         return properties.getInt(name);
@@ -228,9 +232,9 @@ public class IMObjectBean {
      *
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
-     * @return the value of the node, or <tt>defaultValue</tt> if it
+     * @return the value of the node, or {@code defaultValue} if it
      *         is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public int getInt(String name, int defaultValue) {
         return properties.getInt(name, defaultValue);
@@ -240,8 +244,8 @@ public class IMObjectBean {
      * Returns the long value of a node.
      *
      * @param name the node name
-     * @return the value of the node, or <tt>0</tt> if the node is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @return the value of the node, or {@code 0} if the node is null
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public long getLong(String name) {
         return properties.getLong(name);
@@ -252,9 +256,9 @@ public class IMObjectBean {
      *
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
-     * @return the value of the node, or <tt>defaultValue</tt> if it
+     * @return the value of the node, or {@code defaultValue} if it
      *         is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public long getLong(String name, long defaultValue) {
         return properties.getLong(name, defaultValue);
@@ -265,7 +269,7 @@ public class IMObjectBean {
      *
      * @param name the node name
      * @return the value of the node.
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public String getString(String name) {
         return properties.getString(name);
@@ -276,81 +280,80 @@ public class IMObjectBean {
      *
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
-     * @return the value of the node, or <tt>defaultValue</tt> if it
-     *         is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @return the value of the node, or {@code defaultValue} if it is null
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public String getString(String name, String defaultValue) {
         return properties.getString(name, defaultValue);
     }
 
     /**
-     * Returns the <tt>BigDecimal</tt> value of a node.
+     * Returns the {@code BigDecimal} value of a node.
      *
      * @param name the node name
-     * @return the value of the node. May be <tt>null</tt>
-     * @throws IMObjectBeanException if the node does't exist
+     * @return the value of the node. May be {@code null}
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public BigDecimal getBigDecimal(String name) {
         return properties.getBigDecimal(name);
     }
 
     /**
-     * Returns the <tt>BigDecimal</tt> value of a node.
+     * Returns the {@code BigDecimal} value of a node.
      *
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
-     * @return the value of the node, or <tt>defaultValue</tt> if it
+     * @return the value of the node, or {@code defaultValue} if it
      *         is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public BigDecimal getBigDecimal(String name, BigDecimal defaultValue) {
         return properties.getBigDecimal(name, defaultValue);
     }
 
     /**
-     * Returns the <tt>Money</tt> value of a node.
+     * Returns the {@code Money} value of a node.
      *
      * @param name the node name
-     * @return the value of the node. May be <tt>null</tt>
-     * @throws IMObjectBeanException if the node does't exist
+     * @return the value of the node. May be {@code null}
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public Money getMoney(String name) {
         return properties.getMoney(name);
     }
 
     /**
-     * Returns the <tt>BigDecimal</tt> value of a node.
+     * Returns the {@code BigDecimal} value of a node.
      *
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
-     * @return the value of the node, or <tt>defaultValue</tt> if it
+     * @return the value of the node, or {@code defaultValue} if it
      *         is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public Money getMoney(String name, Money defaultValue) {
         return properties.getMoney(name, defaultValue);
     }
 
     /**
-     * Returns the <tt>Date</tt> value of a node.
+     * Returns the {@code Date} value of a node.
      *
      * @param name the node name
      * @return the value of the node
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public Date getDate(String name) {
         return properties.getDate(name);
     }
 
     /**
-     * Returns the <tt>Date</tt> value of a node.
+     * Returns the {@code Date} value of a node.
      *
      * @param name         the node name
      * @param defaultValue the value to return if the node value is null
-     * @return the value of the node, or <tt>defaultValue</tt> if it
+     * @return the value of the node, or {@code defaultValue} if it
      *         is null
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public Date getDate(String name, Date defaultValue) {
         return properties.getDate(name, defaultValue);
@@ -389,7 +392,7 @@ public class IMObjectBean {
      *
      * @param name the node name
      * @return the value of the node
-     * @throws IMObjectBeanException if the node does't exist
+     * @throws IMObjectBeanException if the node doesn't exist
      */
     public Object getValue(String name) {
         NodeDescriptor node = getNode(name);
@@ -457,7 +460,7 @@ public class IMObjectBean {
      *
      * @param name      the node name
      * @param predicate the predicate
-     * @return the first object matching the predicate, or <tt>null</tt> if none is found
+     * @return the first object matching the predicate, or {@code null} if none is found
      * @throws IMObjectBeanException if the node doesn't exist
      */
     public IMObject getValue(String name, Predicate predicate) {
@@ -474,7 +477,7 @@ public class IMObjectBean {
      * specified relationship node.
      *
      * @param node the relationship node name
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node) {
@@ -486,7 +489,7 @@ public class IMObjectBean {
      *
      * @param node   the relationship node name
      * @param active determines if the relationship and source object must be active
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, boolean active) {
@@ -499,7 +502,7 @@ public class IMObjectBean {
      *
      * @param node      the relationship node name
      * @param predicate the predicate
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, Predicate predicate) {
@@ -512,7 +515,7 @@ public class IMObjectBean {
      * @param node      the relationship node name
      * @param predicate the predicate
      * @param active    determines if the object must be active or not
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeSourceObject(String node, Predicate predicate, boolean active) {
@@ -524,7 +527,7 @@ public class IMObjectBean {
      * specified node.
      *
      * @param node the relationship node name
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node) {
@@ -536,7 +539,7 @@ public class IMObjectBean {
      *
      * @param node   the relationship node
      * @param active determines if the relationship and target object must be active
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, boolean active) {
@@ -549,7 +552,7 @@ public class IMObjectBean {
      *
      * @param node      the relationship node name
      * @param predicate the predicate
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, Predicate predicate) {
@@ -562,7 +565,7 @@ public class IMObjectBean {
      * @param node      the relationship node name
      * @param predicate the predicate
      * @param active    determines if the object must be active or not
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public IMObject getNodeTargetObject(String node, Predicate predicate, boolean active) {
@@ -575,7 +578,7 @@ public class IMObjectBean {
      *
      * @param node the relationship node name
      * @param time the time
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -590,7 +593,7 @@ public class IMObjectBean {
      * @param node   the relationship node
      * @param time   the time
      * @param active determines if the object must be active
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -604,7 +607,7 @@ public class IMObjectBean {
      *
      * @param node the relationship node
      * @param time the time
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -619,7 +622,7 @@ public class IMObjectBean {
      * @param node   the relationship node
      * @param time   the time
      * @param active determines if the object must be active
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -686,7 +689,7 @@ public class IMObjectBean {
      * @param node   the relationship node
      * @param time   the time
      * @param active determines if the objects must be active
-     * @return a list of source objects. May contain inactive objects if <tt>active</tt> is <tt>false</tt>
+     * @return a list of source objects. May contain inactive objects if {@code active} is {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeSourceObjects(String node, Date time, boolean active) {
@@ -701,7 +704,7 @@ public class IMObjectBean {
      * @param time   the time
      * @param active determines if the objects must be active
      * @param type   the object type
-     * @return a list of source objects. May contain inactive objects if <tt>active</tt> is <tt>false</tt>
+     * @return a list of source objects. May contain inactive objects if {@code active} is {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Date time, boolean active, Class<T> type) {
@@ -840,7 +843,7 @@ public class IMObjectBean {
      * @param node   the relationship node
      * @param time   the time
      * @param active determines if the objects must be active
-     * @return a list of target objects. May contain inactive entities if <tt>active</tt> is <tt>false</tt>
+     * @return a list of target objects. May contain inactive entities if {@code active} is {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeTargetObjects(String node, Date time, boolean active) {
@@ -855,7 +858,7 @@ public class IMObjectBean {
      * @param time   the time
      * @param active determines if the objects must be active
      * @param type   the expected object type
-     * @return a list of target objects. May contain inactive entities if <tt>active</tt> is <tt>false</tt>
+     * @return a list of target objects. May contain inactive entities if {@code active} is {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Date time, boolean active, Class<T> type) {
@@ -1114,7 +1117,7 @@ public class IMObjectBean {
      *
      * @param relationships the relationships
      * @param shortName     the relationship short name
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String shortName) {
@@ -1127,7 +1130,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortName     the relationship short name
      * @param active        determines if the relationship and object must be active
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String shortName,
@@ -1141,7 +1144,7 @@ public class IMObjectBean {
      *
      * @param relationships the relationships
      * @param shortNames    the relationship short names
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String[] shortNames) {
@@ -1154,7 +1157,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortNames    the relationship short names
      * @param active        determines if the relationship and source object must be active
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObject getSourceObject(Collection<R> relationships, String[] shortNames,
@@ -1168,7 +1171,7 @@ public class IMObjectBean {
      *
      * @param relationships the relationships
      * @param shortName     the relationship short name
-     * @return the active object, or <tt>null</tt> if none is found
+     * @return the active object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String shortName) {
@@ -1181,7 +1184,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortName     the relationship short name
      * @param active        determines if the relationship and object must be active
-     * @return the object, or <tt>null</tt> if none is found
+     * @return the object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String shortName,
@@ -1195,7 +1198,7 @@ public class IMObjectBean {
      *
      * @param relationships the relationships
      * @param shortNames    the relationship short names
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String[] shortNames) {
@@ -1208,7 +1211,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortNames    the relationship short names
      * @param active        determines if the relationship and target object must be active
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObject getTargetObject(Collection<R> relationships, String[] shortNames,
@@ -1223,7 +1226,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortName     the relationship short name
      * @param time          the time
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1240,7 +1243,7 @@ public class IMObjectBean {
      * @param shortName     the relationship short name
      * @param time          the time
      * @param active        determines if the object must be active
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1256,7 +1259,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortNames    the relationship short names
      * @param time          the time
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1273,7 +1276,7 @@ public class IMObjectBean {
      * @param shortNames    the relationship short names
      * @param time          the time
      * @param active        determines if the object must be active
-     * @return the source object, or <tt>null</tt> if none is found
+     * @return the source object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1289,7 +1292,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortName     the relationship short name
      * @param time          the time
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1307,7 +1310,7 @@ public class IMObjectBean {
      * @param shortName     the relationship short name
      * @param time          the time
      * @param active        determines if the object must be active
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1324,7 +1327,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortNames    the relationship short names
      * @param time          the time
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1341,7 +1344,7 @@ public class IMObjectBean {
      * @param shortNames    the relationship short names
      * @param time          the time
      * @param active        determines if the relationship must be active
-     * @return the target object, or <tt>null</tt> if none is found
+     * @return the target object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1355,7 +1358,7 @@ public class IMObjectBean {
      *
      * @param relationships the relationships
      * @param shortName     the relationship short name
-     * @return the source reference, or <tt>null</tt> if none is found
+     * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObjectReference getSourceObjectRef(Collection<R> relationships,
@@ -1369,7 +1372,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortName     the relationship short name
      * @param active        determines if the relationship must be active
-     * @return the source reference, or <tt>null</tt> if none is found
+     * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObjectReference getSourceObjectRef(Collection<R> relationships,
@@ -1383,7 +1386,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortNames    the relationship short names
      * @param active        determines if the relationship must be active
-     * @return the source reference, or <tt>null</tt> if none is found
+     * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObjectReference getSourceObjectRef(Collection<R> relationships,
@@ -1396,7 +1399,7 @@ public class IMObjectBean {
      *
      * @param relationships the relationships
      * @param shortName     the relationship short name
-     * @return the target reference, or <tt>null</tt> if none is found
+     * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObjectReference getTargetObjectRef(Collection<R> relationships,
@@ -1410,7 +1413,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortName     the relationship short name
      * @param active        determines if the relationship must be active
-     * @return the target reference, or <tt>null</tt> if none is found
+     * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObjectReference getTargetObjectRef(Collection<R> relationships,
@@ -1424,7 +1427,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param shortNames    the relationship short names
      * @param active        determines if the relationship must be active
-     * @return the target reference, or <tt>null</tt> if none is found
+     * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <R extends IMObjectRelationship> IMObjectReference getTargetObjectRef(Collection<R> relationships,
@@ -1438,7 +1441,7 @@ public class IMObjectBean {
      *
      * @param node   the relationship node
      * @param object the target object
-     * @return <tt>true</tt> if there is an active relationship to {@code object}
+     * @return {@code true} if there is an active relationship to {@code object}
      */
     public boolean hasNodeTarget(String node, IMObject object) {
         return getNodeTargetObjectRefs(node).contains(object.getObjectReference());
@@ -1451,7 +1454,7 @@ public class IMObjectBean {
      * @param node   the relationship node
      * @param object the target object
      * @param time   the time
-     * @return <tt>true</tt> if there is an relationship to {@code object}, active at {@code time}
+     * @return {@code true} if there is an relationship to {@code object}, active at {@code time}
      */
     public boolean hasNodeTarget(String node, IMObject object, Date time) {
         return getNodeTargetObjectRefs(node, time).contains(object.getObjectReference());
@@ -1472,7 +1475,7 @@ public class IMObjectBean {
      *
      * @param name  the node name
      * @param value the value to add
-     * @throws IMObjectBeanException if the descriptor does't exist
+     * @throws IMObjectBeanException if the descriptor doesn't exist
      */
     public void addValue(String name, IMObject value) {
         NodeDescriptor node = getNode(name);
@@ -1510,7 +1513,7 @@ public class IMObjectBean {
      * @param ref    the reference to resolve
      * @param type   the expected object type
      * @param active determines if the object must be active
-     * @return the resolved object, or <tt>null</tt> if it cannot be found or doesn't match the active criteria
+     * @return the resolved object, or {@code null} if it cannot be found or doesn't match the active criteria
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if an object isn't of the expected type
      */
@@ -1532,8 +1535,8 @@ public class IMObjectBean {
     /**
      * Helper to resolve a reference.
      *
-     * @param ref the reference. May be <tt>null</tt>
-     * @return the object corresponding to the reference or <tt>null</tt> if none is found
+     * @param ref the reference. May be {@code null}
+     * @return the object corresponding to the reference or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected IMObject resolve(IMObjectReference ref) {
@@ -1560,11 +1563,14 @@ public class IMObjectBean {
      * Returns the archetype descriptor.
      *
      * @return the archetype descriptor
+     * @throws IMObjectBeanException if the archetype does not exist
      */
     protected ArchetypeDescriptor getArchetype() {
         if (archetype == null) {
-            archetype = DescriptorHelper.getArchetypeDescriptor(
-                    object, getArchetypeService());
+            archetype = DescriptorHelper.getArchetypeDescriptor(object, getArchetypeService());
+            if (archetype == null) {
+                throw new IMObjectBeanException(ArchetypeNotFound, object.getArchetypeId().getShortName());
+            }
         }
         return archetype;
     }
@@ -1681,7 +1687,7 @@ public class IMObjectBean {
      * @param predicate the criteria
      * @param accessor  the object accessor
      * @param active    determines if the object must be active
-     * @return the first object, or <tt>null</tt> if none is found
+     * @return the first object, or {@code null} if none is found
      * @throws IMObjectBeanException     if the node is invalid
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1738,15 +1744,15 @@ public class IMObjectBean {
     /**
      * Returns the source or target from the first relationship matching the specified criteria.
      * <p/>
-     * If active is <tt>true</tt> the object must be active in order to be returned.
+     * If active is {@code true} the object must be active in order to be returned.
      * <p/>
-     * If active is <tt>false</tt>, then an active object will be returned in preference to an inactive one.
+     * If active is {@code false}, then an active object will be returned in preference to an inactive one.
      *
      * @param relationships the relationships
      * @param predicate     the predicate
      * @param accessor      the relationship reference accessor
      * @param active        determines if the object must be active or not
-     * @return the first object matching the criteria or <tt>null</tt> if none
+     * @return the first object matching the criteria or {@code null} if none
      *         is found
      * @throws ArchetypeServiceException for any archetype service error
      */
@@ -1781,8 +1787,8 @@ public class IMObjectBean {
      * @param target     the target of the relationship
      * @param targetName the relationship node name that will reference the target
      * @return the relationship short name
-     * @throws IMObjectBeanException if <tt>name</tt> is an invalid node, there is no relationship that supports
-     *                               <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     * @throws IMObjectBeanException if {@code name} is an invalid node, there is no relationship that supports
+     *                               {@code target}, or multiple relationships can support {@code target}
      */
     protected String getRelationshipShortName(String name, IMObject target, String targetName) {
         return getRelationshipShortName(name, target.getObjectReference(), targetName);
@@ -1795,8 +1801,8 @@ public class IMObjectBean {
      * @param target     the target of the relationship
      * @param targetName the relationship node name that will reference the target
      * @return the relationship short name
-     * @throws IMObjectBeanException if <tt>name</tt> is an invalid node, there is no relationship that supports
-     *                               <tt>target</tt>, or multiple relationships can support <tt>target</tt>
+     * @throws IMObjectBeanException if {@code name} is an invalid node, there is no relationship that supports
+     *                               {@code target}, or multiple relationships can support {@code target}
      */
     protected String getRelationshipShortName(String name, IMObjectReference target, String targetName) {
         String[] range = getArchetypeRange(name);
@@ -1829,7 +1835,7 @@ public class IMObjectBean {
      * @param relationships the relationships
      * @param predicate     the criteria
      * @param accessor      the relationship reference accessor
-     * @return the matching reference, or <tt>null</tt>
+     * @return the matching reference, or {@code null}
      */
     protected <R extends IMObjectRelationship> IMObjectReference getRelatedRef(
             Collection<R> relationships, Predicate predicate, RelationshipRef accessor) {
@@ -1851,7 +1857,7 @@ public class IMObjectBean {
      * @param shortNames    the short names
      * @param active        determines if the relationship must be active
      * @param accessor      the object accessor
-     * @return the first matching reference,or <tt>null</tt>
+     * @return the first matching reference,or {@code null}
      */
     protected <R extends IMObjectRelationship> IMObjectReference getObjectRef(Collection<R> relationships,
                                                                               String[] shortNames, boolean active,
@@ -1885,7 +1891,7 @@ public class IMObjectBean {
      *
      * @param objects   the objects to match
      * @param predicate the predicate
-     * @return the first object matching the predicate or <tt>null</tt> if none is found
+     * @return the first object matching the predicate or {@code null} if none is found
      */
     protected <T> T selectFirst(Collection<T> objects, Predicate predicate) {
         for (T object : objects) {
@@ -1910,7 +1916,7 @@ public class IMObjectBean {
 
     /**
      * Helper to rerturn a predicate that checks that a relationship is
-     * active now, if <tt>active</tt> is <tt>true</tt>, and is one of a set
+     * active now, if {@code active} is {@code true}, and is one of a set
      * of archetypes.
      *
      * @param active     determines if the relationship must be active
@@ -1947,8 +1953,8 @@ public class IMObjectBean {
      * Returns a node descriptor.
      *
      * @param name the node name
-     * @return the descriptor corresponding to <tt>name</tt>
-     * @throws IMObjectBeanException if the descriptor does't exist
+     * @return the descriptor corresponding to {@code name}
+     * @throws IMObjectBeanException if the descriptor doesn't exist
      */
     protected NodeDescriptor getNode(String name) {
         NodeDescriptor node = getArchetype().getNodeDescriptor(name);
@@ -1979,7 +1985,7 @@ public class IMObjectBean {
          *
          * @param name the property name
          * @return the value of the property
-         * @throws IMObjectBeanException if the descriptor does't exist
+         * @throws IMObjectBeanException if the descriptor doesn't exist
          */
         public Object get(String name) {
             NodeDescriptor node = getNode(name);
@@ -1991,7 +1997,7 @@ public class IMObjectBean {
          *
          * @param name  the propery name
          * @param value the property value
-         * @throws IMObjectBeanException if the descriptor does't exist
+         * @throws IMObjectBeanException if the descriptor doesn't exist
          * @throws OpenVPMSException     if the property cannot be set
          */
         public void set(String name, Object value) {
