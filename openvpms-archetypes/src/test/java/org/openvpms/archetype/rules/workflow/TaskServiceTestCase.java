@@ -1,47 +1,46 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import static org.openvpms.archetype.test.TestHelper.getDate;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.openvpms.archetype.test.TestHelper.getDate;
+
 
 /**
  * Tests the {@link TaskService}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskServiceTestCase extends ArchetypeServiceTest {
 
@@ -180,11 +179,11 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         Act[] tasks = new Act[count];
         Date date = getDate("2007-01-01");
         for (int i = 0; i < count; ++i) {
-            Date startTime = DateRules.getDate(date, 15 * count,
-                                               DateUnits.MINUTES);
+            Date startTime = DateRules.getDate(date, 15 * count, DateUnits.MINUTES);
             Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
+            Date consultStartTime = (i % 2 == 0) ? new Date() : null;
 
-            tasks[i] = createTask(startTime, endTime, schedule);
+            tasks[i] = createTask(startTime, endTime, schedule, consultStartTime);
         }
 
         List<PropertySet> results = service.getEvents(schedule, date);
@@ -213,24 +212,26 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      */
     private Act createTask(Date date, Party workList) {
         Date startTime = DateRules.getDate(date, 15, DateUnits.MINUTES);
-        return createTask(startTime, null, workList);
+        return createTask(startTime, null, workList, null);
     }
 
     /**
      * Creates and saves a new task.
      *
-     * @param startTime the start time
-     * @param endTime   the end time
-     * @param workList  the work list
+     * @param startTime        the start time
+     * @param endTime          the end time
+     * @param workList         the work list
+     * @param consultStartTime the consult start time. May be {@code null}
      * @return a new task
      */
-    private Act createTask(Date startTime, Date endTime, Party workList) {
+    private Act createTask(Date startTime, Date endTime, Party workList, Date consultStartTime) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
         User author = TestHelper.createClinician();
-        Act task = ScheduleTestHelper.createTask(
-                startTime, endTime, workList, customer, patient, clinician, author);
+        Act task = ScheduleTestHelper.createTask(startTime, endTime, workList, customer, patient, clinician, author);
+        IMObjectBean bean = new IMObjectBean(task);
+        bean.setValue("consultStartTime", consultStartTime);
         save(task);
         return task;
     }
@@ -244,7 +245,6 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         workList = ScheduleTestHelper.createWorkList();
     }
 
-
     /**
      * Verifies that a task matches the {@link PropertySet} representing it.
      *
@@ -253,36 +253,23 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
      */
     private void checkTask(Act task, PropertySet set) {
         ActBean bean = new ActBean(task);
-        assertEquals(task.getObjectReference(),
-                     set.get(ScheduleEvent.ACT_REFERENCE));
-        assertEquals(task.getActivityStartTime(),
-                     set.get(ScheduleEvent.ACT_START_TIME));
-        assertEquals(task.getActivityEndTime(),
-                     set.get(ScheduleEvent.ACT_END_TIME));
+        assertEquals(task.getObjectReference(), set.get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(task.getActivityStartTime(), set.get(ScheduleEvent.ACT_START_TIME));
+        assertEquals(task.getActivityEndTime(), set.get(ScheduleEvent.ACT_END_TIME));
         assertEquals(task.getStatus(), set.get(ScheduleEvent.ACT_STATUS));
         assertEquals(task.getReason(), set.get(ScheduleEvent.ACT_REASON));
-        assertEquals(task.getDescription(),
-                     set.get(ScheduleEvent.ACT_DESCRIPTION));
-        assertEquals(bean.getNodeParticipantRef("customer"),
-                     set.get(ScheduleEvent.CUSTOMER_REFERENCE));
-        assertEquals(bean.getNodeParticipant("customer").getName(),
-                     set.get(ScheduleEvent.CUSTOMER_NAME));
-        assertEquals(bean.getNodeParticipantRef("patient"),
-                     set.get(ScheduleEvent.PATIENT_REFERENCE));
-        assertEquals(bean.getNodeParticipant("patient").getName(),
-                     set.get(ScheduleEvent.PATIENT_NAME));
-        assertEquals(bean.getNodeParticipantRef("clinician"),
-                     set.get(ScheduleEvent.CLINICIAN_REFERENCE));
-        assertEquals(bean.getNodeParticipant("clinician").getName(),
-                     set.get(ScheduleEvent.CLINICIAN_NAME));
-        assertEquals(bean.getNodeParticipantRef("worklist"),
-                     set.get(ScheduleEvent.SCHEDULE_REFERENCE));
-        assertEquals(bean.getNodeParticipant("worklist").getName(),
-                     set.get(ScheduleEvent.SCHEDULE_NAME));
-        assertEquals(bean.getNodeParticipantRef("taskType"),
-                     set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
-        assertEquals(bean.getNodeParticipant("taskType").getName(),
-                     set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
+        assertEquals(task.getDescription(), set.get(ScheduleEvent.ACT_DESCRIPTION));
+        assertEquals(bean.getNodeParticipantRef("customer"), set.get(ScheduleEvent.CUSTOMER_REFERENCE));
+        assertEquals(bean.getNodeParticipant("customer").getName(), set.get(ScheduleEvent.CUSTOMER_NAME));
+        assertEquals(bean.getNodeParticipantRef("patient"), set.get(ScheduleEvent.PATIENT_REFERENCE));
+        assertEquals(bean.getNodeParticipant("patient").getName(), set.get(ScheduleEvent.PATIENT_NAME));
+        assertEquals(bean.getNodeParticipantRef("clinician"), set.get(ScheduleEvent.CLINICIAN_REFERENCE));
+        assertEquals(bean.getNodeParticipant("clinician").getName(), set.get(ScheduleEvent.CLINICIAN_NAME));
+        assertEquals(bean.getNodeParticipantRef("worklist"), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
+        assertEquals(bean.getNodeParticipant("worklist").getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
+        assertEquals(bean.getNodeParticipantRef("taskType"), set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+        assertEquals(bean.getNodeParticipant("taskType").getName(), set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
+        assertEquals(bean.getDate("consultStartTime"), set.get(ScheduleEvent.CONSULT_START_TIME));
     }
 
 }

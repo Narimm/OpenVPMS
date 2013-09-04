@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -34,13 +32,12 @@ import java.util.Date;
 /**
  * Implementation of the {@link ScheduleService} for task events.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaskService extends AbstractScheduleService {
 
     /**
-     * Creates a new <tt>TaskService</tt>.
+     * Constructs a {@link TaskService}.
      *
      * @param service the archetype service
      * @param cache   the cache
@@ -59,28 +56,28 @@ public class TaskService extends AbstractScheduleService {
     protected void assemble(PropertySet target, ActBean source) {
         super.assemble(target, source);
 
-        IMObjectReference scheduleRef
-                = source.getNodeParticipantRef("worklist");
+        IMObjectReference scheduleRef = source.getNodeParticipantRef("worklist");
         String scheduleName = getName(scheduleRef);
         target.set(ScheduleEvent.SCHEDULE_REFERENCE, scheduleRef);
         target.set(ScheduleEvent.SCHEDULE_NAME, scheduleName);
 
-        IMObjectReference typeRef
-                = source.getNodeParticipantRef("taskType");
+        IMObjectReference typeRef = source.getNodeParticipantRef("taskType");
         String typeName = getName(typeRef);
         target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
         target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
 
-        String reason = source.getAct().getReason();  // should be null, but populate for consistency
+        String reason = source.getAct().getReason();
         target.set(ScheduleEvent.ACT_REASON, reason);
         target.set(ScheduleEvent.ACT_REASON_NAME, reason);
+
+        target.set(ScheduleEvent.CONSULT_START_TIME, source.getDate(ScheduleEvent.CONSULT_START_TIME));
     }
 
     /**
      * Returns the schedule reference from an event.
      *
      * @param event the event
-     * @return a reference to the schedule. May be <tt>null</tt>
+     * @return a reference to the schedule. May be {@code null}
      */
     protected IMObjectReference getSchedule(Act event) {
         ActBean bean = new ActBean(event, getService());
@@ -88,16 +85,14 @@ public class TaskService extends AbstractScheduleService {
     }
 
     /**
-     * Creates a new query to query events for the specified schedule and date
-     * range.
+     * Creates a new query to query events for the specified schedule and date range.
      *
      * @param schedule the schedule
      * @param from     the start time
      * @param to       the end time
      * @return a new query
      */
-    protected ScheduleEventQuery createQuery(Entity schedule, Date from,
-                                             Date to) {
+    protected ScheduleEventQuery createQuery(Entity schedule, Date from, Date to) {
         return new TaskQuery((Party) schedule, from, to, getService());
     }
 

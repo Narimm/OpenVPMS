@@ -1,23 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -32,9 +33,6 @@ import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.archetype.rules.customer.CustomerArchetypes;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,11 +43,9 @@ import java.util.Map;
 
 
 /**
- * Queries scheduled event acts, returning a limited set of data for display
- * purposes.
+ * Queries scheduled event acts, returning a limited set of data for display purposes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 abstract class ScheduleEventQuery {
 
@@ -85,21 +81,19 @@ abstract class ScheduleEventQuery {
 
 
     /**
-     * Creates a new <tt>ScheduleEventQuery</tt>.
+     * Constructs a {@link ScheduleEventQuery}.
      *
      * @param schedule       the schedule
      * @param from           the 'from' start time
      * @param to             the 'to' start time
      * @param eventShortName the event archetype short name
      */
-    public ScheduleEventQuery(Entity schedule, Date from, Date to,
-                              String eventShortName) {
-        this(schedule, from, to, eventShortName,
-             ArchetypeServiceHelper.getArchetypeService());
+    public ScheduleEventQuery(Entity schedule, Date from, Date to, String eventShortName) {
+        this(schedule, from, to, eventShortName, ArchetypeServiceHelper.getArchetypeService());
     }
 
     /**
-     * Creates a new <tt>ScheduleEventQuery</tt>.
+     * Constructs a {@link ScheduleEventQuery}.
      *
      * @param schedule       the schedule
      * @param from           the 'from' start time
@@ -107,9 +101,7 @@ abstract class ScheduleEventQuery {
      * @param eventShortName the event archetype short name
      * @param service        the archetype service
      */
-    public ScheduleEventQuery(Entity schedule, Date from, Date to,
-                              String eventShortName,
-                              IArchetypeService service) {
+    public ScheduleEventQuery(Entity schedule, Date from, Date to, String eventShortName, IArchetypeService service) {
         this.schedule = schedule;
         this.from = from;
         this.to = to;
@@ -224,16 +216,13 @@ abstract class ScheduleEventQuery {
         String reason = set.getString(ScheduleEvent.ACT_REASON);
 
         result.set(ScheduleEvent.ACT_REFERENCE, actRef);
-        result.set(ScheduleEvent.ACT_START_TIME,
-                   set.get(ScheduleEvent.ACT_START_TIME));
-        result.set(ScheduleEvent.ACT_END_TIME,
-                   set.get(ScheduleEvent.ACT_END_TIME));
+        result.set(ScheduleEvent.ACT_START_TIME, set.get(ScheduleEvent.ACT_START_TIME));
+        result.set(ScheduleEvent.ACT_END_TIME, set.get(ScheduleEvent.ACT_END_TIME));
         result.set(ScheduleEvent.ACT_STATUS, status);
         result.set(ScheduleEvent.ACT_STATUS_NAME, statusNames.get(status));
         result.set(ScheduleEvent.ACT_REASON, reason);
         result.set(ScheduleEvent.ACT_REASON_NAME, reasonNames.get(reason));
-        result.set(ScheduleEvent.ACT_DESCRIPTION,
-                   set.get(ScheduleEvent.ACT_DESCRIPTION));
+        result.set(ScheduleEvent.ACT_DESCRIPTION, set.get(ScheduleEvent.ACT_DESCRIPTION));
         result.set(ScheduleEvent.CUSTOMER_REFERENCE, null);
         result.set(ScheduleEvent.CUSTOMER_NAME, null);
         result.set(ScheduleEvent.PATIENT_REFERENCE, null);
@@ -244,6 +233,7 @@ abstract class ScheduleEventQuery {
         result.set(ScheduleEvent.SCHEDULE_TYPE_NAME, null);
         result.set(ScheduleEvent.CLINICIAN_REFERENCE, null);
         result.set(ScheduleEvent.CLINICIAN_NAME, null);
+        result.set(ScheduleEvent.ARRIVAL_TIME, null);
         return result;
     }
 
