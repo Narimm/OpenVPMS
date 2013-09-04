@@ -37,47 +37,46 @@ import static org.junit.Assert.assertNotNull;
 
 
 /**
- * Tests the {@link AppointmentQuery} class.
+ * Tests the {@link TaskQuery} class.
  *
  * @author Tim Anderson
  */
-public class AppointmentQueryTestCase extends ArchetypeServiceTest {
+public class TaskQueryTestCase extends ArchetypeServiceTest {
 
     /**
-     * Tests the {@link AppointmentQuery#query()} method.
+     * Tests the {@link TaskQuery#query()} method.
      */
     @Test
     public void testQuery() {
         final int count = 10;
-        Party schedule = ScheduleTestHelper.createSchedule();
+        Party workList = ScheduleTestHelper.createWorkList();
         Date from = new Date();
-        Act[] appointments = new Act[count];
+        Act[] tasks = new Act[count];
         Date[] startTimes = new Date[count];
         Date[] endTimes = new Date[count];
-        Date[] arrivalTimes = new Date[count];
+        Date[] consultTimes = new Date[count];
         Party[] customers = new Party[count];
         Party[] patients = new Party[count];
         User[] clinicians = new User[count];
-        Entity[] appointmentTypes = new Entity[count];
+        Entity[] taskTypes = new Entity[count];
         for (int i = 0; i < count; ++i) {
             Date startTime = new Date();
-            Date arrivalTime = (i % 2 == 0) ? new Date() : null;
+            Date consultTime = (i % 2 == 0) ? new Date() : null;
             Date endTime = new Date();
             Party customer = TestHelper.createCustomer();
             Party patient = TestHelper.createPatient();
             User clinician = TestHelper.createClinician();
             User author = TestHelper.createClinician();
-            Act appointment = ScheduleTestHelper.createAppointment(
-                    startTime, endTime, schedule, customer, patient);
-            ActBean bean = new ActBean(appointment);
+            Act task = ScheduleTestHelper.createTask(startTime, endTime, workList, customer, patient);
+            ActBean bean = new ActBean(task);
             bean.addParticipation("participation.clinician", clinician);
             bean.addParticipation("participation.author", author);
-            bean.setValue("arrivalTime", arrivalTime);
-            appointments[i] = appointment;
+            bean.setValue("consultStartTime", consultTime);
+            tasks[i] = task;
             startTimes[i] = getTimestamp(startTime);
-            arrivalTimes[i] = arrivalTime;
+            consultTimes[i] = consultTime;
             endTimes[i] = getTimestamp(endTime);
-            appointmentTypes[i] = bean.getNodeParticipant("appointmentType");
+            taskTypes[i] = bean.getNodeParticipant("taskType");
             customers[i] = customer;
             patients[i] = patient;
             clinicians[i] = clinician;
@@ -85,44 +84,30 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         }
         Date to = new Date();
 
-        AppointmentQuery query = new AppointmentQuery(schedule, from, to, getArchetypeService());
+        TaskQuery query = new TaskQuery(workList, from, to, getArchetypeService());
         IPage<ObjectSet> page = query.query();
         assertNotNull(page);
         List<ObjectSet> results = page.getResults();
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
             ObjectSet set = results.get(i);
-            assertEquals(appointments[i].getObjectReference(),
-                         set.get(ScheduleEvent.ACT_REFERENCE));
-            assertEquals(startTimes[i],
-                         set.get(ScheduleEvent.ACT_START_TIME));
+            assertEquals(tasks[i].getObjectReference(), set.get(ScheduleEvent.ACT_REFERENCE));
+            assertEquals(startTimes[i], set.get(ScheduleEvent.ACT_START_TIME));
             assertEquals(endTimes[i], set.get(ScheduleEvent.ACT_END_TIME));
-            assertEquals(appointments[i].getStatus(),
-                         set.get(ScheduleEvent.ACT_STATUS));
-            assertEquals(appointments[i].getReason(),
-                         set.get(ScheduleEvent.ACT_REASON));
-            assertEquals(appointments[i].getDescription(),
-                         set.get(ScheduleEvent.ACT_DESCRIPTION));
-            assertEquals(customers[i].getObjectReference(),
-                         set.get(ScheduleEvent.CUSTOMER_REFERENCE));
-            assertEquals(customers[i].getName(),
-                         set.get(ScheduleEvent.CUSTOMER_NAME));
-            assertEquals(patients[i].getObjectReference(),
-                         set.get(ScheduleEvent.PATIENT_REFERENCE));
-            assertEquals(patients[i].getName(),
-                         set.get(ScheduleEvent.PATIENT_NAME));
-            assertEquals(clinicians[i].getObjectReference(),
-                         set.get(ScheduleEvent.CLINICIAN_REFERENCE));
-            assertEquals(clinicians[i].getName(),
-                         set.get(ScheduleEvent.CLINICIAN_NAME));
-            assertEquals(schedule.getObjectReference(), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
-            assertEquals(schedule.getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
-            assertEquals(appointmentTypes[i].getObjectReference(),
-                         set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
-            assertEquals(appointmentTypes[i].getName(),
-                         set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
-            assertEquals(arrivalTimes[i],
-                         set.get(ScheduleEvent.ARRIVAL_TIME));
+            assertEquals(tasks[i].getStatus(), set.get(ScheduleEvent.ACT_STATUS));
+            assertEquals(tasks[i].getReason(), set.get(ScheduleEvent.ACT_REASON));
+            assertEquals(tasks[i].getDescription(), set.get(ScheduleEvent.ACT_DESCRIPTION));
+            assertEquals(customers[i].getObjectReference(), set.get(ScheduleEvent.CUSTOMER_REFERENCE));
+            assertEquals(customers[i].getName(), set.get(ScheduleEvent.CUSTOMER_NAME));
+            assertEquals(patients[i].getObjectReference(), set.get(ScheduleEvent.PATIENT_REFERENCE));
+            assertEquals(patients[i].getName(), set.get(ScheduleEvent.PATIENT_NAME));
+            assertEquals(clinicians[i].getObjectReference(), set.get(ScheduleEvent.CLINICIAN_REFERENCE));
+            assertEquals(clinicians[i].getName(), set.get(ScheduleEvent.CLINICIAN_NAME));
+            assertEquals(workList.getObjectReference(), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
+            assertEquals(workList.getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
+            assertEquals(taskTypes[i].getObjectReference(), set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+            assertEquals(taskTypes[i].getName(), set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
+            assertEquals(consultTimes[i], set.get(ScheduleEvent.CONSULT_START_TIME));
         }
     }
 
