@@ -17,7 +17,11 @@
 package org.openvpms.web.workspace.workflow.scheduling;
 
 import org.apache.commons.jxpath.JXPathContext;
+import org.openvpms.archetype.rules.workflow.AppointmentStatus;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.TaskStatus;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.resource.i18n.Messages;
@@ -30,8 +34,7 @@ import java.util.Date;
 /**
  * Scheduling helper.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SchedulingHelper {
 
@@ -39,7 +42,7 @@ public class SchedulingHelper {
      * Returns the minutes from midnight for the specified time.
      *
      * @param time the time
-     * @return the minutes from midnight for <tt>time</tt>
+     * @return the minutes from midnight for {@code time}
      */
     public static int getMinutes(Date time) {
         Calendar calendar = Calendar.getInstance();
@@ -55,7 +58,7 @@ public class SchedulingHelper {
      *
      * @param time     the time
      * @param slotSize the slot size
-     * @param roundUp  if <tt>true</tt> round up to the nearest slot, otherwise
+     * @param roundUp  if {@code true} round up to the nearest slot, otherwise
      *                 round down
      * @return the minutes from midnight for the specified time
      */
@@ -71,30 +74,25 @@ public class SchedulingHelper {
     /**
      * Evaluates an xpath expression against the supplied event.
      * <p/>
-     * If the event has an {@link ScheduleEvent#ARRIVAL_TIME} property,
-     * a formatted string named <em>waiting</em> will be added to the set prior
-     * to evaluation of the expression. This indicates the waiting time, and
-     * is the difference between the arrival time and the current time.
+     * This adds a "waiting" time attribute to the event prior to evaluation as determined by {@link #getWaitingTime}.
      * <p/>
      * NOTE: any string sequence containing the characters '\\n' will be treated
      * as new lines.
      *
      * @param expression the expression
      * @param event      the event
-     * @return the evaluate result. May be <tt>null</tt>
+     * @return the evaluate result. May be {@code null}
      */
     public static String evaluate(String expression, PropertySet event) {
         String text;
-        String waiting = "";
-        if (event.exists(ScheduleEvent.ARRIVAL_TIME)) {
-            Date arrival = event.getDate(ScheduleEvent.ARRIVAL_TIME);
-            if (arrival != null) {
-                waiting = DateFormatter.formatTimeDiff(arrival, new Date());
-                waiting = Messages.format("scheduleview.expression.waiting",
-                                          waiting);
-            }
+        String waiting = getWaitingTime(event);
+        if (waiting != null) {
+            waiting = Messages.format("scheduleview.expression.waiting", waiting);
+        } else {
+            waiting = ""; // makes it easier to use in expressions
         }
         event.set("waiting", waiting);
+
         JXPathContext context = JXPathHelper.newContext(event);
 
         // hack to replace all instances of '\\n' with new lines to
@@ -108,6 +106,54 @@ public class SchedulingHelper {
             text = "Expression Error";
         }
         return text;
+    }
+
+    /**
+     * Calculates a waiting time for an event.
+     * <p/>
+     * This is a formatted string indicating the amount of time spent waiting in an event.
+     * <p/>
+     * If the event is an appointment with:
+     * <ul>
+     * <li>an {@link ScheduleEvent#ARRIVAL_TIME} property and is CHECKED_IN,
+     * this a formatted string indicating the difference between difference between the arrival time and the
+     * current time.</li>
+     * <li>any other status, the waiting time is {@code null}</li>
+     * </ul>
+     * <p/>
+     * If the event is a task, the waiting time will be calculated as:
+     * <ul>
+     * <li>{@code consultStartTime - startTime} if the task is not PENDING</li>
+     * <li>{@code now - startTime} if the task is PENDING</li>
+     * </ul>
+     * <p/>
+     *
+     * @param event the event
+     * @return the waiting time. May be {@code null}
+     */
+    public static String getWaitingTime(PropertySet event) {
+        String waiting = null;
+        String status = event.getString(ScheduleEvent.ACT_STATUS);
+        boolean appointment = TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE),
+                                             ScheduleArchetypes.APPOINTMENT);
+        if (appointment) {
+            if (status.equals(AppointmentStatus.CHECKED_IN) && event.exists(ScheduleEvent.ARRIVAL_TIME)) {
+                Date arrival = event.getDate(ScheduleEvent.ARRIVAL_TIME);
+                if (arrival != null) {
+                    waiting = DateFormatter.formatTimeDiff(arrival, new Date());
+                }
+            }
+        } else {
+            Date start = event.getDate(ScheduleEvent.ACT_START_TIME);
+            Date end;
+            if (status.equals(TaskStatus.PENDING) || !event.exists(ScheduleEvent.CONSULT_START_TIME)) {
+                end = new Date();
+            } else {
+                end = event.getDate(ScheduleEvent.CONSULT_START_TIME);
+            }
+            waiting = DateFormatter.formatTimeDiff(start, end);
+        }
+        return waiting;
     }
 
 }

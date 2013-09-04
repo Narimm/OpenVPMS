@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -45,8 +43,7 @@ import java.util.List;
 /**
  * Expression editor for schedule view expressions.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ScheduleViewExpressionEditor {
 
@@ -67,18 +64,17 @@ public class ScheduleViewExpressionEditor {
 
 
     /**
-     * Creates a new <tt>ScheduleViewExpressionEditor</tt>.
+     * Constructs a {@link ScheduleViewExpressionEditor}.
      *
-     * @param expression  the expression property to edit
-     * @param arrivalTime if <tt>true</tt> add an arrival time property
+     * @param expression   the expression property to edit
+     * @param scheduleView if {@code true} the editor is for an <em>entity.organisationScheduleView</em>, else it is
+     *                     for an <em>entity.organisationWorklistView</em>
      */
-    public ScheduleViewExpressionEditor(Property expression,
-                                        boolean arrivalTime) {
+    public ScheduleViewExpressionEditor(Property expression, boolean scheduleView) {
         this.expression = expression;
-        properties = createProperties(arrivalTime);
+        properties = createProperties(scheduleView);
 
-        PropertyComponentFactory factory
-            = DefaultPropertyComponentFactory.INSTANCE;
+        PropertyComponentFactory factory = DefaultPropertyComponentFactory.INSTANCE;
 
         Label propertyName = LabelFactory.create();
         propertyName.setText(expression.getDisplayName());
@@ -86,8 +82,7 @@ public class ScheduleViewExpressionEditor {
 
         Label help = LabelFactory.create("scheduleview.expression.help", true);
 
-        Grid expressionGrid = GridFactory.create(2, propertyName, editor,
-                                                 LabelFactory.create(), help);
+        Grid expressionGrid = GridFactory.create(2, propertyName, editor, LabelFactory.create(), help);
 
         Grid propertyGrid = GridFactory.create(2);
         for (Property property : properties) {
@@ -101,10 +96,8 @@ public class ScheduleViewExpressionEditor {
             }
         }
 
-        GroupBox box = GroupBoxFactory.create(
-            "scheduleview.expression.properties", propertyGrid);
-        component = ColumnFactory.create("Inset", ColumnFactory.create(
-            "WideCellSpacing", expressionGrid, box));
+        GroupBox box = GroupBoxFactory.create("scheduleview.expression.properties", propertyGrid);
+        component = ColumnFactory.create("Inset", ColumnFactory.create("WideCellSpacing", expressionGrid, box));
     }
 
     /**
@@ -131,7 +124,7 @@ public class ScheduleViewExpressionEditor {
     /**
      * Evaluates the expression.
      *
-     * @return the evaluated result. May be <tt>null</tt>
+     * @return the evaluated result. May be {@code null}
      */
     public String evaluate() {
         Object value = expression.getValue();
@@ -158,10 +151,11 @@ public class ScheduleViewExpressionEditor {
     /**
      * Creates a list of editable properties for testing the expression.
      *
-     * @param arrivalTime if <tt>true</tt> add an arrivalTime property
+     * @param scheduleView if {@code true} the editor is for an <em>entity.organisationScheduleView</em>, else it is
+     *                     for an <em>entity.organisationWorklistView</em>
      * @return the properties
      */
-    private List<Property> createProperties(boolean arrivalTime) {
+    private List<Property> createProperties(boolean scheduleView) {
         List<Property> result = new ArrayList<Property>();
         result.add(create(ScheduleEvent.ACT_DESCRIPTION));
         result.add(create(ScheduleEvent.ACT_STATUS));
@@ -173,8 +167,10 @@ public class ScheduleViewExpressionEditor {
         result.add(create(ScheduleEvent.CLINICIAN_NAME));
         result.add(create(ScheduleEvent.SCHEDULE_NAME));
         result.add(create(ScheduleEvent.SCHEDULE_TYPE_NAME));
-        if (arrivalTime) {
+        if (scheduleView) {
             result.add(create(ScheduleEvent.ARRIVAL_TIME, new Date()));
+        } else {
+            result.add(create(ScheduleEvent.CONSULT_START_TIME, new Date()));
         }
         return result;
     }
