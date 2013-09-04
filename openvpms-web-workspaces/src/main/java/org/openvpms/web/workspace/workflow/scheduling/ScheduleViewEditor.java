@@ -151,9 +151,8 @@ public class ScheduleViewEditor extends AbstractIMObjectEditor {
             focus = state.getFocusGroup();
             focus.add(test);
             container = RowFactory.create("CellSpacing", field, test);
-            boolean arrivalTime = TypeHelper.isA(
-                    parent, "entity.organisationScheduleView");
-            editor = new ScheduleViewExpressionEditor(property, arrivalTime);
+            boolean scheduleView = TypeHelper.isA(parent, "entity.organisationScheduleView");
+            editor = new ScheduleViewExpressionEditor(property, scheduleView);
             help = context.getHelpContext();
         }
 

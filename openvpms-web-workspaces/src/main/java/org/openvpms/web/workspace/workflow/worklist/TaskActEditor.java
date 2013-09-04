@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
 
 
@@ -172,6 +173,10 @@ public class TaskActEditor extends AbstractScheduleActEditor {
             time = new Date();
         }
         setEndTime(time, false);
+
+        if (IN_PROGRESS.equals(value)) {
+            getProperty("consultStartTime").setValue(new Date());
+        }
     }
 
     /**

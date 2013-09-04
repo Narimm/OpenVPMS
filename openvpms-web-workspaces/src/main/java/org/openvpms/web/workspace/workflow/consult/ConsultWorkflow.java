@@ -19,11 +19,13 @@ package org.openvpms.web.workspace.workflow.consult;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
@@ -41,6 +43,8 @@ import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.workflow.EditVisitTask;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
+
+import java.util.Date;
 
 
 /**
@@ -126,22 +130,26 @@ public class ConsultWorkflow extends WorkflowImpl {
         return new EditVisitTask();
     }
 
-
     /**
-     * Creates a task to update the appointment/task act status to {@code IN_PROGRESS} if it is not {@code BILLED} or
-     * {@code COMPLETED}.
+     * Creates a task to update the appointment/task act status to {@code IN_PROGRESS} if it is not {@code IN_PROGRESS},
+     * {@code BILLED} or {@code COMPLETED}.
+     * <p/>
+     * For task acts, this also sets the "arrivalTime" node to the current time.
      *
      * @param act the appointment or task act
      * @return a new task
      */
     private Task createInProgressTask(Act act) {
         String shortName = act.getArchetypeId().getShortName();
-        NodeInTask<String> notBilledOrCompleted
-            = new NodeInTask<String>(shortName, "status", true, WorkflowStatus.BILLED, WorkflowStatus.COMPLETED);
-        TaskProperties billProps = new TaskProperties();
-        billProps.add("status", WorkflowStatus.IN_PROGRESS);
-        UpdateIMObjectTask billTask = new UpdateIMObjectTask(shortName, billProps, true);
-        return new ConditionalTask(notBilledOrCompleted, billTask);
+        NodeInTask<String> notBilledOrCompleted = new NodeInTask<String>(
+                shortName, "status", true, WorkflowStatus.IN_PROGRESS, WorkflowStatus.BILLED, WorkflowStatus.COMPLETED);
+        TaskProperties properties = new TaskProperties();
+        properties.add("status", WorkflowStatus.IN_PROGRESS);
+        if (TypeHelper.isA(act, ScheduleArchetypes.TASK)) {
+            properties.add("consultStartTime", new Date());
+        }
+        UpdateIMObjectTask update = new UpdateIMObjectTask(shortName, properties, true);
+        return new ConditionalTask(notBilledOrCompleted, update);
     }
 
     /**
@@ -153,7 +161,7 @@ public class ConsultWorkflow extends WorkflowImpl {
     private Task createBilledTask(Act act) {
         String shortName = act.getArchetypeId().getShortName();
         NodeConditionTask<String> invoiceCompleted
-            = new NodeConditionTask<String>(CustomerAccountArchetypes.INVOICE, "status", ActStatus.COMPLETED);
+                = new NodeConditionTask<String>(CustomerAccountArchetypes.INVOICE, "status", ActStatus.COMPLETED);
         TaskProperties billProps = new TaskProperties();
         billProps.add("status", WorkflowStatus.BILLED);
         UpdateIMObjectTask billTask = new UpdateIMObjectTask(shortName, billProps, true);

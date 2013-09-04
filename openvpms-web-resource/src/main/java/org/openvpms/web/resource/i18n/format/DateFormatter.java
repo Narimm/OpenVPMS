@@ -218,11 +218,14 @@ public class DateFormatter {
     /**
      * Formats a time difference in hours and minutes.
      *
-     * @param from the start time
-     * @param to   the end time
-     * @return the difference between the time, in hours and minutes
+     * @param from the start time. May be {@code null}
+     * @param to   the end time. May be {@code null}
+     * @return the difference between the time, in hours and minutes, or {@code null} if either argument is {@code null}
      */
     public static String formatTimeDiff(Date from, Date to) {
+        if (from == null || to == null) {
+            return null;
+        }
         long diff = to.getTime() - from.getTime();
         if (diff < 0) {
             diff = 0;

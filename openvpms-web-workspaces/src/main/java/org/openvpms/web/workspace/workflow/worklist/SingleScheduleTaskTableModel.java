@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -22,7 +22,6 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
@@ -31,7 +30,6 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
-import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
 import java.util.Date;
 import java.util.List;
@@ -40,10 +38,9 @@ import java.util.List;
 /**
  * Table model for display <em>act.customerTask<em>s for a single schedule.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class SingleScheduleTaskTableModel extends ScheduleTableModel {
+public class SingleScheduleTaskTableModel extends TaskTableModel {
 
     /**
      * The column names, for single schedule view.
@@ -88,29 +85,17 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
     /**
      * The nodes to display.
      */
-    private static final String[] NODE_NAMES = {
-        "startTime", "status", "taskType", "customer", "patient",
-        "description"};
+    private static final String[] NODE_NAMES = {"startTime", "status", "taskType", "customer", "patient",
+                                                "description"};
 
 
     /**
-     * Creates a new {@code SingleScheduleTaskTableModel}.
+     * Constructs a {@link SingleScheduleTaskTableModel}.
      *
      * @param grid the task grid
      */
     public SingleScheduleTaskTableModel(TaskGrid grid, Context context) {
         super(grid, context);
-    }
-
-    /**
-     * Returns the row of the specified event.
-     *
-     * @param schedule the schedule
-     * @param eventRef the event reference
-     * @return the row, or {@code -1} if the event is not found
-     */
-    public int getRow(Schedule schedule, IMObjectReference eventRef) {
-        return schedule.indexOf(eventRef);
     }
 
     /**
@@ -168,7 +153,7 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
                 result = label;
                 break;
             case STATUS_INDEX:
-                result = set.getString(ScheduleEvent.ACT_STATUS_NAME);
+                result = getStatus(set);
                 break;
             case DESCRIPTION_INDEX:
                 result = set.getString(ScheduleEvent.ACT_DESCRIPTION);
@@ -207,12 +192,10 @@ public class SingleScheduleTaskTableModel extends ScheduleTableModel {
     private String[] getColumnNames() {
         if (columnNames == null) {
             columnNames = new String[NODE_NAMES.length + 1];
-            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
-                "act.customerTask");
+            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerTask");
             if (archetype != null) {
                 for (int i = 0; i < NODE_NAMES.length; ++i) {
-                    NodeDescriptor descriptor = archetype.getNodeDescriptor(
-                        NODE_NAMES[i]);
+                    NodeDescriptor descriptor = archetype.getNodeDescriptor(NODE_NAMES[i]);
                     if (descriptor != null) {
                         columnNames[i] = descriptor.getDisplayName();
                     }

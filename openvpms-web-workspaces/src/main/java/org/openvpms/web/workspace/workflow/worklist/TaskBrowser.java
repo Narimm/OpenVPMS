@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -41,7 +41,7 @@ import java.util.Map;
 public class TaskBrowser extends ScheduleBrowser {
 
     /**
-     * Constructs a {@code TaskBrowser}.
+     * Constructs a {@link TaskBrowser}.
      *
      * @param context the context
      */
@@ -93,7 +93,7 @@ public class TaskBrowser extends ScheduleBrowser {
      * @param events the events
      */
     protected ScheduleEventGrid createEventGrid(
-        Date date, Map<Entity, List<PropertySet>> events) {
+            Date date, Map<Entity, List<PropertySet>> events) {
         return new TaskGrid(getScheduleView(), date, events);
     }
 
@@ -107,7 +107,7 @@ public class TaskBrowser extends ScheduleBrowser {
         if (grid.getSchedules().size() == 1) {
             return new SingleScheduleTaskTableModel((TaskGrid) grid, getContext());
         }
-        return new TaskTableModel((TaskGrid) grid, getContext());
+        return new MultiScheduleTaskTableModel((TaskGrid) grid, getContext());
     }
 
     /**
