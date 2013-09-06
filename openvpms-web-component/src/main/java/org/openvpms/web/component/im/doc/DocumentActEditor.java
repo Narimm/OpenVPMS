@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -37,6 +36,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.help.HelpContext;
 
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.DOCUMENT;
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.VERSIONS;
@@ -299,11 +299,12 @@ public class DocumentActEditor extends AbstractActEditor {
         DocumentAct act = (DocumentAct) getObject();
         Context context = getLayoutContext().getContext();
         HelpContext help = getLayoutContext().getHelpContext();
-        final DocumentGenerator generator = new DocumentGenerator(act, context, help, new DocumentGenerator.Listener() {
+        DocumentGenerator.Listener listener = new DocumentGenerator.AbstractListener() {
             public void generated(Document document) {
                 docEditor.setDocument(document);
             }
-        });
+        };
+        final DocumentGenerator generator = new DocumentGenerator(act, context, help, listener);
         generator.generate();
     }
 

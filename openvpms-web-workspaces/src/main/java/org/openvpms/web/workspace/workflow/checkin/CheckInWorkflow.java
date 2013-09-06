@@ -150,6 +150,9 @@ public class CheckInWorkflow extends WorkflowImpl {
         external = context;
         HelpContext help = getHelpContext();
         initial = new DefaultTaskContext(help);
+        if (appointment != null) {
+            initial.addObject(appointment);
+        }
         initial.setCustomer(customer);
         initial.setPatient(patient);
 
@@ -182,8 +185,8 @@ public class CheckInWorkflow extends WorkflowImpl {
         // prompt for a patient weight.
         addTask(new PatientWeightTask(help));
 
-        // optionally select and print an act.patientDocumentForm
-        addTask(new PrintDocumentFormTask(initial));
+        // optionally print act.patientDocumentForm and act.patientDocumentLetters
+        addTask(new PrintPatientDocumentsTask(getHelpContext()));
 
         // get the latest invoice, or create one if none is available
         addTask(new GetInvoiceTask());

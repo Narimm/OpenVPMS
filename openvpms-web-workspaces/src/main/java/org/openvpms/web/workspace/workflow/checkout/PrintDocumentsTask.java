@@ -125,7 +125,7 @@ class PrintDocumentsTask extends AbstractTask {
         if (unprinted.isEmpty()) {
             notifyCompleted();
         } else {
-            String title = Messages.get("workflow.checkout.print.title");
+            String title = Messages.get("workflow.print.title");
             String[] buttons = isRequired() ? PopupDialog.OK_CANCEL : PopupDialog.OK_SKIP_CANCEL;
             dialog = new BatchPrintDialog(title, buttons, unprinted, help);
             dialog.getButtons().add(MAIL_ID, new ActionListener() {
@@ -219,8 +219,8 @@ class PrintDocumentsTask extends AbstractTask {
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         CollectionNodeConstraint participations
-            = new CollectionNodeConstraint(node, participation,
-                                           false, true);
+                = new CollectionNodeConstraint(node, participation,
+                                               false, true);
         participations.add(new ObjectRefNodeConstraint("entity", party.getObjectReference()));
 
         query.add(participations);

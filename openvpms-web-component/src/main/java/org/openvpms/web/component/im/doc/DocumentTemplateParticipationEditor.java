@@ -65,7 +65,7 @@ public class DocumentTemplateParticipationEditor extends ParticipationEditor<Ent
                 if (getParent() != null) {
                     String shortname = getParent().getArchetypeId().getShortName();
                     if (shortname != null && query instanceof DocumentTemplateQuery) {
-                        ((DocumentTemplateQuery) query).setArchetype(shortname);
+                        ((DocumentTemplateQuery) query).setTypes(shortname);
                     }
                 }
                 return query;

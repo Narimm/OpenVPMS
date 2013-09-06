@@ -117,7 +117,7 @@ public class BatchPrintDialog extends PopupDialog {
         private final int PRINT_INDEX = NEXT_INDEX;
 
         /**
-         * Determines the initial seletions.
+         * Determines the initial selections.
          */
         private List<Boolean> selections;
 

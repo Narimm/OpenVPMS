@@ -18,13 +18,13 @@ package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**
@@ -123,59 +123,81 @@ public class PrintIMObjectTask extends AbstractTask {
     /**
      * Starts the task.
      * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
      */
     public void start(final TaskContext context) {
+        IMObject object = getObject(context);
+        if (object == null) {
+            notifyCancelled();
+        } else {
+            print(object, context);
+        }
+    }
+
+    /**
+     * Prints an object.
+     * <p/>
+     * The registered {@link TaskListener} will be notified on completion or failure.
+     *
+     * @param object  the object to print
+     * @param context the task context
+     */
+    protected void print(final IMObject object, final TaskContext context) {
+        try {
+            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
+            boolean skip = !isRequired() && enableSkip;
+            HelpContext help = context.getHelpContext().topic(object, "print");
+            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, skip, context, help);
+            iPrinter.setInteractive(interactive);
+            iPrinter.setMailContext(mailContext);
+
+            iPrinter.setListener(new PrinterListener() {
+                public void printed(String printer) {
+                    onPrinted(object, context);
+                }
+
+                public void cancelled() {
+                    notifyCancelled();
+                }
+
+                public void skipped() {
+                    notifySkipped();
+                }
+
+                public void failed(Throwable cause) {
+                    notifyCancelledOnError(cause);
+                }
+            });
+            iPrinter.print();
+        } catch (OpenVPMSException exception) {
+            notifyCancelledOnError(exception);
+        }
+    }
+
+    /**
+     * Returns the object.
+     *
+     * @param context the context
+     * @return the object. May be {@code null}
+     */
+    protected IMObject getObject(TaskContext context) {
         if (object == null) {
             object = context.getObject(shortName);
         }
-        if (object != null) {
-            try {
-                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-                IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
-                boolean skip = !isRequired() && enableSkip;
-                HelpContext help = context.getHelpContext().topic(object, "print");
-                InteractiveIMPrinter<IMObject> iPrinter =
-                    new InteractiveIMPrinter<IMObject>(printer, skip, context, help);
-                iPrinter.setInteractive(interactive);
-                iPrinter.setMailContext(mailContext);
-
-                iPrinter.setListener(new PrinterListener() {
-                    public void printed(String printer) {
-                        onPrinted(object);
-                    }
-
-                    public void cancelled() {
-                        notifyCancelled();
-                    }
-
-                    public void skipped() {
-                        notifySkipped();
-                    }
-
-                    public void failed(Throwable cause) {
-                        notifyCancelledOnError(cause);
-                    }
-                });
-                iPrinter.print();
-            } catch (OpenVPMSException exception) {
-                notifyCancelledOnError(exception);
-            }
-        } else {
-            notifyCancelled();
-        }
+        return object;
     }
 
     /**
      * Invoked when the object is successfully printed.
      * Notifies completion of the task.
      *
-     * @param object the printed object
+     * @param object  the printed object
+     * @param context the task context
      */
-    protected void onPrinted(IMObject object) {
+    protected void onPrinted(IMObject object, TaskContext context) {
         notifyCompleted();
     }
 

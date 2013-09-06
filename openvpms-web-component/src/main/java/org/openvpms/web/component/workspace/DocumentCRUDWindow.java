@@ -142,7 +142,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     private void refresh(final boolean print, boolean version) {
         final DocumentAct act = getObject();
         DocumentGenerator generator = new DocumentGenerator(
-            act, getContext(), getHelpContext(), new DocumentGenerator.Listener() {
+                act, getContext(), getHelpContext(), new DocumentGenerator.AbstractListener() {
             public void generated(Document document) {
                 onSaved(act, false);
                 if (print) {

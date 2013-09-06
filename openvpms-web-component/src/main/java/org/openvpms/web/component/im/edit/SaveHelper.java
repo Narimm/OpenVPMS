@@ -21,10 +21,11 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.error.ExceptionHelper;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.util.DefaultIMObjectSaveListener;
 import org.openvpms.web.component.im.util.IMObjectDeletionListener;
+import org.openvpms.web.component.im.util.IMObjectSaveListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -41,8 +42,7 @@ import java.util.Collection;
 /**
  * Helper for saving {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class SaveHelper {
 
@@ -56,7 +56,7 @@ public class SaveHelper {
      * Saves an editor in a transaction.
      *
      * @param editor the editor to save
-     * @return <tt>true</tt> if the object was saved successfully
+     * @return {@code true} if the object was saved successfully
      */
     public static boolean save(final IMObjectEditor editor) {
         Boolean result = null;
@@ -83,7 +83,7 @@ public class SaveHelper {
      *
      * @param displayName the primary display name, for error reporting
      * @param callback    the callback to execute
-     * @return <tt>true</tt> if the save was successful
+     * @return {@code true} if the save was successful
      */
     public static boolean save(String displayName, TransactionCallback<Boolean> callback) {
         boolean saved = false;
@@ -101,7 +101,7 @@ public class SaveHelper {
      * Saves an object.
      *
      * @param object the object to save
-     * @return <tt>true</tt> if the object was saved; otherwise <tt>false</tt>
+     * @return {@code true} if the object was saved; otherwise {@code false}
      */
     public static boolean save(IMObject object) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -113,24 +113,17 @@ public class SaveHelper {
      *
      * @param object  the object to save
      * @param service the archetype service
-     * @return <tt>true</tt> if the object was saved; otherwise <tt>false</tt>
+     * @return {@code true} if the object was saved; otherwise {@code false}
      */
     public static boolean save(IMObject object, IArchetypeService service) {
-        boolean saved = false;
-        try {
-            service.save(object);
-            saved = true;
-        } catch (Throwable exception) {
-            error(object, exception);
-        }
-        return saved;
+        return save(Arrays.asList(object), service);
     }
 
     /**
      * Saves a collection of objects.
      *
      * @param objects the objects to save
-     * @return <tt>true</tt> if the objects were saved; otherwise <tt>false</tt>
+     * @return {@code true} if the objects were saved; otherwise {@code false}
      */
     public static boolean save(IMObject... objects) {
         return save(Arrays.asList(objects));
@@ -140,7 +133,7 @@ public class SaveHelper {
      * Saves a collection of objects.
      *
      * @param objects the objects to save
-     * @return <tt>true</tt> if the objects were saved; otherwise <tt>false</tt>
+     * @return {@code true} if the objects were saved; otherwise {@code false}
      */
     public static boolean save(Collection<? extends IMObject> objects) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -152,18 +145,37 @@ public class SaveHelper {
      *
      * @param objects the objects to save
      * @param service the archetype service
-     * @return <tt>true</tt> if the objects were saved; otherwise <tt>false</tt>
+     * @return {@code true} if the objects were saved; otherwise {@code false}
      */
-    public static boolean save(Collection<? extends IMObject> objects,
+    public static boolean save(Collection<? extends IMObject> objects, IArchetypeService service) {
+        return save(objects, DefaultIMObjectSaveListener.INSTANCE, service);
+    }
+
+    /**
+     * Saves a collection of objects.
+     *
+     * @param objects  the objects to save
+     * @param listener the listener to notify
+     */
+    public static boolean save(Collection<? extends IMObject> objects, IMObjectSaveListener listener) {
+        return save(objects, listener, ServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Saves a collection of objects.
+     *
+     * @param objects  the objects to save
+     * @param listener the listener to notify
+     */
+    public static boolean save(Collection<? extends IMObject> objects, IMObjectSaveListener listener,
                                IArchetypeService service) {
         boolean saved = false;
         try {
             service.save(objects);
+            listener.saved(objects);
             saved = true;
         } catch (Throwable exception) {
-            // use the first object's display name when displaying the exception
-            IMObject object = objects.toArray(new IMObject[objects.size()])[0];
-            error(object, exception);
+            listener.error(objects, exception);
         }
         return saved;
     }
@@ -172,7 +184,7 @@ public class SaveHelper {
      * Removes an object.
      *
      * @param object the object to remove
-     * @return <tt>true</tt> if the object was removed; otherwise <tt>false</tt>
+     * @return {@code true} if the object was removed; otherwise {@code false}
      */
     public static boolean delete(IMObject object) {
         return delete(object, new DefaultIMObjectDeletionListener());
@@ -183,7 +195,7 @@ public class SaveHelper {
      *
      * @param object   the object to remove
      * @param listener the listener to notify
-     * @return <tt>true</tt> if the object was removed; otherwise <tt>false</tt>
+     * @return {@code true} if the object was removed; otherwise {@code false}
      */
     public static <T extends IMObject> boolean delete(T object, IMObjectDeletionListener<T> listener) {
         return delete(object, listener, ServiceHelper.getArchetypeService());
@@ -195,7 +207,7 @@ public class SaveHelper {
      * @param object   the object to remove
      * @param listener the listener to notify
      * @param service  the archetype service
-     * @return <tt>true</tt> if the object was removed; otherwise <tt>false</tt>
+     * @return {@code true} if the object was removed; otherwise {@code false}
      */
     public static <T extends IMObject> boolean delete(T object, IMObjectDeletionListener<T> listener,
                                                       IArchetypeService service) {
@@ -214,7 +226,7 @@ public class SaveHelper {
      *
      * @param delete the object to delete
      * @param insert the object to insert
-     * @return <tt>true</tt> if the operation was successful
+     * @return {@code true} if the operation was successful
      */
     public static boolean replace(final IMObject delete,
                                   final IMObject insert) {
@@ -239,20 +251,8 @@ public class SaveHelper {
     /**
      * Displays a save error.
      *
-     * @param object    the object that failed to save
-     * @param exception the cause
-     */
-    private static void error(IMObject object, Throwable exception) {
-        String displayName = DescriptorHelper.getDisplayName(object);
-        String context = Messages.format("imobject.save.failed", object.getObjectReference());
-        error(displayName, context, exception);
-    }
-
-    /**
-     * Displays a save error.
-     *
      * @param displayName the display name of the object that failed to save
-     * @param context     the context message. May be <tt>null</tt>
+     * @param context     the context message. May be {@code null}
      * @param exception   the cause
      */
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")

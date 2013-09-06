@@ -26,6 +26,7 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.report.DocumentActReporter;
+import org.openvpms.web.component.im.util.AbstractIMObjectSaveListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -33,6 +34,7 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -57,6 +59,58 @@ public class DocumentGenerator {
          * @param document the generated document
          */
         void generated(Document document);
+
+        /**
+         * Invoked if parameter entry is cancelled.
+         */
+        void cancelled();
+
+        /**
+         * Invoked if parameter entry is skipped.
+         */
+        void skipped();
+
+        /**
+         * Invoked if an error occurs trying to save a document.
+         */
+        void error();
+    }
+
+    /**
+     * Abstract implementation of the {@link Listener} interface that provides no-op implementations of each of the
+     * methods.
+     */
+    public static abstract class AbstractListener implements Listener {
+
+        /**
+         * Invoked when generation completes.
+         *
+         * @param document the generated document
+         */
+        @Override
+        public void generated(Document document) {
+        }
+
+        /**
+         * Invoked if parameter entry is cancelled.
+         */
+        @Override
+        public void cancelled() {
+        }
+
+        /**
+         * Invoked if parameter entry is skipped.
+         */
+        @Override
+        public void skipped() {
+        }
+
+        /**
+         * Invoked if an error occurs trying to save a document.
+         */
+        @Override
+        public void error() {
+        }
     }
 
     /**
@@ -75,7 +129,7 @@ public class DocumentGenerator {
     private Document document;
 
     /**
-     * The listener to notify when generation completes
+     * The listener to notify.
      */
     private final Listener listener;
 
@@ -90,7 +144,7 @@ public class DocumentGenerator {
      * @param act      the document act
      * @param context  the context
      * @param help     the help context
-     * @param listener the listener to notify when generation completes
+     * @param listener the listener to notify
      */
     public DocumentGenerator(DocumentAct act, Context context, HelpContext help, Listener listener) {
         this.act = act;
@@ -112,6 +166,8 @@ public class DocumentGenerator {
      * Generates the document.
      * <p/>
      * The document will not be saved.
+     *
+     * @throws DocumentException for any document error
      */
     public void generate() {
         generate(false, false);
@@ -122,8 +178,21 @@ public class DocumentGenerator {
      *
      * @param save    if {@code true} save the act and generated document
      * @param version if {@code true}  and saving the document, version any old document if the act supports it
+     * @throws DocumentException for any document error
      */
     public void generate(boolean save, boolean version) {
+        generate(save, version, false);
+    }
+
+    /**
+     * Generates the document, notifying the listener on completion.
+     *
+     * @param save    if {@code true} save the act and generated document
+     * @param version if {@code true}  and saving the document, version any old document if the act supports it
+     * @param skip    if {@code true} and parameters are prompted for, allows document generation to be skipped
+     * @throws DocumentException for any document error
+     */
+    public void generate(boolean save, boolean version, boolean skip) {
         if (DocumentActReporter.hasTemplate(act)) {
             DocumentActReporter reporter = new DocumentActReporter(act);
             Set<ParameterType> parameters = reporter.getParameterTypes();
@@ -132,7 +201,7 @@ public class DocumentGenerator {
                 generate(reporter, save, version);
             } else {
                 // only support parameter prompting for letters
-                promptParameters(reporter, save, version);
+                promptParameters(reporter, save, version, skip);
             }
         } else if (act.getDocument() != null) {
             Document existing = (Document) IMObjectHelper.getObject(act.getDocument(), context);
@@ -158,9 +227,17 @@ public class DocumentGenerator {
         if (save) {
             DocumentRules rules = new DocumentRules();
             List<IMObject> changes = rules.addDocument(act, document, version);
-            if (SaveHelper.save(changes)) {
-                listener.generated(document);
-            }
+            SaveHelper.save(changes, new AbstractIMObjectSaveListener() {
+                @Override
+                public void saved(Collection<? extends IMObject> objects) {
+                    listener.generated(document);
+                }
+
+                @Override
+                protected void onErrorClosed() {
+                    listener.error();
+                }
+            });
         } else {
             listener.generated(document);
         }
@@ -172,18 +249,30 @@ public class DocumentGenerator {
      * @param reporter the report er
      * @param save     if {@code true}, save the document
      * @param version  if {@code true}  and saving the document, version any old document if the act supports it
+     * @param skip     if {@code true} allow parameter entry (and therefore generation) to be skipped
      */
-    private void promptParameters(final DocumentActReporter reporter, final boolean save, final boolean version) {
+    private void promptParameters(final DocumentActReporter reporter, final boolean save, final boolean version,
+                                  boolean skip) {
         Set<ParameterType> parameters = reporter.getParameterTypes();
-        String title = Messages.get("document.input.parameters");
+        String title = Messages.format("document.input.parameters", reporter.getTemplate().getName());
         MacroVariables variables = new MacroVariables(context, ServiceHelper.getArchetypeService(),
                                                       ServiceHelper.getLookupService());
-        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help, variables);
+        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help, variables, skip);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
                 reporter.setParameters(dialog.getValues());
                 generate(reporter, save, version);
+            }
+
+            @Override
+            public void onSkip() {
+                listener.skipped();
+            }
+
+            @Override
+            public void onCancel() {
+                listener.cancelled();
             }
         });
         dialog.show();
