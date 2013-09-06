@@ -19,6 +19,7 @@ package org.openvpms.web.component.error;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
+import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,10 +59,10 @@ public class DialogErrorHandler extends ErrorHandler {
     /**
      * Handles an error.
      *
-     * @param title    the error title. May be <tt>null</tt>
+     * @param title    the error title. May be {@code null}
      * @param message  the error message
-     * @param cause    the cause. May be <tt>null</tt>
-     * @param listener the listener. May be <tt>null</tt>
+     * @param cause    the cause. May be {@code null}
+     * @param listener the listener. May be {@code null}
      */
     public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
         log.error(message, cause);
@@ -84,13 +85,16 @@ public class DialogErrorHandler extends ErrorHandler {
                 dialog.addWindowPaneListener(listener);
             }
             dialog.show();
+        } else if (listener != null) {
+            // notify of immediate closure
+            listener.windowPaneClosing(new WindowPaneEvent(this));
         }
     }
 
     /**
      * Determines if the error can be displayed in the browser.
      *
-     * @return <tt>true</tt> if the error can be displayed in the browser
+     * @return {@code true} if the error can be displayed in the browser
      */
     private static boolean canDisplay() {
         ApplicationInstance instance = ApplicationInstance.getActive();
@@ -100,7 +104,7 @@ public class DialogErrorHandler extends ErrorHandler {
     /**
      * Determines if an error dialog is already being displayed.
      *
-     * @return <tt>true</tt> if an error dialog is already being displayed
+     * @return {@code true} if an error dialog is already being displayed
      */
     private static boolean inError() {
         Window root = ApplicationInstance.getActive().getDefaultWindow();

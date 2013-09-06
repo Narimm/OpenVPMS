@@ -60,9 +60,8 @@ public class ParameterDialog extends PopupDialog {
      */
     private static final String NARROW_STYLE = "ParameterDialog1Column";
 
-
     /**
-     * Constructs a {@code ParameterDialog}.
+     * Constructs a {@link ParameterDialog}.
      *
      * @param title      the dialog title
      * @param parameters the report parameter types
@@ -73,7 +72,23 @@ public class ParameterDialog extends PopupDialog {
      */
     public ParameterDialog(String title, Set<ParameterType> parameters, IMObject object, Context context,
                            HelpContext help, Variables variables) {
-        super(title, null, OK_CANCEL, help);
+        this(title, parameters, object, context, help, variables, false);
+    }
+
+    /**
+     * Constructs a {@link ParameterDialog}.
+     *
+     * @param title      the dialog title
+     * @param parameters the report parameter types
+     * @param object     object for evaluating macros against. May be {@code null}
+     * @param context    the context
+     * @param help       the help context
+     * @param variables  the variables for macro expansion
+     * @param skip       if {@code true}, allow parameter entry to be skipped
+     */
+    public ParameterDialog(String title, Set<ParameterType> parameters, IMObject object, Context context,
+                           HelpContext help, Variables variables, boolean skip) {
+        super(title, null, (skip) ? OK_SKIP_CANCEL : OK_CANCEL, help);
         setModal(true);
         int columns = 2;
 

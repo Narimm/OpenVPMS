@@ -133,7 +133,7 @@ public abstract class TableBrowser<T> extends AbstractQueryBrowser<T> {
     public void query() {
         Component component = getComponent();
         if (createModel) {
-            // Destroy any existing model and tsble. These will be recreated in getTable().
+            // Destroy any existing model and table. These will be recreated in getTable().
             destroyTable();
             initialLayout = true;
         }

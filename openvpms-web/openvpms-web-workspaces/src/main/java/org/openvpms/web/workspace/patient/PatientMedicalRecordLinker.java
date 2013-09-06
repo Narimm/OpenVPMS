@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient;
 
 import org.apache.commons.logging.Log;
@@ -23,7 +24,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.retry.Retryable;
+import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -34,17 +35,27 @@ import org.openvpms.web.system.ServiceHelper;
  *
  * @author Tim Anderson
  */
-public class PatientMedicalRecordLinker implements Retryable {
+public class PatientMedicalRecordLinker extends AbstractRetryable {
 
     /**
-     * The patient clinical event.
+     * The original patient clinical event.
      */
     private final Act event;
 
     /**
-     * The patient record item.
+     * The original patient record item.
      */
     private final Act item;
+
+    /**
+     * The current event.
+     */
+    private Act currentEvent;
+
+    /**
+     * The current item.
+     */
+    private Act currentItem;
 
     /**
      * The rules.
@@ -79,26 +90,25 @@ public class PatientMedicalRecordLinker implements Retryable {
     }
 
     /**
-     * Link the records.
+     * Returns the current instance of the event.
+     * <p/>
+     * If the link was successful, this will be non-null
      *
-     * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
-     *         retried
-     * @throws RuntimeException if the action fails and may be retried
+     * @return the current instance of the event. May be {@code null}
      */
-    public boolean run() {
-        boolean result = false;
-        Act currentEvent = IMObjectHelper.reload(event);
-        Act currentItem = IMObjectHelper.reload(item);
-        if (currentEvent == null) {
-            logMissing(event, item, event);
-        } else if (currentItem == null) {
-            logMissing(event, item, item);
-        } else {
-            // link the records to the event
-            rules.linkMedicalRecords(currentEvent, currentItem);
-            result = true;
-        }
-        return result;
+    public Act getEvent() {
+        return currentEvent;
+    }
+
+    /**
+     * Returns the current instance of the item.
+     * <p/>
+     * If the link was successful, this will be non-null
+     *
+     * @return the current instance of the item. May be {@code null}
+     */
+    public Act getItem() {
+        return currentItem;
     }
 
     /**
@@ -108,6 +118,55 @@ public class PatientMedicalRecordLinker implements Retryable {
      */
     public String toString() {
         return "PatientMedicalRecordLinker(" + getId(event) + ", " + getId(item) + ")";
+    }
+
+    /**
+     * Runs the action for the first time.
+     * <p/>
+     * This implementation delegates to {@link #runAction()}.
+     *
+     * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+     *         retried
+     * @throws RuntimeException if the action fails and may be retried
+     */
+    @Override
+    protected boolean runFirst() {
+        return linkRecords(event, item);
+    }
+
+    /**
+     * Runs the action.
+     *
+     * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
+     *         retried
+     * @throws RuntimeException if the action fails and may be retried
+     */
+    @Override
+    protected boolean runAction() {
+        return linkRecords(IMObjectHelper.reload(event), IMObjectHelper.reload(item));
+    }
+
+    /**
+     * Links the records.
+     *
+     * @param currentEvent the current instance of the event. May be {@code null}
+     * @param currentItem  the current instance of the item. May be {@code null}
+     * @return {@code true} if the records were linked, {@code false} if one or both of the events is missing.
+     */
+    private boolean linkRecords(Act currentEvent, Act currentItem) {
+        boolean result = false;
+        if (currentEvent == null) {
+            logMissing(event, item, event);
+        } else if (currentItem == null) {
+            logMissing(event, item, item);
+        } else {
+            // link the records to the event
+            rules.linkMedicalRecords(currentEvent, currentItem);
+            this.currentEvent = currentEvent;
+            this.currentItem = currentItem;
+            result = true;
+        }
+        return result;
     }
 
     /**

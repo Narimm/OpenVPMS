@@ -330,11 +330,12 @@ public class MailDialog extends PopupDialog {
             editor.addAttachment(document);
         } else {
             HelpContext help = getHelpContext();
-            DocumentGenerator generator = new DocumentGenerator(act, context, help, new DocumentGenerator.Listener() {
+            DocumentGenerator.AbstractListener listener = new DocumentGenerator.AbstractListener() {
                 public void generated(Document document) {
                     editor.addAttachment(document);
                 }
-            });
+            };
+            DocumentGenerator generator = new DocumentGenerator(act, context, help, listener);
             generator.generate();
         }
     }

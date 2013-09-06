@@ -645,26 +645,14 @@ public class VisitEditor {
     private class VisitStatusUpdater extends AbstractRetryable {
 
         /**
-         * Runs the action for the first time.
+         * Runs the action.
          *
          * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
          *         retried
          * @throws RuntimeException if the action fails and may be retried
          */
         @Override
-        public boolean runFirst() {
-            return runSubsequent();
-        }
-
-        /**
-         * Runs the action. This is invoked after the first attempt to run the action has failed.
-         *
-         * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
-         *         retried
-         * @throws RuntimeException if the action fails and may be retried
-         */
-        @Override
-        public boolean runSubsequent() {
+        protected boolean runAction() {
             Act act = IMObjectHelper.reload(event);
             return (act != null) && updateStatus(act);
         }
