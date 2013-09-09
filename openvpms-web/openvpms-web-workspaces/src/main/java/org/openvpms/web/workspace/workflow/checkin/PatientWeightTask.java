@@ -88,7 +88,7 @@ class PatientWeightTask extends Tasks {
      */
     @Override
     public void start(TaskContext context) {
-        Entity schedule = CheckInHelper.getSchedule(context);
+        Entity schedule = context.getSchedule();
         Entity worklist = CheckInHelper.getWorkList(context);
         if (inputWeight(schedule) || inputWeight(worklist)) {
             TaskProperties properties = new TaskProperties();

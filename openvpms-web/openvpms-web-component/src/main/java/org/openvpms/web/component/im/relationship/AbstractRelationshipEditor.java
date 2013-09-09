@@ -103,14 +103,14 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         nodes = new ArchetypeNodes();
 
         if (source == null || !source.equals(parent)) {
-            sourceEditor = createReferenceEditor(sourceProp, layoutContext);
+            sourceEditor = createSourceReferenceEditor(sourceProp, layoutContext);
             nodes.simple(SOURCE);
             nodes.first(SOURCE);
             nodes.exclude(TARGET);
         }
 
         if (target == null || !target.equals(parent) || target.equals(source)) {
-            targetEditor = createReferenceEditor(targetProp, layoutContext);
+            targetEditor = createTargetReferenceEditor(targetProp, layoutContext);
             nodes.simple(TARGET);
             nodes.first(TARGET);
             nodes.exclude(SOURCE);
@@ -143,6 +143,28 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new LayoutStrategy();
+    }
+
+    /**
+     * Creates a new editor for the relationship source.
+     *
+     * @param property the source property
+     * @param context  the layout context
+     * @return a new reference editor
+     */
+    protected IMObjectReferenceEditor<Entity> createSourceReferenceEditor(Property property, LayoutContext context) {
+        return createReferenceEditor(property, context);
+    }
+
+    /**
+     * Creates a new editor for the relationship target.
+     *
+     * @param property the target property
+     * @param context  the layout context
+     * @return a new reference editor
+     */
+    protected IMObjectReferenceEditor<Entity> createTargetReferenceEditor(Property property, LayoutContext context) {
+        return createReferenceEditor(property, context);
     }
 
     /**
