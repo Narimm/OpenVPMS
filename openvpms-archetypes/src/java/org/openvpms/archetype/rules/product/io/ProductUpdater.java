@@ -83,8 +83,8 @@ class ProductUpdater {
         List<ProductPrice> fixedPrices = getPrices(product, data, true);
         checkPrices(product, data.getFixedPrices(), fixedPrices);
 
-        addPrices(product, practice, data.getUnitPrices(), unitPrices);
-        addPrices(product, practice, data.getFixedPrices(), fixedPrices);
+        updateProduct(product, data.getUnitPrices(), unitPrices, practice);
+        updateProduct(product, data.getFixedPrices(), fixedPrices, practice);
 
         IMObjectBean bean = new IMObjectBean(product, service);
         if (bean.hasNode("printedName")) {
@@ -92,6 +92,14 @@ class ProductUpdater {
         }
     }
 
+    /**
+     * Returns prices associated with a product that may be updated by, or overlap those in the product data.
+     *
+     * @param product the product
+     * @param data    the product data
+     * @param fixed   if {@code true}, return fixed prices otherwise return unit prices
+     * @return all prices for the product, or an empty list if the product data contains no prices of the specified type
+     */
     private List<ProductPrice> getPrices(Product product, ProductData data, boolean fixed) {
         List<ProductPrice> result;
         List<PriceData> prices = (fixed) ? data.getFixedPrices() : data.getUnitPrices();
@@ -103,14 +111,22 @@ class ProductUpdater {
         return result;
     }
 
-    private void addPrices(Product product, Party practice, List<PriceData> prices, List<ProductPrice> existing) {
+    /**
+     * Updates a product's prices.
+     *
+     * @param product  the product to update
+     * @param prices   the prices to update with
+     * @param existing the prices to update
+     * @param practice the practice, used to determine tax rates
+     */
+    private void updateProduct(Product product, List<PriceData> prices, List<ProductPrice> existing, Party practice) {
         Set<PriceData> duplicateFree = new LinkedHashSet<PriceData>(prices);
         List<ProductPrice> newPrices = new ArrayList<ProductPrice>();
         for (PriceData price : duplicateFree) {
             if (price.getId() != -1) {
-                updateExistingPrice(product, price, practice, existing);
+                updateExistingPrice(product, price, existing, practice);
             } else {
-                ProductPrice newPrice = getPrice(product, price, practice);
+                ProductPrice newPrice = updatePrice(product, price, practice);
                 if (newPrice != null) {
                     newPrices.add(newPrice);
                 }
@@ -129,7 +145,7 @@ class ProductUpdater {
      * @param practice the practice, used to determine tax rates
      * @return the new price, or {@code null} if a new price wasn't created
      */
-    private ProductPrice getPrice(Product product, PriceData price, Party practice) {
+    private ProductPrice updatePrice(Product product, PriceData price, Party practice) {
         ProductPrice result = null;
         boolean create = false;
         ProductPrice existing = getIntersectMatch(price, product);
@@ -171,7 +187,17 @@ class ProductUpdater {
         return result;
     }
 
-    private void updateExistingPrice(Product product, PriceData price, Party practice, List<ProductPrice> prices) {
+    /**
+     * Updates an existing price.
+     *
+     * @param product  the product that the price belongs to
+     * @param price    the price data to
+     * @param prices   the existing prices
+     * @param practice the practice
+     * @throws ProductIOException if the price is a linked price or the price is a unit price and overlaps an existing
+     *                            price
+     */
+    private void updateExistingPrice(Product product, PriceData price, List<ProductPrice> prices, Party practice) {
         ProductPrice existing = getPrice(product, price, prices);
         if (isLinkedPrice(existing, product)) {
             if (!priceEquals(price, existing)) {
@@ -187,6 +213,14 @@ class ProductUpdater {
         }
     }
 
+    /**
+     * Checks if a unit price overlaps another price.
+     *
+     * @param product the product
+     * @param price   the price to check
+     * @param prices  the prices to check against
+     * @throws ProductIOException if the price overlaps
+     */
     private void checkOverlap(Product product, PriceData price, List<ProductPrice> prices) {
         for (ProductPrice p : prices) {
             if (p.getId() != price.getId()
@@ -246,11 +280,24 @@ class ProductUpdater {
 
     /**
      * Determines if two prices are the same.
+     *
+     * @param data  the price data
+     * @param price the price to compare with
+     * @return {@code true} if they are the same
      */
     private boolean equals(PriceData data, ProductPrice price) {
         return priceEquals(data, price) && dateEquals(data, price);
     }
 
+    /**
+     * Determines if two prices match on date.
+     * <p/>
+     * Any time component is ignored.
+     *
+     * @param data  the price data
+     * @param price the price to compare with
+     * @return {@code true} if they match on from and to date
+     */
     private boolean dateEquals(PriceData data, ProductPrice price) {
         return DateRules.dateEquals(data.getFrom(), price.getFromDate())
                && DateRules.dateEquals(data.getTo(), price.getToDate());
@@ -269,6 +316,20 @@ class ProductUpdater {
         return price.getPrice().compareTo(data.getPrice()) == 0 && cost.compareTo(data.getCost()) == 0;
     }
 
+    /**
+     * Returns the price whose dates intersect those of the input price.
+     * If there are multiple matches and:
+     * <ul>
+     * <li>the price is a fixed price, {@code null} will be returned.
+     * Multiple fixed prices won't be updated</li>.
+     * <li>the price is a unit price, an exception will be raised</li>
+     * </ul>
+     *
+     * @param price   the input price
+     * @param product the product
+     * @return the corresponding price. May be {@code null}
+     * @throws ProductIOException if multiple unit prices match
+     */
     private ProductPrice getIntersectMatch(PriceData price, Product product) {
         List<ProductPrice> productPrices = rules.getProductPrices(product, price.getShortName(), price.getFrom(),
                                                                   price.getTo());
@@ -284,6 +345,13 @@ class ProductUpdater {
         }
     }
 
+    /**
+     * Verifies that the input prices are valid, and don't update linked prices.
+     *
+     * @param product  the product
+     * @param prices   the input prices
+     * @param existing the existing prices
+     */
     private void checkPrices(Product product, List<PriceData> prices, List<ProductPrice> existing) {
         for (PriceData price : prices) {
             if (price.getFrom() == null) {
