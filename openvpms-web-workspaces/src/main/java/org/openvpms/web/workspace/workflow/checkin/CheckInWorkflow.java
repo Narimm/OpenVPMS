@@ -21,12 +21,15 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.query.EntityQuery;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -150,8 +153,14 @@ public class CheckInWorkflow extends WorkflowImpl {
         external = context;
         HelpContext help = getHelpContext();
         initial = new DefaultTaskContext(help);
+        Entity schedule = null;
         if (appointment != null) {
             initial.addObject(appointment);
+            ActBean bean = new ActBean(appointment);
+            schedule = bean.getNodeParticipant("schedule");
+            if (schedule != null) {
+                initial.addObject(schedule);
+            }
         }
         initial.setCustomer(customer);
         initial.setPatient(patient);
@@ -173,8 +182,10 @@ public class CheckInWorkflow extends WorkflowImpl {
             addTask(new UpdateIMObjectTask(PatientArchetypes.PATIENT, new TaskProperties(), true));
         }
 
-        // optionally select a worklist and edit a customer task
-        addTask(new CustomerTaskWorkflow(taskDescription, help));
+        if (selectWorkList(schedule)) {
+            // optionally select a work list and edit a customer task
+            addTask(new CustomerTaskWorkflow(taskDescription, help));
+        }
 
         // get the act.patientClinicalEvent.
         TaskProperties eventProps = new TaskProperties();
@@ -232,9 +243,9 @@ public class CheckInWorkflow extends WorkflowImpl {
      * @param context the context
      * @return a new task to select a work list
      */
-    protected SelectIMObjectTask<Party> createSelectWorkListTask(TaskContext context) {
+    protected SelectIMObjectTask<Entity> createSelectWorkListTask(TaskContext context) {
         HelpContext help = context.getHelpContext().topic("worklist");
-        return new SelectIMObjectTask<Party>(ScheduleArchetypes.ORGANISATION_WORKLIST, context, help);
+        return new SelectIMObjectTask<Entity>(new EntityQuery(new ScheduleWorkListQuery(context.getSchedule()), context), help);
     }
 
     /**
@@ -244,6 +255,24 @@ public class CheckInWorkflow extends WorkflowImpl {
      */
     protected EditVisitTask createEditVisitTask() {
         return new EditVisitTask();
+    }
+
+    /**
+     * Determines a work list should be selected.
+     *
+     * @param schedule the appointment schedule. May be {@code null}
+     * @return {@code true} if work-lists should be selected
+     */
+    private boolean selectWorkList(Entity schedule) {
+        boolean result = true;
+        if (schedule != null) {
+            IMObjectBean bean = new IMObjectBean(schedule);
+            boolean useAllWorkLists = bean.getBoolean("useAllWorkLists", true);
+            if (!useAllWorkLists) {
+                result = !bean.getValues("workLists").isEmpty();
+            }
+        }
+        return result;
     }
 
     private class CustomerTaskWorkflow extends WorkflowImpl {
@@ -256,8 +285,8 @@ public class CheckInWorkflow extends WorkflowImpl {
          */
         public CustomerTaskWorkflow(String taskDescription, HelpContext help) {
             super(help);
-            // select a worklist
-            SelectIMObjectTask<Party> selectWorkList = createSelectWorkListTask(initial);
+            // select a work list
+            SelectIMObjectTask<Entity> selectWorkList = createSelectWorkListTask(initial);
             selectWorkList.setRequired(false);
             addTask(selectWorkList);
 

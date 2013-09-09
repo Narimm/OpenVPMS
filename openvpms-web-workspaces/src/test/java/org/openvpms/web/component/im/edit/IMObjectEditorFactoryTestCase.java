@@ -69,6 +69,7 @@ import org.openvpms.web.workspace.supplier.delivery.DeliveryEditor;
 import org.openvpms.web.workspace.supplier.delivery.DeliveryItemEditor;
 import org.openvpms.web.workspace.supplier.order.OrderEditor;
 import org.openvpms.web.workspace.supplier.order.OrderItemEditor;
+import org.openvpms.web.workspace.workflow.checkin.ScheduleTemplateRelationshipEditor;
 import org.openvpms.web.workspace.workflow.messaging.UserMessageEditor;
 
 import static org.junit.Assert.assertEquals;
@@ -106,6 +107,9 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <li><em>entityRelationship.supplierStockLocationESCI</em> - returns an
      * {@link SupplierStockLocationRelationshipESCIEditor}
      * <li><em>entityRelationship.productReminder</em> - returns an {@link ProductReminderRelationshipEditor}
+     * <li><em>entityRelationship.scheduleDocumentTemplate</em> - returns an {@link ScheduleTemplateRelationshipEditor}
+     * <li><em>entityRelationship.worklistDocumentTemplate</em> - returns an {@link ScheduleTemplateRelationshipEditor}
+     * </ul>
      */
     @Test
     public void testCreateRelationshipEditor() {
@@ -121,6 +125,9 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                 checkCreate(shortName, ProductReminderRelationshipEditor.class);
             } else if (shortName.equals("entityRelationship.reminderTypeTemplate")) {
                 checkCreate(shortName, ReminderTypeTemplateEditor.class);
+            } else if (shortName.equals("entityRelationship.scheduleDocumentTemplate") ||
+                       shortName.equals("entityRelationship.worklistDocumentTemplate")) {
+                checkCreate(shortName, ScheduleTemplateRelationshipEditor.class);
             } else {
                 checkCreate(shortName, EntityRelationshipEditor.class);
             }

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -129,7 +129,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // add the patient weight
         workflow.addWeight(patient, BigDecimal.valueOf(10), clinician);
 
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        workflow.printPatientDocuments(PopupDialog.SKIP_ID);
 
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
@@ -182,7 +182,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         workflow.addWeight(newPatient, BigDecimal.ONE, clinician);
 
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        workflow.printPatientDocuments(PopupDialog.SKIP_ID);
 
         PopupDialog eventDialog = workflow.editVisit();
         fireDialogButton(eventDialog, PopupDialog.OK_ID);
@@ -262,7 +262,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.addWeight(patient, BigDecimal.valueOf(10), clinician);
 
         // skip form printing
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        workflow.printPatientDocuments(PopupDialog.SKIP_ID);
 
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
@@ -355,7 +355,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         assertNotNull(weight);
         assertTrue(weight.isNew());
 
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        workflow.printPatientDocuments(PopupDialog.SKIP_ID);
 
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();
@@ -463,7 +463,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         fireDialogButton(workflow.getSelectionDialog(), PopupDialog.SKIP_ID);
         fireDialogButton(workflow.getWeightEditor(), PopupDialog.SKIP_ID);
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        workflow.printPatientDocuments(PopupDialog.SKIP_ID);
 
         Product product = CustomerChargeTestHelper.createProduct(ProductArchetypes.MEDICATION, BigDecimal.TEN,
                                                                  getPractice());
@@ -572,7 +572,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         workflow.addWeight(patient, BigDecimal.ONE, clinician);
 
-        BrowserDialog<Act> dialog = workflow.getSelectionDialog();
+        BrowserDialog<Entity> dialog = workflow.getPrintDocumentsDialog();
         WorkflowTestHelper.cancelDialog(dialog, userClose);
 
         workflow.checkComplete(false, null, null, context);
@@ -633,7 +633,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         runCheckInToWeight(workflow);
 
         workflow.addWeight(patient, BigDecimal.valueOf(20), clinician);
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        workflow.printPatientDocuments(PopupDialog.SKIP_ID);
     }
 
 
@@ -653,7 +653,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         workflow.addWeight(patient, BigDecimal.valueOf(20), clinician); // clinician defaults from context
 
-        workflow.printDocumentForm(PopupDialog.SKIP_ID);
+        workflow.printPatientDocuments(PopupDialog.SKIP_ID);
 
         // edit the clinical event
         PopupDialog eventDialog = workflow.editVisit();

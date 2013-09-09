@@ -30,20 +30,6 @@ import org.openvpms.web.component.workflow.TaskContext;
 class CheckInHelper {
 
     /**
-     * Returns the schedule associated with the context appointment.
-     *
-     * @param context the context
-     * @return the schedule, or {@code null} if none is found
-     */
-    public static Entity getSchedule(TaskContext context) {
-        Act appointment = (Act) context.getObject(ScheduleArchetypes.APPOINTMENT);
-        if (appointment != null) {
-            return new ActBean(appointment).getNodeParticipant("schedule");
-        }
-        return null;
-    }
-
-    /**
      * Returns the work list associated with the context task.
      *
      * @param context the context

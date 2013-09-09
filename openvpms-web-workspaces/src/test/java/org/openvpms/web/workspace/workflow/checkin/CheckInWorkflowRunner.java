@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -41,6 +42,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
+import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
@@ -180,9 +182,22 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
      *
      * @param buttonId the button identifier
      */
-    public void printDocumentForm(String buttonId) {
-        BrowserDialog<Act> dialog = getSelectionDialog();
+    public void printPatientDocuments(String buttonId) {
+        BrowserDialog<Entity> dialog = getPrintDocumentsDialog();
         EchoTestHelper.fireDialogButton(dialog, buttonId);
+    }
+
+    /**
+     * Returns the dialog to print patient documents.
+     *
+     * @return the dialog
+     */
+    public BrowserDialog<Entity> getPrintDocumentsDialog() {
+        Task current = getTask();
+        assertTrue(current instanceof PrintPatientDocumentsTask);
+        BrowserDialog<Entity> dialog = ((PrintPatientDocumentsTask) current).getBrowserDialog();
+        assertNotNull(dialog);
+        return dialog;
     }
 
     /**
@@ -413,13 +428,13 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
          * @return a new task to select a work list
          */
         @Override
-        protected SelectIMObjectTask<Party> createSelectWorkListTask(TaskContext context) {
-            List<Party> worklists = (workList != null) ? Arrays.asList(workList) : Collections.<Party>emptyList();
-            Query<Party> query = new ListQuery<Party>(worklists, ScheduleArchetypes.ORGANISATION_WORKLIST, Party.class);
-            return new SelectIMObjectTask<Party>(query, context.getHelpContext()) {
+        protected SelectIMObjectTask<Entity> createSelectWorkListTask(TaskContext context) {
+            List<Entity> list = (workList != null) ? Arrays.<Entity>asList(workList) : Collections.<Entity>emptyList();
+            Query<Entity> query = new ListQuery<Entity>(list, ScheduleArchetypes.ORGANISATION_WORKLIST, Entity.class);
+            return new SelectIMObjectTask<Entity>(query, context.getHelpContext()) {
                 @Override
-                protected Browser<Party> createBrowser(Query<Party> query, LayoutContext layout) {
-                    return new DefaultIMObjectTableBrowser<Party>(query, layout);
+                protected Browser<Entity> createBrowser(Query<Entity> query, LayoutContext layout) {
+                    return new DefaultIMObjectTableBrowser<Entity>(query, layout);
                 }
             };
         }

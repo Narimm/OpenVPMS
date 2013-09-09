@@ -20,6 +20,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.focus.FocusHelper;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.PageListener;
 import org.openvpms.web.echo.table.SortableTableHeaderRenderer;
 import org.openvpms.web.echo.table.TableNavigator;
@@ -48,7 +49,7 @@ public class PagedIMTable<T> extends Column {
      * @param model the table model
      */
     public PagedIMTable(IMTableModel<T> model) {
-        setStyleName("CellSpacing");
+        setStyleName(Styles.CELL_SPACING);
         IMTableModel<T> paged;
         if (!(model instanceof PagedIMTableModel)) {
             paged = new PagedIMTableModel<T, T>(model);
