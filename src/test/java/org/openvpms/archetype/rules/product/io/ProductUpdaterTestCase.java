@@ -250,7 +250,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
             updater.update(product, data, practice);
             fail("Expected ProductIOException to be thrown");
         } catch (ProductIOException expected) {
-            assertEquals("Cannot update linked price with identifier " + fixedPrice.getId()
+            assertEquals("Cannot update price with identifier " + fixedPrice.getId()
                          + " at line 1 for product P1 (" + product.getId()
                          + "). It is linked from " + template.getName() + " (" + template.getId() + ")",
                          expected.getMessage());
