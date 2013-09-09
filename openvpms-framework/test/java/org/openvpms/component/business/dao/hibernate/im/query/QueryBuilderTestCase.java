@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -53,6 +53,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import static org.junit.Assert.assertEquals;
 import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.exists;
 import static org.openvpms.component.system.common.query.Constraints.idEq;
 import static org.openvpms.component.system.common.query.Constraints.join;
 import static org.openvpms.component.system.common.query.Constraints.leftJoin;
@@ -551,6 +552,26 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
      */
     @Test
     public void testExistsConstraint() {
+        // query to find all pets that have a customer
+        String expected =
+                "select pet from " + PartyDO.class.getName() + " as pet where (pet.archetypeId.shortName = :shortName0 "
+                + "and exists "
+                + "(select customer from " + PartyDO.class.getName() + " as customer "
+                + "inner join customer.sourceEntityRelationships as patientRel "
+                + "where (customer.archetypeId.shortName = :shortName1 and "
+                + "((patientRel.archetypeId.shortName = :shortName2 or patientRel.archetypeId.shortName = :shortName3) "
+                + "and pet.id = patientRel.target.id))))";
+        ArchetypeQuery query = new ArchetypeQuery(shortName("pet", "party.animalpet"));
+        query.add(exists(subQuery("party.person", "customer")
+                                 .add(join("patients", "patientRel").add(idEq("pet", "patientRel.target")))));
+        checkQuery(query, expected);
+    }
+
+    /**
+     * Tests not ExistsConstraints.
+     */
+    @Test
+    public void testNotExistsConstraint() {
         // query to find all products that have a CANINE species classification, or no species classification
         String expected = "select p from "
                           + ProductDO.class.getName() + " as p "
