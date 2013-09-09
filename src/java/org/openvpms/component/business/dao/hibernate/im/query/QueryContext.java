@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.component.business.dao.hibernate.im.query;
 
 import org.apache.commons.lang.WordUtils;
@@ -136,6 +137,10 @@ public class QueryContext {
      */
     private final Map<String, Object> params;
 
+    /**
+     * The 'not' constraint clause.
+     */
+    private static final String NOT_CONSTRAINT = "not ";
 
     /**
      * Constructs a {@code QueryContext}.
@@ -658,7 +663,7 @@ public class QueryContext {
      */
     QueryContext addNotConstraint() {
         whereClause.appendOperator();
-        whereClause.append("not ");
+        whereClause.append(NOT_CONSTRAINT);
         return this;
     }
 
@@ -669,6 +674,10 @@ public class QueryContext {
      * @return this context
      */
     QueryContext addExistsConstraint(String query) {
+        if (!whereClause.toString().endsWith(NOT_CONSTRAINT)) {
+            // only add the operator if the clause doesn't end in 'not'
+            whereClause.appendOperator();
+        }
         whereClause.append("exists (");
         whereClause.append(query);
         whereClause.append(")");
