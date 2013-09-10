@@ -159,7 +159,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         product1 = get(product1);
         assertEquals(2, product1.getProductPrices().size());
 
-        checkFixedPrice(product1, fixedPrice, fixedCost, markup, fixed.getFrom(), fixed.getTo());
+        checkFixedPrice(product1, fixedPrice, fixedCost, markup, fixed.getFrom(), fixed.getTo(), true);
         checkUnitPrice(product1, unitPrice, unitCost, markup, unit.getFrom(), unit.getTo());
     }
 
@@ -178,7 +178,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         BigDecimal unitCost = new BigDecimal("0.5");
 
-        data.addFixedPrice(-1, fixedPrice, fixedCost, getDate("2013-06-02"), null, 1);
+        data.addFixedPrice(-1, fixedPrice, fixedCost, getDate("2013-06-02"), null, true, 1);
         data.addUnitPrice(-1, unitPrice, unitCost, getDate("2013-06-03"), null, 1);
 
         importProducts(data);
@@ -188,7 +188,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
 
         checkPrice(product1, createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2013-06-01", true));
         checkPrice(product1, createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-06-02"));
-        checkFixedPrice(product1, fixedPrice, fixedCost, markup, getDate("2013-06-02"), null);
+        checkFixedPrice(product1, fixedPrice, fixedCost, markup, getDate("2013-06-02"), null, true);
         checkUnitPrice(product1, unitPrice, unitCost, markup, getDate("2013-06-03"), null);
     }
 

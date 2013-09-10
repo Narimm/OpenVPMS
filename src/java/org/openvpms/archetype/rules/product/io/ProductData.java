@@ -152,15 +152,17 @@ public class ProductData {
     /**
      * Adds a fixed price.
      *
-     * @param id    the price identifier, or {@code -1} if it is a new price
-     * @param price the price
-     * @param cost  the cost price
-     * @param from  the price start date. May be {@code null}
-     * @param to    the price end date. May be {@code null}
-     * @param line  the line the price was read from
+     * @param id           the price identifier, or {@code -1} if it is a new price
+     * @param price        the price
+     * @param cost         the cost price
+     * @param from         the price start date. May be {@code null}
+     * @param to           the price end date. May be {@code null}
+     * @param defaultPrice {@code true} if the price is the default
+     * @param line         the line the price was read from
      */
-    public void addFixedPrice(long id, BigDecimal price, BigDecimal cost, Date from, Date to, int line) {
-        fixedPrices.add(new PriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, from, to, line));
+    public void addFixedPrice(long id, BigDecimal price, BigDecimal cost, Date from, Date to, boolean defaultPrice,
+                              int line) {
+        fixedPrices.add(new PriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, from, to, defaultPrice, line));
     }
 
     /**
