@@ -59,6 +59,11 @@ public class PriceData {
     private final Date to;
 
     /**
+     * Indicates if the price is the default price. Only applies to fixed prices
+     */
+    private final boolean defaultPrice;
+
+    /**
      * The line that the price was read from.
      */
     private final int line;
@@ -75,12 +80,30 @@ public class PriceData {
      * @param line      the line that the price was read from
      */
     public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, Date from, Date to, int line) {
+        this(id, shortName, price, cost, from, to, false, line);
+    }
+
+    /**
+     * Constructs a {@link PriceData}.
+     *
+     * @param id           the price identifier, or {@code -1} if it is a new price
+     * @param shortName    the price archetype short name
+     * @param price        the price
+     * @param cost         the cost price
+     * @param from         the price start date. May be {@code null}
+     * @param to           the price end date. May be {@code null}
+     * @param defaultPrice if {@code true}, indicates the price is the default price
+     * @param line         the line that the price was read from
+     */
+    public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, Date from, Date to,
+                     boolean defaultPrice, int line) {
         this.id = id;
         this.shortName = shortName;
         this.price = price;
         this.cost = cost;
         this.from = from;
         this.to = to;
+        this.defaultPrice = defaultPrice;
         this.line = line;
     }
 
@@ -154,6 +177,17 @@ public class PriceData {
      */
     public Date getTo() {
         return to;
+    }
+
+    /**
+     * Determines if the price is the default price.
+     * <p/>
+     * This only applies to fixed prices.
+     *
+     * @return {@code true} if the price is the default price
+     */
+    public boolean isDefault() {
+        return defaultPrice;
     }
 
     /**

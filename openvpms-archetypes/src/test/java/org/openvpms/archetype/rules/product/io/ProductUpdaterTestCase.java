@@ -82,7 +82,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         Product product = createProduct("P1", "Product 1", fixed1, unit1);
 
         ProductData data = createProduct(product, false);
-        data.addPrice(createFixedPriceData(-1, "1.08", "0.6", "2013-04-01", null));
+        data.addPrice(createFixedPriceData(-1, "1.08", "0.6", "2013-04-01", null, true));
         data.addPrice(createUnitPriceData(-1, "2.55", "1.5", "2013-04-03", null));
 
         updater.update(product, data, practice);
@@ -91,7 +91,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         assertEquals(getDate("2013-03-31"), fixed1.getToDate()); // price to date now before the new price start date
 
         checkPrice(product, createFixedPrice("1.0", "0.5", "100", "2013-01-01", "2013-3-31", true)); // old fixed price
-        checkPrice(product, createFixedPrice("1.08", "0.6", "80", "2013-04-01", null, false));       // new fixed price
+        checkPrice(product, createFixedPrice("1.08", "0.6", "80", "2013-04-01", null, true));       // new fixed price
 
         checkPrice(product, createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-04-02"));       // old unit price
         checkPrice(product, createUnitPrice("2.55", "1.5", "70", "2013-04-03", null));               // new unit price
@@ -167,7 +167,8 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
 
         // verify that a unit fixed can be added that is dated prior to fixed1
         ProductData data1 = createProduct(product, false);
-        data1.addPrice(createFixedPriceData(-1, "1.0", "0.5", "2013-01-01", "2013-03-31")); // fixed0. Prior to fixed1.
+        data1.addPrice(createFixedPriceData(-1, "1.0", "0.5", "2013-01-01", "2013-03-31", true));
+        // fixed0. Prior to fixed1.
 
         updater.update(product, data1, practice);
         assertEquals(2, product.getProductPrices().size());
@@ -177,7 +178,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
 
         // add a price that overlaps both existing prices. This shouldn't change any dates.
         ProductData data2 = createProduct(product, false);
-        data2.addPrice(createFixedPriceData(-1, "1.92", "1.2", "2013-01-02", null)); // overlaps fixed0, fixed1
+        data2.addPrice(createFixedPriceData(-1, "1.92", "1.2", "2013-01-02", null, true)); // overlaps fixed0, fixed1
         updater.update(product, data2, practice);
 
         checkPrice(product, createFixedPrice("1.0", "0.5", "100", "2013-01-01", "2013-03-31", true)); // fixed0
@@ -195,7 +196,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         Product product = createProduct("P1", "Product 1", fixed1, unit1);
 
         ProductData data = createProduct(product, false);
-        PriceData fixed2 = createFixedPriceData(-1, "1.08", "0.6", "2013-04-02", null);
+        PriceData fixed2 = createFixedPriceData(-1, "1.08", "0.6", "2013-04-02", null, true);
         data.addPrice(fixed2);
         data.addPrice(fixed2);
         PriceData unit2 = createUnitPriceData(-1, "2.55", "1.5", "2013-04-01", null);
@@ -213,7 +214,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
     public void testPriceNotFound() {
         Product product = createProduct("P1", "Product 1");
         ProductData data = createProduct(product);
-        data.addPrice(createFixedPriceData(23, "1.0", "0.5", "2013-01-01", null));
+        data.addPrice(createFixedPriceData(23, "1.0", "0.5", "2013-01-01", null, true));
 
         try {
             updater.update(product, data, practice);
@@ -271,15 +272,18 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         assertEquals("New Product 1", bean.getString("printedName"));
     }
 
-    private PriceData createFixedPriceData(long id, String price, String cost, String from, String to) {
-        return createPriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, from, to);
+    private PriceData createFixedPriceData(long id, String price, String cost, String from, String to,
+                                           boolean isDefault) {
+        return createPriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, from, to, isDefault);
     }
 
     private PriceData createUnitPriceData(long id, String price, String cost, String from, String to) {
-        return createPriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, from, to);
+        return createPriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, from, to, false);
     }
 
-    private PriceData createPriceData(long id, String shortName, String price, String cost, String from, String to) {
-        return new PriceData(id, shortName, new BigDecimal(price), new BigDecimal(cost), getDate(from), getDate(to), 1);
+    private PriceData createPriceData(long id, String shortName, String price, String cost, String from, String to,
+                                      boolean isDefault) {
+        return new PriceData(id, shortName, new BigDecimal(price), new BigDecimal(cost), getDate(from), getDate(to),
+                             isDefault, 1);
     }
 }

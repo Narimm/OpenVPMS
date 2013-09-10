@@ -32,6 +32,7 @@ public class ProductIOException extends OpenVPMSException {
     public enum ErrorCode {
         RequiredValue,
         InvalidValue,
+        InvalidLine,
         InvalidName,
         NotFound,
         UnrecognisedDocument,
@@ -41,7 +42,9 @@ public class ProductIOException extends OpenVPMSException {
         LinkedPrice,
         NoFromDate,
         PriceNotFound,
-        CannotUpdateLinkedPrice
+        CannotUpdateLinkedPrice,
+        UnrecognisedDateFormat
+
     }
 
     /**

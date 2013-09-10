@@ -48,8 +48,8 @@ public class ProductCSVWriter implements ProductWriter {
      */
     public static final String[] HEADER = {
             "Product Id", "Product Name", "Product Printed Name", "Fixed Price Id", "Fixed Price", "Fixed Cost",
-            "Fixed Price Start Date", "Fixed Price End Date", "Unit Price Id", "Unit Price", "Unit Cost",
-            "Unit Price Start Date", "Unit Price End Date", "Notes"};
+            "Fixed Price Start Date", "Fixed Price End Date", "Default Fixed Price", "Unit Price Id", "Unit Price",
+            "Unit Cost", "Unit Price Start Date", "Unit Price End Date", "Notes"};
 
     /**
      * The archetype service.
@@ -177,6 +177,7 @@ public class ProductCSVWriter implements ProductWriter {
             String fixedCost = null;
             String fixedStartDate = null;
             String fixedEndDate = null;
+            String defaultFixedPrice = null;
             String notes = null;
             if (fixedPrice != null) {
                 IMObjectBean fixedBean = new IMObjectBean(fixedPrice, service);
@@ -185,7 +186,9 @@ public class ProductCSVWriter implements ProductWriter {
                 fixedCost = fixedBean.getBigDecimal("cost").toString();
                 fixedStartDate = getDate(fixedPrice.getFromDate());
                 fixedEndDate = getDate(fixedPrice.getToDate());
+                defaultFixedPrice = fixedBean.getString("default");
                 if (!ObjectUtils.equals(fixedPrice.getProduct(), product)) {
+                    // TODO - hack to format message
                     notes = new ProductIOException(ProductIOException.ErrorCode.LinkedPrice,
                                                    fixedPrice.getProduct().getName(),
                                                    fixedPrice.getProduct().getId()).getMessage();
@@ -205,7 +208,7 @@ public class ProductCSVWriter implements ProductWriter {
                 unitEndDate = getDate(unitPrice.getToDate());
             }
             String[] line = {productId, name, printedName, fixedId, fixed, fixedCost, fixedStartDate, fixedEndDate,
-                             unitId, unit, unitCost, unitStartDate, unitEndDate, notes};
+                             defaultFixedPrice, unitId, unit, unitCost, unitStartDate, unitEndDate, notes};
             writer.writeNext(line);
         }
     }

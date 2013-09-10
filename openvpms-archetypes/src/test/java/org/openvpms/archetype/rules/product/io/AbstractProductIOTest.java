@@ -86,7 +86,7 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
             for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE)) {
                 IMObjectBean priceBean = new IMObjectBean(price);
                 result.addFixedPrice(price.getId(), price.getPrice(), priceBean.getBigDecimal("cost"),
-                                     price.getFromDate(), price.getToDate(), 1);
+                                     price.getFromDate(), price.getToDate(), priceBean.getBoolean("default"), 1);
             }
             for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE)) {
                 IMObjectBean priceBean = new IMObjectBean(price);
@@ -110,25 +110,29 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
         BigDecimal expectedMarkup = bean.getBigDecimal("markup");
         Date expectedFrom = expected.getFromDate();
         Date expectedTo = expected.getToDate();
+        boolean isDefault = bean.hasNode("default") && bean.getBoolean("default");
 
         String shortName = expected.getArchetypeId().getShortName();
-        checkPrice(product, shortName, expectedPrice, expectedCost, expectedMarkup, expectedFrom, expectedTo);
+        checkPrice(product, shortName, expectedPrice, expectedCost, expectedMarkup, expectedFrom, expectedTo,
+                   isDefault);
     }
 
     /**
      * Verifies that a product contains the expected fixed price.
      *
-     * @param product        the product
-     * @param expectedPrice  the expected price
-     * @param expectedCost   the expected cost
-     * @param expectedMarkup the expected markup
-     * @param expectedFrom   the expected price start date
-     * @param expectedTo     the expected price end date
+     * @param product         the product
+     * @param expectedPrice   the expected price
+     * @param expectedCost    the expected cost
+     * @param expectedMarkup  the expected markup
+     * @param expectedFrom    the expected price start date
+     * @param expectedTo      the expected price end date
+     * @param expectedDefault the expected default
      */
     protected void checkFixedPrice(Product product, BigDecimal expectedPrice, BigDecimal expectedCost,
-                                   BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo) {
+                                   BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo,
+                                   boolean expectedDefault) {
         checkPrice(product, ProductArchetypes.FIXED_PRICE, expectedPrice, expectedCost, expectedMarkup, expectedFrom,
-                   expectedTo);
+                   expectedTo, expectedDefault);
     }
 
     /**
@@ -144,23 +148,25 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
     protected void checkUnitPrice(Product product, BigDecimal expectedPrice, BigDecimal expectedCost,
                                   BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo) {
         checkPrice(product, ProductArchetypes.UNIT_PRICE, expectedPrice, expectedCost, expectedMarkup, expectedFrom,
-                   expectedTo);
+                   expectedTo, false);
     }
 
     /**
      * Verifies that a product contains the expected fixed price.
      *
-     * @param product        the product
-     * @param expectedPrice  the expected price
-     * @param expectedCost   the expected cost
-     * @param expectedMarkup the expected markup
-     * @param expectedFrom   the expected price start date
-     * @param expectedTo     the expected price end date
+     * @param product         the product
+     * @param expectedPrice   the expected price
+     * @param expectedCost    the expected cost
+     * @param expectedMarkup  the expected markup
+     * @param expectedFrom    the expected price start date
+     * @param expectedTo      the expected price end date
+     * @param expectedDefault the expected default
      */
     protected void checkFixedPrice(Product product, String expectedPrice, String expectedCost,
-                                   String expectedMarkup, String expectedFrom, String expectedTo) {
+                                   String expectedMarkup, String expectedFrom, String expectedTo,
+                                   boolean expectedDefault) {
         checkPrice(product, ProductArchetypes.FIXED_PRICE, expectedPrice, expectedCost, expectedMarkup, expectedFrom,
-                   expectedTo);
+                   expectedTo, expectedDefault);
     }
 
     /**
@@ -176,39 +182,41 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
     protected void checkUnitPrice(Product product, String expectedPrice, String expectedCost,
                                   String expectedMarkup, String expectedFrom, String expectedTo) {
         checkPrice(product, ProductArchetypes.UNIT_PRICE, expectedPrice, expectedCost, expectedMarkup, expectedFrom,
-                   expectedTo);
+                   expectedTo, false);
     }
 
     /**
      * Verifies that a product contains the expected price.
      *
-     * @param product        the product
-     * @param shortName      the price archetype short name
-     * @param expectedPrice  the expected price
-     * @param expectedCost   the expected cost
-     * @param expectedMarkup the expected markup
-     * @param expectedFrom   the expected price start date
-     * @param expectedTo     the expected price end date
+     * @param product         the product
+     * @param shortName       the price archetype short name
+     * @param expectedPrice   the expected price
+     * @param expectedCost    the expected cost
+     * @param expectedMarkup  the expected markup
+     * @param expectedFrom    the expected price start date
+     * @param expectedTo      the expected price end date
+     * @param expectedDefault the expected default. Only applies to fixed prices
      */
     protected void checkPrice(Product product, String shortName, String expectedPrice, String expectedCost,
-                              String expectedMarkup, String expectedFrom, String expectedTo) {
+                              String expectedMarkup, String expectedFrom, String expectedTo, boolean expectedDefault) {
         checkPrice(product, shortName, new BigDecimal(expectedPrice), new BigDecimal(expectedCost),
-                   new BigDecimal(expectedMarkup), getDate(expectedFrom), getDate(expectedTo));
+                   new BigDecimal(expectedMarkup), getDate(expectedFrom), getDate(expectedTo), expectedDefault);
     }
 
     /**
      * Verifies that a product contains the expected price.
      *
-     * @param product        the product
-     * @param shortName      the price archetype short name
-     * @param expectedPrice  the expected price
-     * @param expectedCost   the expected cost
-     * @param expectedMarkup the expected markup
-     * @param expectedFrom   the expected price start date
-     * @param expectedTo     the expected price end date
+     * @param product         the product
+     * @param shortName       the price archetype short name
+     * @param expectedPrice   the expected price
+     * @param expectedCost    the expected cost
+     * @param expectedMarkup  the expected markup
+     * @param expectedFrom    the expected price start date
+     * @param expectedTo      the expected price end date
+     * @param expectedDefault the expected default. Only applies to fixed prices
      */
     protected void checkPrice(Product product, String shortName, BigDecimal expectedPrice, BigDecimal expectedCost,
-                              BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo) {
+                              BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo, boolean expectedDefault) {
         boolean found = false;
         for (ProductPrice price : product.getProductPrices()) {
             IMObjectBean priceBean = new IMObjectBean(price);
@@ -218,7 +226,8 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
                 && priceBean.getBigDecimal("markup").compareTo(expectedMarkup) == 0
                 && ObjectUtils.equals(expectedFrom, price.getFromDate())
                 && ObjectUtils.equals(expectedTo, price.getToDate())) {
-                found = true;
+
+                found = !priceBean.hasNode("default") || priceBean.getBoolean("default") == expectedDefault;
                 break;
             }
         }
