@@ -36,7 +36,9 @@ import java.util.Set;
 
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.UNIT_PRICE;
+import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.CannotCloseExistingPrice;
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.CannotUpdateLinkedPrice;
+import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.FromDateGreaterThanToDate;
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.NoFromDate;
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.PriceNotFound;
 import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCode.UnitPriceOverlap;
@@ -122,11 +124,28 @@ class ProductUpdater {
     private void updateProduct(Product product, List<PriceData> prices, List<ProductPrice> existing, Party practice) {
         Set<PriceData> duplicateFree = new LinkedHashSet<PriceData>(prices);
         List<ProductPrice> newPrices = new ArrayList<ProductPrice>();
+        Date from = null;
+        boolean sameFromDate = true;
+
+        // update existing prices first
         for (PriceData price : duplicateFree) {
             if (price.getId() != -1) {
                 updateExistingPrice(product, price, existing, practice);
             } else {
-                ProductPrice newPrice = updatePrice(product, price, practice);
+                // determine if new prices have the same from date. If so, the from date is used to close existing
+                // prices.
+                if (from == null) {
+                    from = price.getFrom();
+                } else if (price.getFrom() != null && !DateRules.dateEquals(from, price.getFrom())) {
+                    sameFromDate = false;
+                }
+            }
+        }
+
+        // process new prices
+        for (PriceData price : duplicateFree) {
+            if (price.getId() == -1) {
+                ProductPrice newPrice = createPrice(product, price, practice, sameFromDate);
                 if (newPrice != null) {
                     newPrices.add(newPrice);
                 }
@@ -138,47 +157,51 @@ class ProductUpdater {
     }
 
     /**
-     * Updates an existing price, or creates a new price if required.
+     * Creates a new price.
      *
      * @param product  the product
      * @param price    the price to add
      * @param practice the practice, used to determine tax rates
+     * @param sameFrom indicates if all prices of the same type have the same from date
      * @return the new price, or {@code null} if a new price wasn't created
      */
-    private ProductPrice updatePrice(Product product, PriceData price, Party practice) {
+    private ProductPrice createPrice(Product product, PriceData price, Party practice, boolean sameFrom) {
         ProductPrice result = null;
-        boolean create = false;
+        boolean create;
         ProductPrice existing = getIntersectMatch(price, product);
         if (existing == null) {
             create = true;
         } else {
             boolean dateMatch = dateEquals(price, existing);
             boolean priceMatch = priceEquals(price, existing);
-            if (!dateMatch || !priceMatch) {
-                // the price is different to the existing price, so work out if the current price needs to be
-                // updated, or a new one created
+            if (dateMatch && priceMatch) {
+                // the new price matches an existing price, but doesn't have an identifier. Ignore it.
+                create = false;
+            } else {
+                // the price is different to the existing price
                 if (isLinkedPrice(existing, product)) {
-                    // the price is linked from a price template. These cannot be updated
-                    create = true;
+                    // the price is linked from a price template. These cannot be updated.
                     existing = null;
-                } else if (dateMatch) {
-                    updatePrice(existing, price, product, practice);
-                } else {
-                    // price overlaps an existing price.
-                    if (existing.getToDate() == null) {
-                        // the current price is unbounded, so close it off and create a new one
-                        create = true;
-                    } else if (UNIT_PRICE.equals(price.getShortName())) {
+                } else if (UNIT_PRICE.equals(price.getShortName())) {
+                    if (dateMatch || existing.getToDate() != null) {
                         // can't have unit prices overlapping
                         throw new ProductIOException(UnitPriceOverlap, product.getName(), product.getId());
                     }
                 }
+                create = true;
             }
         }
         if (create) {
             Date from = price.getFrom();
             if (existing != null && existing.getToDate() == null) {
-                existing.setToDate(DateRules.getDate(from, -1, DateUnits.DAYS));
+                if (!sameFrom) {
+                    throw new ProductIOException(CannotCloseExistingPrice);
+                }
+                Date date = DateRules.getDate(from, -1, DateUnits.DAYS);
+                if (existing.getFromDate() != null && DateRules.compareDates(existing.getFromDate(), date) > 0) {
+                    throw new ProductIOException(FromDateGreaterThanToDate);
+                }
+                existing.setToDate(date);
             }
             ProductPrice newPrice = (ProductPrice) service.create(price.getShortName());
             updatePrice(newPrice, price, product, practice);
