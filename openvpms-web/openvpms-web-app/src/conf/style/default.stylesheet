@@ -2084,6 +2084,16 @@
         </properties>
     </style>
 
+    <style name="italicLineThrough" base-name="default" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="${font.size}" italic="true" line-through="true">
+                    <typeface name="${font.typeface}"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+
     <style name="h1" base-name="default" type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
