@@ -18,6 +18,8 @@ package org.openvpms.web.workspace.product.io;
 
 import org.openvpms.archetype.rules.product.io.PriceData;
 import org.openvpms.archetype.rules.product.io.ProductData;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 /**
  * Product price data.
@@ -27,9 +29,9 @@ import org.openvpms.archetype.rules.product.io.ProductData;
 class ProductPriceData {
 
     /**
-     * The product.
+     * The product data.
      */
-    private final ProductData product;
+    private final ProductData productData;
 
     /**
      * The fixed price. May be {@code null}
@@ -42,14 +44,19 @@ class ProductPriceData {
     private final PriceData unitPrice;
 
     /**
+     * The product. May be {@code null}
+     */
+    private Product product;
+
+    /**
      * Constructs a {@link ProductPriceData}.
      *
-     * @param product    the product
-     * @param fixedPrice the fixed price. May be {@code null}
-     * @param unitPrice  the unit price. May be {@code null}
+     * @param productData the product
+     * @param fixedPrice  the fixed price. May be {@code null}
+     * @param unitPrice   the unit price. May be {@code null}
      */
-    public ProductPriceData(ProductData product, PriceData fixedPrice, PriceData unitPrice) {
-        this.product = product;
+    public ProductPriceData(ProductData productData, PriceData fixedPrice, PriceData unitPrice) {
+        this.productData = productData;
         this.fixedPrice = fixedPrice;
         this.unitPrice = unitPrice;
     }
@@ -59,8 +66,8 @@ class ProductPriceData {
      *
      * @return the product
      */
-    public ProductData getProduct() {
-        return product;
+    public ProductData getProductData() {
+        return productData;
     }
 
     /**
@@ -79,5 +86,17 @@ class ProductPriceData {
      */
     public PriceData getUnitPrice() {
         return unitPrice;
+    }
+
+    /**
+     * Returns the product.
+     *
+     * @return the product. May be {@code null}
+     */
+    public Product getProduct() {
+        if (product == null && productData.getReference() != null) {
+            product = (Product) IMObjectHelper.getObject(productData.getReference(), null);
+        }
+        return product;
     }
 }
