@@ -219,7 +219,7 @@ public class ProductCSVReader implements ProductReader {
             for (String[] line : lines) {
                 long id = getId(line, ID, lineNo, true);
                 String name = getName(line, lineNo);
-                String printedName = line[PRINTED_NAME];
+                String printedName = getValue(line, PRINTED_NAME, lineNo, false);
                 if (data == null || id != data.getId()) {
                     data = new ProductData(id, name, printedName, lineNo);
                     result.add(data);

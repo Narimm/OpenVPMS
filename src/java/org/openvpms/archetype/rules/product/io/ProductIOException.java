@@ -43,8 +43,9 @@ public class ProductIOException extends OpenVPMSException {
         NoFromDate,
         PriceNotFound,
         CannotUpdateLinkedPrice,
-        UnrecognisedDateFormat
-
+        UnrecognisedDateFormat,
+        CannotCloseExistingPrice,
+        FromDateGreaterThanToDate
     }
 
     /**
