@@ -71,6 +71,16 @@ public class ProductExportQuery extends ProductQuery {
     private Entity productType;
 
     /**
+     * The product income type code to restrict products to. May be {@code null}
+     */
+    private String incomeType;
+
+    /**
+     * The product group code to restrict products to. May be {@code null}
+     */
+    private String productGroup;
+
+    /**
      * The prices to export.
      */
     private Prices prices = Prices.CURRENT;
@@ -170,6 +180,8 @@ public class ProductExportQuery extends ProductQuery {
         super.doLayout(container);
         addProductTypeSelector(container);
         addSpeciesSelector(container);
+        addIncomeTypeSelector(container);
+        addProductGroupSelector(container);
         addPriceSelector(container);
         addDateRange(container);
     }
@@ -183,7 +195,8 @@ public class ProductExportQuery extends ProductQuery {
     @Override
     protected ResultSet<Product> createResultSet(SortConstraint[] sort) {
         return new ProductExportResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), getSpecies(),
-                                          productType, getStockLocation(), sort, getMaxResults());
+                                          productType, getStockLocation(), incomeType, productGroup, sort,
+                                          getMaxResults());
     }
 
     /**
@@ -236,6 +249,48 @@ public class ProductExportQuery extends ProductQuery {
     }
 
     /**
+     * Adds a selector to constrain the products by income type.
+     *
+     * @param container the container to add the component to
+     */
+    private void addIncomeTypeSelector(Component container) {
+        LookupQuery query = new ArchetypeLookupQuery("lookup.productIncomeType");
+        final SelectField field = SelectFieldFactory.create(new LookupListModel(query, true));
+        field.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent event) {
+                incomeType = (String) field.getSelectedItem();
+            }
+        });
+        field.setCellRenderer(LookupListCellRenderer.INSTANCE);
+
+        Label label = LabelFactory.create("product.io.incomeType");
+        container.add(label);
+        container.add(field);
+        getFocusGroup().add(field);
+    }
+
+    /**
+     * Adds a selector to constrain the products by product group.
+     *
+     * @param container the container to add the component to
+     */
+    private void addProductGroupSelector(Component container) {
+        LookupQuery query = new ArchetypeLookupQuery("lookup.productGroup");
+        final SelectField field = SelectFieldFactory.create(new LookupListModel(query, true));
+        field.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent event) {
+                productGroup = (String) field.getSelectedItem();
+            }
+        });
+        field.setCellRenderer(LookupListCellRenderer.INSTANCE);
+
+        Label label = LabelFactory.create("product.io.productGroup");
+        container.add(label);
+        container.add(field);
+        getFocusGroup().add(field);
+    }
+
+    /**
      * Adds a selector to determine which prices are exported.
      *
      * @param container the container to add the component to
@@ -264,10 +319,14 @@ public class ProductExportQuery extends ProductQuery {
      *
      * @param container the container to add the range to
      */
-    private void addDateRange(Component container) {
-        range = new DateRange(getFocusGroup(), false);
+    private void addDateRange(final Component container) {
+        range = new DateRange(getFocusGroup(), false) {
+            @Override
+            protected Component getContainer() {
+                return container;
+            }
+        };
         range.getComponent();
         range.setEnabled(prices == Prices.RANGE);
-        container.add(range.getComponent());
     }
 }
