@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.product.ProductResultSet;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.shortName;
 
 /**
  * Product export result set.
@@ -39,6 +40,17 @@ public class ProductExportResultSet extends ProductResultSet {
     private final Entity productType;
 
     /**
+     * The product income type code. May be {@code null}.
+     */
+    private final String incomeType;
+
+    /**
+     * The product group code. May be {@code null}.
+     */
+    private final String productGroup;
+
+
+    /**
      * Constructs a {@link ProductExportResultSet}.
      *
      * @param archetypes       the archetypes to query
@@ -47,14 +59,18 @@ public class ProductExportResultSet extends ProductResultSet {
      * @param species          the species. May be {@code null}
      * @param productType      the product type. May be {@code null}
      * @param stockLocation    the stock location. May be {@code null}
+     * @param incomeType       the income type code. May be {@code null}
+     * @param productGroup     the product group code. May be {@code null}
      * @param sort             the sort criteria. May be {@code null}
      * @param rows             the maximum no. of rows per page
      */
     public ProductExportResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
-                                  String species, Entity productType, Party stockLocation, SortConstraint[] sort,
-                                  int rows) {
+                                  String species, Entity productType, Party stockLocation, String incomeType,
+                                  String productGroup, SortConstraint[] sort, int rows) {
         super(archetypes, value, searchIdentities, species, stockLocation, sort, rows);
         this.productType = productType;
+        this.incomeType = incomeType;
+        this.productGroup = productGroup;
     }
 
     /**
@@ -67,6 +83,14 @@ public class ProductExportResultSet extends ProductResultSet {
         ArchetypeQuery query = super.createQuery();
         if (productType != null) {
             query.add(join("type").add(eq("source", productType.getObjectReference())));
+        }
+        if (incomeType != null) {
+            query.add(join("classifications", shortName("incomeType", "lookup.productIncomeType"))
+                              .add(eq("code", incomeType)));
+        }
+        if (productGroup != null) {
+            query.add(join("classifications", shortName("productGroup", "lookup.productGroup"))
+                              .add(eq("code", productGroup)));
         }
         return query;
     }

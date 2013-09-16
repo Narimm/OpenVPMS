@@ -204,8 +204,8 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
                 ProductCSVReader importer = new ProductCSVReader(ServiceHelper.getBean(DocumentHandlers.class));
                 try {
                     List<ProductData> data = importer.read(document);
-                    ProductDataFilter filter = new ProductDataFilter(ServiceHelper.getArchetypeService(),
-                                                                     ServiceHelper.getBean(ProductPriceRules.class));
+                    ProductDataFilter filter = new ProductDataFilter(ServiceHelper.getBean(ProductPriceRules.class),
+                                                                     ServiceHelper.getArchetypeService());
                     FilterResult result = filter.filter(data);
                     if (result.getErrors().isEmpty()) {
                         final List<ProductData> output = result.getData();
@@ -237,8 +237,8 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     }
 
     private void onImport(List<ProductData> data) {
-        ProductImporter importer = new ProductImporter(ServiceHelper.getArchetypeService(),
-                                                       ServiceHelper.getBean(ProductPriceRules.class));
+        ProductImporter importer = new ProductImporter(ServiceHelper.getBean(ProductPriceRules.class),
+                                                       ServiceHelper.getArchetypeService());
         importer.run(data, getContext().getPractice());
         InformationDialog.show(Messages.get("product.io.import.title"), Messages.get("product.io.import.imported"));
     }
