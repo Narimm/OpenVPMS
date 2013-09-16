@@ -19,11 +19,11 @@ package org.openvpms.archetype.rules.product.io;
 import java.util.List;
 
 /**
- * {@link ProductDataFilter} result.
+ * Valid and erroneous product data.
  *
  * @author Tim Anderson
  */
-public class FilterResult {
+public class ProductDataSet {
 
     /**
      * The filtered data.
@@ -36,12 +36,12 @@ public class FilterResult {
     private final List<ProductData> errors;
 
     /**
-     * Constructs a {@link FilterResult}.
+     * Constructs a {@link ProductDataSet}.
      *
      * @param data   the filtered data
      * @param errors the erroneous data
      */
-    public FilterResult(List<ProductData> data, List<ProductData> errors) {
+    public ProductDataSet(List<ProductData> data, List<ProductData> errors) {
         this.data = data;
         this.errors = errors;
     }

@@ -189,7 +189,7 @@ public class ProductCSVWriter implements ProductWriter {
                 defaultFixedPrice = fixedBean.getString("default");
                 if (!ObjectUtils.equals(fixedPrice.getProduct(), product)) {
                     // TODO - hack to format message
-                    notes = new ProductIOException(ProductIOException.ErrorCode.LinkedPrice,
+                    notes = new ProductIOException(ProductIOException.ErrorCode.LinkedPrice, -1,
                                                    fixedPrice.getProduct().getName(),
                                                    fixedPrice.getProduct().getId()).getMessage();
                 }

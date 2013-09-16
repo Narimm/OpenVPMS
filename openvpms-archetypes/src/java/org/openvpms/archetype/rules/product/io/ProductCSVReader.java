@@ -170,19 +170,21 @@ public class ProductCSVReader implements ProductReader {
      * @param document the document to read
      * @return the read product data
      */
-    public List<ProductData> read(Document document) {
+    public ProductDataSet read(Document document) {
         DocumentHandler documentHandler = handlers.get(document);
-        List<ProductData> result = new ArrayList<ProductData>();
+        List<ProductData> valid = new ArrayList<ProductData>();
+        List<ProductData> errors = new ArrayList<ProductData>();
+        ProductDataSet result = new ProductDataSet(valid, errors);
 
         try {
             CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)));
             String[] header = reader.readNext();
             if (header.length < ProductCSVWriter.HEADER.length) {
-                throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, document.getName());
+                throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, -1, document.getName());
             }
             for (int i = 0; i < header.length; ++i) {
                 if (!header[i].equalsIgnoreCase(ProductCSVWriter.HEADER[i])) {
-                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidColumn, header[i]);
+                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidColumn, -1, header[i]);
                 }
             }
 
@@ -208,7 +210,7 @@ public class ProductCSVReader implements ProductReader {
                     if (formats.isEmpty()) {
                         formats = getDateFormats(dates, MDY_FORMAT);
                         if (formats.isEmpty()) {
-                            throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDateFormat);
+                            throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDateFormat, -1);
                         }
                     }
                 }
@@ -217,37 +219,60 @@ public class ProductCSVReader implements ProductReader {
             int lineNo = 1;
 
             for (String[] line : lines) {
-                long id = getId(line, ID, lineNo, true);
-                String name = getName(line, lineNo);
-                String printedName = getValue(line, PRINTED_NAME, lineNo, false);
-                if (data == null || id != data.getId()) {
-                    data = new ProductData(id, name, printedName, lineNo);
-                    result.add(data);
-                }
-                long fixedId = getId(line, FIXED_PRICE_ID, lineNo, false);
-                BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo);
-                BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo);
-                Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null, formats);
-                Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false, formats);
-                boolean defaultFixedPrice = getBoolean(line, DEFAULT_FIXED_PRICE, lineNo);
-                long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
-                BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
-                BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
-                Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null, formats);
-                Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false, formats);
-                if (fixedPrice != null) {
-                    data.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedStartDate, fixedEndDate, defaultFixedPrice,
-                                       lineNo);
-                }
-                if (unitPrice != null) {
-                    data.addUnitPrice(unitId, unitPrice, unitCost, unitStartDate, unitEndDate, lineNo);
-                }
+                data = parse(line, valid, errors, data, formats, lineNo);
                 ++lineNo;
             }
         } catch (IOException exception) {
-            throw new ProductIOException(ProductIOException.ErrorCode.ReadError, exception);
+            throw new ProductIOException(ProductIOException.ErrorCode.ReadError, -1, exception);
         }
         return result;
+    }
+
+    private ProductData parse(String[] line, List<ProductData> valid, List<ProductData> errors, ProductData current,
+                              Set<DateFormat> formats, int lineNo) {
+        long id = -1;
+        String name = null;
+        String printedName = null;
+
+        try {
+            id = getId(line, ID, lineNo, true);
+            name = getName(line, lineNo);
+            printedName = getValue(line, PRINTED_NAME, lineNo, false);
+        } catch (ProductIOException exception) {
+            ProductData invalid = new ProductData(id, name, printedName, lineNo);
+            invalid.setError(exception.getMessage(), exception.getLine());
+            errors.add(invalid);
+            return null;
+        }
+        if (current == null || id != current.getId()) {
+            current = new ProductData(id, name, printedName, lineNo);
+            valid.add(current);
+        }
+        try {
+            long fixedId = getId(line, FIXED_PRICE_ID, lineNo, false);
+            BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo);
+            BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo);
+            Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null, formats);
+            Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false, formats);
+            boolean defaultFixedPrice = getBoolean(line, DEFAULT_FIXED_PRICE, lineNo);
+            long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
+            BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
+            BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
+            Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null, formats);
+            Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false, formats);
+            if (fixedPrice != null) {
+                current.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedStartDate, fixedEndDate, defaultFixedPrice,
+                                      lineNo);
+            }
+            if (unitPrice != null) {
+                current.addUnitPrice(unitId, unitPrice, unitCost, unitStartDate, unitEndDate, lineNo);
+            }
+        } catch (ProductIOException exception) {
+            current.setError(exception.getMessage(), exception.getLine());
+            errors.add(current);
+            current = null;
+        }
+        return current;
     }
 
     /**
@@ -395,7 +420,7 @@ public class ProductCSVReader implements ProductReader {
         String value = StringUtils.trimToNull(line[index]);
         if (value == null && required) {
             throw new ProductIOException(ProductIOException.ErrorCode.RequiredValue,
-                                         ProductCSVWriter.HEADER[index], lineNo);
+                                         lineNo, ProductCSVWriter.HEADER[index]);
         }
         return value;
     }
@@ -409,7 +434,7 @@ public class ProductCSVReader implements ProductReader {
      * @throws ProductIOException
      */
     private void reportInvalid(String name, String value, int lineNo) {
-        throw new ProductIOException(ProductIOException.ErrorCode.InvalidValue, name, value, lineNo);
+        throw new ProductIOException(ProductIOException.ErrorCode.InvalidValue, lineNo, name, value);
     }
 
 }

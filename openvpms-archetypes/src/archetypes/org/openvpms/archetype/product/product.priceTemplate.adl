@@ -63,6 +63,21 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="classifications" path="/classifications" parentChild="false"
+              type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+              filter="lookup.product*">
+            <!-- dummy node -->
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.productGroup"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="lookup.productIncomeType"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="sourceRelationships" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship"
               minCardinality="0" maxCardinality="*" hidden="true"/>

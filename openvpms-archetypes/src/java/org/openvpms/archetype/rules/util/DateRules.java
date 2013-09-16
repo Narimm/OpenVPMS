@@ -124,6 +124,8 @@ public class DateRules {
     /**
      * Helper to compare two dates.
      * <p/>
+     * Null dates are treated as greater than non-null dates.
+     * <p/>
      * This is functionally equivalent to the {@link Date#compareTo(Date)}
      * method, except that it doesn't throw {@code ClassCastExceptions}
      * if {@code lhs} is an instance of a {@link Timestamp Timestamp} and
@@ -131,15 +133,15 @@ public class DateRules {
      * <p/>
      * For timestamps, the nanoseconds are ignored.
      *
-     * @param lhs the date
-     * @param rhs the date to compare with
+     * @param lhs the date. May be {@code null}
+     * @param rhs the date to compare with. May be {@code null}
      * @return {@code 0} if the {@code lhs} is equal to {@code rhs};
      *         a value less than {@code 0} if {@code lhs} is before
      *         {@code rhs}; and a value greater than
      *         {@code 0} if {@code lhs} is after {@code rhs}.
      */
     public static int compareTo(Date lhs, Date rhs) {
-        return DateHelper.compareTo(lhs, rhs);
+        return compareDateTime(lhs, rhs, true);
     }
 
     /**
@@ -232,17 +234,56 @@ public class DateRules {
 
     /**
      * Compares the date portion of two date/times. Any time component is ignored.
+     * <p/>
+     * Null dates are treated as greater than non-null dates.
      *
-     * @param d1 the first date/time
-     * @param d2 the second date/time
+     * @param d1 the first date/time. May be {@code null}
+     * @param d2 the second date/time. May be {@code null}
      * @return the {@code 0} if {@code d1} is equal to this {@code d2};
      *         a value less than {@code 0} if {@code d1}  is before the {@code d2};
      *         and a value greater than {@code 0} if {@code d1} is after {@code d2}.
      */
     public static int compareDates(Date d1, Date d2) {
+        return compareDate(d1, d2, true);
+    }
+
+    /**
+     * Compares the date portion of two date/times. Any time component is ignored.
+     *
+     * @param d1       the first date/time. May be {@code null}
+     * @param d2       the second date/time. May be {@code null}
+     * @param nullHigh if {@code true} nulls are considered greater than any date, else they are lower
+     * @return the {@code 0} if {@code d1} is equal to this {@code d2};
+     *         a value less than {@code 0} if {@code d1}  is before the {@code d2};
+     *         and a value greater than {@code 0} if {@code d1} is after {@code d2}.
+     */
+    public static int compareDate(Date d1, Date d2, boolean nullHigh) {
         d1 = getDate(d1);
         d2 = getDate(d2);
-        return d1.compareTo(d2);
+        return compareDateTime(d1, d2, nullHigh);
+    }
+
+    /**
+     * Compares two date/times.
+     *
+     * @param d1       the first date/time. May be {@code null}
+     * @param d2       the second date/time. May be {@code null}
+     * @param nullHigh if {@code true} nulls are considered greater than any date, else they are lower
+     * @return the {@code 0} if {@code d1} is equal to this {@code d2};
+     *         a value less than {@code 0} if {@code d1}  is before the {@code d2};
+     *         and a value greater than {@code 0} if {@code d1} is after {@code d2}.
+     */
+    public static int compareDateTime(Date d1, Date d2, boolean nullHigh) {
+        if (d1 == null || d2 == null) {
+            if (d1 == null && d2 == null) {
+                return 0;
+            } else if (d1 == null) {
+                return nullHigh ? 1 : -1;
+            } else {
+                return nullHigh ? -1 : 1;
+            }
+        }
+        return DateHelper.compareTo(d1, d2);
     }
 
     /**

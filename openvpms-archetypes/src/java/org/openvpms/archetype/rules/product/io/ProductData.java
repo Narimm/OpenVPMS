@@ -48,6 +48,11 @@ public class ProductData {
     private String printedName;
 
     /**
+     * Line that the data was read from.
+     */
+    private final int line;
+
+    /**
      * The fixed prices.
      */
     private List<PriceData> fixedPrices = new ArrayList<PriceData>();
@@ -68,9 +73,9 @@ public class ProductData {
     private String error;
 
     /**
-     * Line that the data was read from.
+     * Error line.
      */
-    private final int line;
+    private int errorLine;
 
     /**
      * Constructs a {@link ProductData}.
@@ -85,6 +90,19 @@ public class ProductData {
         this.name = name;
         this.printedName = printedName;
         this.line = line;
+    }
+
+    /**
+     * Constructs a {@link ProductData}.
+     *
+     * @param source the source product data to copy from. Prices are not copied.
+     */
+    public ProductData(ProductData source) {
+        this.id = source.getId();
+        this.name = source.getName();
+        this.printedName = source.getPrintedName();
+        this.line = source.getLine();
+        this.reference = source.getReference();
     }
 
     /**
@@ -141,6 +159,11 @@ public class ProductData {
         this.printedName = printedName;
     }
 
+    /**
+     * Adds a price.
+     *
+     * @param price the price to add
+     */
     public void addPrice(PriceData price) {
         if (ProductArchetypes.FIXED_PRICE.equals(price.getShortName())) {
             fixedPrices.add(price);
@@ -189,15 +212,6 @@ public class ProductData {
     }
 
     /**
-     * Sets the fixed prices.
-     *
-     * @param fixedPrices the fixed prices
-     */
-    public void setFixedPrices(List<PriceData> fixedPrices) {
-        this.fixedPrices = fixedPrices;
-    }
-
-    /**
      * Returns the unit prices.
      *
      * @return the unit prices
@@ -207,12 +221,12 @@ public class ProductData {
     }
 
     /**
-     * Sets the unit prices.
+     * Returns the line that the product data was read from.
      *
-     * @param unitPrices the unit prices
+     * @return the line
      */
-    public void setUnitPrices(List<PriceData> unitPrices) {
-        this.unitPrices = unitPrices;
+    public int getLine() {
+        return line;
     }
 
     /**
@@ -228,18 +242,19 @@ public class ProductData {
      * Sets an error message to indicate that the product is invalid.
      *
      * @param error the error message. May be {@code null}
+     * @param line  the line that the error occurred on
      */
-    public void setError(String error) {
+    public void setError(String error, int line) {
         this.error = error;
+        this.errorLine = line;
     }
 
     /**
-     * Returns the line that the product data was read from.
+     * Returns the line that a processing error occurred on.
      *
-     * @return the line
+     * @return the error line
      */
-    public int getLine() {
-        return line;
+    public int getErrorLine() {
+        return errorLine;
     }
-
 }
