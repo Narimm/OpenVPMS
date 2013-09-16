@@ -94,7 +94,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
     @Before
     public void setUp() {
         ProductPriceRules rules = new ProductPriceRules(getArchetypeService(), lookups);
-        importer = new ProductImporter(getArchetypeService(), rules);
+        importer = new ProductImporter(rules, getArchetypeService());
         practice = (Party) create(PracticeArchetypes.PRACTICE);
         product1 = createProduct("Product 1", "P1");
         product2 = createProduct("Product 2", "P2");

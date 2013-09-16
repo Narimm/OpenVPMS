@@ -18,8 +18,6 @@ package org.openvpms.archetype.rules.product.io;
 
 import org.openvpms.component.business.domain.im.document.Document;
 
-import java.util.List;
-
 /**
  * Reads product data from a document.
  *
@@ -34,5 +32,5 @@ public interface ProductReader {
      * @return the read product data
      * @throws ProductIOException for any error
      */
-    List<ProductData> read(Document document);
+    ProductDataSet read(Document document);
 }

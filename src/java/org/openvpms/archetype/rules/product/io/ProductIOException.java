@@ -45,7 +45,9 @@ public class ProductIOException extends OpenVPMSException {
         CannotUpdateLinkedPrice,
         UnrecognisedDateFormat,
         CannotCloseExistingPrice,
-        FromDateGreaterThanToDate
+        FromDateGreaterThanToDate,
+        DuplicateFixedPrice,
+        DuplicateUnitPrice
     }
 
     /**
@@ -54,31 +56,40 @@ public class ProductIOException extends OpenVPMSException {
     private final ErrorCode errorCode;
 
     /**
+     * The line the error occurred on.
+     */
+    private final int line;
+
+    /**
      * The error messages.
      */
-    public static Messages MESSAGES = Messages.getMessages("org.openvpms.archetype.rules.product.io."
-                                                           + OpenVPMSException.ERRMESSAGES_FILE);
+    private static Messages MESSAGES = Messages.getMessages("org.openvpms.archetype.rules.product.io."
+                                                            + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
      * Constructs an {@link ProductIOException}.
      *
      * @param code the error code
+     * @param line the line the error occurred on
      * @param args the arguments to format the error message
      */
-    public ProductIOException(ErrorCode code, Object... args) {
+    public ProductIOException(ErrorCode code, int line, Object... args) {
         super(MESSAGES.getMessage(code.toString(), args));
         this.errorCode = code;
+        this.line = line;
     }
 
     /**
      * Constructs an {@link ProductIOException}.
      *
      * @param code  the error code
+     * @param line  the line the error occurred on
      * @param cause the cause
      */
-    public ProductIOException(ErrorCode code, Throwable cause) {
+    public ProductIOException(ErrorCode code, int line, Throwable cause) {
         super(cause);
         this.errorCode = code;
+        this.line = line;
     }
 
     /**
@@ -88,6 +99,15 @@ public class ProductIOException extends OpenVPMSException {
      */
     public ErrorCode getErrorCode() {
         return errorCode;
+    }
+
+    /**
+     * Returns the line the error occurred on.
+     *
+     * @return the line number
+     */
+    public int getLine() {
+        return line;
     }
 
 }

@@ -17,11 +17,8 @@
 package org.openvpms.archetype.rules.product.io;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -47,9 +44,9 @@ public class ProductDataFilter {
     private final IArchetypeService service;
 
     /**
-     * The product price rules.
+     * The product comparer, used to determine changes.
      */
-    private final ProductPriceRules rules;
+    private final ProductDataComparer comparer;
 
     /**
      * Constructs an {@link ProductDataFilter}.
@@ -57,9 +54,9 @@ public class ProductDataFilter {
      * @param service the archetype service
      * @param rules   the price rules
      */
-    public ProductDataFilter(IArchetypeService service, ProductPriceRules rules) {
+    public ProductDataFilter(ProductPriceRules rules, IArchetypeService service) {
+        comparer = new ProductDataComparer(rules, service);
         this.service = service;
-        this.rules = rules;
     }
 
     /**
@@ -71,7 +68,7 @@ public class ProductDataFilter {
      * @param input the data to filter
      * @return the filtered data
      */
-    public FilterResult filter(List<ProductData> input) {
+    public ProductDataSet filter(List<ProductData> input) {
         List<ProductData> output = new ArrayList<ProductData>();
         List<ProductData> errors = new ArrayList<ProductData>();
 
@@ -82,53 +79,23 @@ public class ProductDataFilter {
             if (iterator.hasNext()) {
                 Product product = iterator.next();
                 if (!StringUtils.equalsIgnoreCase(product.getName(), data.getName())) {
-                    addError(errors, data, new ProductIOException(InvalidName, product.getName()));
+                    addError(errors, data, new ProductIOException(InvalidName, data.getLine(), product.getName()));
                 } else {
-                    ProductData modified = getModifiedPrices(data, product);
-                    if (modified != null) {
-                        output.add(data);
+                    try {
+                        ProductData modified = comparer.compare(product, data);
+                        if (modified != null) {
+                            modified.setReference(product.getObjectReference());
+                            output.add(modified);
+                        }
+                    } catch (ProductIOException exception) {
+                        addError(errors, data, exception);
                     }
                 }
             } else {
-                addError(errors, data, new ProductIOException(NotFound));
+                addError(errors, data, new ProductIOException(NotFound, data.getLine()));
             }
         }
-        return new FilterResult(output, errors);
-    }
-
-    /**
-     * Returns the product data with any prices that have changed from the original.
-     * <p/>
-     * NOTE: this modifies {@code data}
-     *
-     * @param data    the product data
-     * @param product the original product
-     * @return the product data containing only the modified prices, or {@code null} if it is unchanged from the
-     *         original
-     */
-    private ProductData getModifiedPrices(ProductData data, Product product) {
-        ProductData result = null;
-        List<PriceData> fixedPrices = new ArrayList<PriceData>();
-        List<PriceData> unitPrices = new ArrayList<PriceData>();
-        List<ProductPrice> currentFixedPrices = rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE);
-        List<ProductPrice> currentUnitPrices = rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE);
-        for (PriceData price : data.getFixedPrices()) {
-            if (!hasPrice(currentFixedPrices, price)) {
-                fixedPrices.add(price);
-            }
-        }
-        for (PriceData price : data.getUnitPrices()) {
-            if (!hasPrice(currentUnitPrices, price)) {
-                unitPrices.add(price);
-            }
-        }
-        if (!fixedPrices.isEmpty() || !unitPrices.isEmpty()) {
-            data.setFixedPrices(fixedPrices);
-            data.setUnitPrices(unitPrices);
-            data.setReference(product.getObjectReference());
-            result = data;
-        }
-        return result;
+        return new ProductDataSet(output, errors);
     }
 
     /**
@@ -139,28 +106,8 @@ public class ProductDataFilter {
      * @param error  the error to add
      */
     private void addError(List<ProductData> errors, ProductData data, ProductIOException error) {
-        data.setError(error.getMessage());
+        data.setError(error.getMessage(), error.getLine());
         errors.add(data);
-    }
-
-    /**
-     * Determines if a price is present in a product's prices.
-     *
-     * @param prices the product prices
-     * @param data   the price
-     * @return {@code true} if the price is present
-     */
-    private boolean hasPrice(List<ProductPrice> prices, PriceData data) {
-        boolean result = false;
-        for (ProductPrice price : prices) {
-            if (DateRules.dateEquals(price.getFromDate(), data.getFrom())
-                && DateRules.dateEquals(price.getToDate(), data.getTo())
-                && price.getPrice().compareTo(data.getPrice()) == 0) {
-                result = true;
-                break;
-            }
-        }
-        return result;
     }
 
 }

@@ -68,7 +68,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
     @Before
     public void setUp() {
         ProductPriceRules rules = new ProductPriceRules(getArchetypeService(), lookups);
-        updater = new ProductUpdater(getArchetypeService(), rules);
+        updater = new ProductUpdater(rules, getArchetypeService());
         practice = (Party) create(PracticeArchetypes.PRACTICE);
     }
 
@@ -134,6 +134,8 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         checkPrice(product, createUnitPrice("1.0", "0.5", "100", "2013-01-01", "2013-03-31")); // unit0
         checkPrice(product, createUnitPrice("1.08", "0.6", "60", "2013-04-01", null));         // unit1
 
+        save(product);
+
         // verify that a unit price can't be added that is dated prior to the existing prices, and overlaps them all
         ProductData data2 = createProduct(product, false);
         data2.addPrice(createUnitPriceData(-1, "1.92", "1.2", "2013-01-02", null)); // overlaps unit1, unit0
@@ -141,8 +143,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
             updater.update(product, data2, practice);
             fail("Expected ProductIOException");
         } catch (ProductIOException expected) {
-            assertEquals("There are multiple unit prices for P1 (" + product.getId() + ") active at the same time",
-                         expected.getMessage());
+            assertEquals("Unit price dates overlap an existing unit price", expected.getMessage());
         }
 
         // verify that a unit price can't be added that is dated prior to the existing prices, and overlaps the first
@@ -152,8 +153,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
             updater.update(product, data3, practice);
             fail("Expected ProductIOException");
         } catch (ProductIOException expected) {
-            assertEquals("There are multiple unit prices for P1 (" + product.getId() + ") active at the same time",
-                         expected.getMessage());
+            assertEquals("Unit price dates overlap an existing unit price", expected.getMessage());
         }
     }
 
@@ -175,6 +175,8 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
 
         checkPrice(product, createFixedPrice("1.0", "0.5", "100", "2013-01-01", "2013-03-31", true)); // fixed0
         checkPrice(product, createFixedPrice("1.08", "0.6", "60", "2013-04-01", null, true));         // fixed1
+
+        save(product);
 
         // add a price that overlaps both existing prices. This shouldn't change any dates.
         ProductData data2 = createProduct(product, false);
@@ -220,8 +222,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
             updater.update(product, data, practice);
             fail("Expected ProductIOException to be thrown");
         } catch (ProductIOException expected) {
-            assertEquals("Price with identifier 23 at line 1 not found in P1 (" + product.getId() + ")",
-                         expected.getMessage());
+            assertEquals("Price with identifier 23 not found", expected.getMessage());
         }
     }
 
@@ -251,10 +252,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
             updater.update(product, data, practice);
             fail("Expected ProductIOException to be thrown");
         } catch (ProductIOException expected) {
-            assertEquals("Cannot update price with identifier " + fixedPrice.getId()
-                         + " at line 1 for product P1 (" + product.getId()
-                         + "). It is linked from " + template.getName() + " (" + template.getId() + ")",
-                         expected.getMessage());
+            assertEquals("Cannot update linked price", expected.getMessage());
         }
     }
 
@@ -271,6 +269,69 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
 
         assertEquals("New Product 1", bean.getString("printedName"));
     }
+
+    /**
+     * Checks the behaviour of a new unit price duplicating an existing unit price. In this case, the new price should
+     * be ignored.
+     */
+    @Test
+    public void testDuplicateExistingUnitPrice() {
+        ProductPrice unit1 = createUnitPrice("1.08", "0.6", "60", "2013-02-02", "2013-04-01");
+        ProductPrice unit2 = createUnitPrice("1.92", "1.2", "60", "2013-04-02", null);
+        Product product = createProduct("P1", "Product 1", unit1, unit2);
+
+        ProductData data = createProduct(product, true);
+        PriceData unit3 = createUnitPriceData(-1, "1.92", "1.2", "2013-04-02", null); // duplicates unit2
+        data.addPrice(unit3);
+
+        updater.update(product, data, practice);
+        assertEquals(2, product.getProductPrices().size());
+
+        checkPrice(product, createUnitPrice("1.08", "0.6", "60", "2013-02-02", "2013-04-01"));
+        checkPrice(product, createUnitPrice("1.92", "1.2", "60", "2013-04-02", null));
+    }
+
+    /**
+     * Checks the behaviour of a new fixed price duplicating an existing fixed price. In this case, the new price should
+     * be ignored.
+     */
+    @Test
+    public void testDuplicateExistingFixedPrice() {
+        ProductPrice fixed1 = createFixedPrice("1.08", "0.6", "60", "2013-02-02", "2013-04-01", true);
+        ProductPrice fixed2 = createFixedPrice("1.92", "1.2", "60", "2013-04-02", null, true);
+        Product product = createProduct("P1", "Product 1", fixed1, fixed2);
+
+        ProductData data = createProduct(product, true);
+        PriceData fixed3 = createFixedPriceData(-1, "1.92", "1.2", "2013-04-02", null, true); // duplicates fixed2
+        data.addPrice(fixed3);
+
+        updater.update(product, data, practice);
+        assertEquals(2, product.getProductPrices().size());
+
+        checkPrice(product, createFixedPrice("1.08", "0.6", "60", "2013-02-02", "2013-04-01", true));
+        checkPrice(product, createFixedPrice("1.92", "1.2", "60", "2013-04-02", null, true));
+    }
+
+    /**
+     * Verifies that the 'default' flag for fixed prices can be updated.
+     */
+    @Test
+    public void testUpdateDefaultFixedPrice() {
+        ProductPrice fixed1 = createFixedPrice("1.08", "0.6", "80", "2013-02-02", "2013-04-01", true);
+        ProductPrice fixed2 = createFixedPrice("1.92", "1.2", "60", "2013-04-02", null, true);
+        Product product = createProduct("P1", "Product 1", fixed1, fixed2);
+
+        ProductData data = createProduct(product, true);
+        data.getFixedPrices().get(0).setDefault(false);
+        data.getFixedPrices().get(1).setDefault(false);
+
+        updater.update(product, data, practice);
+        assertEquals(2, product.getProductPrices().size());
+
+        checkPrice(product, createFixedPrice("1.08", "0.6", "80", "2013-02-02", "2013-04-01", false));
+        checkPrice(product, createFixedPrice("1.92", "1.2", "60", "2013-04-02", null, false));
+    }
+
 
     private PriceData createFixedPriceData(long id, String price, String cost, String from, String to,
                                            boolean isDefault) {

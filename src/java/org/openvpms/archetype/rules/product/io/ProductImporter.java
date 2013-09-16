@@ -43,12 +43,12 @@ public class ProductImporter {
     /**
      * Constructs a {@link ProductImporter}.
      *
-     * @param service the archeype service
      * @param rules   the price rules
+     * @param service the archetype service
      */
-    public ProductImporter(IArchetypeService service, ProductPriceRules rules) {
+    public ProductImporter(ProductPriceRules rules, IArchetypeService service) {
         this.service = service;
-        this.updater = new ProductUpdater(service, rules);
+        this.updater = new ProductUpdater(rules, service);
     }
 
     /**

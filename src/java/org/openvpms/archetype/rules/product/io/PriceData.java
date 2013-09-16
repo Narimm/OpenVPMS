@@ -17,9 +17,14 @@
 package org.openvpms.archetype.rules.product.io;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
+import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
 
 /**
  * Price data.
@@ -56,12 +61,12 @@ public class PriceData {
     /**
      * The price end date. May be {@code null}
      */
-    private final Date to;
+    private Date to;
 
     /**
-     * Indicates if the price is the default price. Only applies to fixed prices
+     * Indicates if the price is the default price. Only applies to fixed prices.
      */
-    private final boolean defaultPrice;
+    private boolean defaultPrice;
 
     /**
      * The line that the price was read from.
@@ -105,6 +110,24 @@ public class PriceData {
         this.to = to;
         this.defaultPrice = defaultPrice;
         this.line = line;
+    }
+
+    /**
+     * Constructs a {@link ProductData}.
+     *
+     * @param source  the source price to initialise from
+     * @param service the archetype service
+     */
+    public PriceData(ProductPrice source, IArchetypeService service) {
+        this.id = source.getId();
+        this.shortName = source.getArchetypeId().getShortName();
+        this.price = source.getPrice();
+        IMObjectBean bean = new IMObjectBean(source, service);
+        this.cost = bean.getBigDecimal("cost");
+        this.from = source.getFromDate();
+        this.to = source.getToDate();
+        this.defaultPrice = ProductImportHelper.isDefault(bean);
+        this.line = -1;
     }
 
     /**
@@ -180,6 +203,15 @@ public class PriceData {
     }
 
     /**
+     * Sets the price end date.
+     *
+     * @param to the price end date. May be {@code null}
+     */
+    public void setTo(Date to) {
+        this.to = to;
+    }
+
+    /**
      * Determines if the price is the default price.
      * <p/>
      * This only applies to fixed prices.
@@ -188,6 +220,17 @@ public class PriceData {
      */
     public boolean isDefault() {
         return defaultPrice;
+    }
+
+    /**
+     * Determines if the price is the default price.
+     * <p/>
+     * This only applies to fixed prices.
+     *
+     * @param defaultPrice if {@code true}, indicates that the price is the default price
+     */
+    public void setDefault(boolean defaultPrice) {
+        this.defaultPrice = defaultPrice;
     }
 
     /**
@@ -213,7 +256,8 @@ public class PriceData {
         if (obj instanceof PriceData) {
             PriceData o = (PriceData) obj;
             return id == o.id && shortName.equals(o.shortName) && price.compareTo(o.price) == 0
-                   && cost.compareTo(o.cost) == 0 && ObjectUtils.equals(from, o.from) && ObjectUtils.equals(to, o.to);
+                   && cost.compareTo(o.cost) == 0 && ObjectUtils.equals(from, o.from) && ObjectUtils.equals(to, o.to)
+                   && (!FIXED_PRICE.equals(shortName) || defaultPrice == o.isDefault());
         }
         return false;
     }

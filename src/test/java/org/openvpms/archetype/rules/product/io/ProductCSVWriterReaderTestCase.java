@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
@@ -37,7 +36,7 @@ import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.create
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
 /**
- * Tests the {@link ProductCSVWriter} and {@link ProductReader} classes.
+ * Tests the {@link ProductCSVWriter} and {@link ProductCSVReader} classes.
  *
  * @author Tim Anderson
  */
@@ -112,10 +111,11 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
-        List<ProductData> products = reader.read(document);
-        assertEquals(1, products.size());
+        ProductDataSet products = reader.read(document);
+        assertEquals(1, products.getData().size());
+        assertEquals(0, products.getErrors().size());
 
-        ProductData data = products.get(0);
+        ProductData data = products.getData().get(0);
         checkProduct(data, product);
         assertEquals(1, data.getFixedPrices().size());
         checkPrice(data.getFixedPrices().get(0), fixed2);
@@ -133,10 +133,11 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), false);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
-        List<ProductData> products = reader.read(document);
-        assertEquals(1, products.size());
+        ProductDataSet products = reader.read(document);
+        assertEquals(1, products.getData().size());
+        assertEquals(0, products.getErrors().size());
 
-        ProductData data = products.get(0);
+        ProductData data = products.getData().get(0);
         checkProduct(data, product);
         assertEquals(2, data.getFixedPrices().size());
         checkPrice(data.getFixedPrices().get(0), fixed2);
@@ -158,10 +159,11 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), from, to);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
-        List<ProductData> products = reader.read(document);
-        assertEquals(1, products.size());
+        ProductDataSet products = reader.read(document);
+        assertEquals(1, products.getData().size());
+        assertEquals(0, products.getErrors().size());
 
-        ProductData data = products.get(0);
+        ProductData data = products.getData().get(0);
         checkProduct(data, product);
         assertEquals(1, data.getFixedPrices().size());
         checkPrice(data.getFixedPrices().get(0), fixed1);
@@ -182,10 +184,11 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), false);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
-        List<ProductData> products = reader.read(document);
-        assertEquals(1, products.size());
+        ProductDataSet products = reader.read(document);
+        assertEquals(1, products.getData().size());
+        assertEquals(0, products.getErrors().size());
 
-        ProductData data = products.get(0);
+        ProductData data = products.getData().get(0);
         checkProduct(data, product);
         assertEquals(0, data.getFixedPrices().size());
         assertEquals(2, data.getUnitPrices().size());
@@ -205,10 +208,11 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), false);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
-        List<ProductData> products = reader.read(document);
-        assertEquals(1, products.size());
+        ProductDataSet products = reader.read(document);
+        assertEquals(1, products.getData().size());
+        assertEquals(0, products.getErrors().size());
 
-        ProductData data = products.get(0);
+        ProductData data = products.getData().get(0);
         checkProduct(data, product);
         assertEquals(2, data.getFixedPrices().size());
         assertEquals(0, data.getUnitPrices().size());
