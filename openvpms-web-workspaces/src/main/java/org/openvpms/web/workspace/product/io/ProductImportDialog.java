@@ -37,8 +37,11 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
@@ -57,9 +60,13 @@ public class ProductImportDialog extends PopupDialog {
 
     /**
      * Constructs a {@link ProductImportDialog}.
+     *
+     * @param data the data to import
+     * @param help the help context
      */
-    public ProductImportDialog(List<ProductData> data) {
-        super(Messages.get("product.io.import.title"), "BrowserDialog", OK_CANCEL);
+    public ProductImportDialog(List<ProductData> data, HelpContext help) {
+        super(Messages.get("product.import.title"), "BrowserDialog", OK_CANCEL, help);
+        setModal(true);
 
         ResultSet<ProductData> resultSet = new ListResultSet<ProductData>(data, 20);
         PagedProductDataTableModel model = new PagedProductDataTableModel();
@@ -67,6 +74,21 @@ public class ProductImportDialog extends PopupDialog {
         getLayout().add(ColumnFactory.create(Styles.INSET, table));
     }
 
+    /**
+     * Invoked when the 'OK' button is pressed.
+     */
+    @Override
+    protected void onOK() {
+        PopupDialog dialog = new ConfirmationDialog(Messages.get("product.import.title"),
+                                                    Messages.get("product.import.save"));
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                ProductImportDialog.super.onOK();
+            }
+        });
+        dialog.show();
+    }
 
     private static final class PagedProductDataTableModel extends PagedIMTableModel<ProductData, ProductPriceData> {
 
@@ -120,17 +142,17 @@ public class ProductImportDialog extends PopupDialog {
 
         public ProductPriceDataModel() {
             DefaultTableColumnModel model = new DefaultTableColumnModel();
-            model.addColumn(createTableColumn(ID, "product.io.import.id"));
-            model.addColumn(createTableColumn(NAME, "product.io.import.name"));
-            model.addColumn(createTableColumn(PRINTED_NAME, "product.io.import.printedName"));
-            model.addColumn(createTableColumn(FIXED_PRICE, "product.io.import.fixedPrice"));
-            model.addColumn(createTableColumn(FIXED_COST, "product.io.import.fixedCost"));
-            model.addColumn(createTableColumn(FIXED_START_DATE, "product.io.import.fixedPriceStartDate"));
-            model.addColumn(createTableColumn(FIXED_END_DATE, "product.io.import.fixedPriceEndDate"));
-            model.addColumn(createTableColumn(UNIT_PRICE, "product.io.import.unitPrice"));
-            model.addColumn(createTableColumn(UNIT_COST, "product.io.import.unitCost"));
-            model.addColumn(createTableColumn(UNIT_START_DATE, "product.io.import.unitPriceStartDate"));
-            model.addColumn(createTableColumn(UNIT_END_DATE, "product.io.import.unitPriceEndDate"));
+            model.addColumn(createTableColumn(ID, "product.import.id"));
+            model.addColumn(createTableColumn(NAME, "product.import.name"));
+            model.addColumn(createTableColumn(PRINTED_NAME, "product.import.printedName"));
+            model.addColumn(createTableColumn(FIXED_PRICE, "product.import.fixedPrice"));
+            model.addColumn(createTableColumn(FIXED_COST, "product.import.fixedCost"));
+            model.addColumn(createTableColumn(FIXED_START_DATE, "product.import.fixedPriceStartDate"));
+            model.addColumn(createTableColumn(FIXED_END_DATE, "product.import.fixedPriceEndDate"));
+            model.addColumn(createTableColumn(UNIT_PRICE, "product.import.unitPrice"));
+            model.addColumn(createTableColumn(UNIT_COST, "product.import.unitCost"));
+            model.addColumn(createTableColumn(UNIT_START_DATE, "product.import.unitPriceStartDate"));
+            model.addColumn(createTableColumn(UNIT_END_DATE, "product.import.unitPriceEndDate"));
             setTableColumnModel(model);
         }
 
@@ -144,7 +166,8 @@ public class ProductImportDialog extends PopupDialog {
          */
         @Override
         protected Object getValue(ProductPriceData object, TableColumn column, int row) {
-            boolean first = row == 0 || getObjects().get(row - 1).getProductData().getId() != object.getProductData().getId();
+            boolean first = row == 0 || getObjects().get(row - 1).getProductData().getId()
+                                        != object.getProductData().getId();
             PriceData fixedPrice = object.getFixedPrice();
             PriceData unitPrice = object.getUnitPrice();
             Object result;
@@ -296,16 +319,19 @@ public class ProductImportDialog extends PopupDialog {
         }
 
         private Label createNewValueLabel(Object newValue) {
-            Label newLabel = new Label();
-            newLabel.setText(newValue != null ? newValue.toString() : "No Value");
-            return newLabel;
+            return createLabel(newValue);
         }
 
         private Label createOldValueLabel(Object oldValue) {
-            Label oldLabel = new Label();
-            oldLabel.setText(oldValue != null ? oldValue.toString() : "No Value");
+            Label oldLabel = createLabel(oldValue);
             oldLabel.setStyleName("italicLineThrough");
             return oldLabel;
+        }
+
+        private Label createLabel(Object newValue) {
+            Label newLabel = new Label();
+            newLabel.setText(newValue != null ? newValue.toString() : Messages.get("product.import.novalue"));
+            return newLabel;
         }
 
         /**

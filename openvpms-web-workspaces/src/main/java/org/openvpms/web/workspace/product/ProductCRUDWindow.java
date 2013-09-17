@@ -21,10 +21,10 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ProductRules;
-import org.openvpms.archetype.rules.product.io.FilterResult;
 import org.openvpms.archetype.rules.product.io.ProductCSVReader;
 import org.openvpms.archetype.rules.product.io.ProductData;
 import org.openvpms.archetype.rules.product.io.ProductDataFilter;
+import org.openvpms.archetype.rules.product.io.ProductDataSet;
 import org.openvpms.archetype.rules.product.io.ProductImporter;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -190,27 +190,30 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     }
 
     private void onExport() {
-        HelpContext help = getHelpContext();
+        HelpContext help = getHelpContext().subtopic("export");
         ProductExportDialog dialog = new ProductExportDialog(createLayoutContext(help), help);
         dialog.show();
     }
 
 
     private void onImport() {
+        final HelpContext help = getHelpContext().subtopic("import");
         DocumentUploadListener listener = new DocumentUploadListener() {
 
             @Override
             protected void upload(Document document) {
                 ProductCSVReader importer = new ProductCSVReader(ServiceHelper.getBean(DocumentHandlers.class));
                 try {
-                    List<ProductData> data = importer.read(document);
-                    ProductDataFilter filter = new ProductDataFilter(ServiceHelper.getBean(ProductPriceRules.class),
-                                                                     ServiceHelper.getArchetypeService());
-                    FilterResult result = filter.filter(data);
-                    if (result.getErrors().isEmpty()) {
-                        final List<ProductData> output = result.getData();
+                    ProductDataSet data = importer.read(document);
+                    if (data.getErrors().isEmpty()) {
+                        ProductDataFilter filter = new ProductDataFilter(ServiceHelper.getBean(ProductPriceRules.class),
+                                                                         ServiceHelper.getArchetypeService());
+                        data = filter.filter(data.getData());
+                    }
+                    if (data.getErrors().isEmpty()) {
+                        final List<ProductData> output = data.getData();
                         if (!output.isEmpty()) {
-                            ProductImportDialog dialog = new ProductImportDialog(output);
+                            ProductImportDialog dialog = new ProductImportDialog(output, help);
                             dialog.show();
                             dialog.addWindowPaneListener(new PopupDialogListener() {
                                 @Override
@@ -219,12 +222,12 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
                                 }
                             });
                         } else {
-                            InformationDialog.show(Messages.get("product.io.import.title"),
-                                                   Messages.get("product.io.import.nochanges"));
+                            InformationDialog.show(Messages.get("product.import.title"),
+                                                   Messages.get("product.import.nochanges"));
                         }
                     } else {
-                        List<ProductData> errors = result.getErrors();
-                        ProductImportErrorDialog dialog = new ProductImportErrorDialog(errors);
+                        List<ProductData> errors = data.getErrors();
+                        ProductImportErrorDialog dialog = new ProductImportErrorDialog(errors, help.subtopic("errors"));
                         dialog.show();
                     }
                 } catch (Throwable exception) {
@@ -232,7 +235,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
                 }
             }
         };
-        UploadDialog dialog = new UploadDialog(listener, getHelpContext());
+        UploadDialog dialog = new UploadDialog(listener, help.subtopic("upload"));
         dialog.show();
     }
 
@@ -240,6 +243,6 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
         ProductImporter importer = new ProductImporter(ServiceHelper.getBean(ProductPriceRules.class),
                                                        ServiceHelper.getArchetypeService());
         importer.run(data, getContext().getPractice());
-        InformationDialog.show(Messages.get("product.io.import.title"), Messages.get("product.io.import.imported"));
+        InformationDialog.show(Messages.get("product.import.title"), Messages.get("product.import.imported"));
     }
 }
