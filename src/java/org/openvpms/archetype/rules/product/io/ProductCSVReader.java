@@ -180,11 +180,11 @@ public class ProductCSVReader implements ProductReader {
             CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)));
             String[] header = reader.readNext();
             if (header.length < ProductCSVWriter.HEADER.length) {
-                throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, -1, document.getName());
+                throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, 1, document.getName());
             }
             for (int i = 0; i < header.length; ++i) {
                 if (!header[i].equalsIgnoreCase(ProductCSVWriter.HEADER[i])) {
-                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidColumn, -1, header[i]);
+                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidColumn, 1, header[i]);
                 }
             }
 
@@ -192,10 +192,10 @@ public class ProductCSVReader implements ProductReader {
             Set<String> dates = new LinkedHashSet<String>();
             for (int i = 0; i < lines.size(); ++i) {
                 String[] line = lines.get(i);
+                int lineNo = i + 2;
                 if (line.length < ProductCSVWriter.HEADER.length) {
-                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, i + 1);
+                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, lineNo);
                 }
-                int lineNo = i + 1;
                 addDate(line, FIXED_PRICE_START_DATE, lineNo, dates);
                 addDate(line, FIXED_PRICE_END_DATE, lineNo, dates);
                 addDate(line, UNIT_PRICE_START_DATE, lineNo, dates);
