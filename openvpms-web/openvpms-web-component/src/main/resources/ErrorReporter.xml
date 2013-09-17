@@ -59,4 +59,7 @@
     <exclude-exception>
         <className>com.mysql.jdbc.PacketTooBigException</className>
     </exclude-exception>
+    <exclude-exception>
+        <className>org.openvpms.archetype.rules.product.io.ProductIOException</className>
+    </exclude-exception>
 </error-reporter-config>

@@ -100,9 +100,9 @@ public class ProductExportQuery extends ProductQuery {
     /**
      * The labels used in the price selector. The order corresponds to {@link #PRICES}.
      */
-    private final String[] PRICE_LABELS = {Messages.get("product.io.prices.current"),
-                                           Messages.get("product.io.prices.all"),
-                                           Messages.get("product.io.prices.range")};
+    private final String[] PRICE_LABELS = {Messages.get("product.export.prices.current"),
+                                           Messages.get("product.export.prices.all"),
+                                           Messages.get("product.export.prices.range")};
 
     /**
      * Constructs a {@link ProductExportQuery}.
@@ -217,7 +217,7 @@ public class ProductExportQuery extends ProductQuery {
             }
         });
 
-        Label label = LabelFactory.create("product.io.productType");
+        Label label = LabelFactory.create("product.export.productType");
         container.add(label);
         container.add(field);
         getFocusGroup().add(field);
@@ -242,7 +242,7 @@ public class ProductExportQuery extends ProductQuery {
         });
         field.setCellRenderer(LookupListCellRenderer.INSTANCE);
 
-        Label species = LabelFactory.create("product.io.species");
+        Label species = LabelFactory.create("product.export.species");
         container.add(species);
         container.add(field);
         getFocusGroup().add(field);
@@ -263,7 +263,7 @@ public class ProductExportQuery extends ProductQuery {
         });
         field.setCellRenderer(LookupListCellRenderer.INSTANCE);
 
-        Label label = LabelFactory.create("product.io.incomeType");
+        Label label = LabelFactory.create("product.export.incomeType");
         container.add(label);
         container.add(field);
         getFocusGroup().add(field);
@@ -284,7 +284,7 @@ public class ProductExportQuery extends ProductQuery {
         });
         field.setCellRenderer(LookupListCellRenderer.INSTANCE);
 
-        Label label = LabelFactory.create("product.io.productGroup");
+        Label label = LabelFactory.create("product.export.productGroup");
         container.add(label);
         container.add(field);
         getFocusGroup().add(field);
@@ -309,7 +309,7 @@ public class ProductExportQuery extends ProductQuery {
                 return PRICE_LABELS[index];
             }
         });
-        container.add(LabelFactory.create("product.io.prices"));
+        container.add(LabelFactory.create("product.export.prices"));
         container.add(field);
         getFocusGroup().add(field);
     }

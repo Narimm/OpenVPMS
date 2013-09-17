@@ -74,12 +74,13 @@ public class ProductExportDialog extends BrowserDialog<Product> {
      * @param help    the help context
      */
     public ProductExportDialog(LayoutContext context, HelpContext help) {
-        super(Messages.get("product.io.export.title"), BUTTONS, false, help);
+        super(Messages.get("product.export.title"), BUTTONS, false, help);
         this.rules = ServiceHelper.getBean(ProductPriceRules.class);
         ProductExportQuery query = new ProductExportQuery();
         PagedProductPricesTableModel model = new PagedProductPricesTableModel();
         Browser<Product> browser = new DefaultIMObjectTableBrowser<Product>(query, model, context);
         init(browser, null);
+        setCloseOnSelection(false);
     }
 
     /**
@@ -208,17 +209,17 @@ public class ProductExportDialog extends BrowserDialog<Product> {
 
         public ProductPricesModel() {
             DefaultTableColumnModel model = new DefaultTableColumnModel();
-            model.addColumn(createTableColumn(ID, "product.io.import.id"));
-            model.addColumn(createTableColumn(NAME, "product.io.import.name"));
-            model.addColumn(createTableColumn(PRINTED_NAME, "product.io.import.printedName"));
-            model.addColumn(createTableColumn(FIXED_PRICE, "product.io.import.fixedPrice"));
-            model.addColumn(createTableColumn(FIXED_COST, "product.io.import.fixedCost"));
-            model.addColumn(createTableColumn(FIXED_START_DATE, "product.io.import.fixedPriceStartDate"));
-            model.addColumn(createTableColumn(FIXED_END_DATE, "product.io.import.fixedPriceEndDate"));
-            model.addColumn(createTableColumn(UNIT_PRICE, "product.io.import.unitPrice"));
-            model.addColumn(createTableColumn(UNIT_COST, "product.io.import.unitCost"));
-            model.addColumn(createTableColumn(UNIT_START_DATE, "product.io.import.unitPriceStartDate"));
-            model.addColumn(createTableColumn(UNIT_END_DATE, "product.io.import.unitPriceEndDate"));
+            model.addColumn(createTableColumn(ID, "product.import.id"));
+            model.addColumn(createTableColumn(NAME, "product.import.name"));
+            model.addColumn(createTableColumn(PRINTED_NAME, "product.import.printedName"));
+            model.addColumn(createTableColumn(FIXED_PRICE, "product.import.fixedPrice"));
+            model.addColumn(createTableColumn(FIXED_COST, "product.import.fixedCost"));
+            model.addColumn(createTableColumn(FIXED_START_DATE, "product.import.fixedPriceStartDate"));
+            model.addColumn(createTableColumn(FIXED_END_DATE, "product.import.fixedPriceEndDate"));
+            model.addColumn(createTableColumn(UNIT_PRICE, "product.import.unitPrice"));
+            model.addColumn(createTableColumn(UNIT_COST, "product.import.unitCost"));
+            model.addColumn(createTableColumn(UNIT_START_DATE, "product.import.unitPriceStartDate"));
+            model.addColumn(createTableColumn(UNIT_END_DATE, "product.import.unitPriceEndDate"));
             setTableColumnModel(model);
         }
 
