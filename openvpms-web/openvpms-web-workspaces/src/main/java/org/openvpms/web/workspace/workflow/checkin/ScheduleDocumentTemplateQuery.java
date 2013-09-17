@@ -53,6 +53,9 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
     /**
      * Determines if a schedule uses all patient forms and letters, or those directly associated with it via
      * its templates node.
+     * <p/>
+     * If the useAllTemplates node is {@code null}, then all templates will be selected if the the templates node is
+     * empty. This is to support existing sites that won't have a value for useAllTemplates populated.
      *
      * @param schedule the schedule. An <em>party.organisationSchedule</em> or <em>party.organisationWorkList</em>.
      * @return {@code true} if the schedule uses all patient forms and letters, {@code false} if it uses those linked
@@ -60,7 +63,7 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
      */
     public static boolean useAllTemplates(Entity schedule) {
         IMObjectBean bean = new IMObjectBean(schedule);
-        if (bean.getValues("useAllTemplates") != null) {
+        if (bean.getValue("useAllTemplates") != null) {
             return bean.getBoolean("useAllTemplates");
         } else {
             return bean.getValues("templates").isEmpty();
