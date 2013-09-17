@@ -26,7 +26,7 @@ import java.util.List;
 public class ProductDataSet {
 
     /**
-     * The filtered data.
+     * The product data.
      */
     private final List<ProductData> data;
 

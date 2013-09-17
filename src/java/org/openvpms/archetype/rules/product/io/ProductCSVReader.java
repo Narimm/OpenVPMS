@@ -172,9 +172,9 @@ public class ProductCSVReader implements ProductReader {
      */
     public ProductDataSet read(Document document) {
         DocumentHandler documentHandler = handlers.get(document);
-        List<ProductData> valid = new ArrayList<ProductData>();
+        List<ProductData> data = new ArrayList<ProductData>();
         List<ProductData> errors = new ArrayList<ProductData>();
-        ProductDataSet result = new ProductDataSet(valid, errors);
+        ProductDataSet result = new ProductDataSet(data, errors);
 
         try {
             CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)));
@@ -188,7 +188,6 @@ public class ProductCSVReader implements ProductReader {
                 }
             }
 
-            ProductData data = null;
             List<String[]> lines = reader.readAll();
             Set<String> dates = new LinkedHashSet<String>();
             for (int i = 0; i < lines.size(); ++i) {
@@ -216,10 +215,11 @@ public class ProductCSVReader implements ProductReader {
                 }
             }
 
-            int lineNo = 1;
+            int lineNo = 2; // line 1 is the header
 
+            ProductData current = null;
             for (String[] line : lines) {
-                data = parse(line, valid, errors, data, formats, lineNo);
+                current = parse(line, current, data, errors, formats, lineNo);
                 ++lineNo;
             }
         } catch (IOException exception) {
@@ -228,7 +228,18 @@ public class ProductCSVReader implements ProductReader {
         return result;
     }
 
-    private ProductData parse(String[] line, List<ProductData> valid, List<ProductData> errors, ProductData current,
+    /**
+     * Parses a line.
+     *
+     * @param line    the line to parse
+     * @param current the current product
+     * @param data    the parsed product data
+     * @param errors  the product data with errors
+     * @param formats the expected date formats
+     * @param lineNo  the line number
+     * @return the product data, or {@code null} if it couldn't be parsed
+     */
+    private ProductData parse(String[] line, ProductData current, List<ProductData> data, List<ProductData> errors,
                               Set<DateFormat> formats, int lineNo) {
         long id = -1;
         String name = null;
@@ -246,7 +257,7 @@ public class ProductCSVReader implements ProductReader {
         }
         if (current == null || id != current.getId()) {
             current = new ProductData(id, name, printedName, lineNo);
-            valid.add(current);
+            data.add(current);
         }
         try {
             long fixedId = getId(line, FIXED_PRICE_ID, lineNo, false);
