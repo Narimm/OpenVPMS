@@ -26,6 +26,7 @@ import org.openvpms.archetype.tools.account.AccountBalanceTool;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
@@ -239,11 +240,12 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     private void reverse(FinancialAct act) {
         try {
             CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
-            rules.reverse(act, new Date(), Messages.get("customer.account.reverse.notes"));
+            String notes = Messages.format("customer.account.reverse.notes", DescriptorHelper.getDisplayName(act),
+                                           act.getId());
+            rules.reverse(act, new Date(), notes);
         } catch (OpenVPMSException exception) {
-            String title = Messages.format(
-                    "customer.account.reverse.failed",
-                    getArchetypeDescriptor().getDisplayName());
+            String title = Messages.format("customer.account.reverse.failed",
+                                           getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
         onRefresh(act);
