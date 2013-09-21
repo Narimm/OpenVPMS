@@ -98,14 +98,15 @@ public class ProductCSVWriter implements ProductWriter {
     /**
      * Writes product data to a document.
      *
-     * @param products the products to write
-     * @param latest   if {@code true}, output the latest price, else output all prices
+     * @param products            the products to write
+     * @param latest              if {@code true}, output the latest price, else output all prices
+     * @param includeLinkedPrices if {@code true} include prices linked from other products
      * @return the document
      */
     @Override
-    public Document write(Iterator<Product> products, boolean latest) {
+    public Document write(Iterator<Product> products, boolean latest, boolean includeLinkedPrices) {
         Prices prices = (latest) ? Prices.LATEST : Prices.ALL;
-        return write(products, prices, null, null);
+        return write(products, prices, null, null, includeLinkedPrices);
     }
 
     /**
@@ -113,31 +114,43 @@ public class ProductCSVWriter implements ProductWriter {
      * <p/>
      * This writes prices active within a date range
      *
-     * @param products the products to write
-     * @param from     the price start date. May be {@code null}
-     * @param to       the price end date. May be {@code null}
+     * @param products            the products to write
+     * @param from                the price start date. May be {@code null}
+     * @param to                  the price end date. May be {@code null}
+     * @param includeLinkedPrices if {@code true} include prices linked from other products
      * @return the document
      */
     @Override
-    public Document write(Iterator<Product> products, Date from, Date to) {
-        return write(products, Prices.RANGE, from, to);
+    public Document write(Iterator<Product> products, Date from, Date to, boolean includeLinkedPrices) {
+        return write(products, Prices.RANGE, from, to, includeLinkedPrices);
+    }
+
+    /**
+     * Helper to return a date as a string.
+     *
+     * @param date the date. May be {@code null}
+     * @return the date as a string. May be {@code null}
+     */
+    protected String getDate(Date date) {
+        return (date != null) ? new java.sql.Date(date.getTime()).toString() : null;
     }
 
     /**
      * Writes product data to a document.
      *
-     * @param products the products to write
-     * @param prices   determines which prices to write
-     * @param from     the price start date. May be {@code null}
-     * @param to       the price end date. May be {@code null}
+     * @param products            the products to write
+     * @param prices              determines which prices to write
+     * @param from                the price start date. May be {@code null}
+     * @param to                  the price end date. May be {@code null}
+     * @param includeLinkedPrices if {@code true} include prices linked from other products
      * @return the document
      */
-    private Document write(Iterator<Product> products, Prices prices, Date from, Date to) {
+    private Document write(Iterator<Product> products, Prices prices, Date from, Date to, boolean includeLinkedPrices) {
         StringWriter writer = new StringWriter();
         CSVWriter csv = new CSVWriter(writer, SEPARATOR);
         csv.writeNext(HEADER);
         while (products.hasNext()) {
-            write(products.next(), prices, from, to, csv);
+            write(products.next(), prices, from, to, includeLinkedPrices, csv);
         }
         String name = "products-" + new java.sql.Date(System.currentTimeMillis()).toString() + ".csv";
 
@@ -149,20 +162,24 @@ public class ProductCSVWriter implements ProductWriter {
     /**
      * Writes a product.
      *
-     * @param product the product to write
-     * @param prices  the prices to write
-     * @param from    the from date. May be {@code null}
-     * @param to      the to date. May be {@code null}
-     * @param writer  the writer to write to
+     * @param product             the product to write
+     * @param prices              the prices to write
+     * @param from                the from date. May be {@code null}
+     * @param to                  the to date. May be {@code null}
+     * @param includeLinkedPrices if {@code true} include prices linked from other products
+     * @param writer              the writer to write to
      */
-    private void write(Product product, Prices prices, Date from, Date to, CSVWriter writer) {
+    private void write(Product product, Prices prices, Date from, Date to, boolean includeLinkedPrices,
+                       CSVWriter writer) {
         IMObjectBean bean = new IMObjectBean(product);
 
         String productId = bean.getString("id");
         String name = bean.getString("name");
 
-        List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE, prices, from, to);
-        List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, prices, from, to);
+        List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE, prices, from, to,
+                                                   includeLinkedPrices);
+        List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, prices, from, to,
+                                                  includeLinkedPrices);
         String printedName = bean.getString("printedName");
 
         int count = Math.max(fixedPrices.size(), unitPrices.size());
@@ -214,36 +231,28 @@ public class ProductCSVWriter implements ProductWriter {
     }
 
     /**
-     * Helper to return a date as a string.
-     *
-     * @param date the date. May be {@code null}
-     * @return the date as a string. May be {@code null}
-     */
-    private String getDate(Date date) {
-        return (date != null) ? new java.sql.Date(date.getTime()).toString() : null;
-    }
-
-    /**
      * Returns prices matching some criteria.
      *
-     * @param product   the product
-     * @param shortName the price archetype short name
-     * @param prices    the prices to return
-     * @param from      the start date range, if prices is {@link Prices#RANGE}. May be {@code null}
-     * @param to        the end date range, if prices is {@link Prices#RANGE}. May be {@code null}
+     * @param product             the product
+     * @param shortName           the price archetype short name
+     * @param prices              the prices to return
+     * @param from                the start date range, if prices is {@link Prices#RANGE}. May be {@code null}
+     * @param to                  the end date range, if prices is {@link Prices#RANGE}. May be {@code null}
+     * @param includeLinkedPrices if {@code true} include prices linked from other products
      * @return the matching prices
      */
-    private List<ProductPrice> getPrices(Product product, String shortName, Prices prices, Date from, Date to) {
+    private List<ProductPrice> getPrices(Product product, String shortName, Prices prices, Date from, Date to,
+                                         boolean includeLinkedPrices) {
         List<ProductPrice> result = new ArrayList<ProductPrice>();
         if (prices == Prices.LATEST) {
-            List<ProductPrice> list = rules.getProductPrices(product, shortName);
+            List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices);
             if (!list.isEmpty()) {
                 result.add(list.get(0));
             }
         } else if (prices == Prices.ALL) {
-            result.addAll(rules.getProductPrices(product, shortName));
+            result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices));
         } else {
-            result.addAll(rules.getProductPrices(product, shortName, from, to));
+            result.addAll(rules.getProductPrices(product, shortName, from, to, includeLinkedPrices));
         }
         return result;
     }

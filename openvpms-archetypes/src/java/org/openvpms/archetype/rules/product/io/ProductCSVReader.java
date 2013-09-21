@@ -29,7 +29,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -45,9 +45,35 @@ import java.util.Set;
 public class ProductCSVReader implements ProductReader {
 
     /**
+     * Supported day-month-year date formats.
+     */
+    public static final SimpleDateFormat[] DAY_MONTH_YEAR_FORMATS = {
+            new SimpleDateFormat("dd/MM/yy"), new SimpleDateFormat("dd-MM-yy")
+    };
+
+    /**
+     * Supported year-month-day date formats.
+     */
+    public static final SimpleDateFormat[] YEAR_MONTH_DAY_FORMATS = {
+            new SimpleDateFormat("yy/MM/dd"), new SimpleDateFormat("yy-MM-dd")
+    };
+
+    /**
+     * Supported month-day-year date formats.
+     */
+    public static final SimpleDateFormat[] MONTH_DAY_YEAR_FORMATS = {
+            new SimpleDateFormat("MM/dd/yy"), new SimpleDateFormat("MM-dd-yy")
+    };
+
+    /**
      * The document handlers.
      */
     private final DocumentHandlers handlers;
+
+    /**
+     * Formats to parse dates with.
+     */
+    private List<SimpleDateFormat> formats = Arrays.asList(DAY_MONTH_YEAR_FORMATS);
 
     /**
      * The product identifier column.
@@ -119,38 +145,14 @@ public class ProductCSVReader implements ProductReader {
      */
     private static final int UNIT_PRICE_END_DATE = 13;
 
-    /**
-     * Supported day-month-year date formats.
-     */
-    private static final DateFormat[] DMY_FORMAT = {
-            new SimpleDateFormat("dd/MM/yyyy"), new SimpleDateFormat("dd/MM/yy"),
-            new SimpleDateFormat("dd-MM-yyyy"), new SimpleDateFormat("dd-MM-yy")
-    };
-
-    /**
-     * Supported year-month-day date formats.
-     */
-    private static final DateFormat[] YMD_FORMAT = {
-            new SimpleDateFormat("yyyy-MM-dd"), new SimpleDateFormat("yy-MM-dd"),
-            new SimpleDateFormat("yyyy/MM/dd"), new SimpleDateFormat("yy/MM/dd")
-    };
-
-    /**
-     * Supported month-day-year date formats.
-     */
-    private static final DateFormat[] MDY_FORMAT = {
-            new SimpleDateFormat("MM-dd-yyyy"), new SimpleDateFormat("MM-dd-yy"),
-            new SimpleDateFormat("MM/dd/yyyy"), new SimpleDateFormat("MM/dd/yy")
-    };
-
     static {
-        for (DateFormat format : DMY_FORMAT) {
+        for (DateFormat format : DAY_MONTH_YEAR_FORMATS) {
             format.setLenient(false);
         }
-        for (DateFormat format : YMD_FORMAT) {
+        for (DateFormat format : YEAR_MONTH_DAY_FORMATS) {
             format.setLenient(false);
         }
-        for (DateFormat format : MDY_FORMAT) {
+        for (DateFormat format : MONTH_DAY_YEAR_FORMATS) {
             format.setLenient(false);
         }
     }
@@ -165,65 +167,68 @@ public class ProductCSVReader implements ProductReader {
     }
 
     /**
+     * Sets the date formats used to parse dates.
+     * <p/>
+     * <em>Warning:</em> do not specify multiple formats that have different d/m/y ordering.
+     *
+     * @param formats the date formats
+     */
+    public void setDateFormats(List<SimpleDateFormat> formats) {
+        this.formats = formats;
+    }
+
+    /**
+     * Returns the date formats detected in the document.
+     *
+     * @param document the document
+     * @return the detected date formats
+     * @throws ProductIOException if the document is invalid
+     */
+    public List<SimpleDateFormat> getDateFormats(Document document) {
+        List<SimpleDateFormat> result = new ArrayList<SimpleDateFormat>();
+        List<String[]> lines = readLines(document);
+        Set<String> dates = new LinkedHashSet<String>();
+        for (int i = 0; i < lines.size(); ++i) {
+            String[] line = lines.get(i);
+            int lineNo = i + 2;
+            if (line.length < ProductCSVWriter.HEADER.length) {
+                throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, lineNo);
+            }
+            addDate(line, FIXED_PRICE_START_DATE, lineNo, dates);
+            addDate(line, FIXED_PRICE_END_DATE, lineNo, dates);
+            addDate(line, UNIT_PRICE_START_DATE, lineNo, dates);
+            addDate(line, UNIT_PRICE_END_DATE, lineNo, dates);
+        }
+        if (!dates.isEmpty()) {
+            result.addAll(getDateFormats(dates, DAY_MONTH_YEAR_FORMATS));
+            result.addAll(getDateFormats(dates, YEAR_MONTH_DAY_FORMATS));
+            result.addAll(getDateFormats(dates, MONTH_DAY_YEAR_FORMATS));
+            if (result.isEmpty()) {
+                throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDateFormat, -1);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Reads a document.
      *
      * @param document the document to read
      * @return the read product data
      */
     public ProductDataSet read(Document document) {
-        DocumentHandler documentHandler = handlers.get(document);
         List<ProductData> data = new ArrayList<ProductData>();
         List<ProductData> errors = new ArrayList<ProductData>();
         ProductDataSet result = new ProductDataSet(data, errors);
 
-        try {
-            CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)));
-            String[] header = reader.readNext();
-            if (header.length < ProductCSVWriter.HEADER.length) {
-                throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, 1, document.getName());
-            }
-            for (int i = 0; i < header.length; ++i) {
-                if (!header[i].equalsIgnoreCase(ProductCSVWriter.HEADER[i])) {
-                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidColumn, 1, header[i]);
-                }
-            }
+        List<String[]> lines = readLines(document);
 
-            List<String[]> lines = reader.readAll();
-            Set<String> dates = new LinkedHashSet<String>();
-            for (int i = 0; i < lines.size(); ++i) {
-                String[] line = lines.get(i);
-                int lineNo = i + 2;
-                if (line.length < ProductCSVWriter.HEADER.length) {
-                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidLine, lineNo);
-                }
-                addDate(line, FIXED_PRICE_START_DATE, lineNo, dates);
-                addDate(line, FIXED_PRICE_END_DATE, lineNo, dates);
-                addDate(line, UNIT_PRICE_START_DATE, lineNo, dates);
-                addDate(line, UNIT_PRICE_END_DATE, lineNo, dates);
-            }
-            Set<DateFormat> formats = Collections.emptySet();
-            if (!dates.isEmpty()) {
-                formats = getDateFormats(dates, DMY_FORMAT);
-                if (formats.isEmpty()) {
-                    formats = getDateFormats(dates, YMD_FORMAT);
-                    if (formats.isEmpty()) {
-                        formats = getDateFormats(dates, MDY_FORMAT);
-                        if (formats.isEmpty()) {
-                            throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDateFormat, -1);
-                        }
-                    }
-                }
-            }
+        int lineNo = 2; // line 1 is the header
 
-            int lineNo = 2; // line 1 is the header
-
-            ProductData current = null;
-            for (String[] line : lines) {
-                current = parse(line, current, data, errors, formats, lineNo);
-                ++lineNo;
-            }
-        } catch (IOException exception) {
-            throw new ProductIOException(ProductIOException.ErrorCode.ReadError, -1, exception);
+        ProductData current = null;
+        for (String[] line : lines) {
+            current = parse(line, current, data, errors, lineNo);
+            ++lineNo;
         }
         return result;
     }
@@ -235,12 +240,11 @@ public class ProductCSVReader implements ProductReader {
      * @param current the current product
      * @param data    the parsed product data
      * @param errors  the product data with errors
-     * @param formats the expected date formats
      * @param lineNo  the line number
      * @return the product data, or {@code null} if it couldn't be parsed
      */
     private ProductData parse(String[] line, ProductData current, List<ProductData> data, List<ProductData> errors,
-                              Set<DateFormat> formats, int lineNo) {
+                              int lineNo) {
         long id = -1;
         String name = null;
         String printedName = null;
@@ -263,14 +267,14 @@ public class ProductCSVReader implements ProductReader {
             long fixedId = getId(line, FIXED_PRICE_ID, lineNo, false);
             BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo);
             BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo);
-            Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null, formats);
-            Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false, formats);
+            Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null);
+            Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false);
             boolean defaultFixedPrice = getBoolean(line, DEFAULT_FIXED_PRICE, lineNo);
             long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
             BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
             BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
-            Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null, formats);
-            Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false, formats);
+            Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null);
+            Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false);
             if (fixedPrice != null) {
                 current.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedStartDate, fixedEndDate, defaultFixedPrice,
                                       lineNo);
@@ -287,16 +291,41 @@ public class ProductCSVReader implements ProductReader {
     }
 
     /**
+     * Reads the document into an array of lines.
+     *
+     * @param document the document to read
+     * @return the
+     */
+    private List<String[]> readLines(Document document) {
+        try {
+            DocumentHandler documentHandler = handlers.get(document);
+            CSVReader reader = new CSVReader(new InputStreamReader(documentHandler.getContent(document)));
+            String[] header = reader.readNext();
+            if (header.length < ProductCSVWriter.HEADER.length) {
+                throw new ProductIOException(ProductIOException.ErrorCode.UnrecognisedDocument, 1, document.getName());
+            }
+            for (int i = 0; i < header.length; ++i) {
+                if (!header[i].equalsIgnoreCase(ProductCSVWriter.HEADER[i])) {
+                    throw new ProductIOException(ProductIOException.ErrorCode.InvalidColumn, 1, header[i]);
+                }
+            }
+            return reader.readAll();
+        } catch (IOException exception) {
+            throw new ProductIOException(ProductIOException.ErrorCode.ReadError, -1, exception);
+        }
+    }
+
+    /**
      * Returns the date formats that can parse the supplied dates.
      *
      * @param dates   the dates
      * @param formats the available formats
      * @return the formats that can parse the supplied dates
      */
-    private Set<DateFormat> getDateFormats(Set<String> dates, DateFormat[] formats) {
-        Set<DateFormat> result = new HashSet<DateFormat>();
+    private Set<SimpleDateFormat> getDateFormats(Set<String> dates, SimpleDateFormat[] formats) {
+        Set<SimpleDateFormat> result = new HashSet<SimpleDateFormat>();
         for (String date : dates) {
-            for (DateFormat format : formats) {
+            for (SimpleDateFormat format : formats) {
                 try {
                     format.parse(date);
                     result.add(format);
@@ -385,7 +414,7 @@ public class ProductCSVReader implements ProductReader {
      * @param required if {@code true}, the date is required
      * @return the date, or {@code null} if there is no date
      */
-    private Date getDate(String[] line, int index, int lineNo, boolean required, Set<DateFormat> formats) {
+    private Date getDate(String[] line, int index, int lineNo, boolean required) {
         String value = getValue(line, index, lineNo, required);
         Date result = null;
         if (value != null) {
