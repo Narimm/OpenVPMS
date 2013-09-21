@@ -25,10 +25,13 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.jxpath.DateFunctions;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
@@ -92,10 +95,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         handlers = new DocumentHandlers();
 
         product = createProduct("Product A", "A");
-        fixed1 = createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2013-04-01", false);
-        fixed2 = createFixedPrice("1.08", "0.6", "80", "2013-04-02", "2013-06-01", true);
-        unit1 = createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-04-02");
-        unit2 = createUnitPrice("2.55", "1.5", "70", "2013-04-03", "2013-06-02");
+        fixed1 = createFixedPrice("1.0", "0.5", "100", "2012-02-01", "2012-04-01", false);
+        fixed2 = createFixedPrice("1.08", "0.6", "80", "2012-04-02", "2012-06-01", true);
+        unit1 = createUnitPrice("1.92", "1.2", "60", "2012-02-02", "2012-04-02");
+        unit2 = createUnitPrice("2.55", "1.5", "70", "2012-04-03", "2012-06-02");
         product.addProductPrice(fixed1);
         product.addProductPrice(fixed2);
         product.addProductPrice(unit1);
@@ -108,9 +111,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     @Test
     public void testWriteReadLatestPrices() {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), true);
+        Document document = writer.write(Arrays.asList(product).iterator(), true, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
+        reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
         assertEquals(0, products.getErrors().size());
@@ -130,9 +134,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     @Test
     public void testWriteReadAllPrices() {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false);
+        Document document = writer.write(Arrays.asList(product).iterator(), false, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
+        reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
         assertEquals(0, products.getErrors().size());
@@ -154,11 +159,12 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     @Test
     public void testWriteReadRangePrices() {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
-        Date from = getDate("2013-02-01");
-        Date to = getDate("2013-03-01");
-        Document document = writer.write(Arrays.asList(product).iterator(), from, to);
+        Date from = getDate("2012-02-01");
+        Date to = getDate("2012-03-01");
+        Document document = writer.write(Arrays.asList(product).iterator(), from, to, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
+        reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
         assertEquals(0, products.getErrors().size());
@@ -181,9 +187,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         product.removeProductPrice(fixed2);
         save(product);
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false);
+        Document document = writer.write(Arrays.asList(product).iterator(), false, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
+        reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
         assertEquals(0, products.getErrors().size());
@@ -205,9 +212,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         product.removeProductPrice(unit2);
         save(product);
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false);
+        Document document = writer.write(Arrays.asList(product).iterator(), false, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
+        reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
         assertEquals(0, products.getErrors().size());
@@ -218,6 +226,40 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         assertEquals(0, data.getUnitPrices().size());
         checkPrice(data.getFixedPrices().get(0), fixed2);
         checkPrice(data.getFixedPrices().get(1), fixed1);
+    }
+
+    /**
+     * Verifies that the correct date formats are detected in the input document.
+     */
+    @Test
+    public void testDateParsing() {
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers) {
+            @Override
+            protected String getDate(Date date) {
+                return DateFunctions.format(date, "dd/MM/yy");
+            }
+        };
+        Document document = writer.write(Arrays.asList(product).iterator(), false, true);
+        ProductCSVReader reader = new ProductCSVReader(handlers);
+        List<SimpleDateFormat> dateFormats = reader.getDateFormats(document);
+        assertEquals(3, dateFormats.size());
+        assertEquals(ProductCSVReader.DAY_MONTH_YEAR_FORMATS[0], dateFormats.get(0));
+        assertEquals(ProductCSVReader.YEAR_MONTH_DAY_FORMATS[0], dateFormats.get(1));
+        assertEquals(ProductCSVReader.MONTH_DAY_YEAR_FORMATS[0], dateFormats.get(2));
+        reader.setDateFormats(Arrays.asList(dateFormats.get(0)));
+        ProductDataSet products = reader.read(document);
+        assertEquals(1, products.getData().size());
+        assertEquals(0, products.getErrors().size());
+
+        ProductData data = products.getData().get(0);
+        checkProduct(data, product);
+        assertEquals(2, data.getFixedPrices().size());
+        checkPrice(data.getFixedPrices().get(0), fixed2);
+        checkPrice(data.getFixedPrices().get(1), fixed1);
+
+        assertEquals(2, data.getUnitPrices().size());
+        checkPrice(data.getUnitPrices().get(0), unit2);
+        checkPrice(data.getUnitPrices().get(1), unit1);
     }
 
     /**

@@ -33,22 +33,24 @@ public interface ProductWriter {
     /**
      * Writes product data to a document.
      *
-     * @param products the products to write
-     * @param latest   if {@code true}, output the latest price, else output all prices
+     * @param products            the products to write
+     * @param latest              if {@code true}, output the latest price, else output all prices
+     * @param includeLinkedPrices if {@code true} include prices linked from other products
      * @return the document
      */
-    Document write(Iterator<Product> products, boolean latest);
+    Document write(Iterator<Product> products, boolean latest, boolean includeLinkedPrices);
 
     /**
      * Writes product data to a document.
      * <p/>
      * This writes prices active within a date range
      *
-     * @param products the products to write
-     * @param from     the price start date. May be {@code null}
-     * @param to       the price end date. May be {@code null}
+     * @param products            the products to write
+     * @param from                the price start date. May be {@code null}
+     * @param to                  the price end date. May be {@code null}
+     * @param includeLinkedPrices if {@code true} include prices linked from other products
      * @return the document
      */
-    Document write(Iterator<Product> products, Date from, Date to);
+    Document write(Iterator<Product> products, Date from, Date to, boolean includeLinkedPrices);
 
 }

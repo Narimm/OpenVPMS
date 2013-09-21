@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
@@ -196,8 +195,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testAddToEventForNonExistentEvent() {
         Date date = getDate("2007-04-05");
-        Act medication = createMedication(patient);
-        save(medication);
+        Act medication = PatientTestHelper.createMedication(patient);
 
         rules.addToEvent(medication, date);
         Act event = rules.getEvent(patient);
@@ -214,8 +212,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testAddToEventForExistingInProgressEvent() {
         Date date = getDate("2007-04-05");
-        Act medication = createMedication(patient);
-        save(medication);
+        Act medication = PatientTestHelper.createMedication(patient);
 
         Act expected = createEvent(date);
         save(expected);
@@ -235,8 +232,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testAddToEventForExistingOldInProgressEvent() {
         Date date = getDate("2007-04-05");
-        Act medication = createMedication(patient);
-        save(medication);
+        Act medication = PatientTestHelper.createMedication(patient);
 
         Date old = DateRules.getDate(date, -8, DateUnits.DAYS);
         Act oldEvent = createEvent(old);
@@ -257,8 +253,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      */
     public void testAddToEventForExistingOldCompletedEvent() {
         Date date = getDate("2007-04-05");
-        Act medication = createMedication(patient);
-        save(medication);
+        Act medication = PatientTestHelper.createMedication(patient);
 
         Date old = DateRules.getDate(date, -8, DateUnits.DAYS);
         Act oldEvent = createEvent(old);
@@ -281,8 +276,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testAddToEventForExistingCompletedEvent() {
         Date date = getDate("2007-04-05");
-        Act medication = createMedication(patient);
-        save(medication);
+        Act medication = PatientTestHelper.createMedication(patient);
 
         Act completed = createEvent(getDate("2007-04-03"));
         completed.setActivityEndTime(getDate("2007-04-06"));
@@ -304,8 +298,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testAddToEventForExistingNonOverlappingCompletedEvent() {
         Date date = getDate("2007-04-05");
-        Act medication = createMedication(patient);
-        save(medication);
+        Act medication = PatientTestHelper.createMedication(patient);
 
         Act completed = createEvent(getDate("2007-04-03"));
         completed.setActivityEndTime(getDate("2007-04-04"));
@@ -426,7 +419,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act problem = createProblem();
         Act note1 = createNote();
         Act note2 = createNote();
-        Act medication = createMedication(patient);
+        Act medication = PatientTestHelper.createMedication(patient);
         ActBean problemBean = new ActBean(problem);
         problemBean.addNodeRelationship("items", note1);
         problemBean.addNodeRelationship("items", medication);
@@ -460,15 +453,10 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     public void testAddToEvents() {
         Date date = getDate("2007-04-05");
         Party patient2 = TestHelper.createPatient();
-        Act med1 = createMedication(patient);
-        Act med2 = createMedication(patient);
-        Act med3 = createMedication(patient2);
-        Act med4 = createMedication(patient2);
-
-        save(med1);
-        save(med2);
-        save(med3);
-        save(med4);
+        Act med1 = PatientTestHelper.createMedication(patient);
+        Act med2 = PatientTestHelper.createMedication(patient);
+        Act med3 = PatientTestHelper.createMedication(patient2);
+        Act med4 = PatientTestHelper.createMedication(patient2);
 
         List<Act> acts = Arrays.asList(med1, med2, med3, med4);
 
@@ -492,9 +480,9 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Date eventDate1 = getDate("2007-04-05");
         Date eventDate2 = getDate("2007-07-01");
         Date eventDate3 = getDate("2007-08-01");
-        Act med1 = createMedication(patient);
-        Act med2 = createMedication(patient);
-        Act med3 = createMedication(patient);
+        Act med1 = PatientTestHelper.createMedication(patient);
+        Act med2 = PatientTestHelper.createMedication(patient);
+        Act med3 = PatientTestHelper.createMedication(patient);
 
         Date medDate1 = getDate("2007-04-04"); // eventDate1-1
         med1.setActivityStartTime(medDate1);
@@ -588,21 +576,6 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act act = createAct("act.patientClinicalNote");
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", patient);
-        return act;
-    }
-
-    /**
-     * Helper to create an <em>act.patientMedication</em>.
-     *
-     * @param patient the patient
-     * @return a new act
-     */
-    protected Act createMedication(Party patient) {
-        Act act = createAct("act.patientMedication");
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        Product product = TestHelper.createProduct();
-        bean.addParticipation("participation.product", product);
         return act;
     }
 
