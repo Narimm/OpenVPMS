@@ -324,10 +324,10 @@ public class ProductDataComparer {
         PriceData result = null;
         ProductPrice existing = ProductImportHelper.getPrice(price, prices);
         if (isLinkedPrice(existing, product)) {
-            if (!priceEquals(price, existing)) {
+            if (!equals(price, existing)) {
                 throw new ProductIOException(CannotUpdateLinkedPrice, price.getLine());
             }
-        } else if (!priceEquals(price, existing)) {
+        } else if (!equals(price, existing)) {
             if (UNIT_PRICE.equals(price.getShortName())) {
                 checkOverlap(price, prices);
             }

@@ -114,7 +114,12 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         Document document = writer.write(Arrays.asList(product).iterator(), true, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
-        reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
+
+        List<SimpleDateFormat> dateFormats = reader.getDateFormats(document);
+        assertEquals(1, dateFormats.size());
+        assertEquals("yy-MM-dd", dateFormats.get(0).toPattern());
+        reader.setDateFormats(dateFormats);
+
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
         assertEquals(0, products.getErrors().size());

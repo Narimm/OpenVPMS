@@ -203,7 +203,7 @@ public class ProductCSVWriter implements ProductWriter {
                 fixedCost = fixedBean.getBigDecimal("cost").toString();
                 fixedStartDate = getDate(fixedPrice.getFromDate());
                 fixedEndDate = getDate(fixedPrice.getToDate());
-                defaultFixedPrice = fixedBean.getString("default");
+                defaultFixedPrice = fixedBean.getString("default", "false").toLowerCase();
                 if (!ObjectUtils.equals(fixedPrice.getProduct(), product)) {
                     // TODO - hack to format message
                     notes = new ProductIOException(ProductIOException.ErrorCode.LinkedPrice, -1,
