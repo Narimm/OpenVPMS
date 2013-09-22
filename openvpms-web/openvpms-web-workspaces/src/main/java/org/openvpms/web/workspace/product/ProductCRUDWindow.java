@@ -261,6 +261,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
             }
         }
         if (!ambiguousDates) {
+            reader.setDateFormats(formats);
             importDocument(document, reader, help);
         }
     }
@@ -314,7 +315,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      */
     private void selectDateFormatAndImport(final Document document, final List<List<SimpleDateFormat>> formatList,
                                            final ProductCSVReader reader, final HelpContext help) {
-        final DateFormatDialog dialog = new DateFormatDialog(formatList);
+        final DateFormatDialog dialog = new DateFormatDialog(formatList, help.subtopic("date"));
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
@@ -369,10 +370,11 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
          * Constructs a {@link DateFormatDialog}.
          *
          * @param formats the date formats
+         * @param help    the help context
          */
-        public DateFormatDialog(List<List<SimpleDateFormat>> formats) {
+        public DateFormatDialog(List<List<SimpleDateFormat>> formats, HelpContext help) {
             super(Messages.get("product.import.dateformat.title"), Messages.get("product.import.dateformat.message"),
-                  OK_CANCEL);
+                  OK_CANCEL, help);
             field = SelectFieldFactory.create(formats);
             field.setCellRenderer(new ListCellRenderer() {
                 @Override
