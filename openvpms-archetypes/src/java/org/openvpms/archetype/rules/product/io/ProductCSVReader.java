@@ -294,7 +294,7 @@ public class ProductCSVReader implements ProductReader {
      * Reads the document into an array of lines.
      *
      * @param document the document to read
-     * @return the
+     * @return the lines
      */
     private List<String[]> readLines(Document document) {
         try {
@@ -329,6 +329,10 @@ public class ProductCSVReader implements ProductReader {
                 try {
                     format.parse(date);
                     result.add(format);
+                    if (result.size() == formats.length) {
+                        // all possible formats used
+                        break;
+                    }
                 } catch (ParseException ignore) {
                     // do nothing
                 }
