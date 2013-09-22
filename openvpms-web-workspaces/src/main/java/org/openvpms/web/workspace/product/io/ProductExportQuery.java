@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.product.io;
 
+import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
@@ -39,6 +40,7 @@ import org.openvpms.web.component.im.query.DateRange;
 import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
@@ -84,6 +86,11 @@ public class ProductExportQuery extends ProductQuery {
      * The prices to export.
      */
     private Prices prices = Prices.CURRENT;
+
+    /**
+     * Determines if linked prices should be exported.
+     */
+    private CheckBox includeLinkedPrices;
 
     /**
      * The archetype short names to query.
@@ -159,6 +166,15 @@ public class ProductExportQuery extends ProductQuery {
     }
 
     /**
+     * Determines if linked prices should be included in the exported data.
+     *
+     * @return {@code true} if linked prices should be exported, otherwise {@code false}
+     */
+    public boolean includeLinkedPrices() {
+        return includeLinkedPrices.isSelected();
+    }
+
+    /**
      * Creates a container component to lay out the query component in.
      * This implementation returns a new grid.
      *
@@ -184,6 +200,7 @@ public class ProductExportQuery extends ProductQuery {
         addProductGroupSelector(container);
         addPriceSelector(container);
         addDateRange(container);
+        addLinkedPrices(container);
     }
 
     /**
@@ -328,5 +345,18 @@ public class ProductExportQuery extends ProductQuery {
         };
         range.getComponent();
         range.setEnabled(prices == Prices.RANGE);
+    }
+
+    /**
+     * Adds the 'include linked prices' checkbox.
+     *
+     * @param container the container to add to
+     */
+    private void addLinkedPrices(Component container) {
+        includeLinkedPrices = CheckBoxFactory.create();
+        includeLinkedPrices.setSelected(false);
+        container.add(LabelFactory.create("product.export.includeLinkedPrices"));
+        container.add(includeLinkedPrices);
+        getFocusGroup().add(includeLinkedPrices);
     }
 }

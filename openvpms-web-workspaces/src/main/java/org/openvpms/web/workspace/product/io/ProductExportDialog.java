@@ -110,15 +110,16 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         ProductWriter exporter = ServiceHelper.getBean(ProductWriter.class);
         Iterator<Product> iterator = new ResultSetIterator<Product>(query.query());
         Document document;
+        boolean includeLinkedPrices = query.includeLinkedPrices();
         switch (query.getPrices()) {
             case CURRENT:
-                document = exporter.write(iterator, true);
+                document = exporter.write(iterator, true, includeLinkedPrices);
                 break;
             case ALL:
-                document = exporter.write(iterator, false);
+                document = exporter.write(iterator, false, includeLinkedPrices);
                 break;
             default:
-                document = exporter.write(iterator, query.getFrom(), query.getTo());
+                document = exporter.write(iterator, query.getFrom(), query.getTo(), includeLinkedPrices);
         }
         DownloadServlet.startDownload(document);
     }
@@ -150,9 +151,11 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         @Override
         protected List<ProductPrices> convertTo(List<Product> list) {
             List<ProductPrices> result = new ArrayList<ProductPrices>();
+            boolean includeLinkedPrices = getQuery().includeLinkedPrices();
             for (Product product : list) {
-                List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE);
-                List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE);
+
+                List<ProductPrice> fixedPrices = getPrices(product, ProductArchetypes.FIXED_PRICE, includeLinkedPrices);
+                List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, includeLinkedPrices);
                 int count = Math.max(fixedPrices.size(), unitPrices.size());
                 if (count == 0) {
                     count = 1;
@@ -170,23 +173,25 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         /**
          * Returns prices matching some criteria.
          *
-         * @param product   the product
-         * @param shortName the price archetype short name
+         * @param product             the product
+         * @param shortName           the price archetype short name
+         * @param includeLinkedPrices if {@code true}, include prices linked from price template products
          * @return the matching prices
          */
-        private List<ProductPrice> getPrices(Product product, String shortName) {
+        private List<ProductPrice> getPrices(Product product, String shortName, boolean includeLinkedPrices) {
             List<ProductPrice> result = new ArrayList<ProductPrice>();
             ProductExportQuery query = getQuery();
             ProductExportQuery.Prices prices = query.getPrices();
             if (prices == ProductExportQuery.Prices.CURRENT) {
-                List<ProductPrice> list = rules.getProductPrices(product, shortName);
+                List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices);
                 if (!list.isEmpty()) {
                     result.add(list.get(0));
                 }
             } else if (prices == ProductExportQuery.Prices.ALL) {
-                result.addAll(rules.getProductPrices(product, shortName));
+                result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices));
             } else {
-                result.addAll(rules.getProductPrices(product, shortName, query.getFrom(), query.getTo()));
+                result.addAll(rules.getProductPrices(product, shortName, query.getFrom(), query.getTo(),
+                                                     includeLinkedPrices));
             }
             return result;
         }
