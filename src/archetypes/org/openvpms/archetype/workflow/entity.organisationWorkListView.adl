@@ -1,20 +1,18 @@
-<!-- 
- *  Version: 1.0
- *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
- *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
- *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
--->
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <archetypes>
     <archetype name="entity.organisationWorkListView.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity" displayName="Work List View">
@@ -24,18 +22,21 @@
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="displayExpression" path="/details/displayExpression" type="java.lang.String" minCardinality="0" maxLength="600"/>
-        <node name="displayNotes" path="/details/displayNotes" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"/>
-        <node name="highlight" path="/details/highlight" type="java.lang.String" minCardinality="0" defaultValue="'EVENT_TYPE'">
-              <assertion name="lookup.local">
-                  <propertyList name="entries">
-                      <property name="EVENT_TYPE" value="Event Type"/>
-                      <property name="CLINICIAN" value="Clinician"/>
-                      <property name="STATUS" value="Status"/>
-                  </propertyList>
-              </assertion>
+        <node name="displayExpression" path="/details/displayExpression" type="java.lang.String" minCardinality="0"
+              maxLength="600"/>
+        <node name="displayNotes" path="/details/displayNotes" type="java.lang.Boolean" minCardinality="0"
+              defaultValue="true()"/>
+        <node name="highlight" path="/details/highlight" type="java.lang.String" minCardinality="0"
+              defaultValue="'EVENT_TYPE'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="EVENT_TYPE" value="Event Type"/>
+                    <property name="CLINICIAN" value="Clinician"/>
+                    <property name="STATUS" value="Status"/>
+                </propertyList>
+            </assertion>
         </node>
-        <node name="workLists" path="/entityRelationships"
+        <node name="workLists" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.viewWorkList">
             <assertion name="archetypeRange">
