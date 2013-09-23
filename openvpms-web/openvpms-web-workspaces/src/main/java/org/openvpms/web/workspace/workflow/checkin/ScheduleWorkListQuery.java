@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -26,6 +27,7 @@ import org.openvpms.web.component.im.query.EntityObjectSetQuery;
 import org.openvpms.web.component.im.query.EntityObjectSetResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 
+import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.exists;
 import static org.openvpms.component.system.common.query.Constraints.idEq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -33,7 +35,7 @@ import static org.openvpms.component.system.common.query.Constraints.subQuery;
 
 /**
  * A query for <em>party.organisationWorkList</em> instances, optionally linked to a
- * <em>party.organisationSchedule</em>.
+ * <em>party.organisationSchedule</em> or <em>party.organisationLocation</em>
  *
  * @author Tim Anderson
  */
@@ -44,17 +46,28 @@ class ScheduleWorkListQuery extends EntityObjectSetQuery {
      */
     private final Entity schedule;
 
+    /**
+     * The practice location. May be {@code null}
+     */
+    private final Entity location;
+
+    /**
+     * The archetype short names to query.
+     */
     private static final String[] SHORT_NAMES = {ScheduleArchetypes.ORGANISATION_WORKLIST};
 
     /**
      * Constructs a {@link ScheduleWorkListQuery}.
      *
      * @param schedule the schedule. May be {@code null}
+     * @param location the practice location. May be {@code null}
      */
-    public ScheduleWorkListQuery(Entity schedule) {
+    public ScheduleWorkListQuery(Entity schedule, Entity location) {
         super(SHORT_NAMES);
         this.schedule = schedule;
+        this.location = location;
         setAuto(true);
+        setDistinct(true);
     }
 
     /**
@@ -76,18 +89,30 @@ class ScheduleWorkListQuery extends EntityObjectSetQuery {
             @Override
             protected ArchetypeQuery createQuery() {
                 ArchetypeQuery query = super.createQuery();
+                boolean useAllWorkLists = true;
                 if (schedule != null) {
                     IMObjectBean bean = new IMObjectBean(schedule);
-                    boolean useAllWorkLists = bean.getBoolean("useAllWorkLists", true);
+                    useAllWorkLists = bean.getBoolean("useAllWorkLists", true);
                     if (!useAllWorkLists) {
                         // constrain the work lists to those linked to the schedule
                         query.add(exists(subQuery(ScheduleArchetypes.ORGANISATION_SCHEDULE, "schedule")
+                                                 .add(eq("id", schedule.getId()))
                                                  .add(join("workLists", "w").add(idEq("entity", "w.target")))));
                     }
                 }
+                if (useAllWorkLists && location != null) {
+                    // constrain the work lists to those linked to the location
+                    query.add(exists(subQuery(PracticeArchetypes.LOCATION, "location")
+                                             .add(eq("id", location.getId()))
+                                             .add(join("workListViews").add(join("target", "workListView").add(
+                                                     join("workListView.workLists", "w")
+                                                             .add(idEq("entity", "w.target")))))));
+                }
+
                 return query;
             }
         };
+
     }
 
 }
