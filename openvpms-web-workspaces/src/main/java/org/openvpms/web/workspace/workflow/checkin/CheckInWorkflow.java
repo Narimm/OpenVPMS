@@ -245,7 +245,8 @@ public class CheckInWorkflow extends WorkflowImpl {
      */
     protected SelectIMObjectTask<Entity> createSelectWorkListTask(TaskContext context) {
         HelpContext help = context.getHelpContext().topic("worklist");
-        return new SelectIMObjectTask<Entity>(new EntityQuery(new ScheduleWorkListQuery(context.getSchedule()), context), help);
+        ScheduleWorkListQuery query = new ScheduleWorkListQuery(context.getSchedule(), context.getLocation());
+        return new SelectIMObjectTask<Entity>(new EntityQuery(query, context), help);
     }
 
     /**
