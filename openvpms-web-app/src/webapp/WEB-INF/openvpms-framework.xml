@@ -285,6 +285,11 @@
                         <constructor-arg value="expr"/>
                     </bean>
                 </entry>
+                <entry key="history">
+                    <bean class="org.openvpms.archetype.function.history.HistoryFunctions">
+                        <constructor-arg index="0" ref="archetypeService"/>
+                    </bean>
+                </entry>
             </map>
         </constructor-arg>
     </bean>
