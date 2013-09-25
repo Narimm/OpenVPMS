@@ -21,10 +21,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
+import java.util.Collections;
 import java.util.Date;
 
 /**
- * Enter description.
+ * Patient history functions, for use in reporting.
  *
  * @author Tim Anderson
  */
@@ -35,23 +36,60 @@ public class HistoryFunctions {
      */
     private final PatientHistory history;
 
+    /**
+     * Constructs a {@link HistoryFunctions}.
+     *
+     * @param service the archetype service
+     */
     public HistoryFunctions(IArchetypeService service) {
         history = new PatientHistory(service);
     }
 
+    /**
+     * Returns all medication acts for a patient.
+     *
+     * @param patient the patient. May be {@code null}
+     * @return the medication acts for the patient, or an empty list if patient is {@code null}
+     */
     public Iterable<Act> medication(Party patient) {
-        return history.getMedication(patient);
+        return patient != null ? history.getMedication(patient) : Collections.<Act>emptyList();
     }
 
+    /**
+     * Returns medication acts for a patient, between the specified dates, inclusive.
+     *
+     * @param patient the patient. May be {@code null}
+     * @param from    the from date-time. May be {@code null}
+     * @param to      the to date-time. May be {@code null}
+     * @return the medication acts for the patient, or an empty list if patient is {@code null}
+     */
     public Iterable<Act> medication(Party patient, Date from, Date to) {
-        return history.getMedication(patient, from, to);
+        return patient != null ? history.getMedication(patient, from, to) : Collections.<Act>emptyList();
     }
 
+    /**
+     * Returns medication acts for a patient, with the specified product type name.
+     *
+     * @param patient         the patient. May be {@code null}
+     * @param productTypeName the product type name. May be {@code null}
+     * @return the medication acts for the patient, or an empty list if patient is {@code null}
+     */
     public Iterable<Act> medication(Party patient, String productTypeName) {
-        return history.getMedication(patient, productTypeName);
+        return patient != null ? history.getMedication(patient, productTypeName) : Collections.<Act>emptyList();
     }
 
+    /**
+     * Returns medication acts for a patient, with the specified product type name, between the specified dates,
+     * inclusive.
+     *
+     * @param patient         the patient. May be {@code null}
+     * @param productTypeName the product type name. May be {@code null}
+     * @param from            the from date-time. May be {@code null}
+     * @param to              the to date-time. May be {@code null}
+     * @return the medication acts for the patient, or an empty list if patient is {@code null}
+     */
     public Iterable<Act> medication(Party patient, String productTypeName, Date from, Date to) {
-        return history.getMedication(patient, productTypeName, from, to);
+        return patient != null ? history.getMedication(patient, productTypeName, from, to)
+                               : Collections.<Act>emptyList();
     }
 }

@@ -19,6 +19,7 @@ package org.openvpms.archetype.function.history;
 import org.apache.commons.jxpath.JXPathContext;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -167,6 +168,30 @@ public class HistoryFunctionsTestCase extends ArchetypeServiceTest {
                 "history:medication(., 'Vaccination', java.sql.Date.valueOf('2013-09-01'), "
                 + "java.sql.Date.valueOf('2013-09-18'))");
         checkActs(acts3);
+    }
+
+    /**
+     * Tests the medication methods when a null patient is supplied.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testMedicationWithNullPatient() {
+        Act event = (Act) create(PatientArchetypes.CLINICAL_EVENT);
+        JXPathContext ctx = JXPathHelper.newContext(event);
+        Iterable<Act> acts1 = (Iterable<Act>) ctx.getValue("history:medication(openvpms:get(., 'patient.entity'))");
+        checkActs(acts1);
+
+        Iterable<Act> acts2 = (Iterable<Act>) ctx.getValue(
+                "history:medication(openvpms:get(., 'patient.entity'), null, null)");
+        checkActs(acts2);
+
+        Iterable<Act> acts3 = (Iterable<Act>) ctx.getValue(
+                "history:medication(openvpms:get(., 'patient.entity'), 'Vaccination')");
+        checkActs(acts3);
+
+        Iterable<Act> acts4 = (Iterable<Act>) ctx.getValue(
+                "history:medication(openvpms:get(., 'patient.entity'), 'Vaccination', null, null)");
+        checkActs(acts4);
     }
 
     /**
