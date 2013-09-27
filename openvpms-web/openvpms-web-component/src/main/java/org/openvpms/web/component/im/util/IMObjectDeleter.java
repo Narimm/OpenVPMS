@@ -18,6 +18,7 @@ package org.openvpms.web.component.im.util;
 
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -42,7 +43,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * @author Tim Anderson
  */
-public abstract class IMObjectDeletor {
+public abstract class IMObjectDeleter {
 
     /**
      * The context.
@@ -50,12 +51,26 @@ public abstract class IMObjectDeletor {
     private final Context context;
 
     /**
-     * Constructs an {@link IMObjectDeletor}.
+     * Relationship archetype short names to exclude.
+     */
+    private String[] excludeRelationships;
+
+    /**
+     * Constructs an {@link IMObjectDeleter}.
      *
      * @param context the context
      */
-    public IMObjectDeletor(Context context) {
+    public IMObjectDeleter(Context context) {
         this.context = context;
+    }
+
+    /**
+     * Sets the archetype short names of relationships to exclude when considering if an entity should be deleted.
+     *
+     * @param relationships the relationships to exclude
+     */
+    public void setExcludeRelationships(String... relationships) {
+        this.excludeRelationships = relationships;
     }
 
     /**
@@ -191,13 +206,24 @@ public abstract class IMObjectDeletor {
     }
 
     /**
-     * Determines if an entity has any relationships where it is the source.
+     * Determines if an entity has any relationships where it is the source, and the relationship isn't excluded.
      *
      * @param entity the entity
      * @return {@code true} if the entity has relationships where it is the source, otherwise {@code false}
      */
     protected boolean hasRelationships(Entity entity) {
-        return !entity.getSourceEntityRelationships().isEmpty();
+        boolean result = false;
+        if (excludeRelationships == null || excludeRelationships.length == 0) {
+            result = !entity.getSourceEntityRelationships().isEmpty();
+        } else {
+            for (EntityRelationship relationship : entity.getSourceEntityRelationships()) {
+                if (!TypeHelper.isA(relationship, excludeRelationships)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**

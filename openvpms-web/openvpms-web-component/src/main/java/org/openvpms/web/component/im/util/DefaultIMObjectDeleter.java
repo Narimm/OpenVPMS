@@ -27,18 +27,18 @@ import org.openvpms.web.resource.i18n.Messages;
 
 
 /**
- * An {@link IMObjectDeletor} that prompts for confirmation to delete objects.
+ * An {@link IMObjectDeleter} that prompts for confirmation to delete objects.
  *
  * @author Tim Anderson
  */
-public class DefaultIMObjectDeletor extends IMObjectDeletor {
+public class DefaultIMObjectDeleter extends IMObjectDeleter {
 
     /**
-     * Constructs a {@code DefaultIMObjectDeletor}.
+     * Constructs a {@code DefaultIMObjectDeleter}.
      *
      * @param context the context
      */
-    public DefaultIMObjectDeletor(Context context) {
+    public DefaultIMObjectDeleter(Context context) {
         super(context);
     }
 

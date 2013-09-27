@@ -19,9 +19,6 @@ package org.openvpms.web.component.workflow;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.event.WindowPaneListener;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -30,10 +27,13 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.IMObjectDeletor;
+import org.openvpms.web.component.im.util.IMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.util.SilentIMObjectDeletor;
+import org.openvpms.web.component.im.util.SilentIMObjectDeleter;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.help.HelpContext;
 
 
 /**
@@ -193,7 +193,7 @@ public class EditIMObjectTask extends AbstractTask {
      * or skipped. Defaults to {@code false}.
      * Note that no checking is performed to see if the object participates
      * in entity relationships before being deleted. To do this,
-     * use {@link IMObjectDeletor} instead.
+     * use {@link IMObjectDeleter} instead.
      * Defaults to {@code false}
      *
      * @param delete if {@code true} delete the object on cancel or skip
@@ -214,7 +214,7 @@ public class EditIMObjectTask extends AbstractTask {
         if (object == null) {
             if (create) {
                 CreateIMObjectTask creator
-                    = new CreateIMObjectTask(shortName, createProperties);
+                        = new CreateIMObjectTask(shortName, createProperties);
                 creator.addTaskListener(new DefaultTaskListener() {
                     public void taskEvent(TaskEvent event) {
                         switch (event.getType()) {
@@ -427,8 +427,8 @@ public class EditIMObjectTask extends AbstractTask {
                 object = IMObjectHelper.reload(object);
                 if (object != null) {
                     // make sure the the last saved instance is being deleted to avoid validation errors
-                    IMObjectDeletor deletor = new SilentIMObjectDeletor(context);
-                    deletor.delete(object, context.getHelpContext(), new DefaultIMObjectDeletionListener());
+                    IMObjectDeleter deleter = new SilentIMObjectDeleter(context);
+                    deleter.delete(object, context.getHelpContext(), new DefaultIMObjectDeletionListener());
                 }
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

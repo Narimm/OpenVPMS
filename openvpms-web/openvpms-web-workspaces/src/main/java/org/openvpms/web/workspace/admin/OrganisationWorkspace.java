@@ -20,7 +20,10 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.query.QueryBrowser;
+import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
+import org.openvpms.web.workspace.admin.organisation.OrganisationCRUDWindow;
 
 
 /**
@@ -63,4 +66,15 @@ public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
         }
     }
 
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow<Entity> createCRUDWindow() {
+        QueryBrowser<Entity> browser = getBrowser();
+        return new OrganisationCRUDWindow(getArchetypes(), browser.getQuery(), browser.getResultSet(),
+                                          getContext(), getHelpContext());
+    }
 }

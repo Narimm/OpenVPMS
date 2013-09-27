@@ -22,18 +22,18 @@ import org.openvpms.web.echo.help.HelpContext;
 
 
 /**
- * Implementation of {@link IMObjectDeletor} that doesn't prompt for confirmation.
+ * Implementation of {@link IMObjectDeleter} that doesn't prompt for confirmation.
  *
  * @author Tim Anderson
  */
-public class SilentIMObjectDeletor extends IMObjectDeletor {
+public class SilentIMObjectDeleter extends IMObjectDeleter {
 
     /**
-     * Constructs a {@code SilentIMObjectDeletor}.
+     * Constructs a {@code SilentIMObjectDeleter}.
      *
      * @param context the context.
      */
-    public SilentIMObjectDeletor(Context context) {
+    public SilentIMObjectDeleter(Context context) {
         super(context);
     }
 
