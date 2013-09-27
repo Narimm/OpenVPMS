@@ -19,13 +19,13 @@ package org.openvpms.web.workspace.admin.archetype;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.tools.archetype.loader.Change;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +35,9 @@ import java.util.List;
  * Loads a batch of {@link ArchetypeDescriptor}s, providing prompting to
  * replace duplicates, and error handling.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class BatchArchetypeLoader
-        extends AbstractAsynchronousBatchProcessor<ArchetypeDescriptor> {
+public class BatchArchetypeLoader extends AbstractAsynchronousBatchProcessor<ArchetypeDescriptor> {
 
 
     /**
@@ -74,14 +72,16 @@ public class BatchArchetypeLoader
      *          if the descriptor fails to validate
      */
     protected void process(ArchetypeDescriptor descriptor) {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        IArchetypeService service = ServiceHelper.getArchetypeService();
         service.validateObject(descriptor);
         String shortName = descriptor.getShortName();
-        ArchetypeDescriptor existing = service.getArchetypeDescriptor(shortName);
+        ArchetypeDescriptor existing = getArchetypeDescriptor(shortName, service);
         if (existing != null) {
             promptOnReplace(descriptor, existing);
         } else {
-            save(descriptor, service);
+            // Check if there is a cached version - these aren't deleted when an archetype descriptor is deleted
+            ArchetypeDescriptor cached = service.getArchetypeDescriptor(shortName);
+            save(descriptor, cached, service);
         }
     }
 
@@ -101,12 +101,12 @@ public class BatchArchetypeLoader
      * Saves an archetype descriptor.
      *
      * @param descriptor the descriptor to save
+     * @param existing   the existing instance. May be {@code null}
      * @param service    the archetype service
      */
-    private void save(ArchetypeDescriptor descriptor,
-                      IArchetypeService service) {
+    private void save(ArchetypeDescriptor descriptor, ArchetypeDescriptor existing, IArchetypeService service) {
         service.save(descriptor);
-        changes.add(new Change(descriptor));
+        changes.add(new Change(existing, descriptor));
     }
 
     /**
@@ -115,8 +115,7 @@ public class BatchArchetypeLoader
      * @param descriptor the new instance
      * @param existing   the existing instance
      */
-    private void promptOnReplace(final ArchetypeDescriptor descriptor,
-                                 final ArchetypeDescriptor existing) {
+    private void promptOnReplace(final ArchetypeDescriptor descriptor, final ArchetypeDescriptor existing) {
         String[] buttons;
         if (getIterator().hasNext()) {
             buttons = ConfirmationDialog.OK_SKIP_CANCEL;
@@ -124,10 +123,8 @@ public class BatchArchetypeLoader
             buttons = ConfirmationDialog.OK_CANCEL;
         }
         String title = Messages.get("archetype.import.replace.title");
-        String message = Messages.format("archetype.import.replace.message",
-                                         descriptor.getShortName());
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message,
-                                                                 buttons);
+        String message = Messages.format("archetype.import.replace.message", descriptor.getShortName());
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, buttons);
         setSuspend(true);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
@@ -151,9 +148,26 @@ public class BatchArchetypeLoader
      * @param descriptor the new instance
      * @param existing   the existing instance
      */
-    private void replace(ArchetypeDescriptor descriptor,
-                         ArchetypeDescriptor existing) {
+    private void replace(ArchetypeDescriptor descriptor, ArchetypeDescriptor existing) {
         SaveHelper.replace(existing, descriptor);
         changes.add(new Change(existing, descriptor));
+    }
+
+    /**
+     * Returns the archetype descriptor corresponding to the short name.
+     * <p/>
+     * If an archetype descriptor with the same short name has been deleted, it will still be present in the cache, so
+     * need to check the database to determine if an existing archetype descriptor should be replaced.
+     *
+     * @param shortName the descriptor short name
+     * @param service   the archetype service
+     * @return the corresponding archetype descriptor, or {@code null} if none is found
+     */
+    private ArchetypeDescriptor getArchetypeDescriptor(String shortName, IArchetypeService service) {
+        ArchetypeDescriptor result = service.getArchetypeDescriptor(shortName);
+        if (result != null) {
+            result = (ArchetypeDescriptor) service.get(result.getObjectReference());
+        }
+        return result;
     }
 }
