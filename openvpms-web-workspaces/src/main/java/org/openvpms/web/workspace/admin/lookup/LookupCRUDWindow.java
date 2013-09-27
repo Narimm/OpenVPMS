@@ -29,8 +29,8 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletor;
-import org.openvpms.web.component.im.util.IMObjectDeletor;
+import org.openvpms.web.component.im.util.DefaultIMObjectDeleter;
+import org.openvpms.web.component.im.util.IMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
@@ -80,7 +80,7 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
         if (object == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
-            IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
+            IMObjectDeleter deletor = new DefaultIMObjectDeleter(getContext());
             deletor.delete(object, getHelpContext().subtopic("delete"), new LookupDeletorListener());
         }
     }

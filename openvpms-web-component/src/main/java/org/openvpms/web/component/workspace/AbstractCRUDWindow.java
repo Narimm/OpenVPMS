@@ -39,10 +39,10 @@ import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletor;
+import org.openvpms.web.component.im.util.DefaultIMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
-import org.openvpms.web.component.im.util.IMObjectDeletor;
+import org.openvpms.web.component.im.util.IMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.mail.MailContext;
@@ -306,9 +306,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         if (object == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", archetypes.getDisplayName()));
         } else if (getActions().canDelete(object)) {
-            IMObjectDeletor deletor = new DefaultIMObjectDeletor(getContext());
+            IMObjectDeleter deleter = createDeleter(object);
             HelpContext delete = getHelpContext().subtopic("delete");
-            deletor.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
+            deleter.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
                 public void deleted(T object) {
                     onDeleted(object);
                 }
@@ -394,6 +394,16 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     protected IMObjectActions<T> getActions() {
         return actions;
+    }
+
+    /**
+     * Creates a deleter to delete an object.
+     *
+     * @param object the object to delete
+     * @return a new deleter
+     */
+    protected IMObjectDeleter createDeleter(T object) {
+        return new DefaultIMObjectDeleter(getContext());
     }
 
     /**
