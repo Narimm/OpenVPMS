@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -27,23 +25,31 @@ import java.util.Collection;
 /**
  * Service for accessing {@link Lookup}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public interface ILookupService {
 
     /**
-     * Returns the lookup with the specified lookup archetype short name and
-     * code.
+     * Returns the active lookup with the specified lookup archetype short name and code.
      *
      * @param shortName the lookup archetype short name. May contain wildcards
      * @param code      the lookup code
-     * @return the corresponding lookup or <tt>null</tt> if none is found
+     * @return the corresponding lookup or {@code null} if none is found
      */
     Lookup getLookup(String shortName, String code);
 
     /**
-     * Returns all lookups with the specified lookup archetype short name.
+     * Returns the lookup with the specified lookup archetype short name and code.
+     *
+     * @param shortName   the lookup archetype short name. May contain wildcards
+     * @param code        the lookup code
+     * @param activeOnly, if {@code true}, the lookup must be active, otherwise it must be active/inactive
+     * @return the corresponding lookup or {@code null} if none is found
+     */
+    Lookup getLookup(String shortName, String code, boolean activeOnly);
+
+    /**
+     * Returns all active lookups with the specified lookup archetype short name.
      *
      * @param shortName the lookup archetype short name. May contain wildcards
      * @return a collection of lookups with the specified short name
@@ -54,7 +60,7 @@ public interface ILookupService {
      * Returns the default lookup for the specified lookup archetype short name.
      *
      * @param shortName the lookup archetype short name. May contain wildcards
-     * @return the default lookup, or <Tt>null</tt> if none is found
+     * @return the default lookup, or {@code null} if none is found
      */
     Lookup getDefaultLookup(String shortName);
 
@@ -125,18 +131,18 @@ public interface ILookupService {
      *
      * @param object the object
      * @param node   the node name
-     * @return the lookup, or <tt>null</tt> if none is found
+     * @return the lookup, or {@code null} if none is found
      */
     Lookup getLookup(IMObject object, String node);
 
     /**
-      * Returns a lookup's name based on the value of a node.
-      *
-      * @param object the object
-      * @param node   the node name
-      * @return the lookup's name, or <tt>null</tt> if none is found
-      */
-     String getName(IMObject object, String node);
+     * Returns a lookup's name based on the value of a node.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the lookup's name, or {@code null} if none is found
+     */
+    String getName(IMObject object, String node);
 
     /**
      * Replaces one lookup with another.
@@ -144,7 +150,7 @@ public interface ILookupService {
      * Each lookup must be of the same archetype.
      *
      * @param source the lookup to replace
-     * @param target the lookup to replace <tt>source</tt> with
+     * @param target the lookup to replace {@code source} with
      */
     void replace(Lookup source, Lookup target);
 

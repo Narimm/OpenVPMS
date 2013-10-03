@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -31,10 +29,10 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,8 +45,7 @@ import java.util.List;
  * Abstract implementation of the {@link ILookupService}, that
  * delegates to the {@link IArchetypeService}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractLookupService implements ILookupService {
 
@@ -69,7 +66,7 @@ public abstract class AbstractLookupService implements ILookupService {
 
 
     /**
-     * Constructs an <tt>AbstractLookupService</tt>.
+     * Constructs an {@link AbstractLookupService}.
      *
      * @param service the archetype service
      * @param dao     the data access object
@@ -80,19 +77,31 @@ public abstract class AbstractLookupService implements ILookupService {
     }
 
     /**
-     * Returns the lookup with the specified lookup archetype short name and
-     * code.
+     * Returns the active lookup with the specified lookup archetype short name and code.
      *
      * @param shortName the lookup archetype short name
      * @param code      the lookup code
-     * @return the corresponding lookup or <tt>null</tt> if none is found
+     * @return the corresponding lookup or {@code null} if none is found
      */
     public Lookup getLookup(String shortName, String code) {
-        return query(shortName, code);
+        return getLookup(shortName, code, true);
     }
 
     /**
-     * Returns all lookups with the specified lookup archetype short name.
+     * Returns the lookup with the specified lookup archetype short name and code.
+     *
+     * @param shortName   the lookup archetype short name. May contain wildcards
+     * @param code        the lookup code
+     * @param activeOnly, if {@code true}, the lookup must be active, otherwise it must be active/inactive
+     * @return the corresponding lookup or {@code null} if none is found
+     */
+    @Override
+    public Lookup getLookup(String shortName, String code, boolean activeOnly) {
+        return query(shortName, code, activeOnly);
+    }
+
+    /**
+     * Returns all active lookups with the specified lookup archetype short name.
      *
      * @param shortName the lookup archetype short name
      * @return a collection of lookups with the specified short name
@@ -105,11 +114,11 @@ public abstract class AbstractLookupService implements ILookupService {
      * Returns the default lookup for the specified lookup archetype short name.
      *
      * @param shortName the lookup archetype short name
-     * @return the default lookup, or <Tt>null</tt> if none is found
+     * @return the default lookup, or {@code null} if none is found
      */
     public Lookup getDefaultLookup(String shortName) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, false)
-                .add(new NodeConstraint(DEFAULT_LOOKUP, RelationalOp.EQ, true))
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
+                .add(Constraints.eq(DEFAULT_LOOKUP, true))
                 .setMaxResults(1);
         List<IMObject> results = getService().get(query).getResults();
 
@@ -216,7 +225,7 @@ public abstract class AbstractLookupService implements ILookupService {
      *
      * @param object the object
      * @param node   the node name
-     * @return the lookup, or <tt>null</tt> if none is found
+     * @return the lookup, or {@code null} if none is found
      */
     public Lookup getLookup(IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object, service);
@@ -238,7 +247,7 @@ public abstract class AbstractLookupService implements ILookupService {
      *
      * @param object the object
      * @param node   the node name
-     * @return the lookup's name, or <tt>null</tt> if none is found
+     * @return the lookup's name, or {@code null} if none is found
      */
     public String getName(IMObject object, String node) {
         Lookup lookup = getLookup(object, node);
@@ -251,7 +260,7 @@ public abstract class AbstractLookupService implements ILookupService {
      * Each lookup must be of the same archetype.
      *
      * @param source the lookup to replace
-     * @param target the lookup to replace <tt>source</tt> with
+     * @param target the lookup to replace {@code source} with
      */
     public void replace(Lookup source, Lookup target) {
         if (!source.getArchetypeId().equals(target.getArchetypeId())) {
@@ -284,10 +293,10 @@ public abstract class AbstractLookupService implements ILookupService {
      *
      * @param shortName the lookup archetype short name
      * @param code      the lookup code
-     * @return the corresponding lookup or <tt>null</tt> if none is found
+     * @return the corresponding lookup or {@code null} if none is found
      */
-    protected Lookup query(String shortName, String code) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+    protected Lookup query(String shortName, String code, boolean activeOnly) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, activeOnly);
         query.add(new NodeConstraint("code", code)); // NON-NLS
         query.setMaxResults(1);
         List<IMObject> results = service.get(query).getResults();
@@ -295,7 +304,7 @@ public abstract class AbstractLookupService implements ILookupService {
     }
 
     /**
-     * Returns all lookups with the specified lookup archetype short name.
+     * Returns all active lookups with the specified lookup archetype short name.
      *
      * @param shortName the lookup archetype short name
      * @return a collection of lookups with the specified short name
@@ -316,8 +325,8 @@ public abstract class AbstractLookupService implements ILookupService {
     /**
      * Retrieves a lookup by reference.
      *
-     * @param reference the lookup reference. May be <tt>null</tt>
-     * @return the corresponding lookup, or <tt>null</tt> if none is found
+     * @param reference the lookup reference. May be {@code null}
+     * @return the corresponding lookup, or {@code null} if none is found. The lookup may be inactive
      */
     protected Lookup getLookup(IMObjectReference reference) {
         return (reference != null) ? (Lookup) service.get(reference) : null;
