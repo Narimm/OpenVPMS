@@ -227,14 +227,32 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient(false);
         assertNull(rules.getMicrochip(patient));
 
-        EntityIdentity microchip = (EntityIdentity) create("entityIdentity.microchip");
-        IMObjectBean tagBean = new IMObjectBean(microchip);
-        tagBean.setValue("microchip", "1234567");
+        EntityIdentity microchip = createMicrochip("1234567");
         patient.addIdentity(microchip);
         assertEquals("1234567", rules.getMicrochip(patient));
 
         microchip.setActive(false);
         assertNull(rules.getMicrochip(patient));
+    }
+
+    /**
+     * Tests the {@link PatientRules#getMicrochips(Party)} method.
+     */
+    @Test
+    public void testGetMicrochips() {
+        Party patient = TestHelper.createPatient(false);
+        assertNull(rules.getMicrochips(patient));
+
+        EntityIdentity microchip1 = createMicrochip("123");
+        patient.addIdentity(microchip1);
+        save(patient);
+        assertEquals("123", rules.getMicrochips(patient));
+
+        EntityIdentity microchip2 = createMicrochip("456");
+        patient.addIdentity(microchip2);
+        save(patient); // 456 will be returned first as its id is higher
+
+        assertEquals("456, 123", rules.getMicrochips(patient));
     }
 
     /**
@@ -339,6 +357,20 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
             // do nothing
         }
     }
+
+    /**
+     * Helper to create a microchip.
+     *
+     * @param microchip the chip value
+     * @return the microchip
+     */
+    private EntityIdentity createMicrochip(String microchip) {
+        EntityIdentity result = (EntityIdentity) create("entityIdentity.microchip");
+        IMObjectBean bean = new IMObjectBean(result);
+        bean.setValue("microchip", microchip);
+        return result;
+    }
+
 
     /**
      * Helper to convert a string to a date.

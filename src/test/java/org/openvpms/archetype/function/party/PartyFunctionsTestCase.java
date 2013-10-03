@@ -182,6 +182,33 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyFunctions#getPatientMicrochips(Party)} method.
+     */
+    @Test
+    public void testGetPatientMicrochips() {
+        Party patient = TestHelper.createPatient(false);
+        JXPathContext ctx = JXPathHelper.newContext(patient);
+
+        assertEquals("", ctx.getValue("party:getPatientMicrochips(.)"));
+
+        EntityIdentity microchip1 = (EntityIdentity) create("entityIdentity.microchip");
+        IMObjectBean tagBean = new IMObjectBean(microchip1);
+        tagBean.setValue("microchip", "123");
+        patient.addIdentity(microchip1);
+        save(patient);
+
+        assertEquals("123", ctx.getValue("party:getPatientMicrochips(.)"));
+
+        EntityIdentity microchip2 = (EntityIdentity) create("entityIdentity.microchip");
+        tagBean = new IMObjectBean(microchip2);
+        tagBean.setValue("microchip", "456");
+        patient.addIdentity(microchip2);
+        save(patient);
+
+        assertEquals("456, 123", ctx.getValue("party:getPatientMicrochips(.)"));
+    }
+
+    /**
      * Tests the {@link PartyFunctions#getWeight(Party)} and {@link PartyFunctions#getWeight(Party, String)} methods.
      */
     @Test

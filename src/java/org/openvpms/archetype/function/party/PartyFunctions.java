@@ -831,11 +831,28 @@ public class PartyFunctions {
     /**
      * Returns the patient microchip.
      *
-     * @param patient the patient
+     * @param patient the patient. May be {@code null}
      * @return the microchip, or an empty string if none is found
      */
     public String getPatientMicrochip(Party patient) {
-        String result = patientRules.getMicrochip(patient);
+        String result = null;
+        if (patient != null) {
+            result = patientRules.getMicrochip(patient);
+        }
+        return (result != null) ? result : "";
+    }
+
+    /**
+     * Returns the patient microchips, separated by commas.
+     *
+     * @param patient the patient. May be {@code null}
+     * @return the microchips, or an empty string if none is found
+     */
+    public String getPatientMicrochips(Party patient) {
+        String result = null;
+        if (patient != null) {
+            result = patientRules.getMicrochips(patient);
+        }
         return (result != null) ? result : "";
     }
 
@@ -846,8 +863,17 @@ public class PartyFunctions {
      * @return the microchip, or an empty string if none is found
      */
     public String getPatientMicrochip(Act act) {
-        Party patient = getPatient(act);
-        return (patient != null) ? getPatientMicrochip(patient) : "";
+        return getPatientMicrochip(getPatient(act));
+    }
+
+    /**
+     * Returns the microchips of a patient associated with an act.
+     *
+     * @param act the act
+     * @return the microchips, or an empty string if none is found
+     */
+    public String getPatientMicrochips(Act act) {
+        return getPatientMicrochips(getPatient(act));
     }
 
     /**
