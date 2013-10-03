@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.admin.lookup;
 
 import nextapp.echo2.app.Component;
@@ -163,7 +164,7 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
                 Property property = getProperty(node);
                 String name = (property != null) ? property.getDisplayName() : node;
                 String archetype = lookup.getArchetypeId().getShortName();
-                if (ServiceHelper.getLookupService().getLookup(archetype, code) != null) {
+                if (exists(archetype, code)) {
                     String message = Messages.format("lookup.validation.duplicate", getDisplayName(), name, code);
                     validator.add(this, new ValidatorError(archetype, node, message));
                     result = false;
@@ -171,6 +172,17 @@ public abstract class AbstractLookupEditor extends AbstractIMObjectEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Determines if a lookup exists.
+     *
+     * @param shortName the lookup archetype short name
+     * @param code      the lookup code
+     * @return {@code true} if it exists, otherwise {@code false}
+     */
+    private boolean exists(String shortName, String code) {
+        return ServiceHelper.getLookupService().getLookup(shortName, code, false) != null;
     }
 
     /**

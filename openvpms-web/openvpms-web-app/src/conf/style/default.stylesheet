@@ -2154,6 +2154,21 @@
         </properties>
     </style>
 
+    <!-- label in a grid. This specifies the alignment -->
+    <style name="default.grid" type="nextapp.echo2.app.Label" base-name="default">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.GridLayoutData">
+                    <properties>
+                        <property name="alignment">
+                            <alignment horizontal="right"/>
+                        </property>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <!-- =================================================================== -->
     <!--  Button defaults                                                    -->
     <!-- =================================================================== -->
