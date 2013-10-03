@@ -16,6 +16,7 @@
 
 package org.openvpms.archetype.rules.patient;
 
+import org.apache.commons.collections.ComparatorUtils;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.MergeException;
@@ -45,9 +46,11 @@ import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ParticipationConstraint;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeMap;
 
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
 import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
@@ -551,6 +554,25 @@ public class PatientRules {
     }
 
     /**
+     * Returns the active microchip numbers for a patient, separated by commas.
+     *
+     * @param patient the patient
+     * @return the active microchip numbers, or {@code null} if none is found
+     */
+    public String getMicrochips(Party patient) {
+        String result = null;
+        Collection<EntityIdentity> identities = getIdentities(patient, "entityIdentity.microchip");
+        for (EntityIdentity identity : identities) {
+            if (result == null) {
+                result = identity.getIdentity();
+            } else {
+                result += ", " + identity.getIdentity();
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the most recent active pet tag for a patient.
      *
      * @param patient the patient
@@ -649,6 +671,25 @@ public class PatientRules {
             }
         }
         return (result != null) ? result.getIdentity() : null;
+    }
+
+    /**
+     * Returns the active identity with the specified short name.
+     * If there are multiple identities, these will be ordered with the highest id first.
+     *
+     * @param patient   the patient
+     * @param shortName the identity archetype short name
+     * @return the identities
+     */
+    @SuppressWarnings("unchecked")
+    private Collection<EntityIdentity> getIdentities(Party patient, String shortName) {
+        TreeMap<Long, EntityIdentity> result = new TreeMap<Long, EntityIdentity>(ComparatorUtils.reversedComparator(ComparatorUtils.NATURAL_COMPARATOR));
+        for (EntityIdentity identity : patient.getIdentities()) {
+            if (identity.isActive() && TypeHelper.isA(identity, shortName)) {
+                result.put(identity.getId(), identity);
+            }
+        }
+        return result.values();
     }
 
 }
