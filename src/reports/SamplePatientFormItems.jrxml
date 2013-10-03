@@ -3,7 +3,7 @@
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.9487171000000012"/>
-	<property name="ireport.x" value="451"/>
+	<property name="ireport.x" value="402"/>
 	<property name="ireport.y" value="0"/>
 	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -14,8 +14,7 @@
 	<field name="product.entity.name" class="java.lang.String"/>
 	<field name="product.entity.displayName" class="java.lang.String"/>
 	<field name="product.entity.printedName" class="java.lang.String"/>
-	<field name="startTime" class="java.sql.Timestamp"/>
-	<sortField name="startTime"/>
+	<field name="startTime" class="java.util.Date"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
