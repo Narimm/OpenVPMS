@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -39,8 +37,7 @@ import java.util.Set;
 /**
  * Implementation of {@link ILookupService} that caches objects.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CachingLookupService extends AbstractLookupService {
 
@@ -51,7 +48,7 @@ public class CachingLookupService extends AbstractLookupService {
 
 
     /**
-     * Creates a new <tt>CachingLookupService</tt>.
+     * Creates a new {@code CachingLookupService}.
      *
      * @param service the archetype service
      * @param dao     the data access object
@@ -77,7 +74,7 @@ public class CachingLookupService extends AbstractLookupService {
      *
      * @param shortNames the lookup archetype short names. May contain wildcards
      */
-    public void setCached(String ... shortNames) {
+    public void setCached(String... shortNames) {
         for (String wildcard : shortNames) {
             String[] expanded = DescriptorHelper.getShortNames(wildcard, false,
                                                                getService());
@@ -88,20 +85,24 @@ public class CachingLookupService extends AbstractLookupService {
     }
 
     /**
-     * Returns the lookup with the specified lookup archetype short name and
-     * code.
+     * Returns the lookup with the specified lookup archetype short name and code.
      *
-     * @param shortName the lookup archetype short name
-     * @param code      the lookup code
-     * @return the corresponding lookup or <tt>null</tt> if none is found
+     * @param shortName   the lookup archetype short name. May contain wildcards
+     * @param code        the lookup code
+     * @param activeOnly, if {@code true}, the lookup must be active, otherwise it must be active/inactive
+     * @return the corresponding lookup or {@code null} if none is found
      */
-    public Lookup getLookup(String shortName, String code) {
+    @Override
+    public Lookup getLookup(String shortName, String code, boolean activeOnly) {
         Lookup result;
         Element element = cache.get(new Key(shortName, code));
         if (element != null) {
             result = (Lookup) element.getObjectValue();
+            if (result != null && activeOnly && !result.isActive()) {
+                result = null;
+            }
         } else {
-            result = super.getLookup(shortName, code);
+            result = super.getLookup(shortName, code, activeOnly);
             if (result != null) {
                 addLookup(result);
             }
@@ -110,29 +111,28 @@ public class CachingLookupService extends AbstractLookupService {
     }
 
     /**
-     * Returns all lookups with the specified lookup archetype short name.
+     * Returns all active lookups with the specified lookup archetype short name.
      *
      * @param shortName the lookup archetype short name
      * @return a collection of lookups with the specified short name
      */
+    @SuppressWarnings("unchecked")
     public Collection<Lookup> getLookups(String shortName) {
         Collection<Lookup> result;
         Key key = new Key(shortName);
         Element element = cache.get(key);
         if (element != null) {
             result = new ArrayList<Lookup>();
-            Set<IMObjectReference> references
-                    = (Set<IMObjectReference>) element.getObjectValue();
+            Set<IMObjectReference> references = (Set<IMObjectReference>) element.getObjectValue();
             for (IMObjectReference reference : references) {
                 Lookup lookup = getLookup(reference);
-                if (lookup != null) {
+                if (lookup != null && lookup.isActive()) {
                     result.add(lookup);
                 }
             }
         } else {
             result = query(shortName);
-            Set<IMObjectReference> references
-                    = new HashSet<IMObjectReference>();
+            Set<IMObjectReference> references = new HashSet<IMObjectReference>();
             for (Lookup lookup : result) {
                 references.add(lookup.getObjectReference());
                 addLookup(lookup);
@@ -146,7 +146,7 @@ public class CachingLookupService extends AbstractLookupService {
      * Returns the default lookup for the specified lookup archetype short name.
      *
      * @param shortName the lookup archetype short name
-     * @return the default lookup, or <Tt>null</tt> if none is found
+     * @return the default lookup, or {@code null} if none is found
      */
     public Lookup getDefaultLookup(String shortName) {
         for (Lookup lookup : getLookups(shortName)) {
@@ -160,8 +160,8 @@ public class CachingLookupService extends AbstractLookupService {
     /**
      * Retrieves a lookup by reference.
      *
-     * @param reference the lookup reference. May be <tt>null</tt>
-     * @return the corresponding lookup, or <tt>null</tt> if none is found
+     * @param reference the lookup reference. May be {@code null}
+     * @return the corresponding lookup, or {@code null} if none is found. The lookup may be inactive
      */
     @Override
     protected Lookup getLookup(IMObjectReference reference) {
@@ -188,18 +188,32 @@ public class CachingLookupService extends AbstractLookupService {
     private void addLookup(Lookup lookup) {
         String shortName = lookup.getArchetypeId().getShortName();
 
-        Key refKey = new Key(lookup.getObjectReference());
+        IMObjectReference reference = lookup.getObjectReference();
+        Key refKey = new Key(reference);
         Key codeKey = new Key(shortName, lookup.getCode());
         cache.put(new Element(refKey, lookup));
         cache.put(new Element(codeKey, lookup));
 
-        Key collectionKey = new Key(shortName);
+        if (lookup.isActive()) {
+            addToCollection(reference);
+        } else {
+            removeFromCollection(reference);
+        }
+    }
+
+    /**
+     * Adds a lookup to the collection of lookups for a particular archetype.
+     *
+     * @param reference the lookup reference
+     */
+    @SuppressWarnings("unchecked")
+    private void addToCollection(IMObjectReference reference) {
+        Key collectionKey = new Key(reference.getArchetypeId().getShortName());
         Element element = cache.get(collectionKey);
         if (element != null) {
             synchronized (element) {
-                Set<IMObjectReference> lookups
-                        = (Set<IMObjectReference>) element.getObjectValue();
-                lookups.add(lookup.getObjectReference());
+                Set<IMObjectReference> lookups = (Set<IMObjectReference>) element.getObjectValue();
+                lookups.add(reference);
             }
         }
     }
@@ -210,20 +224,28 @@ public class CachingLookupService extends AbstractLookupService {
      * @param lookup the lookup to remove
      */
     private void removeLookup(Lookup lookup) {
-        String shortName = lookup.getArchetypeId().getShortName();
-
-        Key refKey = new Key(lookup.getObjectReference());
-        Key codeKey = new Key(shortName, lookup.getCode());
+        IMObjectReference reference = lookup.getObjectReference();
+        Key refKey = new Key(reference);
+        Key codeKey = new Key(lookup.getArchetypeId().getShortName(), lookup.getCode());
         cache.remove(refKey);
         cache.remove(codeKey);
 
-        Key collectionKey = new Key(shortName);
+        removeFromCollection(reference);
+    }
+
+    /**
+     * Removes a lookup from the collection of lookups for a particular lookup archetype.
+     *
+     * @param reference the lookup reference
+     */
+    @SuppressWarnings("unchecked")
+    private void removeFromCollection(IMObjectReference reference) {
+        Key collectionKey = new Key(reference.getArchetypeId().getShortName());
         Element element = cache.get(collectionKey);
         if (element != null) {
             synchronized (element) {
-                Set<IMObjectReference> lookups
-                        = (Set<IMObjectReference>) element.getObjectValue();
-                lookups.remove(lookup.getObjectReference());
+                Set<IMObjectReference> lookups = (Set<IMObjectReference>) element.getObjectValue();
+                lookups.remove(reference);
             }
         }
     }
@@ -255,14 +277,12 @@ public class CachingLookupService extends AbstractLookupService {
          * Indicates whether some other object is "equal to" this one.
          *
          * @param obj the reference object with which to compare.
-         * @return <code>true</code> if this object is the same as the obj
-         *         argument; <code>false</code> otherwise.
+         * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
          */
         @Override
         public boolean equals(Object obj) {
             Key other = (Key) obj;
-            return (ObjectUtils.equals(key, other.key)
-                    || ObjectUtils.equals(ref, other.ref));
+            return (ObjectUtils.equals(key, other.key) || ObjectUtils.equals(ref, other.ref));
         }
 
         /**

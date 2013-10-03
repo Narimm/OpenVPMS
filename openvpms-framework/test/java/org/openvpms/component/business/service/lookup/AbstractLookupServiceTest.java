@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
@@ -30,12 +27,17 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collection;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link ILookupService}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-11-27 05:03:46Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("lookup-service-appcontext.xml")
 public abstract class AbstractLookupServiceTest extends AbstractArchetypeServiceTest {
@@ -73,6 +75,12 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
         found = lookupService.getLookup("lookup.breed", code);
         assertNotNull(found);
         assertEquals(lookup.getObjectReference(), found.getObjectReference());
+
+        // now de-activate it
+        lookup.setActive(false);
+        save(lookup);
+
+        assertNull(lookupService.getLookup("lookup.breed", code));
     }
 
     /**
@@ -82,12 +90,23 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
     public void testGetLookups() {
         Collection<Lookup> lookups1 = lookupService.getLookups("lookup.country");
 
-        Lookup lookup = createLookup("lookup.country", "AU");
-        save(lookup);
+        Lookup lookup1 = createLookup("lookup.country", "AU");
+        Lookup lookup2 = createLookup("lookup.country", "NZ");
+        save(lookup1);
+        save(lookup2);
 
         Collection<Lookup> lookups2 = lookupService.getLookups("lookup.country");
-        assertEquals(lookups1.size() + 1, lookups2.size());
-        assertTrue(lookups2.contains(lookup));
+        assertEquals(lookups1.size() + 2, lookups2.size());
+        assertTrue(lookups2.contains(lookup1));
+        assertTrue(lookups2.contains(lookup2));
+
+        lookup2.setActive(false);
+        save(lookup2);
+
+        Collection<Lookup> lookups3 = lookupService.getLookups("lookup.country");
+        assertEquals(lookups1.size() + 1, lookups3.size());
+        assertTrue(lookups3.contains(lookup1));
+        assertFalse(lookups3.contains(lookup2));
     }
 
     /**
@@ -105,6 +124,17 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
 
         Lookup lookup = lookupService.getDefaultLookup("lookup.country");
         assertEquals(au, lookup);
+
+        // now create an inactive lookup, set as the default, and mark au as not the default
+        Lookup nz = createLookup("lookup.country", "NZ");
+        nz.setDefaultLookup(true);
+        nz.setActive(false);
+        save(nz);
+        au.setDefaultLookup(false);
+        save(au);
+
+        assertNull(lookupService.getDefaultLookup("lookup.country"));
+
     }
 
     /**
@@ -194,15 +224,6 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
      */
     protected void setLookupService(ILookupService service) {
         lookupService = service;
-    }
-
-    /**
-     * Returns the lookup service.
-     *
-     * @return the lookup service
-     */
-    protected ILookupService getLookupService() {
-        return lookupService;
     }
 
     /**
