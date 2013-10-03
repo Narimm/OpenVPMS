@@ -231,7 +231,7 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
  status is displayed on the OpenVPMS login screen. If you have not paid, a
  link to a payment page is displayed. On payment, a subscription key will be
  mailed to you.
- If you have a current subscription, you can request a subscription key be
+ If you have a current subscription, you can request a subscription key by
  emailing a copy of your receipt to subscription@openvpms.org.
 
  To update your subscription status, edit the Practice in the
@@ -262,5 +262,5 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
  is displayed in a separate browser window. If you want it displayed in a tab rather than a
  new window try the following:
   - Firefox: install the 'Open Link in New Tab' add-on
-  - Chrome: install the 'Open Window' extension
+  - Chrome: install the 'One Window' extension
   - Safari: select Preferences|Tabs|Open pages in tabs instead of windows: Always
