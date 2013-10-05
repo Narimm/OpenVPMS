@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -24,8 +22,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 /**
  * Workflow task.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public interface Task {
 
@@ -46,8 +43,7 @@ public interface Task {
     /**
      * Starts the task.
      * <p/>
-     * The registered {@link TaskListener} will be notified on completion or
-     * failure.
+     * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
      * @throws OpenVPMSException for any error
@@ -57,8 +53,15 @@ public interface Task {
     /**
      * Determines if this is a required or an optional task.
      *
-     * @return <code>true</code> if this is a required task; <code>false</code>
-     *         if it is an optional task
+     * @return {@code true} if this is a required task; {@code false} if it is an optional task
      */
     boolean isRequired();
+
+    /**
+     * Determines if the task has finished.
+     *
+     * @return {@code true} if the task has finished
+     */
+    boolean isFinished();
+
 }

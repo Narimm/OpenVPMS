@@ -37,7 +37,7 @@ import org.openvpms.web.workspace.patient.visit.VisitEditor;
  *
  * @author Tim Anderson
  */
-public class TestEditVisitTask extends EditVisitTask {
+public class TestEditVisitTask extends EditVisitTask implements EditorQueueHandle {
 
     /**
      * The popup dialog manager.
@@ -58,7 +58,7 @@ public class TestEditVisitTask extends EditVisitTask {
      *
      * @param event    the event
      * @param invoice  the invoice
-     * @param customer
+     * @param customer the customer
      * @param patient  the patient
      * @param context  the task context
      * @param help     the help context

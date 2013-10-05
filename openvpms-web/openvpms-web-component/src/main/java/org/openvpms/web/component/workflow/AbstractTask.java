@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -23,8 +21,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.event.WindowPaneListener;
 
 import java.util.Collection;
 
@@ -32,8 +30,7 @@ import java.util.Collection;
 /**
  * Abstract implementation of the {@link Task} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractTask implements Task {
 
@@ -83,8 +80,7 @@ public abstract class AbstractTask implements Task {
     /**
      * Determines if this is a required or an optional task.
      *
-     * @param required if <code>true</code> this is a required task; otherwise
-     *                 it is an optional task
+     * @param required if {@code true} this is a required task; otherwise it is an optional task
      */
     public void setRequired(boolean required) {
         this.required = required;
@@ -93,11 +89,19 @@ public abstract class AbstractTask implements Task {
     /**
      * Determines if this is a required or an optional task.
      *
-     * @return <code>true</code> if this is a required task; <code>false</code>
-     *         if it is an optional task
+     * @return {@code true} if this is a required task; {@code false} if it is an optional task
      */
     public boolean isRequired() {
         return required;
+    }
+
+    /**
+     * Determines if the task has finished.
+     *
+     * @return {@code true} if any of the {@code notify*} methods have been invoked
+     */
+    public boolean isFinished() {
+        return finished;
     }
 
     /**
@@ -150,17 +154,7 @@ public abstract class AbstractTask implements Task {
     }
 
     /**
-     * Determines if the task has finished.
-     *
-     * @return <tt>true</tt> if any of the <tt>notify*</tt> methods have been
-     *         invoked
-     */
-    protected boolean isFinished() {
-        return finished;
-    }
-
-    /**
-     * Helper to display an error and nofity that the task has been cancelled.
+     * Helper to display an error and notify that the task has been cancelled.
      *
      * @param cause the cause of the error
      * @throws IllegalStateException if notification has already occurred
@@ -227,12 +221,26 @@ public abstract class AbstractTask implements Task {
      */
     protected void notifyEvent(TaskEvent.Type type) {
         if (finished) {
-            throw new IllegalStateException(
-                "Listener has already been notified");
+            throw new IllegalStateException("Listener has already been notified");
         }
         finished = true;
         if (listeners != null) {
             listeners.taskEvent(new TaskEvent(type, this));
+        }
+    }
+
+    /**
+     * Notifies the registered listener of the completion state of the task.
+     *
+     * @param type the event type
+     * @throws IllegalStateException if notification has already occurred
+     */
+    protected void notifyEvent(TaskEvent.Type type, Task task) {
+        if (task.isFinished()) {
+            throw new IllegalStateException("Listener has already been notified");
+        }
+        if (listeners != null) {
+            listeners.taskEvent(new TaskEvent(type, task));
         }
     }
 

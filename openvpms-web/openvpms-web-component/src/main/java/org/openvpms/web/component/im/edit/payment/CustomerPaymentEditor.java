@@ -19,28 +19,18 @@ package org.openvpms.web.component.im.edit.payment;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
-import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
@@ -54,19 +44,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class CustomerPaymentEditor extends PaymentEditor {
-
-    /**
-     * Determines the expected payment amount. If {@code null}, there
-     * is no limit on the payment amount. If non-null, validation will fail
-     * if the act total is not that specified.
-     */
-    private BigDecimal expectedAmount;
-
-    /**
-     * The amount of the invoice that this payment relates to.
-     */
-    private final SimpleProperty invoiceAmount;
+public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
 
     /**
      * The previous balance.
@@ -105,82 +83,17 @@ public class CustomerPaymentEditor extends PaymentEditor {
      */
     public CustomerPaymentEditor(Act act, IMObject parent, LayoutContext context, BigDecimal invoice) {
         super(act, parent, context);
-        invoiceAmount = createProperty("invoiceAmount", "customer.payment.currentInvoice");
-        invoiceAmount.setValue(invoice);
+        setInvoiceAmount(invoice);
         previousBalance = createProperty("previousBalance", "customer.payment.previousBalance");
         overdueAmount = createProperty("overdueAmount", "customer.payment.overdue");
         totalBalance = createProperty("totalBalance", "customer.payment.totalBalance");
 
-        initParticipant("customer", context.getContext().getCustomer());
-        initParticipant("location", context.getContext().getLocation());
-        getItems().setCreationListener(new IMObjectCreationListener() {
-            public void created(IMObject object) {
-                onCreated((FinancialAct) object);
-            }
-        });
-
         updateSummary();
-
         getProperty("customer").addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateSummary();
             }
         });
-    }
-
-    /**
-     * Sets the invoice amount.
-     *
-     * @param amount the invoice amount
-     */
-    public void setInvoiceAmount(BigDecimal amount) {
-        invoiceAmount.setValue(amount);
-    }
-
-    /**
-     * Determines the expected amount of the payment. If {@code null}, there
-     * is no limit on the payment amount. If non-null, validation will fail
-     * if the act total is not that specified.
-     *
-     * @param amount the expected payment amount. May be {@code null}
-     */
-    public void setExpectedAmount(BigDecimal amount) {
-        expectedAmount = amount;
-    }
-
-    /**
-     * Sets the till.
-     *
-     * @param till the till. May be {@code null}
-     */
-    public void setTill(Entity till) {
-        setParticipant("till", till);
-    }
-
-    /**
-     * Validates the object.
-     * <p/>
-     * This extends validation by ensuring that the payment amount matches the expected amount, if present.
-     *
-     * @param validator the validator
-     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
-     */
-    @Override
-    protected boolean doValidation(Validator validator) {
-        boolean valid = super.doValidation(validator);
-        if (valid && expectedAmount != null) {
-            Property property = getProperty("amount");
-            BigDecimal amount = (BigDecimal) property.getValue();
-            if (amount.compareTo(expectedAmount) != 0) {
-                valid = false;
-                // need to pre-format the amounts as the Messages uses the browser's locale which may have different
-                // currency format
-                String msg = Messages.format("customer.payment.amountMismatch",
-                                             NumberFormatter.formatCurrency(expectedAmount));
-                validator.add(property, new ValidatorError(msg));
-            }
-        }
-        return valid;
     }
 
     /**
@@ -191,38 +104,6 @@ public class CustomerPaymentEditor extends PaymentEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new LayoutStrategy(getItems());
-    }
-
-    /**
-     * Invoked when a child act is created. This sets the total to the:
-     * <ul>
-     * <li>outstanding balance +/- the running total, if there is no expected
-     * amount; or</li>
-     * <li>expected amount - the running total</li>
-     * </ul>
-     *
-     * @param act the act
-     */
-    private void onCreated(FinancialAct act) {
-        Party customer = (Party) getParticipant("customer");
-        if (customer != null) {
-            BigDecimal runningTotal = getRunningTotal();
-            BigDecimal balance;
-            if (expectedAmount == null) {
-                // default the amount to the outstanding balance +/- the running total.
-                boolean payment = TypeHelper.isA(act, "act.customerAccountPayment*");
-                CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
-                balance = rules.getBalance(customer, runningTotal, payment);
-                act.setTotal(new Money(balance));
-            } else {
-                // default the amount to the expected amount - the running total.
-                balance = expectedAmount.subtract(runningTotal);
-                if (balance.signum() >= 0) {
-                    act.setTotal(new Money(balance));
-                }
-            }
-            getItems().setModified(act, true);
-        }
     }
 
     /**
@@ -238,7 +119,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
 
             total = rules.getBalance(customer);
             overdue = rules.getOverdueBalance(customer, new Date());
-            BigDecimal invoice = (BigDecimal) invoiceAmount.getValue();
+            BigDecimal invoice = getInvoiceAmount();
             previous = total.subtract(overdue).subtract(invoice);
         }
         previousBalance.setValue(previous);
@@ -246,28 +127,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
         totalBalance.setValue(total);
     }
 
-    /**
-     * Returns the running total. This is the current total of the act
-     * minus any committed child acts which are already included in the balance.
-     *
-     * @return the running total
-     */
-    private BigDecimal getRunningTotal() {
-        FinancialAct act = (FinancialAct) getObject();
-        BigDecimal total = act.getTotal();
-        BigDecimal committed = ActHelper.sum(act, "amount");
-        return total.subtract(committed);
-    }
-
-    private SimpleProperty createProperty(String name,
-                                          String key) {
-        SimpleProperty property = new SimpleProperty(name, BigDecimal.class);
-        property.setDisplayName(Messages.get(key));
-        property.setReadOnly(true);
-        return property;
-    }
-
-    private class LayoutStrategy extends ActLayoutStrategy {
+    protected class LayoutStrategy extends ActLayoutStrategy {
 
         /**
          * Creates a new {@code LayoutStrategy}.
@@ -292,7 +152,7 @@ public class CustomerPaymentEditor extends PaymentEditor {
                                       Component container, LayoutContext context) {
             ComponentSet set = createComponentSet(object, properties, context);
             ComponentGrid grid = new ComponentGrid();
-            grid.set(0, 0, createComponent(invoiceAmount, object, context));
+            grid.set(0, 0, createComponent(getInvoiceAmountProperty(), object, context));
             grid.set(0, 2, createComponent(previousBalance, object, context));
             grid.set(1, 0, createComponent(overdueAmount, object, context));
             grid.set(1, 2, createComponent(totalBalance, object, context));
