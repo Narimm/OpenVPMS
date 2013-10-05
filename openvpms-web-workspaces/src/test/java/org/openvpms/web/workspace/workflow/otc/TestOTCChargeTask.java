@@ -16,59 +16,48 @@
 
 package org.openvpms.web.workspace.workflow.otc;
 
-import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
-
+import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
+import org.openvpms.web.workspace.workflow.EditorQueueHandle;
 
 /**
- * A task for editing over-the-counter payments.
- * <p/>
- * This ensures that the payment amount equals the charge amount.
+ * Tests implementation of the {@link OTCChargeTask}.
  *
  * @author Tim Anderson
  */
-class OTCPaymentTask extends EditIMObjectTask {
+class TestOTCChargeTask extends OTCChargeTask implements EditorQueueHandle {
 
     /**
-     * Constructs a {@link OTCPaymentTask}.
+     * The popup dialog manager.
      */
-    public OTCPaymentTask() {
-        super(CustomerAccountArchetypes.PAYMENT, true);
-    }
+    private ChargeEditorQueue queue = new ChargeEditorQueue();
 
 
     /**
-     * Edits an object.
+     * Returns the popup dialog manager.
      *
-     * @param object  the object to edit
-     * @param context the task context
+     * @return the popup dialog manager
      */
     @Override
-    protected void edit(IMObject object, TaskContext context) {
-        Act payment = (Act) object;
-        payment.setStatus(ActStatus.IN_PROGRESS); // enables the Apply button
-        super.edit(object, context);
+    public ChargeEditorQueue getEditorQueue() {
+        return queue;
     }
 
     /**
-     * Creates a new editor for an object.
+     * Creates the charge editor.
      *
      * @param object  the object to edit
      * @param context the task context
-     * @return a new editor
+     * @return a new charge editor
      */
     @Override
     protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
         LayoutContext layout = new DefaultLayoutContext(true, context, context.getHelpContext());
-        FinancialAct charge = (FinancialAct) context.getObject(CustomerAccountArchetypes.COUNTER);
-        return new OTCPaymentEditor((FinancialAct) object, null, layout, charge.getTotal());
+        return new TestOTCChargeEditor(queue, (FinancialAct) object, null, layout);
     }
 }

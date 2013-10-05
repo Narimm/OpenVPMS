@@ -14,39 +14,38 @@
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.workflow;
+package org.openvpms.web.workspace.workflow.otc;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
-import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
-import org.openvpms.web.workspace.patient.charge.VisitChargeItemRelationshipCollectionEditor;
+import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
+import org.openvpms.web.workspace.workflow.DelegatingEditorQueue;
+import org.openvpms.web.workspace.workflow.EditorQueueHandle;
 
 /**
- * A test {@link VisitChargeEditor}.
+ * Tests implementation of the {@link OTCChargeEditor}.
  *
  * @author Tim Anderson
  */
-public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQueueHandle {
+class TestOTCChargeEditor extends OTCChargeEditor implements EditorQueueHandle {
+
+    private final ChargeEditorQueue queue;
 
     /**
-     * The editor queue.
-     */
-    private EditorQueueHandle queue;
-
-    /**
-     * Constructs a {@code TestVisitChargeEditor}.
+     * Constructs a {@link TestOTCChargeEditor}.
      *
-     * @param queue   the editor queue
-     * @param charge  the charge to edit
-     * @param event   the visit to edit
+     * @param queue   the popup editor queue
+     * @param act     the act to edit
+     * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      */
-    public TestVisitChargeEditor(EditorQueueHandle queue, FinancialAct charge, Act event, LayoutContext context) {
-        super(charge, event, context, false); // don't add a default item...
+    public TestOTCChargeEditor(ChargeEditorQueue queue, FinancialAct act, IMObject parent, LayoutContext context) {
+        super(act, parent, context, false);
         this.queue = queue;
     }
 
@@ -57,16 +56,21 @@ public class TestVisitChargeEditor extends VisitChargeEditor implements EditorQu
      */
     @Override
     public ChargeEditorQueue getEditorQueue() {
-        return queue.getEditorQueue();
+        return queue;
     }
 
+    /**
+     * Creates a collection editor for the items collection.
+     *
+     * @param act   the act
+     * @param items the items collection
+     * @return a new collection editor
+     */
     @Override
-    protected ActRelationshipCollectionEditor createItemsEditor(Act act,
-                                                                CollectionProperty items) {
-        VisitChargeItemRelationshipCollectionEditor result
-                = new VisitChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
+    protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
+        ChargeItemRelationshipCollectionEditor result
+                = new ChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
         result.setEditorQueue(new DelegatingEditorQueue(this));
         return result;
     }
-
 }

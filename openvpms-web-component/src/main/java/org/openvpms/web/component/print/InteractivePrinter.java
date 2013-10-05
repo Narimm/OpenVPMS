@@ -88,6 +88,11 @@ public class InteractivePrinter implements Printer {
      */
     private MailContext mailContext;
 
+    /**
+     * The print dialog, or {@code null} if none is being displayed.
+     */
+    private PrintDialog dialog;
+
 
     /**
      * Constructs an {@code InteractivePrinter}.
@@ -289,6 +294,15 @@ public class InteractivePrinter implements Printer {
     }
 
     /**
+     * Returns the print dialog.
+     *
+     * @return the print dialog, if one is being displayed, otherwise {@code null}
+     */
+    public PrintDialog getPrintDialog() {
+        return dialog;
+    }
+
+    /**
      * Returns the underlying printer.
      *
      * @return the printer
@@ -355,7 +369,7 @@ public class InteractivePrinter implements Printer {
      * @throws OpenVPMSException for any error
      */
     protected void printInteractive(String printerName) {
-        final PrintDialog dialog = createDialog();
+        dialog = createDialog();
         if (printerName == null) {
             printerName = getDefaultPrinter();
         }
@@ -364,21 +378,25 @@ public class InteractivePrinter implements Printer {
         dialog.setCancelListener(cancelListener);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (PrintDialog.OK_ID.equals(action)) {
-                    String printerName = dialog.getPrinter();
-                    if (printerName == null) {
-                        doPrintPreview();
+                try {
+                    String action = dialog.getAction();
+                    if (PrintDialog.OK_ID.equals(action)) {
+                        String printerName = dialog.getPrinter();
+                        if (printerName == null) {
+                            doPrintPreview();
+                        } else {
+                            printer.setCopies(dialog.getCopies());
+                            doPrint(printerName);
+                        }
+                    } else if (PrintDialog.SKIP_ID.equals(action)) {
+                        skipped();
+                    } else if (MailDialog.SEND_ID.equals(action)) {
+                        mailed();
                     } else {
-                        printer.setCopies(dialog.getCopies());
-                        doPrint(printerName);
+                        cancelled();
                     }
-                } else if (PrintDialog.SKIP_ID.equals(action)) {
-                    skipped();
-                } else if (MailDialog.SEND_ID.equals(action)) {
-                    mailed();
-                } else {
-                    cancelled();
+                } finally {
+                    dialog = null;
                 }
             }
         });

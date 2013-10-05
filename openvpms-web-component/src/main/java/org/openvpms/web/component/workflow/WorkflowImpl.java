@@ -1,24 +1,26 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.help.HelpContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -197,8 +199,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
                 current.addTaskListener(taskListener);
                 start(current, initial);
             } catch (Throwable throwable) {
-                cancel = true;
-                ErrorHelper.show(throwable);
+                taskFailed(throwable);
             }
         } else {
             current = null;
@@ -244,6 +245,26 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      */
     protected HelpContext getHelpContext() {
         return help;
+    }
+
+    /**
+     * Invoked when a task fails on start.
+     * <p/>
+     * This displays an error and treats the tasks as being cancelled
+     *
+     * @param throwable the cause of the failure.
+     */
+    private void taskFailed(Throwable throwable) {
+        ErrorHelper.show(throwable, new WindowPaneListener() {
+            @Override
+            public void onClose(WindowPaneEvent event) {
+                if (!current.isFinished()) {
+                    // task didn't notify - do it now
+                    notifyEvent(TaskEvent.Type.CANCELLED, current);
+                }
+                onEvent(new TaskEvent(TaskEvent.Type.CANCELLED, current));
+            }
+        });
     }
 
 }

@@ -64,7 +64,7 @@ public class PrintIMObjectTask extends AbstractTask {
 
 
     /**
-     * Creates a new {@code PrintIMObjectTask}.
+     * Constructs a {@link PrintIMObjectTask}.
      *
      * @param object  the object to print
      * @param context the mail context. May be {@code null}
@@ -74,7 +74,7 @@ public class PrintIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Creates a new {@code PrintIMObjectTask}.
+     * Constructs a {@link PrintIMObjectTask}.
      *
      * @param object      the object to print
      * @param context     the mail context. May be {@code null}
@@ -87,7 +87,7 @@ public class PrintIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Creates a new {@code PrintIMObjectTask}.
+     * Constructs a {@link PrintIMObjectTask}.
      *
      * @param shortName the short name of the object to print
      * @param context   the mail context. May be {@code null}
@@ -97,7 +97,7 @@ public class PrintIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Creates a new {@code PrintIMObjectTask}.
+     * Constructs a {@link PrintIMObjectTask}.
      *
      * @param shortName   the short name of the object to print
      * @param context     the mail context. May be {@code null}
@@ -150,7 +150,7 @@ public class PrintIMObjectTask extends AbstractTask {
             IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
             boolean skip = !isRequired() && enableSkip;
             HelpContext help = context.getHelpContext().topic(object, "print");
-            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, skip, context, help);
+            InteractiveIMPrinter<IMObject> iPrinter = createPrinter(printer, skip, context, help);
             iPrinter.setInteractive(interactive);
             iPrinter.setMailContext(mailContext);
 
@@ -175,6 +175,19 @@ public class PrintIMObjectTask extends AbstractTask {
         } catch (OpenVPMSException exception) {
             notifyCancelledOnError(exception);
         }
+    }
+
+    /**
+     * Creates an interactive printer.
+     *
+     * @param printer the printer to delegate to
+     * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
+     * @param context the context
+     * @param help    the help context
+     */
+    protected InteractiveIMPrinter<IMObject> createPrinter(IMPrinter<IMObject> printer, boolean skip,
+                                                           TaskContext context, HelpContext help) {
+        return new InteractiveIMPrinter<IMObject>(printer, skip, context, help);
     }
 
     /**

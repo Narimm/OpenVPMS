@@ -130,6 +130,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      */
     protected void checkCharge(FinancialAct charge, Party customer, User author, User clinician, BigDecimal tax,
                                BigDecimal total) {
+        assertNotNull(charge);
         ActBean bean = new ActBean(charge);
         assertEquals(customer.getObjectReference(), bean.getNodeParticipantRef("customer"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
