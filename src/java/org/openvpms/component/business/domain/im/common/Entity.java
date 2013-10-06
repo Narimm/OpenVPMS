@@ -199,15 +199,9 @@ public class Entity extends IMObject {
      * @param entityRel the entity relationship to remove
      */
     public void removeEntityRelationship(EntityRelationship entityRel) {
-        if (entityRel.getSource() == null || entityRel.getTarget() == null) {
-            throw new EntityException(EntityException.ErrorCode.FailedToRemoveEntityRelationship,
-                                      new Object[]{entityRel.getSource(), entityRel.getTarget()});
-        }
-        if (ObjectUtils.equals(entityRel.getSource().getLinkId(), getLinkId())
-            && ObjectUtils.equals(entityRel.getSource().getArchetypeId(), getArchetypeId())) {
+        if (entityRel.getSource() != null && ObjectUtils.equals(entityRel.getSource().getLinkId(), getLinkId())) {
             removeSourceEntityRelationship(entityRel);
-        } else if (ObjectUtils.equals(entityRel.getTarget().getLinkId(), getLinkId())
-                   && ObjectUtils.equals(entityRel.getTarget().getArchetypeId(), getArchetypeId())) {
+        } else if (entityRel.getTarget() != null && ObjectUtils.equals(entityRel.getTarget().getLinkId(), getLinkId())) {
             removeTargetEntityRelationship(entityRel);
         } else {
             throw new EntityException(EntityException.ErrorCode.FailedToRemoveEntityRelationship,
