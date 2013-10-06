@@ -277,7 +277,7 @@ public class DocumentLoader {
      */
     private void dumpStats(Date start) {
         Date end = new Date();
-        log.info("Ending load at: " + start);
+        log.info("Ending load at: " + end);
 
         double elapsed = (end.getTime() - start.getTime()) / 1000;
         LoaderListener listener = loader.getListener();
