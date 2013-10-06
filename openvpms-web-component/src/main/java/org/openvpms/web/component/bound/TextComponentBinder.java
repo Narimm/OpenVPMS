@@ -107,7 +107,7 @@ class TextComponentBinder extends Binder {
         boolean result = property.setValue(fieldValue);
         if (result) {
             String newValue = property.getString();
-            if (!ObjectUtils.equals(fieldValue, newValue)) {
+            if (!ObjectUtils.equals(oldValue, newValue)) {
                 setField();
                 int oldLength = (oldValue != null) ? oldValue.length() : 0;
                 int newLength = (newValue != null) ? newValue.length() : 0;

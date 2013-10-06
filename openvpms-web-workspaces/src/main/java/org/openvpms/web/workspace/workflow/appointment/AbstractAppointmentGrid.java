@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -35,8 +33,7 @@ import java.util.Date;
 /**
  * Abstract implementation of the {@link AppointmentGrid} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractAppointmentGrid implements AppointmentGrid {
 
@@ -85,9 +82,14 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      */
     protected static final int DEFAULT_END = 18 * 60;
 
+    /**
+     * The maximum end time, in minutes.
+     */
+    private static final int MAX_TIME = 24 * 60;
+
 
     /**
-     * Creates a new <tt>AbstractAppointmentGrid</tt>.
+     * Constructs an {@link AbstractAppointmentGrid}.
      *
      * @param scheduleView the schedule view
      * @param date         the appointment date
@@ -185,8 +187,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * @return the start time of the specified slot
      */
     public Date getStartTime(int slot) {
-        return DateRules.getDate(date, getStartMins(slot),
-                                 DateUnits.MINUTES);
+        return DateRules.getDate(date, getStartMins(slot), DateUnits.MINUTES);
     }
 
     /**
@@ -333,6 +334,9 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
 
         if (start != null) {
             startMins = SchedulingHelper.getMinutes(start);
+            if (startMins < 0 || startMins > MAX_TIME) {
+                startMins = DEFAULT_START;
+            }
         } else {
             startMins = DEFAULT_START;
         }
@@ -340,9 +344,16 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
         Date end = bean.getDate("endTime");
         if (end != null) {
             endMins = SchedulingHelper.getMinutes(end);
+            if (endMins > MAX_TIME) {
+                endMins = MAX_TIME;
+            }
         } else {
             endMins = DEFAULT_END;
         }
+        if (endMins < startMins) {
+            endMins = startMins;
+        }
+
         slotSize = rules.getSlotSize(schedule);
         if (slotSize <= 0) {
             slotSize = DEFAULT_SLOT_SIZE;

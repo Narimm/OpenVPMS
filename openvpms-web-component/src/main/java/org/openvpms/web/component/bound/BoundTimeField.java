@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -28,14 +26,17 @@ import java.text.DateFormat;
 
 /**
  * Bound time field.
+ * <p/>
+ * This should be used to represent times linked to dates.
+ * <p/>
+ * For absolute
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BoundTimeField extends BoundFormattedField {
 
     /**
-     * Construct a new <code>BoundTimeField</code>.
+     * Construct a new {@code BoundTimeField}.
      *
      * @param property the property to bind
      */
@@ -50,7 +51,7 @@ public class BoundTimeField extends BoundFormattedField {
      * Parses the field value. This implementation is a no-op, as field
      * parsing is handled via {@link TimePropertyTransformer}.
      *
-     * @return the parsed value, or <code>value</code> if it can't be parsed
+     * @return the parsed value, or {@code value} if it can't be parsed
      */
     @Override
     protected Object parse(String value) {
