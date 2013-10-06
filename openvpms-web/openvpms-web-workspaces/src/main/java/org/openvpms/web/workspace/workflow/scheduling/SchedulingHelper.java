@@ -47,9 +47,10 @@ public class SchedulingHelper {
     public static int getMinutes(Date time) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
+        int day = calendar.get(Calendar.DAY_OF_MONTH) - 1;
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int mins = calendar.get(Calendar.MINUTE);
-        return (hour * 60) + mins;
+        return (day * 24 * 60) + (hour * 60) + mins;
     }
 
     /**

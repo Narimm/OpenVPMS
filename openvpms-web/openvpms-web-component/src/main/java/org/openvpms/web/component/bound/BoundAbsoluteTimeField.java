@@ -16,61 +16,48 @@
 
 package org.openvpms.web.component.bound;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Extent;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.TimePropertyTransformer;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.echo.text.TextDocument;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 
-import java.text.Format;
-import java.text.ParseException;
-
+import java.util.Date;
 
 /**
- * Binds a {@link Property} to a {@link TextField}, providing formatting.
+ * A time field that restricts entered times to the range 0:00..24:00.
  *
  * @author Tim Anderson
  */
-public class BoundFormattedField extends TextField {
+public class BoundAbsoluteTimeField extends TextField {
 
     /**
-     * The formatter.
-     */
-    private final Format format;
-
-    /**
-     * The binder.
+     * The component binder.
      */
     private final Binder binder;
 
-
     /**
-     * Construct a new <tt>BoundFormattedField</tt>.
+     * Constructs a {@link BoundAbsoluteTimeField}.
      *
      * @param property the property to bind
-     * @param format   the formatter
      */
-    public BoundFormattedField(Property property, Format format) {
+    public BoundAbsoluteTimeField(Property property) {
         super(new TextDocument());
-        this.format = format;
+        setStyleName("default");
         binder = new FormattingBinder(this, property);
+        if (!(property.getTransformer() instanceof TimePropertyTransformer)) {
+            property.setTransformer(new TimePropertyTransformer(property, TimePropertyTransformer.MIN_DATE,
+                                                                TimePropertyTransformer.MAX_DATE));
+        }
+        setAlignment(Alignment.ALIGN_RIGHT);
+        setWidth(new Extent(5, Extent.EX));
     }
 
     /**
-     * Construct a new <tt>BoundFormattedField</tt>.
-     *
-     * @param property the property to bind
-     * @param columns  the no. of columns to display.
-     * @param format   the formatter
-     */
-    public BoundFormattedField(Property property, int columns,
-                               Format format) {
-        this(property, format);
-        setWidth(new Extent(columns, Extent.EX));
-    }
-
-    /**
-     * Life-cycle method invoked when the <tt>Component</tt> is added to a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is added to a registered hierarchy.
      */
     @Override
     public void init() {
@@ -79,7 +66,7 @@ public class BoundFormattedField extends TextField {
     }
 
     /**
-     * Life-cycle method invoked when the <tt>Component</tt> is removed from a registered hierarchy.
+     * Life-cycle method invoked when the {@code Component} is removed from a registered hierarchy.
      */
     @Override
     public void dispose() {
@@ -87,38 +74,10 @@ public class BoundFormattedField extends TextField {
         binder.unbind();
     }
 
-    /**
-     * Parses the field value.
-     *
-     * @param value the value to parse
-     * @return the parsed value, or <tt>value</tt> if it can't be parsed
-     */
-    protected Object parse(String value) {
-        Object result = null;
-        if (value != null) {
-            try {
-                result = format.parseObject(value);
-            } catch (ParseException exception) {
-                // failed to parse, so return the field unchanged
-                result = value;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the format.
-     *
-     * @return the format
-     */
-    protected Format getFormat() {
-        return format;
-    }
-
     private class FormattingBinder extends TextComponentBinder {
 
         /**
-         * Construct a new <tt>FormattingtBinder</tt>.
+         * Construct a {@link FormattingBinder}.
          *
          * @param component the component to bind
          * @param property  the property to bind
@@ -145,15 +104,31 @@ public class BoundFormattedField extends TextField {
          */
         @Override
         protected void setFieldValue(Object value) {
-            if (value != null) {
-                try {
-                    value = format.format(value);
-                } catch (IllegalArgumentException ignore) {
-                    // failed to format, so set the field unchanged
-                }
+            if (value instanceof Date) {
+                value = DateFormatter.formatTimeDiff(TimePropertyTransformer.MIN_DATE, (Date) value);
             }
             super.setFieldValue(value);
         }
+
+        /**
+         * Parses the field value.
+         *
+         * @param value the value to parse
+         * @return the parsed value, or {@code value} if it can't be parsed
+         */
+        protected Object parse(String value) {
+            Object result = null;
+            if (value != null) {
+                try {
+                    result = DateFormatter.parseTime(value, true);
+                } catch (Throwable exception) {
+                    // failed to parse, so return the field unchanged
+                    result = value;
+                }
+            }
+            return result;
+        }
+
     }
 
 }

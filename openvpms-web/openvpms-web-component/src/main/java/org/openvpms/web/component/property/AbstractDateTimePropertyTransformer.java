@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,8 +28,7 @@ import java.util.Date;
 /**
  * {@link PropertyTransformer} for date/time properties.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractDateTimePropertyTransformer extends AbstractPropertyTransformer {
 
@@ -41,12 +41,12 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
     }
 
     /**
-     * The minimum value for the date. If <tt>null</tt>, the date has no minimum.
+     * The minimum value for the date. If {@code null}, the date has no minimum.
      */
     private Date minDate;
 
     /**
-     * The maximum value for the date. If <tt>null</tt>, the date has no maximum.
+     * The maximum value for the date. If {@code null}, the date has no maximum.
      */
     private Date maxDate;
 
@@ -62,20 +62,11 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
 
 
     /**
-     * Constructs a <tt>AbstractDateTimePropertyTransformer</tt>.
+     * Constructs a {@code AbstractDateTimePropertyTransformer}.
      *
      * @param property the property
-     */
-    public AbstractDateTimePropertyTransformer(Property property) {
-        this(property, null, null, Format.DATE_TIME);
-    }
-
-    /**
-     * Constructs a <tt>AbstractDateTimePropertyTransformer</tt>.
-     *
-     * @param property the property
-     * @param min      the minimum value for the date. If <tt>null</tt>, the date has no minimum
-     * @param max      the maximum value for the date. If <tt>null</tt>, the date has no maximum
+     * @param min      the minimum value for the date. If {@code null}, the date has no minimum
+     * @param max      the maximum value for the date. If {@code null}, the date has no maximum
      * @param format   the format for date range validation errors
      */
     public AbstractDateTimePropertyTransformer(Property property, Date min, Date max, Format format) {
@@ -88,7 +79,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
     /**
      * Returns the minimum value for the date.
      *
-     * @return the minimum value for the date. If <tt>null</tt>, the date has no minimum
+     * @return the minimum value for the date. If {@code null}, the date has no minimum
      */
     public Date getMinDate() {
         return minDate;
@@ -97,7 +88,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
     /**
      * Returns the maximum value for the date.
      *
-     * @return the maximum value for the date. If <tt>null</tt>, the date has no maximum
+     * @return the maximum value for the date. If {@code null}, the date has no maximum
      */
     public Date getMaxDate() {
         return maxDate;
@@ -107,13 +98,13 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      * Transform an object to the required type, performing validation.
      *
      * @param object the object to convert
-     * @return the transformed object, or <tt>object</tt> if no
+     * @return the transformed object, or {@code object} if no
      *         transformation is required
      * @throws org.openvpms.web.component.property.PropertyException
      *          if the object is invalid
      */
     public Object apply(Object object) throws PropertyException {
-        Object result;
+        Date result;
         try {
             if (object instanceof String) {
                 String value = (String) object;
@@ -140,11 +131,11 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
         } catch (Throwable exception) {
             throw getException(exception);
         }
-        if (result instanceof Date) {
+        if (result != null) {
             if (!keepSeconds) {
-                result = removeSeconds((Date) result);
+                result = removeSeconds(result);
             }
-            checkDateRange((Date) result, minDate, maxDate);
+            checkDateRange(result, minDate, maxDate);
         }
         return result;
     }
@@ -152,7 +143,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
     /**
      * Determines if seconds should be kept.
      *
-     * @param keep if <true</tt> keep seconds, otherwise zero them out (along with milliseconds)
+     * @param keep if {@code true} keep seconds, otherwise zero them out (along with milliseconds)
      */
     public void setKeepSeconds(boolean keep) {
         keepSeconds = keep;
@@ -172,7 +163,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      * <p/>
      * This implementation assumes that the property value is a date, and returns it unchanged.
      *
-     * @return the date, or <tt>null</tt> if there is no date
+     * @return the date, or {@code null} if there is no date
      */
     protected Date getDate() {
         return (Date) getProperty().getValue();
@@ -201,7 +192,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
      */
     protected Date addTime(String value) throws ParseException {
         Date result;
-        Date time = DateFormatter.parseTime(value);
+        Date time = parseTime(value);
         Date date = getDate();
         if (date != null) {
             result = DateRules.addDateTime(date, time);
@@ -212,11 +203,22 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
     }
 
     /**
+     * Parses a time string.
+     *
+     * @param value the value to parse
+     * @return the date/time
+     * @throws ParseException if the value can't be parsed as a time
+     */
+    protected Date parseTime(String value) throws ParseException {
+        return DateFormatter.parseTime(value);
+    }
+
+    /**
      * Verifies that the date falls into the acceptable date range.
      *
      * @param date the date to check
-     * @param min  the minimum date, or <tt>null</tt> if there is no minimum
-     * @param max  the maximum date, or <tt>null</tt> if there is no maximum
+     * @param min  the minimum date, or {@code null} if there is no minimum
+     * @param max  the maximum date, or {@code null} if there is no maximum
      */
     protected void checkDateRange(Date date, Date min, Date max) {
         if (min != null && date.getTime() < min.getTime()) {
@@ -250,7 +252,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
     /**
      * Helper to create a new property exception.
      *
-     * @param cause the cause. May be <tt>null</tt>
+     * @param cause the cause. May be {@code null}
      * @return a new property exception
      */
     protected PropertyException getException(Throwable cause) {

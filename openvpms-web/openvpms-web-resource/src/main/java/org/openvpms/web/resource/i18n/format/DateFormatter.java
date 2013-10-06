@@ -255,15 +255,29 @@ public class DateFormatter {
      * @throws IllegalArgumentException if the hour or minute component is invalid
      */
     public static Date parseTime(String time) throws ParseException {
+        return parseTime(time, false);
+    }
+
+    /**
+     * Parses a time from a string.
+     *
+     * @param time    the time string
+     * @param allow24 if {@code true}, allow hours in the range 0..24, else 0..23
+     * @return a Date, with just the time portion set
+     * @throws ParseException           if the time can't be parsed
+     * @throws NumberFormatException    if a hour or minute specification is not numeric
+     * @throws IllegalArgumentException if the hour or minute component is invalid
+     */
+    public static Date parseTime(String time, boolean allow24) throws ParseException {
         Date result;
         DateFormat format = getTimeFormat(true);
         try {
             result = format.parse(time);
         } catch (ParseException exception) {
             if (time.length() <= 2) {
-                result = parseHours(time);
+                result = parseHours(time, allow24);
             } else if (time.length() <= 4) {
-                result = parseHoursMins(time);
+                result = parseHoursMins(time, allow24);
             } else {
                 throw exception;
             }
@@ -272,31 +286,34 @@ public class DateFormatter {
     }
 
     /**
-     * Parse a time from a string, expected to be in the range 0..23.
+     * Parse a time from a string, expected to be in the range 0..24.
      *
-     * @param value the string to parse
+     * @param value   the string to parse
+     * @param allow24 if {@code true}, allow hours in the range 0..24, else 0..23
      * @return the parsed time
      * @throws NumberFormatException    if the string is not a valid no
-     * @throws IllegalArgumentException if the hours aren't in the range 0..23
+     * @throws IllegalArgumentException if the hours aren't in the range 0..24
      */
-    private static Date parseHours(String value) {
-        int hours = getHours(value);
+    private static Date parseHours(String value, boolean allow24) {
+        int hours = getHours(value, allow24);
         Calendar calendar = Calendar.getInstance();
+        calendar.clear();
         calendar.set(Calendar.HOUR_OF_DAY, hours);
         return calendar.getTime();
     }
 
     /**
-     * Parses hours from a string, expected to be in the range 0..23.
+     * Parses hours from a string.
      *
-     * @param value the string to parse
+     * @param value   the string to parse
+     * @param allow24 if {@code true}, allow hours in the range 0..24, else 0..23
      * @return the hours from the string
      * @throws NumberFormatException    if the string is not a valid no
-     * @throws IllegalArgumentException if the hours aren't in the range 0..23
+     * @throws IllegalArgumentException if the hours aren't in the allowed range
      */
-    private static int getHours(String value) {
+    private static int getHours(String value, boolean allow24) {
         int hours = Integer.parseInt(value);
-        if (hours < 0 || hours > 23) {
+        if (hours < 0 || (!allow24 && hours > 23) || (allow24 && hours > 24)) {
             throw new IllegalArgumentException(value);
         }
         return hours;
@@ -305,25 +322,30 @@ public class DateFormatter {
     /**
      * Parse a time from a string, expected to be of the form [H]HMM.
      *
-     * @param value the string to parse
+     * @param value   the string to parse
+     * @param allow24 if {@code true}, allow hours in the range 0..24, else 0..23
      * @return the parsed time
      * @throws NumberFormatException    if the hours or minutes can't be parsed
      * @throws IllegalArgumentException if the hours or minutes exceed the range
      */
-    private static Date parseHoursMins(String value) {
+    private static Date parseHoursMins(String value, boolean allow24) {
         String hourPart;
         if (value.length() == 3) {
             hourPart = value.substring(0, 1);
         } else {
             hourPart = value.substring(0, 2);
         }
-        int hours = getHours(hourPart);
+        int hours = getHours(hourPart, allow24);
         String minPart = value.substring(hourPart.length());
         int mins = Integer.parseInt(minPart);
         if (mins < 0 || mins > 59) {
             throw new IllegalArgumentException("Minutes exceed range 0..59: " + minPart);
         }
-        Calendar calendar = Calendar.getInstance();
+        if (hours == 24 && mins > 0) {
+            throw new IllegalArgumentException("Maximum time (24:00) exceeded");
+        }
+        Calendar calendar = new GregorianCalendar();
+        calendar.clear(); // get rid of date, timezone info
         calendar.set(Calendar.HOUR_OF_DAY, hours);
         calendar.set(Calendar.MINUTE, mins);
         return calendar.getTime();
