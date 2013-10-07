@@ -26,6 +26,10 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -166,12 +170,22 @@ class PrintPatientDocumentsTask extends Tasks {
         super.start(context);
     }
 
+    /**
+     * Determines if a schedule/work list has any active templates linked to it.
+     *
+     * @param schedule the schedule/work list
+     * @return {@code true} if there are any active templates, otherwise {@code false}
+     */
     private boolean hasTemplates(Entity schedule) {
         if (schedule == null || ScheduleDocumentTemplateQuery.useAllTemplates(schedule)) {
             return true;
         }
-        IMObjectBean bean = new IMObjectBean(schedule);
-        return !bean.getValues("templates").isEmpty();
+        ArchetypeQuery query = new ArchetypeQuery(schedule.getObjectReference());
+        query.add(new NodeSelectConstraint("id"));
+        query.add(Constraints.join("templates").add(Constraints.join("target").add(Constraints.eq("active", true))));
+        query.setMaxResults(1);
+        ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(query);
+        return iterator.hasNext();
     }
 
     private static class PrintPatientActTask extends PrintActTask {
