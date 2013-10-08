@@ -27,6 +27,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -96,8 +97,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * @param startMins    the grid start time, as minutes from midnight
      * @param endMins      the grid end time, as minutes from midnight
      */
-    public AbstractAppointmentGrid(Entity scheduleView, Date date,
-                                   int startMins, int endMins) {
+    public AbstractAppointmentGrid(Entity scheduleView, Date date, int startMins, int endMins) {
         this.scheduleView = scheduleView;
         this.date = DateRules.getDate(date);
         this.startMins = startMins;
@@ -333,20 +333,14 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
         int slotSize;
 
         if (start != null) {
-            startMins = SchedulingHelper.getMinutes(start);
-            if (startMins < 0 || startMins > MAX_TIME) {
-                startMins = DEFAULT_START;
-            }
+            startMins = getGridMinutes(start);
         } else {
             startMins = DEFAULT_START;
         }
 
         Date end = bean.getDate("endTime");
         if (end != null) {
-            endMins = SchedulingHelper.getMinutes(end);
-            if (endMins > MAX_TIME) {
-                endMins = MAX_TIME;
-            }
+            endMins = getGridMinutes(end);
         } else {
             endMins = DEFAULT_END;
         }
@@ -361,5 +355,27 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
 
         return new Schedule(schedule, startMins, endMins, slotSize);
     }
+
+    /**
+     * Determines an appointment grid boundary, in minutes from midnight.
+     * <p/>
+     * This supports minutes in the range 00:00..24:00
+     *
+     * @param time the time
+     * @return the minutes from midnight for {@code time}
+     */
+    private int getGridMinutes(Date time) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
+        int day = calendar.get(Calendar.DAY_OF_MONTH) - 1;
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int mins = calendar.get(Calendar.MINUTE);
+        int result = (day * 24 * 60) + (hour * 60) + mins;
+        if (result < 0 || result > MAX_TIME) {
+            result = DEFAULT_START;
+        }
+        return result;
+    }
+
 
 }
