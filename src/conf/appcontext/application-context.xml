@@ -161,6 +161,11 @@
                 <entry key="math">
                     <bean class="org.openvpms.archetype.function.math.MathFunctions"/>
                 </entry>
+                <entry key="expr">
+                    <bean class="org.openvpms.archetype.function.expression.ExpressionFunctions">
+                        <constructor-arg value="expr"/>
+                    </bean>
+                </entry>
             </map>
         </constructor-arg>
     </bean>
