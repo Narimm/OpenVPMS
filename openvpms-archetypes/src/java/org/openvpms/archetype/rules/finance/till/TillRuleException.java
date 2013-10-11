@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
@@ -25,8 +23,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 /**
  * Exception class for exceptions raised by till rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TillRuleException extends OpenVPMSException {
 
@@ -42,7 +39,11 @@ public class TillRuleException extends OpenVPMSException {
         TillNotFound,
         BalanceNotFound,
         MissingRelationship,
-        InvalidTransferTill
+        InvalidTransferTill,
+        InvalidStatusForStartClear,
+        InvalidStatusForClear,
+        ClearInProgress,
+        DifferentTills
     }
 
     /**
@@ -57,14 +58,14 @@ public class TillRuleException extends OpenVPMSException {
     private static Messages MESSAGES
             = Messages.getMessages(
             "org.openvpms.archetype.rules.finance.till."
-                    + OpenVPMSException.ERRMESSAGES_FILE);
+            + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
      * Constructs a new <code>IMObjectBeanException</code>.
      *
      * @param errorCode the error code
      */
-    public TillRuleException(ErrorCode errorCode, Object ... args) {
+    public TillRuleException(ErrorCode errorCode, Object... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args));
         _errorCode = errorCode;
     }

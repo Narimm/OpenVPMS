@@ -119,6 +119,7 @@
             <list>
                 <ref bean="currencies"/>
                 <ref bean="lookupService"/>
+                <ref bean="txnManager"/>
             </list>
         </property>
     </bean>
@@ -163,6 +164,11 @@
                         <constructor-arg index="0" ref="archetypeService"/>
                         <constructor-arg index="1" ref="reminderRules"/>
                         <constructor-arg index="2" ref="customerRules"/>
+                    </bean>
+                </entry>
+                <entry key="expr">
+                    <bean class="org.openvpms.archetype.function.expression.ExpressionFunctions">
+                        <constructor-arg value="expr"/>
                     </bean>
                 </entry>
                 <entry key="history">

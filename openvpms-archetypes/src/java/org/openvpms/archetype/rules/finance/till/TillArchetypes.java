@@ -42,4 +42,10 @@ public class TillArchetypes {
      * Till balance item relationship short name.
      */
     public static final String TILL_BALANCE_ITEM = "actRelationship.tillBalanceItem";
+
+    /**
+     * Till balance adjustment short name.
+     */
+    public static final String TILL_BALANCE_ADJUSTMENT = "act.tillBalanceAdjustment";
+
 }

@@ -23,7 +23,7 @@
         </node>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat('Last Cleared : ', date:formatDate(/details/lastCleared), ' Cash Float : ',/details/tillFloat)"/>
+              derivedValue="concat('Last Cleared : ', expr:if(boolean(/details/lastCleared), date:formatDate(/details/lastCleared), 'Never'), ', Cash Float : ',/details/tillFloat)"/>
         <node name="tillFloat" path="/details/tillFloat"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"/>
         <node name="lastCleared" path="/details/lastCleared" type="java.util.Date"/>
