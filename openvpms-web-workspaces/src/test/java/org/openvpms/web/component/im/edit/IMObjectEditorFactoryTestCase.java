@@ -62,6 +62,7 @@ import org.openvpms.web.workspace.product.stock.StockAdjustEditor;
 import org.openvpms.web.workspace.product.stock.StockAdjustItemEditor;
 import org.openvpms.web.workspace.product.stock.StockTransferEditor;
 import org.openvpms.web.workspace.product.stock.StockTransferItemEditor;
+import org.openvpms.web.workspace.reporting.till.TillBalanceAdjustmentEditor;
 import org.openvpms.web.workspace.supplier.SupplierStockLocationRelationshipESCIEditor;
 import org.openvpms.web.workspace.supplier.charge.SupplierChargeActEditor;
 import org.openvpms.web.workspace.supplier.charge.SupplierChargeActItemEditor;
@@ -524,6 +525,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     @Test
     public void testLocationEditor() {
         checkCreate("contact.location", LocationEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link TillBalanceAdjustmentEditor} is created for <em>act.tillBalanceAdjustment</em>.
+     */
+    @Test
+    public void testTillBalanceAdjustmentEditor() {
+        checkCreate("act.tillBalanceAdjustment", TillBalanceAdjustmentEditor.class);
     }
 
     /**

@@ -16,16 +16,15 @@
 
 package org.openvpms.web.workspace.reporting.till;
 
+import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
-import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
@@ -43,21 +42,15 @@ import org.openvpms.web.component.workspace.CRUDWindow;
 public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
 
     /**
-     * The act statuses to query.
-     */
-    private static final ActStatuses STATUSES = new ActStatuses("act.tillBalance");
-
-
-    /**
-     * Constructs a {@code TillWorkspace}.
+     * Constructs a {@link TillWorkspace}.
      *
      * @param context     the context
      * @param mailContext the mail context
      */
     public TillWorkspace(Context context, MailContext mailContext) {
         super("reporting", "till", context);
-        setArchetypes(Party.class, "party.organisationTill");
-        setChildArchetypes(FinancialAct.class, "act.tillBalance");
+        setArchetypes(Party.class, TillArchetypes.TILL);
+        setChildArchetypes(FinancialAct.class, TillArchetypes.TILL_BALANCE);
         setMailContext(mailContext);
     }
 
@@ -99,9 +92,7 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      * @return a new query
      */
     protected ActQuery<FinancialAct> createQuery() {
-        ActQuery<FinancialAct> query = new DefaultActQuery<FinancialAct>(
-            getObject(), "till", "participation.till",
-            getChildArchetypes().getShortNames(), STATUSES);
+        ActQuery<FinancialAct> query = new TillBalanceActQuery(getObject());
         query.setStatus(TillBalanceStatus.UNCLEARED);
         return query;
     }
