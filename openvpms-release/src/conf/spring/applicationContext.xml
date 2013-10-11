@@ -173,6 +173,11 @@
                        value="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions"/>
                 <entry key="date"
                        value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
+                <entry key="expr">
+                    <bean class="org.openvpms.archetype.function.expression.ExpressionFunctions">
+                        <constructor-arg value="expr"/>
+                    </bean>
+                </entry>
                 <entry key="lookup"
                        value="org.openvpms.archetype.function.lookup.LookupFunctions"/>
                 <entry key="party">
