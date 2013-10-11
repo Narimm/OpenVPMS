@@ -153,4 +153,9 @@
         <constructor-arg ref="documentHandlers"/>
     </bean>
 
+    <bean class="org.openvpms.archetype.rules.finance.till.TillRules">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
+
 </beans>
