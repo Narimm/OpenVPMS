@@ -80,6 +80,16 @@ public class ComponentGrid {
     /**
      * Adds a component to the end of the grid.
      *
+     * @param component  the component to add
+     * @param columnSpan the no. of cell columns to span
+     */
+    public void add(Component component, int columnSpan) {
+        set(cells.size(), 0, columnSpan, component);
+    }
+
+    /**
+     * Adds a component to the end of the grid.
+     *
      * @param state           the component state to add
      * @param columnGroupSpan the number of column groups the component spans
      */
@@ -286,6 +296,15 @@ public class ComponentGrid {
      */
     public int getColumns() {
         return columns;
+    }
+
+    /**
+     * Returns the number of rows.
+     *
+     * @return the no. of rows
+     */
+    public int getRows() {
+        return cells.size();
     }
 
     /**
