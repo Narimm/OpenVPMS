@@ -124,12 +124,15 @@ public class TillRules {
      * Start clearing the till.
      * <p/>
      * This sets the status of the till balance to IN_PROGRESS, so that any new payments or refunds don't affect it.
+     * <p/>
+     * If the cash float is different to the existing cash float for the till, an adjustment will be created.
      *
-     * @param balance the till balance
+     * @param balance   the till balance
+     * @param cashFloat the amount remaining in the till
      * @throws TillRuleException         if the balance is not UNCLEARED
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void startClearTill(final FinancialAct balance) {
+    public void startClearTill(final FinancialAct balance, final BigDecimal cashFloat) {
         if (!balance.getStatus().equals(TillBalanceStatus.UNCLEARED)) {
             throw new TillRuleException(InvalidStatusForStartClear, balance.getStatus());
         }
@@ -141,7 +144,12 @@ public class TillRules {
                     throw new TillRuleException(ClearInProgress);
                 }
                 balance.setStatus(TillBalanceStatus.IN_PROGRESS);
+                Till till = getTillBean(balance);
+                addAdjustment(balance, cashFloat, till);
                 service.save(balance);
+                till.setTillFloat(cashFloat);
+                till.setLastCleared(new Date());
+                till.save();
             }
         });
     }
@@ -168,7 +176,26 @@ public class TillRules {
     }
 
     /**
-     * Clears a till.
+     * Clears a till for an IN_PROGRESS balance.
+     *
+     * @param balance the current till balance
+     * @param account the account to deposit to
+     * @throws TillRuleException if the balance doesn't have a till
+     */
+    public void clearTill(final FinancialAct balance, final Party account) {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                clearInProgressTill(balance, account);
+            }
+        });
+    }
+
+    /**
+     * Clears a till for an UNCLEARED balance.
+     * <p/>
+     * If the cash float is different to the existing cash float for the till, an adjustment will be created.
      *
      * @param balance   the current till balance
      * @param cashFloat the amount remaining in the till
@@ -180,7 +207,7 @@ public class TillRules {
         template.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                doClearTill(balance, cashFloat, account);
+                clearUnclearedTill(balance, cashFloat, account);
             }
         });
     }
@@ -247,7 +274,9 @@ public class TillRules {
     }
 
     /**
-     * Clears the till.
+     * Clears the till, performing an adjustment if the new cash float is different to the old one.
+     * <p/>
+     * The till must be UNCLEARED to perform the adjustment.
      * <p/>
      * This should be invoked within a transaction.
      *
@@ -256,25 +285,60 @@ public class TillRules {
      * @param account   the account to deposit to
      * @throws TillRuleException if the balance doesn't have a till
      */
-    private void doClearTill(FinancialAct balance, BigDecimal cashFloat, Party account) {
+    private void clearUnclearedTill(FinancialAct balance, BigDecimal cashFloat, Party account) {
         String status = balance.getStatus();
-        if (!TillBalanceStatus.UNCLEARED.equals(status) && !TillBalanceStatus.IN_PROGRESS.equals(status)) {
+        if (!TillBalanceStatus.UNCLEARED.equals(status)) {
             throw new TillRuleException(InvalidStatusForClear, status);
         }
-        Entity till = getTill(balance, service);
-        IMObjectBean tillBean = new IMObjectBean(till, service);
-        BigDecimal lastCashFloat = tillBean.getBigDecimal("tillFloat", BigDecimal.ZERO);
+        Till till = getTillBean(balance);
+        addAdjustment(balance, cashFloat, till);
+        depositBalance(balance, account);
+        till.setLastCleared(new Date());
+        till.setTillFloat(cashFloat);
+        till.save();
+    }
+
+    /**
+     * Adds an adjustment to a till, if required.
+     *
+     * @param balance   the till balance act
+     * @param cashFloat the new cash float
+     */
+    private void addAdjustment(FinancialAct balance, BigDecimal cashFloat, Till till) {
+        BigDecimal lastCashFloat = till.getTillFloat();
 
         BigDecimal diff = cashFloat.subtract(lastCashFloat);
         if (diff.compareTo(BigDecimal.ZERO) != 0) {
             // need to generate an adjustment, and associate it with the balance
             boolean credit = (lastCashFloat.compareTo(cashFloat) > 0);
-            Act adjustment = createTillBalanceAdjustment(till, diff.abs(), credit);
+            Act adjustment = createTillBalanceAdjustment(till.getEntity(), diff.abs(), credit);
             ActBean balanceBean = new ActBean(balance);
             balanceBean.addNodeRelationship("items", adjustment);
             service.save(adjustment); // NOTE that this will trigger TillBalanceRules.addToTill(), but will have no effect
             TillHelper.updateBalance(balanceBean, service);
         }
+    }
+
+    /**
+     * Clears the till.
+     * <p/>
+     * The till must be IN_PROGRESS.
+     * <p/>
+     * This should be invoked within a transaction.
+     *
+     * @param balance the current till balance
+     * @param account the account to deposit to
+     * @throws TillRuleException if the balance doesn't have a till
+     */
+    private void clearInProgressTill(FinancialAct balance, Party account) {
+        String status = balance.getStatus();
+        if (!TillBalanceStatus.IN_PROGRESS.equals(status)) {
+            throw new TillRuleException(InvalidStatusForClear, status);
+        }
+        depositBalance(balance, account);
+    }
+
+    private void depositBalance(FinancialAct balance, Party account) {
         balance.setStatus(TillBalanceStatus.CLEARED);
         balance.setActivityEndTime(new Date());
 
@@ -288,11 +352,6 @@ public class TillRules {
         updateDepositTotal(depositBean);
 
         service.save(deposit);
-
-        tillBean = new IMObjectBean(till, service);
-        tillBean.setValue("lastCleared", new Date());
-        tillBean.setValue("tillFloat", cashFloat);
-        tillBean.save();
     }
 
     /**
@@ -323,4 +382,45 @@ public class TillRules {
         depositBean.setValue("amount", total);
     }
 
+    /**
+     * Returns a till associated with an act.
+     *
+     * @param act the act
+     * @return the corresponding till
+     */
+    private Till getTillBean(Act act) {
+        return new Till(getTill(act, service), service);
+    }
+
+    /**
+     * Helper to manipulate a till.
+     */
+    private static class Till {
+
+        private final IMObjectBean till;
+
+        private Till(Entity entity, IArchetypeService service) {
+            till = new IMObjectBean(entity, service);
+        }
+
+        public BigDecimal getTillFloat() {
+            return till.getBigDecimal("tillFloat", BigDecimal.ZERO);
+        }
+
+        public void setTillFloat(BigDecimal value) {
+            till.setValue("tillFloat", value);
+        }
+
+        public void setLastCleared(Date date) {
+            till.setValue("lastCleared", date);
+        }
+
+        public Entity getEntity() {
+            return (Entity) till.getObject();
+        }
+
+        public void save() {
+            till.save();
+        }
+    }
 }

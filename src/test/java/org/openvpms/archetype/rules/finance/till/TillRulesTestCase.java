@@ -76,31 +76,31 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
     @Test
     public void testClearTillWithNoAdjustment() {
         final BigDecimal cashFloat = BigDecimal.ZERO;
-        checkClearTill(cashFloat, cashFloat);
+        checkClearTillForUnclearedBalance(cashFloat, cashFloat);
     }
 
     /**
      * Tests the {@link TillRules#clearTill)} method, with an initial cash float
-     * of <code>40.0</code> and new cash float of <code>20.0</code>.
-     * This should create a credit adjustment of <code>20.0</code>
+     * of {@code 40.0} and new cash float of {@code 20.0}.
+     * This should create a credit adjustment of {@code 20.0}
      */
     @Test
     public void testClearTillWithCreditAdjustment() {
         final BigDecimal cashFloat = new BigDecimal(40);
         final BigDecimal newCashFloat = new BigDecimal(20);
-        checkClearTill(cashFloat, newCashFloat);
+        checkClearTillForUnclearedBalance(cashFloat, newCashFloat);
     }
 
     /**
      * Tests the {@link TillRules#clearTill)} method, with an initial cash float
-     * of <code>40.0</code> and new cash float of <code>100.0</code>.
-     * This should create a debit adjustment of <code>60.0</code>
+     * of {@code 40.0} and new cash float of {@code 100.0}.
+     * This should create a debit adjustment of {@code 60.0}
      */
     @Test
     public void testClearTillWithDebitAdjustment() {
         final BigDecimal cashFloat = new BigDecimal(40);
         final BigDecimal newCashFloat = new BigDecimal(100);
-        checkClearTill(cashFloat, newCashFloat);
+        checkClearTillForUnclearedBalance(cashFloat, newCashFloat);
     }
 
     /**
@@ -285,12 +285,12 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
     }
 
     /**
-     * Tests the {@link TillRules#startClearTill(FinancialAct)} method.
+     * Tests the {@link TillRules#startClearTill(FinancialAct, BigDecimal)} method.
      */
     @Test
     public void testStartClearTill() {
         FinancialAct balance1 = (FinancialAct) createBalance(till, TillBalanceStatus.UNCLEARED).getAct();
-        rules.startClearTill(balance1);
+        rules.startClearTill(balance1, BigDecimal.ZERO);
         balance1 = get(balance1);
         assertEquals(TillBalanceStatus.IN_PROGRESS, balance1.getStatus());
 
@@ -307,6 +307,40 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
     }
 
     /**
+     * Tests the {@link TillRules#startClearTill} method folli, with a zero cash float.
+     * This should not create an <em>act.tillBalanceAdjustment</e>.
+     */
+    @Test
+    public void testStartClearTillWithNoAdjustment() {
+        final BigDecimal cashFloat = BigDecimal.ZERO;
+        checkStartClearTill(cashFloat, cashFloat);
+    }
+
+    /**
+     * Tests the {@link TillRules#startClearTill} method, with an initial cash float
+     * of {@code 40.0} and new cash float of {@code 20.0}.
+     * This should create a credit adjustment of {@code 20.0}
+     */
+    @Test
+    public void testStartClearTillWithCreditAdjustment() {
+        final BigDecimal cashFloat = new BigDecimal(40);
+        final BigDecimal newCashFloat = new BigDecimal(20);
+        checkStartClearTill(cashFloat, newCashFloat);
+    }
+
+    /**
+     * Tests the {@link TillRules#startClearTill)} method, with an initial cash float
+     * of {@code 40.0} and new cash float of {@code 100.0}.
+     * This should create a debit adjustment of {@code 60.0}
+     */
+    @Test
+    public void testStartClearTillWithDebitAdjustment() {
+        final BigDecimal cashFloat = new BigDecimal(40);
+        final BigDecimal newCashFloat = new BigDecimal(100);
+        checkStartClearTill(cashFloat, newCashFloat);
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -317,16 +351,13 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
     }
 
     /**
-     * Checks the behaviour of the {@link TillRules#clearTill} method.
+     * Checks the behaviour of the {@link TillRules#clearTill(FinancialAct, BigDecimal, Party)} method.
      *
      * @param initialCashFloat the initial cash float value
      * @param newCashFloat     the new cash float value
      */
-    private void checkClearTill(BigDecimal initialCashFloat, BigDecimal newCashFloat) {
-
-        IMObjectBean tillBean = new IMObjectBean(till);
-        tillBean.setValue("tillFloat", initialCashFloat);
-        tillBean.save();
+    private void checkClearTillForUnclearedBalance(BigDecimal initialCashFloat, BigDecimal newCashFloat) {
+        setTillCashFloat(initialCashFloat);
 
         Party account = DepositTestHelper.createDepositAccount();
         ActBean balanceBean = createBalance(till, TillBalanceStatus.UNCLEARED);
@@ -342,19 +373,73 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
         rules.clearTill(balance, newCashFloat, account);
 
         // make sure the balance is updated
-        assertEquals(TillBalanceStatus.CLEARED, balance.getStatus());
+        BigDecimal expectedBalance = checkBalance(initialCashFloat, newCashFloat, balance, TillBalanceStatus.CLEARED);
+        checkDeposit(account, balanceBean, expectedBalance);
+    }
+
+    private void checkDeposit(Party account, ActBean balanceBean, BigDecimal expectedBalance) {
+        FinancialAct deposit = DepositHelper.getUndepositedDeposit(account);
+        // make sure a new uncleared bank deposit exists, with a relationship to the till balance
+        assertNotNull(deposit);
+        ActBean depBean = new ActBean(deposit);
+        assertNotNull(depBean.getRelationship(balanceBean.getAct()));
+        assertTrue(expectedBalance.compareTo(deposit.getTotal()) == 0);
+    }
+
+    private void setTillCashFloat(BigDecimal initialCashFloat) {
+        IMObjectBean tillBean = new IMObjectBean(till);
+        tillBean.setValue("tillFloat", initialCashFloat);
+        tillBean.save();
+    }
+
+    /**
+     * Checks the behaviour of the {@link TillRules#startClearTill(FinancialAct, BigDecimal)} method and
+     * {@link TillRules#clearTill(FinancialAct, Party)} methods.
+     *
+     * @param initialCashFloat the initial cash float value
+     * @param newCashFloat     the new cash float value
+     */
+    private void checkStartClearTill(BigDecimal initialCashFloat, BigDecimal newCashFloat) {
+        setTillCashFloat(initialCashFloat);
+        Party account = DepositTestHelper.createDepositAccount();
+
+        ActBean balanceBean = createBalance(till, TillBalanceStatus.UNCLEARED);
+        balanceBean.save();
+        assertNull(balanceBean.getAct().getActivityEndTime());
+
+        // start clearing the till
+        FinancialAct balance = (FinancialAct) balanceBean.getAct();
+        rules.startClearTill(balance, newCashFloat);
+
+        BigDecimal expectedBalance = checkBalance(initialCashFloat, newCashFloat, balance,
+                                                  TillBalanceStatus.IN_PROGRESS);
+
+        rules.clearTill(balance, account);
+        checkDeposit(account, balanceBean, expectedBalance);
+    }
+
+
+    private BigDecimal checkBalance(BigDecimal initialCashFloat, BigDecimal newCashFloat, FinancialAct balance,
+                                    String status) {
+        // make sure the balance is updated
+        assertEquals(status, balance.getStatus());
         // end time should be > startTime < now
         Date startTime = balance.getActivityStartTime();
         Date endTime = balance.getActivityEndTime();
-        assertEquals(1, endTime.compareTo(startTime));
-        assertEquals(-1, endTime.compareTo(new Date()));
+        if (TillBalanceStatus.CLEARED.equals(status)) {
+            // CLEARED balances have an end time
+            assertEquals(1, endTime.compareTo(startTime));
+            assertEquals(-1, endTime.compareTo(new Date()));
+        } else {
+            // IN_PROGRESS balances do not
+            assertNull(endTime);
+        }
 
         BigDecimal total = newCashFloat.subtract(initialCashFloat);
 
         if (initialCashFloat.compareTo(newCashFloat) != 0) {
             // expect a till balance adjustment to have been made
-            Set<ActRelationship> rels
-                    = balance.getSourceActRelationships();
+            Set<ActRelationship> rels = balance.getSourceActRelationships();
             assertEquals(1, rels.size());
             ActRelationship r = rels.toArray(new ActRelationship[rels.size()])[0];
             Act target = (Act) get(r.getTarget());
@@ -384,14 +469,7 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
 
         assertTrue(currentFloat.compareTo(newCashFloat) == 0);
         assertTrue(now.compareTo(lastCleared) == 1); // expect now > lastCleared
-
-        // make sure a new uncleared bank deposit exists, with a relationship
-        // to the till balance
-        deposit = DepositHelper.getUndepositedDeposit(account);
-        assertNotNull(deposit);
-        ActBean depBean = new ActBean(deposit);
-        assertNotNull(depBean.getRelationship(balanceBean.getAct()));
-        assertTrue(expectedBalance.compareTo(deposit.getTotal()) == 0);
+        return expectedBalance;
     }
 
     /**
@@ -400,7 +478,7 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
      *
      * @param source the source act
      * @param target the target act
-     * @return the no. of times <code>target</code> appears as a target
+     * @return the no. of times {@code target} appears as a target
      */
     private int countRelationships(Act source, Act target) {
         int found = 0;
