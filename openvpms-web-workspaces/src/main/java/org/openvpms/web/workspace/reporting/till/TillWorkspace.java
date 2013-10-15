@@ -119,4 +119,21 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
         return getLatest(getContext().getTill());
     }
 
+    /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onRefresh(FinancialAct object) {
+        Party till = getLatest();
+        if (till != getObject()) {
+            // the till has changed - propagate the change to the workspace.
+            setObject(getLatest());
+        } else {
+            // just refresh the browser
+            super.onRefresh(object);
+        }
+
+    }
 }
