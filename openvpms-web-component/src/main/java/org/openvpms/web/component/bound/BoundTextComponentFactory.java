@@ -66,7 +66,7 @@ public class BoundTextComponentFactory extends TextComponentFactory {
      * Creates a new bound text field, restricted to numeric input.
      *
      * @param property the property to bind
-     * @param columns  the no. of columnns to display
+     * @param columns  the no. of columns to display
      * @return a new bound text field
      */
     public static TextField createNumeric(Property property, int columns) {

@@ -26,17 +26,14 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.IMObjectSorter;
-import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
-import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,63 +44,39 @@ import static org.openvpms.component.business.service.archetype.functor.IsActive
  *
  * @author Tim Anderson
  */
-public class ClearTillDialog extends PopupDialog {
-
-    /**
-     * The amount field.
-     */
-    private final TextField amount;
+public class ClearTillDialog extends AbstractClearTillDialog {
 
     /**
      * The bank account selector.
      */
     private final SelectField account;
 
+    /**
+     * Determines if the till float amount dialog will be displayed.
+     */
+    private final boolean showAmount;
+
 
     /**
-     * Constructs a {@code ClearTillDialog}.
+     * Constructs a {@link ClearTillDialog}.
      *
-     * @param location the location to clear the till for
-     * @param context  the context
-     * @param help     the help context
+     * @param location   the location to clear the till for
+     * @param showAmount if {@code true} prompt for the cash float amount
+     * @param context    the context
+     * @param help       the help context
      */
-    public ClearTillDialog(Party location, Context context, HelpContext help) {
-        super(Messages.get("till.clear.title"), null, OK_CANCEL, help);
-        setModal(true);
-        amount = TextComponentFactory.create();
+    public ClearTillDialog(Party location, boolean showAmount, Context context, HelpContext help) {
+        super(Messages.get("till.clear.title"), help);
         account = createAccountSelector(location, context);
-
+        this.showAmount = showAmount;
 
         Grid grid = GridFactory.create(2);
-        grid.add(LabelFactory.create("till.clear.amount"));
-        grid.add(amount);
+        if (showAmount) {
+            addAmount(grid);
+        }
         grid.add(LabelFactory.create("till.clear.account"));
         grid.add(account);
-        getLayout().add(ColumnFactory.create("Inset", grid));
-    }
-
-    /**
-     * Sets the till float amount.
-     *
-     * @param amount the till float amount
-     */
-    public void setAmount(BigDecimal amount) {
-        this.amount.setText(amount.toString());
-    }
-
-    /**
-     * Returns the till float amount.
-     *
-     * @return the till float amount. May be {@code null}
-     */
-    public BigDecimal getAmount() {
-        BigDecimal result = null;
-        try {
-            result = new BigDecimal(amount.getText());
-        } catch (NumberFormatException ignore) {
-            // no-op
-        }
-        return result;
+        getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, grid));
     }
 
     /**
@@ -120,7 +93,7 @@ public class ClearTillDialog extends PopupDialog {
      * and deposit are valid
      */
     protected void onOK() {
-        if (getAmount() != null && getAccount() != null) {
+        if ((!showAmount || getCashFloat() != null) && getAccount() != null) {
             super.onOK();
         }
     }
