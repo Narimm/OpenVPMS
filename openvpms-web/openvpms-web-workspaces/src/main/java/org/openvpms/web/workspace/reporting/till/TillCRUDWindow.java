@@ -27,6 +27,7 @@ import org.openvpms.archetype.rules.finance.till.TillBalanceStatus;
 import org.openvpms.archetype.rules.finance.till.TillRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -110,6 +111,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      * Till balance short name.
      */
     private static final String TILL_BALANCE = "act.tillBalance";
+    private final TillRules rules;
 
 
     /**
@@ -120,6 +122,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     public TillCRUDWindow(Context context, HelpContext help) {
         super(new Archetypes<FinancialAct>("act.tillBalanceAdjustment", FinancialAct.class), context, help);
+        rules = ServiceHelper.getBean(TillRules.class);
     }
 
     /**
@@ -226,12 +229,23 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     protected void onStartClear() {
         try {
-            TillRules rules = ServiceHelper.getBean(TillRules.class);
-            FinancialAct act = getObject();
+            final FinancialAct act = getObject();
             ActBean balanceBean = new ActBean(act);
-            IMObjectReference till = balanceBean.getNodeParticipantRef("till");
+            Entity till = balanceBean.getNodeParticipant("till");
             if (!rules.isClearInProgress(till)) {
-                rules.startClearTill(act);
+                IMObjectBean tillBean = new IMObjectBean(till);
+                BigDecimal lastFloat = tillBean.getBigDecimal("tillFloat", ZERO);
+                HelpContext help = getHelpContext().subtopic("startClear");
+                final StartClearTillDialog dialog = new StartClearTillDialog(help);
+                dialog.setCashFloat(lastFloat);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        rules.startClearTill(act, dialog.getCashFloat());
+                        onRefresh(act);
+                    }
+                });
+                dialog.show();
             } else {
                 ErrorDialog.show(Messages.get("till.clear.title"),
                                  Messages.get("till.clear.error.clearInProgress"));
@@ -252,20 +266,34 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             Party till = (Party) actBean.getNodeParticipant("till");
             Party location = getContext().getLocation();
             if (till != null && location != null) {
-                TillRules rules = ServiceHelper.getBean(TillRules.class);
-                if (UNCLEARED.equals(act.getStatus()) && rules.isClearInProgress(till)) {
-                    ErrorDialog.show(Messages.get("till.clear.title"),
-                                     Messages.get("till.clear.error.clearInProgress"));
-                } else {
-                    IMObjectBean bean = new IMObjectBean(till);
-                    BigDecimal lastFloat = bean.getBigDecimal("tillFloat", ZERO);
-                    HelpContext help = getHelpContext().subtopic("clear");
-                    final ClearTillDialog dialog = new ClearTillDialog(location, getContext(), help);
-                    dialog.setAmount(lastFloat);
+                boolean uncleared = UNCLEARED.equals(act.getStatus());
+                boolean inProgress = IN_PROGRESS.equals(act.getStatus());
+                HelpContext help = getHelpContext().subtopic("clear");
+                if (uncleared) {
+                    if (rules.isClearInProgress(till)) {
+                        ErrorDialog.show(Messages.get("till.clear.title"),
+                                         Messages.get("till.clear.error.clearInProgress"));
+                    } else {
+                        IMObjectBean bean = new IMObjectBean(till);
+                        BigDecimal lastFloat = bean.getBigDecimal("tillFloat", ZERO);
+                        final ClearTillDialog dialog = new ClearTillDialog(location, true, getContext(), help);
+                        dialog.setCashFloat(lastFloat);
+                        dialog.addWindowPaneListener(new PopupDialogListener() {
+                            @Override
+                            public void onOK() {
+                                rules.clearTill(act, dialog.getCashFloat(), dialog.getAccount());
+                                onRefresh(act);
+                            }
+                        });
+                        dialog.show();
+                    }
+                } else if (inProgress) {
+                    final ClearTillDialog dialog = new ClearTillDialog(location, false, getContext(), help);
                     dialog.addWindowPaneListener(new PopupDialogListener() {
                         @Override
                         public void onOK() {
-                            doClear(act, dialog.getAmount(), dialog.getAccount());
+                            rules.clearTill(act, dialog.getAccount());
+                            onRefresh(act);
                         }
                     });
                     dialog.show();
@@ -415,23 +443,6 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     protected void onChildActSelected(FinancialAct child) {
         childAct = child;
         enableButtons(getButtons(), getObject() != null);
-    }
-
-    /**
-     * Clears the current balance.
-     *
-     * @param act     the uncleared balance
-     * @param amount  the amount to clear
-     * @param account the account to deposit to
-     */
-    private void doClear(FinancialAct act, BigDecimal amount, Party account) {
-        try {
-            TillRules rules = ServiceHelper.getBean(TillRules.class);
-            rules.clearTill(act, amount, account);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception.getMessage(), exception);
-        }
-        onRefresh(getObject());
     }
 
     /**
