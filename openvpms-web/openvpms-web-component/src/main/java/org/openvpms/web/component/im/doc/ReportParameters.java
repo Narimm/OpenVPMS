@@ -102,10 +102,9 @@ public class ReportParameters {
             grid.setWidth(Styles.FULL_WIDTH);
             PropertyComponentFactory factory = ComponentFactory.INSTANCE;
             for (Property property : properties) {
-                if (property.isBoolean() || property.isString()
-                    || property.isNumeric() || property.isDate()) {
+                if (property.isBoolean() || property.isString() || property.isNumeric() || property.isDate()) {
                     Component component = factory.create(property);
-                    Label label = LabelFactory.create();
+                    Label label = LabelFactory.create(null, "default.grid");
                     label.setText(property.getDisplayName());
                     grid.add(label);
                     grid.add(component);

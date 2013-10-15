@@ -20,12 +20,14 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +113,7 @@ public class ComponentGrid {
         List<Cell> row = new ArrayList<Cell>();
         for (ComponentState state : states) {
             if (state.hasLabel()) {
-                row.add(new Cell(state.getLabel()));
+                row.add(new Cell(getLabel(state)));
                 row.add(new Cell(state.getComponent(), state));
             } else {
                 row.add(new Cell(state.getComponent(), state));
@@ -238,7 +240,7 @@ public class ComponentGrid {
     public void set(int row, int column, int columnGroupSpan, ComponentState state) {
         int span = 2 * columnGroupSpan;
         if (state.hasLabel()) {
-            set(row, column++, new Cell(state.getLabel()));
+            set(row, column++, new Cell(getLabel(state)));
             if (span > 0) {
                 span--;
             }
@@ -247,6 +249,14 @@ public class ComponentGrid {
         for (int i = 0; i < span - 1; i++) {
             set(row, column + i, SPAN);  // mark the remaining columns as being spanned
         }
+    }
+
+    private Label getLabel(ComponentState state) {
+        Label label = state.getLabel();
+        if (label != null && (label.getStyleName() == null || Styles.DEFAULT.equals(label.getStyleName()))) {
+            label.setStyleName("default.grid");
+        }
+        return label;
     }
 
     /**
