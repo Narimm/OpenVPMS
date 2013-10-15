@@ -2161,7 +2161,7 @@
                 <layout-data type="nextapp.echo2.app.layout.GridLayoutData">
                     <properties>
                         <property name="alignment">
-                            <alignment horizontal="right"/>
+                            <alignment horizontal="left"/>
                         </property>
                     </properties>
                 </layout-data>
