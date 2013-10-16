@@ -264,8 +264,8 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#ff3366"/>
-                        <!-- red -->
+                        <property name="background" value="#ffb1c6"/>
+                        <!-- red - previously ff3366 -->
                     </properties>
                 </layout-data>
             </property>
@@ -278,8 +278,8 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#ccff66"/>
-                        <!-- yellow -->
+                        <property name="background" value="#ffecb1"/>
+                        <!-- yellowish - previously ccff66 -->
                     </properties>
                 </layout-data>
             </property>
@@ -292,57 +292,15 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#33ff66"/>
-                        <!-- green -->
+                        <property name="background" value="#d1ffb1"/>
+                        <!-- green - previously 33ff66 -->
                     </properties>
                 </layout-data>
             </property>
         </properties>
     </style>
 
-    <style name="MedicalRecordSummary.act.patientInvestigationBiochemistry"
-           type="nextapp.echo2.app.Component">
-        <properties>
-            <property name="layoutData">
-                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
-                    <properties>
-                        <property name="background" value="#ffffff"/>
-                        <!-- white -->
-                    </properties>
-                </layout-data>
-            </property>
-        </properties>
-    </style>
-
-    <style name="MedicalRecordSummary.act.patientInvestigationCytology"
-           type="nextapp.echo2.app.Component">
-        <properties>
-            <property name="layoutData">
-                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
-                    <properties>
-                        <property name="background" value="#ffffff"/>
-                        <!-- white -->
-                    </properties>
-                </layout-data>
-            </property>
-        </properties>
-    </style>
-
-    <style name="MedicalRecordSummary.act.patientInvestigationHaematology"
-           type="nextapp.echo2.app.Component">
-        <properties>
-            <property name="layoutData">
-                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
-                    <properties>
-                        <property name="background" value="#ffffff"/>
-                        <!-- white -->
-                    </properties>
-                </layout-data>
-            </property>
-        </properties>
-    </style>
-
-    <style name="MedicalRecordSummary.act.patientInvestigationRadiology"
+    <style name="MedicalRecordSummary.act.patientInvestigation"
            type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
