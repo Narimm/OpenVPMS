@@ -27,7 +27,6 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.im.till.TillQuery;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
@@ -105,7 +104,7 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
      */
     @Override
     protected Browser<FinancialAct> createBrowser(Query<FinancialAct> query) {
-        IMObjectTableModel<FinancialAct> model = new ActAmountTableModel<FinancialAct>(true, true);
+        IMObjectTableModel<FinancialAct> model = new TillBalanceActTableModel();
         return BrowserFactory.create(query, null, model, new DefaultLayoutContext(getContext(), getHelpContext()));
     }
 
@@ -136,4 +135,5 @@ public class TillWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
         }
 
     }
+
 }
