@@ -87,7 +87,7 @@ public class FinancialActCRUDWindow
     /**
      * Layout strategy that renders a {@link Viewer} for the items node.
      */
-    private class LayoutStrategy extends ActLayoutStrategy {
+    protected class LayoutStrategy extends ActLayoutStrategy {
 
         /**
          * Lay out out the object.

@@ -41,6 +41,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -51,7 +52,11 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.print.BasicPrinterListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ErrorDialog;
@@ -60,12 +65,17 @@ import org.openvpms.web.echo.dialog.SelectionDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.FinancialActCRUDWindow;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.util.List;
 
 import static java.math.BigDecimal.ZERO;
@@ -446,6 +456,18 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
+     * Creates a new {@link IMObjectViewer} for an object.
+     *
+     * @param object the object to view
+     */
+    @Override
+    protected IMObjectViewer createViewer(IMObject object) {
+        LayoutContext context = createViewLayoutContext();
+        LayoutStrategy layout = new TillBalanceActLayoutStrategy();
+        return new IMObjectViewer(object, null, layout, context);
+    }
+
+    /**
      * Transfers the selected payment/refund to a different till.
      *
      * @param balance the original balance
@@ -462,4 +484,48 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         onRefresh(getObject());
     }
 
+    /**
+     * Layout strategy for till balance acts that displays the start and end times as date/times.
+     */
+    private class TillBalanceActLayoutStrategy extends LayoutStrategy {
+
+        /**
+         * Apply the layout strategy.
+         * <p/>
+         * This renders an object in a {@code Component}, using a factory to create the child components.
+         *
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param context    the layout context
+         * @return the component containing the rendered {@code object}
+         */
+        @Override
+        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            if (!context.isEdit()) {
+                DateFormat format = DateFormatter.getDateTimeFormat(false);
+                int maxColumns = DateFormatter.getLength(format);
+                addComponent(createDate("startTime", properties, maxColumns, format));
+                addComponent(createDate("endTime", properties, maxColumns, format));
+            }
+            return super.apply(object, properties, parent, context);
+        }
+
+        /**
+         * Creates a date component for a property.
+         *
+         * @param name       the property name
+         * @param properties the properties
+         * @param maxColumns the maximum columns to display
+         * @param format     the date format
+         * @return a new component
+         */
+        private ComponentState createDate(String name, PropertySet properties, int maxColumns, DateFormat format) {
+            Property property = properties.get(name);
+            TextField result = BoundTextComponentFactory.create(property, maxColumns, format);
+            result.setEnabled(false);
+            ComponentFactory.setStyle(result, Styles.DEFAULT);
+            return new ComponentState(result, property);
+        }
+    }
 }
