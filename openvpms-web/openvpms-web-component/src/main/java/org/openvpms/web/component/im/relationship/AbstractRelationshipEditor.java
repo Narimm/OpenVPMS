@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.relationship;
 
 import nextapp.echo2.app.Component;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -96,7 +97,9 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         if (sourceRef == null && source != null) {
             sourceProp.setValue(source.getObjectReference());
         }
-        if (targetRef == null && target != null) {
+        if (targetRef == null && target != null && !ObjectUtils.equals(source, target)) {
+            // only add the target if it is different to the source (e.g. see entityRelationship.productLink where the
+            // source and target archetypes are the same)
             targetProp.setValue(target.getObjectReference());
         }
 
