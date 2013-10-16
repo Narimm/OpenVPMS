@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -49,6 +47,11 @@ public abstract class Downloader {
      * The listener for events.
      */
     private DownloaderListener listener;
+
+    /**
+     * The maximum file name display length, or {@code -1} to display the entire file name.
+     */
+    private int nameLength = -1;
 
 
     /**
@@ -91,6 +94,17 @@ public abstract class Downloader {
     public void download(String mimeType) {
         Document document = getDocument(mimeType);
         DownloadServlet.startDownload(document);
+    }
+
+    /**
+     * Shortens long names to the specified number of characters.
+     *
+     * @param length the maximum length. Must be {@code > 5}
+     */
+    public void setNameLength(int length) {
+        if (length > 5) {
+            this.nameLength = length;
+        }
     }
 
     /**
@@ -147,13 +161,15 @@ public abstract class Downloader {
      * Helper to set the button style.
      *
      * @param button the button
-     * @param name   the button name. Long names will be shortened
+     * @param name   the button name. Long names will be shortened if {@link #nameLength} is > 0}
      */
     protected void setButtonStyle(Button button, String name) {
         String tooltip = null;
-        if (name.length() > 18) {
+        if (nameLength > 0 && name.length() > nameLength) {
             tooltip = name;
-            name = name.substring(0, 8) + "..." + name.substring(name.length() - 7);
+            int start = nameLength / 2 - 1;
+            int end = nameLength - start - 3;
+            name = name.substring(0, start) + "..." + name.substring(name.length() - end);
         }
         button.setText(name);
         if (tooltip != null) {

@@ -392,6 +392,7 @@ public class MailEditor extends AbstractModifiable {
         documents.add(ref);
         DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true, false,
                                                            new DefaultLayoutContext(context, help));
+        documentViewer.setNameLength(18);  // display up to 18 characters of the name to avoid scrollbars
         documentViewer.setDownloadListener(new DownloaderListener() {
             public void download(Downloader downloader, String mimeType) {
                 onDownload(downloader, mimeType, ref.getReference());
