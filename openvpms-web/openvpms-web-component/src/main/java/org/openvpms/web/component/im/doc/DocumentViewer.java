@@ -90,6 +90,11 @@ public class DocumentViewer {
      */
     private boolean showNoDocument = true;
 
+    /**
+     * The maximum file name display length, or {@code -1} to display the entire file name.
+     */
+    private int nameLength = -1;
+
 
     /**
      * Constructs a {@code DocumentViewer}.
@@ -208,6 +213,7 @@ public class DocumentViewer {
                     } else {
                         downloader = new DocumentRefDownloader(reference, name);
                     }
+                    downloader.setNameLength(nameLength);
                     downloader.setListener(listener);
                     result = downloader.getComponent();
                 } else {
@@ -258,4 +264,16 @@ public class DocumentViewer {
         return result;
     }
 
+    /**
+     * Shortens long names to the specified number of characters.
+     *
+     * @param length the maximum length
+     */
+    public void setNameLength(int length) {
+        if (downloader != null) {
+            downloader.setNameLength(length);
+        } else {
+            this.nameLength = length;
+        }
+    }
 }
