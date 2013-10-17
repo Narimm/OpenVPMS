@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -50,8 +48,7 @@ import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createTask;
 /**
  * Tests the {@link ConsultWorkflow}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest {
 
@@ -195,11 +192,11 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         ConsultWorkflowRunner workflow1 = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow1.start();
 
-        // verify the event has been created with COMPLETED status
+        // verify the event has been created with IN_PROGRESS status
         VisitEditorDialog visitEditorDialog1 = workflow1.editVisit();
         VisitEditor editor1 = visitEditorDialog1.getEditor();
         Act event = editor1.getHistory().getObject();
-        assertEquals(ActStatus.COMPLETED, event.getStatus());
+        assertEquals(ActStatus.IN_PROGRESS, event.getStatus());
 
         // verify the event is selected
         checkSelectedHistory(editor1, event, event);

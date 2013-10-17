@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -84,6 +85,7 @@ public class GetClinicalEventTask extends SynchronousTask {
         MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
         Act event = rules.getEventForAddition(patient, date, clinician);
         if (event.isNew()) {
+            event.setStatus(ActStatus.IN_PROGRESS);
             if (properties != null) {
                 populate(event, properties, context);
             }
