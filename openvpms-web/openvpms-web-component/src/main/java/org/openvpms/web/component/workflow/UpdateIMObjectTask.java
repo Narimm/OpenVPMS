@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
@@ -31,8 +29,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 /**
  * Task to update an {@link IMObject}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UpdateIMObjectTask extends SynchronousTask {
 
@@ -47,8 +44,7 @@ public class UpdateIMObjectTask extends SynchronousTask {
     private IMObject object;
 
     /**
-     * The reference of the object to update. Resolved at time of
-     * update.
+     * The reference of the object to update. Resolved at time of update.
      */
     private IMObjectReference reference;
 
@@ -56,7 +52,6 @@ public class UpdateIMObjectTask extends SynchronousTask {
      * Properties to populate the created object with.
      */
     private final TaskProperties properties;
-
 
     /**
      * Determines if the object should be saved.
@@ -70,7 +65,7 @@ public class UpdateIMObjectTask extends SynchronousTask {
 
 
     /**
-     * Creates a new <tt>UpdateIMObjectTask</tt>.
+     * Constructs an {@link UpdateIMObjectTask}.
      * The object is saved on update.
      *
      * @param shortName  the short name of the object to update
@@ -81,7 +76,7 @@ public class UpdateIMObjectTask extends SynchronousTask {
     }
 
     /**
-     * Creates a new <tt>UpdateIMObjectTask</tt>.
+     * Constructs an {@link UpdateIMObjectTask}.
      *
      * @param shortName  the short name of the object to update
      * @param properties properties to populate the object with
@@ -95,7 +90,7 @@ public class UpdateIMObjectTask extends SynchronousTask {
     }
 
     /**
-     * Creates a new <tt>UpdateIMObjectTask</tt>.
+     * Constructs an {@link UpdateIMObjectTask}.
      * The object is saved on update.
      *
      * @param object     the object to update
@@ -106,7 +101,7 @@ public class UpdateIMObjectTask extends SynchronousTask {
     }
 
     /**
-     * Creates a new <tt>UpdateIMObjectTask</tt>.
+     * Constructs an {@link UpdateIMObjectTask}.
      *
      * @param object     the object to update
      * @param properties properties to populate the object with
@@ -120,7 +115,7 @@ public class UpdateIMObjectTask extends SynchronousTask {
     }
 
     /**
-     * Creates a new <tt>UpdateIMObjectTask</tt>.
+     * Constructs an {@link UpdateIMObjectTask}.
      * The object is saved on update.
      *
      * @param reference  reference to the object to update
@@ -132,7 +127,7 @@ public class UpdateIMObjectTask extends SynchronousTask {
     }
 
     /**
-     * Creates a new <tt>UpdateIMObjectTask</tt>.
+     * Constructs an {@link UpdateIMObjectTask}.
      *
      * @param reference  reference to the object to update
      * @param properties properties to populate the object with
@@ -152,16 +147,10 @@ public class UpdateIMObjectTask extends SynchronousTask {
      */
     public void execute(TaskContext context) {
         if (object == null) {
-            if (reference != null) {
-                IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-                object = service.get(reference);
-            } else {
-                object = context.getObject(shortName);
-            }
+            object = getObject(context);
         }
         if (object != null) {
-            populate(object, properties, context);
+            populate(object, context);
             if (save) {
                 if (!SaveHelper.save(object)) {
                     notifyCancelled();
@@ -172,5 +161,32 @@ public class UpdateIMObjectTask extends SynchronousTask {
                       shortName + ", reference=" + reference);
             notifyCancelled();
         }
+    }
+
+    /**
+     * Populates an object.
+     *
+     * @param object  the object to populate
+     * @param context the task context
+     */
+    protected void populate(IMObject object, TaskContext context) {
+        populate(object, properties, context);
+    }
+
+    /**
+     * Returns the object.
+     *
+     * @param context the task context
+     * @return the object, or {@code null} if none is found
+     */
+    protected IMObject getObject(TaskContext context) {
+        IMObject result;
+        if (reference != null) {
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            result = service.get(reference);
+        } else {
+            result = context.getObject(shortName);
+        }
+        return result;
     }
 }

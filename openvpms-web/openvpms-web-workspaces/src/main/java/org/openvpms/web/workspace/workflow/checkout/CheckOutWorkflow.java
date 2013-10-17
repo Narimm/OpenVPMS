@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.workflow.checkout;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -29,11 +28,13 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
+import org.openvpms.web.component.workflow.ConditionalUpdateTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.EvalTask;
 import org.openvpms.web.component.workflow.NodeConditionTask;
+import org.openvpms.web.component.workflow.RetryableUpdateIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -49,6 +50,8 @@ import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
 
 import java.util.Date;
+
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT;
 
 
 /**
@@ -142,12 +145,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // on save, determine if the user wants to post the invoice, but
         // only if its not already posted
         NodeConditionTask<String> notPosted = new NodeConditionTask<String>(
-            CustomerAccountArchetypes.INVOICE, "status", false, FinancialActStatus.POSTED);
+                CustomerAccountArchetypes.INVOICE, "status", false, FinancialActStatus.POSTED);
         addTask(new ConditionalTask(notPosted, getPostTask()));
 
         // if the invoice is posted, prompt to pay the account
         NodeConditionTask<String> posted = new NodeConditionTask<String>(
-            CustomerAccountArchetypes.INVOICE, "status", FinancialActStatus.POSTED);
+                CustomerAccountArchetypes.INVOICE, "status", FinancialActStatus.POSTED);
 
         PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
         payWorkflow.setRequired(false);
@@ -160,15 +163,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // created
         addTask(new PrintTask(act, help.subtopic("print")));
 
-        // update the most recent act.patientClinicalEvent, setting it status
-        // to COMPLETED, if one is present
-        // TODO:  Removed this as causing version issues on common consulting room workflow.   
-        // After consulting workflow and completing billing reception woudl do checkout and update visit
-        // but clinician would also add more clinical records causing version conflict when saved.
-        //addTask(new GetClinicalEventTask());
-        //TaskProperties eventProperties = new TaskProperties();
-        //eventProperties.add("status", ActStatus.COMPLETED);
-        //addTask(new ConditionalUpdateTask(EVENT_SHORTNAME, eventProperties));
+        // update the most recent act.patientClinicalEvent, setting it status to COMPLETED, if one is present.
+        // Use a retryable task to handle concurrent update conflicts
+        TaskProperties eventProperties = new TaskProperties();
+        eventProperties.add("status", ActStatus.COMPLETED);
+        addTask(new ConditionalUpdateTask(CLINICAL_EVENT,
+                                          new RetryableUpdateIMObjectTask(CLINICAL_EVENT, eventProperties)));
     }
 
     /**
@@ -260,7 +260,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
          */
         public void execute(TaskContext context) {
             Date min = getMinStartTime(CustomerAccountArchetypes.INVOICE, startTime, context);
-            min = getMinStartTime(PatientArchetypes.CLINICAL_EVENT, min, context);
+            min = getMinStartTime(CLINICAL_EVENT, min, context);
             PrintDocumentsTask printDocs = new PrintDocumentsTask(min, help);
             printDocs.setRequired(false);
             addTask(printDocs);

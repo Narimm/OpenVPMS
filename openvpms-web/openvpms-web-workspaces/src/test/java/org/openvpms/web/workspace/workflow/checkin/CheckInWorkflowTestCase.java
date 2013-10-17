@@ -593,7 +593,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         WorkflowTestHelper.cancelDialog(eventDialog, userClose);
 
         // event is saved regardless of cancel
-        workflow.checkEvent(patient, clinician, ActStatus.COMPLETED);
+        workflow.checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
         workflow.checkInvoice(clinician, BigDecimal.ZERO, ActStatus.IN_PROGRESS, false);
         workflow.checkComplete(false, null, null, context);
     }
