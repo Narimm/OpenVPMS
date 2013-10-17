@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="act.patientMedication.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.Act" displayName="Medication">
@@ -20,7 +21,7 @@
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Medication'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-              derivedValue="concat(openvpms:get(.,'product.entity.name'), ' - ','Qty : ',/details/quantity,' Expiry : ', date:formatDate(/activityEndTime))"/>
+              derivedValue="concat(openvpms:get(.,'product.entity.name'), ' - Qty: ',/details/quantity,' Expiry: ', expr:if(boolean(/activityEndTime), date:formatDate(/activityEndTime), 'None'))"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()"/>
         <node displayName="Expiry Date" name="endTime" path="/activityEndTime" type="java.util.Date"
