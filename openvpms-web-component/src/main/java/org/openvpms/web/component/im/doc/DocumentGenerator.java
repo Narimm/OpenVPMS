@@ -257,7 +257,8 @@ public class DocumentGenerator {
         String title = Messages.format("document.input.parameters", reporter.getTemplate().getName());
         MacroVariables variables = new MacroVariables(context, ServiceHelper.getArchetypeService(),
                                                       ServiceHelper.getLookupService());
-        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help, variables, skip);
+        final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help.subtopic("parameters"),
+                                                           variables, skip);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
