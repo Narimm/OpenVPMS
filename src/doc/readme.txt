@@ -15,8 +15,8 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
   - Java 1.6.x or higher
     See http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-  - MySQL 5.0.24a or higher
-    See http://www.mysql.org/downloads/mysql/5.0.html
+  - MySQL 5.1.53 or higher
+    See http://dev.mysql.com/downloads/mysql/5.1.html
 
   - MySQL Connector/J JDBC driver 
     See http://dev.mysql.com/downloads/connector/j/5.1.html
@@ -24,8 +24,8 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
   - Tomcat 6.0 or higher
     See http://tomcat.apache.org/download-60.cgi
 
-  - OpenOffice 2.2.1 or higher
-    See http://download.openoffice.org/
+  - OpenOffice 4.0.0 or higher
+    See http://www.openoffice.org/download/
 
 - MySQL:
   - should be on the same host as Tomcat
@@ -170,7 +170,7 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
      and build <TOMCAT_HOME>/webapps/openvpms
 
 2.6 Customisation
-  If you have customised version of propercase.properties, help.properties, or
+  If you have customised versions of propercase.properties, help.properties, or
   messages.properties you need to install these in
   <TOMCAT_HOME>/webapps/openvpms/WEB-INF/classes/localisation
   You can simply overwrite the default propercase.properties with your own version.
