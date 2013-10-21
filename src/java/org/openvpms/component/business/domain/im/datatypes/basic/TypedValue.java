@@ -1,25 +1,26 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.datatypes.basic;
 
 import com.thoughtworks.xstream.core.BaseException;
 import org.apache.commons.lang.ObjectUtils;
+
+import java.sql.Timestamp;
+import java.util.Date;
 
 
 /**
@@ -149,6 +150,9 @@ public class TypedValue {
      * @param object the object
      */
     public void setObject(Object object) {
+        if (object != null && object.getClass() == Date.class) {
+            object = new Timestamp(((Date) object).getTime());
+        }
         this.object = object;
         type = TypedValueConverter.getType(object);
         state = State.OBJECT_DIRTY;
@@ -186,7 +190,7 @@ public class TypedValue {
             if (obj instanceof TypedValue) {
                 TypedValue other = (TypedValue) obj;
                 if (ObjectUtils.equals(type, other.getType())
-                        && ObjectUtils.equals(getValue(), other.getValue())) {
+                    && ObjectUtils.equals(getValue(), other.getValue())) {
                     equals = true;
                 }
             }

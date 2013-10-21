@@ -1,34 +1,37 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.datatypes.basic;
 
-import com.thoughtworks.xstream.converters.basic.DateConverter;
-import static org.junit.Assert.*;
+import com.thoughtworks.xstream.converters.extended.SqlTimestampConverter;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link TypedValueMap} class.
@@ -67,8 +70,8 @@ public class TypedValueMapTestCase {
      */
     @Test
     public void testConversion() {
-        DateConverter converter = new DateConverter();
-        Date date = new Date();
+        SqlTimestampConverter converter = new SqlTimestampConverter();
+        Date date = new Timestamp(System.currentTimeMillis());
         String dateStr = converter.toString(date);
 
         Map<String, TypedValue> underlying = new HashMap<String, TypedValue>();
@@ -76,7 +79,7 @@ public class TypedValueMapTestCase {
         underlying.put("b", new TypedValue("int", "2"));
         underlying.put("c", new TypedValue("string", "astring"));
         underlying.put("d", new TypedValue("big-decimal", "10.0"));
-        underlying.put("e", new TypedValue("date", dateStr));
+        underlying.put("e", new TypedValue("sql-timestamp", dateStr));
 
         TypedValueMap map = new TypedValueMap(underlying);
         check(map, underlying, "a", false);
