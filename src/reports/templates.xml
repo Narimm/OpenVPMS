@@ -82,7 +82,7 @@
 
     <template name="Till Balance"
               archetype="act.tillBalance"
-              path="tillBalance.jrxml"
+              path="TillBalance.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
 
