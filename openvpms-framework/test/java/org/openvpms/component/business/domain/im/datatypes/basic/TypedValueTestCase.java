@@ -1,27 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.datatypes.basic;
 
-import com.thoughtworks.xstream.converters.basic.DateConverter;
 import com.thoughtworks.xstream.converters.extended.SqlTimestampConverter;
 import com.thoughtworks.xstream.io.StreamException;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
@@ -33,6 +29,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the {@link TypedValue} class.
@@ -65,7 +65,7 @@ public class TypedValueTestCase {
         check("big-decimal", BigDecimal.ZERO, "0");
         check("big-int", BigInteger.TEN, "10");
         check("string", "astring", "astring");
-        check("date", date, new DateConverter().toString(date));
+        check("sql-timestamp", date, new SqlTimestampConverter().toString(new Timestamp(date.getTime())));
         check("url", new URL("http://localhost:8080"), "http://localhost:8080");
         check("sql-timestamp", timestamp,
               new SqlTimestampConverter().toString(timestamp));
@@ -180,6 +180,22 @@ public class TypedValueTestCase {
         } catch (StreamException exception) {
             // the expected behaviour
         }
+    }
+
+    /**
+     * Verifies that {@code java.util.Date} instances are converted to {@code java.sql.Timestamp} instances,
+     * to avoid timezone information being stored.
+     */
+    @Test
+    public void testDate() {
+        Date date = new Date();
+        TypedValue value = new TypedValue(date);
+        Timestamp expected = new Timestamp(date.getTime());
+        SqlTimestampConverter converter = new SqlTimestampConverter();
+        assertEquals(expected, value.getObject());
+        assertEquals("sql-timestamp", value.getType());
+        assertEquals(expected, value.getObject());
+        assertEquals(converter.toString(expected), value.getValue());
     }
 
     /**
