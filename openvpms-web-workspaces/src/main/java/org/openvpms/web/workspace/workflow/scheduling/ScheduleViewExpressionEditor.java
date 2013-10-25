@@ -20,7 +20,9 @@ import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.property.DefaultPropertyComponentFactory;
@@ -157,6 +159,9 @@ public class ScheduleViewExpressionEditor {
      */
     private List<Property> createProperties(boolean scheduleView) {
         List<Property> result = new ArrayList<Property>();
+        String shortName = scheduleView ? ScheduleArchetypes.APPOINTMENT : ScheduleArchetypes.TASK;
+        IMObjectReference reference = new IMObjectReference(shortName, -1);
+        result.add(create(ScheduleEvent.ACT_REFERENCE, reference));
         result.add(create(ScheduleEvent.ACT_DESCRIPTION));
         result.add(create(ScheduleEvent.ACT_STATUS));
         result.add(create(ScheduleEvent.ACT_STATUS_NAME));
@@ -182,21 +187,8 @@ public class ScheduleViewExpressionEditor {
      * @param value the property value
      * @return a new property
      */
-    private Property create(String name, String value) {
-        SimpleProperty property = new SimpleProperty(name, value, String.class);
-        property.setDisplayName(name);
-        return property;
-    }
-
-    /**
-     * Creates a new property with the specified name and value.
-     *
-     * @param name  the property name
-     * @param value the property value
-     * @return a new property
-     */
-    private Property create(String name, Date value) {
-        SimpleProperty property = new SimpleProperty(name, value, Date.class);
+    private Property create(String name, Object value) {
+        SimpleProperty property = new SimpleProperty(name, value, value.getClass());
         property.setDisplayName(name);
         return property;
     }
