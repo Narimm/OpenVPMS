@@ -151,6 +151,15 @@ public class ScheduleViewExpressionEditor {
     }
 
     /**
+     * Returns the properties available to the expression.
+     *
+     * @return the properties
+     */
+    public List<Property> getProperties() {
+        return properties;
+    }
+
+    /**
      * Creates a list of editable properties for testing the expression.
      *
      * @param scheduleView if {@code true} the editor is for an <em>entity.organisationScheduleView</em>, else it is
@@ -162,6 +171,8 @@ public class ScheduleViewExpressionEditor {
         String shortName = scheduleView ? ScheduleArchetypes.APPOINTMENT : ScheduleArchetypes.TASK;
         IMObjectReference reference = new IMObjectReference(shortName, -1);
         result.add(create(ScheduleEvent.ACT_REFERENCE, reference));
+        result.add(create(ScheduleEvent.ACT_START_TIME, new Date()));
+        result.add(create(ScheduleEvent.ACT_END_TIME, new Date()));
         result.add(create(ScheduleEvent.ACT_DESCRIPTION));
         result.add(create(ScheduleEvent.ACT_STATUS));
         result.add(create(ScheduleEvent.ACT_STATUS_NAME));
