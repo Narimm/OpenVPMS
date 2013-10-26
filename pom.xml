@@ -85,23 +85,15 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>castor-maven-plugin</artifactId>
-                <version>1.0</version>
-                <configuration>
-                    <schema>${basedir}/src/schema/templates.xsd</schema>
-                    <packaging>org.openvpms.report.jasper.tools</packaging>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>castor</groupId>
-                        <artifactId>castor-xml</artifactId>
-                        <version>${castor.version}</version>
-                    </dependency>
-                </dependencies>
                 <executions>
                     <execution>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <schema>${basedir}/src/schema/templates.xsd</schema>
+                            <packaging>org.openvpms.report.jasper.tools</packaging>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -157,7 +149,7 @@
             <version>${pom.version}</version>
         </dependency>
         <dependency>
-            <groupId>castor</groupId>
+            <groupId>org.codehaus.castor</groupId>
             <artifactId>castor-xml</artifactId>
             <version>${castor.version}</version>
         </dependency>
