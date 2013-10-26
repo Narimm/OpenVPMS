@@ -373,7 +373,7 @@ public class LoaderPluginDialog extends BaseStepDialog
             idName.setText(mappings.getIdColumn());
         }
 
-        batchSize.setText(Integer.toString(mappings.getBatchSize()));
+        batchSize.setText(Long.toString(mappings.getBatchSize()));
         generateLookups.setSelection(mappings.getGenerateLookups());
 
         skipProcessed.setSelection(mappings.getSkipProcessed());
