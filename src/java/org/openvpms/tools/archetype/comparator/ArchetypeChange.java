@@ -12,11 +12,9 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
-package org.openvpms.tools.archetype.loader;
+package org.openvpms.tools.archetype.comparator;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -24,6 +22,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,130 +31,82 @@ import java.util.Map;
 /**
  * Tracks changes to an archetype descriptor.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class Change {
+public class ArchetypeChange extends DescriptorChange<ArchetypeDescriptor> {
 
     /**
-     * The previous version.
+     * The changed fields.
      */
-    private ArchetypeDescriptor oldVersion;
+    private final List<FieldChange> fieldChanges;
 
     /**
-     * The current version.
+     * The changed nodes.
      */
-    private ArchetypeDescriptor newVersion;
-
+    private final List<NodeChange> nodeChanges;
 
     /**
-     * Creates a new <tt>Change</tt>.
+     * Constructs an {@link ArchetypeChange}.
+     *
+     * @param oldVersion the prior version of the archetype descriptor. May be {@code null}
+     * @param newVersion the current version of the archetype descriptor. May be {@code null}
      */
-    public Change() {
+    public ArchetypeChange(ArchetypeDescriptor oldVersion, ArchetypeDescriptor newVersion) {
+        this(oldVersion, newVersion, Collections.<FieldChange>emptyList(), Collections.<NodeChange>emptyList());
     }
 
     /**
-     * Creates a new <tt>Change</tt>.
+     * Constructs an {@link ArchetypeChange}.
      *
-     * @param newVersion the current version of the archetype descriptor.
-     *                   May be <tt>null</tt>
+     * @param oldVersion   the prior version of the archetype descriptor. May be {@code null}
+     * @param newVersion   the current version of the archetype descriptor. May be {@code null}
+     * @param fieldChanges the field changes
+     * @param nodeChanges  the node changes
      */
-    public Change(ArchetypeDescriptor newVersion) {
-        setNewVersion(newVersion);
+    public ArchetypeChange(ArchetypeDescriptor oldVersion, ArchetypeDescriptor newVersion,
+                           List<FieldChange> fieldChanges, List<NodeChange> nodeChanges) {
+        super(oldVersion, newVersion);
+        this.fieldChanges = fieldChanges;
+        this.nodeChanges = nodeChanges;
     }
 
     /**
-     * Creates a new <tt>Change</tt>.
+     * Returns the archetype short name.
      *
-     * @param oldVersion the prior version of the archetype descriptor.
-     *                   May be <tt>null</tt>
-     * @param newVersion the current version of the archetype descriptor.
-     *                   May be <tt>null</tt>
+     * @return the archetype short name
      */
-    public Change(ArchetypeDescriptor oldVersion,
-                  ArchetypeDescriptor newVersion) {
-        setOldVersion(oldVersion);
-        setNewVersion(newVersion);
+    public String getShortName() {
+        return getOldVersion() != null ? getOldVersion().getShortName() : getNewVersion().getShortName();
     }
 
     /**
-     * Returns the prior version of the archetype descriptor.
+     * Returns the field changes.
      *
-     * @return the prior version of the archetype descriptor, or <tt>null</tt>
-     *         if there was no prior version
+     * @return the field changes
      */
-    public ArchetypeDescriptor getOldVersion() {
-        return oldVersion;
+    public List<FieldChange> getFieldChanges() {
+        return fieldChanges;
     }
 
     /**
-     * Sets the prior version of the archetype descriptor.
+     * Returns the node changes.
      *
-     * @param oldVersion the prior version. May be <tt>null</tt>
+     * @return the node changes
      */
-    public void setOldVersion(ArchetypeDescriptor oldVersion) {
-        this.oldVersion = oldVersion;
-    }
-
-    /**
-     * Returns the current version of the archetype descriptor.
-     *
-     * @return the current version of the archetype descriptor, or <tt>null</tt>
-     *         if there is no current version
-     */
-    public ArchetypeDescriptor getNewVersion() {
-        return newVersion;
-    }
-
-    /**
-     * Sets the current version of the archetype descriptor.
-     *
-     * @param newVersion the current version. May be <tt>null</tt>
-     */
-    public void setNewVersion(ArchetypeDescriptor newVersion) {
-        this.newVersion = newVersion;
-    }
-
-    /**
-     * Determines if the change is an addition.
-     *
-     * @return <tt>true</tt> if the archetype has been added, <tt>false</tt> if
-     *         it has been updated/deleted.
-     */
-    public boolean isAdd() {
-        return oldVersion == null && newVersion != null;
-    }
-
-    /**
-     * Determines if the change is a deletion.
-     *
-     * @return <tt>true</tt> if the archetype has been removed or <tt>false</tt>
-     *         if it has been added/updated
-     */
-    public boolean isDelete() {
-        return oldVersion != null && newVersion == null;
-    }
-
-    /**
-     * Determines if the change is an update.
-     *
-     * @return <tt>true</tt> if the archetype has been updated or <tt>false</tt>
-     *         if it has been added/removed.
-     */
-    public boolean isUpdate() {
-        return oldVersion != null && newVersion != null;
+    public List<NodeChange> getNodeChanges() {
+        return nodeChanges;
     }
 
     /**
      * Determines if the archetype has derived nodes that have been changed
      * since the prior version. Ony applicable if this is an update change.
      *
-     * @return <tt>true</tt> if the update changed derived nodes
+     * @return {@code true} if the update changed derived nodes
      */
     public boolean hasChangedDerivedNodes() {
         if (isUpdate()) {
-            Map<String, NodeDescriptor> oldNodes = getDerivedNodes(oldVersion);
-            Map<String, NodeDescriptor> newNodes = getDerivedNodes(newVersion);
+            Map<String, NodeDescriptor> oldNodes = getDerivedNodes(getOldVersion());
+            Map<String, NodeDescriptor> newNodes = getDerivedNodes(getNewVersion());
             if (oldNodes.size() != newNodes.size()) {
                 return true;
             }
@@ -179,13 +130,13 @@ public class Change {
      * Only applicable if this is an update change.
      *
      * @param assertions if specified, then only the named assertions are considered
-     * @return <tt>true</tt> if the update changed node assertions
+     * @return {@code true} if the update changed node assertions
      */
     public boolean hasAddedAssertions(String... assertions) {
         if (isUpdate()) {
-            for (NodeDescriptor oldNode : oldVersion.getAllNodeDescriptors()) {
+            for (NodeDescriptor oldNode : getOldVersion().getAllNodeDescriptors()) {
                 String name = oldNode.getName();
-                NodeDescriptor newNode = newVersion.getNodeDescriptor(name);
+                NodeDescriptor newNode = getNewVersion().getNodeDescriptor(name);
                 if (newNode != null) {
                     if (hasAddedAssertions(oldNode, newNode, assertions)) {
                         return true;
@@ -206,9 +157,9 @@ public class Change {
     public List<String> getNodesWithAddedAssertions(String... assertions) {
         List<String> result = new ArrayList<String>();
         if (isUpdate()) {
-            for (NodeDescriptor oldNode : oldVersion.getAllNodeDescriptors()) {
+            for (NodeDescriptor oldNode : getOldVersion().getAllNodeDescriptors()) {
                 String name = oldNode.getName();
-                NodeDescriptor newNode = newVersion.getNodeDescriptor(name);
+                NodeDescriptor newNode = getNewVersion().getNodeDescriptor(name);
                 if (newNode != null) {
                     if (hasAddedAssertions(oldNode, newNode, assertions)) {
                         result.add(name);
@@ -225,7 +176,7 @@ public class Change {
      * @param oldNode    the old version of the node descriptor
      * @param newNode    the new version of the node descriptor
      * @param assertions if specified, then only the named assertions are considered
-     * @return <tt>true</tt> if the node has changed assertions; otherwise <tt>false</tt>
+     * @return {@code true} if the node has changed assertions; otherwise {@code false}
      */
     private boolean hasAddedAssertions(NodeDescriptor oldNode, NodeDescriptor newNode, String... assertions) {
         Map<String, AssertionDescriptor> oldAssertions = oldNode.getAssertionDescriptors();
