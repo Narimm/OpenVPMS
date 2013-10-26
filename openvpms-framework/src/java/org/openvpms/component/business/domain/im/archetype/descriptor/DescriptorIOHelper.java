@@ -12,16 +12,14 @@
  *  License.
  *
  *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
+import org.castor.xml.XMLProperties;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
-import static org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException.ErrorCode.*;
 import org.xml.sax.InputSource;
 
 import java.io.InputStream;
@@ -29,18 +27,20 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
+import static org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException.ErrorCode.MappingError;
+import static org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException.ErrorCode.ReadError;
+import static org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException.ErrorCode.WriteError;
+
 
 /**
  * Helper to read/write descriptors.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class DescriptorIOHelper {
 
     /**
-     * Unmarsals an object from a stream using the mapping from the specified
-     * resource path.
+     * Reads an object from a stream using the mapping from the specified resource path.
      *
      * @param stream      the stream to read from
      * @param mappingPath the mapping resource path
@@ -50,38 +50,59 @@ class DescriptorIOHelper {
     public static Object read(InputStream stream, String mappingPath) {
         Object result;
         Mapping mapping = getMapping(mappingPath);
-        try {
-            Unmarshaller unmarshaller = new Unmarshaller(mapping);
-            result = unmarshaller.unmarshal(new InputStreamReader(stream));
-        } catch (Exception exception) {
-            throw new DescriptorException(ReadError, exception, mappingPath,
-                                          exception.getMessage());
-        }
+        result = read(stream, mapping, mappingPath);
         return result;
     }
 
     /**
-     * Marshals an object to a stream using the mapping from the specified
-     * resource path.
+     * Reads an object from a stream using the supplied mapping.
+     *
+     * @param stream  the stream to read from
+     * @param mapping the mapping
+     * @return the object
+     * @throws DescriptorException if the read fails
+     */
+    public static Object read(InputStream stream, Mapping mapping) {
+        Object result;
+        result = read(stream, mapping, "<unknown mapping path>");
+        return result;
+    }
+
+    /**
+     * Writes an object to a stream using the mapping from the specified resource path.
      *
      * @param object      the object to write
      * @param mappingPath the mapping resource path
      * @throws DescriptorException if the write fails
      */
-    public static void write(Object object, OutputStream stream,
-                             String mappingPath) {
+    public static void write(Object object, OutputStream stream, String mappingPath) {
         Mapping mapping = getMapping(mappingPath);
-        OutputStreamWriter writer = new OutputStreamWriter(stream);
-        try {
-            Marshaller marshaller = new Marshaller(writer);
-            marshaller.setMapping(mapping);
-            marshaller.setMarshalAsDocument(true);
-            marshaller.marshal(object);
-            writer.flush();
-        } catch (Exception exception) {
-            throw new DescriptorException(WriteError, exception, mappingPath,
-                                          exception.getMessage());
-        }
+        write(object, stream, mapping, mappingPath, false, false);
+    }
+
+    /**
+     * Writes an object to a stream using the mapping from the specified resource path.
+     *
+     * @param object  the object to write
+     * @param mapping the mapping
+     * @throws DescriptorException if the write fails
+     */
+    public static void write(Object object, OutputStream stream, Mapping mapping) {
+        write(object, stream, mapping, false, false);
+    }
+
+    /**
+     * Writes an object to a stream using the mapping from the specified resource path.
+     *
+     * @param object      the object to write
+     * @param mapping     the mapping
+     * @param fragment    if {@code true} omit xml declarations
+     * @param prettyPrint if {@code true}, indent the XML and remove namespace and type information
+     * @throws DescriptorException if the write fails
+     */
+    public static void write(Object object, OutputStream stream, Mapping mapping, boolean fragment,
+                             boolean prettyPrint) {
+        write(object, stream, mapping, "<unknown mapping path>", fragment, prettyPrint);
     }
 
     /**
@@ -96,11 +117,63 @@ class DescriptorIOHelper {
         try {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
             InputStream stream = loader.getResourceAsStream(path);
-            mapping.loadMapping(new InputSource(new InputStreamReader(stream)));
+            InputSource source = new InputSource(new InputStreamReader(stream));
+            source.setSystemId(path);
+            mapping.loadMapping(source);
         } catch (Exception exception) {
             throw new DescriptorException(MappingError, exception, path);
         }
         return mapping;
+    }
+
+    /**
+     * Reads an object from a stream using the supplied mapping.
+     *
+     * @param stream      the stream to read from
+     * @param mapping     the mapping
+     * @param mappingPath the mapping path, for error reporting purposes
+     * @return the object
+     * @throws DescriptorException if the read fails
+     */
+    private static Object read(InputStream stream, Mapping mapping, String mappingPath) {
+        Object result;
+        try {
+            Unmarshaller unmarshaller = new Unmarshaller(mapping);
+            result = unmarshaller.unmarshal(new InputStreamReader(stream));
+        } catch (Exception exception) {
+            throw new DescriptorException(ReadError, exception, mappingPath, exception.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * Writes an object to a stream, using the supplied mapping.
+     *
+     * @param object      the object to write
+     * @param stream      the stream to write to
+     * @param mapping     the mapping
+     * @param mappingPath the mapping path, for error reporting purposes
+     * @param fragment    if {@code true} omit xml declarations
+     * @param prettyPrint if {@code true}, indent the XML and remove namespace and type information
+     * @throws DescriptorException if the write fails
+     */
+    private static void write(Object object, OutputStream stream, Mapping mapping, String mappingPath,
+                              boolean fragment, boolean prettyPrint) {
+        OutputStreamWriter writer = new OutputStreamWriter(stream);
+        try {
+            Marshaller marshaller = new Marshaller(writer);
+            marshaller.setMapping(mapping);
+            if (prettyPrint) {
+                marshaller.setSuppressNamespaces(true);
+                marshaller.setSuppressXSIType(true);
+                marshaller.setProperty(XMLProperties.USE_INDENTATION, "true");
+            }
+            marshaller.setMarshalAsDocument(!fragment);
+            marshaller.marshal(object);
+            writer.flush();
+        } catch (Exception exception) {
+            throw new DescriptorException(WriteError, exception, mappingPath, exception.getMessage());
+        }
     }
 
 }

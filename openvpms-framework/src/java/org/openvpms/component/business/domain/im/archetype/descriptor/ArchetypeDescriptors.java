@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 
@@ -29,8 +27,8 @@ import java.util.Map;
 /**
  * Archetype descriptors.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ArchetypeDescriptors implements Serializable {
 
@@ -42,16 +40,7 @@ public class ArchetypeDescriptors implements Serializable {
     /**
      * A map of descriptors, keyed on name.
      */
-    private HashMap<String, ArchetypeDescriptor> archetypeDescriptors =
-            new HashMap<String, ArchetypeDescriptor>();
-
-    /**
-     * The mapping resource path.
-     */
-    private static final String MAPPING
-            = "org/openvpms/component/business/domain/im/archetype/descriptor/"
-            + "archetype-mapping-file.xml";
-
+    private HashMap<String, ArchetypeDescriptor> archetypeDescriptors = new HashMap<String, ArchetypeDescriptor>();
 
     /**
      * Default constructor.
@@ -74,8 +63,7 @@ public class ArchetypeDescriptors implements Serializable {
      * @return the descriptors
      */
     public ArchetypeDescriptor[] getArchetypeDescriptorsAsArray() {
-        return archetypeDescriptors.values().toArray(
-                new ArchetypeDescriptor[archetypeDescriptors.size()]);
+        return archetypeDescriptors.values().toArray(new ArchetypeDescriptor[archetypeDescriptors.size()]);
     }
 
     /**
@@ -83,8 +71,7 @@ public class ArchetypeDescriptors implements Serializable {
      *
      * @param descriptors the descriptors to set
      */
-    public void setArchetypeDescriptorsAsArray(
-            ArchetypeDescriptor[] descriptors) {
+    public void setArchetypeDescriptorsAsArray(ArchetypeDescriptor[] descriptors) {
         archetypeDescriptors = new HashMap<String, ArchetypeDescriptor>();
         for (ArchetypeDescriptor descriptor : descriptors) {
             archetypeDescriptors.put(descriptor.getShortName(), descriptor);
@@ -96,8 +83,7 @@ public class ArchetypeDescriptors implements Serializable {
      *
      * @param descriptors the descriptors
      */
-    public void setArchetypeDescriptors(
-            HashMap<String, ArchetypeDescriptor> descriptors) {
+    public void setArchetypeDescriptors(HashMap<String, ArchetypeDescriptor> descriptors) {
         this.archetypeDescriptors = descriptors;
     }
 
@@ -109,8 +95,7 @@ public class ArchetypeDescriptors implements Serializable {
      * @throws DescriptorException if the descriptors cannot be read
      */
     public static ArchetypeDescriptors read(InputStream stream) {
-        return (ArchetypeDescriptors) DescriptorIOHelper.read(stream, MAPPING);
-
+        return new ArchetypeDescriptorReader().read(stream);
     }
 
     /**
@@ -120,9 +105,8 @@ public class ArchetypeDescriptors implements Serializable {
      * @param stream      the stream to write to
      * @throws DescriptorException if the descriptors cannot be written
      */
-    public static void write(ArchetypeDescriptors descriptors,
-                             OutputStream stream) {
-        DescriptorIOHelper.write(descriptors, stream, MAPPING);
+    public static void write(ArchetypeDescriptors descriptors, OutputStream stream) {
+        new ArchetypeDescriptorWriter().write(descriptors, stream);
     }
 
 }

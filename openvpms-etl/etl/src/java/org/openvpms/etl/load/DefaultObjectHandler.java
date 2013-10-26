@@ -27,7 +27,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +37,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.openvpms.etl.load.LoaderException.ErrorCode.ArchetypeNotFound;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.IMObjectNotFound;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.InvalidReference;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.RefResolvesMultipleObjects;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.ReferencedObjectNotMapped;
 
 
 /**
@@ -117,7 +122,7 @@ public class DefaultObjectHandler implements ObjectHandler {
     /**
      * The batch size.
      */
-    private int batchSize = 1000;
+    private long batchSize = 1000;
 
     /**
      * Used for formatting exception messages.
@@ -328,7 +333,7 @@ public class DefaultObjectHandler implements ObjectHandler {
                 if (objectLogs == null) {
                     throw new IllegalArgumentException(
                             "No logs corresponding to object: "
-                                    + object.getLinkId());
+                            + object.getLinkId());
                 }
                 for (ETLLog log : objectLogs) {
                     log.setReference(object.getObjectReference());
@@ -397,7 +402,7 @@ public class DefaultObjectHandler implements ObjectHandler {
                         if (list == null) {
                             throw new IllegalArgumentException(
                                     "No logs corresponding to object: "
-                                            + object.getLinkId());
+                                    + object.getLinkId());
                         }
                         logMap.put(object.getLinkId(), list);
                     }
@@ -417,7 +422,7 @@ public class DefaultObjectHandler implements ObjectHandler {
      *
      * @param ref the parsed reference
      * @return the corresponding object reference
-     * @throws LoaderException           for any loader exception
+     * @throws LoaderException for any loader exception
      */
     private IMObjectReference getMappedReference(Reference ref) {
         // NOTE: this previously invoked 2 queries. The first queried on loader

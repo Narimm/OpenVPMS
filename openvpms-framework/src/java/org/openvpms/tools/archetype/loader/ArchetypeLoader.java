@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 
@@ -25,10 +23,6 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.stringparsers.BooleanStringParser;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.BasicConfigurator;
@@ -41,7 +35,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorValidationError;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.tools.archetype.loader.ArchetypeLoaderException.ErrorCode.*;
+import org.openvpms.tools.archetype.io.ArchetypeIOHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -57,6 +51,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.openvpms.tools.archetype.loader.ArchetypeLoaderException.ErrorCode.DirNotFound;
+import static org.openvpms.tools.archetype.loader.ArchetypeLoaderException.ErrorCode.FileNotFound;
+import static org.openvpms.tools.archetype.loader.ArchetypeLoaderException.ErrorCode.ValidationError;
+
 
 /**
  * This utility will read all the archetypes from the specified directory
@@ -65,8 +63,8 @@ import java.util.List;
  * When loading from a directory, all files with a <em>.adl</em> extension
  * will be processed.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ArchetypeLoader {
 
@@ -76,13 +74,8 @@ public class ArchetypeLoader {
     private final IArchetypeService service;
 
     /**
-     * Specifies the file extension to filter. Defaults to adl.
-     */
-    private String extension = "adl";
-
-    /**
      * Indicates whether an archetype should override an existing
-     * archetype (i.e. one that is already stored in the databse
+     * archetype (i.e. one that is already stored in the database
      */
     private boolean overwrite;
 
@@ -95,11 +88,6 @@ public class ArchetypeLoader {
      * Determines if verbose logging will be performed.
      */
     private boolean verbose;
-
-    /**
-     * The load state.
-     */
-    private Changes changes = new Changes();
 
     /**
      * The default name of the application context file.
@@ -147,15 +135,6 @@ public class ArchetypeLoader {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Returns the changes that have been made.
-     *
-     * @return the changes
-     */
-    public Changes getChanges() {
-        return changes;
     }
 
     /**
@@ -213,8 +192,14 @@ public class ArchetypeLoader {
      * @throws DescriptorException       if a descriptor cannot be read
      */
     public void loadArchetypes(String dirName, boolean recurse) {
-        IOFileFilter filter = FileFilterUtils.suffixFileFilter(extension);
-        loadArchetypes(dirName, filter, recurse);
+        File dir = new File(dirName);
+        if (!dir.exists()) {
+            throw new ArchetypeLoaderException(DirNotFound, dirName);
+        }
+        Collection<File> files = ArchetypeIOHelper.getArchetypeFiles(dir, recurse);
+        for (File file : files) {
+            loadArchetypes(file);
+        }
     }
 
     /**
@@ -256,7 +241,7 @@ public class ArchetypeLoader {
     }
 
     /**
-     * Main line.
+     * ArchDiff line.
      *
      * @param args the command line arguments
      */
@@ -349,33 +334,8 @@ public class ArchetypeLoader {
             throw new ArchetypeLoaderException(FileNotFound, exception,
                                                file.getName());
         }
-        for (ArchetypeDescriptor descriptor
-                : descriptors.getArchetypeDescriptorsAsArray()) {
+        for (ArchetypeDescriptor descriptor : descriptors.getArchetypeDescriptorsAsArray()) {
             loadArchetype(descriptor, file.getName());
-        }
-    }
-
-    /**
-     * Loads archetypes matching a file name filter, from the specified
-     * directory.
-     *
-     * @param dirName    the directory
-     * @param fileFilter the file name filter to match archetype file names
-     * @param recurse    if <tt>true</tt>, scan sub-directories
-     * @throws ArchetypeLoaderException  if the directory cannot be found
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws DescriptorException       if a descriptor cannot be read
-     */
-    private void loadArchetypes(String dirName, IOFileFilter fileFilter,
-                                boolean recurse) {
-        File dir = new File(dirName);
-        if (!dir.exists()) {
-            throw new ArchetypeLoaderException(DirNotFound, dirName);
-        }
-        IOFileFilter dirFilter = (recurse) ? TrueFileFilter.INSTANCE : null;
-        Collection files = FileUtils.listFiles(dir, fileFilter, dirFilter);
-        for (Object file : files) {
-            loadArchetypes((File) file);
         }
     }
 
@@ -485,47 +445,47 @@ public class ArchetypeLoader {
     private static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
         parser.registerParameter(new FlaggedOption("dir")
-                .setShortFlag('d')
-                .setLongFlag("dir")
-                .setHelp("Directory where ADL files reside."));
+                                         .setShortFlag('d')
+                                         .setLongFlag("dir")
+                                         .setHelp("Directory where ADL files reside."));
         parser.registerParameter(new Switch("subdir")
-                .setShortFlag('s')
-                .setLongFlag("subdir")
-                .setDefault("false")
-                .setHelp("Search the subdirectories as well."));
+                                         .setShortFlag('s')
+                                         .setLongFlag("subdir")
+                                         .setDefault("false")
+                                         .setHelp("Search the subdirectories as well."));
         parser.registerParameter(new FlaggedOption("file")
-                .setShortFlag('f')
-                .setLongFlag("file")
-                .setHelp("Name of file containing archetypes"));
+                                         .setShortFlag('f')
+                                         .setLongFlag("file")
+                                         .setHelp("Name of file containing archetypes"));
         parser.registerParameter(new Switch("verbose")
-                .setShortFlag('v')
-                .setLongFlag("verbose")
-                .setDefault("false")
-                .setHelp("Displays verbose info to the console."));
+                                         .setShortFlag('v')
+                                         .setLongFlag("verbose")
+                                         .setDefault("false")
+                                         .setHelp("Displays verbose info to the console."));
         parser.registerParameter(new Switch("overwrite")
-                .setShortFlag('o')
-                .setLongFlag("overwrite")
-                .setDefault("false")
-                .setHelp("Overwrite archetype if it already exists"));
+                                         .setShortFlag('o')
+                                         .setLongFlag("overwrite")
+                                         .setDefault("false")
+                                         .setHelp("Overwrite archetype if it already exists"));
         parser.registerParameter(new Switch("clean")
-                .setShortFlag('c')
-                .setLongFlag("clean")
-                .setDefault("false")
-                .setHelp("Clean all the archetypes before loading"));
+                                         .setShortFlag('c')
+                                         .setLongFlag("clean")
+                                         .setDefault("false")
+                                         .setHelp("Clean all the archetypes before loading"));
         parser.registerParameter(new FlaggedOption("failOnError")
-                .setShortFlag('e')
-                .setLongFlag("failOnError")
-                .setDefault("true")
-                .setStringParser(BooleanStringParser.getParser())
-                .setHelp("Fail on validation error"));
+                                         .setShortFlag('e')
+                                         .setLongFlag("failOnError")
+                                         .setDefault("true")
+                                         .setStringParser(BooleanStringParser.getParser())
+                                         .setHelp("Fail on validation error"));
         parser.registerParameter(new FlaggedOption("context")
-                .setLongFlag("context")
-                .setDefault(APPLICATION_CONTEXT)
-                .setHelp("The application context path"));
+                                         .setLongFlag("context")
+                                         .setDefault(APPLICATION_CONTEXT)
+                                         .setHelp("The application context path"));
         parser.registerParameter(new FlaggedOption("mappingFile")
-                .setShortFlag('m')
-                .setLongFlag("mappingFile")
-                .setHelp("A location of the assertion type mapping file"));
+                                         .setShortFlag('m')
+                                         .setLongFlag("mappingFile")
+                                         .setHelp("A location of the assertion type mapping file"));
         return parser;
     }
 
@@ -561,7 +521,6 @@ public class ArchetypeLoader {
                 log.info("Deleting " + descriptor.getName());
             }
             service.remove(descriptor);
-            changes.addOldVersion(descriptor);
         }
     }
 

@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.admin.archetype;
 
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
-import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -28,8 +28,7 @@ import java.util.List;
 /**
  * Confirms updates nodes of objects associated with changed archetype descriptors.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 class ConfirmingBatchArchetypeUpdater {
 
@@ -38,9 +37,9 @@ class ConfirmingBatchArchetypeUpdater {
      *
      * @param changes the archetype changes
      */
-    public void confirmUpdate(final List<Change> changes) {
+    public void confirmUpdate(final List<ArchetypeChange> changes) {
         StringBuffer names = new StringBuffer();
-        for (Change change : changes) {
+        for (ArchetypeChange change : changes) {
             if (names.length() != 0) {
                 names.append(", ");
             }
@@ -64,7 +63,7 @@ class ConfirmingBatchArchetypeUpdater {
      *
      * @param changes the changed archetypes
      */
-    private void update(List<Change> changes) {
+    private void update(List<ArchetypeChange> changes) {
         BatchArchetypeUpdater updater = new BatchArchetypeUpdater(changes);
         updater.setListener(new BatchProcessorListener() {
             public void completed() {

@@ -23,7 +23,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.echo.dialog.ErrorDialog;
@@ -42,8 +42,7 @@ import java.util.ListIterator;
  * {@link org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor ArchetypeDescriptor},
  * providing a progress bar and cancel prompt.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class ObjectUpdateProgressBarProcessor extends ProgressBarProcessor<IMObject> {
 
@@ -83,7 +82,7 @@ class ObjectUpdateProgressBarProcessor extends ProgressBarProcessor<IMObject> {
      * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
      *          for any archetype service error
      */
-    public void update(Change change) {
+    public void update(ArchetypeChange change) {
         derive = change.hasChangedDerivedNodes();
         nodes = change.getNodesWithAddedAssertions(BatchArchetypeUpdater.ASSERTIONS);
 

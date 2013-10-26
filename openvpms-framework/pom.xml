@@ -132,24 +132,15 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>castor-maven-plugin</artifactId>
-                <version>1.0</version>
-                <configuration>
-                    <schema>${basedir}/src/java/org/openvpms/tools/security/loader/security-loader.xsd</schema>
-                    <packaging>org.openvpms.tools.security.loader</packaging>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>castor</groupId>
-                        <artifactId>castor-xml</artifactId>
-                        <version>${castor.version}</version>
-                    </dependency>
-                </dependencies>
                 <executions>
                     <execution>
-                        <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <schema>${basedir}/src/java/org/openvpms/tools/security/loader/security-loader.xsd</schema>
+                            <packaging>org.openvpms.tools.security.loader</packaging>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -369,7 +360,7 @@
             <version>${commons.collections.version}</version>
         </dependency>
         <dependency>
-            <groupId>castor</groupId>
+            <groupId>org.codehaus.castor</groupId>
             <artifactId>castor-xml</artifactId>
             <version>${castor.version}</version>
         </dependency>
@@ -479,13 +470,13 @@
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
             <version>${commons.dbcp.version}</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>${jdbc.groupId}</groupId>
             <artifactId>${jdbc.artifactId}</artifactId>
             <version>${jdbc.version}</version>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
