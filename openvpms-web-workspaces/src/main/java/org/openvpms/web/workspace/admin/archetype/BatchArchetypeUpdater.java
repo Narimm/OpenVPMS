@@ -22,7 +22,7 @@ import nextapp.echo2.app.Row;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -36,11 +36,10 @@ import java.util.List;
  * Updates objects associated with a batch of changed {@link ArchetypeDescriptor}s,
  * providing a progress bar and cancel prompt.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class BatchArchetypeUpdater
-        extends AbstractAsynchronousBatchProcessor<Change> {
+        extends AbstractAsynchronousBatchProcessor<ArchetypeChange> {
 
     /**
      * Assertion names to check for during updates.
@@ -63,7 +62,7 @@ public class BatchArchetypeUpdater
      *
      * @param changes the changed archetype descriptors of the objects to update
      */
-    public BatchArchetypeUpdater(List<Change> changes) {
+    public BatchArchetypeUpdater(List<ArchetypeChange> changes) {
         super(changes.iterator());
     }
 
@@ -72,7 +71,7 @@ public class BatchArchetypeUpdater
      *
      * @param change the object to process
      */
-    protected void process(final Change change) {
+    protected void process(final ArchetypeChange change) {
         if (processor == null) {
             processor = new ObjectUpdateProgressBarProcessor();
             processor.setListener(new BatchProcessorListener() {

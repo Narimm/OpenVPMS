@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.AbstractIMObjectFactory;
 import org.openvpms.component.business.service.archetype.IMObjectFactory;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -87,7 +87,7 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
             ArchetypeDescriptor old = IMObjectHelper.reload(current);
             saved = super.doSave();
             if (saved && old != null) {
-                Change change = new Change(current, old);
+                ArchetypeChange change = new ArchetypeChange(current, old);
                 boolean updateDerived = change.hasChangedDerivedNodes();
                 boolean updateAssertions = change.hasAddedAssertions(BatchArchetypeUpdater.ASSERTIONS);
                 if (updateDerived || updateAssertions) {

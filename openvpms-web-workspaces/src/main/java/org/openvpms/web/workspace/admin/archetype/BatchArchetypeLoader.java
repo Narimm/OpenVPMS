@@ -20,7 +20,7 @@ import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProce
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -43,7 +43,7 @@ public class BatchArchetypeLoader extends AbstractAsynchronousBatchProcessor<Arc
     /**
      * Tracks the archetype changes.
      */
-    private List<Change> changes = new ArrayList<Change>();
+    private List<ArchetypeChange> changes = new ArrayList<ArchetypeChange>();
 
 
     /**
@@ -60,7 +60,7 @@ public class BatchArchetypeLoader extends AbstractAsynchronousBatchProcessor<Arc
      *
      * @return the archetypes the have changed
      */
-    public List<Change> getChanges() {
+    public List<ArchetypeChange> getChanges() {
         return changes;
     }
 
@@ -106,7 +106,7 @@ public class BatchArchetypeLoader extends AbstractAsynchronousBatchProcessor<Arc
      */
     private void save(ArchetypeDescriptor descriptor, ArchetypeDescriptor existing, IArchetypeService service) {
         service.save(descriptor);
-        changes.add(new Change(existing, descriptor));
+        changes.add(new ArchetypeChange(existing, descriptor));
     }
 
     /**
@@ -150,7 +150,7 @@ public class BatchArchetypeLoader extends AbstractAsynchronousBatchProcessor<Arc
      */
     private void replace(ArchetypeDescriptor descriptor, ArchetypeDescriptor existing) {
         SaveHelper.replace(existing, descriptor);
-        changes.add(new Change(existing, descriptor));
+        changes.add(new ArchetypeChange(existing, descriptor));
     }
 
     /**

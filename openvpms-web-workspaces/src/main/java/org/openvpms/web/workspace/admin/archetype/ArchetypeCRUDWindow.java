@@ -29,7 +29,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.tools.archetype.loader.Change;
+import org.openvpms.tools.archetype.comparator.ArchetypeChange;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.AbstractUploadListener;
@@ -161,16 +161,14 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
         try {
             ArchetypeDescriptors descriptors = new ArchetypeDescriptors();
             descriptors.setArchetypeDescriptorsAsArray(
-                new ArchetypeDescriptor[]{descriptor});
+                    new ArchetypeDescriptor[]{descriptor});
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             ArchetypeDescriptors.write(descriptors, stream);
             String name = descriptor.getShortName() + ".adl";
             DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
             DocumentHandler handler = handlers.get(name, MIME_TYPE);
             byte[] buffer = stream.toByteArray();
-            Document document = handler.create(
-                name, new ByteArrayInputStream(buffer), MIME_TYPE,
-                buffer.length);
+            Document document = handler.create(name, new ByteArrayInputStream(buffer), MIME_TYPE, buffer.length);
             DownloadServlet.startDownload(document);
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
@@ -204,7 +202,7 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
      */
     private void loadArchetypes(InputStream stream) {
         ArchetypeDescriptors descriptors
-            = ArchetypeDescriptors.read(stream);
+                = ArchetypeDescriptors.read(stream);
 
         final BatchArchetypeLoader loader = new BatchArchetypeLoader(descriptors);
         loader.setListener(new BatchProcessorListener() {
@@ -240,11 +238,11 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
      *
      * @param changes the changes
      */
-    private void uploaded(List<Change> changes) {
+    private void uploaded(List<ArchetypeChange> changes) {
         if (!changes.isEmpty()) {
             super.onSaved(changes.get(0).getNewVersion(), true);
-            List<Change> update = new ArrayList<Change>();
-            for (Change change : changes) {
+            List<ArchetypeChange> update = new ArrayList<ArchetypeChange>();
+            for (ArchetypeChange change : changes) {
                 if (change.hasChangedDerivedNodes() || change.hasAddedAssertions(BatchArchetypeUpdater.ASSERTIONS)) {
                     update.add(change);
                 }
