@@ -220,7 +220,7 @@ public class ArchDiff {
     }
 
     private static DescriptorLoader getDescriptorLoader(String source, IArchetypeService service, boolean recurse) {
-        if ("db".equals(source) || "database".equals(source)) {
+        if ("db".equals(source)) {
             return new ArchetypeServiceLoader(service);
         } else {
             return new FileSystemLoader(source, recurse);
@@ -309,12 +309,16 @@ public class ArchDiff {
         System.err.println("1. Compare a directory with archetypes in the database");
         System.err.println("> archdiff -v ../archetypes");
         System.err.println(" The above is short-hand for: ");
-        System.err.println("> archdiff -v ../archetypes database");
-        System.err.println("  OR");
         System.err.println("> archdiff -v ../archetypes db");
         System.err.println();
         System.err.println("2. Compare a file with a prior version in the database");
         System.err.println("> archdiff -v db ../archetypes/contact.location.adl");
+        System.err.println();
+        System.err.println("3. Compare two directories containing archetypes");
+        System.err.println("> archdiff 1.5/archetypes 1.6/archetypes");
+        System.err.println();
+        System.err.println("4. List archetypes in the database");
+        System.err.println("> archdiff -l db");
 
         System.exit(1);
     }
