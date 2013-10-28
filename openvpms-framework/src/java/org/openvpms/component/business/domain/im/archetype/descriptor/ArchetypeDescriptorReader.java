@@ -56,7 +56,19 @@ public class ArchetypeDescriptorReader {
      * @throws DescriptorException if the descriptors cannot be read
      */
     public ArchetypeDescriptors read(InputStream stream) {
-        return (ArchetypeDescriptors) DescriptorIOHelper.read(stream, mapping);
+        return read(stream, ArchetypeDescriptors.class);
+    }
+
+    /**
+     * Reads a descriptor from a stream.
+     *
+     * @param stream the stream to read from
+     * @param type   the    descriptor type
+     * @return the read descriptor
+     * @throws DescriptorException if the descriptor cannot be read
+     */
+    public <T> T read(InputStream stream, Class<T> type) {
+        return type.cast(DescriptorIOHelper.read(stream, mapping));
     }
 
 }
