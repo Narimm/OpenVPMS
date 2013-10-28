@@ -22,7 +22,6 @@ import org.openvpms.macro.Variables;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -58,11 +57,6 @@ class MacroContext {
      * The user variables. May be {@code null}.
      */
     private final Variables variables;
-
-    /**
-     * The macro runners.
-     */
-    private Map<Class, MacroRunner> runners = new HashMap<Class, MacroRunner>();
 
     /**
      * Tracks currently running macros to avoid recursion.
@@ -105,19 +99,12 @@ class MacroContext {
 
     /**
      * Returns a runner to run the specified macro.
-     * <p/>
-     * Runners are created on demand, and cached for subsequent requests.
      *
      * @param macro the macro
      * @return a runner for the macro
      */
     public MacroRunner getRunner(Macro macro) {
-        MacroRunner runner = runners.get(macro.getClass());
-        if (runner == null) {
-            runner = factory.create(macro, this);
-            runners.put(macro.getClass(), runner);
-        }
-        return runner;
+        return factory.create(macro, this);
     }
 
     /**
@@ -143,7 +130,7 @@ class MacroContext {
         String code = macro.getCode();
         if (running.contains(code)) {
             throw new MacroException(
-                "Macro " + code + " called recursively from " + StringUtils.join(running.descendingIterator(), " => "));
+                    "Macro " + code + " called recursively from " + StringUtils.join(running.descendingIterator(), " => "));
         }
         running.push(code);
         try {
