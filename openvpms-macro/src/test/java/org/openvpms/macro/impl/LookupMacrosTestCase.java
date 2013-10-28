@@ -296,6 +296,21 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that a macro can call another macro if it is prefixed with a '$', and that the $number variable
+     * can be used.
+     */
+    @Test
+    public void testMacroCallingMacro() {
+        MacroTestHelper.createMacro("testDispensingVerb", "'Give'");
+        MacroTestHelper.createMacro("testDispensingUnits", "'tablet'");
+        MacroTestHelper.createMacro(
+                "@testTwiceADay",
+                "concat($testDispensingVerb, ' ', $number, ' ', $testDispensingUnits, '(s) Twice a Day')");
+        String text2 = macros.run("3@testTwiceADay", new Object());
+        assertEquals(text2, "Give 3 tablet(s) Twice a Day");
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
