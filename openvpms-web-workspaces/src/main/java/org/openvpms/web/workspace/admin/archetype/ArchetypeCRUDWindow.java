@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.archetype;
@@ -24,6 +24,7 @@ import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptorWriter;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
@@ -160,10 +161,9 @@ public class ArchetypeCRUDWindow extends ResultSetCRUDWindow<ArchetypeDescriptor
         ArchetypeDescriptor descriptor = getObject();
         try {
             ArchetypeDescriptors descriptors = new ArchetypeDescriptors();
-            descriptors.setArchetypeDescriptorsAsArray(
-                    new ArchetypeDescriptor[]{descriptor});
+            descriptors.setArchetypeDescriptorsAsArray(new ArchetypeDescriptor[]{descriptor});
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            ArchetypeDescriptors.write(descriptors, stream);
+            new ArchetypeDescriptorWriter(false, true).write(descriptors, stream);
             String name = descriptor.getShortName() + ".adl";
             DocumentHandlers handlers = ServiceHelper.getDocumentHandlers();
             DocumentHandler handler = handlers.get(name, MIME_TYPE);
