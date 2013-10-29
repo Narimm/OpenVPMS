@@ -118,28 +118,21 @@
             org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor
         </description>
         <map-to xml="node"/>
-        <field name="maxCardinality" type="string" required="false"
-               direct="false" transient="false"
-               get-method="getMaxCardinalityAsString" set-method="setMaxCardinalityAsString">
-            <bind-xml name="maxCardinality" node="attribute" reference="false"/>
-        </field>
-        <field name="readOnly" type="boolean" required="false"
-               direct="false" transient="false"
-               get-method="isReadOnly" set-method="setReadOnly">
-            <bind-xml name="readOnly" node="attribute" reference="false"/>
-        </field>
-        <field name="minCardinality" type="integer" required="false"
-               direct="false" transient="false"
-               get-method="getMinCardinality" set-method="setMinCardinality">
-            <bind-xml name="minCardinality" node="attribute" reference="false"/>
-        </field>
         <field name="name" type="string" required="true" direct="false"
                transient="false" get-method="getName" set-method="setName">
             <bind-xml name="name" node="attribute" reference="false"/>
         </field>
+        <field name="displayName" type="string" required="false"
+               direct="false" transient="false" get-method="getDisplayName" set-method="setDisplayName">
+            <bind-xml name="displayName" node="attribute" reference="false"/>
+        </field>
         <field name="type" type="string" required="true" direct="false"
                transient="false" get-method="getType" set-method="setType">
             <bind-xml name="type" node="attribute" reference="false"/>
+        </field>
+        <field name="baseName" type="string" required="false" direct="false"
+               transient="false" get-method="getBaseName" set-method="setBaseName">
+            <bind-xml name="baseName" node="attribute" reference="false"/>
         </field>
         <field name="path" type="string" required="true" direct="false"
                transient="false" get-method="getPath" set-method="setPath">
@@ -149,32 +142,37 @@
                transient="false" get-method="isParentChild" set-method="setParentChild">
             <bind-xml name="parentChild" node="attribute" reference="false"/>
         </field>
-        <field name="baseName" type="string" required="false" direct="false"
-               transient="false" get-method="getBaseName" set-method="setBaseName">
-            <bind-xml name="baseName" node="attribute" reference="false"/>
+        <field name="minLength" type="integer" required="false"
+               direct="false" transient="false" get-method="getMinLength" set-method="setMinLength">
+            <bind-xml name="minLength" node="attribute" reference="false"/>
         </field>
-        <field name="assertionDescriptors"
-               type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor"
-               required="false" direct="false" transient="false"
-               get-method="getAssertionDescriptorsAsArray"
-               set-method="setAssertionDescriptorsAsArray" collection="array">
-            <bind-xml name="assertion" node="element" reference="false"/>
+        <field name="maxLength" type="integer" required="false"
+               direct="false" transient="false" get-method="getMaxLength" set-method="setMaxLength">
+            <bind-xml name="maxLength" node="attribute" reference="false"/>
+        </field>
+        <field name="minCardinality" type="integer" required="false"
+               direct="false" transient="false"
+               get-method="getMinCardinality" set-method="setMinCardinality">
+            <bind-xml name="minCardinality" node="attribute" reference="false"/>
+        </field>
+        <field name="maxCardinality" type="string" required="false"
+               direct="false" transient="false"
+               get-method="getMaxCardinalityAsString" set-method="setMaxCardinalityAsString">
+            <bind-xml name="maxCardinality" node="attribute" reference="false"/>
+        </field>
+        <field name="filter" type="string" required="false"
+               direct="false" transient="false" get-method="getFilter" set-method="setFilter">
+            <bind-xml name="filter" node="attribute" reference="false"/>
         </field>
         <field name="defaultValue" type="string" required="false"
                direct="false" transient="false"
                get-method="getDefaultValue" set-method="setDefaultValue">
             <bind-xml name="defaultValue" node="attribute" reference="false"/>
         </field>
-        <field name="nodeDescriptors"
-               type="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor"
-               required="false" direct="false" transient="false"
-               get-method="getNodeDescriptorsAsArray"
-               set-method="setNodeDescriptorsAsArray" collection="array">
-            <bind-xml name="node" node="element" reference="false"/>
-        </field>
-        <field name="maxLength" type="integer" required="false"
-               direct="false" transient="false" get-method="getMaxLength" set-method="setMaxLength">
-            <bind-xml name="maxLength" node="attribute" reference="false"/>
+        <field name="readOnly" type="boolean" required="false"
+               direct="false" transient="false"
+               get-method="isReadOnly" set-method="setReadOnly">
+            <bind-xml name="readOnly" node="attribute" reference="false"/>
         </field>
         <field name="hidden" type="boolean" required="false"
                direct="false" transient="false" get-method="isHidden" set-method="setHidden">
@@ -188,17 +186,19 @@
                transient="false" get-method="getDerivedValue" set-method="setDerivedValue">
             <bind-xml name="derivedValue" node="attribute" reference="false"/>
         </field>
-        <field name="minLength" type="integer" required="false"
-               direct="false" transient="false" get-method="getMinLength" set-method="setMinLength">
-            <bind-xml name="minLength" node="attribute" reference="false"/>
+        <field name="assertionDescriptors"
+               type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor"
+               required="false" direct="false" transient="false"
+               get-method="getAssertionDescriptorsAsArray"
+               set-method="setAssertionDescriptorsAsArray" collection="array">
+            <bind-xml name="assertion" node="element" reference="false"/>
         </field>
-        <field name="displayName" type="string" required="false"
-               direct="false" transient="false" get-method="getDisplayName" set-method="setDisplayName">
-            <bind-xml name="displayName" node="attribute" reference="false"/>
-        </field>
-        <field name="filter" type="string" required="false"
-               direct="false" transient="false" get-method="getFilter" set-method="setFilter">
-            <bind-xml name="filter" node="attribute" reference="false"/>
+        <field name="nodeDescriptors"
+               type="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor"
+               required="false" direct="false" transient="false"
+               get-method="getNodeDescriptorsAsArray"
+               set-method="setNodeDescriptorsAsArray" collection="array">
+            <bind-xml name="node" node="element" reference="false"/>
         </field>
     </class>
     <class

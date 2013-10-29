@@ -9,14 +9,21 @@ public class NodeFieldChange extends DescriptorChange<Object> {
 
     public enum Field {
         DISPLAY_NAME("displayName"),
-        PATH("path"),
+        TYPE("type"),
         BASE_NAME("baseName"),
-        DEFAULT_VALUE("defaultValue"),
-        DERIVED_VALUE("derivedValue"),
+        PATH("path"),
+        PARENT_CHILD("parentChild"),
+        MIN_LENGTH("minLength"),
+        MAX_LENGTH("maxLength"),
         MIN_CARDINALITY("minCardinality"),
         MAX_CARDINALITY("maxCardinality"),
-        ASSERTION("assertion"),
-        FILTER("filter");
+        FILTER("filter"),
+        DEFAULT_VALUE("defaultValue"),
+        READ_ONLY("readOnly"),
+        HIDDEN("hidden"),
+        DERIVED("derived"),
+        DERIVED_VALUE("derivedValue"),
+        ASSERTION("assertion");
 
         @Override
         public String toString() {
