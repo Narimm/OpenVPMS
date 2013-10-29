@@ -36,17 +36,15 @@ import java.math.BigDecimal;
 
 
 /**
- * An editor for {@link Act}s which have an archetype of
- * <em>act.supplierOrderItem</em>.
+ * An editor for {@link Act}s which have an archetype of <em>act.supplierOrderItem</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
 public class OrderItemEditor extends SupplierStockItemEditor {
 
     /**
-     * Determines if the act was POSTED or ACCEPTED at construction. If so, only a limited
-     * set of properties may be edited.
+     * Determines if the act was POSTED or ACCEPTED at construction. If so, only a limited set of properties may be
+     * edited.
      */
     private final boolean postedOrAccepted;
 
@@ -67,7 +65,7 @@ public class OrderItemEditor extends SupplierStockItemEditor {
 
 
     /**
-     * Constructs an <tt>OrderItemEditor</tt>.
+     * Constructs an {@link OrderItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act
@@ -128,7 +126,7 @@ public class OrderItemEditor extends SupplierStockItemEditor {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     protected boolean doValidation(Validator validator) {
@@ -162,7 +160,7 @@ public class OrderItemEditor extends SupplierStockItemEditor {
              * @param property the property
              * @param parent   the parent object
              * @param context  the layout context
-             * @return a component to display <tt>property</tt>
+             * @return a component to display {@code property}
              */
             @Override
             protected ComponentState createComponent(Property property,

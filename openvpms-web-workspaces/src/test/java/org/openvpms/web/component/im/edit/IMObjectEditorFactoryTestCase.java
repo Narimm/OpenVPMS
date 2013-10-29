@@ -190,8 +190,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     /**
      * Verifies that a {@link CustomerChargeActEditor} is returned for
      * <em>act.customerAccountChargesInvoice, act.customerAccountChargesCredit,
-     * act.customerAccountChargesCounter, act.supplierAccountChargesInvoice, and
-     * act.supplierAccountChargesCredit</em>
+     * act.customerAccountChargesCounter</em>
      */
     @Test
     public void testCreateChargeEditor() {
@@ -322,7 +321,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateOrderItemEditor() {
-        checkCreate("act.supplierOrderItem", OrderItemEditor.class);
+        checkCreate("act.supplierOrderItem", "act.supplierOrder", OrderItemEditor.class);
     }
 
     /**
@@ -341,8 +340,8 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateDeliveryItemEditor() {
-        checkCreate("act.supplierDeliveryItem", DeliveryItemEditor.class);
-        checkCreate("act.supplierReturnItem", DeliveryItemEditor.class);
+        checkCreate("act.supplierDeliveryItem", "act.supplierDelivery", DeliveryItemEditor.class);
+        checkCreate("act.supplierReturnItem", "act.supplierReturn", DeliveryItemEditor.class);
     }
 
     /**
@@ -351,9 +350,9 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateSupplierInvoiceItemEditor() {
-        checkCreate("act.supplierAccountInvoiceItem",
+        checkCreate("act.supplierAccountInvoiceItem", "act.supplierAccountChargesInvoice",
                     SupplierChargeActItemEditor.class);
-        checkCreate("act.supplierAccountCreditItem",
+        checkCreate("act.supplierAccountCreditItem", "act.supplierAccountChargesCredit",
                     SupplierChargeActItemEditor.class);
     }
 
