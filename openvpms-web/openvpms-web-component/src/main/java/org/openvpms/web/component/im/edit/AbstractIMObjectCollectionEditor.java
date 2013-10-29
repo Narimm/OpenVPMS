@@ -138,7 +138,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      */
     public void dispose() {
         collection.removeModifiableListener(broadcaster);
-        for (Editor editor : getCurrentEditors()) {
+        for (Editor editor : getEditors()) {
             editor.removeModifiableListener(broadcaster);
             editor.dispose();
         }
@@ -393,7 +393,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      *
      * @return all current editors
      */
-    public Collection<IMObjectEditor> getCurrentEditors() {
+    public Collection<IMObjectEditor> getEditors() {
         Set<IMObjectEditor> editors = new HashSet<IMObjectEditor>();
         editors.addAll(getCollectionPropertyEditor().getEditors());
         if (getCurrentEditor() != null) {

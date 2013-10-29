@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -83,17 +82,14 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * Invoked when a product-supplier relationship changes. This recalculates product prices if required.
      */
     private void onSupplierChanged() {
-        AbstractIMObjectCollectionEditor suppliers =
-                (AbstractIMObjectCollectionEditor) getEditor("suppliers");
-        AbstractIMObjectCollectionEditor prices =
-                (AbstractIMObjectCollectionEditor) getEditor("prices");
-        Collection<IMObjectEditor> currentPrices = prices.getCurrentEditors();
-        Collection<IMObjectEditor> editors = suppliers.getCurrentEditors();
+        IMObjectCollectionEditor suppliers = (IMObjectCollectionEditor) getEditor("suppliers");
+        IMObjectCollectionEditor prices = (IMObjectCollectionEditor) getEditor("prices");
+        Collection<IMObjectEditor> currentPrices = prices.getEditors();
+        Collection<IMObjectEditor> editors = suppliers.getEditors();
         for (IMObjectEditor editor : editors) {
             EntityRelationship rel = (EntityRelationship) editor.getObject();
             ProductSupplier ps = new ProductSupplier(rel);
-            List<ProductPrice> updated
-                    = updater.update((Product) getObject(), ps, false);
+            List<ProductPrice> updated = updater.update((Product) getObject(), ps, false);
             for (ProductPrice price : updated) {
                 updatePriceEditor(price, currentPrices);
             }
