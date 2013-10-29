@@ -32,13 +32,20 @@ public class NodeComparator extends AbstractComparator {
     public NodeChange compare(NodeDescriptor oldVersion, NodeDescriptor newVersion) {
         List<NodeFieldChange> changes = new ArrayList<NodeFieldChange>();
         compare(Field.DISPLAY_NAME, oldVersion.getDisplayName(), newVersion.getDisplayName(), changes);
-        compare(Field.PATH, oldVersion.getPath(), newVersion.getPath(), changes);
+        compare(Field.TYPE, oldVersion.getType(), newVersion.getType(), changes);
         compare(Field.BASE_NAME, oldVersion.getBaseName(), newVersion.getBaseName(), changes);
-        compare(Field.DEFAULT_VALUE, oldVersion.getDefaultValue(), newVersion.getDefaultValue(), changes);
-        compare(Field.DERIVED_VALUE, oldVersion.getDerivedValue(), newVersion.getDerivedValue(), changes);
+        compare(Field.PATH, oldVersion.getPath(), newVersion.getPath(), changes);
+        compare(Field.PARENT_CHILD, oldVersion.isParentChild(), newVersion.isParentChild(), changes);
+        compare(Field.MIN_LENGTH, oldVersion.getMinLength(), newVersion.getMinLength(), changes);
+        compare(Field.MAX_LENGTH, oldVersion.getMaxLength(), newVersion.getMaxLength(), changes);
         compare(Field.MIN_CARDINALITY, oldVersion.getMinCardinality(), newVersion.getMinCardinality(), changes);
         compare(Field.MAX_CARDINALITY, oldVersion.getMaxCardinality(), newVersion.getMaxCardinality(), changes);
         compare(Field.FILTER, oldVersion.getFilter(), newVersion.getFilter(), changes);
+        compare(Field.DEFAULT_VALUE, oldVersion.getDefaultValue(), newVersion.getDefaultValue(), changes);
+        compare(Field.READ_ONLY, oldVersion.isReadOnly(), newVersion.isReadOnly(), changes);
+        compare(Field.HIDDEN, oldVersion.isHidden(), newVersion.isHidden(), changes);
+        compare(Field.DERIVED, oldVersion.isDerived(), newVersion.isDerived(), changes);
+        compare(Field.DERIVED_VALUE, oldVersion.getDerivedValue(), newVersion.getDerivedValue(), changes);
         compareAssertions(oldVersion, newVersion, changes);
 
         return (changes.isEmpty()) ? null : new NodeChange(oldVersion, newVersion, changes);
