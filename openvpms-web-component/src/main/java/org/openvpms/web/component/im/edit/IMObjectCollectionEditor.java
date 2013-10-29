@@ -22,12 +22,13 @@ import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
 
+import java.util.Collection;
+
 
 /**
  * Editor for a collection of {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public interface IMObjectCollectionEditor extends PropertyEditor, Saveable {
 
@@ -96,5 +97,17 @@ public interface IMObjectCollectionEditor extends PropertyEditor, Saveable {
      * Refreshes the collection display.
      */
     void refresh();
+
+    /**
+     * Returns editors for items in the collection.
+     * <p/>
+     * These include any editors that have been created for objects in the
+     * collection, and the current editor, which may be for an uncommitted object.
+     * <p/>
+     * If an object hasn't been edited, it may not have a corresponding editor.
+     *
+     * @return editors for items in the collection and editors for items not yet committed to the collection
+     */
+    Collection<IMObjectEditor> getEditors();
 
 }

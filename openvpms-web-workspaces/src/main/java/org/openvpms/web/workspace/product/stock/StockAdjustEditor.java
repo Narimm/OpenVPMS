@@ -66,7 +66,7 @@ public class StockAdjustEditor extends ActEditor {
      * @param location the new stock location. May be <tt>null</tt>
      */
     private void stockLocationChanged(Party location) {
-        for (IMObjectEditor itemEditor : getItems().getCurrentEditors()) {
+        for (IMObjectEditor itemEditor : getItems().getEditors()) {
             StockAdjustItemEditor editor
                     = (StockAdjustItemEditor) itemEditor;
             editor.setStockLocation(location);

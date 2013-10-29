@@ -26,6 +26,8 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.focus.FocusGroup;
 
+import java.util.Collection;
+
 
 /**
  * An {@link IMObjectCollectionEditor} that delegates to another.
@@ -312,6 +314,19 @@ public abstract class DelegatingCollectionEditor
      */
     public AbstractIMObjectCollectionEditor getEditor() {
         return editor;
+    }
+
+    /**
+     * Returns editors for items in the collection.
+     * <p/>
+     * These include any editors that have been created for objects in the
+     * collection, and the current editor, which may be for an uncommitted object.
+     *
+     * @return all current editors
+     */
+    @Override
+    public Collection<IMObjectEditor> getEditors() {
+        return editor.getEditors();
     }
 
     /**

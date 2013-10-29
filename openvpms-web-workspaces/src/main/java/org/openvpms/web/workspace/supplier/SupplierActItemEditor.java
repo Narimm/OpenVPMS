@@ -54,7 +54,7 @@ public abstract class SupplierActItemEditor extends ActItemEditor {
     public SupplierActItemEditor(FinancialAct act, Act parent, LayoutContext context) {
         super(act, parent, context);
 
-        if (!ActStatusHelper.isPosted(parent, ServiceHelper.getArchetypeService())) {
+        if (parent != null && !ActStatusHelper.isPosted(parent, ServiceHelper.getArchetypeService())) {
             calculateTax();
         }
 
