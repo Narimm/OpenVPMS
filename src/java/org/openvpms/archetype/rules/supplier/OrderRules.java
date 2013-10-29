@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -96,18 +97,30 @@ public class OrderRules {
     /**
      * Copies an order.
      * <p/>
-     * The copied order will have an <em>IN_PROGRESS</em> status.
+     * The copied order will have an <em>IN_PROGRESS</em> status and <em>PENDING</em> delivery status.
+     * <p/>
      * The copy is saved.
      *
      * @param order the order to copy
+     * @param title a title to assign to the copy. May be {@code null}
      * @return the copy of the order
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public FinancialAct copyOrder(FinancialAct order) {
-        List<IMObject> objects = copy(order, ORDER,
-                                      new DefaultActCopyHandler(), new Date(),
-                                      true);
-        return (FinancialAct) objects.get(0);
+    public FinancialAct copyOrder(FinancialAct order, String title) {
+        List<IMObject> objects = copy(order, ORDER, new DefaultActCopyHandler(), new Date(), false);
+        FinancialAct copy = (FinancialAct) objects.get(0);
+        IMObjectBean bean = new IMObjectBean(copy, service);
+        bean.setValue("deliveryStatus", DeliveryStatus.PENDING);
+        copy.setTitle(title);
+        for (IMObject object : objects) {
+            if (TypeHelper.isA(object, SupplierArchetypes.ORDER_ITEM)) {
+                IMObjectBean itemBean = new IMObjectBean(object, service);
+                itemBean.setValue("receivedQuantity", BigDecimal.ZERO);
+                itemBean.setValue("cancelledQuantity", BigDecimal.ZERO);
+            }
+        }
+        service.save(objects);
+        return copy;
     }
 
     /**

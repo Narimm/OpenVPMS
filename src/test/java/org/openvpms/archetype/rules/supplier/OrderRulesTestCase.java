@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -25,6 +23,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
@@ -40,8 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link OrderRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OrderRulesTestCase extends AbstractSupplierTest {
 
@@ -70,20 +68,24 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
     }
 
     /**
-     * Tests the {@link OrderRules#copyOrder(FinancialAct)} method.
+     * Tests the {@link OrderRules#copyOrder(FinancialAct, String)} method.
      */
     @Test
     public void testCopyOrder() {
         BigDecimal quantity = new BigDecimal(50);
         int packageSize = 10;
         BigDecimal unitPrice = BigDecimal.ONE;
-        FinancialAct orderItem = createOrderItem(quantity, packageSize,
-                                                 unitPrice);
+        FinancialAct orderItem = createOrderItem(quantity, packageSize, unitPrice);
+        IMObjectBean itemBean = new IMObjectBean(orderItem);
+        itemBean.setValue("receivedQuantity", 25);
+        itemBean.setValue("cancelledQuantity", 10);
         FinancialAct order = createOrder(orderItem);
-        order.setStatus(ActStatus.POSTED);
-        save(order);
+        IMObjectBean orderBean = new IMObjectBean(order);
+        orderBean.setValue("status", ActStatus.POSTED);
+        orderBean.setValue("deliveryStatus", DeliveryStatus.PART.toString());
+        orderBean.save();
 
-        FinancialAct copy = rules.copyOrder(order);
+        FinancialAct copy = rules.copyOrder(order, "Copy");
         assertTrue(TypeHelper.isA(copy, SupplierArchetypes.ORDER));
         assertEquals(ActStatus.IN_PROGRESS, copy.getStatus());
         assertFalse(copy.equals(order));
@@ -96,6 +98,12 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
         assertTrue(TypeHelper.isA(copyItem, SupplierArchetypes.ORDER_ITEM));
         assertFalse(copyItem.equals(orderItem));
         checkEquals(quantity, copyItem.getQuantity());
+        IMObjectBean copyBean = new IMObjectBean(copyItem);
+        assertEquals(0, copyBean.getInt("receivedQuantity"));
+        assertEquals(0, copyBean.getInt("cancelledQuantity"));
+
+        assertEquals(DeliveryStatus.PENDING.toString(), bean.getString("deliveryStatus"));
+        assertEquals("Copy", copy.getTitle());
     }
 
     /**
