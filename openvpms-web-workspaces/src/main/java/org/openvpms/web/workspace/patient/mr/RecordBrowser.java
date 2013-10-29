@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -259,6 +260,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         String[] shortNames = {ReminderArchetypes.REMINDER, PatientArchetypes.ALERT};
         DefaultActQuery<Act> query = new DefaultActQuery<Act>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
                                                               REMINDER_STATUSES);
+        query.setStatus(ActStatus.IN_PROGRESS);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         IMObjectTableModel<Act> model = new ReminderActTableModel(query.getShortNames(), layout);
         return new DefaultIMObjectTableBrowser<Act>(query, model, layout);
