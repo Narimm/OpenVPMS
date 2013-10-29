@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.supplier.order;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
@@ -159,9 +160,11 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         try {
             OrderRules rules = SupplierHelper.createOrderRules(getContext().getPractice());
             FinancialAct object = getObject();
-            FinancialAct copy = rules.copyOrder(object);
-            String notes = Messages.format("supplier.order.copy.notes", object.getTitle());
-            copy.setTitle(notes);
+            String title = null;
+            if (!StringUtils.isEmpty(object.getTitle())) {
+                title = Messages.format("supplier.order.copy.notes", object.getTitle());
+            }
+            FinancialAct copy = rules.copyOrder(object, title);
             edit(copy, null);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("supplier.order.copy.failed");

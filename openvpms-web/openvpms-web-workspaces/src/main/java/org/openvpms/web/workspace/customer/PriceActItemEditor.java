@@ -146,7 +146,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected void updateDiscount() {
         try {
-            BigDecimal amount = calculateDiscpount();
+            BigDecimal amount = calculateDiscount();
             // If discount amount calculates to zero don't update any
             // existing value as may have been manually modified.
             if (amount.compareTo(BigDecimal.ZERO) != 0) {
@@ -161,10 +161,9 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     /**
      * Calculates the discount.
      *
-     * @return the discount, or {@code BigDecimal.ZERO} if the discount can't
-     *         be calculated
+     * @return the discount, or {@code BigDecimal.ZERO} if the discount can't be calculated
      */
-    protected BigDecimal calculateDiscpount() {
+    protected BigDecimal calculateDiscount() {
         BigDecimal amount = BigDecimal.ZERO;
         Party customer = getCustomer();
         Party patient = getPatient();

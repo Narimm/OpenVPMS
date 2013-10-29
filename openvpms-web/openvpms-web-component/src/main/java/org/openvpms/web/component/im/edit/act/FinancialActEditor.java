@@ -21,6 +21,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActCalculator;
+import org.openvpms.archetype.rules.act.ActStatusHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -55,7 +56,7 @@ public class FinancialActEditor extends ActEditor {
     private static final Log log = LogFactory.getLog(FinancialActEditor.class);
 
     /**
-     * Constructs a {@code FinancialActEditor}.
+     * Constructs a {@link FinancialActEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -63,7 +64,13 @@ public class FinancialActEditor extends ActEditor {
      */
     protected FinancialActEditor(FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
-        recalculateTax();
+        if (!isSavedPosted(act)) {
+            // If the act hasn't been POSTED, calculate the tax and amount as the tax rate may have changed.
+            // For tax-ex acts, this will affect the act total.
+            // If the act has been POSTED, amounts shouldn't change. If they do, it will be picked up at validation.
+            recalculateTax();
+            calculateAmount();
+        }
     }
 
     /**
@@ -84,7 +91,7 @@ public class FinancialActEditor extends ActEditor {
      * This extends validation by ensuring that the total matches that of the sum of the item totals.
      *
      * @param validator the validator
-     * @return {@code true} if the object and its descendents are valid otherwise {@code false}
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     public boolean validate(Validator validator) {
@@ -144,10 +151,17 @@ public class FinancialActEditor extends ActEditor {
      */
     @Override
     protected void onItemsChanged() {
+        calculateAmount();
+        calculateTax();
+    }
+
+    /**
+     * Calculates the act amount from the child act totals.
+     */
+    private void calculateAmount() {
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum((Act) getObject(), getItems().getCurrentActs(), "total");
         amount.setValue(value);
-        calculateTax();
     }
 
     /**
@@ -169,6 +183,16 @@ public class FinancialActEditor extends ActEditor {
                 taxAmount.setValue(tax);
             }
         }
+    }
+
+    /**
+     * Determines if an act has been saved with {@code POSTED} status.
+     *
+     * @param act the act to check
+     * @return {@code true} if the act has been saved with {@code POSTED} status.
+     */
+    private boolean isSavedPosted(FinancialAct act) {
+        return ActStatusHelper.isPosted(act, ServiceHelper.getArchetypeService());
     }
 
     /**
