@@ -67,8 +67,10 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
     * the Apache Tomcat library directory: <TOMCAT_HOME>/lib
     * the OpenVPMS library directory:  <OPENVPMS_HOME>/lib
 
-  In the above, <TOMCAT_HOME> refers to the directory where Apache Tomcat is installed.
-  On Windows, this will be something like: C:\Program Files\Apache Software Foundation\Tomcat 6.0
+  In the above, <TOMCAT_HOME> refers to the directory where Apache Tomcat is
+  installed.
+  On Windows, this will be something like:
+    C:\Program Files\Apache Software Foundation\Tomcat 6.0
 
 1.4 Database setup
 
@@ -77,7 +79,7 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
   > mysql -u admin -p < createdb.sql
   > mysql -u admin -p openvpms < db.sql
 
-  NOTE: replace 'admin' with a user that has administrator priviledges in MySQL
+  NOTE: replace 'admin' with a user that has administrator privileges in MySQL.
 
   Next, run the 'dataload' script. This provides two options, 'base' and
   'setup'. The former loads a base database setup in preparation for data
@@ -96,7 +98,20 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
      directory.
   2. Start Apache Tomcat if it is not running
 
-1.6 Testing the installation
+1.6 OpenOffice installation
+
+  OpenVPMS uses OpenOffice to perform reporting, printing and conversion.
+  Install it as per your platform's requirements and then:
+
+  1. Add it to the PATH of the user that runs Apache Tomcat.
+     Windows users can find instructions for this at:
+        http://www.openvpms.org/documentation/installing-openvpms-windows-7-computer#openvpms_win7_10
+  2. Verify it can be run as that user.
+     From a command prompt, enter:
+        soffice
+     This should start OpenOffice.
+
+1.7 Testing the installation
 
   To test the installation, open up your Internet Browser and enter the 
   address:
@@ -116,8 +131,9 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
      E.g. on Windows:
         c:\OpenVPMS\openvpms-release-1.7
 
- NOTE: the OpenVPMS version can be excluded from the path name. This can simplify upgrades by removing the need
-       to change custom scripts that contain the installation path.
+ NOTE: the OpenVPMS version can be excluded from the path name. This can
+ simplify upgrades by removing the need to change custom scripts that contain
+ the installation path.
 
  The previous installation should be retained until:
  . settings have been migrated to the new installation
@@ -181,8 +197,8 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
   <TOMCAT_HOME>/webapps/openvpms/WEB-INF/classes/style will need to be edited
   to incorporate your changes.
   
-  Now restart Apache Tomcat so the above customisations get picked up and login and see
-  that things are as they should be.
+  Now restart Apache Tomcat so the above customisations get picked up and
+  login and see that things are as they should be.
   
 2.7 Kettle
   If you use Pentaho Data Integration (see 4 below) then you need perform its
@@ -190,7 +206,8 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
 
 2.8 Upgrading from older releases of OpenVPMS
 
-  Upgrading from OpenVPMS 1.4 or earlier requires data migration scripts to be run.
+  Upgrading from OpenVPMS 1.4 or earlier requires data migration scripts to be
+  run.
   These are located in the <OPENVPMS_HOME>/update/db directory.
   See the following sections to migrate data from a particular release.
   Once complete, continue with step 2.3.
@@ -251,16 +268,23 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
 
  To install the OpenVPMSLoader plugin:
 
- 1. Extract <OPENVPMS_HOME>/import/plugin/OpenVPMSLoader.zip to <PDI_HOME>/plugins/steps/OpenVPMSLoader
+ 1. Extract <OPENVPMS_HOME>/import/plugin/OpenVPMSLoader.zip to
+    <PDI_HOME>/plugins/steps/OpenVPMSLoader
  2. Remove <PDI_HOME>/libext/spring/spring-core.jar
  3. Copy the OpenVPMS jars to libext/spring i.e.
     copy plugins/steps/OpenVPMSLoader/*.jar libext/spring/
     
 5. Browser Compatibility
- OpenVPMS is designed to be used with Firefox, Chrome, or Safari. The Context Sensitive Help
- facility provides help when you press Alt-F1 on almost all screens. By default, the help
- is displayed in a separate browser window. If you want it displayed in a tab rather than a
- new window try the following:
+
+  OpenVPMS is designed to be used with Firefox, Chrome, or Safari. The Context
+  Sensitive Help facility provides help when you press Alt-F1 on most screens.
+  By default, the help is displayed in a separate browser window. If you want
+  it displayed in a tab rather than a new window try the following:
   - Firefox: install the 'Open Link in New Tab' add-on
   - Chrome: install the 'One Window' extension
-  - Safari: select Preferences|Tabs|Open pages in tabs instead of windows: Always
+  - Safari:
+      select Preferences|Tabs|Open pages in tabs instead of windows: Always
+
+  Note that both Context Sensitive Help and Print Previews are treated as
+  pop-ups by browsers and may be blocked.
+  You will need to enable pop-ups for your OpenVPMS site.
