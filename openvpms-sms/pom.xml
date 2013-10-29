@@ -63,7 +63,7 @@
                 <configuration>
                     <dir>src/main/resources/archetypes/org/openvpms/sms</dir>
                     <propertyfile>target/test-classes/hibernate.properties</propertyfile>
-                    <skip>${maven.test.skip}</skip>
+                    <skip>${skipTests}</skip>
                 </configuration>
                 <executions>
                     <execution>
