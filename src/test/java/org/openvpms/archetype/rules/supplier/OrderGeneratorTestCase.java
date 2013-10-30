@@ -151,19 +151,70 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
 
-        addRelationships(product1, stockLocation, supplier, true, 1, 10, 5, new BigDecimal("2.0"));
-        addRelationships(product2, stockLocation, supplier, true, 1, 10, 5, BigDecimal.ONE);
+        addRelationships(product1, stockLocation, supplier, true, 1, 10, 5, new BigDecimal("2.0"), 1);
+        addRelationships(product2, stockLocation, supplier, true, 1, 10, 5, BigDecimal.ONE, 1);
 
         List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
         assertEquals(3, order.size());
         FinancialAct act = order.get(0);
         FinancialAct item1 = order.get(1);
         FinancialAct item2 = order.get(2);
-        checkEquals(act.getTotal(), new BigDecimal("29.70"));
-        checkEquals(act.getTaxAmount(), new BigDecimal("2.70"));
+        checkEquals(new BigDecimal("29.70"), act.getTotal());
+        checkEquals(new BigDecimal("2.70"), act.getTaxAmount());
         assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
         assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
         assertTrue(TypeHelper.isA(item2, SupplierArchetypes.ORDER_ITEM));
+        save(order);
+    }
+
+    /**
+     * Verifies that when the idealQty is less the than the package size, an order for a single package will be
+     * created.
+     */
+    @Test
+    public void testCreateOrderForQuantityLessThanPackageSize() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        addRelationships(product1, stockLocation, supplier, true, 0, 2, 2, new BigDecimal("2.0"), 10);
+
+        List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
+        assertEquals(2, order.size());
+        FinancialAct act = order.get(0);
+        FinancialAct item1 = order.get(1);
+        checkEquals(new BigDecimal("2.20"), act.getTotal());
+        checkEquals(new BigDecimal("0.20"), act.getTaxAmount());
+        checkEquals(BigDecimal.ONE, item1.getQuantity());
+        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
+        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
+        save(order);
+
+    }
+
+    /**
+     * Verifies that when the idealQty is greater the than the package size, the order will round up to the correct
+     * quantity.
+     */
+    @Test
+    public void testCreateOrderForQuantityGreaterThanPackageSize() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier = TestHelper.createSupplier();
+        Product product1 = TestHelper.createProduct();
+
+        addRelationships(product1, stockLocation, supplier, true, 0, 22, 22, new BigDecimal("2.0"), 10);
+
+        List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
+        assertEquals(2, order.size());
+        FinancialAct act = order.get(0);
+        FinancialAct item1 = order.get(1);
+        checkEquals(new BigDecimal("6.60"), act.getTotal());
+        checkEquals(new BigDecimal("0.60"), act.getTaxAmount());
+        checkEquals(BigDecimal.valueOf(3), item1.getQuantity());
+        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
+        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
         save(order);
     }
 
@@ -256,7 +307,8 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      */
     private void addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
                                   int quantity, int idealQty, int criticalQty) {
-        addRelationships(product, stockLocation, supplier, preferred, quantity, idealQty, criticalQty, BigDecimal.ONE);
+        addRelationships(product, stockLocation, supplier, preferred, quantity, idealQty, criticalQty, BigDecimal.ONE,
+                         1);
     }
 
     /**
@@ -272,7 +324,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      * @param unitPrice     the unit price
      */
     private void addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
-                                  int quantity, int idealQty, int criticalQty, BigDecimal unitPrice) {
+                                  int quantity, int idealQty, int criticalQty, BigDecimal unitPrice, int packageSize) {
         EntityBean bean = new EntityBean(product);
 
         IMObjectBean productStockLocation = new IMObjectBean(bean.addNodeRelationship("stockLocations", stockLocation));
@@ -282,7 +334,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
         ProductSupplier ps = new ProductSupplier(bean.addNodeRelationship("suppliers", supplier));
         ps.setPreferred(preferred);
-        ps.setPackageSize(1);
+        ps.setPackageSize(packageSize);
         ps.setNettPrice(unitPrice);
 
         save(product, stockLocation, supplier);
