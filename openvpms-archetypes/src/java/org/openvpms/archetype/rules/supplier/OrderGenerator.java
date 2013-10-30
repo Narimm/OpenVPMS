@@ -35,11 +35,14 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.math.BigDecimal.ZERO;
 
 /**
  * Generates orders.
@@ -104,26 +107,31 @@ class OrderGenerator {
             ObjectSet set = iterator.next();
             Product product = (Product) getObject("product", set);
             if (product != null) {
-                BigDecimal quantity = set.getBigDecimal("quantity", BigDecimal.ZERO);
-                BigDecimal idealQty = set.getBigDecimal("idealQty", BigDecimal.ZERO);
-                BigDecimal criticalQty = set.getBigDecimal("criticalQty", BigDecimal.ZERO);
+                BigDecimal quantity = getDecimal("quantity", set);
+                BigDecimal idealQty = getDecimal("idealQty", set);
+                BigDecimal criticalQty = getDecimal("criticalQty", set);
                 int packageSize = set.getInt("packageSize");
                 String packageUnits = set.getString("packageUnits");
                 String reorderCode = set.getString("reorderCode");
                 String reorderDesc = set.getString("reorderDesc");
-                BigDecimal nettPrice = set.getBigDecimal("nettPrice", BigDecimal.ZERO);
-                BigDecimal listPrice = set.getBigDecimal("listPrice", BigDecimal.ZERO);
-                BigDecimal orderedQty = set.getBigDecimal("orderedQty", BigDecimal.ZERO);
-                BigDecimal receivedQty = set.getBigDecimal("receivedQty", BigDecimal.ZERO);
-                BigDecimal cancelledQty = set.getBigDecimal("cancelledQty", BigDecimal.ZERO);
+                BigDecimal nettPrice = getDecimal("nettPrice", set);
+                BigDecimal listPrice = getDecimal("listPrice", set);
+                BigDecimal orderedQty = getDecimal("orderedQty", set);
+                BigDecimal receivedQty = getDecimal("receivedQty", set);
+                BigDecimal cancelledQty = getDecimal("cancelledQty", set);
                 int orderPackageSize = set.getInt("orderPackageSize");
                 int size = (packageSize != 0) ? packageSize : orderPackageSize;
                 if (size != 0) {
-                    BigDecimal onOrder = orderedQty.subtract(receivedQty).subtract(cancelledQty).multiply(
-                            BigDecimal.valueOf(size));
+                    BigDecimal decSize = BigDecimal.valueOf(size);
+                    BigDecimal onOrder = orderedQty.subtract(receivedQty).subtract(cancelledQty).multiply(decSize);
 
                     BigDecimal current = quantity.add(onOrder); // the on-hand and on-order stock
-                    BigDecimal toOrder = MathRules.divide(idealQty.subtract(current), size, 0);
+                    BigDecimal toOrder = ZERO;
+                    BigDecimal units = idealQty.subtract(current); // no. of units required to get to idealQty
+                    if (!MathRules.equals(ZERO, units)) {
+                        // Use CEILING as the desired no. may be less than a packageSize, but must order a whole pack.
+                        toOrder = units.divide(decSize, RoundingMode.CEILING);
+                    }
 
                     if (log.isDebugEnabled()) {
                         log.debug("Stock: product=" + product.getName() + " (" + product.getId()
@@ -132,8 +140,8 @@ class OrderGenerator {
                                   + "), onHand=" + quantity + ", onOrder=" + onOrder + ", toOrder=" + toOrder
                                   + ", idealQty=" + idealQty + ", criticalQty=" + criticalQty);
                     }
-                    if ((belowIdealQuantity && current.compareTo(idealQty) <= 0
-                         || (current.compareTo(criticalQty) <= 0)) && !MathRules.equals(BigDecimal.ZERO, toOrder)) {
+                    if (!MathRules.equals(ZERO, toOrder) && (belowIdealQuantity && current.compareTo(idealQty) <= 0
+                                                             || (current.compareTo(criticalQty) <= 0))) {
                         result.add(new Stock(product, stockLocation, supplier, quantity, idealQty, onOrder, toOrder,
                                              reorderCode, reorderDesc, size, packageUnits, nettPrice, listPrice));
                     }
@@ -215,6 +223,21 @@ class OrderGenerator {
             return service.get(new IMObjectReference(new ArchetypeId(shortName), id));
         }
         return null;
+    }
+
+    /**
+     * Helper to return a decimal from a set, constraining it to be {@code >= 0}.
+     *
+     * @param name the decimal name
+     * @param set  the set
+     * @return the decimal value
+     */
+    private BigDecimal getDecimal(String name, ObjectSet set) {
+        BigDecimal result = set.getBigDecimal(name, ZERO);
+        if (result.compareTo(ZERO) < 0) {
+            result = ZERO;
+        }
+        return result;
     }
 
 }
