@@ -129,8 +129,8 @@ class OrderGenerator {
                     BigDecimal toOrder = ZERO;
                     BigDecimal units = idealQty.subtract(current); // no. of units required to get to idealQty
                     if (!MathRules.equals(ZERO, units)) {
-                        // Use CEILING as the desired no. may be less than a packageSize, but must order a whole pack.
-                        toOrder = units.divide(decSize, RoundingMode.CEILING);
+                        // Round up as the desired no. may be less than a packageSize, but must order a whole pack.
+                        toOrder = units.divide(decSize, 0, RoundingMode.UP);
                     }
 
                     if (log.isDebugEnabled()) {
