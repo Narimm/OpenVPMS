@@ -41,6 +41,7 @@ import org.openvpms.web.component.im.query.ListQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.CollectionHelper;
@@ -278,7 +279,8 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
                     = new ListQuery<EntityRelationship>(relationships, "entityRelationship.productSupplier",
                                                         EntityRelationship.class);
             String title = Messages.get("product.supplier.type");
-            LayoutContext context = getLayoutContext();
+            LayoutContext context = new DefaultLayoutContext(getLayoutContext());
+            context.setComponentFactory(new TableComponentFactory(context));
             final Browser<EntityRelationship> browser = new ProductSupplierBrowser(query, context);
             final BrowserDialog<EntityRelationship> dialog
                     = new BrowserDialog<EntityRelationship>(title, browser, context.getHelpContext());
@@ -341,13 +343,14 @@ class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Product> {
             extends TableBrowser<EntityRelationship> {
 
         /**
-         * Constructs a TableBrowser} that queries objects using the specified query, displaying them in the table.
+         * Constructs a ProductSupplierBrowser that queries objects using the specified query, displaying them in the
+         * table.
          *
          * @param query   the query
          * @param context the layout context
          */
         public ProductSupplierBrowser(Query<EntityRelationship> query, LayoutContext context) {
-            super(query, null, new ProductSupplierTableModel(query.getShortNames(), null, true), context);
+            super(query, null, new ProductSupplierTableModel(query.getShortNames(), context, true), context);
         }
 
         /**

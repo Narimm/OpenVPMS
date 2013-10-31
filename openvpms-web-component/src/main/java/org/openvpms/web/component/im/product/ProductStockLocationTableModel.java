@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -27,25 +25,20 @@ import org.openvpms.web.component.im.relationship.RelationshipDescriptorTableMod
  * Table model for <em>entityRelationship.productStockLocation</em>
  * relationships.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class ProductStockLocationTableModel
-    extends RelationshipDescriptorTableModel<IMObjectRelationship> {
+public class ProductStockLocationTableModel extends RelationshipDescriptorTableModel<IMObjectRelationship> {
 
     /**
-     * Creates a new <tt>ProductStockLocationTableModel</tt>.
+     * Constructs a {@link ProductStockLocationTableModel}.
      * <p/>
-     * Enables selection if the context is in edit mode, or <tt>null</tt>
+     * Enables selection if the context is in edit mode, or {@code null}
      *
      * @param shortNames    the archetype short names
-     * @param context       the layout context. May be <tt>null</tt>
-     * @param displayTarget if <tt>true</tt> display the target node,
-     *                      otherwise display the source node
+     * @param context       the layout context
+     * @param displayTarget if {@code true} display the target node, otherwise display the source node
      */
-    public ProductStockLocationTableModel(String[] shortNames,
-                                          LayoutContext context,
-                                          boolean displayTarget) {
+    public ProductStockLocationTableModel(String[] shortNames, LayoutContext context, boolean displayTarget) {
         super(shortNames, context, displayTarget);
     }
 }
