@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -25,11 +23,10 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 /**
  * Default implementation of the {@link DescriptorTableModel}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class DefaultDescriptorTableModel<T extends IMObject>
-    extends DescriptorTableModel<T> {
+        extends DescriptorTableModel<T> {
 
     /**
      * The node names to include in the table. If empty, all simple nodes
@@ -38,30 +35,26 @@ public class DefaultDescriptorTableModel<T extends IMObject>
     private final String[] nodeNames;
 
     /**
-     * Creates a new <tt>DefaultDescriptorTableModel</tt>.
+     * Constructs a {@link DefaultDescriptorTableModel}.
      *
      * @param shortName the archetype short name(s). May contain wildcards
-     * @param context   the layout context. May be <tt>null</tt>
+     * @param context   the layout context
      * @param names     the node names to display. If empty, all simple nodes
      *                  will be displayed
      */
-    public DefaultDescriptorTableModel(String shortName,
-                                       LayoutContext context,
-                                       String... names) {
+    public DefaultDescriptorTableModel(String shortName, LayoutContext context, String... names) {
         this(new String[]{shortName}, context, names);
     }
 
     /**
-     * Creates a new <tt>DefaultDescriptorTableModel</tt>.
+     * Constructs a {@link DefaultDescriptorTableModel}.
      *
      * @param shortNames the archetype short names. May contain wildcards
-     * @param context    the layout context. May be <tt>null</tt>
+     * @param context    the layout context
      * @param names      the node names to display. If empty, all simple nodes will
      *                   be displayed
      */
-    public DefaultDescriptorTableModel(String[] shortNames,
-                                       LayoutContext context,
-                                       String... names) {
+    public DefaultDescriptorTableModel(String[] shortNames, LayoutContext context, String... names) {
         super(context);
         this.nodeNames = names;
         setTableColumnModel(createColumnModel(shortNames, context));
