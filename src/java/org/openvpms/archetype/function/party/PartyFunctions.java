@@ -596,25 +596,37 @@ public class PartyFunctions {
     public String getContactPurposes(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
         if (pointer == null || !(pointer.getValue() instanceof Contact)) {
-            return null;
+            return "";
         }
         Contact contact = (Contact) pointer.getValue();
         return partyRules.getContactPurposes(contact);
     }
 
     /**
-     * Returns a stringfield form of a party's identities.
+     * Returns a stringified form of a party's identities.
      *
      * @param context the expression context. Expected to reference a party.
-     * @return the stringified form of the party's identities or
-     *         {@code null}
+     * @return the stringified form of the party's identities
      */
     public String identities(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
         if (pointer == null || !(pointer.getValue() instanceof Party)) {
-            return null;
+            return "";
         }
         Party party = (Party) pointer.getValue();
+        return identities(party);
+    }
+
+    /**
+     * Returns a stringified form of a party's identities.
+     *
+     * @param party the party. May be {@code null}
+     * @return the stringified form of the party's identities
+     */
+    public String identities(Party party) {
+        if (party == null) {
+            return "";
+        }
         return partyRules.getIdentities(party);
     }
 

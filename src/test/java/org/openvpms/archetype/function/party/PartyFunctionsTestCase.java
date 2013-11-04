@@ -163,6 +163,43 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyFunctions#identities(ExpressionContext)} method.
+     */
+    @Test
+    public void testIdentities() {
+        Party party = TestHelper.createPatient(false);
+
+        JXPathContext ctx = JXPathHelper.newContext(party);
+        assertEquals("", ctx.getValue("party:identities()"));
+
+        String tag = "1234567";
+        party.addIdentity(createPetTag(tag));
+        assertEquals("Pet Tag: " + tag, ctx.getValue("party:identities()"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#identities(Party)} method.
+     */
+    @Test
+    public void testIdentitiesForParty() {
+        Act act = (Act) create("act.customerEstimationItem");
+        Party party = TestHelper.createPatient();
+
+        JXPathContext ctx = JXPathHelper.newContext(act);
+
+        assertEquals("", ctx.getValue("party:identities(openvpms:get(., 'patient.entity'))"));
+        String tag = "1234567";
+        party.addIdentity(createPetTag(tag));
+        save(party);
+
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("patient", party);
+
+        assertEquals("Pet Tag: " + tag, ctx.getValue("party:identities(openvpms:get(., 'patient.entity'))"));
+    }
+
+
+    /**
      * Tests the {@link PartyFunctions#getPatientMicrochip(Party)} method.
      */
     @Test
@@ -429,4 +466,17 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         return contact;
     }
 
+
+    /**
+     * Helper to create a pet tag.
+     *
+     * @param tag the tag value
+     * @return a new pet tag
+     */
+    private EntityIdentity createPetTag(String tag) {
+        EntityIdentity result = (EntityIdentity) create("entityIdentity.petTag");
+        IMObjectBean tagBean = new IMObjectBean(result);
+        tagBean.setValue("petTag", tag);
+        return result;
+    }
 }
