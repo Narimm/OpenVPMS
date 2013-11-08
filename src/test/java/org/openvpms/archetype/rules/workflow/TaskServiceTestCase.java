@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -28,12 +27,15 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
@@ -42,18 +44,37 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  *
  * @author Tim Anderson
  */
-public class TaskServiceTestCase extends ArchetypeServiceTest {
+public class TaskServiceTestCase extends AbstractScheduleServiceTest {
 
     /**
      * The task service.
      */
-    private ScheduleService service;
+    private TaskService service;
 
     /**
      * The work list.
      */
     private Party workList;
 
+    /**
+     * Cleans up after the test.
+     *
+     * @throws Exception for any error
+     */
+    public void tearDown() throws Exception {
+        super.tearDown();
+        if (service != null) {
+            service.destroy();
+        }
+    }
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        workList = ScheduleTestHelper.createWorkList();
+    }
 
     /**
      * Tests addition of a task.
@@ -63,6 +84,8 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         Date date1 = getDate("2008-01-01");
         Date date2 = getDate("2008-01-02");
         Date date3 = getDate("2008-01-03");
+
+        service = createScheduleService();
 
         // retrieve the tasks for date1 and date2 and verify they are empty.
         // This caches the tasks for each date.
@@ -101,6 +124,7 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         Date date2 = getDate("2008-01-02");
         Date date3 = getDate("2008-01-03");
 
+        service = createScheduleService();
         List<PropertySet> results = service.getEvents(workList, date1);
         assertEquals(0, results.size());
 
@@ -130,12 +154,14 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         Date date1 = getDate("2008-01-01");
         Date date2 = getDate("2008-03-01");
 
+        service = createScheduleService();
         service.getEvents(workList, date1);
         assertEquals(0, service.getEvents(workList, date1).size());
         assertEquals(0, service.getEvents(workList, date2).size());
 
         Act task = createTask(date1);
 
+        // the task has no end date, so will appear in both dates
         assertEquals(1, service.getEvents(workList, date1).size());
         assertEquals(1, service.getEvents(workList, date2).size());
 
@@ -147,35 +173,12 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests moving of an event from one worklist to another.
-     */
-    @Test
-    public void testChangeEventWorkList() {
-        Date date = getDate("2008-01-01");
-
-        service.getEvents(workList, date);
-        assertEquals(0, service.getEvents(workList, date).size());
-
-        Act task = createTask(date);
-        assertEquals(1, service.getEvents(workList, date).size());
-
-        Party workList2 = ScheduleTestHelper.createWorkList();
-        ActBean bean = new ActBean(task);
-        bean.setParticipant(ScheduleArchetypes.WORKLIST_PARTICIPATION, workList2);
-
-        getArchetypeService().save(task);
-
-        assertEquals(0, service.getEvents(workList, date).size());
-        assertEquals(1, service.getEvents(workList2, date).size());
-    }
-
-    /**
      * Tests the {@link TaskService#getEvents(Entity, Date)} method.
      */
     @Test
     public void testGetEvents() {
         final int count = 10;
-        Party schedule = ScheduleTestHelper.createWorkList();
+        service = createScheduleService();
         Act[] tasks = new Act[count];
         Date date = getDate("2007-01-01");
         for (int i = 0; i < count; ++i) {
@@ -183,14 +186,178 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
             Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
             Date consultStartTime = (i % 2 == 0) ? new Date() : null;
 
-            tasks[i] = createTask(startTime, endTime, schedule, consultStartTime);
+            tasks[i] = createTask(startTime, endTime, workList, consultStartTime);
         }
 
-        List<PropertySet> results = service.getEvents(schedule, date);
+        List<PropertySet> results = service.getEvents(workList, date);
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
             checkTask(tasks[i], results.get(i));
         }
+    }
+
+    /**
+     * Reads a schedule for a date in one thread, while updating it in another.
+     * <p/>
+     * Verifies that the schedule contains the expected result on completion.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testConcurrentReadWrite() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("Concurrent read/write run: " + i + " ");
+            TaskService service = createScheduleService();
+            try {
+                checkConcurrentReadWrite(service);
+                System.out.println("OK");
+            } finally {
+                service.destroy();
+            }
+        }
+    }
+
+    /**
+     * Reads a schedule for two separate dates in two threads, while updating it in a third.
+     * <p/>
+     * Verifies that the schedule contains the expected result on completion.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testConcurrentReadWrite2() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("Concurrent read/write run: " + i + " ");
+            TaskService service = createScheduleService();
+            try {
+                checkConcurrentReadWrite2(service);
+                System.out.println("OK");
+            } finally {
+                service.destroy();
+            }
+        }
+    }
+
+    /**
+     * Creates a new {@link ScheduleService}.
+     *
+     * @return the new service
+     */
+    @Override
+    protected TaskService createScheduleService() {
+        return new TaskService(getArchetypeService(), applicationContext.getBean(ILookupService.class), ScheduleTestHelper.createCache());
+    }
+
+    /**
+     * Creates a new schedule.
+     *
+     * @return the new schedule
+     */
+    @Override
+    protected Entity createSchedule() {
+        return ScheduleTestHelper.createWorkList();
+    }
+
+    /**
+     * Creates a new event for the specified schedule and date.
+     *
+     * @param schedule the schedule
+     * @param date     the date
+     * @return the new event act
+     */
+    @Override
+    protected Act createEvent(Entity schedule, Date date) {
+        return createTask(date, (Party) schedule);
+    }
+
+    /**
+     * Reads a schedule for a date in one thread, while updating it in another.
+     * <p/>
+     * Verifies that the schedule contains the expected result on completion.
+     *
+     * @param taskService the task service
+     * @throws Exception for any error
+     */
+    private void checkConcurrentReadWrite(final TaskService taskService) throws Exception {
+        final Date date = getDate("2007-01-01");
+        final Party schedule = ScheduleTestHelper.createWorkList();
+        final Act task = createTask(date, schedule);
+
+        Callable<PropertySet> read = new Callable<PropertySet>() {
+            @Override
+            public PropertySet call() throws Exception {
+                System.err.println("read");
+                List<PropertySet> events = taskService.getEvents(schedule, date);
+                assertFalse(events.size() > 1);
+                return events.isEmpty() ? null : events.get(0);
+            }
+        };
+
+        Callable<PropertySet> write = new Callable<PropertySet>() {
+            @Override
+            public PropertySet call() throws Exception {
+                System.err.println("write");
+                task.setActivityEndTime(date);
+                save(task);
+                return null;
+            }
+        };
+
+        runConcurrent(read, write);
+
+        List<PropertySet> events = taskService.getEvents(schedule, date);
+        assertEquals(1, events.size());
+        assertEquals(date, events.get(0).getDate(ScheduleEvent.ACT_END_TIME));
+    }
+
+    /**
+     * Reads a schedule for two separate dates in two threads, while updating it in a third.
+     * <p/>
+     * Verifies that the schedule contains the expected result on completion.
+     *
+     * @param taskService the task service
+     * @throws Exception for any error
+     */
+    private void checkConcurrentReadWrite2(final TaskService taskService) throws Exception {
+        final Date date1 = getDate("2007-01-01");
+        final Date date2 = getDate("2007-01-02");
+        final Party schedule = ScheduleTestHelper.createWorkList();
+        final Act task = createTask(date1, schedule);
+
+        Callable<PropertySet> readDate1 = new Callable<PropertySet>() {
+            @Override
+            public PropertySet call() throws Exception {
+                System.err.println("Read date1 thread=" + Thread.currentThread().getName());
+                List<PropertySet> events = taskService.getEvents(schedule, date1);
+                assertFalse(events.size() > 1);
+                return events.isEmpty() ? null : events.get(0);
+            }
+        };
+        Callable<PropertySet> readDate2 = new Callable<PropertySet>() {
+            @Override
+            public PropertySet call() throws Exception {
+                System.err.println("Read date2 thread=" + Thread.currentThread().getName());
+                List<PropertySet> events = taskService.getEvents(schedule, date2);
+                assertFalse(events.size() > 1);
+                return events.isEmpty() ? null : events.get(0);
+            }
+        };
+        Callable<PropertySet> write = new Callable<PropertySet>() {
+            @Override
+            public PropertySet call() throws Exception {
+                System.err.println("Writer thread=" + Thread.currentThread().getName());
+                task.setActivityEndTime(date1);
+                save(task);
+                return null;
+            }
+        };
+
+        runConcurrent(readDate1, readDate2, write);
+
+        List<PropertySet> events = taskService.getEvents(schedule, date1);
+        assertEquals(1, events.size());
+        events = taskService.getEvents(schedule, date2);
+        assertEquals(0, events.size());
     }
 
     /**
@@ -234,15 +401,6 @@ public class TaskServiceTestCase extends ArchetypeServiceTest {
         bean.setValue("consultStartTime", consultStartTime);
         save(task);
         return task;
-    }
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        service = (ScheduleService) applicationContext.getBean("taskService");
-        workList = ScheduleTestHelper.createWorkList();
     }
 
     /**

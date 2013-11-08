@@ -128,4 +128,13 @@ public class ScheduleEvent {
      */
     public static final String CONSULT_START_TIME = "consultStartTime";
 
+    public static final String ACT_VERSION = "act.version";
+    public static final String CUSTOMER_PARTICIPATION_VERSION = "customerParticipation.version";
+
+    public static final String PATIENT_PARTICIPATION_VERSION = "patientParticipation.version";
+
+    public static final String SCHEDULE_PARTICIPATION_VERSION = "scheduleParticipation.version";
+
+    public static final String CLINICIAN_PARTICIPATION_VERSION = "clinicianParticipation.version";
+
 }

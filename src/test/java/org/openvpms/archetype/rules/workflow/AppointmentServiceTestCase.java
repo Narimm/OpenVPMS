@@ -16,11 +16,11 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -46,12 +47,12 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  *
  * @author Tim Anderson
  */
-public class AppointmentServiceTestCase extends ArchetypeServiceTest {
+public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
 
     /**
      * The appointment service.
      */
-    private ScheduleService service;
+    private AppointmentService service;
 
     /**
      * The schedule.
@@ -71,6 +72,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         // retrieve the appointments for date1 and date2 and verify they are
         // empty.
         // This caches the appointments for each date.
+        service = createScheduleService();
         List<PropertySet> results = service.getEvents(schedule, date1);
         assertEquals(0, results.size());
 
@@ -104,6 +106,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         // retrieve the appointments for date1 and date2 and verify they are
         // empty.
         // This caches the appointments for each date.
+        service = createScheduleService();
         List<PropertySet> results = service.getEvents(schedule, date1);
         assertEquals(0, results.size());
 
@@ -129,7 +132,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentService#getEvents(Entity, Date)} ()} method.
+     * Tests the {@link AppointmentService#getEvents(Entity, Date)} method.
      */
     @Test
     public void testGetEvents() {
@@ -154,7 +157,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
             bean.save();
         }
 
-        ScheduleService service = (ScheduleService) applicationContext.getBean("appointmentService");
+        service = createScheduleService();
         List<PropertySet> results = service.getEvents(schedule, date);
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
@@ -171,6 +174,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
         Date date1 = getDate("2008-01-01");
         Date date2 = getDate("2008-03-01");
 
+        service = createScheduleService();
         service.getEvents(schedule, date1);
         assertEquals(0, service.getEvents(schedule, date1).size());
         assertEquals(0, service.getEvents(schedule, date2).size());
@@ -189,29 +193,6 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests moving of an event from one schedule to another.
-     */
-    @Test
-    public void testChangeEventSchedule() {
-        Date date = getDate("2008-01-01");
-
-        service.getEvents(schedule, date);
-        assertEquals(0, service.getEvents(schedule, date).size());
-
-        Act act = createAppointment(date);
-        assertEquals(1, service.getEvents(schedule, date).size());
-
-        Party schedule2 = ScheduleTestHelper.createSchedule();
-        ActBean bean = new ActBean(act);
-        bean.setParticipant("participation.schedule", schedule2);
-
-        getArchetypeService().save(act);
-
-        assertEquals(0, service.getEvents(schedule, date).size());
-        assertEquals(1, service.getEvents(schedule2, date).size());
-    }
-
-    /**
      * Verifies that a new to lookup.appointmentReason appears in new appointments.
      */
     @Test
@@ -221,6 +202,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
 
         // create and save appointment for date1
         Act appointment1 = createAppointment(date1);
+        service = createScheduleService();
         List<PropertySet> results = service.getEvents(schedule, date1);
         assertEquals(1, results.size());
         PropertySet set = results.get(0);
@@ -248,6 +230,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     @Test
     public void testUpdateReason() {
         Date date = getDate("2008-01-01");
+        service = createScheduleService();
 
         // create and save appointment for date
         Act appointment = createAppointment(date);
@@ -279,6 +262,7 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     public void testRemoveReason() {
         Date date = getDate("2008-01-01");
 
+        service = createScheduleService();
         // create and save appointment for date
         Act appointment = createAppointment(date, schedule, false);
         String code = "XREASON" + System.currentTimeMillis();
@@ -316,6 +300,8 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
     public void testMultipleDayAppointment() {
         Date start = getDate("2008-01-01");
         Date end = getDate("2008-01-05");
+
+        service = createScheduleService();
 
         // retrieve the appointments from start to end and verify they are empty.
         // This caches the appointments for each date.
@@ -355,8 +341,54 @@ public class AppointmentServiceTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        service = (ScheduleService) applicationContext.getBean("appointmentService");
         schedule = ScheduleTestHelper.createSchedule();
+    }
+
+    /**
+     * Cleans up after the test.
+     *
+     * @throws Exception for any error
+     */
+    @After
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        if (service != null) {
+            service.destroy();
+        }
+    }
+
+    /**
+     * Creates a new {@link ScheduleService}.
+     *
+     * @return the new service
+     */
+    @Override
+    protected AppointmentService createScheduleService() {
+        return new AppointmentService(getArchetypeService(), applicationContext.getBean(ILookupService.class),
+                                      ScheduleTestHelper.createCache());
+    }
+
+    /**
+     * Creates a new schedule.
+     *
+     * @return the new schedule
+     */
+    @Override
+    protected Entity createSchedule() {
+        return ScheduleTestHelper.createSchedule();
+    }
+
+    /**
+     * Creates a new event for the specified schedule and date.
+     *
+     * @param schedule the schedule
+     * @param date     the date
+     * @return the new event act
+     */
+    @Override
+    protected Act createEvent(Entity schedule, Date date) {
+        return createAppointment(date, (Party) schedule, true);
     }
 
     /**

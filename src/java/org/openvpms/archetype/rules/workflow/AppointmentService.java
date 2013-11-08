@@ -16,53 +16,44 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.Cache;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
+import net.sf.ehcache.Ehcache;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.util.PropertySet;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
- * Implementation of the {@link ScheduleService} for appointment events.
+ * Implementation of the {@link ScheduleService} for appointments.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AppointmentService extends AbstractScheduleService {
 
     /**
-     * Reason lookup names, keyed on code.
+     * Listener for appointment reason changes.
      */
-    private final Map<String, String> reasonNames = Collections.synchronizedMap(new HashMap<String, String>());
+    private final IArchetypeServiceListener listener;
 
     /**
-     * Constructs an <tt>AppointmentService</tt>.
+     * Appointment reason archetype short name.
+     */
+    private static final String APPOINTMENT_REASON_SHORT_NAME = "lookup.appointmentReason";
+
+
+    /**
+     * Constructs an {@link AppointmentService}.
      *
      * @param service       the archetype service
      * @param lookupService the lookup service
      * @param cache         the cache
      */
-    public AppointmentService(IArchetypeService service, ILookupService lookupService, Cache cache) {
-        super(ScheduleArchetypes.APPOINTMENT, service, lookupService, cache);
+    public AppointmentService(IArchetypeService service, ILookupService lookupService, Ehcache cache) {
+        super(ScheduleArchetypes.APPOINTMENT, service, cache, new AppointmentFactory(service, lookupService));
 
-        Map<String, String> map = LookupHelper.getNames(service, lookupService, ScheduleArchetypes.APPOINTMENT,
-                                                        "reason");
-        reasonNames.putAll(map);
-        service.addListener("lookup.appointmentReason", new AbstractArchetypeServiceListener() {
+        listener = new AbstractArchetypeServiceListener() {
             @Override
             public void saved(IMObject object) {
                 onReasonSaved((Lookup) object);
@@ -72,58 +63,31 @@ public class AppointmentService extends AbstractScheduleService {
             public void removed(IMObject object) {
                 onReasonRemoved((Lookup) object);
             }
-        });
+        };
+        service.addListener(APPOINTMENT_REASON_SHORT_NAME, listener);
     }
 
     /**
-     * Assembles an {@link PropertySet PropertySet} from a source act.
+     * Invoked by a BeanFactory on destruction of a singleton.
      *
-     * @param target the target set
-     * @param source the source act
+     * @throws Exception in case of shutdown errors.
+     *                   Exceptions will get logged but not rethrown to allow
+     *                   other beans to release their resources too.
      */
     @Override
-    protected void assemble(PropertySet target, ActBean source) {
-        super.assemble(target, source);
-
-        String reason = source.getAct().getReason();
-        target.set(ScheduleEvent.ACT_REASON, reason);
-        target.set(ScheduleEvent.ACT_REASON_NAME, reasonNames.get(reason));
-
-        IMObjectReference scheduleRef = source.getNodeParticipantRef("schedule");
-        String scheduleName = getName(scheduleRef);
-        target.set(ScheduleEvent.SCHEDULE_REFERENCE, scheduleRef);
-        target.set(ScheduleEvent.SCHEDULE_NAME, scheduleName);
-
-        IMObjectReference typeRef
-                = source.getNodeParticipantRef("appointmentType");
-        String typeName = getName(typeRef);
-        target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
-        target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
-        target.set(ScheduleEvent.ARRIVAL_TIME, source.getDate(ScheduleEvent.ARRIVAL_TIME));
+    public void destroy() throws Exception {
+        getService().removeListener(APPOINTMENT_REASON_SHORT_NAME, listener);
+        super.destroy();
     }
 
     /**
-     * Returns the schedule reference from an event.
+     * Returns the event factory.
      *
-     * @param event the event
-     * @return a reference to the schedule. May be <tt>null</tt>
+     * @return the event factory
      */
-    protected IMObjectReference getSchedule(Act event) {
-        ActBean bean = new ActBean(event, getService());
-        return bean.getNodeParticipantRef("schedule");
-    }
-
-    /**
-     * Creates a new query to query events for the specified schedule and date
-     * range.
-     *
-     * @param schedule the schedule
-     * @param from     the start time
-     * @param to       the end time
-     * @return a new query
-     */
-    protected ScheduleEventQuery createQuery(Entity schedule, Date from, Date to) {
-        return new AppointmentQuery((Party) schedule, from, to, getService());
+    @Override
+    protected AppointmentFactory getEventFactory() {
+        return (AppointmentFactory) super.getEventFactory();
     }
 
     /**
@@ -132,12 +96,8 @@ public class AppointmentService extends AbstractScheduleService {
      * @param reason the reason lookup
      */
     private void onReasonSaved(Lookup reason) {
-        boolean exists;
-        synchronized (reasonNames) {
-            exists = reasonNames.containsKey(reason.getCode());
-            reasonNames.put(reason.getCode(), reason.getName());
-        }
-        if (exists) {
+        boolean updated = getEventFactory().addReason(reason);
+        if (updated) {
             clearCache();
         }
     }
@@ -151,7 +111,7 @@ public class AppointmentService extends AbstractScheduleService {
      * @param reason the reason lookup
      */
     private void onReasonRemoved(Lookup reason) {
-        if (reasonNames.remove(reason.getCode()) != null) {
+        if (getEventFactory().removeReason(reason)) {
             clearCache();
         }
     }

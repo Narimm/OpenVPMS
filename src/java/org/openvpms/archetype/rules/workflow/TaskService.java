@@ -16,21 +16,13 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.Cache;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
+import net.sf.ehcache.Ehcache;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.util.PropertySet;
-
-import java.util.Date;
 
 
 /**
- * Implementation of the {@link ScheduleService} for task events.
+ * Implementation of the {@link ScheduleService} for tasks.
  *
  * @author Tim Anderson
  */
@@ -42,58 +34,8 @@ public class TaskService extends AbstractScheduleService {
      * @param service the archetype service
      * @param cache   the cache
      */
-    public TaskService(IArchetypeService service, ILookupService lookupService, Cache cache) {
-        super(ScheduleArchetypes.TASK, service, lookupService, cache);
-    }
-
-    /**
-     * Assembles an {@link PropertySet PropertySet} from a source act.
-     *
-     * @param target the target set
-     * @param source the source act
-     */
-    @Override
-    protected void assemble(PropertySet target, ActBean source) {
-        super.assemble(target, source);
-
-        IMObjectReference scheduleRef = source.getNodeParticipantRef("worklist");
-        String scheduleName = getName(scheduleRef);
-        target.set(ScheduleEvent.SCHEDULE_REFERENCE, scheduleRef);
-        target.set(ScheduleEvent.SCHEDULE_NAME, scheduleName);
-
-        IMObjectReference typeRef = source.getNodeParticipantRef("taskType");
-        String typeName = getName(typeRef);
-        target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
-        target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
-
-        String reason = source.getAct().getReason();
-        target.set(ScheduleEvent.ACT_REASON, reason);
-        target.set(ScheduleEvent.ACT_REASON_NAME, reason);
-
-        target.set(ScheduleEvent.CONSULT_START_TIME, source.getDate(ScheduleEvent.CONSULT_START_TIME));
-    }
-
-    /**
-     * Returns the schedule reference from an event.
-     *
-     * @param event the event
-     * @return a reference to the schedule. May be {@code null}
-     */
-    protected IMObjectReference getSchedule(Act event) {
-        ActBean bean = new ActBean(event, getService());
-        return bean.getNodeParticipantRef("worklist");
-    }
-
-    /**
-     * Creates a new query to query events for the specified schedule and date range.
-     *
-     * @param schedule the schedule
-     * @param from     the start time
-     * @param to       the end time
-     * @return a new query
-     */
-    protected ScheduleEventQuery createQuery(Entity schedule, Date from, Date to) {
-        return new TaskQuery((Party) schedule, from, to, getService());
+    public TaskService(IArchetypeService service, ILookupService lookupService, Ehcache cache) {
+        super(ScheduleArchetypes.TASK, service, cache, new TaskFactory(service, lookupService));
     }
 
 }
