@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -64,6 +65,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class TestHelper extends Assert {
+
+    /**
+     * Random no. generator for creating unique names.
+     */
+    private static final Random random = new Random();
 
     /**
      * Creates a new object.
@@ -149,7 +155,7 @@ public class TestHelper extends Assert {
      */
     public static Party createCustomer(boolean save) {
 
-        return createCustomer("J", "Zoo-" + System.currentTimeMillis(), save);
+        return createCustomer("J", "Zoo-" + nextId(), save);
     }
 
     /**
@@ -241,7 +247,7 @@ public class TestHelper extends Assert {
     public static Party createPatient(boolean save) {
         Party patient = (Party) create(PatientArchetypes.PATIENT);
         EntityBean bean = new EntityBean(patient);
-        bean.setValue("name", "XPatient-" + System.currentTimeMillis());
+        bean.setValue("name", "XPatient-" + nextId());
         bean.setValue("species", "CANINE");
         bean.setValue("deceased", false);
         if (save) {
@@ -354,7 +360,8 @@ public class TestHelper extends Assert {
      * @return a new user
      */
     public static User createClinician(boolean save) {
-        User user = createUser("zuser" + Math.abs((int) System.nanoTime()), false);
+        String username = "zuser" + nextId();
+        User user = createUser(username, false);
         user.addClassification(getLookup("lookup.userType", "CLINICIAN"));
         if (save) {
             save(user);
@@ -408,8 +415,7 @@ public class TestHelper extends Assert {
                                         boolean save) {
         Product product = (Product) create(shortName);
         EntityBean bean = new EntityBean(product);
-        String name = "XProduct-" + ((species != null) ? species : "")
-                      + System.currentTimeMillis();
+        String name = "XProduct-" + ((species != null) ? species : "") + nextId();
         bean.setValue("name", name);
         if (species != null) {
             Lookup classification
@@ -736,6 +742,10 @@ public class TestHelper extends Assert {
      */
     public static Date getDate(String value) {
         return value != null ? getDatetime(value + " 0:0:0") : null;
+    }
+
+    private static int nextId() {
+        return Math.abs(random.nextInt());
     }
 
 }

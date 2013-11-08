@@ -16,6 +16,8 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import net.sf.ehcache.CacheException;
+import net.sf.ehcache.Ehcache;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
@@ -29,7 +31,9 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.springframework.cache.ehcache.EhCacheFactoryBean;
 
+import java.io.IOException;
 import java.sql.Time;
 import java.util.Date;
 
@@ -373,4 +377,22 @@ public class ScheduleTestHelper extends TestHelper {
         return act;
     }
 
+    /**
+     * Helper to create an in-memory cache.
+     *
+     * @return a new cache
+     */
+    public static Ehcache createCache() {
+        EhCacheFactoryBean bean = new EhCacheFactoryBean();
+        bean.setCacheName("foo" + System.nanoTime());
+        bean.setMaxElementsInMemory(30);
+        bean.setEternal(true);
+        bean.setOverflowToDisk(false);
+        try {
+            bean.afterPropertiesSet();
+        } catch (IOException exception) {
+            throw new CacheException(exception);
+        }
+        return bean.getObject();
+    }
 }

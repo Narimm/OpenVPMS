@@ -187,8 +187,8 @@ public class DateRules {
      * Determines if a date falls between two dates.
      *
      * @param date       the date to compare
-     * @param lowerBound the lower bound
-     * @param upperBound the upper bound
+     * @param lowerBound the from date. If {@code null}, indicates that the date is unbounded
+     * @param upperBound the to date. If {@code null}, indicates that the date is unbounded
      * @return {@code true} if the date falls between the lower and upper bounds, otherwise {@code false}
      */
     public static boolean between(Date date, Date lowerBound, Date upperBound) {

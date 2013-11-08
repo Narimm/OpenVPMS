@@ -253,34 +253,5 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
-    <bean id="appointmentService"
-          class="org.openvpms.archetype.rules.workflow.AppointmentService">
-        <constructor-arg ref="archetypeService" index="0"/>
-        <constructor-arg ref="lookupService" index="1"/>
-        <constructor-arg index="2">
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="lookupCache"/>
-                <property name="maxElementsInMemory" value="100"/>
-                <property name="overflowToDisk" value="false"/>
-                <property name="eternal" value="true"/>
-            </bean>
-        </constructor-arg>
-    </bean>
-
-    <bean id="taskService"
-          class="org.openvpms.archetype.rules.workflow.TaskService">
-        <constructor-arg ref="archetypeService" index="0"/>
-        <constructor-arg ref="lookupService" index="1"/>
-        <constructor-arg index="2">
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="lookupCache"/>
-                <property name="maxElementsInMemory" value="100"/>
-                <property name="overflowToDisk" value="false"/>
-                <property name="eternal" value="true"/>
-            </bean>
-        </constructor-arg>
-    </bean>
 
 </beans>

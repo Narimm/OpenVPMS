@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -87,18 +86,6 @@ abstract class ScheduleEventQuery {
      * @param from           the 'from' start time
      * @param to             the 'to' start time
      * @param eventShortName the event archetype short name
-     */
-    public ScheduleEventQuery(Entity schedule, Date from, Date to, String eventShortName) {
-        this(schedule, from, to, eventShortName, ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Constructs a {@link ScheduleEventQuery}.
-     *
-     * @param schedule       the schedule
-     * @param from           the 'from' start time
-     * @param to             the 'to' start time
-     * @param eventShortName the event archetype short name
      * @param service        the archetype service
      */
     public ScheduleEventQuery(Entity schedule, Date from, Date to, String eventShortName, IArchetypeService service) {
@@ -131,6 +118,7 @@ abstract class ScheduleEventQuery {
                 }
                 currentAct = actRef;
                 current = createEvent(actRef, set);
+                current.set(ScheduleEvent.ACT_VERSION, set.getLong("act.version"));
             }
             IMObjectReference entityRef = getEntity(set);
             String participation = set.getString("participation.shortName");
@@ -138,15 +126,19 @@ abstract class ScheduleEventQuery {
             if (CustomerArchetypes.CUSTOMER_PARTICIPATION.equals(participation)) {
                 current.set(ScheduleEvent.CUSTOMER_REFERENCE, entityRef);
                 current.set(ScheduleEvent.CUSTOMER_NAME, entityName);
+                current.set(ScheduleEvent.CUSTOMER_PARTICIPATION_VERSION, set.getLong("participation.version"));
             } else if (PatientArchetypes.PATIENT_PARTICIPATION.equals(participation)) {
                 current.set(ScheduleEvent.PATIENT_REFERENCE, entityRef);
                 current.set(ScheduleEvent.PATIENT_NAME, entityName);
+                current.set(ScheduleEvent.PATIENT_PARTICIPATION_VERSION, set.getLong("participation.version"));
             } else if (TypeHelper.isA(entityRef, scheduleType)) {
                 current.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, entityRef);
                 current.set(ScheduleEvent.SCHEDULE_TYPE_NAME, entityName);
+                current.set(ScheduleEvent.SCHEDULE_PARTICIPATION_VERSION, set.getLong("participation.version"));
             } else if (UserArchetypes.CLINICIAN_PARTICIPATION.equals(participation)) {
                 current.set(ScheduleEvent.CLINICIAN_REFERENCE, entityRef);
                 current.set(ScheduleEvent.CLINICIAN_NAME, entityName);
+                current.set(ScheduleEvent.CLINICIAN_PARTICIPATION_VERSION, set.getLong("participation.version"));
             }
             String key = set.getString("act.details_Keys");
             TypedValue value = (TypedValue) set.get("act.details_Values");
@@ -185,12 +177,14 @@ abstract class ScheduleEventQuery {
     protected IArchetypeQuery createQuery(Date from, Date to) {
         Collection<String> names = Arrays.asList("act.archetypeId",
                                                  "act.id", "act.linkId",
+                                                 "act.version",
                                                  "act.startTime", "act.endTime",
                                                  "act.details_Keys",
                                                  "act.details_Values",
                                                  "act.status", "act.reason",
                                                  "act.description",
                                                  "participation.shortName",
+                                                 "participation.version",
                                                  "entity.archetypeId",
                                                  "entity.id", "entity.linkId",
                                                  "entity.name");

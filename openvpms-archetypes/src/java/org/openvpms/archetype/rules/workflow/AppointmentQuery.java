@@ -16,8 +16,8 @@
 
 package org.openvpms.archetype.rules.workflow;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
 
@@ -39,7 +39,7 @@ class AppointmentQuery extends ScheduleEventQuery {
      * @param to       the 'to' start time
      * @param service  the archetype service
      */
-    public AppointmentQuery(Party schedule, Date from, Date to, IArchetypeService service) {
+    public AppointmentQuery(Entity schedule, Date from, Date to, IArchetypeService service) {
         super(schedule, from, to, ScheduleArchetypes.APPOINTMENT, service);
     }
 
