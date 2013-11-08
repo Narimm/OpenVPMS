@@ -1,24 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
-import static org.junit.Assert.*;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -34,13 +32,15 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 
 /**
- * Tests archetype service event notification via
- * {@link IArchetypeServiceListener}.
+ * Tests archetype service event notification via {@link IArchetypeServiceListener}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServiceListenerTestCase extends AbstractArchetypeServiceTest {
@@ -224,6 +224,45 @@ public class ArchetypeServiceListenerTestCase extends AbstractArchetypeServiceTe
         assertEquals(2, rolledBack.size());
         assertTrue(rolledBack.contains(person1));
         assertTrue(rolledBack.contains(person2));
+    }
+
+    /**
+     * Verifies that the {@link IMObject#getVersion()} is correctly reported within an {@link IArchetypeServiceListener}
+     * in the context of a transaction.
+     */
+    @Test
+    public void testVersion() {
+        final MutableInt version = new MutableInt();
+        final IArchetypeService service = getArchetypeService();
+
+        final Party person = createPerson();
+        service.addListener("party.customerperson", new AbstractArchetypeServiceListener() {
+            @Override
+            public void saved(IMObject object) {
+                version.setValue(object.getVersion());
+            }
+        });
+
+        template.execute(new TransactionCallback<Object>() {
+            @Override
+            public Object doInTransaction(TransactionStatus status) {
+                save(person);
+                return null;
+            }
+        });
+        assertEquals(0, person.getVersion());
+        assertEquals(0, version.intValue());
+
+        person.getDetails().put("lastName", "Gum");
+        template.execute(new TransactionCallback<Object>() {
+            @Override
+            public Object doInTransaction(TransactionStatus status) {
+                save(person);
+                return null;
+            }
+        });
+        assertEquals(1, person.getVersion());
+        assertEquals(1, version.intValue());
     }
 
     /**
