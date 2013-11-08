@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.common;
@@ -24,6 +22,7 @@ import org.hibernate.Session;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.springframework.core.Ordered;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -333,7 +332,7 @@ public class Context {
      * @return the corresponding object, or <tt>null</tt> if none is found
      */
     public <T extends IMObjectDO, Impl extends IMObjectDOImpl> T
-            get(IMObjectReference reference, Class<T> type, Class<Impl> impl) {
+    get(IMObjectReference reference, Class<T> type, Class<Impl> impl) {
         Object result = session.load(impl, reference.getId());
         return type.cast(result);
     }
@@ -360,7 +359,7 @@ public class Context {
             return object.getObjectReference();
         }
         Query query = session.createQuery("select archetypeId, linkId from "
-                + type.getName() + " where id=?");
+                                          + type.getName() + " where id=?");
         query.setParameter(0, object.getId());
         List result = query.list();
         if (!result.isEmpty()) {
@@ -505,6 +504,11 @@ public class Context {
 
         public ContextSynchronization(Context context) {
             this.context = context;
+        }
+
+        @Override
+        public int getOrder() {
+            return Ordered.HIGHEST_PRECEDENCE;
         }
 
         @Override
