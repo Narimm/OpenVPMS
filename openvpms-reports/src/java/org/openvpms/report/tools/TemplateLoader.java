@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.tools;
@@ -24,13 +22,13 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -38,7 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.report.jasper.tools.Template;
 import org.openvpms.report.jasper.tools.Templates;
 import org.springframework.context.ApplicationContext;
@@ -48,15 +46,14 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
  * Report template loader.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TemplateLoader {
 
@@ -77,13 +74,12 @@ public class TemplateLoader {
 
 
     /**
-     * Construct a new <code>JasperTemplateLoader</code>.
+     * Constructs a {@link TemplateLoader}.
      *
-     * @param service the archetype service
+     * @param service  the archetype service
      * @param handlers the document handlers
      */
-    public TemplateLoader(IArchetypeService service,
-                          DocumentHandlers handlers) {
+    public TemplateLoader(IArchetypeService service, DocumentHandlers handlers) {
         this.service = service;
         this.handlers = handlers;
     }
@@ -99,7 +95,7 @@ public class TemplateLoader {
                                          MarshalException {
         File file = new File(path);
         FileReader reader = new FileReader(file);
-        Templates templates = (Templates) Templates.unmarshal(reader);
+        Templates templates = Templates.unmarshal(reader);
         File dir = file.getParentFile();
         for (Template template : templates.getTemplate()) {
             load(template, dir);
@@ -118,32 +114,28 @@ public class TemplateLoader {
         Document document = getDocument(template, dir);
         Entity entity;
         DocumentAct act;
-        Participation participation;
-        ArchetypeQuery query
-                = new ArchetypeQuery("act.documentTemplate", false, true);
-        query.add(new NodeConstraint("name", document.getName()));
+        ArchetypeQuery query = new ArchetypeQuery(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT, false, true);
+        query.add(Constraints.eq("name", document.getName()));
         query.setFirstResult(0);
         query.setMaxResults(1);
         List<IMObject> rows = service.get(query).getResults();
         if (!rows.isEmpty()) {
             act = (DocumentAct) rows.get(0);
-            ActBean bean = new ActBean(act);
-            entity = bean.getParticipant("participation.document");
+            ActBean bean = new ActBean(act, service);
+            entity = bean.getNodeParticipant("template");
             if (entity == null) {
-                entity = (Entity) service.create("entity.documentTemplate");
-                bean.setParticipant("participation.document", entity);
+                entity = (Entity) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+                bean.setParticipant(DocumentArchetypes.DOCUMENT_PARTICIPATION, entity);
             }
         } else {
-            entity = (Entity) service.create("entity.documentTemplate");
-            act = (DocumentAct) service.create("act.documentTemplate");
+            entity = (Entity) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+            act = (DocumentAct) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
             act.setFileName(document.getName());
             act.setMimeType(document.getMimeType());
+
             act.setDescription(DescriptorHelper.getDisplayName(document));
-            participation = (Participation) service.create(
-                    "participation.document");
-            participation.setAct(act.getObjectReference());
-            act.addParticipation(participation);
-            participation.setEntity(entity.getObjectReference());
+            ActBean bean = new ActBean(act, service);
+            bean.addNodeParticipation("template", entity);
         }
 
         act.setDocument(document.getObjectReference());
@@ -153,8 +145,10 @@ public class TemplateLoader {
             name = document.getName();
         }
         entity.setName(name);
+        entity.setDescription(template.getDescription());
         EntityBean bean = new EntityBean(entity);
         bean.setValue("archetype", template.getArchetype());
+        bean.setValue("reportType", template.getReportType());
         service.save(Arrays.asList(document, entity, act));
     }
 
@@ -225,12 +219,12 @@ public class TemplateLoader {
     private static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
-                .setLongFlag("context")
-                .setDefault(APPLICATION_CONTEXT)
-                .setHelp("Application context path"));
+                                         .setLongFlag("context")
+                                         .setDefault(APPLICATION_CONTEXT)
+                                         .setHelp("Application context path"));
         parser.registerParameter(new FlaggedOption("file").setShortFlag('f')
-                .setLongFlag("file").setHelp(
-                "The template configuration file to load."));
+                                         .setLongFlag("file").setHelp(
+                        "The template configuration file to load."));
         return parser;
     }
 
