@@ -9,7 +9,6 @@
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
-    <groupId>org.openvpms</groupId>
     <artifactId>openvpms-release</artifactId>
 
     <packaging>pom</packaging>
@@ -228,31 +227,6 @@
                 </dependencies>
             </plugin>
             <plugin>
-                <!-- load report templates -->
-                <groupId>org.openvpms</groupId>
-                <artifactId>openvpms-report-maven-plugin</artifactId>
-                <version>${pom.version}</version>
-                <configuration>
-                    <file>src/reports/templates.xml</file>
-                    <propertyfile>target/classes/hibernate.properties</propertyfile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>load</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>${jdbc.groupId}</groupId>
-                        <artifactId>${jdbc.artifactId}</artifactId>
-                        <version>${jdbc.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.2</version>
                 <configuration>
@@ -291,6 +265,23 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <!-- helper to load report templates for testing -->
+                <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-report-maven-plugin</artifactId>
+                <version>${pom.version}</version>
+                <configuration>
+                    <file>src/reports/templates.xml</file>
+                    <propertyfile>target/classes/hibernate.properties</propertyfile>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
         <resources>
