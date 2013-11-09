@@ -5,24 +5,37 @@ OpenVPMS ${pom.version} Release
 
 See section 2 if you are upgrading an existing system.
 
-Note that in this text the directory or folder separator character is shown as /
-following the unix usage. If you are using Windows, then you will be using \ so
-that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
+Note that in this text, the directory or folder separator character is shown
+as /, following unix conventions. On Windows, replace / with \. E.g. given:
+  <OPENVPMS_HOME>/lib
+change to:
+  <OPENVPMS_HOME>\lib.
 
 1.1 Requirements
 - OpenVPMS requires the following to be installed:
 
-  - Java 1.6.x or higher
+  - Java Platform, Standard Edition 6 or higher
+    The Java Runtime Environment (JRE) is the minimum requirement.
     See http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
   - MySQL 5.1.53 or higher
     See http://dev.mysql.com/downloads/mysql/5.1.html
 
+    Download the MySQL Community Server 'Generally Available (GA) Release'
+
+    On Windows, the MySQL installer may require that the Microsoft .Net
+    Framework 4 be installed. This is available from:
+        http://www.microsoft.com/en-au/download/details.aspx?id=17851
+
   - MySQL Connector/J JDBC driver 
     See http://dev.mysql.com/downloads/connector/j/5.1.html
 
+    This may be included in the MySQL server installation.
+
   - Tomcat 6.0 or higher
     See http://tomcat.apache.org/download-60.cgi
+
+    On Windows, select the 32-bit/64-bit Windows Service Installer
 
   - OpenOffice 4.0.0 or higher
     See http://www.openoffice.org/download/
