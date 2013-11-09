@@ -27,6 +27,10 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
   - OpenOffice 4.0.0 or higher
     See http://www.openoffice.org/download/
 
+  - iReport Designer 3.7.6 or higher
+    Only required to customise document templates.
+    See http://community.jaspersoft.com/project/ireport-designer
+
 - MySQL:
   - should be on the same host as Tomcat
   - should accept connections on port 3306
@@ -36,12 +40,13 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
 
 1.2 Directory structure
 
- The OpenVPMS installation has a single top-level directory named
- openvpms-release-${pom.version}
+ The OpenVPMS installation has a single top-level directory named:
+   openvpms-release-${pom.version}
+
  This will be referred to as <OPENVPMS_HOME> in the remainder of this document.
  This directory has the following sub-directories:
 
- - bin     contains a number of tool scripts used to load data into OpenVPMS
+ - bin     contains a number of tools used to load data into OpenVPMS
  - conf    contains configuration files for the tools in bin/
  - db      contains MySQL SQL scripts to create the initial database
  - import  contains data to import into OpenVPMS
@@ -100,7 +105,7 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
 
 1.6 OpenOffice installation
 
-  OpenVPMS uses OpenOffice to perform reporting, printing and conversion.
+  OpenVPMS uses OpenOffice to perform reporting, printing and document conversion.
   Install it as per your platform's requirements and then:
 
   1. Add it to the PATH of the user that runs Apache Tomcat.
@@ -111,33 +116,55 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
         soffice
      This should start OpenOffice.
 
-1.7 Testing the installation
+1.7 Document Templates
 
-  To test the installation, open up your Internet Browser and enter the 
+  Document templates used for invoices, payments etc., are located in <OPENVPMS_HOME>/reports.
+  These need to be loaded prior to use.
+  This can be done using the 'templateload' script. E.g:
+
+  > cd <OPENVPMS_HOME>/bin
+  > templateload ../reports/templates.xml
+
+  NOTE: if a template has been already loaded, it will be replaced.
+
+  After installation, templates can be updated using via Administration|Templates.
+
+  The templates need to be customised to add practice logos etc. Templates with a:
+  - .doc or .odt extension can be customised in OpenOffice Writer or Microsoft Word
+  - .jrxml extension can be customised in iReport Designer
+
+  See also:
+  - http://www.openvpms.org/documentation/csh/1.7/introduction/reporting
+  - http://www.openvpms.org/documentation/csh/1.7/reference/reportsForms
+  - http://www.openvpms.org/documentation/csh/1.7/admin/template
+
+1.8 Testing the installation
+
+  To test the installation, open up your Internet Browser and enter the
   address:
 
       http://localhost:8080/openvpms/app
 
   Login to OpenVPMS using user admin and password admin
-  
-2. Upgrading
- This section details the upgrade procedure.
 
- These instructions assume that:
- 1. The previous OpenVPMS installation is available in <OPENVPMS_PREV>.
+2. Upgrading
+  This section details the upgrade procedure.
+
+  These instructions assume that:
+  1. The previous OpenVPMS installation is available in <OPENVPMS_PREV>.
      E.g. on Windows:
         c:\OpenVPMS\openvpms-release-1.6
- 2. The new installation will be located in <OPENVPMS_HOME>.
+  2. The new installation will be located in <OPENVPMS_HOME>.
      E.g. on Windows:
         c:\OpenVPMS\openvpms-release-1.7
 
- NOTE: the OpenVPMS version can be excluded from the path name. This can
- simplify upgrades by removing the need to change custom scripts that contain
- the installation path.
+  NOTE: the OpenVPMS version can be excluded from the path name. This can
+  simplify upgrades by removing the need to change custom scripts that contain
+  the installation path.
 
- The previous installation should be retained until:
- . settings have been migrated to the new installation
- . the migration has been verified to be successful
+  The previous installation should be retained until:
+  . settings have been migrated to the new installation
+  . the migration has been verified to be successful
 
 2.1 Preparation
 
@@ -146,8 +173,8 @@ that paths shown as say <OPENVPMS_HOME>/lib will in fact be <OPENVPMS_HOME>\lib.
 
         mysqldump -u openvpms -p openvpms > openvpms.sql
 
-  NOTE: It is good practice to ensure that the backup can be restored prior to
-        performing any upgrade.
+  NOTE: It is good practice to ensure that the backup can be restored to a
+        different server, prior to performing any upgrade.
 
   For more information on backing up and restoring MySQL databases, see:
   . http://dev.mysql.com/doc/refman/5.1/en/mysqldump.html and
