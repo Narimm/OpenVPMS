@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -404,7 +405,21 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeTargetEntities(String node) {
-        return getNodeTargetObjects(node, Entity.class);
+        return getNodeTargetEntities(node, (Comparator<EntityRelationship>) null);
+    }
+
+    /**
+     * Returns the active target entities from each active relationship for the
+     * specified node. If a target reference cannot be resolved, it will be
+     * ignored.
+     *
+     * @param node       the entity relationship node
+     * @param comparator if non-null, specifies a comparator to sort relationships
+     * @return a list of active target entities
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<Entity> getNodeTargetEntities(String node, Comparator<EntityRelationship> comparator) {
+        return getNodeTargetObjects(node, Entity.class, comparator);
     }
 
     /**
@@ -495,7 +510,7 @@ public class EntityBean extends IMObjectBean {
      */
     @Deprecated
     public List<IMObjectReference> getNodeSourceEntityRefs(String node, Date time, boolean active) {
-        return getRelatedObjectRefs(node, isActive(time), SOURCE);
+        return getRelatedObjectRefs(node, isActive(time), SOURCE, null);
     }
 
     /**
@@ -545,7 +560,7 @@ public class EntityBean extends IMObjectBean {
      */
     @Deprecated
     public List<IMObjectReference> getNodeTargetEntityRefs(String node, Date time, boolean active) {
-        return getRelatedObjectRefs(node, isActive(time), TARGET);
+        return getRelatedObjectRefs(node, isActive(time), TARGET, null);
     }
 
     /**

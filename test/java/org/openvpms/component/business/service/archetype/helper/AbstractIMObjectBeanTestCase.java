@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceTestCase;
@@ -65,6 +64,19 @@ public class AbstractIMObjectBeanTestCase extends ArchetypeServiceTestCase {
                 }
             }
             assertTrue("Object not found: " + e, found);
+        }
+    }
+
+    /**
+     * Verifies that objects are in the expected order.
+     *
+     * @param objects  the actual objects
+     * @param expected the expected object, in order
+     */
+    protected <T extends IMObject> void checkOrder(List<T> objects, IMObject... expected) {
+        assertEquals(objects.size(), expected.length);
+        for (int i = 0; i < expected.length; ++i) {
+            assertEquals(objects.get(i), expected[i]);
         }
     }
 
@@ -127,8 +139,8 @@ public class AbstractIMObjectBeanTestCase extends ArchetypeServiceTestCase {
     /**
      * Helper to add a relationship.
      *
-     * @param source     the customer
-     * @param target      the patient
+     * @param source       the customer
+     * @param target       the patient
      * @param relationship the relationship to add
      */
     protected void addRelationship(Party source, Party target, EntityRelationship relationship) {
@@ -137,4 +149,5 @@ public class AbstractIMObjectBeanTestCase extends ArchetypeServiceTestCase {
         source.addEntityRelationship(relationship);
         target.addEntityRelationship(relationship);
     }
+
 }

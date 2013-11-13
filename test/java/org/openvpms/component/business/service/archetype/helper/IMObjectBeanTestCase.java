@@ -30,11 +30,14 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
+import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -675,4 +678,43 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         }
     }
 
+    /**
+     * Tests the {@link IMObjectBean#getNodeTargetObjects(String, Comparator)},
+     * {@link IMObjectBean#getNodeTargetObjects(String, Class, Comparator)} and
+     * {@link IMObjectBean#getNodeTargetObjects(String, Predicate, boolean, Class, Comparator)} methods.
+     */
+    @Test
+    public void testGetNodeTargetObjectsWithComparator() {
+        Party customer = createCustomer();
+        Party patient1 = createPatient();
+        Party patient2 = createPatient();
+        Party patient3 = createPatient();
+        EntityRelationship rel1 = addOwnerRelationship(customer, patient1);
+        EntityRelationship rel2 = addOwnerRelationship(customer, patient2);
+        EntityRelationship rel3 = addOwnerRelationship(customer, patient3);
+        rel1.setSequence(3);
+        rel2.setSequence(2);
+        rel3.setSequence(1);
+        save(customer, patient1, patient2, patient3);
+
+        IMObjectBean bean = new IMObjectBean(customer);
+        List<IMObject> patients1 = bean.getNodeTargetObjects("patients", SequenceComparator.INSTANCE);
+        checkOrder(patients1, patient3, patient2, patient1);
+
+        List<Party> patients2 = bean.getNodeTargetObjects("patients", Party.class, SequenceComparator.INSTANCE);
+        checkOrder(patients2, patient3, patient2, patient1);
+
+        // set the relationship times to the past verify it is filtered out
+        Date now = new Date();
+        Date start1 = new Date(now.getTime() - 60 * 1000);
+        Date end1 = new Date(now.getTime() - 50 * 1000);
+
+        rel1.setActiveStartTime(start1);
+        rel1.setActiveEndTime(end1);
+        List<Party> patients3 = bean.getNodeTargetObjects("patients", IsActiveRelationship.isActive(now), true,
+                                                          Party.class, SequenceComparator.INSTANCE);
+        checkEquals(patients3, patient3, patient2);
+    }
+
 }
+

@@ -25,8 +25,10 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -856,6 +858,28 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
         relationship.setSource(null);
         references = pet1Bean.getNodeSourceEntityRefs("customers");
         assertEquals(0, references.size());
+    }
+
+    /**
+     * Tests the {@link EntityBean#getNodeTargetEntities(String, Comparator)} method.
+     */
+    @Test
+    public void testGetNodeTargetEntitiesWithComparator() {
+        Party customer = createCustomer();
+        Party patient1 = createPatient();
+        Party patient2 = createPatient();
+        Party patient3 = createPatient();
+        EntityRelationship rel1 = addOwnerRelationship(customer, patient1);
+        EntityRelationship rel2 = addOwnerRelationship(customer, patient2);
+        EntityRelationship rel3 = addOwnerRelationship(customer, patient3);
+        rel1.setSequence(3);
+        rel2.setSequence(2);
+        rel3.setSequence(1);
+        save(customer, patient1, patient2, patient3);
+
+        EntityBean bean = new EntityBean(customer);
+        List<Entity> patients1 = bean.getNodeTargetEntities("patients", SequenceComparator.INSTANCE);
+        checkOrder(patients1, patient3, patient2, patient1);
     }
 
     /**

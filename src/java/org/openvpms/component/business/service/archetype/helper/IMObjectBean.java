@@ -41,6 +41,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -58,8 +59,7 @@ import static org.openvpms.component.business.service.archetype.helper.IMObjectB
 /**
  * Helper to access an {@link IMObject}'s properties via their names.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class IMObjectBean {
 
@@ -652,7 +652,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Class<T> type) {
-        return getRelatedObjects(node, IsActiveRelationship.isActiveNow(), SOURCE, true, type);
+        return getRelatedObjects(node, IsActiveRelationship.isActiveNow(), SOURCE, true, type, null);
     }
 
     /**
@@ -751,7 +751,7 @@ public class IMObjectBean {
      */
     public <T extends IMObject> List<T> getNodeSourceObjects(String node, Predicate predicate, boolean active,
                                                              Class<T> type) {
-        return getRelatedObjects(node, predicate, SOURCE, active, type);
+        return getRelatedObjects(node, predicate, SOURCE, active, type, null);
     }
 
     /**
@@ -797,6 +797,19 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the active target objects from each active {@link IMObjectRelationship} for the specified node.. If a
+     * target reference cannot be resolved, it will be ignored.
+     *
+     * @param node       the relationship node
+     * @param comparator a comparator to sort relationships. May be {@code null}
+     * @return a list of active target objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <R extends IMObjectRelationship> List<IMObject> getNodeTargetObjects(String node, Comparator<R> comparator) {
+        return getNodeTargetObjects(node, IMObject.class, comparator);
+    }
+
+    /**
      * Returns the active target objects from each active {@link IMObjectRelationship} for the specified node. If a
      * target reference cannot be resolved, it will be ignored.
      *
@@ -806,7 +819,22 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Class<T> type) {
-        return getNodeTargetObjects(node, IsActiveRelationship.isActiveNow(), true, type);
+        return getNodeTargetObjects(node, type, (Comparator<IMObjectRelationship>) null);
+    }
+
+    /**
+     * Returns the active target objects from each active {@link IMObjectRelationship} for the specified node. If a
+     * target reference cannot be resolved, it will be ignored.
+     *
+     * @param node       the relationship node
+     * @param type       the object type
+     * @param comparator if non-null, specifies a comparator to sort relationships
+     * @return a list of active target objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getNodeTargetObjects(String node, Class<T> type,
+                                                                                             Comparator<R> comparator) {
+        return getNodeTargetObjects(node, IsActiveRelationship.isActiveNow(), true, type, comparator);
     }
 
     /**
@@ -903,7 +931,7 @@ public class IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<IMObject> getNodeTargetObjects(String node, Predicate predicate, boolean active) {
-        return getRelatedObjects(node, predicate, TARGET, active, IMObject.class);
+        return getRelatedObjects(node, predicate, TARGET, active, IMObject.class, null);
     }
 
     /**
@@ -919,7 +947,24 @@ public class IMObjectBean {
      */
     public <T extends IMObject> List<T> getNodeTargetObjects(String node, Predicate predicate, boolean active,
                                                              Class<T> type) {
-        return getRelatedObjects(node, predicate, TARGET, active, type);
+        return getNodeTargetObjects(node, predicate, active, type, null);
+    }
+
+    /**
+     * Returns the target objects from each {@link IMObjectRelationship} for the specified node that matches the
+     * specified predicate.
+     *
+     * @param node       the relationship node
+     * @param predicate  the predicate
+     * @param active     determines if the objects must be active
+     * @param type       the object type
+     * @param comparator if non-null, specifies a comparator to sort relationships
+     * @return a list of target objects. May  contain inactive objects
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public <T extends IMObject, R extends IMObjectRelationship> List<T> getNodeTargetObjects(
+            String node, Predicate predicate, boolean active, Class<T> type, Comparator<R> comparator) {
+        return getRelatedObjects(node, predicate, TARGET, active, type, comparator);
     }
 
     /**
@@ -983,7 +1028,7 @@ public class IMObjectBean {
      * @return a list of source object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeSourceObjectRefs(String node, Predicate predicate) {
-        return getRelatedObjectRefs(node, predicate, SOURCE);
+        return getRelatedObjectRefs(node, predicate, SOURCE, null);
     }
 
     /**
@@ -1017,7 +1062,7 @@ public class IMObjectBean {
      * @return a list of target object references. May contain references to both active and inactive objects
      */
     public List<IMObjectReference> getNodeTargetObjectRefs(String node, Predicate predicate) {
-        return getRelatedObjectRefs(node, predicate, TARGET);
+        return getRelatedObjectRefs(node, predicate, TARGET, null);
     }
 
     /**
@@ -1578,31 +1623,39 @@ public class IMObjectBean {
     /**
      * Returns all objects for the specified relationship node that match the specified criteria.
      *
-     * @param node      the relationship node
-     * @param predicate the criteria to filter relationships
-     * @param accessor  the object accessor
-     * @param active    determines if the objects must be active
-     * @param type      the expected object type
+     * @param node       the relationship node
+     * @param predicate  the criteria to filter relationships
+     * @param accessor   the object accessor
+     * @param active     determines if the objects must be active
+     * @param type       the expected object type
+     * @param comparator if non-null, specifies a comparator to sort relationships
      * @return a list of objects
      * @throws ArchetypeServiceException for any archetype service error
      */
     @SuppressWarnings("unchecked")
-    protected <T extends IMObject> List<T> getRelatedObjects(String node, Predicate predicate, RelationshipRef accessor,
-                                                             boolean active, Class<T> type) {
-        List<IMObjectReference> refs = getRelatedObjectRefs(node, predicate, accessor);
+    protected <T extends IMObject, R extends IMObjectRelationship> List<T> getRelatedObjects(
+            String node, Predicate predicate, RelationshipRef accessor, boolean active, Class<T> type,
+            Comparator<R> comparator) {
+        List<IMObjectReference> refs = getRelatedObjectRefs(node, predicate, accessor, comparator);
         return resolve(refs, type, active);
     }
 
     /**
      * Returns all related references for the specified node that match the specified criteria.
      *
-     * @param node      the relationship node
-     * @param predicate the criteria
-     * @param accessor  the object accessor
+     * @param node       the relationship node
+     * @param predicate  the criteria
+     * @param accessor   the object accessor
+     * @param comparator if non-null, specifies a comparator to sort relationships
      * @return the matching references
      */
-    protected List<IMObjectReference> getRelatedObjectRefs(String node, Predicate predicate, RelationshipRef accessor) {
-        List<IMObjectRelationship> relationships = getValues(node, IMObjectRelationship.class);
+    @SuppressWarnings("unchecked")
+    protected <R extends IMObjectRelationship> List<IMObjectReference> getRelatedObjectRefs(
+            String node, Predicate predicate, RelationshipRef accessor, Comparator<R> comparator) {
+        List<R> relationships = (List<R>) getValues(node, IMObjectRelationship.class);
+        if (comparator != null) {
+            Collections.sort(relationships, comparator);
+        }
         return getRelatedRefs(relationships, predicate, accessor);
     }
 
