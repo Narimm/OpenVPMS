@@ -398,14 +398,14 @@ public abstract class IMTableCollectionEditor<T>
                 onNew();
             }
         };
-        buttons.addButton(ADD_ID, addListener, disableShortcut);
+        buttons.addButton(ADD_ID, disableShortcut, addListener);
 
         ActionListener deleteListener = new ActionListener() {
             public void onAction(ActionEvent event) {
                 onDelete();
             }
         };
-        buttons.addButton(DELETE_ID, deleteListener, disableShortcut);
+        buttons.addButton(DELETE_ID, disableShortcut, deleteListener);
 
         int cardinality = getCollection().getMaxCardinality();
         if (cardinality > 1 || cardinality == -1) {
@@ -414,14 +414,14 @@ public abstract class IMTableCollectionEditor<T>
                     onPrevious();
                 }
             };
-            buttons.addButton(PREVIOUS_ID, previous, disableShortcut);
+            buttons.addButton(PREVIOUS_ID, disableShortcut, previous);
 
             ActionListener next = new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onNext();
                 }
             };
-            buttons.addButton(NEXT_ID, next, disableShortcut);
+            buttons.addButton(NEXT_ID, disableShortcut, next);
         }
         if (range.length == 1) {
             shortName = range[0];

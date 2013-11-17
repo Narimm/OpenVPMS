@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.button;
@@ -23,7 +21,6 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 
@@ -31,8 +28,7 @@ import org.openvpms.web.echo.keyboard.KeyStrokeHandler;
 /**
  * A column of buttons.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-12-12 03:25:07Z $
+ * @author Tim Anderson
  */
 public class ButtonColumn extends Column implements KeyStrokeHandler {
 
@@ -48,37 +44,37 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
 
 
     /**
-     * Constructs a new <tt>ButtonColumn</tt>.
+     * Constructs a new {@code ButtonColumn}.
      */
     public ButtonColumn() {
         this(STYLE, null);
     }
 
     /**
-     * Constructs a new <tt>ButtonColumn</tt>.
+     * Constructs a new {@code ButtonColumn}.
      *
-     * @param columnStyle the column style. May be <tt>null</tt>
-     * @param buttonStyle the button style. May be <tt>null</tt>
+     * @param columnStyle the column style. May be {@code null}
+     * @param buttonStyle the button style. May be {@code null}
      */
     public ButtonColumn(String columnStyle, String buttonStyle) {
         this(null, columnStyle, buttonStyle);
     }
 
     /**
-     * Constructs a new <tt>ButtonColumn</tt>.
+     * Constructs a new {@code ButtonColumn}.
      *
-     * @param focus the focus group. May be <tt>null</tt>
+     * @param focus the focus group. May be {@code null}
      */
     public ButtonColumn(FocusGroup focus) {
         this(focus, STYLE, null);
     }
 
     /**
-     * Constructs a new <tt>ButtonColumn</tt>.
+     * Constructs a new {@code ButtonColumn}.
      *
-     * @param focus       the focus set. May be <tt>null</tt>
-     * @param columnStyle the column style. May be <tt>null</tt>
-     * @param buttonStyle the button style. May be <tt>null</tt>
+     * @param focus       the focus set. May be {@code null}
+     * @param columnStyle the column style. May be {@code null}
+     * @param buttonStyle the button style. May be {@code null}
      */
     public ButtonColumn(FocusGroup focus, String columnStyle, String buttonStyle) {
         setStyleName(columnStyle);
@@ -108,7 +104,7 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
      * button, and is returned by {@link ActionEvent#getActionCommand} when
      * triggered.
      *
-     * @param key the resource bundle key. May be <tt>null</tt>
+     * @param key the resource bundle key. May be {@code null}
      * @return a new button
      */
     public Button addButton(String key) {
@@ -118,7 +114,7 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param key      the resource bundle key. May be <tt>null</tt>
+     * @param key      the resource bundle key. May be {@code null}
      * @param listener the listener to add
      * @return the button
      */
@@ -129,13 +125,13 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param key             the resource bundle key. May be <tt>null</tt>
+     * @param key             the resource bundle key. May be {@code null}
+     * @param disableShortcut if {@code true} disable any keyboard shortcut
      * @param listener        the listener to add
-     * @param disableShortcut if <tt>true</tt> disable any keyboard shortcut
      * @return the button
      */
-    public Button addButton(String key, ActionListener listener, boolean disableShortcut) {
-        return set.add(key, listener, disableShortcut);
+    public Button addButton(String key, boolean disableShortcut, ActionListener listener) {
+        return set.add(key, disableShortcut, listener);
     }
 
     /**
@@ -148,10 +144,10 @@ public class ButtonColumn extends Column implements KeyStrokeHandler {
     }
 
     /**
-     * Removes the specified child <tt>Component</tt> from this
-     * <tt>Component</tt>.
+     * Removes the specified child {@code Component} from this
+     * {@code Component}.
      *
-     * @param component the child <tt>Component</tt> to remove
+     * @param component the child {@code Component} to remove
      */
     @Override
     public void remove(Component component) {
