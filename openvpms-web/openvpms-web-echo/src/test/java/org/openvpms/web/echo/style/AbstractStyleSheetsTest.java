@@ -16,6 +16,7 @@
 
 package org.openvpms.web.echo.style;
 
+import nextapp.echo2.app.Border;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Extent;
@@ -119,13 +120,36 @@ public abstract class AbstractStyleSheetsTest {
     }
 
     /**
+     * Verifies that styles can be overridden.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testStyleSheetOverride() throws Exception {
+        StyleSheets overriddenStyles = createStyleSheets("org/openvpms/web/echo/style/valid",
+                                                         "org/openvpms/web/echo/style/override");
+
+        StyleSheet defaultStyleSheet = styleSheets.getStyleSheet(640, 480);
+        StyleSheet overriddenStyleSheet = overriddenStyles.getStyleSheet(640, 480);
+
+        Style defaultStyle = defaultStyleSheet.getStyle(Button.class, "button");
+        Style overriddenStyle = overriddenStyleSheet.getStyle(Button.class, "button");
+
+        Border defaultBorder = (Border) defaultStyle.getProperty(Button.PROPERTY_BORDER);
+        Border overriddenBorder = (Border) overriddenStyle.getProperty(Button.PROPERTY_BORDER);
+
+        assertEquals(1, defaultBorder.getSize().getValue());
+        assertEquals(10, overriddenBorder.getSize().getValue());
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
      */
     @Before
     public void setUp() throws Exception {
-        styleSheets = createStyleSheets();
+        styleSheets = createStyleSheets("org/openvpms/web/echo/style/valid", null);
     }
 
     /**
@@ -164,10 +188,13 @@ public abstract class AbstractStyleSheetsTest {
     /**
      * Creates the style sheets.
      *
+     * @param defaultBaseName  the default resource base name
+     * @param overrideBaseName the override resource base name. May be {@code null}
      * @return the style sheets
-     * @throws java.io.IOException for any I/O error
+     * @throws IOException for any I/O error
      */
-    protected abstract StyleSheets createStyleSheets() throws IOException;
+    protected abstract StyleSheets createStyleSheets(String defaultBaseName, String overrideBaseName)
+            throws IOException;
 
     /**
      * Returns the style sheets.

@@ -204,9 +204,9 @@ public abstract class AbstractStyleSheetCache implements StyleSheets {
     }
 
     /**
-     * Sets the default properties.
+     * Sets the unevaluated properties.
      * <p/>
-     * This should be called before any other operation
+     * This should be called before any other operation.
      *
      * @param properties the default properties
      */
