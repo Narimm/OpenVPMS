@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.resource.i18n.format;
 
@@ -77,16 +77,20 @@ public class NumberFormatter {
     /**
      * Format a number.
      *
-     * @param value  the number to format
+     * @param value  the number to format. May be {@code null}
      * @param format the formatter
-     * @return the formatted number
+     * @return the formatted number, or {@code null} if {@code value} is {@code null}
      */
     public static String format(Number value, NumberFormat format) {
         String result;
-        try {
-            result = format.format(value);
-        } catch (IllegalArgumentException exception) {
-            result = value.toString();
+        if (value != null) {
+            try {
+                result = format.format(value);
+            } catch (IllegalArgumentException exception) {
+                result = value.toString();
+            }
+        } else {
+            result = null;
         }
         return result;
     }
@@ -98,15 +102,19 @@ public class NumberFormatter {
      * This is due to the fact that {@link Messages} uses the browser's locale to format messages, which may have a
      * different currency symbol to that of the practice.
      *
-     * @param amount the amount
-     * @return the formatted amount
+     * @param amount the amount. May be {@code null}
+     * @return the formatted amount, or {@code null} if {@code value} is {@code null}
      */
     public static String formatCurrency(Number amount) {
         String result;
-        try {
-            result = getCurrencyFormat().format(amount);
-        } catch (IllegalArgumentException exception) {
-            result = amount.toString();
+        if (amount != null) {
+            try {
+                result = getCurrencyFormat().format(amount);
+            } catch (IllegalArgumentException exception) {
+                result = amount.toString();
+            }
+        } else {
+            result = null;
         }
         return result;
     }
