@@ -29,8 +29,8 @@ import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.SelectionDialog;
 import org.openvpms.web.echo.event.WindowPaneListener;
+import org.openvpms.web.echo.factory.ListBoxFactory;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.list.KeyListBox;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -134,8 +134,7 @@ public final class IMObjectCreator {
             final ShortNameListModel model = new ShortNameListModel(shortNames, false);
             String title = Messages.format("imobject.create.title", type);
             String message = Messages.format("imobject.create.message", type);
-            ListBox list = new KeyListBox(model);
-            list.setStyleName("default");
+            ListBox list = ListBoxFactory.create(model);
             list.setHeight(new Extent(12, Extent.EM));
             list.setCellRenderer(new ShortNameListCellRenderer());
             if (defaultShortName != null) {
