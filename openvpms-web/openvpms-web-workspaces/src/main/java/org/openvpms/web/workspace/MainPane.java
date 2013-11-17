@@ -371,7 +371,7 @@ public class MainPane extends SplitPane implements ContextChangeListener, Contex
                     select(workspaces, workspace);
                 }
             };
-            Button button = subMenu.addButton(workspace.getTitleKey(), listener, true);
+            Button button = subMenu.addButton(workspace.getTitleKey(), true, listener);
             button.setFocusTraversalParticipant(false);
         }
         Workspace current = workspaces.getWorkspace();

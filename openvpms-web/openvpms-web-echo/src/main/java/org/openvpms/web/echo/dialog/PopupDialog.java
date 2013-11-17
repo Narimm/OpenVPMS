@@ -448,7 +448,7 @@ public abstract class PopupDialog extends PopupWindow {
                 onButton(id);
             }
         };
-        return addButton(id, listener, disableShortcut);
+        return addButton(id, disableShortcut, listener);
     }
 
 }

@@ -176,20 +176,19 @@ public abstract class PopupWindow extends WindowPane {
      * @return a new button
      */
     protected Button addButton(String id, ActionListener listener) {
-        return addButton(id, listener, false);
+        return addButton(id, false, listener);
     }
 
     /**
      * Adds a button.
      *
      * @param id              the button identifier
-     * @param listener        the action listener
      * @param disableShortcut if {@code true} disable any keyboard shortcut
+     * @param listener        the action listener
      * @return a new button
      */
-    protected Button addButton(String id, ActionListener listener,
-                               boolean disableShortcut) {
-        return row.addButton(id, listener, disableShortcut);
+    protected Button addButton(String id, boolean disableShortcut, ActionListener listener) {
+        return row.addButton(id, disableShortcut, listener);
     }
 
     /**

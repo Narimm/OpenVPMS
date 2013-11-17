@@ -250,20 +250,19 @@ public class ButtonSet implements KeyStrokeHandler {
      * @return a new button
      */
     public Button add(String id, ActionListener listener) {
-        return add(id, listener, false);
+        return add(id, false, listener);
     }
 
     /**
      * Adds a button, and registers an event listener.
      *
-     * @param id              the button id, used to identify the button and as
-     *                        a resource bundle key. May be {@code null}
-     * @param listener        the listener to add
+     * @param id              the button id, used to identify the button and as a resource bundle key. May be
+     *                        {@code null}
      * @param disableShortcut if {@code true} disable any keyboard shortcut
+     * @param listener        the listener to add
      * @return a new button
      */
-    public Button add(String id, ActionListener listener,
-                      boolean disableShortcut) {
+    public Button add(String id, boolean disableShortcut, ActionListener listener) {
         Button button = add(id, disableShortcut);
         button.addActionListener(listener);
         return button;
