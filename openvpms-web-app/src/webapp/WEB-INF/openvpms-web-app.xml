@@ -57,6 +57,7 @@
 
     <bean id="styleSheetCache" class="org.openvpms.web.echo.style.StyleSheetCache">
         <constructor-arg index="0" value="style/default"/>
+        <constructor-arg index="1" value="style/site"/>
     </bean>
 
     <bean id="userStyleSheets" class="org.openvpms.web.echo.style.UserStyleSheets" scope="session">

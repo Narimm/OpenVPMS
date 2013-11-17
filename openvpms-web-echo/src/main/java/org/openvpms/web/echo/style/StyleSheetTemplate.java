@@ -16,7 +16,7 @@
 
 package org.openvpms.web.echo.style;
 
-import nextapp.echo2.app.StyleSheet;
+import nextapp.echo2.app.MutableStyleSheet;
 import nextapp.echo2.app.componentxml.ComponentXmlException;
 import nextapp.echo2.app.componentxml.StyleSheetLoader;
 import org.apache.commons.io.IOUtils;
@@ -62,10 +62,10 @@ public class StyleSheetTemplate {
      * @return a new style sheet
      * @throws StyleSheetException if the style sheet cannot be created
      */
-    public StyleSheet getStyleSheet(Map<String, String> properties) {
+    public MutableStyleSheet getStyleSheet(Map<String, String> properties) {
         InputStream expanded = replaceTokens(properties);
         try {
-            return StyleSheetLoader.load(expanded, StyleSheetTemplate.class.getClassLoader());
+            return (MutableStyleSheet) StyleSheetLoader.load(expanded, StyleSheetTemplate.class.getClassLoader());
         } catch (ComponentXmlException exception) {
             throw new StyleSheetException(StyleSheetException.ErrorCode.InvalidStyleSheet, exception);
         }

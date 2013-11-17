@@ -29,10 +29,13 @@ public class StyleSheetCacheTestCase extends AbstractStyleSheetsTest {
     /**
      * Creates the style sheets.
      *
+     * @param defaultBaseName  the default resource base name
+     * @param overrideBaseName the override resource base name. May be {@code null}
      * @return the style sheets
      * @throws IOException for any I/O error
      */
-    protected StyleSheets createStyleSheets() throws IOException {
-        return new StyleSheetCache("org/openvpms/web/echo/style/valid");
+    @Override
+    protected StyleSheets createStyleSheets(String defaultBaseName, String overrideBaseName) throws IOException {
+        return new StyleSheetCache(defaultBaseName, overrideBaseName);
     }
 }
