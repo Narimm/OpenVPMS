@@ -14,7 +14,7 @@ change to:
 1.1 Requirements
 - OpenVPMS requires the following to be installed:
 
-  - Java Platform, Standard Edition 6 or higher
+  - Java Platform, Standard Edition 7 or higher
     The Java Runtime Environment (JRE) is the minimum requirement.
     See http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
