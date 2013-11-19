@@ -19,6 +19,7 @@ package org.openvpms.web.echo.table;
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.LayoutData;
 import nextapp.echo2.app.Style;
@@ -26,6 +27,7 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.echo.colour.ColourHelper;
 
 import java.util.Iterator;
 
@@ -182,11 +184,33 @@ public class TableHelper {
                 if (value != null) {
                     try {
                         BeanUtils.setProperty(component, name, value);
+
+                        if (value instanceof TableLayoutData) {
+                            Color background = ((TableLayoutData) value).getBackground();
+                            if (background != null) {
+                                // layout sets a background, so adjust foreground colours so text doesn't become
+                                // unreadable
+                                setForeground(component, ColourHelper.getTextColour(background));
+                            }
+                        }
                     } catch (Throwable ignore) {
                         // no-op
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Recursively sets the foreground colour of a component and its children.
+     *
+     * @param component the component
+     * @param colour    the foreground colour
+     */
+    private static void setForeground(Component component, Color colour) {
+        component.setForeground(colour);
+        for (Component child : component.getComponents()) {
+            setForeground(child, colour);
         }
     }
 
