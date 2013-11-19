@@ -52,7 +52,6 @@ import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQueryFactory;
-import org.openvpms.web.workspace.patient.mr.PatientDocumentCRUDWindow;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
 
 
@@ -64,34 +63,34 @@ import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
 public class VisitEditor {
 
     /**
-     * The index of the patient history tab.
+     * The id of the patient history tab.
      */
-    public static final int HISTORY_INDEX = 0;
+    public static final int HISTORY_TAB = 0;
 
     /**
-     * The index of the invoice tab.
+     * The id of the invoice tab.
      */
-    public static final int INVOICE_INDEX = 1;
+    public static final int INVOICE_TAB = 1;
 
     /**
-     * The index of the reminders/alerts tab.
+     * The id of the reminders/alerts tab.
      */
-    public static final int REMINDERS_INDEX = 2;
+    public static final int REMINDER_TAB = 2;
 
     /**
-     * The index of the document tab.
+     * The id of the document tab.
      */
-    public static final int DOCUMENT_INDEX = 3;
+    public static final int DOCUMENT_TAB = 3;
 
     /**
-     * The index of the prescription tab.
+     * The id of the prescription tab.
      */
-    public static final int PRESCRIPTION_INDEX = 4;
+    public static final int PRESCRIPTION_TAB = 4;
 
     /**
-     * The index of the estimates tab.
+     * The id of the estimates tab.
      */
-    public static final int ESTIMATES_INDEX = 5;
+    public static final int ESTIMATE_TAB = 5;
 
     /**
      * The CRUD window for editing events and their items.
@@ -129,9 +128,9 @@ public class VisitEditor {
     private BrowserCRUDWindow<Act> reminderWindow;
 
     /**
-     * The patient CRUD window.
+     * The patient document browser window.
      */
-    private PatientDocumentCRUDWindow documentWindow;
+    private BrowserCRUDWindow<DocumentAct> documentWindow;
 
     /**
      * The prescription CRUD window.
@@ -169,14 +168,39 @@ public class VisitEditor {
     private FocusGroup focusGroup = new FocusGroup(getClass().getName());
 
     /**
-     * The patient document browser.
-     */
-    private Browser<DocumentAct> documentBrowser;
-
-    /**
      * Determines if the documents have been queried.
      */
     private boolean documentsQueried;
+
+    /**
+     * History tab index.
+     */
+    private int historyIndex;
+
+    /**
+     * Invoice tab index.
+     */
+    private int invoiceIndex;
+
+    /**
+     * Reminder tab index.
+     */
+    private int reminderIndex;
+
+    /**
+     * Document tab index.
+     */
+    private int documentIndex;
+
+    /**
+     * Prescription tab index.
+     */
+    private int prescriptionIndex;
+
+    /**
+     * Estimate tab index.
+     */
+    private int estimateIndex;
 
 
     /**
@@ -209,7 +233,7 @@ public class VisitEditor {
 
         reminderWindow = new ReminderBrowserCRUDWindow(patient, context, help.subtopic("reminder"));
 
-        documentWindow = new VisitDocumentCRUDWindow(context, help.subtopic("document"));
+        documentWindow = createDocumentBrowserCRUDWindow(context);
 
         prescriptionWindow = new PrescriptionBrowserCRUDWindow(patient, context, help.subtopic("prescription"));
 
@@ -256,7 +280,7 @@ public class VisitEditor {
      * Selects the charges tab.
      */
     public void selectCharges() {
-        tab.setSelectedIndex(INVOICE_INDEX);
+        selectTab(INVOICE_TAB);
     }
 
     /**
@@ -265,7 +289,8 @@ public class VisitEditor {
      * @param buttons the buttons
      */
     public void setButtons(ButtonSet buttons) {
-        CRUDWindow<? extends Act> window = getWindow(tab.getSelectedIndex());
+        int index = getModelIndex(tab.getSelectedIndex());
+        CRUDWindow<? extends Act> window = getWindow(index);
         if (window instanceof AbstractCRUDWindow) {
             ((AbstractCRUDWindow) window).setButtons(buttons);
         }
@@ -296,7 +321,8 @@ public class VisitEditor {
      */
     public HelpContext getHelpContext() {
         HelpContext result = getBaseHelpContext();
-        CRUDWindow<? extends Act> window = getWindow(tab.getSelectedIndex());
+        int index = getModelIndex(tab.getSelectedIndex());
+        CRUDWindow<? extends Act> window = getWindow(index);
         if (window != null) {
             result = window.getHelpContext();
         }
@@ -318,7 +344,7 @@ public class VisitEditor {
             tab.getSelectionModel().addChangeListener(new ChangeListener() {
                 @Override
                 public void onChange(ChangeEvent event) {
-                    onTabSelected(tab.getSelectedIndex());
+                    onTabSelected(getModelIndex(tab.getSelectedIndex()));
                 }
             });
             focusGroup.add(tab);
@@ -396,27 +422,83 @@ public class VisitEditor {
     }
 
     /**
+     * Selects the specified tab.
+     *
+     * @param index the tab model index
+     */
+    protected void selectTab(int index) {
+        tab.setSelectedIndex(getTabIndex(index));
+    }
+
+    /**
      * Returns the {@link CRUDWindow} associated with the tab index.
      *
-     * @param index the tab index
+     * @param index the tab model index
      * @return the corresponding {@link CRUDWindow} or {@code null} if none is found
      */
     protected CRUDWindow<? extends Act> getWindow(int index) {
         switch (index) {
-            case HISTORY_INDEX:
+            case HISTORY_TAB:
                 return visitWindow.getWindow();
-            case INVOICE_INDEX:
+            case INVOICE_TAB:
                 return chargeWindow;
-            case REMINDERS_INDEX:
+            case REMINDER_TAB:
                 return reminderWindow.getWindow();
-            case DOCUMENT_INDEX:
-                return documentWindow;
-            case PRESCRIPTION_INDEX:
+            case DOCUMENT_TAB:
+                return documentWindow.getWindow();
+            case PRESCRIPTION_TAB:
                 return prescriptionWindow.getWindow();
-            case ESTIMATES_INDEX:
+            case ESTIMATE_TAB:
                 return estimateWindow.getWindow();
         }
         return null;
+    }
+
+    /**
+     * Returns the tab model index, given its position index.
+     *
+     * @param tabIndex the tab position index
+     * @return the tab model index
+     */
+    protected int getModelIndex(int tabIndex) {
+        if (tabIndex == historyIndex) {
+            return HISTORY_TAB;
+        } else if (tabIndex == invoiceIndex) {
+            return INVOICE_TAB;
+        } else if (tabIndex == reminderIndex) {
+            return REMINDER_TAB;
+        } else if (tabIndex == documentIndex) {
+            return DOCUMENT_TAB;
+        } else if (tabIndex == prescriptionIndex) {
+            return PRESCRIPTION_TAB;
+        } else if (tabIndex == estimateIndex) {
+            return ESTIMATE_TAB;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the tab position index, given its model index.
+     *
+     * @param modelIndex the tab model index
+     * @return the tab position index
+     */
+    protected int getTabIndex(int modelIndex) {
+        switch (modelIndex) {
+            case HISTORY_TAB:
+                return historyIndex;
+            case INVOICE_TAB:
+                return invoiceIndex;
+            case REMINDER_TAB:
+                return reminderIndex;
+            case DOCUMENT_TAB:
+                return documentIndex;
+            case PRESCRIPTION_TAB:
+                return prescriptionIndex;
+            case ESTIMATE_TAB:
+                return estimateIndex;
+        }
+        return -1;
     }
 
     /**
@@ -441,6 +523,19 @@ public class VisitEditor {
     }
 
     /**
+     * Creates a window to view patient documents.
+     *
+     * @param context the context
+     * @return a new window
+     */
+    protected BrowserCRUDWindow<DocumentAct> createDocumentBrowserCRUDWindow(Context context) {
+        Query<DocumentAct> query = new PatientDocumentQuery<DocumentAct>(patient);
+        Browser<DocumentAct> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
+        VisitDocumentCRUDWindow window = new VisitDocumentCRUDWindow(context, help.subtopic("document"));
+        return new BrowserCRUDWindow<DocumentAct>(browser, window);
+    }
+
+    /**
      * Adds the history, invoice, reminder, document, prescription and estimates tabs to the tab pane model.
      *
      * @param model the model to add to
@@ -457,40 +552,42 @@ public class VisitEditor {
     /**
      * Helper to add a browser to the tab pane.
      *
-     * @param index     the tab index. Used to determine the shortcut key
      * @param button    the button key
      * @param model     the tab model
      * @param component the component
+     * @return the tab index
      */
-    protected void addTab(int index, String button, DefaultTabModel model, Component component) {
+    protected int addTab(String button, DefaultTabModel model, Component component) {
+        int index = model.size();
         int shortcut = index + 1;
         String text = "&" + shortcut + " " + Messages.get(button);
         model.addTab(text, component);
+        return index;
     }
 
     /**
      * Invoked when a tab is selected.
      *
-     * @param selected the selected tab
+     * @param selected the selected tab model index
      */
     protected void onTabSelected(int selected) {
         switch (selected) {
-            case HISTORY_INDEX:
+            case HISTORY_TAB:
                 onHistorySelected();
                 break;
-            case INVOICE_INDEX:
+            case INVOICE_TAB:
                 onInvoiceSelected();
                 break;
-            case REMINDERS_INDEX:
+            case REMINDER_TAB:
                 onRemindersSelected();
                 break;
-            case DOCUMENT_INDEX:
+            case DOCUMENT_TAB:
                 onDocumentsSelected();
                 break;
-            case PRESCRIPTION_INDEX:
+            case PRESCRIPTION_TAB:
                 onPrescriptionsSelected();
                 break;
-            case ESTIMATES_INDEX:
+            case ESTIMATE_TAB:
                 onEstimatesSelected();
                 break;
         }
@@ -512,11 +609,11 @@ public class VisitEditor {
      *
      * @param model the tab pane model to add to
      */
-    private void addPatientHistoryTab(TabPaneModel model) {
+    protected void addPatientHistoryTab(TabPaneModel model) {
         // need to add the browser to a ContentPane to get scrollbars
         ContentPane pane = new ContentPane();
         pane.add(visitWindow.getComponent());
-        addTab(HISTORY_INDEX, "button.summary", model, pane);
+        historyIndex = addTab("button.summary", model, pane);
     }
 
     /**
@@ -524,11 +621,11 @@ public class VisitEditor {
      *
      * @param model the tab pane model to add to
      */
-    private void addInvoiceTab(TabPaneModel model) {
+    protected void addInvoiceTab(TabPaneModel model) {
         // need to add the window to a ContentPane to get scrollbars
         ContentPane pane = new ContentPane();
         pane.add(chargeWindow.getComponent());
-        addTab(INVOICE_INDEX, "button.invoice", model, pane);
+        invoiceIndex = addTab("button.invoice", model, pane);
     }
 
     /**
@@ -536,8 +633,8 @@ public class VisitEditor {
      *
      * @param model the tab pane model to add to
      */
-    private void addRemindersAlertsTab(TabPaneModel model) {
-        addTab(REMINDERS_INDEX, "button.reminder", model, reminderWindow.getComponent());
+    protected void addRemindersAlertsTab(TabPaneModel model) {
+        reminderIndex = addTab("button.reminder", model, reminderWindow.getComponent());
     }
 
     /**
@@ -545,11 +642,8 @@ public class VisitEditor {
      *
      * @param model the tab pane model to add to
      */
-    private void addDocumentsTab(TabPaneModel model) {
-        Query<DocumentAct> query = new PatientDocumentQuery<DocumentAct>(patient);
-        documentBrowser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
-        BrowserCRUDWindow<DocumentAct> window = new BrowserCRUDWindow<DocumentAct>(documentBrowser, documentWindow);
-        addTab(DOCUMENT_INDEX, "button.document", model, window.getComponent());
+    protected void addDocumentsTab(TabPaneModel model) {
+        documentIndex = addTab("button.document", model, documentWindow.getComponent());
     }
 
     /**
@@ -557,8 +651,8 @@ public class VisitEditor {
      *
      * @param model the tab pane model to add to
      */
-    private void addPrescriptionsTab(TabPaneModel model) {
-        addTab(PRESCRIPTION_INDEX, "button.prescriptions", model, prescriptionWindow.getComponent());
+    protected void addPrescriptionsTab(TabPaneModel model) {
+        prescriptionIndex = addTab("button.prescriptions", model, prescriptionWindow.getComponent());
     }
 
     /**
@@ -566,8 +660,17 @@ public class VisitEditor {
      *
      * @param model the tab pane model to add to
      */
-    private void addEstimatesTab(TabPaneModel model) {
-        addTab(ESTIMATES_INDEX, "button.estimates", model, estimateWindow.getComponent());
+    protected void addEstimatesTab(TabPaneModel model) {
+        estimateIndex = addTab("button.estimates", model, getEstimateWindow().getComponent());
+    }
+
+    /**
+     * Returns the estimate window.
+     *
+     * @return the estimate window
+     */
+    protected EstimateBrowserCRUDWindow getEstimateWindow() {
+        return estimateWindow;
     }
 
     /**
@@ -575,7 +678,7 @@ public class VisitEditor {
      * <p/>
      * This refreshes the history if the current event being displayed.
      */
-    private void onHistorySelected() {
+    protected void onHistorySelected() {
         Browser<Act> browser = visitWindow.getBrowser();
         if (browser.getObjects().contains(event)) {
             Act selected = browser.getSelected();
@@ -583,56 +686,56 @@ public class VisitEditor {
             browser.setSelected(selected);
         }
         browser.setFocusOnResults();
-        notifyListener(HISTORY_INDEX);
+        notifyListener(HISTORY_TAB);
     }
 
     /**
      * Invoked when the invoice tab is selected.
      */
-    private void onInvoiceSelected() {
+    protected void onInvoiceSelected() {
         VisitChargeEditor editor = chargeWindow.getEditor();
         if (editor != null) {
             editor.getFocusGroup().setFocus();
         }
-        notifyListener(INVOICE_INDEX);
+        notifyListener(INVOICE_TAB);
     }
 
     /**
      * Invoked when the reminders tab is selected.
      */
-    private void onRemindersSelected() {
+    protected void onRemindersSelected() {
         reminderWindow.getBrowser().setFocusOnResults();
-        notifyListener(REMINDERS_INDEX);
+        notifyListener(REMINDER_TAB);
     }
 
     /**
      * Invoked when the documents tab is selected.
      */
-    private void onDocumentsSelected() {
+    protected void onDocumentsSelected() {
         if (!documentsQueried) {
-            documentBrowser.query();
+            documentWindow.getBrowser().query();
             documentsQueried = true;
         } else {
-            documentBrowser.setFocusOnResults();
+            documentWindow.getBrowser().setFocusOnResults();
         }
-        notifyListener(DOCUMENT_INDEX);
+        notifyListener(DOCUMENT_TAB);
     }
 
     /**
      * Invoked when the prescriptions tab is selected.
      */
-    private void onPrescriptionsSelected() {
+    protected void onPrescriptionsSelected() {
         prescriptionWindow.getBrowser().setFocusOnResults();
         prescriptionWindow.setChargeEditor(getChargeEditor());
-        notifyListener(PRESCRIPTION_INDEX);
+        notifyListener(PRESCRIPTION_TAB);
     }
 
     /**
      * Invoked when the estimates tab is selected.
      */
-    private void onEstimatesSelected() {
+    protected void onEstimatesSelected() {
         estimateWindow.getBrowser().setFocusOnResults();
-        notifyListener(ESTIMATES_INDEX);
+        notifyListener(ESTIMATE_TAB);
     }
 
     /**

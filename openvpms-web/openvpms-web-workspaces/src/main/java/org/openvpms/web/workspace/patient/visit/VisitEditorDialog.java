@@ -139,22 +139,22 @@ public class VisitEditorDialog extends PopupDialog {
      */
     protected void onSelected(int index) {
         switch (index) {
-            case VisitEditor.HISTORY_INDEX:
+            case VisitEditor.HISTORY_TAB:
                 onHistorySelected();
                 break;
-            case VisitEditor.INVOICE_INDEX:
+            case VisitEditor.INVOICE_TAB:
                 onInvoiceSelected();
                 break;
-            case VisitEditor.REMINDERS_INDEX:
+            case VisitEditor.REMINDER_TAB:
                 onRemindersSelected();
                 break;
-            case VisitEditor.DOCUMENT_INDEX:
+            case VisitEditor.DOCUMENT_TAB:
                 onDocumentsSelected();
                 break;
-            case VisitEditor.PRESCRIPTION_INDEX:
+            case VisitEditor.PRESCRIPTION_TAB:
                 onPrescriptionSelected();
                 break;
-            case VisitEditor.ESTIMATES_INDEX:
+            case VisitEditor.ESTIMATE_TAB:
                 onEstimatesSelected();
                 break;
         }
