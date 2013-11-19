@@ -55,6 +55,7 @@ public class EstimateEditor extends ActEditor {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
         addStartEndTimeListeners();
+        initParticipant("customer", context.getContext().getCustomer());
     }
 
     /**
