@@ -127,9 +127,8 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
             HelpContext help = getHelpContext().subtopic("replace");
             DefaultLayoutContext context = new DefaultLayoutContext(getContext(), help);
             final ReplaceLookupBrowser browser = new ReplaceLookupBrowser(query, lookup, context);
-            String title = Messages.get("lookup.replace.title");
-            BrowserDialog<Lookup> dialog = new BrowserDialog<Lookup>(title, BrowserDialog.OK_CANCEL, browser, help);
-            dialog.setCloseOnSelection(false);
+
+            BrowserDialog<Lookup> dialog = new ReplaceLookupBrowserDialog(browser, help);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -216,4 +215,34 @@ public class LookupCRUDWindow extends ResultSetCRUDWindow<Lookup> {
         }
 
     }
+
+    /**
+     * A dialog that prompts to replace a lookup.
+     */
+    private static class ReplaceLookupBrowserDialog extends BrowserDialog<Lookup> {
+
+        /**
+         * Constructs an {@link ReplaceLookupBrowserDialog}.
+         *
+         * @param browser the lookup browser
+         * @param help    the help context
+         */
+        public ReplaceLookupBrowserDialog(ReplaceLookupBrowser browser, HelpContext help) {
+            super(Messages.get("lookup.replace.title"), OK_CANCEL, browser, help);
+            setCloseOnSelection(false);
+            getButtons().setEnabled(BrowserDialog.OK_ID, false);
+        }
+
+        /**
+         * Enables the OK button when a lookup is selected.
+         *
+         * @param object the selected object
+         */
+        @Override
+        protected void onSelected(Lookup object) {
+            getButtons().setEnabled(OK_ID, object != null);
+            super.onSelected(object);
+        }
+    }
+
 }
