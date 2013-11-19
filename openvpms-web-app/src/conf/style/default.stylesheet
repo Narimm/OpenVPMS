@@ -30,8 +30,7 @@
     <style name="TitlePane" type="nextapp.echo2.app.ContentPane">
         <properties>
             <property name="foreground" value="#6B6D84"/>
-            <property name="background" value="#fdf5e6"/>
-            <!-- oldlace -->
+            <property name="background" value="${theme.title.colour}"/>
         </properties>
     </style>
 
@@ -79,7 +78,7 @@
             <!-- black -->
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#000000"/>
-            <property name="rolloverBackground" value="#99cc66"/>
+            <property name="rolloverBackground" value="${theme.button.colour}"/>
             <property name="font">
                 <font size="${font.size}" bold="true">
                     <typeface name="${font.typeface}"/>
@@ -235,9 +234,9 @@
     <style name="MedicalRecordSummary" type="org.openvpms.web.echo.table.KeyTable"
            base-name="plain">
         <properties>
-            <property name="selectionBackground" value="#47A3FF"/>
-            <property name="rolloverBackground" value="#85c1ff"/>
-            <property name="selectionBlurBackground" value="#47A3FF"/>
+            <property name="selectionBackground" value="${theme.selection.colour}"/>
+            <property name="rolloverBackground" value="${theme.selection.colour}"/>
+            <property name="selectionBlurBackground" value="${theme.selection.colour}"/>
         </properties>
     </style>
 
@@ -251,7 +250,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#ffffff"/>
+                        <property name="background" value="${history.note.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -264,8 +263,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#ffb1c6"/>
-                        <!-- red - previously ff3366 -->
+                        <property name="background" value="${history.problem.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -278,8 +276,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#ffecb1"/>
-                        <!-- yellowish - previously ccff66 -->
+                        <property name="background" value="${history.medication.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -292,8 +289,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#d1ffb1"/>
-                        <!-- green - previously 33ff66 -->
+                        <property name="background" value="${history.weight.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -306,8 +302,7 @@
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
-                        <property name="background" value="#ffffff"/>
-                        <!-- white -->
+                        <property name="background" value="${history.investigation.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -345,7 +340,7 @@
         <properties>
             <!-- make the blur background the same as the selection background to avoid white-foreground text
                  becoming hard to read -->
-            <property name="selectionBlurBackground" value="#85c1ff"/>
+            <property name="selectionBlurBackground" value="${theme.selection.colour}"/>
         </properties>
     </style>
 
@@ -423,7 +418,6 @@
                 <border size="2px" style="groove" color="#cfdfff"/>
             </property>
             <property name="insets" value="${padding.small} ${padding.tiny}"/>
-            <property name="rolloverBackground" value="#85c1ff"/>
             <property name="rolloverEnabled" value="false"/>
             <property name="selectionEnabled" value="true"/>
             <property name="width" value="100%"/>
@@ -665,7 +659,7 @@
 
     <style name="MailEditor.attachments" type="nextapp.echo2.app.Table">
         <properties>
-            <property name="rolloverBackground" value="#85c1ff"/>
+            <property name="rolloverBackground" value="${theme.selection.colour}"/>
             <property name="rolloverEnabled" value="true"/>
             <property name="selectionBackground" value="#f2f3b3"/>
             <property name="selectionEnabled" value="true"/>
@@ -1777,7 +1771,7 @@
                       name="nextapp.echo2.webcontainer.syncpeer.WindowPanePeer.ieAlphaRenderBorder"
                       value="true"/>
             <property name="titleInsets" value="${padding.medium} ${padding.small}"/>
-            <property name="titleBackground" value="#99cc66"/>
+            <property name="titleBackground" value="${theme.button.colour}"/>
             <!--property name="titleBackgroundImage">
                 <fill-image vertical="100%" repeat="horizontal">
                     <image type="nextapp.echo2.app.ResourceImageReference">
@@ -1897,9 +1891,9 @@
             <property name="border">
                 <border size="2px" style="groove" color="#cfdfff"/>
             </property>
-            <property name="rolloverBackground" value="#85c1ff"/>
+            <property name="rolloverBackground" value="${theme.selection.colour}"/>
             <property name="rolloverEnabled" value="true"/>
-            <property name="selectionBackground" value="#85c1ff"/>
+            <property name="selectionBackground" value="${theme.selection.colour}"/>
             <property name="selectionEnabled" value="true"/>
             <property name="selectionBlurBackground" value="#f2f3b3"/>
             <property name="width" value="100%"/>
@@ -1911,7 +1905,7 @@
             <property name="border">
                 <border size="2px" style="groove" color="#cfdfff"/>
             </property>
-            <property name="rolloverBackground" value="#85c1ff"/>
+            <property name="rolloverBackground" value="${theme.selection.colour}"/>
             <property name="rolloverEnabled" value="true"/>
             <property name="selectionBackground" value="#f2f3b3"/>
             <property name="selectionEnabled" value="true"/>
@@ -2133,7 +2127,7 @@
 
     <style name="default" type="nextapp.echo2.app.button.AbstractButton">
         <properties>
-            <property name="background" value="#99cc66"/>
+            <property name="background" value="${theme.button.colour}"/>
             <!-- slateblue -->
             <property name="foreground" value="#000000"/>
             <!-- oldlace -->
