@@ -20,12 +20,14 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openvpms.archetype.rules.doc.AbstractDocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.xml.sax.SAXParseException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -84,6 +86,7 @@ public class JRXMLDocumentHandler extends AbstractDocumentHandler {
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws JRXMLDocumentException    if the document version cannot be parsed
      */
     public Document create(String name, InputStream stream, String mimeType, int size) {
         Document document;
@@ -91,7 +94,14 @@ public class JRXMLDocumentHandler extends AbstractDocumentHandler {
         try {
             design = JRXmlLoader.load(stream);
         } catch (JRException exception) {
-            throw new DocumentException(DocumentException.ErrorCode.ReadError, exception, name);
+            if (ExceptionUtils.getRootCause(exception) instanceof SAXParseException) {
+                if (name == null) {
+                    name = "file";
+                }
+                throw new JRXMLDocumentException(exception, JRXMLDocumentException.ErrorCode.ReadError, name);
+            } else {
+                throw new DocumentException(DocumentException.ErrorCode.ReadError, exception, name);
+            }
         }
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
