@@ -343,6 +343,30 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PartyRules#getSMSTelephone(Party)} method.
+     */
+    @Test
+    public void testGetSMSTelephone() {
+        Party party = TestHelper.createCustomer(false);
+
+        assertEquals("", rules.getSMSTelephone(party));
+        Contact contact1 = createPhone(null, "1234", false, null);
+
+        party.addContact(contact1);
+        assertEquals("", rules.getSMSTelephone(party));
+
+        enableSMS(contact1);
+        assertEquals("1234", rules.getSMSTelephone(party));
+
+        Contact contact2 = createPhone(null, "5678", true, null);
+        party.addContact(contact2);
+        assertEquals("1234", rules.getSMSTelephone(party));
+
+        enableSMS(contact2);
+        assertEquals("5678", rules.getSMSTelephone(party));
+    }
+
+    /**
      * Tests the {@link PartyRules#getFaxNumber(Party)} method.
      */
     @Test
@@ -477,22 +501,42 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      * Creates a new <em>contact.phoneNumber</em>.
      *
      * @param number    the phone number
-     * @param preferred if <tt>true</tt>, marks the contact as the preferred
-     *                  contact
-     * @param purpose   the contact purpose. May be <tt>null</tt>
+     * @param preferred if {@code true}, marks the contact as the preferred contact
+     * @param purpose   the contact purpose. May be {@code null}
      * @return a new phone contact
      */
-    private Contact createPhone(String number, boolean preferred,
-                                String purpose) {
+    private Contact createPhone(String number, boolean preferred, String purpose) {
+        return createPhone("03", number, preferred, purpose);
+    }
+
+    /**
+     * Creates a new <em>contact.phoneNumber</em>.
+     *
+     * @param number    the phone number
+     * @param preferred if {@code true}, marks the contact as the preferred contact
+     * @param purpose   the contact purpose. May be {@code null}
+     * @return a new phone contact
+     */
+    private Contact createPhone(String areaCode, String number, boolean preferred, String purpose) {
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
-        populatePhone(contact, number, preferred, purpose);
+        populatePhone(contact, areaCode, number, preferred, purpose);
         return contact;
+    }
+
+    /**
+     * Enables the SMS flag for a phone contact.
+     *
+     * @param contact the contact
+     */
+    private void enableSMS(Contact contact) {
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("sms", true);
     }
 
     /**
      * Creates a new <em>contact.faxNumber</em>.
      *
-     * @param areaCode the area code. May be <tt>null</tt>
+     * @param areaCode the area code. May be {@code null}
      * @param number   the fax number
      * @return a new fax contact
      */
@@ -509,14 +553,26 @@ public class PartyRulesTestCase extends ArchetypeServiceTest {
      *
      * @param contact   the contact
      * @param number    the phone number
-     * @param preferred if <tt>true</tt>, marks the contact as the preferred
+     * @param preferred if {@code true}, marks the contact as the preferred
      *                  contact
-     * @param purpose   the contact purpose. May be <tt>null</tt>
+     * @param purpose   the contact purpose. May be {@code null}
      */
-    private void populatePhone(Contact contact, String number,
-                               boolean preferred, String purpose) {
+    private void populatePhone(Contact contact, String number, boolean preferred, String purpose) {
+        populatePhone(contact, "03", number, preferred, purpose);
+    }
+
+    /**
+     * Populates a <em>contact.phoneNumber</em>.
+     *
+     * @param contact   the contact
+     * @param areaCode  the area code. May be {@code null}
+     * @param number    the phone number
+     * @param preferred if {@code true}, marks the contact as the preferred contact
+     * @param purpose   the contact purpose. May be {@code null}
+     */
+    private void populatePhone(Contact contact, String areaCode, String number, boolean preferred, String purpose) {
         IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("areaCode", "03");
+        bean.setValue("areaCode", areaCode);
         bean.setValue("telephoneNumber", number);
         bean.setValue("preferred", preferred);
         if (purpose != null) {

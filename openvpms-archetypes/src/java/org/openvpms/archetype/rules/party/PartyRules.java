@@ -447,6 +447,19 @@ public class PartyRules {
     }
 
     /**
+     * Returns a telephone number for a party that has sms enabled.
+     *
+     * @param party the party
+     * @return a formatted telephone number for the party. May be empty if
+     *         there is no corresponding <em>contact.phoneNumber</em> contact with sms set {@code true}
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getSMSTelephone(Party party) {
+        Contact contact = (party != null) ? getContact(party, new SMSMatcher()) : null;
+        return (contact != null) ? formatPhone(contact) : "";
+    }
+
+    /**
      * Returns a formatted fax number for a party.
      *
      * @param party the party
@@ -553,31 +566,6 @@ public class PartyRules {
     }
 
     /**
-     * Looks for the contact that best matches the criteria.
-     *
-     * @param party   the party
-     * @param type    the contact type
-     * @param purpose the contact purpose. May be {@code null}
-     * @param exact   if {@code true}, the contact must have the specified
-     *                purpose
-     * @return the matching contact or {@code null}
-     */
-    private Contact getContact(Party party, String type, String purpose,
-                               boolean exact) {
-        Contact result = null;
-        if (party != null) {
-            PurposeMatcher matcher = new PurposeMatcher(type, purpose, exact);
-            for (Contact contact : party.getContacts()) {
-                if (matcher.matches(contact)) {
-                    break;
-                }
-            }
-            result = matcher.getMatch();
-        }
-        return result;
-    }
-
-    /**
      * Returns the customer associated with an act via an
      * <em>participation.customer</em> participation.
      *
@@ -587,6 +575,30 @@ public class PartyRules {
     public Party getCustomer(Act act) {
         ActBean bean = new ActBean(act, service);
         return (Party) bean.getParticipant("participation.customer");
+    }
+
+    /**
+     * Looks for the contact that best matches the criteria.
+     *
+     * @param party   the party
+     * @param type    the contact type
+     * @param purpose the contact purpose. May be {@code null}
+     * @param exact   if {@code true}, the contact must have the specified purpose
+     * @return the matching contact or {@code null}
+     */
+    private Contact getContact(Party party, String type, String purpose, boolean exact) {
+        return (party != null) ? getContact(party, new PurposeMatcher(type, purpose, exact)) : null;
+    }
+
+    private Contact getContact(Party party, ContactMatcher matcher) {
+        Contact result;
+        for (Contact contact : party.getContacts()) {
+            if (matcher.matches(contact)) {
+                break;
+            }
+        }
+        result = matcher.getMatch();
+        return result;
     }
 
     /**
@@ -936,4 +948,36 @@ public class PartyRules {
         }
     }
 
+    /**
+     * Matches phone contacts if they have sms enabled.
+     */
+    private class SMSMatcher extends ContactMatcher {
+
+        /**
+         * Constructs an {@link SMSMatcher}.
+         */
+        public SMSMatcher() {
+            super(ContactArchetypes.PHONE);
+        }
+
+        @Override
+        public boolean matches(Contact contact) {
+            boolean result = super.matches(contact);
+            if (result) {
+                IMObjectBean bean = new IMObjectBean(contact, service);
+                if (bean.getBoolean("sms")) {
+                    if (isPreferred(contact)) {
+                        result = true;
+                        setMatch(0, contact);
+                    } else {
+                        result = false;
+                        setMatch(1, contact);
+                    }
+                } else {
+                    result = false;
+                }
+            }
+            return result;
+        }
+    }
 }
