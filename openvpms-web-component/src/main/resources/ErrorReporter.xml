@@ -62,4 +62,7 @@
     <exclude-exception>
         <className>org.openvpms.archetype.rules.product.io.ProductIOException</className>
     </exclude-exception>
+    <exclude-exception>
+        <className>org.openvpms.report.jasper.JRXMLDocumentException</className>
+    </exclude-exception>
 </error-reporter-config>
