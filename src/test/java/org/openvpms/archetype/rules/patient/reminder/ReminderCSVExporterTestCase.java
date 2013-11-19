@@ -140,6 +140,11 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
                                                            "Sawtell", "NSW", "New South Wales", "2452");
         customer.addContact(address);
         customer.addContact(TestHelper.createPhoneContact("03", "1234 5678"));
+        Contact mobile = TestHelper.createPhoneContact(null, "5678 1234");
+        IMObjectBean phoneBean = new IMObjectBean(mobile);
+        phoneBean.setValue("sms", true);
+        phoneBean.setValue("preferred", false);
+        customer.addContact(mobile);
         customer.addContact(TestHelper.createEmailContact("foo@bar.com"));
         Party patient = createPatient(customer);
 
@@ -164,7 +169,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
         String companyName = bean.getString("companyName");
 
         String[] expected = {getId(customer), "Mr", firstName, initials, lastName, companyName, "Twenty Second Avenue",
-                             "Sawtell", "New South Wales", "2452", "(03) 1234 5678", "foo@bar.com",
+                             "Sawtell", "New South Wales", "2452", "(03) 1234 5678", "5678 1234", "foo@bar.com",
                              getId(patient), patient.getName(), "Canine", "Kelpie", "Male", "Black", "2013-02-01",
                              getId(reminderType), reminderType.getName(),
                              getDate(reminder.getActivityEndTime()), "0", "2013-06-05"};

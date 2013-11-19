@@ -49,7 +49,7 @@ public class ReminderCSVExporter implements ReminderExporter {
     public static final String[] HEADER = {
             "Customer Identifier", "Customer Title", "Customer First Name", "Customer Initials", "Customer Surname",
             "Company Name", "Customer Street Address", "Customer Suburb", "Customer State", "Customer Postcode",
-            "Customer Phone", "Customer Email",
+            "Customer Phone", "Customer SMS", "Customer Email",
             "Patient Identifier", "Patient Name", "Patient Species", "Patient Breed", "Patient Sex", "Patient Colour",
             "Patient Date of Birth", "Reminder Type Identifier", "Reminder Type Name", "Reminder Due Date",
             "Reminder Count", "Reminder Last Sent Date"};
@@ -169,6 +169,7 @@ public class ReminderCSVExporter implements ReminderExporter {
         String state = getLookup(location, "state");
         String postCode = location.getString("postcode");
         String phone = partyRules.getTelephone(event.getCustomer());
+        String sms = partyRules.getSMSTelephone(event.getCustomer());
         String email = partyRules.getEmailAddress(event.getCustomer());
         String patientId = Long.toString(event.getPatient().getId());
         String patientName = patient.getString("name");
@@ -184,7 +185,7 @@ public class ReminderCSVExporter implements ReminderExporter {
         String lastSentDate = getDate(reminder.getDate("lastSent"));
 
         String[] line = {customerId, title, firstName, initials, lastName, companyName, address, suburb, state,
-                         postCode, phone, email, patientId, patientName, species, breed, sex, colour, dateOfBirth,
+                         postCode, phone, sms, email, patientId, patientName, species, breed, sex, colour, dateOfBirth,
                          reminderTypeId, reminderTypeName, dueDate, reminderCount, lastSentDate};
         writer.writeNext(line);
     }
