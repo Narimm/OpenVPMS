@@ -20,8 +20,11 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -29,6 +32,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -39,9 +43,14 @@ import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBITS;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
 
 
 /**
@@ -315,6 +324,9 @@ public class CustomerAccountRules {
 
     /**
      * Reverses an act.
+     * <p/>
+     * If the act to be reversed is an invoice, charge items and medication acts will be unlinked from patient history.
+     * Reminders and investigations will be retained.
      *
      * @param act       the act to reverse
      * @param startTime the start time of the reversal
@@ -333,6 +345,9 @@ public class CustomerAccountRules {
         }
         reversal.setStatus(FinancialActStatus.POSTED);
         reversal.setActivityStartTime(startTime);
+        if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
+            removeInvoiceFromPatientHistory(act, objects);
+        }
         service.save(objects);
         return reversal;
     }
@@ -351,6 +366,68 @@ public class CustomerAccountRules {
             result = getInvoice(customer, ActStatus.COMPLETED);
         }
         return result;
+    }
+
+    /**
+     * Removes charge items and medications acts linked to an invoice from the patient history.
+     * <p/>
+     * NOTE: this removes the charge item relationship from the event but not the item itself; this is left up to
+     * the archetype service. This is to avoid triggering the
+     * archetypeService.save.act.customerAccountInvoiceItem.before and
+     * archetypeService.save.act.customerAccountInvoiceItem.after rules that perform demographic updates and update
+     * stock.
+     * <br/>
+     * This can cause problems if the item is being modified elsewhere in the same transaction,
+     * but isn't likely for the purposes of invoice reversal.
+     *
+     * @param invoice the invoice
+     * @param toSave  a list of objects to save
+     */
+    private void removeInvoiceFromPatientHistory(FinancialAct invoice, List<IMObject> toSave) {
+        ActBean bean = new ActBean(invoice, service);
+        Map<IMObjectReference, Act> events = new HashMap<IMObjectReference, Act>();
+        for (Act item : bean.getNodeActs("items")) {
+            ActBean itemBean = new ActBean(item, service);
+            for (ActRelationship relationship : itemBean.getRelationships(CLINICAL_EVENT_CHARGE_ITEM)) {
+                removeEventRelationship(events, itemBean, relationship);
+            }
+            for (ActRelationship relationship : itemBean.getRelationships(DISPENSING_ITEM_RELATIONSHIP)) {
+                Act medication = (Act) service.get(relationship.getTarget());
+                if (medication != null) {
+                    boolean medicationChanged = false;
+                    ActBean medicationBean = new ActBean(medication, service);
+                    for (ActRelationship eventRelationship : medicationBean.getRelationships(CLINICAL_EVENT_ITEM)) {
+                        medicationChanged = true;
+                        removeEventRelationship(events, medicationBean, eventRelationship);
+                    }
+                    if (medicationChanged) {
+                        toSave.add(medication);
+                    }
+                }
+            }
+        }
+        toSave.addAll(events.values());
+    }
+
+    /**
+     * Removes a relationship between an act and <em>act.patientClinicalEvent</em>.
+     *
+     * @param events       the cache of events
+     * @param act          the act to remove the relationship from. It must be the target of the relationship
+     * @param relationship the relationship to remove
+     */
+    private void removeEventRelationship(Map<IMObjectReference, Act> events, ActBean act,
+                                         ActRelationship relationship) {
+        act.removeRelationship(relationship);
+        IMObjectReference ref = relationship.getSource();
+        Act event = events.get(ref);
+        if (event == null) {
+            event = (Act) service.get(ref);
+            events.put(ref, event);
+        }
+        if (event != null) {
+            event.removeActRelationship(relationship);
+        }
     }
 
     /**
