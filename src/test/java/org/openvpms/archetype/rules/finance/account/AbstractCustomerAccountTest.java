@@ -1,25 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -38,8 +37,7 @@ import java.util.List;
 /**
  * Base class for customer account test cases.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
 
@@ -57,6 +55,11 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * The product.
      */
     private Product product;
+
+    /**
+     * The stock location.
+     */
+    private Party stockLocation;
 
     /**
      * The till.
@@ -122,6 +125,18 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
     }
 
     /**
+     * Returns the stock location.
+     *
+     * @return the stock location
+     */
+    protected Party getStockLocation() {
+        if (stockLocation == null) {
+            stockLocation = ProductTestHelper.createStockLocation();
+        }
+        return stockLocation;
+    }
+
+    /**
      * Helper to create a <em>POSTED</em>
      * <em>act.customerAccountChargesInvoice</em> with an associated
      * <em>act.customerAccountInvoiceItem</em>.
@@ -144,9 +159,11 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      */
     protected List<FinancialAct> createChargesInvoice(Money amount,
                                                       Party customer) {
-        return FinancialTestHelper.createChargesInvoice(
-                amount, customer, getPatient(), getProduct(),
-                ActStatus.POSTED);
+        List<FinancialAct> result = FinancialTestHelper.createChargesInvoice(
+                amount, customer, getPatient(), getProduct(), ActStatus.POSTED);
+        ActBean item = new ActBean(result.get(1));
+        item.addNodeParticipation("stockLocation", getStockLocation());
+        return result;
     }
 
     /**
@@ -228,8 +245,11 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new act
      */
     protected List<FinancialAct> createChargesCounter(Money amount) {
-        return FinancialTestHelper.createChargesCounter(
-                amount, getCustomer(), getProduct(), ActStatus.POSTED);
+        List<FinancialAct> result = FinancialTestHelper.createChargesCounter(amount, getCustomer(), getProduct(),
+                                                                             ActStatus.POSTED);
+        ActBean item = new ActBean(result.get(1));
+        item.addNodeParticipation("stockLocation", getStockLocation());
+        return result;
     }
 
     /**
@@ -241,9 +261,11 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
      * @return a new act
      */
     protected List<FinancialAct> createChargesCredit(Money amount) {
-        return FinancialTestHelper.createChargesCredit(
-                amount, getCustomer(), getPatient(), getProduct(),
-                ActStatus.POSTED);
+        List<FinancialAct> result = FinancialTestHelper.createChargesCredit(amount, getCustomer(), getPatient(),
+                                                                            getProduct(), ActStatus.POSTED);
+        ActBean item = new ActBean(result.get(1));
+        item.addNodeParticipation("stockLocation", getStockLocation());
+        return result;
     }
 
     /**

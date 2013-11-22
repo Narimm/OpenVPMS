@@ -20,16 +20,28 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
+import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -68,8 +80,7 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * In order for these tests to be successful, the archetype service
  * must be configured to trigger the above rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
@@ -515,21 +526,21 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
-     * Tests the reversal of customer account acts.
+     * Tests the reversal of customer account acts by {@link CustomerAccountRules#reverse}.
      */
     @Test
     public void testReverse() {
-        checkReverse(createChargesInvoice(new Money(100)),
-                     "act.customerAccountChargesCredit",
-                     "act.customerAccountCreditItem");
+        checkReverseCharge(createChargesInvoice(new Money(100)),
+                           "act.customerAccountChargesCredit",
+                           "act.customerAccountCreditItem");
 
-        checkReverse(createChargesCredit(new Money(50)),
-                     "act.customerAccountChargesInvoice",
-                     "act.customerAccountInvoiceItem");
+        checkReverseCharge(createChargesCredit(new Money(50)),
+                           "act.customerAccountChargesInvoice",
+                           "act.customerAccountInvoiceItem");
 
-        checkReverse(createChargesCounter(new Money(40)),
-                     "act.customerAccountChargesCredit",
-                     "act.customerAccountCreditItem");
+        checkReverseCharge(createChargesCounter(new Money(40)),
+                           "act.customerAccountChargesCredit",
+                           "act.customerAccountCreditItem");
 
         checkReverse(createPaymentCash(new Money(75)),
                      "act.customerAccountRefund",
@@ -767,6 +778,105 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
+     * Verifies that when an invoice is reversed, any invoice items and medication acts are unlinked from the patient
+     * history.
+     * <p/>
+     * Also ensures that:
+     * <ul>
+     * <li>demographic updates aren't triggered in the process of performing the reversal, which requires
+     * the invoice items to be saved.</li>
+     * <li>stock quantities match that expected</li>
+     * </ul>
+     */
+    @Test
+    public void testReverseInvoiceRemovesEntriesFromHistory() {
+        PatientRules patientRules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
+        Party patient = getPatient();
+        User author = TestHelper.createUser();
+        Party location = TestHelper.createLocation();
+
+        // add a demographics update to the product that sets the patient as desexed when the invoice is POSTED
+        Product product = getProduct();
+        ProductTestHelper.addDemographicUpdate(product, "patient.entity", "party:setPatientDesexed(.)");
+
+        EntityRelationship stock = initStockQuantity(new BigDecimal("10"));
+
+        // create the invoice
+        List<FinancialAct> invoiceActs = createChargesInvoice(new Money(100));
+        FinancialAct invoice = invoiceActs.get(0);
+        invoice.setStatus(ActStatus.IN_PROGRESS);
+        ActBean item = new ActBean(invoiceActs.get(1));
+        Act medication = PatientTestHelper.createMedication(getPatient(), getProduct());
+        item.addNodeRelationship("dispensing", medication);
+        List<IMObject> toSave = new ArrayList<IMObject>();
+        toSave.addAll(invoiceActs);
+        toSave.add(medication);
+        save(toSave);
+
+        checkStock(stock, new BigDecimal("9"));
+
+        assertFalse(patientRules.isDesexed(get(patient)));
+
+        // now create the event
+        Act event = (Act) create(PatientArchetypes.CLINICAL_EVENT);
+        ActBean eventBean = new ActBean(event);
+        eventBean.addNodeParticipation("patient", getPatient());
+        eventBean.save();
+
+        // link the charge item and medication to the event
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
+        linker.link(event, invoiceActs.get(1));
+
+        // verify they are linked
+        List<Act> charges = eventBean.getNodeActs("chargeItems");
+        assertEquals(1, charges.size());
+        assertEquals(item.getAct(), charges.get(0));
+
+        List<Act> items = eventBean.getNodeActs("items");
+        assertEquals(1, items.size());
+        assertEquals(medication, items.get(0));
+
+        // now post the invoice. The demographic update should be executed
+        invoice.setStatus(ActStatus.POSTED);
+        save(invoice);
+
+        // stock should remain the same
+        checkStock(stock, new BigDecimal("9"));
+
+        patient = get(patient);
+        assertTrue(patientRules.isDesexed(patient));
+
+        // now set the patient as not desexed. When the invoice is reversed, the demographic update shouldn't fire
+        // again.
+        IMObjectBean bean = new IMObjectBean(patient);
+        bean.setValue("desexed", false);
+        bean.save();
+
+        // reverse the invoice.
+        rules.reverse(invoice, new Date());
+
+        event = get(event);  // reload the event
+        eventBean = new ActBean(event);
+
+        // ensure the item and medication still exist
+        assertNotNull(get(item.getAct()));
+        assertNotNull(get(medication));
+
+        // verify the item and medication are no longer linked to the event
+        charges = eventBean.getNodeActs("chargeItems");
+        assertEquals(0, charges.size());
+
+        items = eventBean.getNodeActs("items");
+        assertEquals(0, items.size());
+
+        // verify the demographic update didn't get run again
+        assertFalse(patientRules.isDesexed(get(patient)));
+
+        // verify stock has reverted to its initial value
+        checkStock(stock, new BigDecimal("10"));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -775,8 +885,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
-     * Verfies that when an act is saved, a
-     * <em>participation.customerAccountBalance</em> is associated with it.
+     * Verifies that when an act is saved, a <em>participation.customerAccountBalance</em> is associated with it.
      *
      * @param acts the act
      */
@@ -913,24 +1022,73 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     }
 
     /**
-     * Verifies that an act can be reversed by
-     * {@link CustomerAccountRules#reverse}, and has the correct child act,
-     * if any.
+     * Verifies that a charge can be reversed by {@link CustomerAccountRules#reverse}.
+     * <p/>
+     * This ensures that stock is updated appropriately.
      *
      * @param acts          the acts to reverse
      * @param shortName     the reversal act short name
-     * @param itemShortName the reversal act child short name.
-     *                      May be <tt>null</tt>
+     * @param itemShortName the reversal act child short name
      */
-    private void checkReverse(List<FinancialAct> acts, String shortName,
-                              String itemShortName) {
+    private void checkReverseCharge(List<FinancialAct> acts, String shortName, String itemShortName) {
+        BigDecimal quantity = new BigDecimal("10");
+        EntityRelationship relationship = initStockQuantity(quantity);
+
+        // save the charge
         save(acts);
+
+        // verify the stock quantity has updated
+        if (!acts.get(0).isCredit()) {
+            checkStock(relationship, quantity.subtract(BigDecimal.ONE));
+        } else {
+            checkStock(relationship, quantity.add(BigDecimal.ONE));
+        }
+
+        // reverse the charge
         checkReverse(acts.get(0), shortName, itemShortName);
+
+        // ensure the stock has gone back to its initial value
+        checkStock(relationship, quantity);
     }
 
     /**
-     * Verifies that an act can be reversed by
-     * {@link CustomerAccountRules#reverse}, and has the correct child act,
+     * Initialises the quantity for the product and stock location.
+     *
+     * @param quantity the quantity
+     * @return the <em>entityRelationship.productStockLocation</em> relationship
+     */
+    private EntityRelationship initStockQuantity(BigDecimal quantity) {
+        Product product = get(getProduct());
+        Party stockLocation = get(getStockLocation());
+        EntityBean bean = new EntityBean(product);
+        List<EntityRelationship> stockLocations = bean.getNodeRelationships("stockLocations");
+        EntityRelationship relationship;
+        if (stockLocations.isEmpty()) {
+            relationship = bean.addNodeRelationship("stockLocations", stockLocation);
+        } else {
+            relationship = stockLocations.get(0);
+        }
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("quantity", quantity);
+        save(product, stockLocation);
+        return relationship;
+    }
+
+    /**
+     * Verifies the quantity of stock matches that expected.
+     *
+     * @param relationship the <em>entityRelationship.productStockLocation</em>
+     * @param expected     the expected quantity
+     */
+    private void checkStock(EntityRelationship relationship, BigDecimal expected) {
+        relationship = get(relationship);
+        assertNotNull(relationship);
+        IMObjectBean bean = new IMObjectBean(relationship);
+        checkEquals(expected, bean.getBigDecimal("quantity"));
+    }
+
+    /**
+     * Verifies that an act can be reversed by {@link CustomerAccountRules#reverse}, and has the correct child act,
      * if any.
      *
      * @param act           the act to reverse
