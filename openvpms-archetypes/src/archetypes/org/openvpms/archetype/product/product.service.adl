@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="product.service.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.product.Product" displayName="Service">
@@ -76,7 +77,7 @@
                 <errorMessage>Duplicate active product type relationship</errorMessage>
             </assertion>
         </node>
-        <node name="investigationTypes" path="/entityRelationships"
+        <node name="investigationTypes" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.productInvestigationType">
             <assertion name="archetypeRange">

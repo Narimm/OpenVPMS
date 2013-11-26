@@ -149,6 +149,9 @@
                 <errorMessage>Duplicate active product discount relationship</errorMessage>
             </assertion>
         </node>
+        <node name="investigationTypes" path="/sourceEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="0"
+              hidden="true" filter="entityRelationship.productInvestigationType"/>
         <node name="sourceRelationships" path="/sourceEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship"
               minCardinality="0" maxCardinality="*" hidden="true"/>
