@@ -722,15 +722,25 @@ public class MedicalRecordRules {
      * @return the the minimum difference between the date and the event's start or end times, ignoring seconds.
      */
     private long distance(Date date, Act event) {
-        long dateSecs = date.getTime() / 1000;          // truncate milliseconds, as they may are not stored in db
-        long startTime = event.getActivityStartTime().getTime() / 1000;
-        long endTime = (event.getActivityEndTime() != null) ? event.getActivityEndTime().getTime() / 1000 : 0;
+        long dateSecs = getSeconds(date);          // truncate milliseconds are not stored in db
+        long startTime = getSeconds(event.getActivityStartTime());
+        long endTime = (event.getActivityEndTime() != null) ? getSeconds(event.getActivityEndTime()) : 0;
         long distStartTime = Math.abs(startTime - dateSecs);
         if (endTime != 0) {
             return distStartTime;
         }
         long distEndTime = Math.abs(endTime - dateSecs);
         return distStartTime < distEndTime ? distStartTime : distEndTime;
+    }
+
+    /**
+     * Returns a date in seconds.
+     *
+     * @param date the date
+     * @return the date in seconds
+     */
+    private long getSeconds(Date date) {
+        return date.getTime() / 1000;
     }
 
 }
