@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.product;
 
 import org.openvpms.component.business.domain.im.party.Party;
@@ -48,7 +49,7 @@ public class ProductResultSet extends EntityResultSet<Product> {
     private final Party stockLocation;
 
     /**
-     * Constructs a {@code EntityResultSet}.
+     * Constructs a {@link ProductResultSet}.
      *
      * @param archetypes       the archetypes to query
      * @param value            the value to query on. May be {@code null}

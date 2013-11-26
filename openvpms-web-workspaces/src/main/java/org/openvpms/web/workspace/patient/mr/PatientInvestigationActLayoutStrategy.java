@@ -28,6 +28,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentActLayoutStrategy;
 import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.SingleParticipationCollectionEditor;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
@@ -37,6 +38,7 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
@@ -50,6 +52,8 @@ import java.util.List;
 
 /**
  * Layout strategy that includes a 'Print Form' button to print the act.
+ *
+ * @author Tim Anderson
  */
 public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStrategy {
 
@@ -63,29 +67,39 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
      */
     private boolean enablePrint = true;
 
+    /**
+     * Determines if the product node should be displayed read-only.
+     */
+    private boolean showProductReadOnly;
+
 
     /**
-     * Constructs a <tt>PatientInvestigationActLayoutStrategy</tt>.
+     * Constructs a {@code PatientInvestigationActLayoutStrategy}.
      */
     public PatientInvestigationActLayoutStrategy() {
-        this(null, null);
+        this(null, null, null);
     }
 
     /**
-     * Constructs a <tt>PatientInvestigationActLayoutStrategy</tt>.
+     * Constructs a {@code PatientInvestigationActLayoutStrategy}.
      *
-     * @param editor         the document reference editor. May be <tt>null</tt>
-     * @param versionsEditor the document version editor. May be <tt>null</tt>
+     * @param editor         the document reference editor. May be {@code null}
+     * @param versionsEditor the document version editor. May be {@code null}
+     * @param productEditor  editor the product editor. May be {@code null}
      */
     public PatientInvestigationActLayoutStrategy(DocumentEditor editor,
-                                                 ActRelationshipCollectionEditor versionsEditor) {
+                                                 ActRelationshipCollectionEditor versionsEditor,
+                                                 SingleParticipationCollectionEditor productEditor) {
         super(editor, versionsEditor);
+        if (productEditor != null) {
+            addComponent(new ComponentState(productEditor));
+        }
     }
 
     /**
      * Determines if the data should be displayed read-only.
      *
-     * @param readOnly if <tt>true</tt> display the date read-only
+     * @param readOnly if {@code true} display the date read-only
      */
     public void setDateReadOnly(boolean readOnly) {
         showDateReadOnly = readOnly;
@@ -94,40 +108,51 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
     /**
      * Determines if the button should be enabled.
      *
-     * @param enable if <tt>true</tt>, enable the button
+     * @param enable if {@code true}, enable the button
      */
     public void setEnableButton(boolean enable) {
         enablePrint = enable;
     }
 
     /**
-     * Creates a component for a property.
+     * Determines if the product should be read-only.
      *
-     * @param property the property
-     * @param parent   the parent object
-     * @param context  the layout context
-     * @return a component to display <tt>property</tt>
+     * @param readOnly if {@code true} display the product read-only
+     */
+    public void setShowProductReadOnly(boolean readOnly) {
+        showProductReadOnly = readOnly;
+    }
+
+    /**
+     * Apply the layout strategy.
+     * <p/>
+     * This renders an object in a {@code Component}, using a factory to create the child components.
+     *
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param parent     the parent object. May be {@code null}
+     * @param context    the layout context
+     * @return the component containing the rendered {@code object}
      */
     @Override
-    protected ComponentState createComponent(Property property, IMObject parent,
-                                             LayoutContext context) {
-        ComponentState result = null;
-        String name = property.getName();
-        if (showDateReadOnly && name.equals("startTime")) {
-            result = getReadOnlyComponent(property, parent, context);
+    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+        if (showDateReadOnly || showProductReadOnly) {
+            ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(context);
+            if (showDateReadOnly) {
+                addComponent(factory.create(properties.get("startTime"), object));
+            }
+            if (showProductReadOnly) {
+                addComponent(factory.create(properties.get("product"), object));
+            }
         }
-
-        if (result == null) {
-            result = super.createComponent(property, parent, context);
-        }
-        return result;
+        return super.apply(object, properties, parent, context);
     }
 
     /**
      * Lays out child components in a grid.
      *
      * @param object     the object to lay out
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param properties the properties
      * @param container  the container to use
      * @param context    the layout context
@@ -174,20 +199,5 @@ public class PatientInvestigationActLayoutStrategy extends DocumentActLayoutStra
         }
     }
 
-
-    /**
-     * Helper to return a read-only component.
-     *
-     * @param property the property
-     * @param parent   the parent object
-     * @param context  the layout context
-     * @return a read-only component to display the property
-     */
-    private ComponentState getReadOnlyComponent(Property property,
-                                                IMObject parent,
-                                                LayoutContext context) {
-        ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(context);
-        return factory.create(property, parent);
-    }
 
 }

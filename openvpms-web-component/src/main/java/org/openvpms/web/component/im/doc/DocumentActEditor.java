@@ -71,7 +71,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
 
     /**
-     * Construct a {@code DocumentActEditor}.
+     * Constructs a {@link DocumentActEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -96,15 +96,7 @@ public class DocumentActEditor extends AbstractActEditor {
             versionsEditor = new ActRelationshipCollectionEditor((CollectionProperty) versions, act, context);
             getEditors().add(versionsEditor);
         }
-        ParticipationEditor template = getDocumentTemplateEditor();
-        if (template != null) {
-            lastTemplate = getTemplateRef();
-            template.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    onTemplateUpdate();
-                }
-            });
-        }
+        lastTemplate = getTemplateRef();
     }
 
     /**
@@ -177,6 +169,22 @@ public class DocumentActEditor extends AbstractActEditor {
             throw new IllegalStateException("Documents are not supported by: " + getDisplayName());
         }
         return docEditor.getReference();
+    }
+
+    /**
+     * Invoked when layout has completed.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        super.onLayoutCompleted();
+        DocumentTemplateParticipationEditor editor = getDocumentTemplateEditor();
+        if (editor != null) {
+            editor.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onTemplateUpdate();
+                }
+            });
+        }
     }
 
     /**

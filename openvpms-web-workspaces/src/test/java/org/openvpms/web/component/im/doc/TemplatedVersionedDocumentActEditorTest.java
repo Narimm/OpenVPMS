@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -37,8 +35,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link DocumentActEditor} class, for templated, versioned archetypes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public abstract class TemplatedVersionedDocumentActEditorTest extends VersionedDocumentActEditorTest {
 
@@ -51,6 +48,7 @@ public abstract class TemplatedVersionedDocumentActEditorTest extends VersionedD
         DocumentAct act = createAct();
         Entity template = createDocumentTemplate(act.getArchetypeId().getShortName());
         DocumentActEditor editor = createEditor(act);
+        editor.getComponent();
 
         editor.setTemplate(template);
         IMObjectReference docRef = act.getDocument();
@@ -84,6 +82,7 @@ public abstract class TemplatedVersionedDocumentActEditorTest extends VersionedD
         Entity template1 = createDocumentTemplate(act.getArchetypeId().getShortName());
         Entity template2 = createDocumentTemplate(act.getArchetypeId().getShortName());
         DocumentActEditor editor = createEditor(act);
+        editor.getComponent();
 
         editor.setTemplate(template1);
         IMObjectReference docRef1 = act.getDocument();
