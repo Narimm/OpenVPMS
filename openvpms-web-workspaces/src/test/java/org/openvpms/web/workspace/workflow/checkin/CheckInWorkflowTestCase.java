@@ -418,7 +418,12 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Act event1 = bean.getSourceAct(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
         assertNotNull(event1);
         assertEquals(date1, event1.getActivityStartTime());
-        assertEquals(ActStatus.COMPLETED, event1.getStatus());
+        assertEquals(ActStatus.IN_PROGRESS, event1.getStatus());
+
+        // complete the event. This will force a new event to be created on subsequent check-in
+        event1.setActivityEndTime(getDatetime("2012-01-01 11:30:00"));
+        event1.setStatus(ActStatus.COMPLETED);
+        save(event1);
 
         Act appointment = createAppointment(date2, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);

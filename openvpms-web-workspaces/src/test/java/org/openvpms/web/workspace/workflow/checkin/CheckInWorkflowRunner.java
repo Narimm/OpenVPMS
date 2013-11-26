@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -70,7 +71,7 @@ import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
  *
  * @author Tim Anderson
  */
-class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunner.TestCheckInWorkflow> {
+public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunner.TestCheckInWorkflow> {
 
     /**
      * The appointment.
@@ -203,12 +204,13 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
     /**
      * Verifies the context has a task with the specified attributes.
      *
-     * @param workList the expected worklist
+     * @param workList the expected work list
      * @param customer the expected customer
      * @param patient  the expected patient
      * @param status   the expected status
+     * @return the task
      */
-    public void checkTask(Party workList, Party customer, Party patient, String status) {
+    public Act checkTask(Party workList, Party customer, Party patient, String status) {
         Act task = (Act) getContext().getObject(ScheduleArchetypes.TASK);
         assertNotNull(task);
         assertTrue(!task.isNew());  // has been saved
@@ -217,6 +219,7 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
         assertEquals(bean.getNodeParticipant("worklist"), workList);
         assertEquals(bean.getNodeParticipant("customer"), customer);
         assertEquals(bean.getNodeParticipant("patient"), patient);
+        return task;
     }
 
     /**
@@ -316,6 +319,40 @@ class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkflowRunne
         EditDialog dialog = setWeight(weight);
         fireDialogButton(dialog, PopupDialog.OK_ID);
         checkWeight(patient, weight, clinician);
+    }
+
+    /**
+     * Helper to run the workflow through to completion.
+     *
+     * @param patient
+     * @param customer
+     * @param workList
+     * @param clinician
+     * @return the event
+     */
+    public Act runWorkflow(Party patient, Party customer, Party workList, User clinician) {
+        setPatient(patient);                              // need to pre-set patient and work list
+        setWorkList(workList);                            // so they can be selected in popups
+        start();
+
+        ActBean bean = new ActBean(appointment);
+        if (bean.getNodeParticipantRef("patient") == null) {
+            // as the appointment has no patient, a pop should be displayed to select one
+            selectPatient(patient);
+        }
+
+        // select the work list and verify a task has been created.
+        selectWorkList(workList, customer, patient);
+
+        // add the patient weight
+        addWeight(patient, BigDecimal.valueOf(10), clinician);
+
+        printPatientDocuments(PopupDialog.SKIP_ID);
+
+        // edit the clinical event
+        PopupDialog eventDialog = editVisit();
+        fireDialogButton(eventDialog, PopupDialog.OK_ID);
+        return checkEvent(patient, clinician, ActStatus.IN_PROGRESS);
     }
 
     /**

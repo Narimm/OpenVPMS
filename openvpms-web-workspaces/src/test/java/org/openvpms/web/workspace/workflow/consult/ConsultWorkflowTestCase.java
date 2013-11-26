@@ -20,10 +20,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
+import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -33,16 +38,20 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.patient.visit.VisitEditor;
 import org.openvpms.web.workspace.patient.visit.VisitEditorDialog;
+import org.openvpms.web.workspace.workflow.checkin.CheckInWorkflowRunner;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.cancelDialog;
 import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createAppointment;
 import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createTask;
+import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createWorkList;
 
 
 /**
@@ -77,17 +86,50 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testConsultForAppointment() {
-        Act appointment = createAppointment(customer, patient, clinician);
-        checkConsultWorkflow(appointment);
+        Date date = new Date();
+        Act appointment = createAppointment(date, customer, patient, clinician);
+
+        // create a COMPLETED event for the previous date, with no end date. This should not be used by check-in
+        // or consult
+        Act previousEvent = PatientTestHelper.createEvent(DateRules.getYesterday(), null, patient, clinician);
+        previousEvent.setStatus(ActStatus.COMPLETED);
+        save(previousEvent);
+
+        Entity taskType = ScheduleTestHelper.createTaskType();
+        Party workList = createWorkList(taskType, 1);
+        CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
+
+        Act event = runner.runWorkflow(patient, customer, workList, clinician);
+        assertNotEquals(previousEvent, event); // new event should have been created
+
+        checkConsultWorkflow(appointment, event);
     }
 
     /**
-     * Tests running a consult from an test.
+     * Tests running a consult from a task.
      */
     @Test
     public void testConsultForTask() {
-        Act task = createTask(customer, patient, clinician);
-        checkConsultWorkflow(task);
+        patient = TestHelper.createPatient(customer);
+        Date date = new Date();
+
+        // create a COMPLETED event for the previous date, with no end date. This should not be used by check-in
+        // or consult
+        Act previousEvent = PatientTestHelper.createEvent(DateRules.getYesterday(), null, patient, clinician);
+        previousEvent.setStatus(ActStatus.COMPLETED);
+        save(previousEvent);
+
+        Act appointment = createAppointment(date, customer, patient, clinician);
+        Entity taskType = ScheduleTestHelper.createTaskType();
+        Party workList = createWorkList(taskType, 1);
+        CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
+
+        Act event = runner.runWorkflow(patient, customer, workList, clinician);
+        assertNotEquals(previousEvent, event); // new event should have been created
+
+        Act task = runner.checkTask(workList, customer, patient, TaskStatus.PENDING);
+
+        checkConsultWorkflow(task, event);
     }
 
     /**
@@ -248,16 +290,18 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     /**
      * Tests the consult workflow.
      *
-     * @param act the appointment/task
+     * @param act   the appointment/task
+     * @param event the event created at check-in
      */
-    private void checkConsultWorkflow(Act act) {
+    private void checkConsultWorkflow(Act act, Act event) {
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow.start();
 
-        PopupDialog event = workflow.editVisit();
+        VisitEditorDialog dialog = workflow.editVisit();
+        assertEquals(event, dialog.getEditor().getEvent());
         workflow.addNote();
         workflow.addVisitInvoiceItem(patient, clinician);
-        fireDialogButton(event, PopupDialog.OK_ID);
+        fireDialogButton(dialog, PopupDialog.OK_ID);
 
         workflow.checkComplete(ActStatus.IN_PROGRESS);
         workflow.checkContext(context, customer, patient, clinician);

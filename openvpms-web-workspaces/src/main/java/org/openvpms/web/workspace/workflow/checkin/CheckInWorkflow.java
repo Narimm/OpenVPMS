@@ -31,7 +31,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.EntityQuery;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
-import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.LocalTask;
@@ -182,15 +181,15 @@ public class CheckInWorkflow extends WorkflowImpl {
             addTask(new UpdateIMObjectTask(PatientArchetypes.PATIENT, new TaskProperties(), true));
         }
 
+        Date date = (appointment != null) ? appointment.getActivityStartTime() : new Date();
         if (selectWorkList(schedule)) {
             // optionally select a work list and edit a customer task
-            addTask(new CustomerTaskWorkflow(taskDescription, help));
+            addTask(new CustomerTaskWorkflow(date, taskDescription, help));
         }
 
         // get the act.patientClinicalEvent.
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", reason);
-        Date date = (appointment != null) ? appointment.getActivityStartTime() : new Date();
         addTask(new GetClinicalEventTask(date, eventProps));
 
         // prompt for a patient weight.
@@ -281,10 +280,11 @@ public class CheckInWorkflow extends WorkflowImpl {
         /**
          * Constructs a {@code CustomerTaskWorkflow}.
          *
+         * @param date            the task date
          * @param taskDescription the task description
          * @param help            the help context
          */
-        public CustomerTaskWorkflow(String taskDescription, HelpContext help) {
+        public CustomerTaskWorkflow(Date date, String taskDescription, HelpContext help) {
             super(help);
             // select a work list
             SelectIMObjectTask<Entity> selectWorkList = createSelectWorkListTask(initial);
@@ -297,8 +297,12 @@ public class CheckInWorkflow extends WorkflowImpl {
             // create and edit an act.customerTask
             TaskProperties taskProps = new TaskProperties();
             taskProps.add("description", taskDescription);
-            addTask(new CreateIMObjectTask(ScheduleArchetypes.TASK, taskProps));
-            addTask(new EditIMObjectTask(ScheduleArchetypes.TASK, false, false));
+            taskProps.add("startTime", date);
+            addTask(new EditIMObjectTask(ScheduleArchetypes.TASK, taskProps, false));
+
+            // update the task with the startTime, as it loses second accuracy. Without this, there is a small chance
+            // that the incorrect visit will be selected, when performing a consult from the task.
+            addTask(new UpdateIMObjectTask(ScheduleArchetypes.TASK, taskProps, true));
         }
 
     }
