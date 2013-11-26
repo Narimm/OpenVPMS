@@ -20,7 +20,6 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -65,11 +64,6 @@ public class TitlePane extends ContentPane {
     private SelectField locationSelector;
 
     /**
-     * The project logo.
-     */
-    private static final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
-
-    /**
      * The style name.
      */
     private static final String STYLE = "TitlePane";
@@ -93,7 +87,7 @@ public class TitlePane extends ContentPane {
     protected void doLayout() {
         setStyleName(STYLE);
 
-        Label logo = LabelFactory.create(new ResourceImageReference(PATH));
+        Label logo = LabelFactory.create(null, "logo");
         RowLayoutData centre = new RowLayoutData();
         centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
         logo.setLayoutData(centre);
