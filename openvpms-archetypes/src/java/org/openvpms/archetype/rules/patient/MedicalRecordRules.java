@@ -33,13 +33,11 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.QueryIterator;
-import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -262,7 +260,7 @@ public class MedicalRecordRules {
      * <li>if it is <em>COMPLETED</em> and
      * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
      * use it; otherwise
-     * <li>create a new event, with <em>COMPLETED</em> status and startTime
+     * <li>create a new event, with <em>IN_PROGRESS</em> status and startTime
      * </ol>
      *
      * @param patient   the patient
@@ -285,7 +283,7 @@ public class MedicalRecordRules {
      * <li>if it is <em>COMPLETED</em> and
      * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
      * use it; otherwise
-     * <li>create a new event, with <em>COMPLETED</em> status and startTime
+     * <li>create a new event, with <em>IN_PROGRESS</em> status and startTime
      * </ol>
      *
      * @param patient   the patient
@@ -332,6 +330,7 @@ public class MedicalRecordRules {
             Act event = getEvent(patient, date);
             if (event == null) {
                 event = createEvent(patient, date, null);
+                event.setStatus(ActStatus.COMPLETED);
             }
             boolean save = false;
             ActBean bean = new ActBean(event, service);
@@ -351,9 +350,8 @@ public class MedicalRecordRules {
      * Returns an <em>act.patientClinicalEvent</em> for the specified patient.
      *
      * @param patient the patient
-     * @return the corresponding <em>act.patientClinicalEvent</em> or
-     *         {@code null} if none is found. The event may be
-     *         <em>IN_PROGRESS</em> or <em>COMPLETED}
+     * @return the corresponding <em>act.patientClinicalEvent</em> or {@code null} if none is found. The event may be
+     *         <em>IN_PROGRESS</em> or <em>COMPLETED</em>
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act getEvent(Party patient) {
@@ -418,39 +416,25 @@ public class MedicalRecordRules {
         ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT, true, true);
         query.add(new CollectionNodeConstraint("patient").add(
                 new ObjectRefNodeConstraint("entity", patient)));
-        OrConstraint or = new OrConstraint();
         Date lowerBound = DateRules.getDate(date);
         Date upperBound = getEndTime(date);
-        or.add(new NodeConstraint(START_TIME, RelationalOp.LTE, lowerBound));
-        or.add(new NodeConstraint(START_TIME, RelationalOp.BTW, lowerBound, upperBound));
-        query.add(or);
-        OrConstraint or2 = new OrConstraint();
-        or2.add(new NodeConstraint(END_TIME, RelationalOp.IS_NULL));
-        or2.add(new NodeConstraint(END_TIME, RelationalOp.GTE, getEndTime(date)));
-        or2.add(new NodeConstraint(END_TIME, RelationalOp.BTW, lowerBound, upperBound));
-        query.add(or2);
+        query.add(Constraints.lte(START_TIME, upperBound));
+        query.add(Constraints.or(Constraints.gte(END_TIME, lowerBound), Constraints.isNull(END_TIME)));
         query.add(new NodeSortConstraint(START_TIME));
         query.add(new NodeSortConstraint("id"));
         QueryIterator<Act> iter = new IMObjectQueryIterator<Act>(service, query);
         Act result = null;
+        long resultDistance = 0;
         while (iter.hasNext()) {
             Act event = iter.next();
-            Date startTime = event.getActivityStartTime();
             if (result == null) {
+                resultDistance = distance(date, event);
                 result = event;
             } else {
-                int comp = DateRules.compareTo(startTime, date, true);
-                if (comp < 0) {
+                long distance = distance(date, event);
+                if (distance < resultDistance) {
+                    resultDistance = distance;
                     result = event;
-                } else if (comp == 0) {
-                    if (DateRules.compareTo(result.getActivityStartTime(), startTime, true) == 0) {
-                        // same time, but result will have lower id, so use it
-                        break;
-                    } else {
-                        result = event;
-                    }
-                } else {
-                    break;
                 }
             }
         }
@@ -575,7 +559,7 @@ public class MedicalRecordRules {
      * <li>if it is <em>COMPLETED</em> and
      * <pre>startTime &gt;= event.startTime && startTime <= event.endTime</pre>
      * use it; otherwise
-     * <li>create a new event, with <em>COMPLETED</em> status and startTime
+     * <li>create a new event, with <em>IN_PROGRESS</em> status and startTime
      * </ol>
      *
      * @param events    the cache of events keyed on patient reference
@@ -594,19 +578,20 @@ public class MedicalRecordRules {
         } else {
             Date lowerBound = DateRules.getDate(timestamp);
             Date upperBound = getEndTime(timestamp);
+            long resultDistance = 0;
 
             for (Act event : patientEvents) {
-                Date startTime = event.getActivityStartTime();
-                Date endTime = event.getActivityEndTime();
-                if ((DateRules.compareTo(startTime, lowerBound) <= 0
-                     || DateRules.between(startTime, lowerBound, upperBound))
-                    || (endTime == null
-                        || DateRules.compareTo(endTime, upperBound) >= 0
-                        || DateRules.between(endTime, lowerBound, upperBound))) {
-                    if (result == null || DateRules.compareTo(startTime, timestamp) <= 0) {
+                if (DateRules.intersects(event.getActivityStartTime(), event.getActivityEndTime(), lowerBound,
+                                         upperBound)) {
+                    if (result == null) {
+                        resultDistance = distance(timestamp, event);
                         result = event;
                     } else {
-                        break;
+                        long distance = distance(timestamp, event);
+                        if (distance < resultDistance) {
+                            resultDistance = distance;
+                            result = event;
+                        }
                     }
                 }
             }
@@ -622,7 +607,6 @@ public class MedicalRecordRules {
         }
         if (result == null) {
             result = createEvent(patient, timestamp, clinician);
-            result.setStatus(ActStatus.COMPLETED);
             patientEvents.add(result);
         }
         Collections.sort(patientEvents, new Comparator<Act>() {
@@ -684,18 +668,6 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Returns an act given its reference.
-     *
-     * @param ref a reference to the object
-     * @return the object corresponding to <code>ref</code> or null if none
-     *         is found
-     * @throws ArchetypeServiceException for any error
-     */
-    private Act get(IMObjectReference ref) {
-        return (Act) service.get(ref);
-    }
-
-    /**
      * Returns the first clinician found in a Collection of Acts.
      *
      * @param acts a collection of Acts
@@ -738,4 +710,27 @@ public class MedicalRecordRules {
         }
         return clinicalEventItems;
     }
+
+    /**
+     * Calculates the distance of a date to an event.
+     * <p/>
+     * The distance is the minimum difference between the date and the event's start or end times, ignoring
+     * seconds.
+     *
+     * @param date  the date
+     * @param event the event
+     * @return the the minimum difference between the date and the event's start or end times, ignoring seconds.
+     */
+    private long distance(Date date, Act event) {
+        long dateSecs = date.getTime() / 1000;          // truncate milliseconds, as they may are not stored in db
+        long startTime = event.getActivityStartTime().getTime() / 1000;
+        long endTime = (event.getActivityEndTime() != null) ? event.getActivityEndTime().getTime() / 1000 : 0;
+        long distStartTime = Math.abs(startTime - dateSecs);
+        if (endTime != 0) {
+            return distStartTime;
+        }
+        long distEndTime = Math.abs(endTime - dateSecs);
+        return distStartTime < distEndTime ? distStartTime : distEndTime;
+    }
+
 }

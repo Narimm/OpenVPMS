@@ -20,7 +20,12 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+
+import java.util.Date;
+
+import static org.openvpms.archetype.test.TestHelper.create;
 
 /**
  * Patient test helper methods.
@@ -47,11 +52,45 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createMedication(Party patient, Product product) {
-        Act act = (Act) TestHelper.create(PatientArchetypes.PATIENT_MEDICATION);
+        Act act = (Act) create(PatientArchetypes.PATIENT_MEDICATION);
         ActBean bean = new ActBean(act);
         bean.addNodeParticipation("patient", patient);
         bean.addNodeParticipation("product", product);
         bean.save();
         return act;
     }
+
+    /**
+     * Helper to create an <em>act.patientClinicalEvent</em>.
+     *
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @return a new act
+     */
+    public static Act createEvent(Party patient, User clinician) {
+        Act act = (Act) create(PatientArchetypes.CLINICAL_EVENT);
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.patient", patient);
+        if (clinician != null) {
+            bean.addParticipation("participation.clinician", clinician);
+        }
+        return act;
+    }
+
+    /**
+     * Helper to create an <em>act.patientClinicalEvent</em>.
+     *
+     * @param startTime the start time. May be {@code null}
+     * @param endTime   the end time. May be {@code null}
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @return a new act
+     */
+    public static Act createEvent(Date startTime, Date endTime, Party patient, User clinician) {
+        Act act = createEvent(patient, clinician);
+        act.setActivityStartTime(startTime);
+        act.setActivityEndTime(endTime);
+        return act;
+    }
+
 }
