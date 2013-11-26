@@ -34,6 +34,14 @@
         </properties>
     </style>
 
+    <style name="logo" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/openvpms.gif"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="MainPane" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
