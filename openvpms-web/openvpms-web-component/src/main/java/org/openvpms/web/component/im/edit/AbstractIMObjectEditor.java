@@ -43,6 +43,7 @@ import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
@@ -477,6 +478,16 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      */
     public Property getProperty(String name) {
         return properties.get(name);
+    }
+
+    /**
+     * Returns a collection property, given its node descriptor's name.
+     *
+     * @param name the descriptor's name
+     * @return the property corresponding to {@code name} or {@code null} if none exists
+     */
+    public CollectionProperty getCollectionProperty(String name) {
+        return (CollectionProperty) properties.get(name);
     }
 
     /**

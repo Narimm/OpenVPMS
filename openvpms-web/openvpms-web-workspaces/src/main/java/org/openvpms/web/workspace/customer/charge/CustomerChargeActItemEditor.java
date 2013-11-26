@@ -715,7 +715,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                     if (act != null) {
                         IMObjectEditor editor = createEditor(act, investigations);
                         if (editor instanceof PatientInvestigationActEditor) {
-                            ((PatientInvestigationActEditor) editor).setInvestigationType(investigationType);
+                            PatientInvestigationActEditor investigationEditor = (PatientInvestigationActEditor) editor;
+                            investigationEditor.setInvestigationType(investigationType);
+                            investigationEditor.setProduct(product);
                         }
                         investigations.addEdited(editor);
 
