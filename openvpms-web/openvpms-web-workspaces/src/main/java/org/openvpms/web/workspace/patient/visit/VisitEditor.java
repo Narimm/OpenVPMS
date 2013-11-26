@@ -241,6 +241,15 @@ public class VisitEditor {
     }
 
     /**
+     * Returns the <em>act.patientClinicalEvent</em>.
+     *
+     * @return the event
+     */
+    public Act getEvent() {
+        return event;
+    }
+
+    /**
      * Returns the patient history browser.
      *
      * @return the patient history browser

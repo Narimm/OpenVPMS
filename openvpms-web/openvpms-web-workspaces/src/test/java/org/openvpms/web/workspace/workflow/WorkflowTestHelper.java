@@ -83,6 +83,19 @@ public class WorkflowTestHelper extends TestHelper {
      */
     public static Act createTask(Party customer, Party patient, User clinician) {
         Date startTime = new Date();
+        return createTask(startTime, customer, patient, clinician);
+    }
+
+    /**
+     * Helper to create a task.
+     *
+     * @param startTime the task start time
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
+     * @return a new task
+     */
+    public static Act createTask(Date startTime, Party customer, Party patient, User clinician) {
         Party workList = ScheduleTestHelper.createWorkList();
         Act task = ScheduleTestHelper.createTask(startTime, null, workList, customer, patient, clinician, null);
         save(task);
