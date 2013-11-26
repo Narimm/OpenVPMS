@@ -18,7 +18,6 @@ package org.openvpms.archetype.rules.patient;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -26,13 +25,13 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +41,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.test.TestHelper.getDate;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 /**
  * Tests the {@link MedicalRecordRules} class.
@@ -104,23 +107,23 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetEvent() {
         Act event1 = createEvent(getDate("2007-01-01"));
-        event1.setStatus(ActStatus.IN_PROGRESS);
+        event1.setStatus(IN_PROGRESS);
         save(event1);
         checkEvent(event1);
 
         Act event2 = createEvent(getDate("2007-01-02"));
-        event2.setStatus(ActStatus.COMPLETED);
+        event2.setStatus(COMPLETED);
         save(event2);
         checkEvent(event2);
 
         Act event3 = createEvent(getDate("2008-01-01"));
-        event3.setStatus(ActStatus.IN_PROGRESS);
+        event3.setStatus(IN_PROGRESS);
         save(event3);
         checkEvent(event3);
 
         // ensure that where there are 2 events with the same timestamp, the one with the higher id is returned
         Act event4 = createEvent(getDate("2008-01-01"));
-        event4.setStatus(ActStatus.IN_PROGRESS);
+        event4.setStatus(IN_PROGRESS);
         save(event4);
         checkEvent(event4);
     }
@@ -132,7 +135,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     public void testGetEventByDate() {
         Date jan1 = getDate("2007-01-01");
         Date jan2 = getDate("2007-01-02");
-        Date jan3 = getDate("2007-01-03 10:43:55");
+        Date jan3 = getDatetime("2007-01-03 10:43:55");
 
         checkEvent(jan2, null);
 
@@ -189,7 +192,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
     /**
      * Tests the {@link MedicalRecordRules#addToEvent} method where no event
-     * exists for the patient. A new one will be created with COMPLETED status,
+     * exists for the patient. A new one will be created with IN_PROGRESS status,
      * and the specified startTime.
      */
     @Test
@@ -199,7 +202,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         rules.addToEvent(medication, date);
         Act event = rules.getEvent(patient);
-        assertTrue(ActStatus.COMPLETED.equals(event.getStatus()));
+        assertTrue(IN_PROGRESS.equals(event.getStatus()));
         assertEquals(date, event.getActivityStartTime());
         checkContains(event, medication);
     }
@@ -221,13 +224,13 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act event = rules.getEvent(patient);
         checkContains(event, medication);
         assertEquals(expected, event);
-        assertTrue(ActStatus.IN_PROGRESS.equals(event.getStatus()));
+        assertTrue(IN_PROGRESS.equals(event.getStatus()));
     }
 
     /**
      * Tests the {@link MedicalRecordRules#addToEvent} method where
      * there is an IN_PROGRESS event that has a startTime > 7 days prior to
-     * the specified startTime. A new COMPLETED event should be created.
+     * the specified startTime. A new IN_PROGRESS event should be created.
      */
     @Test
     public void testAddToEventForExistingOldInProgressEvent() {
@@ -243,7 +246,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         checkContains(event, medication);
         assertFalse(oldEvent.equals(event));
         assertEquals(date, event.getActivityStartTime());
-        assertTrue(ActStatus.COMPLETED.equals(event.getStatus()));
+        assertTrue(IN_PROGRESS.equals(event.getStatus()));
     }
 
     /**
@@ -257,7 +260,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         Date old = DateRules.getDate(date, -8, DateUnits.DAYS);
         Act oldEvent = createEvent(old);
-        oldEvent.setStatus(ActStatus.COMPLETED);
+        oldEvent.setStatus(COMPLETED);
         save(oldEvent);
 
         rules.addToEvent(medication, date);
@@ -265,7 +268,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         checkContains(event, medication);
         assertFalse(oldEvent.equals(event));
         assertEquals(date, event.getActivityStartTime());
-        assertTrue(ActStatus.COMPLETED.equals(event.getStatus()));
+        assertTrue(COMPLETED.equals(event.getStatus()));
     }
 
     /**
@@ -280,7 +283,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         Act completed = createEvent(getDate("2007-04-03"));
         completed.setActivityEndTime(getDate("2007-04-06"));
-        completed.setStatus(ActStatus.COMPLETED);
+        completed.setStatus(COMPLETED);
         save(completed);
 
         rules.addToEvent(medication, date);
@@ -293,7 +296,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * Tests the {@link MedicalRecordRules#addToEvent} method where
      * there is a COMPLETTED event that has a startTime and endTime that
      * DOESN'T overlap the specified start time. The medication should be added
-     * to a new COMPLETED event whose startTime equals that specified.
+     * to a new IN_PROGRESS event whose startTime equals that specified.
      */
     @Test
     public void testAddToEventForExistingNonOverlappingCompletedEvent() {
@@ -302,7 +305,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         Act completed = createEvent(getDate("2007-04-03"));
         completed.setActivityEndTime(getDate("2007-04-04"));
-        completed.setStatus(ActStatus.COMPLETED);
+        completed.setStatus(COMPLETED);
         save(completed);
 
         rules.addToEvent(medication, date);
@@ -310,7 +313,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         checkContains(event, medication);
         assertFalse(completed.equals(event));
         assertEquals(date, event.getActivityStartTime());
-        assertTrue(ActStatus.COMPLETED.equals(event.getStatus()));
+        assertTrue(IN_PROGRESS.equals(event.getStatus()));
     }
 
     /**
@@ -520,6 +523,65 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link MedicalRecordRules#getEventForAddition(Party, Date, Entity)} method.
+     */
+    @Test
+    public void testGetEventForAdditionForWithCompletedEventOnSameDay() {
+        Act event1 = createEvent(getDatetime("2013-11-21 10:00:00"), getDatetime("2013-11-21 11:00:00"), COMPLETED);
+        Act event2 = createEvent(getDatetime("2013-11-21 12:00:05"), null, IN_PROGRESS);
+        save(event1, event2);
+
+        // no events, so a new event should be created
+        checkGetEventForAddition(null, getDatetime("2013-11-20 00:00:00"));
+
+        // timestamps closest to event1 should return event1
+        checkGetEventForAddition(event1, getDatetime("2013-11-21 00:00:00"));
+        checkGetEventForAddition(event1, getDatetime("2013-11-21 09:00:00"));
+        checkGetEventForAddition(event1, getDatetime("2013-11-21 10:00:00"));
+        checkGetEventForAddition(event1, getDatetime("2013-11-21 11:00:00"));
+
+        // timestamps closest to event2 should return event2
+        checkGetEventForAddition(event2, getDatetime("2013-11-21 12:00:00"));
+        checkGetEventForAddition(event2, getDatetime("2013-11-21 13:00:00"));
+        checkGetEventForAddition(event2, getDatetime("2013-11-22 00:00:00"));
+        checkGetEventForAddition(event2, getDatetime("2013-11-28 00:00:00"));
+
+        // over a week after event2, a new event should be created
+        checkGetEventForAddition(null, getDatetime("2013-11-29 00:00:00"));
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#getEvent(IMObjectReference)}
+     */
+    @Test
+    public void testGetEventWithCompletedEventWithNoEndDate() {
+        Act event1 = createEvent(getDatetime("2013-11-15 10:00:00"), null, COMPLETED);
+        Act event2 = createEvent(getDatetime("2013-11-21 12:00:05"), null, IN_PROGRESS);
+        save(event1, event2);
+
+        // no events before the 15th, so a new event should be created
+        checkGetEventForAddition(null, getDatetime("2013-11-14 00:00:00"));
+
+        // event2 should be returned for all timestamps on the 15th
+        checkGetEventForAddition(event1, getDatetime("2013-11-15 00:00:00"));
+        checkGetEventForAddition(event1, getDatetime("2013-11-15 23:59:59"));
+
+        // a new event should be returned from 16-20th
+        checkGetEventForAddition(null, getDatetime("2013-11-16 00:00:00"));
+        checkGetEventForAddition(null, getDatetime("2013-11-20 23:59:59"));
+
+        // event2 should be returned for all timestamps on or after the 21st
+        checkGetEventForAddition(event2, getDatetime("2013-11-21 00:00:00"));
+        checkGetEventForAddition(event2, getDatetime("2013-11-21 12:00:00"));
+        checkGetEventForAddition(event2, getDatetime("2013-11-21 12:00:05"));
+        checkGetEventForAddition(event2, getDatetime("2013-11-22 00:00:00"));
+        checkGetEventForAddition(event2, getDatetime("2013-11-28 00:00:00"));
+
+        // over a week after event2, a new event should be created
+        checkGetEventForAddition(null, getDatetime("2013-11-29 13:00:00"));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -535,11 +597,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     protected Act createEvent() {
-        Act act = createAct("act.patientClinicalEvent");
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        bean.addParticipation("participation.clinician", clinician);
-        return act;
+        return PatientTestHelper.createEvent(patient, clinician);
     }
 
     /**
@@ -549,9 +607,32 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     protected Act createEvent(Date startTime) {
-        Act act = createEvent();
-        act.setActivityStartTime(startTime);
+        return createEvent(startTime, null);
+    }
+
+    /**
+     * Helper to create an <em>act.patientClinicalEvent</em>.
+     *
+     * @param startTime the start time. May be {@code null}
+     * @param endTime   the end time. May be {@code null}
+     * @param status    the event status
+     * @return a new act
+     */
+    protected Act createEvent(Date startTime, Date endTime, String status) {
+        Act act = createEvent(startTime, endTime);
+        act.setStatus(status);
         return act;
+    }
+
+    /**
+     * Helper to create an <em>act.patientClinicalEvent</em>.
+     *
+     * @param startTime the start time. May be {@code null}
+     * @param endTime   the end time. May be {@code null}
+     * @return a new act
+     */
+    protected Act createEvent(Date startTime, Date endTime) {
+        return PatientTestHelper.createEvent(startTime, endTime, patient, clinician);
     }
 
     /**
@@ -653,17 +734,22 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Returns a date for a date string.
+     * Verifies that the expected event is returned for a give date by
+     * {@link MedicalRecordRules#getEventForAddition(Party, Date, Entity)}.
      *
-     * @param date the stringified date
-     * @return the date
+     * @param expected the expected event. If {@code null}, a new event is expected
+     * @param date     the date
      */
-    private Date getDate(String date) {
-        if (date.contains(":")) {
-            return Timestamp.valueOf(date);
+    private void checkGetEventForAddition(Act expected, Date date) {
+        Act actual = rules.getEventForAddition(patient, date, null);
+        if (expected != null) {
+            assertEquals(expected, actual);
         } else {
-            return java.sql.Date.valueOf(date);
+            assertTrue(actual.isNew());
+            assertEquals(date, actual.getActivityStartTime());
+            assertEquals(IN_PROGRESS, actual.getStatus());
         }
     }
+
 
 }
