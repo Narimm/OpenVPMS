@@ -34,8 +34,7 @@ import org.openvpms.web.resource.i18n.Messages;
 /**
  * Query component for {@link Entity} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
 
@@ -164,7 +163,7 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
         addShortNameSelector(container);
         addSearchField(container);
         addIdentitySearch(container);
-        addInactive(container);
+        addActive(container);
         FocusHelper.setFocus(getSearchField());
     }
 

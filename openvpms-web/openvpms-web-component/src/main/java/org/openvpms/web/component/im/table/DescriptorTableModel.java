@@ -56,6 +56,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param context the layout context
      */
     public DescriptorTableModel(LayoutContext context) {
+        super(null);
         if (context.getComponentFactory() == null) {
             context = new DefaultLayoutContext(context);
             context.setComponentFactory(new TableComponentFactory(context));

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -37,7 +37,7 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
  * @author Tim Anderson
  */
 public class RelationshipStateTableModel
-    extends AbstractIMTableModel<RelationshipState> {
+        extends AbstractIMTableModel<RelationshipState> {
 
     /**
      * Dummy node name for the 'name' column.
@@ -58,6 +58,11 @@ public class RelationshipStateTableModel
      * If {@code true} displays the target of the relationship; otherwise displays the source.
      */
     private final boolean displayTarget;
+
+    /**
+     * Determines if the active column is displayed.
+     */
+    private boolean showActive;
 
     /**
      * The listener to notify when an object is selected.
@@ -84,15 +89,19 @@ public class RelationshipStateTableModel
      */
     private static final int DETAIL_INDEX = 3;
 
+    /**
+     * The active column index.
+     */
+    private static final int ACTIVE_INDEX = 4;
+
 
     /**
-     * Construct a new {@code RelationshipStateTableModel}.
+     * Constructs a {@link RelationshipStateTableModel}.
      * <p/>
      * Enables selection if the context is in edit mode.
      *
      * @param context       layout context
-     * @param displayTarget if {@code true} display the relationship target,
-     *                      otherwise display the source
+     * @param displayTarget if {@code true} display the relationship target, otherwise display the source
      */
     public RelationshipStateTableModel(LayoutContext context, boolean displayTarget) {
         this.displayTarget = displayTarget;
@@ -103,13 +112,23 @@ public class RelationshipStateTableModel
     }
 
     /**
+     * Determines if the active column is displayed.
+     *
+     * @param show if {@code true}, show the active column
+     */
+    public void setShowActive(boolean show) {
+        if (show != showActive) {
+            showActive = show;
+            setTableColumnModel(createTableColumnModel());
+        }
+    }
+
+    /**
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if {@code true} sort in ascending order; otherwise
-     *                  sort in {@code descending} order
-     * @return the sort criteria, or {@code null} if the column isn't
-     *         sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         SortConstraint result = null;
@@ -142,8 +161,7 @@ public class RelationshipStateTableModel
      * @param row    the table row
      */
     @Override
-    protected Object getValue(RelationshipState object, TableColumn column,
-                              int row) {
+    protected Object getValue(RelationshipState object, TableColumn column, int row) {
         Object result = null;
         switch (column.getModelIndex()) {
             case NAME_INDEX:
@@ -154,6 +172,9 @@ public class RelationshipStateTableModel
                 break;
             case DETAIL_INDEX:
                 result = object.getRelationship().getDescription();
+                break;
+            case ACTIVE_INDEX:
+                result = getCheckBox(object.isActive());
                 break;
         }
         return result;
@@ -189,8 +210,7 @@ public class RelationshipStateTableModel
      * @return the source or target description
      */
     protected Object getDescription(RelationshipState state) {
-        return displayTarget ? state.getTargetDescription()
-                             : state.getSourceDescription();
+        return displayTarget ? state.getTargetDescription() : state.getSourceDescription();
     }
 
     /**
@@ -201,10 +221,11 @@ public class RelationshipStateTableModel
     protected TableColumnModel createTableColumnModel() {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(createTableColumn(NAME_INDEX, "table.imobject.name"));
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
-                                          "table.imobject.description"));
-        model.addColumn(createTableColumn(DETAIL_INDEX,
-                                          "table.entityrelationship.details"));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX, "table.imobject.description"));
+        model.addColumn(createTableColumn(DETAIL_INDEX, "table.entityrelationship.details"));
+        if (showActive) {
+            model.addColumn(createTableColumn(ACTIVE_INDEX, ACTIVE));
+        }
         return model;
     }
 

@@ -40,8 +40,7 @@ import java.util.Map;
 /**
  * Viewer for collections of {@link IMObjectRelationship}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class RelationshipCollectionViewer
         extends IMTableCollectionViewer<RelationshipState> {
@@ -65,16 +64,14 @@ public class RelationshipCollectionViewer
 
 
     /**
-     * Constructs a new <tt>RelationshipCollectionViewer</tt>.
+     * Constructs a {@link RelationshipCollectionViewer}.
      *
      * @param property the collection to view
      * @param parent   the parent object
-     * @param context  the layout context. May be <tt>null</tt>
+     * @param context  the layout context. May be {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public RelationshipCollectionViewer(CollectionProperty property,
-                                        IMObject parent,
-                                        LayoutContext context) {
+    public RelationshipCollectionViewer(CollectionProperty property, IMObject parent, LayoutContext context) {
         super(property, parent, context);
         RelationshipStateQuery query = createQuery(parent);
         parentIsSource = query.parentIsSource();
@@ -124,7 +121,7 @@ public class RelationshipCollectionViewer
 
     /**
      * Returns the relationship states, filtering inactive relationships if
-     * {@link #hideInactive()} is <tt>true</tt>.
+     * {@link #hideInactive()} is {@code true}.
      *
      * @return the relationships
      */
@@ -156,8 +153,8 @@ public class RelationshipCollectionViewer
     /**
      * Determines if the parent is the source or target of the relationship.
      *
-     * @return <tt>true</tt> if the parent is the source of the relationship,
-     *         <tt>false</tt> if it is the target
+     * @return {@code true} if the parent is the source of the relationship,
+     *         {@code false} if it is the target
      */
     protected boolean parentIsSource() {
         return parentIsSource;
@@ -195,6 +192,10 @@ public class RelationshipCollectionViewer
      * Invoked when the 'hide inactive' checkbox changes.
      */
     private void onHideInactiveChanged() {
+        IMTableModel<RelationshipState> model = getTable().getModel().getModel();
+        if (model instanceof RelationshipStateTableModel) {
+            ((RelationshipStateTableModel) model).setShowActive(!hideInactive());
+        }
         populateTable();
     }
 

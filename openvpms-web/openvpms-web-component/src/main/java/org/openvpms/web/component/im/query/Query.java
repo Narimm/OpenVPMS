@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -21,6 +19,7 @@ package org.openvpms.web.component.im.query;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.echo.focus.FocusGroup;
@@ -31,8 +30,7 @@ import java.util.Iterator;
 /**
  * Queries objects for display by an {@link Browser}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public interface Query<T> extends Iterable<T> {
 
@@ -67,21 +65,21 @@ public interface Query<T> extends Iterable<T> {
     /**
      * Sets the default sort constraint.
      *
-     * @param sort the default sort cosntraint. May be <tt>null</tt>
+     * @param sort the default sort cosntraint. May be {@code null}
      */
     void setDefaultSortConstraint(SortConstraint[] sort);
 
     /**
      * Returns the default sort constraint
      *
-     * @return the default sort constraint. May be <tt>null</tt>
+     * @return the default sort constraint. May be {@code null}
      */
     SortConstraint[] getDefaultSortConstraint();
 
     /**
      * Performs the query using the default sort constraint (if any).
      *
-     * @return the query result set. May be <tt>null</tt>
+     * @return the query result set. May be {@code null}
      * @throws ArchetypeServiceException for any error
      */
     ResultSet<T> query();
@@ -89,8 +87,8 @@ public interface Query<T> extends Iterable<T> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
+     * @return the query result set. May be {@code null}
      * @throws ArchetypeServiceException if the query fails
      */
     ResultSet<T> query(SortConstraint[] sort);
@@ -99,7 +97,7 @@ public interface Query<T> extends Iterable<T> {
      * Determines if the query selects a particular object.
      *
      * @param object the object to check
-     * @return <tt>true</tt> if the object is selected by the query
+     * @return {@code true} if the object is selected by the query
      */
     boolean selects(T object);
 
@@ -107,7 +105,7 @@ public interface Query<T> extends Iterable<T> {
      * Determines if the query selects a particular object reference.
      *
      * @param reference the object reference to check
-     * @return <tt>true</tt> if the object reference is selected by the query
+     * @return {@code true} if the object reference is selected by the query
      */
     boolean selects(IMObjectReference reference);
 
@@ -124,7 +122,7 @@ public interface Query<T> extends Iterable<T> {
      * Performs the query using the default sort constraint, and adapts the
      * results to an iterator.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
      * @return an iterator over the results.
      * @throws ArchetypeServiceException if the query fails
      */
@@ -141,14 +139,14 @@ public interface Query<T> extends Iterable<T> {
     /**
      * Sets the value to query on.
      *
-     * @param value the value. May contain wildcards, or be <tt>null</tt>
+     * @param value the value. May contain wildcards, or be {@code null}
      */
     void setValue(String value);
 
     /**
      * Returns the value being queried on.
      *
-     * @return the value. May contain wildcards, or be <tt>null</tt>
+     * @return the value. May contain wildcards, or be {@code null}
      */
     String getValue();
 
@@ -169,15 +167,15 @@ public interface Query<T> extends Iterable<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @param auto if <tt>true</tt> run the query automatically
+     * @param auto if {@code true} run the query automatically
      */
     void setAuto(boolean auto);
 
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <tt>true</tt> if the query should be run automaticaly;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if the query should be run automaticaly;
+     *         otherwise {@code false}
      */
     boolean isAuto();
 
@@ -191,8 +189,8 @@ public interface Query<T> extends Iterable<T> {
     /**
      * Determines if duplicate rows should be filtered.
      *
-     * @return <tt>true</tt> if duplicate rows should be removed;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if duplicate rows should be removed;
+     *         otherwise {@code false}
      */
     boolean isDistinct();
 
@@ -211,6 +209,13 @@ public interface Query<T> extends Iterable<T> {
     void removeQueryListener(QueryListener listener);
 
     /**
+     * Determines if active and/or inactive instances should be returned.
+     *
+     * @return the active state
+     */
+    BaseArchetypeConstraint.State getActive();
+
+    /**
      * Set query constraints.
      *
      * @param constraints the constraints
@@ -223,7 +228,7 @@ public interface Query<T> extends Iterable<T> {
      * This may be used to obtain a lightweight representation of the query's state, in order to restore it later
      * to this object, or another compatible query.
      *
-     * @return the query state, or <tt>null</tt> if this query doesn't support externalizing its state
+     * @return the query state, or {@code null} if this query doesn't support externalizing its state
      */
     QueryState getQueryState();
 

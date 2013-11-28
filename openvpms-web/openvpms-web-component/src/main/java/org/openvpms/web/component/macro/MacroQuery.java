@@ -82,7 +82,7 @@ public class MacroQuery extends AbstractIMObjectQuery<Lookup> {
     protected void doLayout(Component container) {
         addSearchField(container);
         if (showInactive) {
-            addInactive(container);
+            addActive(container);
         }
         FocusHelper.setFocus(getSearchField());
     }

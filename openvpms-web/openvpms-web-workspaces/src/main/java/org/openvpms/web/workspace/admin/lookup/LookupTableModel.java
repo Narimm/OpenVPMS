@@ -1,23 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.admin.lookup;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 
 import java.util.ArrayList;
@@ -31,16 +33,7 @@ import java.util.List;
  */
 public class LookupTableModel extends DescriptorTableModel<Lookup> {
 
-    /**
-     * Constructs a {@code LookupTableModel}.
-     * <p/>
-     * The column model must be set using {@link #setTableColumnModel}.
-     *
-     * @param context the layout context
-     */
-    public LookupTableModel(LayoutContext context) {
-        super(context);
-    }
+    private boolean active = false;
 
     /**
      * Constructs a {@code LookupTableModel}.
@@ -51,7 +44,23 @@ public class LookupTableModel extends DescriptorTableModel<Lookup> {
      * @param context    the layout context
      */
     public LookupTableModel(String[] shortNames, LayoutContext context) {
-        super(shortNames, context);
+        this(shortNames, null, context);
+    }
+
+    /**
+     * Constructs a {@code LookupTableModel}.
+     * <p/>
+     * This displays the archetype column if the short names reference multiple archetypes.
+     *
+     * @param shortNames the archetype short names
+     * @param query      the query. If both active and inactive results are being queried, an Active column will be
+     *                   displayed
+     * @param context    the layout context
+     */
+    public LookupTableModel(String[] shortNames, Query<Lookup> query, LayoutContext context) {
+        super(context);
+        active = query == null || query.getActive() == BaseArchetypeConstraint.State.BOTH;
+        setTableColumnModel(createColumnModel(shortNames, context));
     }
 
     /**
@@ -75,6 +84,9 @@ public class LookupTableModel extends DescriptorTableModel<Lookup> {
             include("code", result, names, false);
             include("name", result, names, true);
             include("description", result, names, true);
+            if (active) {
+                include("active", result, names, true);
+            }
             result.addAll(names); // add any remaining node names
         } else {
             result = names;

@@ -39,8 +39,7 @@ import java.util.List;
 /**
  * Editor for collections of {@link IMObjectRelationship}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class RelationshipCollectionEditor
         extends IMTableCollectionEditor<RelationshipState> {
@@ -52,15 +51,14 @@ public class RelationshipCollectionEditor
 
 
     /**
-     * Construct a new <tt>RelationshipCollectionEditor</tt>.
+     * Constructs a {@link RelationshipCollectionEditor}.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
      * @param context the layout context
      */
-    protected RelationshipCollectionEditor(
-            RelationshipCollectionPropertyEditor editor, IMObject object,
-            LayoutContext context) {
+    protected RelationshipCollectionEditor(RelationshipCollectionPropertyEditor editor, IMObject object,
+                                           LayoutContext context) {
         super(editor, object, context);
     }
 
@@ -70,12 +68,9 @@ public class RelationshipCollectionEditor
      * @param context the layout context
      * @return a new table model
      */
-    protected IMTableModel<RelationshipState> createTableModel(
-            LayoutContext context) {
-        RelationshipCollectionPropertyEditor editor
-                = getCollectionPropertyEditor();
-        return new RelationshipStateTableModel(context,
-                                               editor.parentIsSource());
+    protected IMTableModel<RelationshipState> createTableModel(LayoutContext context) {
+        RelationshipCollectionPropertyEditor editor = getCollectionPropertyEditor();
+        return new RelationshipStateTableModel(context, editor.parentIsSource());
     }
 
     /**
@@ -96,7 +91,7 @@ public class RelationshipCollectionEditor
     /**
      * Returns the selected object.
      *
-     * @return the selected object. May be <tt>null</tt>
+     * @return the selected object. May be {@code null}
      */
     protected IMObject getSelected() {
         RelationshipState selected = getTable().getSelected();
@@ -106,7 +101,7 @@ public class RelationshipCollectionEditor
     /**
      * Selects the object prior to the selected object, if one is available.
      *
-     * @return the prior object. May be <tt>null</tt>
+     * @return the prior object. May be {@code null}
      */
     protected IMObject selectPrevious() {
         IMObject result = null;
@@ -122,7 +117,7 @@ public class RelationshipCollectionEditor
     /**
      * Selects the object after the selected object, if one is available.
      *
-     * @return the next object. May be <tt>null</tt>
+     * @return the next object. May be {@code null}
      */
     protected IMObject selectNext() {
         IMObject result = null;
@@ -178,17 +173,21 @@ public class RelationshipCollectionEditor
      */
     @Override
     protected RelationshipCollectionPropertyEditor getCollectionPropertyEditor() {
-        return (RelationshipCollectionPropertyEditor)
-                super.getCollectionPropertyEditor();
+        return (RelationshipCollectionPropertyEditor) super.getCollectionPropertyEditor();
     }
 
     /**
      * Invoked when the 'hide inactive' checkbox changes.
      */
     private void onHideInactiveChanged() {
-        RelationshipCollectionPropertyEditor editor
-                = getCollectionPropertyEditor();
-        editor.setExcludeInactive(hideInactive.isSelected());
+        RelationshipCollectionPropertyEditor editor = getCollectionPropertyEditor();
+        boolean selected = hideInactive.isSelected();
+        editor.setExcludeInactive(selected);
+        IMTableModel<RelationshipState> model = getTable().getModel().getModel();
+        if (model instanceof RelationshipStateTableModel) {
+            ((RelationshipStateTableModel) model).setShowActive(!selected);
+        }
+
         refresh();
     }
 
