@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.patient;
@@ -60,6 +60,11 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
     private boolean showIdentity;
 
     /**
+     * Determines if the active column should be displayed.
+     */
+    private boolean showActive;
+
+    /**
      * The owner index.
      */
     private static final int OWNER_INDEX = NEXT_INDEX;
@@ -76,15 +81,17 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
     }
 
     /**
-     * Determines if the patient-owner column should be displayed.
+     * Determines which columns should be displayed
      *
-     * @param owner    if <code>true</code> show the patient-owner column
+     * @param owner    if {@code true} show the patient-owner column
      * @param identity if {@code true} show the identity column
+     * @param active   if {@code true} show the active column
      */
-    public void showColumns(boolean owner, boolean identity) {
-        if (owner != showOwner || identity != showIdentity) {
+    public void showColumns(boolean owner, boolean identity, boolean active) {
+        if (owner != showOwner || identity != showIdentity || active != showActive) {
             showOwner = owner;
             showIdentity = identity;
+            showActive = active;
             setTableColumnModel(createTableColumnModel());
         }
     }
@@ -104,6 +111,9 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
         model.addColumn(createTableColumn(DESCRIPTION_INDEX, DESCRIPTION));
         if (showIdentity) {
             model.addColumn(createTableColumn(IDENTITY_INDEX, IDENTITY));
+        }
+        if (showActive) {
+            model.addColumn(createTableColumn(ACTIVE_INDEX, ACTIVE));
         }
         return model;
     }

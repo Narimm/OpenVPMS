@@ -101,4 +101,5 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
     protected ResultSet<Party> convert(ResultSet<ObjectSet> set) {
         return new ObjectSetResultSetAdapter<Party>(set, "patient", Party.class);
     }
+
 }

@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.history;
 
 import nextapp.echo2.app.Component;
@@ -27,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
@@ -171,6 +173,16 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
      */
     public boolean selects(IMObjectReference reference) {
         return false;
+    }
+
+    /**
+     * Determines if active and/or inactive instances should be returned.
+     *
+     * @return the active state
+     */
+    @Override
+    public BaseArchetypeConstraint.State getActive() {
+        return BaseArchetypeConstraint.State.BOTH;
     }
 
     /**

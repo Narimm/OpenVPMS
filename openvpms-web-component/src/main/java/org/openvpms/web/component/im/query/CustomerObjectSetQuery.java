@@ -21,6 +21,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -149,7 +150,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
         setPatient(memento.patient);
         setContact(memento.contact);
         getIdentitySearch().setSelected(memento.identity);
-        getInactive().setSelected(memento.inactive);
+        setActive(memento.active);
     }
 
     /**
@@ -191,7 +192,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
         addShortNameSelector(container);
         addSearchField(container);
         addIdentitySearch(container);
-        addInactive(container);
+        addActive(container);
         addPatientName(container);
         addContact(container);
         FocusHelper.setFocus(getSearchField());
@@ -263,7 +264,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
 
         public final String contact;
 
-        public final boolean inactive;
+        public final BaseArchetypeConstraint.State active;
 
         public final boolean identity;
 
@@ -272,7 +273,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
             customer = query.getValue();
             patient = query.getPatient().getText();
             contact = query.getContact().getText();
-            inactive = query.getInactive().isSelected();
+            active = query.getActive();
             identity = query.isIdentitySearch();
         }
 

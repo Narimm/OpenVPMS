@@ -27,6 +27,8 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
@@ -37,8 +39,7 @@ import java.util.Date;
 
 
 /**
- * Table model for <em>product.*</em> objects. Displays the fixed and unit
- * prices if available.
+ * Table model for <em>product.*</em> objects. Displays the fixed and unit prices if available.
  *
  * @author Tim Anderson
  */
@@ -59,11 +60,24 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      */
     private ProductPriceRules rules;
 
+
     /**
      * Constructs a {@link ProductTableModel}.
      */
     public ProductTableModel() {
+        this(null);
+    }
+
+    /**
+     * Constructs a {@link ProductTableModel}.
+     *
+     * @param query the query. May be {@code null}
+     */
+    public ProductTableModel(Query<Product> query) {
+        super(null);
         rules = ServiceHelper.getBean(ProductPriceRules.class);
+        boolean active = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
+        setTableColumnModel(createTableColumnModel(active));
     }
 
     /**
@@ -90,8 +104,7 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      *
      * @return a new column model
      */
-    @Override
-    protected TableColumnModel createTableColumnModel() {
+    protected TableColumnModel createTableColumnModel(boolean active) {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(createTableColumn(ID_INDEX, ID));
         model.addColumn(createTableColumn(NAME_INDEX, NAME));
@@ -103,6 +116,9 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
         TableColumn unitPrice = createTableColumn(unitPriceIndex, "producttablemodel.unitPrice");
         model.addColumn(fixedPrice);
         model.addColumn(unitPrice);
+        if (active) {
+            model.addColumn(createTableColumn(ACTIVE_INDEX, ACTIVE));
+        }
         return model;
     }
 

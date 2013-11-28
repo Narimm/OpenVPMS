@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -29,13 +27,11 @@ import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
- * An object set table model that displays the ID, archetype, name and description.
+ * An object set table model that displays the ID, archetype, name, description and active status.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class NameDescObjectSetTableModel
-    extends AbstractIMTableModel<ObjectSet> {
+public class NameDescObjectSetTableModel extends AbstractIMTableModel<ObjectSet> {
 
     /**
      * The reference key.
@@ -53,9 +49,19 @@ public class NameDescObjectSetTableModel
     private final String description;
 
     /**
+     * The active key.
+     */
+    private final String active;
+
+    /**
      * Determines if the archetype column should be displayed.
      */
     private boolean showArchetype;
+
+    /**
+     * Determines if the active column should be displayed.
+     */
+    private boolean showActive;
 
     /**
      * The ID column index.
@@ -77,43 +83,63 @@ public class NameDescObjectSetTableModel
      */
     private static final int DESCRIPTION_INDEX = 3;
 
+    /**
+     * The active index.
+     */
+    private static final int ACTIVE_INDEX = 4;
+
 
     /**
-     * Creates a new <tt>NameDescObjectSetTableModel</tt>.
+     * Constructs a {@link NameDescObjectSetTableModel}.
      */
     public NameDescObjectSetTableModel() {
-        this(null, false);
+        this(null, false, false);
     }
 
     /**
-     * Creates a new <tt>NameDescObjectSetTableModel</tt>.
+     * Constructs a {@link NameDescObjectSetTableModel}.
      *
-     * @param alias         the object alias, used to prefix node names. May be <tt>null</tt>
-     * @param showArchetype if <tt>true</tt> show the archetype
+     * @param alias         the object alias, used to prefix node names. May be {@code null}
+     * @param showArchetype if {@code true} show the archetype
+     * @param showActive    if  {@code true} show the active status
      */
-    public NameDescObjectSetTableModel(String alias, boolean showArchetype) {
+    public NameDescObjectSetTableModel(String alias, boolean showArchetype, boolean showActive) {
         this.showArchetype = showArchetype;
-        setTableColumnModel(createTableColumnModel(showArchetype));
+        setTableColumnModel(createTableColumnModel(showArchetype, showActive));
         if (alias != null) {
             reference = alias + ".reference";
             name = alias + ".name";
             description = alias + ".description";
+            active = alias + ".active";
         } else {
             reference = "reference";
             name = "name";
             description = "description";
+            active = "active";
         }
     }
 
     /**
      * Determines if the archetype columns should be displayed.
      *
-     * @param show if <tt>true</tt> show the archetype
+     * @param show if {@code true} show the archetype
      */
     public void showArchetype(boolean show) {
         if (show != showArchetype) {
             showArchetype = show;
-            setTableColumnModel(createTableColumnModel(showArchetype));
+            setTableColumnModel(createTableColumnModel(showArchetype, showActive));
+        }
+    }
+
+    /**
+     * Determines if the active column should be displayed.
+     *
+     * @param show if {@code true} show the active column
+     */
+    public void setShowActive(boolean show) {
+        if (show != showActive) {
+            showActive = show;
+            setTableColumnModel(createTableColumnModel(showArchetype, showActive));
         }
     }
 
@@ -143,6 +169,9 @@ public class NameDescObjectSetTableModel
             case DESCRIPTION_INDEX:
                 result = set.getString(description);
                 break;
+            case ACTIVE_INDEX:
+                result = getCheckBox(set.getBoolean(active));
+                break;
         }
         return result;
     }
@@ -151,10 +180,8 @@ public class NameDescObjectSetTableModel
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <tt>true</tt> sort in ascending order; otherwise
-     *                  sort in <tt>descending</tt> order
-     * @return the sort criteria, or <tt>null</tt> if the column isn't
-     *         sortable
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         SortConstraint result = null;
@@ -164,6 +191,8 @@ public class NameDescObjectSetTableModel
             result = new NodeSortConstraint("name", ascending);
         } else if (column == DESCRIPTION_INDEX) {
             result = new NodeSortConstraint("description", ascending);
+        } else if (column == ACTIVE_INDEX) {
+            result = new NodeSortConstraint("active", ascending);
         }
         return (result != null) ? new SortConstraint[]{result} : null;
     }
@@ -171,10 +200,10 @@ public class NameDescObjectSetTableModel
     /**
      * Creates the column model.
      *
-     * @param showArchetype if <tt>true</tt> show the archetype
+     * @param showArchetype if {@code true} show the archetype
      * @return a new column model
      */
-    private static TableColumnModel createTableColumnModel(boolean showArchetype) {
+    private static TableColumnModel createTableColumnModel(boolean showArchetype, boolean showActive) {
         DefaultTableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(createTableColumn(ID_INDEX, ID));
         if (showArchetype) {
@@ -182,6 +211,9 @@ public class NameDescObjectSetTableModel
         }
         model.addColumn(createTableColumn(NAME_INDEX, NAME));
         model.addColumn(createTableColumn(DESCRIPTION_INDEX, DESCRIPTION));
+        if (showActive) {
+            model.addColumn(createTableColumn(ACTIVE_INDEX, ACTIVE));
+        }
         return model;
     }
 }

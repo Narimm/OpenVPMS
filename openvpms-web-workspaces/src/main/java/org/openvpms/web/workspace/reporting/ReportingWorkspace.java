@@ -30,8 +30,9 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ReloadingContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
+import org.openvpms.web.component.im.table.DefaultDescriptorTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.component.mail.MailContext;
@@ -178,7 +179,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
                 HelpContext help = getHelpContext().subtopic("run");
                 Variables variables = new MacroVariables(new ReloadingContext(context), service, lookups);
                 InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(
-                    printer, context, getMailContext(), help, variables);
+                        printer, context, getMailContext(), help, variables);
                 iPrinter.print();
             } catch (Throwable exception) {
                 ErrorHelper.show(exception);
@@ -187,13 +188,16 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
     }
 
     /**
-     * Creates the Entity browser.
+     * Creates the report browser.
      *
      * @param query the entity query
      * @return a new act browser
      */
     private Browser<Entity> createBrowser(ReportQuery query) {
-        return BrowserFactory.create(query, new DefaultLayoutContext(getContext(), getHelpContext()));
+        DefaultLayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
+        DefaultDescriptorTableModel<Entity> model = new DefaultDescriptorTableModel<Entity>(
+                query.getShortNames(), context, "id", "name", "description", "archetype", "reportType");
+        return new DefaultIMObjectTableBrowser<Entity>(query, model, context);
     }
 
     /**

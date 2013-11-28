@@ -1,26 +1,26 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
 
+import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.echo.text.TextHelper;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -32,11 +32,10 @@ import java.util.List;
 /**
  * Abstract implementation of the {@link IMTableModel} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractIMTableModel<T> extends AbstractTableModel
-    implements IMTableModel<T> {
+        implements IMTableModel<T> {
 
     /**
      * The column model.
@@ -73,15 +72,20 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      */
     protected static final String DESCRIPTION = "table.imobject.description";
 
+    /**
+     * Active column localisation key.
+     */
+    protected static final String ACTIVE = "table.imobject.active";
+
 
     /**
-     * Constructs an <tt>AbstractIMTableModel</tt>.
+     * Constructs an {@link AbstractIMTableModel}.
      */
     public AbstractIMTableModel() {
     }
 
     /**
-     * Creates a new <tt>AbstractIMTableModel</tt>.
+     * Constructs an {@link AbstractIMTableModel}.
      *
      * @param model the column model
      */
@@ -142,7 +146,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      * Return the object at the given row.
      *
      * @param row the row
-     * @return the object at <tt>row</tt>
+     * @return the object at {@code row}
      */
     public T getObject(int row) {
         return objects.get(row);
@@ -187,10 +191,9 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
     /**
      * Determines if selection should be enabled.
      * <p/>
-     * This implementation defaults to <tt>true</tt>.
+     * This implementation defaults to {@code true}.
      *
-     * @return <tt>true</tt> if selection should be enabled; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if selection should be enabled; otherwise {@code false}
      */
     public boolean getEnableSelection() {
         return enableSelection;
@@ -199,7 +202,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
     /**
      * Determines if selection should be enabled.
      *
-     * @param enable if <tt>true</tt> selection should be enabled; otherwise
+     * @param enable if {@code true} selection should be enabled; otherwise
      *               it should be disabled
      */
     public void setEnableSelection(boolean enable) {
@@ -257,8 +260,8 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
     /**
      * Returns a column offset given its model index.
      *
-     * @param column the columjn index
-     * @return the column offset, or <tt>-1</tt> if a column with the
+     * @param column the column index
+     * @return the column offset, or {@code -1} if a column with the
      *         specified index doesn't exist
      */
     protected int getColumnOffset(int column) {
@@ -270,7 +273,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
      *
      * @param model  the model
      * @param column the column index
-     * @return the column offset, or <tt>-1</tt> if a column with the
+     * @return the column offset, or {@code -1} if a column with the
      *         specified index doesn't exist
      */
     protected int getColumnOffset(TableColumnModel model, int column) {
@@ -330,6 +333,29 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel
             }
         }
         return index;
+    }
+
+    /**
+     * Returns a checkbox indicating the active state of an object.
+     *
+     * @param object the object
+     * @return a new checkbox
+     */
+    protected CheckBox getActive(IMObject object) {
+        return getCheckBox(object.isActive());
+    }
+
+    /**
+     * Helper to create a read-only checkbox
+     *
+     * @param selected if {@code true}, selects the check-box
+     * @return the checkbox
+     */
+    protected CheckBox getCheckBox(boolean selected) {
+        CheckBox result = new CheckBox();
+        result.setEnabled(false);
+        result.setSelected(selected);
+        return result;
     }
 
 }
