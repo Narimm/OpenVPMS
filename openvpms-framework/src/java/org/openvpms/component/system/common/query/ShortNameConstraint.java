@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -22,6 +20,7 @@ package org.openvpms.component.system.common.query;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
 import static org.openvpms.component.system.common.query.ArchetypeQueryException.ErrorCode.MustSpecifyAtLeastOneShortName;
 
 
@@ -29,8 +28,8 @@ import static org.openvpms.component.system.common.query.ArchetypeQueryException
  * A constraint on one or more archetype short names. The short names can be
  * complete short names or short names with wildcard characters.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ShortNameConstraint extends BaseArchetypeConstraint {
 
@@ -59,7 +58,7 @@ public class ShortNameConstraint extends BaseArchetypeConstraint {
      * Creates an instance of this constraint with the specified short name
      * for both primary/non-primary and active/inactive instances.
      *
-     * @param alias     the type alias. May be <code>null</code>
+     * @param alias     the type alias. May be {@code null}
      * @param shortName the short name
      */
     public ShortNameConstraint(String alias, String shortName) {
@@ -71,7 +70,7 @@ public class ShortNameConstraint extends BaseArchetypeConstraint {
      * for primary and non-primary instances.
      *
      * @param shortName  the short name
-     * @param activeOnly if <code>true</code> only deal with active entities
+     * @param activeOnly if {@code true} only deal with active entities
      */
     public ShortNameConstraint(String shortName, boolean activeOnly) {
         this(null, shortName, activeOnly);
@@ -81,71 +80,142 @@ public class ShortNameConstraint extends BaseArchetypeConstraint {
      * Creates an instance of the constraint with the specified short name
      * for primary and non-primary instances.
      *
-     * @param alias      the type alias. May be <code>null</code>
-     * @param shortName  the short name
-     * @param activeOnly if <code>true</code> only deal with active entities
+     * @param shortName the short name
+     * @param state     determines if active and/or inactive instances are returned
      */
-    public ShortNameConstraint(String alias, String shortName,
-                               boolean activeOnly) {
+    public ShortNameConstraint(String shortName, State state) {
+        this(null, shortName, state);
+    }
+
+    /**
+     * Creates an instance of the constraint with the specified short name
+     * for primary and non-primary instances.
+     *
+     * @param alias      the type alias. May be {@code null}
+     * @param shortName  the short name
+     * @param activeOnly if {@code true} only deal with active entities
+     */
+    public ShortNameConstraint(String alias, String shortName, boolean activeOnly) {
         this(alias, shortName, false, activeOnly);
+    }
+
+    /**
+     * Creates an instance of the constraint with the specified short name
+     * for primary and non-primary instances.
+     *
+     * @param alias     the type alias. May be {@code null}
+     * @param shortName the short name
+     * @param state     determines if active and/or inactive instances are returned
+     */
+    public ShortNameConstraint(String alias, String shortName, State state) {
+        this(alias, shortName, false, state);
     }
 
     /**
      * Create an instance of this constraint with the specified short name.
      *
      * @param shortName   the short name
-     * @param primaryOnly if <code>true</code> only deal with primary archetypes
-     * @param activeOnly  if <code>true</code> only deal with active entities
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param activeOnly  if {@code true} only deal with active entities
      */
-    public ShortNameConstraint(String shortName, boolean primaryOnly,
-                               boolean activeOnly) {
+    public ShortNameConstraint(String shortName, boolean primaryOnly, boolean activeOnly) {
         this(null, shortName, primaryOnly, activeOnly);
     }
 
     /**
      * Create an instance of this constraint with the specified short name.
      *
-     * @param alias       the type alias. May be <code>null</code>
      * @param shortName   the short name
-     * @param primaryOnly if <code>true</code> only deal with primary archetypes
-     * @param activeOnly  if <code>true</code> only deal with active entities
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param state       determines if active and/or inactive instances are returned
      */
-    public ShortNameConstraint(String alias, String shortName,
-                               boolean primaryOnly, boolean activeOnly) {
+    public ShortNameConstraint(String shortName, boolean primaryOnly, State state) {
+        this(null, shortName, primaryOnly, state);
+    }
+
+    /**
+     * Create an instance of this constraint with the specified short name.
+     *
+     * @param alias       the type alias. May be {@code null}
+     * @param shortName   the short name
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param activeOnly  if {@code true} only deal with active entities
+     */
+    public ShortNameConstraint(String alias, String shortName, boolean primaryOnly, boolean activeOnly) {
         super(alias, primaryOnly, activeOnly);
 
         if (StringUtils.isEmpty(shortName)) {
-            throw new ArchetypeQueryException(
-                    ArchetypeQueryException.ErrorCode.NoShortNameSpecified);
+            throw new ArchetypeQueryException(ArchetypeQueryException.ErrorCode.NoShortNameSpecified);
         }
         this.shortNames = new String[]{shortName};
     }
 
     /**
-     * Create an instance of this class with the specified archetype
-     * short names
+     * Create an instance of this constraint with the specified short name.
+     *
+     * @param alias       the type alias. May be {@code null}
+     * @param shortName   the short name
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param state       determines if active and/or inactive instances are returned
+     */
+    public ShortNameConstraint(String alias, String shortName, boolean primaryOnly, State state) {
+        super(alias, primaryOnly, state);
+
+        if (StringUtils.isEmpty(shortName)) {
+            throw new ArchetypeQueryException(ArchetypeQueryException.ErrorCode.NoShortNameSpecified);
+        }
+        this.shortNames = new String[]{shortName};
+    }
+
+    /**
+     * Create an instance of this class with the specified archetype short names.
      *
      * @param shortNames  an array of archetype short names
-     * @param primaryOnly if <code>true</code> only deal with primary archetypes
-     * @param activeOnly  if <code>true</code> only deal with active entities
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param activeOnly  if {@code true} only deal with active entities
      */
-    public ShortNameConstraint(String[] shortNames, boolean primaryOnly,
-                               boolean activeOnly) {
+    public ShortNameConstraint(String[] shortNames, boolean primaryOnly, boolean activeOnly) {
         this(null, shortNames, primaryOnly, activeOnly);
     }
 
     /**
-     * Creates an instance of this class with the specified archetype short
-     * names.
+     * Create an instance of this class with the specified archetype short names.
      *
-     * @param alias       the type alias. May be <code>null</code>
      * @param shortNames  an array of archetype short names
-     * @param primaryOnly if <code>true</code> only deal with primary archetypes
-     * @param activeOnly  if <code>true</code> only deal with active entities
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param state       determines if active and/or inactive instances are returned
      */
-    public ShortNameConstraint(String alias, String[] shortNames,
-                               boolean primaryOnly, boolean activeOnly) {
+    public ShortNameConstraint(String[] shortNames, boolean primaryOnly, State state) {
+        this(null, shortNames, primaryOnly, state);
+    }
+
+    /**
+     * Creates an instance of this class with the specified archetype short names.
+     *
+     * @param alias       the type alias. May be {@code null}
+     * @param shortNames  an array of archetype short names
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param activeOnly  if {@code true} only deal with active entities
+     */
+    public ShortNameConstraint(String alias, String[] shortNames, boolean primaryOnly, boolean activeOnly) {
         super(alias, primaryOnly, activeOnly);
+
+        if (shortNames == null || shortNames.length == 0) {
+            throw new ArchetypeQueryException(MustSpecifyAtLeastOneShortName);
+        }
+        this.shortNames = shortNames;
+    }
+
+    /**
+     * Creates an instance of this class with the specified archetype short names.
+     *
+     * @param alias       the type alias. May be {@code null}
+     * @param shortNames  an array of archetype short names
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param state       determines if active and/or inactive instances are returned
+     */
+    public ShortNameConstraint(String alias, String[] shortNames, boolean primaryOnly, State state) {
+        super(alias, primaryOnly, state);
 
         if (shortNames == null || shortNames.length == 0) {
             throw new ArchetypeQueryException(MustSpecifyAtLeastOneShortName);

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -24,48 +22,65 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 
 /**
- * This is the base archetype constraint that is the root of all archetype
- * queries. Currently it is a marker class.
+ * This is the base archetype constraint that is the root of all archetype queries.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public abstract class BaseArchetypeConstraint extends ConstraintContainer {
 
     /**
-     * The type name alias. May be <code>null</code>.
+     * The instance state to query.
+     */
+    public enum State {
+        ACTIVE, INACTIVE, BOTH
+    }
+
+    /**
+     * The type name alias. May be {@code null}.
      */
     private String alias;
 
-    /**
-     * If <code>true</code> only query active instances.
-     */
-    private boolean activeOnly;
 
     /**
-     * If <code>true</code>, only query primary instances.
+     * Determines if active and/or inactive instances should be returned.
+     */
+    private State state;
+
+    /**
+     * If {@code true}, only query primary instances.
      */
     private boolean primaryOnly;
 
 
     /**
-     * Constructs a new <code>BaseArchetypeConstraint</code>.
+     * Constructs a {@link BaseArchetypeConstraint}.
      *
-     * @param alias       the type alias. May be <code>null</code>
-     * @param primaryOnly if <code>true</code> only deal with primary archetypes
-     * @param activeOnly  if <code>true</code> only deal with active entities
+     * @param alias       the type alias. May be {@code null}
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param activeOnly  if {@code true} only deal with active entities
      */
-    BaseArchetypeConstraint(String alias, boolean primaryOnly,
-                            boolean activeOnly) {
+    BaseArchetypeConstraint(String alias, boolean primaryOnly, boolean activeOnly) {
+        this(alias, primaryOnly, (activeOnly) ? State.ACTIVE : State.BOTH);
+    }
+
+    /**
+     * Constructs a {@link BaseArchetypeConstraint}.
+     *
+     * @param alias       the type alias. May be {@code null}
+     * @param primaryOnly if {@code true} only deal with primary archetypes
+     * @param state       determines if active and/or inactive instances are returned
+     */
+    BaseArchetypeConstraint(String alias, boolean primaryOnly, State state) {
         this.alias = alias;
         this.primaryOnly = primaryOnly;
-        this.activeOnly = activeOnly;
+        this.state = state;
     }
 
     /**
      * Sets the type name alias.
      *
-     * @param alias the type name alias. May be <code>null</code>
+     * @param alias the type name alias. May be {@code null}
      */
     public void setAlias(String alias) {
         this.alias = alias;
@@ -74,7 +89,7 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
     /**
      * Returns the type name alias.
      *
-     * @return the type name alias. May be <code>null</code>
+     * @return the type name alias. May be {@code null}
      */
     public String getAlias() {
         return alias;
@@ -83,7 +98,7 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
     /**
      * Determines if only primary instances will be queried.
      *
-     * @return <code>true</code> if only primary instances will be queried
+     * @return {@code true} if only primary instances will be queried
      */
     public boolean isPrimaryOnly() {
         return primaryOnly;
@@ -92,30 +107,46 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
     /**
      * Determines if only primary instances will be queried.
      *
-     * @param primaryOnly if <code>true</code>, only primary instances will be
-     *                    queried
+     * @param primaryOnly if {@code true}, only primary instances will be queried
      */
     public void setPrimaryOnly(boolean primaryOnly) {
         this.primaryOnly = primaryOnly;
     }
 
     /**
-     * Determines if only active instances will be queried.
+     * Determines if active and/or inactive instances will be queried.
      *
-     * @return </code>true</code> if only active instances will be queried.
+     * @param state the instances to query
      */
-    public boolean isActiveOnly() {
-        return activeOnly;
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    /**
+     * Determines if active and/or inactive instances will be queried.
+     *
+     * @return the instances to query
+     */
+    public State getState() {
+        return state;
     }
 
     /**
      * Determines if only active instances will be queried.
      *
-     * @param activeOnly if <code>true</code>, only active instances will be
-     *                   queried
+     * @return {@code true} if only active instances will be queried.
+     */
+    public boolean isActiveOnly() {
+        return state == State.ACTIVE;
+    }
+
+    /**
+     * Determines if only active instances will be queried.
+     *
+     * @param activeOnly if {@code true}, only active instances will be queried
      */
     public void setActiveOnly(boolean activeOnly) {
-        this.activeOnly = activeOnly;
+        state = (activeOnly) ? State.ACTIVE : State.BOTH;
     }
 
     /* (non-Javadoc)
@@ -135,7 +166,7 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
         return new EqualsBuilder()
                 .appendSuper(super.equals(rhs))
                 .append(alias, rhs.alias)
-                .append(activeOnly, rhs.activeOnly)
+                .append(state, rhs.state)
                 .append(primaryOnly, rhs.primaryOnly)
                 .isEquals();
     }
@@ -148,7 +179,7 @@ public abstract class BaseArchetypeConstraint extends ConstraintContainer {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
                 .append("alias", alias)
-                .append("activeOnly", activeOnly)
+                .append("state", state)
                 .append("primaryOnly", primaryOnly)
                 .toString();
     }
