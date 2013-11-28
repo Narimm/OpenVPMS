@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="lookup.durationformat.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
@@ -22,7 +23,7 @@
         <node name="name" type="java.lang.String" path="/name" minCardinality="0" derived="true"
               derivedValue="concat(/details/interval, ' ', openvpms:lookup(., 'units'))"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
-        <node displayName="default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
+        <node displayName="Default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
               defaultValue="false()" hidden="true"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" hidden="true"/>
         <node name="interval" path="/details/interval" type="java.lang.Integer" minCardinality="1"/>
