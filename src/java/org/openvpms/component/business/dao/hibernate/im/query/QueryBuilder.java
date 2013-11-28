@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -59,6 +59,7 @@ import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilde
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoNodeDescWithName;
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NoNodeDescriptorForName;
 import static org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException.ErrorCode.NodeDescriptorsDoNotMatch;
+import static org.openvpms.component.system.common.query.BaseArchetypeConstraint.State;
 
 
 /**
@@ -229,7 +230,7 @@ public class QueryBuilder {
     private void processArchetypeConstraint(ShortNameConstraint constraint, QueryContext context) {
         boolean and = false;
 
-        if (constraint.isActiveOnly() || !constraint.getConstraints().isEmpty()) {
+        if (constraint.getState() != State.BOTH || !constraint.getConstraints().isEmpty()) {
             context.pushLogicalOperator(LogicalOperator.AND);
             and = true;
         }
@@ -264,7 +265,7 @@ public class QueryBuilder {
     }
 
     private void addActiveConstraint(BaseArchetypeConstraint constraint, QueryContext context) {
-        if (constraint.isActiveOnly()) {
+        if (constraint.getState() != State.BOTH) {
             String alias = constraint.getAlias();
             TypeSet set = context.getTypeSet(alias);
             boolean add = true;
@@ -283,7 +284,8 @@ public class QueryBuilder {
                 }
             }
             if (add) {
-                context.addConstraint(alias, "active", RelationalOp.EQ, true);
+                boolean active = constraint.getState() == State.ACTIVE;
+                context.addConstraint(alias, "active", RelationalOp.EQ, active);
             }
         }
     }
@@ -298,7 +300,7 @@ public class QueryBuilder {
                                             QueryContext context) {
         boolean and = false;
         // process the active flag
-        if (constraint.isActiveOnly() && !constraint.getConstraints().isEmpty()) {
+        if (constraint.getState() != State.BOTH && !constraint.getConstraints().isEmpty()) {
             context.pushLogicalOperator(LogicalOperator.AND);
             and = true;
         }
@@ -528,9 +530,9 @@ public class QueryBuilder {
 
         // push the new type
         BaseArchetypeConstraint archetypeConstraint = constraint.getArchetypeConstraint();
-        boolean activeOnly = false;
+        State state = State.BOTH;
         if (archetypeConstraint instanceof ArchetypeConstraint) {
-            activeOnly = archetypeConstraint.isActiveOnly();
+            state = archetypeConstraint.getState();
             types = TypeSet.create((ArchetypeConstraint) archetypeConstraint, ndesc, cache, assembler);
         } else {
             types = getTypeSet(archetypeConstraint);
@@ -542,7 +544,7 @@ public class QueryBuilder {
         boolean and = false;
 
         if (!constrainsByShortName(archetypeConstraint)) {
-            if (activeOnly || !archetypeConstraint.getConstraints().isEmpty()) {
+            if (state != State.BOTH || !archetypeConstraint.getConstraints().isEmpty()) {
                 context.pushLogicalOperator(LogicalOperator.AND);
                 and = true;
             }
