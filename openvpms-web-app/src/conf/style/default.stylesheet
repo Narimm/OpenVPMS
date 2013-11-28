@@ -291,6 +291,19 @@
         </properties>
     </style>
 
+    <style name="MedicalRecordSummary.act.customerAccountInvoiceItem"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.invoice.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="MedicalRecordSummary.act.patientWeight"
            type="nextapp.echo2.app.Component">
         <properties>
