@@ -72,11 +72,18 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
         final int maxDisplayLength = 50;
         int length = property.getMaxLength();
         int columns = (length < maxDisplayLength) ? length : maxDisplayLength;
-        result = TextComponentFactory.create(columns);
+        String value = null;
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor != null) {
-            result.setText(LookupNameHelper.getLookupName(descriptor, context));
+            value = LookupNameHelper.getLookupName(descriptor, context);
+            if (value != null && value.length() > 0) {
+                if (value.length() < columns) {
+                    columns = value.length();
+                }
+            }
         }
+        result = TextComponentFactory.create(columns);
+        result.setText(value);
         ComponentFactory.setStyle(result, getStyle());
         return result;
     }
