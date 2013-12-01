@@ -202,16 +202,35 @@ public class TableHelper {
     }
 
     /**
-     * Recursively sets the foreground colour of a component and its children.
+     * Recursively sets the foreground colour of a component and its children, unless a custom color is specified.
      *
      * @param component the component
-     * @param colour    the foreground colour
+     * @param colour    the foreground colour. Must be {@link Color#WHITE} or {@link Color#BLACK}.
      */
     private static void setForeground(Component component, Color colour) {
-        component.setForeground(colour);
+        Color foreground = getForeground(component);
+        if (foreground == null || !colour.equals(foreground)
+                                  && (foreground.equals(Color.BLACK) || foreground.equals(Color.WHITE))) {
+            component.setForeground(colour);
+        }
         for (Component child : component.getComponents()) {
             setForeground(child, colour);
         }
+    }
+
+    /**
+     * Returns the foreground colour of a component.
+     *
+     * @param component the component
+     * @return the foreground colour, or {@code null} if none is specified
+     */
+    private static Color getForeground(Component component) {
+        Color result = component.getForeground();
+        if (result == null && component.getStyleName() != null) {
+            Style style = ApplicationInstance.getActive().getStyle(component.getClass(), component.getStyleName());
+            result = (style != null) ? (Color) style.getProperty(Component.PROPERTY_FOREGROUND) : null;
+        }
+        return result;
     }
 
     /**
