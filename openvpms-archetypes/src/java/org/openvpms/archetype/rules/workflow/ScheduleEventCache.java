@@ -734,7 +734,7 @@ class ScheduleEventCache {
         private int compareVersions(String key, PropertySet other) {
             long version = event.getLong(key);
             long otherVersion = other.getLong(key);
-            return Long.compare(version, otherVersion);
+            return (version < otherVersion) ? -1 : ((version == otherVersion) ? 0 : 1);
         }
 
         /**
