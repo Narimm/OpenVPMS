@@ -190,7 +190,7 @@ KeyListComponent = Core.extend({
                                    },
 
                                    /**
-                                    * Creates a DHTML-based listbox copmonent and adds it to the DOM.
+                                    * Creates a DHTML-based listbox component and adds it to the DOM.
                                     */
                                    createDhtml: function () {
                                        var containerElement = document.getElementById(this.containerElementId);
@@ -306,7 +306,6 @@ KeyListComponent = Core.extend({
                                        containerElement.appendChild(selectElement);
 
                                        EchoEventProcessor.addHandler(selectElement, "change", "KeyListComponent.processChange");
-                                       EchoEventProcessor.addHandler(selectElement, "click", "KeyListComponent.processClickDhtml");
                                        EchoEventProcessor.addHandler(selectElement, "keypress", "KeyListComponent.processKeyPress");
                                        if (this.rolloverStyle) {
                                            EchoEventProcessor.addHandler(selectElement, "mouseover", "KeyListComponent.processRolloverEnter");
@@ -387,8 +386,8 @@ KeyListComponent = Core.extend({
                                        while (node != selectElement) {
                                            if (node.nodeType == 1) {
                                                var id = node.getAttribute("id");
-                                               if (id && id.indexOf(itemPrefix) == 0) {
-                                                   return parseInt(id.substring(itemPrefix.length));
+                                               if (id && id.indexOf(itemPrefix) === 0) {
+                                                   return parseInt(id.substring(itemPrefix.length), 10);
                                                }
                                            }
                                            node = node.parentNode;
@@ -521,6 +520,47 @@ KeyListComponent = Core.extend({
                                                // Item was not found in selection: add it to selection.
                                                this.selectedIndices.push(index);
                                            }
+                                       } else if (this.multipleSelection && echoEvent.shiftKey && this.selectedIndices) {
+                                           var contSelection = true;
+                                           for (var i = 0; i < this.selectedIndices.length - 1; i++) {
+                                               var gap = this.selectedIndices[i + 1] - this.selectedIndices[i];
+                                               if (gap < -1 || gap > 1) {
+                                                   contSelection = false;
+                                                   break;
+                                               } else if (gap == 1 && index < this.selectedIndices[i]) {
+                                                   contSelection = false;
+                                                   break;
+                                               } else if (gap == -1 && index > this.selectedIndices[i]) {
+                                                   contSelection = false;
+                                                   break;
+                                               }
+                                           }
+
+                                           if (contSelection) {
+                                               var lastSelectedIndex = this.selectedIndices.pop();
+                                               if (lastSelectedIndex < index) {
+                                                   for (var i = lastSelectedIndex; i <= index; i++) {
+                                                       this.selectedIndices.push(i);
+                                                   }
+                                               } else {
+                                                   for (var i = lastSelectedIndex; i >= index; i--) {
+                                                       this.selectedIndices.push(i);
+                                                   }
+                                               }
+                                           } else {
+                                               var firstIndex = this.selectedIndices[0];
+                                               this.selectedIndices = [];
+                                               if (firstIndex < index) {
+                                                   for (var i = firstIndex; i <= index; i++) {
+                                                       this.selectedIndices.push(i);
+                                                   }
+                                               } else {
+                                                   for (var i = firstIndex; i >= index; i--) {
+                                                       this.selectedIndices.push(i);
+                                                   }
+                                               }
+                                           }
+
                                        } else {
                                            this.selectedIndices = [];
                                            this.selectedIndices.push(index);
@@ -676,7 +716,9 @@ KeyListComponent = Core.extend({
                                            EchoServerTransaction.connect();
                                        }
                                    }
-                               });
+                               }
+)
+;
 
 
 /**
