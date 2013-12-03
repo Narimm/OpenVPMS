@@ -67,6 +67,20 @@ public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
     }
 
     /**
+     * Determines if the workspace can be updated with instances of the specified archetype.
+     * <p/>
+     * This implementation always returns {@code false}, largely to avoid receiving updates when changing practice
+     * locations.
+     *
+     * @param shortName the archetype's short name
+     * @return {@code false}
+     */
+    @Override
+    public boolean canUpdate(String shortName) {
+        return false;
+    }
+
+    /**
      * Creates a new CRUD window.
      *
      * @return a new CRUD window
