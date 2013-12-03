@@ -33,11 +33,14 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -109,8 +112,13 @@ public class AppointmentBrowser extends ScheduleBrowser {
         AppointmentGrid grid;
         if (schedules.size() == 1) {
             Party schedule = (Party) schedules.iterator().next();
-            grid = new SingleScheduleGrid(getScheduleView(), date, schedule,
-                                          events.get(schedule));
+            List<PropertySet> sets = events.get(schedule);
+            if (!hasOverlappingEvents(sets)) {
+                grid = new SingleScheduleGrid(getScheduleView(), date, schedule, sets);
+            } else {
+                // there are overlapping appointments, so display them in multiple schedules
+                grid = new MultiScheduleGrid(getScheduleView(), date, events);
+            }
         } else {
             grid = new MultiScheduleGrid(getScheduleView(), date, events);
         }
@@ -215,6 +223,23 @@ public class AppointmentBrowser extends ScheduleBrowser {
             startMins = endMins;
         }
         return new AppointmentGridView(grid, startMins, endMins);
+    }
+
+    /**
+     * Determines if one or more events have overlapping times.
+     *
+     * @param events the events
+     * @return {@code true} if one or more events have overlapping times
+     */
+    private boolean hasOverlappingEvents(List<PropertySet> events) {
+        List<PropertySet> list = new ArrayList<PropertySet>();
+        for (PropertySet event : events) {
+            if (Collections.binarySearch(list, event, IntersectComparator.INSTANCE) >= 0) {
+                return true;
+            }
+            list.add(event);
+        }
+        return false;
     }
 
 }
