@@ -33,8 +33,7 @@ import org.openvpms.web.component.property.CollectionProperty;
  * This implementation renders {@link IMObject} instances, and creates the
  * table model using {@link IMObjectTableModelFactory}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class IMObjectTableCollectionViewer
         extends IMTableCollectionViewer<IMObject> {
@@ -68,8 +67,7 @@ public abstract class IMObjectTableCollectionViewer
      * @return a new table model
      */
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
-        return IMObjectTableModelFactory.create(
-                getProperty().getArchetypeRange(), context);
+        return IMObjectTableModelFactory.create(getProperty().getArchetypeRange(), getObject(), context);
     }
 
     /**

@@ -1,11 +1,32 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.component.im.layout;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.List;
 
@@ -30,7 +51,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        archetype = getArchetypeService().getArchetypeDescriptor("product.medication");
+        archetype = getArchetypeService().getArchetypeDescriptor(ProductArchetypes.MEDICATION);
         assertNotNull(archetype);
     }
 
@@ -85,7 +106,43 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         checkComplex(archetype, nodes, "prices", "linked", "type", "investigationTypes", "suppliers", "stockLocations",
                      "reminders", "documents", "discounts", "updates", "classifications", "identities",
                      "equivalents", "taxes", "sourceRelationships");
+    }
 
+    /**
+     * Verifies nodes can be excluded if they are empty.
+     */
+    @Test
+    public void testExcludeIfEmpty() {
+        ArchetypeNodes nodes = new ArchetypeNodes().excludeIfEmpty("label", "dispInstructions", "usageNotes", "prices");
+        Product product = (Product) create(ProductArchetypes.MEDICATION);
+
+        IMObjectBean bean = new IMObjectBean(product);
+        bean.setValue("label", null);            // Boolean
+        bean.setValue("dispInstructions", null); // String
+        bean.setValue("usageNotes", "");
+        product.getProductPrices().clear();
+
+        // verify label, dispInstructions and usageNotes are excluded from simple nodes
+        checkSimple(archetype, nodes, product, "id", "name", "description", "printedName", "drugSchedule",
+                    "activeIngredients", "sellingUnits", "dispensingUnits", "dispensingVerb", "active");
+
+        // verify prices are excluded from complex nodes
+        checkComplex(archetype, nodes, product, "linked", "type", "investigationTypes", "suppliers", "stockLocations",
+                     "reminders", "documents", "discounts", "species", "updates", "classifications", "identities",
+                     "equivalents", "taxes", "sourceRelationships");
+
+        // populate the nodes and verify they are now returned
+        bean.setValue("label", true);
+        bean.setValue("dispInstructions", "instructions");
+        bean.setValue("usageNotes", "notes");
+        product.addProductPrice((ProductPrice) create(ProductArchetypes.FIXED_PRICE));
+
+        checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
+                    "sellingUnits", "dispensingUnits", "dispensingVerb", "label", "dispInstructions", "usageNotes",
+                    "active");
+        checkComplex(archetype, nodes, "prices", "linked", "type", "investigationTypes", "suppliers", "stockLocations",
+                     "reminders", "documents", "discounts", "species", "updates", "classifications", "identities",
+                     "equivalents", "taxes", "sourceRelationships");
     }
 
     /**
@@ -101,6 +158,19 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that the expected simple nodes are returned, in the correct order.
+     *
+     * @param archetype the archetype descriptor
+     * @param nodes     the nodes
+     * @param object    the object to return nodes for
+     * @param expected  the expected nodes
+     */
+    private void checkSimple(ArchetypeDescriptor archetype, ArchetypeNodes nodes, IMObject object, String... expected) {
+        List<NodeDescriptor> actual = nodes.getSimpleNodes(archetype, object, null);
+        checkNodes(expected, actual);
+    }
+
+    /**
      * Verifies that the expected complex nodes are returned, in the correct order.
      *
      * @param archetype the archetype descriptor
@@ -109,6 +179,20 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
      */
     private void checkComplex(ArchetypeDescriptor archetype, ArchetypeNodes nodes, String... expected) {
         List<NodeDescriptor> actual = nodes.getComplexNodes(archetype);
+        checkNodes(expected, actual);
+    }
+
+    /**
+     * Verifies that the expected complex nodes are returned, in the correct order.
+     *
+     * @param archetype the archetype descriptor
+     * @param nodes     the nodes
+     * @param object    the object to return nodes for
+     * @param expected  the expected nodes
+     */
+    private void checkComplex(ArchetypeDescriptor archetype, ArchetypeNodes nodes, IMObject object,
+                              String... expected) {
+        List<NodeDescriptor> actual = nodes.getComplexNodes(archetype, object, null);
         checkNodes(expected, actual);
     }
 

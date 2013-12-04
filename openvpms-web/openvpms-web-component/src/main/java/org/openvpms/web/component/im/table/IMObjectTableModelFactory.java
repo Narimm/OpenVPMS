@@ -56,12 +56,12 @@ public class IMObjectTableModelFactory {
      * Creates a new table model.
      *
      * @param shortNames the short names of the archetype the table must display
-     * @param context    the layout context. May be {@code null}
+     * @param context    the layout context
      * @return a new table model
      */
     @SuppressWarnings("unchecked")
     public static <T extends IMObject> IMObjectTableModel<T> create(String[] shortNames, LayoutContext context) {
-        return create(shortNames, null, context);
+        return create(shortNames, (IMObject) null, context);
     }
 
     /**
@@ -69,7 +69,7 @@ public class IMObjectTableModelFactory {
      *
      * @param shortNames the short names of the archetype the table must display
      * @param query      the query
-     * @param context    the layout context. May be {@code null}
+     * @param context    the layout context
      * @return a new table model
      */
     @SuppressWarnings("unchecked")
@@ -79,7 +79,7 @@ public class IMObjectTableModelFactory {
 
         ArchetypeHandler handler = getTableModels().getHandler(shortNames);
         if (handler != null) {
-            result = construct(handler, shortNames, query, context);
+            result = construct(handler, shortNames, query, null, context);
         }
         if (result == null) {
             result = new DefaultDescriptorTableModel<T>(shortNames, query, context);
@@ -91,20 +91,42 @@ public class IMObjectTableModelFactory {
      * Creates a new table model.
      *
      * @param type    the table model type
-     * @param context the layout context. May be {@code null}
+     * @param context the layout context
      * @return a new table model, or {@link DefaultIMObjectTableModel} if the type cannot be constructed
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> IMObjectTableModel<T> create(
-            Class type, LayoutContext context) {
+    public static <T extends IMObject> IMObjectTableModel<T> create(Class type, LayoutContext context) {
         IMObjectTableModel<T> result = null;
 
         ArchetypeHandler handler = getTableModels().getHandler(type);
         if (handler != null) {
-            result = construct(handler, null, null, context);
+            result = construct(handler, null, null, null, context);
         }
         if (result == null) {
             result = new DefaultIMObjectTableModel<T>();
+        }
+        return result;
+    }
+
+    /**
+     * Creates a new table model.
+     *
+     * @param shortNames the short names of the archetype the table must display
+     * @param parent     the parent object
+     * @param context    the layout context
+     * @return a new table model
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends IMObject> IMObjectTableModel<T> create(String[] shortNames, IMObject parent,
+                                                                    LayoutContext context) {
+        IMObjectTableModel<T> result = null;
+
+        ArchetypeHandler handler = getTableModels().getHandler(shortNames);
+        if (handler != null) {
+            result = construct(handler, shortNames, null, parent, context);
+        }
+        if (result == null) {
+            result = new DefaultDescriptorTableModel<T>(shortNames, context);
         }
         return result;
     }
@@ -115,13 +137,14 @@ public class IMObjectTableModelFactory {
      * @param handler    the archetype handler
      * @param shortNames the archetype short names. May be {@code null}
      * @param query      the query. May be {@code null}
+     * @param parent     the parent object
      * @param context    the layout context
      * @return a new table model, or {@code null} if there is no valid constructor
      */
     @SuppressWarnings("unchecked")
     private static <T extends IMObject> IMObjectTableModel<T> construct(ArchetypeHandler<IMObjectTableModel<T>> handler,
                                                                         final String[] shortNames, Query<T> query,
-                                                                        LayoutContext context) {
+                                                                        final IMObject parent, LayoutContext context) {
         Class type = handler.getType();
         DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 
@@ -138,6 +161,9 @@ public class IMObjectTableModelFactory {
         });
         if (query != null) {
             factory.registerSingleton("query", query);
+        }
+        if (parent != null) {
+            factory.registerSingleton("parent", parent);
         }
         if (context != null) {
             factory.registerSingleton("context", context);

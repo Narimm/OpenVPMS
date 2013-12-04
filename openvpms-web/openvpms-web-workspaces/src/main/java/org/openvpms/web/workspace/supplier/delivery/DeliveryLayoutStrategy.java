@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.supplier.delivery;
 
 import nextapp.echo2.app.Component;
@@ -42,7 +43,8 @@ public class DeliveryLayoutStrategy extends ActLayoutStrategy {
     /**
      * Excludes the supplierNotes node.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("supplierNotes");
+    private static final ArchetypeNodes NODES
+            = new ArchetypeNodes().exclude("supplierNotes").excludeIfEmpty("supplierInvoiceId");
 
     /**
      * Constructs a {@link DeliveryLayoutStrategy} for viewing deliveries.
