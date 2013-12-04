@@ -29,6 +29,7 @@ import org.openvpms.web.component.property.PropertySet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -82,6 +83,11 @@ public class ArchetypeNodes {
     private Set<String> exclude = new HashSet<String>();
 
     /**
+     * Exclude nodes if they are empty.
+     */
+    private Set<String> excludeIfEmpty = new HashSet<String>();
+
+    /**
      * Used to order nodes. The n-th element is placed before the n-th+1 element.
      */
     private List<String> order = new ArrayList<String>();
@@ -120,6 +126,7 @@ public class ArchetypeNodes {
         this.includeSimpleNodes = new LinkedHashSet<String>(nodes.includeSimpleNodes);
         this.includeComplexNodes = new LinkedHashSet<String>(nodes.includeComplexNodes);
         this.exclude = new HashSet<String>(exclude);
+        this.excludeIfEmpty = new HashSet<String>(excludeIfEmpty);
     }
 
     /**
@@ -188,6 +195,23 @@ public class ArchetypeNodes {
     }
 
     /**
+     * Excludes the specified nodes if they are null or empty.
+     * <p/>
+     * <ul>
+     * <li>string nodes are excluded if the string is null or empty</li>
+     * <li>non-collection nodes if they are null</li>
+     * <li>collection nodes are excluded if they are empty</li>
+     * </ul>
+     *
+     * @param nodes the node names
+     * @return this instance
+     */
+    public ArchetypeNodes excludeIfEmpty(String... nodes) {
+        Collections.addAll(excludeIfEmpty, nodes);
+        return this;
+    }
+
+    /**
      * Places a node before another.
      *
      * @param node1 the first node
@@ -219,7 +243,7 @@ public class ArchetypeNodes {
      * @return the simple nodes
      */
     public List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype, IMObject object, NodeFilter filter) {
-        return getNodes(archetype, object, includeSimpleNodes, new SimplePredicate(), filter);
+        return getNodes(archetype, object, includeSimpleNodes, new SimplePredicate(object), filter);
     }
 
     /**
@@ -258,7 +282,7 @@ public class ArchetypeNodes {
      * @return the complex nodes
      */
     public List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype, IMObject object, NodeFilter filter) {
-        return getNodes(archetype, object, includeComplexNodes, new ComplexPredicate(), filter);
+        return getNodes(archetype, object, includeComplexNodes, new ComplexPredicate(object), filter);
     }
 
     /**
@@ -296,7 +320,8 @@ public class ArchetypeNodes {
                    && allComplexNodes == nodes.allComplexNodes
                    && includeSimpleNodes.equals(nodes.includeSimpleNodes)
                    && includeComplexNodes.equals(nodes.includeComplexNodes)
-                   && exclude.equals(nodes.exclude);
+                   && exclude.equals(nodes.exclude)
+                   && excludeIfEmpty.equals(nodes.excludeIfEmpty);
         }
         return false;
     }
@@ -377,7 +402,6 @@ public class ArchetypeNodes {
             result = nodes;
         }
         return result;
-
     }
 
     /**
@@ -438,7 +462,53 @@ public class ArchetypeNodes {
         }
     }
 
-    private class SimplePredicate implements Predicate {
+    /**
+     * Determines if a node is empty.
+     *
+     * @param object     the parent object
+     * @param descriptor the node descriptor
+     * @return {@code true} if the node is empty
+     */
+    private boolean isEmpty(IMObject object, NodeDescriptor descriptor) {
+        boolean result;
+        Object value = descriptor.getValue(object);
+        if (value instanceof String) {
+            result = ((String) value).length() == 0;
+        } else if (value instanceof Collection) {
+            result = ((Collection) value).isEmpty();
+        } else {
+            result = value == null;
+        }
+        return result;
+    }
+
+    private abstract class AbstractPredicate implements Predicate {
+
+        private final IMObject object;
+
+        public AbstractPredicate() {
+            this(null);
+        }
+
+        public AbstractPredicate(IMObject object) {
+            this.object = object;
+        }
+
+        protected boolean include(NodeDescriptor descriptor) {
+            String name = descriptor.getName();
+            return !exclude.contains(name) && !(this.object != null && excludeIfEmpty.contains(name))
+                   || !isEmpty(this.object, descriptor);
+        }
+    }
+
+    private class SimplePredicate extends AbstractPredicate {
+
+        public SimplePredicate() {
+        }
+
+        public SimplePredicate(IMObject object) {
+            super(object);
+        }
 
         /**
          * Determines if a node is an included simple node.
@@ -448,15 +518,26 @@ public class ArchetypeNodes {
          */
         @Override
         public boolean evaluate(Object object) {
+            boolean include = false;
             NodeDescriptor descriptor = (NodeDescriptor) object;
             String name = descriptor.getName();
             boolean simple = !descriptor.isComplexNode();
-            return ((allSimpleNodes && simple) || (!simple && includeSimpleNodes.contains(name)))
-                   && !exclude.contains(name) && !includeComplexNodes.contains(name);
+            if (((allSimpleNodes && simple) || (!simple && includeSimpleNodes.contains(name)))
+                && !includeComplexNodes.contains(name)) {
+                include = include(descriptor);
+            }
+            return include;
         }
     }
 
-    private class ComplexPredicate implements Predicate {
+    private class ComplexPredicate extends AbstractPredicate {
+
+        public ComplexPredicate() {
+        }
+
+        public ComplexPredicate(IMObject object) {
+            super(object);
+        }
 
         /**
          * Determines if a node is an included complex node.
@@ -466,11 +547,15 @@ public class ArchetypeNodes {
          */
         @Override
         public boolean evaluate(Object object) {
+            boolean include = false;
             NodeDescriptor descriptor = (NodeDescriptor) object;
             String name = descriptor.getName();
             boolean complex = descriptor.isComplexNode();
-            return ((allComplexNodes && complex) || (!complex && includeComplexNodes.contains(name)))
-                   && !exclude.contains(name) && !includeSimpleNodes.contains(name);
+            if (((allComplexNodes && complex) || (!complex && includeComplexNodes.contains(name)))
+                && !includeSimpleNodes.contains(name)) {
+                include = include(descriptor);
+            }
+            return include;
         }
     }
 }

@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
@@ -36,8 +35,7 @@ import org.openvpms.web.workspace.supplier.SupplierStockItemEditor;
  * An editor for <em>act.supplierDeliveryItem</em> and
  * <em>act.supplierReturnItem</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DeliveryItemEditor extends SupplierStockItemEditor {
 
@@ -53,14 +51,13 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
 
 
     /**
-     * Constructs a <tt>DeliveryItemEditor</tt>.
+     * Constructs a {@link DeliveryItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act.
-     * @param context the layout context. May be <tt>null</tt>
+     * @param context the layout context
      */
-    public DeliveryItemEditor(FinancialAct act, Act parent,
-                              LayoutContext context) {
+    public DeliveryItemEditor(FinancialAct act, Act parent, LayoutContext context) {
         super(act, parent, context);
         CollectionProperty order = (CollectionProperty) getProperty("order");
         orderEditor = new ActRelationshipCollectionEditor(order, act, getLayoutContext());
@@ -84,7 +81,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      * result, otherwise {@link #doValidation(Validator)} will be invoked.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     public boolean validate(Validator validator) {
@@ -103,7 +100,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      * POSTED.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     protected boolean doValidation(Validator validator) {
@@ -127,7 +124,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      * Validates that the product is set when the parent is POSTED.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the property is valid, otherwise <tt>false</tt>
+     * @return {@code true} if the property is valid, otherwise {@code false}
      */
     private boolean validateProduct(Validator validator) {
         boolean result = true;
@@ -144,7 +141,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      * Validates the packageSize when the parent is POSTED.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the property is valid, otherwise <tt>false</tt>
+     * @return {@code true} if the property is valid, otherwise {@code false}
      */
     private boolean validatePackageSize(Validator validator) {
         boolean result = true;
@@ -162,7 +159,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      * Validates the packageUnits node when the parent is POSTED.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the property is valid, otherwise <tt>false</tt>
+     * @return {@code true} if the property is valid, otherwise {@code false}
      */
     private boolean validatePackageUnits(Validator validator) {
         boolean result = true;
@@ -183,6 +180,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new ActLayoutStrategy("order", false);
+        return new DeliveryItemLayoutStrategy();
     }
+
 }

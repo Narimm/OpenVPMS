@@ -84,7 +84,7 @@ public abstract class IMObjectTableCollectionEditor
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
         CollectionPropertyEditor editor = getCollectionPropertyEditor();
-        return IMObjectTableModelFactory.create(editor.getArchetypeRange(), context);
+        return IMObjectTableModelFactory.create(editor.getArchetypeRange(), getObject(), context);
     }
 
     /**
