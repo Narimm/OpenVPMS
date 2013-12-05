@@ -69,10 +69,18 @@ KeyListComponent = Core.extend({
                                        },
 
                                        /**
+                                        * Event listener for click events.
+                                        *
+                                        * @param echoEvent the event (that has been fired via EchoEventProcessor)
+                                        */
+                                       processClick: function (echoEvent) {
+                                           var componentId = EchoDomUtil.getComponentId(echoEvent.registeredTarget.id);
+                                           var listComponent = KeyListComponent.getComponent(componentId);
+                                           return listComponent.processClick(echoEvent);
+                                       },
+
+                                       /**
                                         * Click event listener for DHTML-based list box components.
-                                        * Looks up appropriate KeyListComponent instance based on event
-                                        * target id and then delegates to corresponding method in
-                                        * KeyListComponent instance.
                                         *
                                         * @param echoEvent the event (that has been fired via EchoEventProcessor)
                                         */
@@ -125,7 +133,7 @@ KeyListComponent = Core.extend({
                                        },
 
                                        /**
-                                        * Event listener for keypress events.
+                                        * Event listener for keydown events.
                                         *
                                         * @param echoEvent the event (that has been fired via EchoEventProcessor)
                                         */
@@ -306,7 +314,8 @@ KeyListComponent = Core.extend({
                                        containerElement.appendChild(selectElement);
 
                                        EchoEventProcessor.addHandler(selectElement, "change", "KeyListComponent.processChange");
-                                       EchoEventProcessor.addHandler(selectElement, "keypress", "KeyListComponent.processKeyPress");
+                                       EchoEventProcessor.addHandler(selectElement, "click", "KeyListComponent.processClick");
+                                       EchoEventProcessor.addHandler(selectElement, "keydown", "KeyListComponent.processKeyPress");
                                        if (this.rolloverStyle) {
                                            EchoEventProcessor.addHandler(selectElement, "mouseover", "KeyListComponent.processRolloverEnter");
                                            EchoEventProcessor.addHandler(selectElement, "mouseout", "KeyListComponent.processRolloverExit");
@@ -324,13 +333,14 @@ KeyListComponent = Core.extend({
                                        this.styles = null;
 
                                        var selectElement = this.getElement();
+                                       EchoEventProcessor.removeHandler(selectElement, "click");
                                        if (this.renderAsDhtml) {
-                                           EchoEventProcessor.removeHandler(selectElement, "click");
                                            if (EchoClientProperties.get("browserInternetExplorer")) {
                                                EchoEventProcessor.removeHandler(selectElement, "selectstart");
                                            }
                                        } else {
                                            EchoEventProcessor.removeHandler(selectElement, "change");
+                                           EchoEventProcessor.removeHandler(selectElement, "keydown");
                                        }
 
                                        if (this.rolloverStyle) {
@@ -487,6 +497,26 @@ KeyListComponent = Core.extend({
                                                                       KeyListComponent.DHTML_SELECTION_STYLE);
                                            }
                                        }
+                                   },
+
+                                   /**
+                                    * Processes a click event on a list box component.
+                                    *
+                                    * @param echoEvent the event, preprocessed by the
+                                    *        <code>EchoEventProcessor</code>
+                                    */
+                                   processClick: function (echoEvent) {
+                                       var selectElement = this.getElement();
+
+                                       EchoDomUtil.preventEventDefault(echoEvent);
+                                       if (!this.enabled || !EchoClientEngine.verifyInput(selectElement)) {
+                                           return;
+                                       }
+                                       var index = this.getNodeIndex(echoEvent.target);
+                                       if (index == -1) {
+                                           return;
+                                       }
+                                       this.updateClientMessage(true);
                                    },
 
                                    /**
