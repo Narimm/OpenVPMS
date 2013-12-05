@@ -16,6 +16,7 @@
 
 package org.openvpms.etl.tools.doc;
 
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -198,6 +199,8 @@ abstract class AbstractLoader implements Loader {
                 result.add(descriptor.getType().getShortName());
             }
         }
+        // can't load to document template acts.
+        result.remove(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
 
         return result.toArray(new String[result.size()]);
     }

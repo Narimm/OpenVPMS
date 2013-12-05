@@ -18,8 +18,10 @@ package org.openvpms.etl.tools.doc;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -36,6 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -100,6 +103,52 @@ public class NameLoaderTestCase extends AbstractLoaderTest {
             checkMimeType(e);
         }
     }
+
+    /**
+     * Verifies that document templates cannot be loaded to.
+     */
+    @Test
+    public void testLoadDocumentTemplate() throws Exception {
+        File source = new File("target/sdocs" + System.currentTimeMillis());
+        File target = new File("target/tdocs" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        // verify that the loader cannot be constructed to load act.documentTemplate acts
+        try {
+            new NameLoader(source, new String[]{DocumentArchetypes.DOCUMENT_TEMPLATE_ACT}, service,
+                           new DefaultDocumentFactory());
+            fail("Expected exception to be thrown");
+        } catch (Throwable exception) {
+            assertEquals(exception.getMessage(), "Argument 'shortNames' doesn't refer to any valid archetype for "
+                                                 + "loading documents to: {act.documentTemplate}");
+        }
+
+        // verify that an act.documentTemplate cannot be overwritten by a load
+        DocumentAct act = (DocumentAct) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
+        File file = createFile(act, source, null, "-Z", "A");
+
+        Entity template = (Entity) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        act.setName("foo");
+        act.setDescription("bar");
+        template.setName("ZTemplate");
+        ActBean bean = new ActBean(act);
+        bean.setValue("fileName", file.getName());
+        bean.addNodeParticipation("template", template);
+        service.save(Arrays.asList(act, template));
+
+
+        Loader loader = new NameLoader(source, new String[]{PatientArchetypes.DOCUMENT_ATTACHMENT}, service,
+                                       new DefaultDocumentFactory());
+        LoggingLoaderListener listener = new LoggingLoaderListener(DocumentLoader.log, target);
+
+        load(loader, listener);
+        assertEquals(0, listener.getLoaded());
+        assertEquals(0, listener.getAlreadyLoaded());
+        assertEquals(0, listener.getMissingAct());
+        assertEquals(0, listener.getErrors());
+    }
+
 
     /**
      * Removes all <em>act.patientDocumentAttachment</em> acts with no document, and a non-null file name.

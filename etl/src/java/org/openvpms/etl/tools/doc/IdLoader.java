@@ -153,6 +153,9 @@ class IdLoader extends AbstractLoader {
             throw new IllegalArgumentException("Argument 'shortNames' doesn't refer to any valid archetype for loading "
                                                + "documents to: " + ArrayUtils.toString(shortNames));
         }
+        if (log.isInfoEnabled()) {
+            log.info("Loading documents for archetypes=" + StringUtils.join(this.shortNames, ", "));
+        }
         this.overwrite = overwrite;
         if (log.isDebugEnabled()) {
             log.debug("dir=" + dir);

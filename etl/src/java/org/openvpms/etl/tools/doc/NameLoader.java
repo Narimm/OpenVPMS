@@ -77,13 +77,16 @@ class NameLoader extends AbstractLoader {
     public NameLoader(File dir, String[] shortNames, IArchetypeService service, DocumentFactory factory) {
         super(service, factory);
         this.dir = dir;
-        shortNames = getDocumentActShortNames(shortNames);
-        if (shortNames.length == 0) {
-            throw new IllegalArgumentException("Argument 'shortName' doesn't refer to a valid archetype for loading "
+        String[] expanded = getDocumentActShortNames(shortNames);
+        if (expanded.length == 0) {
+            throw new IllegalArgumentException("Argument 'shortNames' doesn't refer to any valid archetype for loading "
                                                + "documents to: " + ArrayUtils.toString(shortNames));
         }
+        if (log.isInfoEnabled()) {
+            log.info("Loading documents for archetypes=" + StringUtils.join(expanded, ", "));
+        }
 
-        List<IMObjectReference> refs = getDocumentActs(shortNames);
+        List<IMObjectReference> refs = getDocumentActs(expanded);
         log.info("Found " + refs.size() + " documents");
         iterator = refs.iterator();
     }
