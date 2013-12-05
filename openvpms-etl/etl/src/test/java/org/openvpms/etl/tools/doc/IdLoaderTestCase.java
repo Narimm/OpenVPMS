@@ -18,10 +18,12 @@ package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
@@ -33,6 +35,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -318,7 +321,7 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         File act2File = createFile(act2, source, "V", null, ".pdf");
         File act3File = createFile(act3, source, null, "-12345", null, ".html");
         File act4File = createFile(act4, source, null, null, ".png");
-        File act5File = createFile(act5, source,  null, null, ".gif");
+        File act5File = createFile(act5, source, null, null, ".gif");
 
         // load files that have corresponding document attachment acts. The document image acts should not be uppdated
         LoaderListener listener = load(source, PatientArchetypes.DOCUMENT_ATTACHMENT, target, false);
@@ -340,6 +343,43 @@ public class IdLoaderTestCase extends AbstractLoaderTest {
         checkAct(act3, act3File.getName());
         checkNoDocument(act4);
         checkNoDocument(act5);
+    }
+
+    /**
+     * Verifies that document templates cannot be loaded to.
+     */
+    @Test
+    public void testLoadDocumentTemplate() throws Exception {
+        File source = new File("target/sdocs" + System.currentTimeMillis());
+        File target = new File("target/tdocs" + System.currentTimeMillis());
+        assertTrue(source.mkdirs());
+        assertTrue(target.mkdirs());
+
+        // verify that the loader cannot be constructed to load act.documentTemplate acts
+        String[] shortNames = {DocumentArchetypes.DOCUMENT_TEMPLATE_ACT};
+        try {
+            new IdLoader(source, shortNames, service,
+                         new DefaultDocumentFactory(), transactionManager, true, true);
+            fail("Expected exception to be thrown");
+        } catch (Throwable exception) {
+            assertEquals(exception.getMessage(), "Argument 'shortNames' doesn't refer to any valid archetype for "
+                                                 + "loading documents to: {act.documentTemplate}");
+        }
+
+        // verify that an act.documentTemplate cannot be overwritten by a load
+        DocumentAct act = (DocumentAct) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE_ACT);
+        Entity template = (Entity) service.create(DocumentArchetypes.DOCUMENT_TEMPLATE);
+        act.setName("foo");
+        act.setDescription("bar");
+        template.setName("ZTemplate");
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("template", template);
+        service.save(Arrays.asList(act, template));
+
+        createFile(act, source, null, "-Z", "A");
+        LoaderListener listener = load(source, target, true);
+        assertEquals(1, listener.getMissingAct());
+        assertEquals(1, listener.getErrors());
     }
 
     /**
