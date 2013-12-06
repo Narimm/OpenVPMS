@@ -604,6 +604,15 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
+     * Returns the properties.
+     *
+     * @return the properties
+     */
+    protected PropertySet getProperties() {
+        return properties;
+    }
+
+    /**
      * Returns the child editors.
      *
      * @return the child editors

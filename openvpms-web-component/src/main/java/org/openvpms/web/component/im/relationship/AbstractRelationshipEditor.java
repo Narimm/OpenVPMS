@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
@@ -51,12 +50,12 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
     /**
      * Editor for the source of the relationship. Null if the source is the parent.
      */
-    private PropertyEditor sourceEditor;
+    private IMObjectReferenceEditor<Entity> sourceEditor;
 
     /**
      * Editor for the target of the relationship. Null if the target is the parent.
      */
-    private PropertyEditor targetEditor;
+    private IMObjectReferenceEditor<Entity> targetEditor;
 
     /**
      * The nodes to render.
@@ -106,17 +105,43 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         nodes = new ArchetypeNodes();
 
         if (source == null || !source.equals(parent)) {
-            sourceEditor = createSourceReferenceEditor(sourceProp, layoutContext);
+            sourceEditor = createSourceEditor(sourceProp, layoutContext);
             nodes.simple(SOURCE);
             nodes.first(SOURCE);
             nodes.exclude(TARGET);
         }
 
         if (target == null || !target.equals(parent) || target.equals(source)) {
-            targetEditor = createTargetReferenceEditor(targetProp, layoutContext);
+            targetEditor = createTargetEditor(targetProp, layoutContext);
             nodes.simple(TARGET);
             nodes.first(TARGET);
             nodes.exclude(SOURCE);
+        }
+    }
+
+    /**
+     * Sets the source of the relationship.
+     *
+     * @param source the source. May be {@code null}
+     */
+    public void setSource(Entity source) {
+        if (sourceEditor != null) {
+            sourceEditor.setObject(source);
+        } else {
+            getSource().setValue(source != null ? source.getObjectReference() : null);
+        }
+    }
+
+    /**
+     * Sets the target of the relationship.
+     *
+     * @param target the target. May be {@code null}
+     */
+    public void setTarget(Entity target) {
+        if (targetEditor != null) {
+            targetEditor.setObject(target);
+        } else {
+            getTarget().setValue(target != null ? target.getObjectReference() : null);
         }
     }
 
@@ -148,6 +173,14 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         return new LayoutStrategy();
     }
 
+    protected IMObjectReferenceEditor<Entity> getSourceEditor() {
+        return sourceEditor;
+    }
+
+    protected IMObjectReferenceEditor<Entity> getTargetEditor() {
+        return targetEditor;
+    }
+
     /**
      * Creates a new editor for the relationship source.
      *
@@ -155,7 +188,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @param context  the layout context
      * @return a new reference editor
      */
-    protected IMObjectReferenceEditor<Entity> createSourceReferenceEditor(Property property, LayoutContext context) {
+    protected IMObjectReferenceEditor<Entity> createSourceEditor(Property property, LayoutContext context) {
         return createReferenceEditor(property, context);
     }
 
@@ -166,7 +199,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @param context  the layout context
      * @return a new reference editor
      */
-    protected IMObjectReferenceEditor<Entity> createTargetReferenceEditor(Property property, LayoutContext context) {
+    protected IMObjectReferenceEditor<Entity> createTargetEditor(Property property, LayoutContext context) {
         return createReferenceEditor(property, context);
     }
 
@@ -198,6 +231,28 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         }
 
         /**
+         * Apply the layout strategy.
+         * <p/>
+         * This renders an object in a {@code Component}, using a factory to create the child components.
+         *
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param context    the layout context
+         * @return the component containing the rendered {@code object}
+         */
+        @Override
+        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            if (sourceEditor != null) {
+                addComponent(new ComponentState(sourceEditor));
+            }
+            if (targetEditor != null) {
+                addComponent(new ComponentState(targetEditor));
+            }
+            return super.apply(object, properties, parent, context);
+        }
+
+        /**
          * Lay out out the object in the specified container.
          *
          * @param object     the object to lay out
@@ -223,25 +278,6 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
                 doSimpleLayout(object, parent, simple, container, context);
                 doComplexLayout(object, parent, complex, container, context);
             }
-        }
-
-        /**
-         * Creates a component for a property.
-         *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display {@code property}
-         */
-        @Override
-        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            String name = property.getName();
-            if (sourceEditor != null && name.equals(sourceEditor.getProperty().getName())) {
-                return new ComponentState(sourceEditor);
-            } else if (targetEditor != null && name.equals(targetEditor.getProperty().getName())) {
-                return new ComponentState(targetEditor);
-            }
-            return super.createComponent(property, parent, context);
         }
 
         /**

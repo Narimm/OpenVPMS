@@ -53,6 +53,11 @@ public class PropertySet {
     private Map<String, Property> properties = new HashMap<String, Property>();
 
     /**
+     * The editable properties.
+     */
+    private Map<String, Property> editable;
+
+    /**
      * Derived property values.
      */
     private Map<Property, Object> derived = new HashMap<Property, Object>();
@@ -137,6 +142,25 @@ public class PropertySet {
      */
     public Collection<Property> getProperties() {
         return properties.values();
+    }
+
+    /**
+     * Returns the editable properties.
+     * <p/>
+     * These are the non-hidden, modifiable properties.
+     *
+     * @return the editable properties
+     */
+    public Collection<Property> getEditable() {
+        if (editable == null) {
+            editable = new HashMap<String, Property>();
+            for (Property property : getProperties()) {
+                if (!property.isHidden() && !property.isReadOnly() && !property.isDerived()) {
+                    editable.put(property.getName(), property);
+                }
+            }
+        }
+        return editable.values();
     }
 
     /**
