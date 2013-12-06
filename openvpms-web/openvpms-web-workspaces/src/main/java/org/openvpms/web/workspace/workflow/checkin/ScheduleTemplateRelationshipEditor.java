@@ -57,7 +57,7 @@ public class ScheduleTemplateRelationshipEditor extends EntityRelationshipEditor
      * @return a new reference editor
      */
     @Override
-    protected IMObjectReferenceEditor<Entity> createTargetReferenceEditor(Property property, LayoutContext context) {
+    protected IMObjectReferenceEditor<Entity> createTargetEditor(Property property, LayoutContext context) {
         return new AbstractIMObjectReferenceEditor<Entity>(property, getObject(), context) {
             @Override
             protected Query<Entity> createQuery(String name) {

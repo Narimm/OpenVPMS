@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SingleIMObjectCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -40,12 +41,23 @@ public class SingleEntityRelationshipCollectionEditor extends SingleIMObjectColl
     }
 
     /**
+     * Returns the relationship editor.
+     *
+     * @return the relationship editor, or {@code null} if there is no current relationship editor
+     */
+    protected EntityRelationshipEditor getRelationshipEditor() {
+        IMObjectEditor editor = getCurrentEditor();
+        return (editor instanceof EntityRelationshipEditor) ? (EntityRelationshipEditor) editor : null;
+    }
+
+    /**
      * Determines if the object being edited is empty.
      *
      * @return {@code true} if the object is empty
      */
     @Override
     protected boolean isEmpty() {
-        return false;
+        EntityRelationshipEditor editor = getRelationshipEditor();
+        return editor != null && getCollection().getMinCardinality() == 0 && editor.isEmpty();
     }
 }
