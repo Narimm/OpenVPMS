@@ -109,6 +109,24 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies nodes can be excluded.
+     */
+    @Test
+    public void testExclude() {
+        ArchetypeNodes nodes = new ArchetypeNodes().exclude("label", "dispInstructions", "usageNotes", "prices");
+        Product product = (Product) create(ProductArchetypes.MEDICATION);
+
+        // verify label, dispInstructions and usageNotes are excluded from simple nodes
+        checkSimple(archetype, nodes, product, "id", "name", "description", "printedName", "drugSchedule",
+                    "activeIngredients", "sellingUnits", "dispensingUnits", "dispensingVerb", "active");
+
+        // verify prices are excluded from complex nodes
+        checkComplex(archetype, nodes, product, "linked", "type", "investigationTypes", "suppliers", "stockLocations",
+                     "reminders", "documents", "discounts", "species", "updates", "classifications", "identities",
+                     "equivalents", "taxes", "sourceRelationships");
+    }
+
+    /**
      * Verifies nodes can be excluded if they are empty.
      */
     @Test
