@@ -71,6 +71,8 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="autoLogout" path="/details/autoLogout" type="java.lang.Integer" minCardinality="0"
+              defaultValue="30"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
