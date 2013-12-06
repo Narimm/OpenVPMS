@@ -495,9 +495,12 @@ public class ArchetypeNodes {
         }
 
         protected boolean include(NodeDescriptor descriptor) {
+            boolean result = false;
             String name = descriptor.getName();
-            return !exclude.contains(name) && !(this.object != null && excludeIfEmpty.contains(name))
-                   || !isEmpty(this.object, descriptor);
+            if (!exclude.contains(name)) {
+                result = !(excludeIfEmpty.contains(name) && this.object != null) || !isEmpty(this.object, descriptor);
+            }
+            return result;
         }
     }
 
