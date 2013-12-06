@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.processor;
@@ -25,6 +25,8 @@ import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.echo.event.Vetoable;
+import org.openvpms.web.echo.servlet.SessionMonitor;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Collection;
 
@@ -35,8 +37,8 @@ import java.util.Collection;
  * @author Tim Anderson
  */
 public abstract class ProgressBarProcessor<T>
-    extends AbstractAsynchronousBatchProcessor<T>
-    implements BatchProcessorComponent {
+        extends AbstractAsynchronousBatchProcessor<T>
+        implements BatchProcessorComponent {
 
     /**
      * The items to process.
@@ -79,6 +81,11 @@ public abstract class ProgressBarProcessor<T>
     private boolean completed = false;
 
     /**
+     * The session monitor.
+     */
+    private final SessionMonitor monitor;
+
+    /**
      * Determines how often to re-schedule the processor, to force a refresh.
      */
     private static final long REFRESH_INTERVAL = DateUtils.MILLIS_PER_SECOND * 2;
@@ -117,6 +124,7 @@ public abstract class ProgressBarProcessor<T>
         bar.setCompletedColor(Color.GREEN);
         bar.setNumberOfBlocks(20);
         this.title = title;
+        monitor = ServiceHelper.getBean(SessionMonitor.class);
     }
 
     /**
@@ -176,6 +184,7 @@ public abstract class ProgressBarProcessor<T>
      */
     @Override
     public void process() {
+        monitor.active();  // keep the session alive
         completed = false;
         super.process();
     }

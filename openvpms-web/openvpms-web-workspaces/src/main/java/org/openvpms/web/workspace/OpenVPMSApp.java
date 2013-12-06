@@ -210,13 +210,13 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         Connection connection = WebRenderServlet.getActiveConnection();
         if (context != null && connection != null) {
             HttpServletRequest request = connection.getRequest();
-            StringBuffer uri = request.getRequestURL();
-            String baseUri = uri.substring(0, uri.lastIndexOf("/"));
-            String loginUri = baseUri + "/login";
+            String url = request.getRequestURL().toString();
+            url = url.substring(0, url.length() - request.getRequestURI().length());
+            url = url + ServletHelper.getRedirectURI("login");
             ClientConfiguration config = new ClientConfiguration();
-            config.setProperty(
-                    ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI,
-                    loginUri);
+            config.setProperty(ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI, url);
+            config.setProperty(ClientConfiguration.PROPERTY_SESSION_EXPIRATION_MESSAGE,
+                               Messages.get("session.expired"));
             context.setClientConfiguration(config);
         }
     }
