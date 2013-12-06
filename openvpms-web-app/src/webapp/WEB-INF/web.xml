@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
         "http://java.sun.com/dtd/web-app_2_3.dtd">
 
@@ -59,6 +75,10 @@
     <!--Support the scoping of beans at the request, session, and global session levels (web-scoped beans) -->
     <listener>
         <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>org.openvpms.web.echo.servlet.SessionListener</listener-class>
     </listener>
 
     <servlet>

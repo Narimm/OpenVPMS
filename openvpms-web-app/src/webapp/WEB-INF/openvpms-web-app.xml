@@ -93,4 +93,12 @@
 
     <bean id="errorReporter" class="org.openvpms.web.component.error.ErrorReporter"/>
 
+    <bean id="sessionMonitor" class="org.openvpms.web.echo.servlet.SessionMonitor"/>
+
+    <bean id="sessionMonitorConfigurer" class="org.openvpms.web.echo.servlet.SessionMonitorConfigurer">
+        <constructor-arg ref="sessionMonitor"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="practiceRules"/>
+    </bean>
+
 </beans>

@@ -1,26 +1,32 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
 
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.webcontainer.NewInstanceService;
 import nextapp.echo2.webcontainer.WebContainerServlet;
+import nextapp.echo2.webcontainer.WindowHtmlService;
+import nextapp.echo2.webrender.ServiceRegistry;
+import nextapp.echo2.webrender.WebRenderServlet;
+import nextapp.echo2.webrender.service.AsyncMonitorService;
+import nextapp.echo2.webrender.service.CoreServices;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.echo.service.LaunchService;
+import org.openvpms.web.echo.service.WindowService;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -34,7 +40,7 @@ import java.util.Locale;
 
 
 /**
- * A <tt>WebContainerServlet</tt> that integrates Echo with Spring.
+ * A {@code WebContainerServlet} that integrates Echo with Spring.
  * <p/>
  * This supports multiple client browser windows/tabs via a single http session
  * by appending a unique identifier to the request URI when the servlet is
@@ -61,6 +67,11 @@ public class SpringWebContainerServlet extends WebContainerServlet {
     private transient ApplicationContext context;
 
     /**
+     * The session monitor.
+     */
+    private transient SessionMonitor monitor;
+
+    /**
      * The application name.
      */
     private String name;
@@ -69,7 +80,7 @@ public class SpringWebContainerServlet extends WebContainerServlet {
      * Caches the servlet name for the current thread.
      */
     private transient ThreadLocal<String> servletName
-        = new ThreadLocal<String>();
+            = new ThreadLocal<String>();
 
     /**
      * The locale of the current thread.
@@ -88,6 +99,20 @@ public class SpringWebContainerServlet extends WebContainerServlet {
 
 
     /**
+     * Constructs a {@link SpringWebContainerServlet}.
+     */
+    public SpringWebContainerServlet() {
+        // replace the echo2 services with the OpenVPMS implementations
+        ServiceRegistry serviceRegistry = WebRenderServlet.getServiceRegistry();
+        serviceRegistry.remove(CoreServices.CLIENT_ENGINE);
+        serviceRegistry.remove(WindowHtmlService.INSTANCE);
+        serviceRegistry.remove(NewInstanceService.INSTANCE);
+        serviceRegistry.add(WindowService.CLIENT_ENGINE);
+        serviceRegistry.add(WindowService.INSTANCE);
+        serviceRegistry.add(LaunchService.INSTANCE);
+    }
+
+    /**
      * Initialises the servlet.
      *
      * @throws ServletException if the serlvet can't be initialised
@@ -102,17 +127,13 @@ public class SpringWebContainerServlet extends WebContainerServlet {
     }
 
     /**
-     * Creates a new <tt>ApplicationInstance</tt> for a visitor to an
-     * application.
+     * Creates a new {@code ApplicationInstance} for a visitor to an application.
      *
-     * @return a new <tt>ApplicationInstance</tt>
+     * @return a new {@code ApplicationInstance}
      */
     public ApplicationInstance newApplicationInstance() {
         SpringApplicationInstance result;
-        if (context == null) {
-            context = WebApplicationContextUtils.getWebApplicationContext(
-                getServletContext());
-        }
+        ApplicationContext context = getContext();
         result = (SpringApplicationInstance) context.getBean(name);
         result.setApplicationContext(context);
         Locale current = locale.get();
@@ -125,14 +146,19 @@ public class SpringWebContainerServlet extends WebContainerServlet {
     /**
      * Processes a HTTP request and generates a response.
      *
-     * @param request  the incoming <tt>HttpServletRequest</tt>
-     * @param response the outgoing <tt>HttpServletResponse</tt>
+     * @param request  the incoming {@code HttpServletRequest}
+     * @param response the outgoing {@code HttpServletResponse}
      */
     @Override
-    protected void process(HttpServletRequest request,
-                           HttpServletResponse response)
-        throws IOException, ServletException {
+    protected void process(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
         HttpSession session = request.getSession();
+
+        String serviceId = request.getParameter(SERVICE_ID_PARAMETER);
+        if (!AsyncMonitorService.SERVICE_ID.equals(serviceId)) {
+            // flag the session as active, if the request isn't associated with echo2 asynchronous tasks
+            getSessionMonitor().active(session);
+        }
 
         // get next instance-counter
         Integer nextInstance = (Integer) session.getAttribute(NEXT_INSTANCE);
@@ -180,6 +206,30 @@ public class SpringWebContainerServlet extends WebContainerServlet {
     }
 
     /**
+     * Returns the session monitor.
+     *
+     * @return the session monitor
+     */
+    private synchronized SessionMonitor getSessionMonitor() {
+        if (monitor == null) {
+            monitor = getContext().getBean(SessionMonitor.class);
+        }
+        return monitor;
+    }
+
+    /**
+     * Returns the application context.
+     *
+     * @return the application context
+     */
+    private synchronized ApplicationContext getContext() {
+        if (context == null) {
+            context = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+        }
+        return context;
+    }
+
+    /**
      * Helper for manipulating servlet URI paths.
      */
     private static class ServletInstance {
@@ -201,7 +251,7 @@ public class SpringWebContainerServlet extends WebContainerServlet {
 
 
         /**
-         * Creates a new <tt>ServletInstance</tt>.
+         * Creates a new {@link ServletInstance}.
          *
          * @param request the request
          */
@@ -245,8 +295,7 @@ public class SpringWebContainerServlet extends WebContainerServlet {
         /**
          * Returns the servlet instance identifier.
          *
-         * @return the servlet instance identifier, or <tt>-1</tt> if none has
-         *         been set
+         * @return the servlet instance identifier, or {@code -1} if none has been set
          */
         public int getId() {
             return id;

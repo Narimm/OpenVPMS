@@ -32,6 +32,7 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
@@ -91,6 +92,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
         addPrescriptionExpiry(object, properties, factory);
+        addAutoLogout(object, properties, factory);
         if (subscription == null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             Participation participation = SubscriptionHelper.getSubscriptionParticipation((Party) object, service);
@@ -154,6 +156,21 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
         group.add(periodComponent.getComponent());
         group.add(unitsComponent.getComponent());
         addComponent(new ComponentState(row, period, group));
+    }
+
+    /**
+     * Registers a component to render the session auto-logout and minutes.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addAutoLogout(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        Property autoLogout = properties.get("autoLogout");
+        ComponentState state = factory.create(autoLogout, object);
+        Row row = RowFactory.create(Styles.CELL_SPACING, state.getComponent(),
+                                    LabelFactory.create("admin.practice.minutes"));
+        addComponent(new ComponentState(row, autoLogout));
     }
 
 }
