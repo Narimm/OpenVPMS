@@ -25,7 +25,6 @@
               derivedValue="concat('Practice SMS Configuration', ' (', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')"/>
         <node name="activeStartTime" path="/activeStartTime" type="java.util.Date" minCardinality="1"
               hidden="true" defaultValue="java.util.Date.new()"/>
-        <node name="default" path="/details/default" type="java.lang.Boolean" defaultValue="false()"/>
         <node name="source" displayName="Practice" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1">
             <assertion name="archetypeRange">
