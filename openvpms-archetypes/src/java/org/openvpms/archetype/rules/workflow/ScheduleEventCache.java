@@ -728,10 +728,17 @@ class ScheduleEventCache {
          *
          * @param key   the version key
          * @param other the set to compare with
-         * @return {@code -1} if this has has older version than {@code other}, {@code 0} if they are equal, {@code 1}
+         * @return {@code -1} if this has older version than {@code other}, {@code 0} if they are equal, {@code 1}
          *         if this has a newer version
          */
         private int compareVersions(String key, PropertySet other) {
+            if (!event.exists(key) || !other.exists(key)) {
+                // the version isn't present in one or both of the sets. If its missing from one and not the other,
+                // then a relationship has been added or removed; cannot tell which, without looking at the versions
+                // on the parent events (these should have different versions anyway). In this case, just return that
+                // they are equal.
+                return 0;
+            }
             long version = event.getLong(key);
             long otherVersion = other.getLong(key);
             return (version < otherVersion) ? -1 : ((version == otherVersion) ? 0 : 1);

@@ -167,7 +167,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Tests moving of an event from one date to another.
+     * Tests moving an event from one date to another.
      */
     @Test
     public void testChangeEventDate() {
@@ -199,6 +199,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     public void testAddReason() {
         Date date1 = getDate("2008-01-01");
         Date date2 = getDate("2008-01-02");
+        Party patient = TestHelper.createPatient();
 
         // create and save appointment for date1
         Act appointment1 = createAppointment(date1);
@@ -212,7 +213,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         String name = "Added reason";
         TestHelper.getLookup("lookup.appointmentReason", code, name, true);
 
-        Act appointment2 = createAppointment(date2, schedule, false);
+        Act appointment2 = createAppointment(date2, schedule, patient, false);
         appointment2.setReason(code);
         save(appointment2);
 
@@ -261,10 +262,11 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     @Test
     public void testRemoveReason() {
         Date date = getDate("2008-01-01");
+        Party patient = TestHelper.createPatient();
 
         service = createScheduleService();
         // create and save appointment for date
-        Act appointment = createAppointment(date, schedule, false);
+        Act appointment = createAppointment(date, schedule, patient, false);
         String code = "XREASON" + System.currentTimeMillis();
         String name = "Reason to remove";
         Lookup reason = TestHelper.getLookup("lookup.appointmentReason", code, name, true);
@@ -282,7 +284,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         remove(appointment);
         remove(reason);
 
-        appointment = createAppointment(date, schedule, false);
+        appointment = createAppointment(date, schedule, patient, false);
         appointment.setReason(code);
         save(appointment);
 
@@ -300,6 +302,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     public void testMultipleDayAppointment() {
         Date start = getDate("2008-01-01");
         Date end = getDate("2008-01-05");
+        Party patient = TestHelper.createPatient();
 
         service = createScheduleService();
 
@@ -311,7 +314,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         // create and save a multiple day appointment
         Date startTime = DateRules.getDate(start, 15, DateUnits.MINUTES);
         Date endTime = DateRules.getDate(end, 15, DateUnits.MINUTES);
-        Act appointment = createAppointment(startTime, endTime, schedule, true);
+        Act appointment = createAppointment(startTime, endTime, schedule, patient, true);
 
         // verify the appointment is returned for each day
         checkAppointment(appointment, 5);
@@ -384,11 +387,12 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      *
      * @param schedule the schedule
      * @param date     the date
+     * @param patient  the patient. May be {@code null}
      * @return the new event act
      */
     @Override
-    protected Act createEvent(Entity schedule, Date date) {
-        return createAppointment(date, (Party) schedule, true);
+    protected Act createEvent(Entity schedule, Date date, Party patient) {
+        return createAppointment(date, (Party) schedule, patient, true);
     }
 
     /**
@@ -451,7 +455,8 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      * @return a new appointment
      */
     private Act createAppointment(Date date) {
-        return createAppointment(date, schedule, true);
+        Party patient = TestHelper.createPatient();
+        return createAppointment(date, schedule, patient, true);
     }
 
     /**
@@ -459,13 +464,14 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      *
      * @param date     the date to create the appointment on
      * @param schedule the schedule
+     * @param patient  the patient. May be {@code null}
      * @param save     if {@code true} save the appointment
      * @return a new appointment
      */
-    private Act createAppointment(Date date, Party schedule, boolean save) {
+    private Act createAppointment(Date date, Party schedule, Party patient, boolean save) {
         Date startTime = DateRules.getDate(date, 15, DateUnits.MINUTES);
         Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
-        return createAppointment(startTime, endTime, schedule, save);
+        return createAppointment(startTime, endTime, schedule, patient, save);
     }
 
     /**
@@ -474,12 +480,11 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      * @param startTime the start time
      * @param endTime   the end time
      * @param schedule  the schedule
-     * @param save      if {@code true} save the appointment
-     * @return a new appointment
+     * @param patient   the patient. May be {@code null}
+     * @param save      if {@code true} save the appointment  @return a new appointment
      */
-    private Act createAppointment(Date startTime, Date endTime, Party schedule, boolean save) {
+    private Act createAppointment(Date startTime, Date endTime, Party schedule, Party patient, boolean save) {
         Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
         User author = TestHelper.createClinician();
         Entity appointmentType = ScheduleTestHelper.createAppointmentType();

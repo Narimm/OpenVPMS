@@ -44,6 +44,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
 /**
@@ -94,12 +95,13 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
 
         Entity schedule1 = createSchedule();
         Entity schedule2 = createSchedule();
+        Party patient = TestHelper.createPatient();
 
         service = createScheduleService();
         service.getEvents(schedule1, date);
         assertEquals(0, service.getEvents(schedule1, date).size());
 
-        Act act = createEvent(schedule1, date);
+        Act act = createEvent(schedule1, date, patient);
         assertEquals(1, service.getEvents(schedule1, date).size());
 
         setSchedule(act, schedule2);
@@ -117,20 +119,36 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Date date = getDate("2013-11-01");
 
         Entity schedule = createSchedule();
+        Party patient1 = TestHelper.createPatient();
+
         service = createScheduleService();
         service.getEvents(schedule, date);
         Assert.assertEquals(0, service.getEvents(schedule, date).size());
 
-        Act event = createEvent(schedule, date);
-        ActBean bean = new ActBean(event);
-        IMObjectReference patient1 = bean.getNodeParticipantRef("patient");
-        assertNotNull(patient1);
-
-        // verify the patient matches that expected.
+        // create an event with no patient
+        Act event = createEvent(schedule, date, null);
         List<PropertySet> events = service.getEvents(schedule, date);
         assertEquals(1, events.size());
-        assertEquals(patient1, events.get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        assertNull(events.get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
 
+        // now update it to include the patient
+        ActBean bean = new ActBean(event);
+        bean.addNodeParticipation("patient", patient1);
+        bean.save();
+
+        // verify the patient matches that expected.
+        events = service.getEvents(schedule, date);
+        assertEquals(1, events.size());
+        assertEquals(patient1.getObjectReference(), events.get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+
+        // remove the patient
+        bean.removeParticipation(PatientArchetypes.PATIENT_PARTICIPATION);
+        bean.save();
+        events = service.getEvents(schedule, date);
+        assertEquals(1, events.size());
+        assertNull(events.get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+
+        // now change the patient
         Party patient2 = TestHelper.createPatient();
         bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient2);
         bean.save();
@@ -148,11 +166,13 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Date date = getDate("2013-11-01");
 
         Entity schedule = createSchedule();
+        Party patient = TestHelper.createPatient();
+
         service = createScheduleService();
         service.getEvents(schedule, date);
         Assert.assertEquals(0, service.getEvents(schedule, date).size());
 
-        Act task = createEvent(schedule, date);
+        Act task = createEvent(schedule, date, patient);
         ActBean bean = new ActBean(task);
         IMObjectReference customer1 = bean.getNodeParticipantRef("customer");
         assertNotNull(customer1);
@@ -179,11 +199,13 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Date date = getDate("2013-11-01");
 
         Entity schedule = createSchedule();
+        Party patient = TestHelper.createPatient();
+
         service = createScheduleService();
         service.getEvents(schedule, date);
         Assert.assertEquals(0, service.getEvents(schedule, date).size());
 
-        Act task = createEvent(schedule, date);
+        Act task = createEvent(schedule, date, patient);
         ActBean bean = new ActBean(task);
         IMObjectReference clinician = bean.getNodeParticipantRef("clinician");
         assertNotNull(clinician);
@@ -259,9 +281,11 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
      *
      * @param schedule the schedule
      * @param date     the date
+     * @param patient  the patient. May be {@code null}
      * @return the new event act
      */
-    protected abstract Act createEvent(Entity schedule, Date date);
+    protected abstract Act createEvent(Entity schedule, Date date, Party patient);
+
 
     /**
      * Sets an event's schedule.
@@ -317,8 +341,10 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
     private void checkConcurrentChangeSchedule(final ScheduleService service) throws Exception {
         final Entity schedule1 = createSchedule();
         final Entity schedule2 = createSchedule();
+        Party patient = TestHelper.createPatient();
         final Date date = getDate("2007-01-01");
-        final Act event = createEvent(schedule1, date);
+
+        final Act event = createEvent(schedule1, date, patient);
 
         Callable<PropertySet> readSchedule1 = new Callable<PropertySet>() {
             @Override
@@ -365,7 +391,9 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
     private void checkConcurrentChangePatient(final ScheduleService service) throws Exception {
         final Entity schedule = createSchedule();
         final Date date = getDate("2007-01-01");
-        final Act event = createEvent(schedule, date);
+        Party patient = TestHelper.createPatient();
+
+        final Act event = createEvent(schedule, date, patient);
         final Party patient2 = TestHelper.createPatient();
 
         Callable<PropertySet> read1 = new Callable<PropertySet>() {
