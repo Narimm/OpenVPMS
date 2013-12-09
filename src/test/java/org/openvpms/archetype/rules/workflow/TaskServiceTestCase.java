@@ -179,6 +179,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     public void testGetEvents() {
         final int count = 10;
         service = createScheduleService();
+        Party patient = TestHelper.createPatient();
         Act[] tasks = new Act[count];
         Date date = getDate("2007-01-01");
         for (int i = 0; i < count; ++i) {
@@ -186,7 +187,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
             Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
             Date consultStartTime = (i % 2 == 0) ? new Date() : null;
 
-            tasks[i] = createTask(startTime, endTime, workList, consultStartTime);
+            tasks[i] = createTask(startTime, endTime, workList, patient, consultStartTime);
         }
 
         List<PropertySet> results = service.getEvents(workList, date);
@@ -263,11 +264,12 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      *
      * @param schedule the schedule
      * @param date     the date
+     * @param patient  the patient. May be {@code null}
      * @return the new event act
      */
     @Override
-    protected Act createEvent(Entity schedule, Date date) {
-        return createTask(date, (Party) schedule);
+    protected Act createEvent(Entity schedule, Date date, Party patient) {
+        return createTask(date, (Party) schedule, patient);
     }
 
     /**
@@ -281,7 +283,8 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     private void checkConcurrentReadWrite(final TaskService taskService) throws Exception {
         final Date date = getDate("2007-01-01");
         final Party schedule = ScheduleTestHelper.createWorkList();
-        final Act task = createTask(date, schedule);
+        Party patient = TestHelper.createPatient();
+        final Act task = createTask(date, schedule, patient);
 
         Callable<PropertySet> read = new Callable<PropertySet>() {
             @Override
@@ -322,7 +325,8 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         final Date date1 = getDate("2007-01-01");
         final Date date2 = getDate("2007-01-02");
         final Party schedule = ScheduleTestHelper.createWorkList();
-        final Act task = createTask(date1, schedule);
+        Party patient = TestHelper.createPatient();
+        final Act task = createTask(date1, schedule, patient);
 
         Callable<PropertySet> readDate1 = new Callable<PropertySet>() {
             @Override
@@ -367,7 +371,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      * @return a new task
      */
     private Act createTask(Date date) {
-        return createTask(date, workList);
+        return createTask(date, workList, TestHelper.createPatient());
     }
 
     /**
@@ -375,11 +379,12 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      *
      * @param date     the date to create the task on
      * @param workList the work list
+     * @param patient  the patient. May be {@code null}
      * @return a new task
      */
-    private Act createTask(Date date, Party workList) {
+    private Act createTask(Date date, Party workList, Party patient) {
         Date startTime = DateRules.getDate(date, 15, DateUnits.MINUTES);
-        return createTask(startTime, null, workList, null);
+        return createTask(startTime, null, workList, patient, null);
     }
 
     /**
@@ -388,12 +393,12 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      * @param startTime        the start time
      * @param endTime          the end time
      * @param workList         the work list
+     * @param patient          the patient. May be {@code null}
      * @param consultStartTime the consult start time. May be {@code null}
      * @return a new task
      */
-    private Act createTask(Date startTime, Date endTime, Party workList, Date consultStartTime) {
+    private Act createTask(Date startTime, Date endTime, Party workList, Party patient, Date consultStartTime) {
         Party customer = TestHelper.createCustomer();
-        Party patient = TestHelper.createPatient();
         User clinician = TestHelper.createClinician();
         User author = TestHelper.createClinician();
         Act task = ScheduleTestHelper.createTask(startTime, endTime, workList, customer, patient, clinician, author);
