@@ -80,6 +80,8 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
                 if (value.length() < columns) {
                     columns = value.length();
                 }
+            } else if (columns > 20) {
+                columns = 20; // value is empty, so shrink the display
             }
         }
         result = TextComponentFactory.create(columns);
