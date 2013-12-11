@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.workflow.merge;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.workflow.ConfirmationTask;
+import org.openvpms.web.component.workflow.AbstractConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.Task;
@@ -83,15 +83,24 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
     protected void init() {
         HelpContext help = getHelpContext();
         initial = createContext(help);
-        String displayName = DescriptorHelper.getDisplayName(object);
-        String mergeTitle = Messages.format("workflow.merge.title", displayName);
-        String mergeMsg = Messages.format("workflow.merge.message", displayName);
+        final String displayName = DescriptorHelper.getDisplayName(object);
 
-        addTask(new ConfirmationTask(mergeTitle, mergeMsg, false, help));
         SelectIMObjectTask select = createSelectTask(initial);
         select.setTitle(Messages.format("workflow.merge.select.title", displayName, object.getName()));
         select.setMessage(Messages.format("workflow.merge.select.message", displayName));
         addTask(select);
+        addTask(new AbstractConfirmationTask(false, help) {
+            @Override
+            protected String getTitle() {
+                return Messages.format("workflow.merge.title", displayName);
+            }
+
+            @Override
+            protected String getMessage() {
+                return getConfirmationMessage();
+            }
+        });
+
         addTask(createMergeTask());
     }
 
@@ -114,6 +123,13 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
      * @return a new select task
      */
     protected abstract SelectIMObjectTask<T> createSelectTask(Context context);
+
+    /**
+     * Returns the merge confirmation message.
+     *
+     * @return the merge confirmation message
+     */
+    protected abstract String getConfirmationMessage();
 
     /**
      * Creates the task to perform the merge.
