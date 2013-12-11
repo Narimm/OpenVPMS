@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="party.customerperson.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Customer">
@@ -27,8 +28,7 @@
               minCardinality="1" maxLength="30">
             <assertion name="propercase"/>
         </node>
-        <node name="title" path="/details/title" type="java.lang.String"
-              minCardinality="0" maxLength="10">
+        <node name="title" path="/details/title" type="java.lang.String" minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.personTitle"/>
@@ -47,7 +47,7 @@
             <assertion name="propercase"/>
         </node>
         <node displayName="Referred By" name="referral" path="/details/referral" type="java.lang.String"
-              minCardinality="0" maxLength="20">
+              minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.customerReferral"/>
@@ -55,7 +55,7 @@
             </assertion>
         </node>
         <node displayName="Preferred Vet" name="preferredVet" path="/details/preferredVet" type="java.lang.String"
-              minCardinality="0" maxLength="20">
+              minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.customerVet"/>
@@ -63,7 +63,7 @@
             </assertion>
         </node>
         <node displayName="Insurance Plan" name="insurancePlan" path="/details/insurancePlan" type="java.lang.String"
-              minCardinality="0" maxLength="20">
+              minCardinality="0">
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.customerInsurance"/>
