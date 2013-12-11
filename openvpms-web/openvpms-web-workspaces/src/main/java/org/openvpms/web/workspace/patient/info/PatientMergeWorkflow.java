@@ -18,10 +18,9 @@ package org.openvpms.web.workspace.patient.info;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.PatientQuery;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
@@ -32,6 +31,8 @@ import org.openvpms.web.workspace.workflow.merge.MergeWorkflow;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import static org.openvpms.component.system.common.query.Constraints.not;
 
 
 /**
@@ -56,6 +57,7 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
     public PatientMergeWorkflow(Party patient, Party customer, HelpContext help) {
         super(patient, help);
         this.customer = customer;
+        init();
     }
 
     /**
@@ -79,11 +81,13 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
      */
     @Override
     protected SelectIMObjectTask<Party> createSelectTask(Context context) {
-        String[] shortNames = {getObject().getArchetypeId().getShortName()};
-        Query<Party> query = QueryFactory.create(shortNames, context, Party.class);
-        if (query instanceof PatientQuery) {
-            ((PatientQuery) query).setShowAllPatients(true);
-        }
+        Party patient = getObject();
+        String[] shortNames = {patient.getArchetypeId().getShortName()};
+        PatientQuery query = new PatientQuery(shortNames, context);
+        query.setShowAllPatients(true);
+
+        // exclude the patient being merged from the search
+        query.setConstraints(not(new ObjectRefConstraint("patient", patient.getObjectReference())));
         return new SelectIMObjectTask<Party>(query, getHelpContext().topic("patient"));
     }
 

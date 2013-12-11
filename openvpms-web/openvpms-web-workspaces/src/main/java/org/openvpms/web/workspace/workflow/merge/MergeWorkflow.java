@@ -44,32 +44,20 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
     /**
      * The initial context.
      */
-    protected final TaskContext initial;
+    private TaskContext initial;
 
 
     /**
-     * Constructs a {@code MergeWorkflow.
+     * Constructs a {@link MergeWorkflow}.
+     * <p/>
+     * Subclasses should call {@link #init} after their construction is complete.
      *
      * @param object the object to merge to
      * @param help   the help context
      */
-    public MergeWorkflow(T object, HelpContext help) {
+    protected MergeWorkflow(T object, HelpContext help) {
         super(help);
         this.object = object;
-        initial = createContext(help);
-
-        String displayName = DescriptorHelper.getDisplayName(object);
-        String mergeTitle = Messages.format("workflow.merge.title", displayName);
-        String mergeMsg = Messages.format("workflow.merge.message", displayName);
-
-        addTask(new ConfirmationTask(mergeTitle, mergeMsg, false, help));
-        SelectIMObjectTask select = createSelectTask(initial);
-        select.setTitle(Messages.format("workflow.merge.select.title",
-                                        displayName, object.getName()));
-        select.setMessage(Messages.format("workflow.merge.select.message",
-                                          displayName));
-        addTask(select);
-        addTask(createMergeTask());
     }
 
     /**
@@ -87,6 +75,24 @@ public abstract class MergeWorkflow<T extends IMObject> extends WorkflowImpl {
      */
     protected T getObject() {
         return object;
+    }
+
+    /**
+     * Initialises the workflow.
+     */
+    protected void init() {
+        HelpContext help = getHelpContext();
+        initial = createContext(help);
+        String displayName = DescriptorHelper.getDisplayName(object);
+        String mergeTitle = Messages.format("workflow.merge.title", displayName);
+        String mergeMsg = Messages.format("workflow.merge.message", displayName);
+
+        addTask(new ConfirmationTask(mergeTitle, mergeMsg, false, help));
+        SelectIMObjectTask select = createSelectTask(initial);
+        select.setTitle(Messages.format("workflow.merge.select.title", displayName, object.getName()));
+        select.setMessage(Messages.format("workflow.merge.select.message", displayName));
+        addTask(select);
+        addTask(createMergeTask());
     }
 
     /**
