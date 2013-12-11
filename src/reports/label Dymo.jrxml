@@ -2,14 +2,16 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label Dymo" pageWidth="204" pageHeight="153" orientation="Landscape" columnWidth="199" leftMargin="5" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
-        <parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
-        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
-    </parameter>
-
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
 	<field name="patient.entity.name" class="java.lang.String"/>
 	<field name="patient.entity.description" class="java.lang.String"/>
 	<field name="product.entity.name" class="java.lang.String"/>
@@ -23,8 +25,27 @@
 	<field name="[party:getPartyFullName(party:getPractice())]" class="java.lang.String"/>
 	<field name="[party:getPracticeAddress()]" class="java.lang.String"/>
 	<field name="[party:getPracticeTelephone()]" class="java.lang.String"/>
+	<field name="prescription.source.repeats" class="java.lang.Integer"/>
+	<field name="[count(openvpms:get(.,&apos;prescription.source.dispensing&apos;))]" class="java.lang.Number"/>
+	<field name="id" class="java.lang.Long"/>
 	<variable name="patientFullName" class="java.lang.String">
 		<variableExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(.),'lastName')]} + "," + $F{patient.entity.name}]]></variableExpression>
+	</variable>
+	<variable name="prescriptionRepeats" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{prescription.source.repeats} == null ? -1 : $F{prescription.source.repeats}]]></variableExpression>
+	</variable>
+	<variable name="prescriptionDispenses" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{[count(openvpms:get(.,'prescription.source.dispensing'))]}.intValue()]]></variableExpression>
+	</variable>
+	<variable name="repeats" class="java.lang.Integer">
+		<variableExpression><![CDATA[($F{id}<0)   ?
+($V{prescriptionRepeats} - $V{prescriptionDispenses})
+: ($V{prescriptionRepeats} - $V{prescriptionDispenses} + 1)]]></variableExpression>
+		<initialValueExpression><![CDATA[22]]></initialValueExpression>
+	</variable>
+	<variable name="repeatText" class="java.lang.String" resetType="Page">
+		<variableExpression><![CDATA[($V{repeats} > 0) ? $V{repeats} + " Rpts" : "No Rpts"]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
 	</variable>
 	<background>
 		<band height="1" splitType="Stretch"/>
@@ -48,7 +69,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Left" lineSpacing="Single">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{product.entity.name}]]></textFieldExpression>
@@ -61,7 +82,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{label}]]></textFieldExpression>
@@ -74,85 +95,85 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[ Vet:Vet:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField" x="48" y="114" width="85" height="11" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="textField" x="48" y="114" width="109" height="11" isPrintWhenDetailOverflows="true"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{clinician.entity.name}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-3" x="96" y="104" width="28" height="11" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="staticText-3" x="97" y="103" width="28" height="11" isPrintWhenDetailOverflows="true"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Expiry :]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true">
-				<reportElement key="textField" x="125" y="104" width="65" height="11" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="textField" x="125" y="103" width="65" height="11" isPrintWhenDetailOverflows="true"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{endTime}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
-				<reportElement key="textField" x="48" y="104" width="49" height="11" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="textField" x="48" y="103" width="49" height="11" isPrintWhenDetailOverflows="true"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{startTime}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-4" x="15" y="104" width="30" height="11" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="staticText-4" x="15" y="103" width="30" height="11" isPrintWhenDetailOverflows="true"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[ Date:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-7" x="15" y="93" width="30" height="11" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="staticText-7" x="15" y="92" width="30" height="11" isPrintWhenDetailOverflows="true"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[ Patient:]]></text>
@@ -165,18 +186,18 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement/>
+				<textElement lineSpacing="Single"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantity}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField" x="47" y="92" width="143" height="11"/>
+				<reportElement key="textField" x="47" y="92" width="119" height="11"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement lineSpacing="Single">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$V{patientFullName}]]></textFieldExpression>
@@ -189,7 +210,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center">
+				<textElement textAlignment="Center" lineSpacing="Single">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{[party:getPartyFullName(party:getPractice())]}]]></textFieldExpression>
@@ -202,7 +223,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center">
+				<textElement textAlignment="Center" lineSpacing="Single">
 					<font size="5"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{[party:getPracticeAddress()]}]]></textFieldExpression>
@@ -215,10 +236,17 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center">
+				<textElement textAlignment="Center" lineSpacing="Single">
 					<font size="5"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{[party:getPracticeTelephone()]}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="158" y="114" width="32" height="11"/>
+				<textElement lineSpacing="Single">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{repeatText}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
