@@ -592,6 +592,21 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
     }
 
     /**
+     * Tests the not operator in conjunction with an {@link ObjectRefConstraint}.
+     */
+    @Test
+    public void testNotRefEquals() {
+        String expected = "select p from "
+                          + ProductDO.class.getName() + " as p "
+                          + "where (p.archetypeId.shortName = :shortName0 "
+                          + "and not (p.archetypeId.shortName = :shortName1 and p.id = :id0))";
+        IMObjectReference ref = new IMObjectReference("product.product", 1);
+        ArchetypeQuery query = new ArchetypeQuery(shortName("p", "product.product"));
+        query.add(Constraints.not(new ObjectRefConstraint("p", ref)));
+        checkQuery(query, expected);
+    }
+
+    /**
      * Verifies that an exception is thrown if an alias is duplicated.
      */
     @Test
