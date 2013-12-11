@@ -49,9 +49,9 @@ public class SessionMonitor implements DisposableBean {
     public static int DEFAULT_AUTO_LOGOUT_INTERVAL = 30;
 
     /**
-     * The time in minutes before inactive sessions are logged out.
+     * The time in milliseconds before inactive sessions are logged out.
      */
-    private volatile int autoLogout = DEFAULT_AUTO_LOGOUT_INTERVAL;
+    private volatile long autoLogout = DEFAULT_AUTO_LOGOUT_INTERVAL * DateUtils.MILLIS_PER_MINUTE;
 
     /**
      * The monitors, keyed on their sessions.
@@ -126,9 +126,10 @@ public class SessionMonitor implements DisposableBean {
      * @param time the timeout, in minutes. A value of {@code 0} indicates that sessions don't expire
      */
     public void setAutoLogout(int time) {
-        if (time != autoLogout) {
-            autoLogout = time;
-            if (time == 0) {
+        long newTime = time * DateUtils.MILLIS_PER_MINUTE;
+        if (newTime != autoLogout) {
+            autoLogout = newTime;
+            if (newTime == 0) {
                 log.warn("Sessions configured to not auto-logout");
             } else {
                 log.info("Using session auto-logout time=" + time + " minutes");
@@ -189,12 +190,12 @@ public class SessionMonitor implements DisposableBean {
 
         /**
          * Invoked by the executor. This invalidates the session if it hasn't been accessed for {@link #autoLogout}
-         * seconds. If it has been accessed, then it reschedules itself for another {@code sessionTimeout - inactive}
-         * seconds.
+         * seconds. If it has been accessed, then it reschedules itself for another {@code autoLogout - inactive}
+         * milliseconds.
          */
         @Override
         public void run() {
-            int inactive = (int) ((System.currentTimeMillis() - lastAccessedTime) / DateUtils.MILLIS_PER_MINUTE);
+            long inactive = System.currentTimeMillis() - lastAccessedTime;
             if (inactive >= autoLogout) {
                 // session is inactive, so kill it
                 HttpSession httpSession = session.get();
@@ -211,7 +212,7 @@ public class SessionMonitor implements DisposableBean {
          * Schedules the monitor.
          */
         public void schedule() {
-            int time = autoLogout;
+            long time = autoLogout;
             if (time != 0) {
                 schedule(time);
             }
@@ -225,7 +226,7 @@ public class SessionMonitor implements DisposableBean {
             if (current != null) {
                 current.cancel(false);
             }
-            int timeout = autoLogout;
+            long timeout = autoLogout;
             if (timeout != 0) {
                 run();
                 // will either expire or schedule. Note that there is a possibility of a race condition where run() is
@@ -243,10 +244,10 @@ public class SessionMonitor implements DisposableBean {
         /**
          * Schedules the monitor.
          *
-         * @param minutes the minutes to delay before invoking {@link #run}.
+         * @param delay the milliseconds to delay before invoking {@link #run}.
          */
-        private void schedule(int minutes) {
-            future = executor.schedule(this, minutes, TimeUnit.MINUTES);
+        private void schedule(long delay) {
+            future = executor.schedule(this, delay, TimeUnit.MILLISECONDS);
         }
 
     }
