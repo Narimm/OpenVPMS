@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.query;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.ObjectSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
@@ -43,29 +44,28 @@ import java.util.Date;
  * <pre>EntityIdentity identity = (EntityIdentity) set.get("identity");</pre>
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientResultSet extends AbstractEntityResultSet<ObjectSet> {
 
     /**
-     * The customer to return patients for. If <tt>null</tt>, queries all patients.
+     * The customer to return patients for. If {@code null}, queries all patients.
      */
     private Party customer;
 
     /**
-     * Creates a new <tt>PatientResultSet</tt>.
+     * Creates a new {@code PatientResultSet}.
      *
      * @param archetypes       the archetypes to query
-     * @param value            the value to query on. May be <tt>null</tt>
-     * @param searchIdentities if <tt>true</tt> search on identity name
+     * @param value            the value to query on. May be {@code null}
+     * @param searchIdentities if {@code true} search on identity name
      * @param customer         if specified, only return patients for the specified customer
-     * @param sort             the sort criteria. May be <tt>null</tt>
+     * @param sort             the sort criteria. May be {@code null}
      * @param rows             the maximum no. of rows per page
      */
     public PatientResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
-                            Party customer, SortConstraint[] sort, int rows) {
-        super(archetypes, value, searchIdentities, null, sort,
+                            Party customer, IConstraint constraints, SortConstraint[] sort, int rows) {
+        super(archetypes, value, searchIdentities, constraints, sort,
               rows, true, new ObjectSetQueryExecutor());
         archetypes.setAlias("patient");
         this.customer = customer;
@@ -74,7 +74,7 @@ public class PatientResultSet extends AbstractEntityResultSet<ObjectSet> {
     /**
      * Determines if all patients are being queried.
      *
-     * @return <tt>true</tt> if all patients are being queried, or <tt>false</tt> if only the patients for the
+     * @return {@code true} if all patients are being queried, or {@code false} if only the patients for the
      *         specified customer are being returned.
      */
     public boolean isSearchingAllPatients() {

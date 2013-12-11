@@ -18,7 +18,10 @@ package org.openvpms.web.workspace.customer.info;
 
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.query.CustomerQuery;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
@@ -39,13 +42,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 class CustomerMergeWorkflow extends MergeWorkflow<Party> {
 
     /**
-     * Constructs a {@code MergeWorkflow}.
+     * Constructs a {@link CustomerMergeWorkflow}.
      *
      * @param customer the customer to merge to
      * @param help     the help context
      */
     public CustomerMergeWorkflow(Party customer, HelpContext help) {
         super(customer, help);
+        init();
     }
 
     /**
@@ -56,8 +60,13 @@ class CustomerMergeWorkflow extends MergeWorkflow<Party> {
      */
     @Override
     protected SelectIMObjectTask<Party> createSelectTask(Context context) {
-        String shortName = getObject().getArchetypeId().getShortName();
-        return new SelectIMObjectTask<Party>(shortName, context, getHelpContext().topic("customer"));
+        Party customer = getObject();
+        String shortName = customer.getArchetypeId().getShortName();
+        CustomerQuery query = new CustomerQuery(new String[]{shortName});
+
+        // exclude the customer being merged from the search
+        query.setConstraints(Constraints.not(new ObjectRefConstraint("customer", customer.getObjectReference())));
+        return new SelectIMObjectTask<Party>(query, getHelpContext().topic("customer"));
     }
 
     /**
@@ -81,7 +90,7 @@ class CustomerMergeWorkflow extends MergeWorkflow<Party> {
      */
     private void merge(final Party from) {
         TransactionTemplate template = new TransactionTemplate(
-            ServiceHelper.getTransactionManager());
+                ServiceHelper.getTransactionManager());
         template.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 CustomerRules rules = new CustomerRules(ServiceHelper.getArchetypeService());

@@ -72,13 +72,11 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     /**
      * The default sort constraint.
      */
-    private static final SortConstraint[] DEFAULT_SORT
-            = {new NodeSortConstraint("customer", "name")};
+    private static final SortConstraint[] DEFAULT_SORT = {new NodeSortConstraint("customer", "name")};
 
 
     /**
-     * Construct a new <tt>CustomerQuery</tt> that queries customers
-     * instances with the specified short names.
+     * Constructs a {@link CustomerQuery} that queries customers instances with the specified short names.
      *
      * @param shortNames the short names
      * @throws ArchetypeQueryException if the short names don't match any
@@ -92,7 +90,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     /**
      * Sets the name or id of the patient to search on.
      *
-     * @param value the patient name or id. May be <tt>null</tt>
+     * @param value the patient name or id. May be {@code null}
      */
     public void setPatient(String value) {
         getPatient().setText(value);
@@ -101,7 +99,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     /**
      * Sets the contact description to search on.
      *
-     * @param value the contact description to search on. May be <tt>null</tt>
+     * @param value the contact description to search on. May be {@code null}
      */
     public void setContact(String value) {
         getContact().setText(value);
@@ -111,7 +109,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * Determines if the query selects a particular object.
      *
      * @param object the object to check
-     * @return <tt>true</tt> if the object is selected by the query
+     * @return {@code true} if the object is selected by the query
      */
     public boolean selects(IMObject object) {
         return selects(object.getObjectReference());
@@ -121,7 +119,7 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
      * Determines if the query selects a particular object reference.
      *
      * @param reference the object reference to check
-     * @return <tt>true</tt> if the object reference is selected by the query
+     * @return {@code true} if the object reference is selected by the query
      */
     @Override
     public boolean selects(IMObjectReference reference) {
@@ -156,22 +154,20 @@ public class CustomerObjectSetQuery extends AbstractEntityQuery<ObjectSet> {
     /**
      * Creates the result set.
      *
-     * @param sort the sort criteria. May be <tt>null</tt>
+     * @param sort the sort criteria. May be {@code null}
      * @return a new result set
      */
     protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
         String patientWildcard = getWildcardedText(getPatient());
         String contactWildcard = getWildcardedText(getContact(), true);
 
-        return new CustomerResultSet(getArchetypeConstraint(), getValue(),
-                                     isIdentitySearch(), patientWildcard,
-                                     contactWildcard, sort, getMaxResults(),
-                                     isDistinct());
+        return new CustomerResultSet(getArchetypeConstraint(), getValue(), isIdentitySearch(), patientWildcard,
+                                     contactWildcard, getConstraints(), sort, getMaxResults(), isDistinct());
     }
 
     /**
      * Creates a container component to lay out the query component in.
-     * This implementation returns a new <tt>Grid</tt>.
+     * This implementation returns a new {@code Grid}.
      *
      * @return a new container
      * @see #doLayout(Component)
