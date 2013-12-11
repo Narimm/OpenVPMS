@@ -662,8 +662,7 @@ public class QueryContext {
      * @return this context
      */
     QueryContext addNotConstraint() {
-        whereClause.appendOperator();
-        whereClause.append(NOT_CONSTRAINT);
+        whereClause.appendNot();
         return this;
     }
 
@@ -674,10 +673,7 @@ public class QueryContext {
      * @return this context
      */
     QueryContext addExistsConstraint(String query) {
-        if (!whereClause.toString().endsWith(NOT_CONSTRAINT)) {
-            // only add the operator if the clause doesn't end in 'not'
-            whereClause.appendOperator();
-        }
+        whereClause.appendOperator();
         whereClause.append("exists (");
         whereClause.append(query);
         whereClause.append(")");
@@ -885,6 +881,11 @@ public class QueryContext {
 
         Stack<Counter<LogicalOperator>> stack = new Stack<Counter<LogicalOperator>>();
 
+        /**
+         * Determines if the last clause is a not.
+         */
+        private boolean not;
+
         public Counter<LogicalOperator> push(LogicalOperator operator) {
             appendOperator();
             Counter<LogicalOperator> result = new Counter<LogicalOperator>(operator);
@@ -896,19 +897,28 @@ public class QueryContext {
         public void pop() {
             stack.pop();
             append(")");
+            not = false;
         }
 
         /**
          * Append the logical operator if required.
          */
         public void appendOperator() {
-            if (!stack.isEmpty()) {
-                if (stack.peek().count > 0) {
-                    String op = stack.peek().operator.getValue();
-                    clause.append(op);
+            if (!not) {
+                if (!stack.isEmpty()) {
+                    if (stack.peek().count > 0) {
+                        String op = stack.peek().operator.getValue();
+                        clause.append(op);
+                    }
+                    stack.peek().count++;
                 }
-                stack.peek().count++;
             }
+        }
+
+        public void appendNot() {
+            appendOperator();
+            clause.append(NOT_CONSTRAINT);
+            not = true;
         }
 
         public boolean isEmpty() {
@@ -920,6 +930,7 @@ public class QueryContext {
         }
 
         public Clause append(String value) {
+            not = false;
             clause.append(value);
             return this;
         }
