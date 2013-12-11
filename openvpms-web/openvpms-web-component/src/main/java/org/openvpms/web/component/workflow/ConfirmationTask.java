@@ -16,10 +16,6 @@
 
 package org.openvpms.web.component.workflow;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 
 
@@ -32,7 +28,7 @@ import org.openvpms.web.echo.help.HelpContext;
  *
  * @author Tim Anderson
  */
-public class ConfirmationTask extends EvalTask<Boolean> {
+public class ConfirmationTask extends AbstractConfirmationTask {
 
     /**
      * The dialog title.
@@ -45,23 +41,7 @@ public class ConfirmationTask extends EvalTask<Boolean> {
     private final String message;
 
     /**
-     * Determines if the No button should be displayed.
-     */
-    private final boolean displayNo;
-
-    /**
-     * The help context.
-     */
-    private final HelpContext help;
-
-    /**
-     * The confirmation dialog.
-     */
-    private ConfirmationDialog dialog;
-
-
-    /**
-     * Constructs a {@code ConfirmationTask}.
+     * Constructs a {@link ConfirmationTask}.
      *
      * @param title   the dialog title
      * @param message the dialog message
@@ -79,44 +59,28 @@ public class ConfirmationTask extends EvalTask<Boolean> {
      * @param displayNo determines if the 'No' button should be displayed
      */
     public ConfirmationTask(String title, String message, boolean displayNo, HelpContext help) {
+        super(displayNo, help);
         this.title = title;
         this.message = message;
-        this.displayNo = displayNo;
-        this.help = help;
     }
 
     /**
-     * Returns the dialog.
+     * Returns the title.
      *
-     * @return the dialog, or {@code null} if the task isn't started
+     * @return the title
      */
-    public ConfirmationDialog getConfirmationDialog() {
-        return dialog;
+    @Override
+    protected String getTitle() {
+        return title;
     }
 
     /**
-     * Starts the task.
-     * <p/>
-     * The registered {@link TaskListener} will be notified on completion or failure.
+     * Returns the message.
      *
-     * @param context the task context
+     * @return the message
      */
-    public void start(TaskContext context) {
-        String[] buttons = (displayNo) ? PopupDialog.YES_NO_CANCEL : PopupDialog.OK_CANCEL;
-        dialog = new ConfirmationDialog(title, message, buttons, help);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void onClose(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                dialog = null;
-                if (ConfirmationDialog.YES_ID.equals(action) || ConfirmationDialog.OK_ID.equals(action)) {
-                    setValue(true);
-                } else if (ConfirmationDialog.NO_ID.equals(action)) {
-                    setValue(false);
-                } else {
-                    notifyCancelled();
-                }
-            }
-        });
-        dialog.show();
+    @Override
+    protected String getMessage() {
+        return message;
     }
 }

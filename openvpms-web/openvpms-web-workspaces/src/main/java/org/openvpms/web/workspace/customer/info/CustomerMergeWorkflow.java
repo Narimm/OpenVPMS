@@ -27,6 +27,7 @@ import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.merge.MergeWorkflow;
 import org.springframework.transaction.TransactionStatus;
@@ -67,6 +68,19 @@ class CustomerMergeWorkflow extends MergeWorkflow<Party> {
         // exclude the customer being merged from the search
         query.setConstraints(Constraints.not(new ObjectRefConstraint("customer", customer.getObjectReference())));
         return new SelectIMObjectTask<Party>(query, getHelpContext().topic("customer"));
+    }
+
+    /**
+     * Returns the merge confirmation message.
+     *
+     * @return the merge confirmation message
+     */
+    @Override
+    protected String getConfirmationMessage() {
+        Party customerTo = getObject();
+        Party customerFrom = getContext().getCustomer();
+        return Messages.format("workflow.merge.message", customerTo.getName(), customerTo.getId(),
+                               customerFrom.getName(), customerFrom.getId());
     }
 
     /**

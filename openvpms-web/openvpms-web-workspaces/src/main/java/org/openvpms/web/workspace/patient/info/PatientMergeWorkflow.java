@@ -26,6 +26,7 @@ import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.merge.MergeWorkflow;
 import org.springframework.transaction.TransactionStatus;
@@ -89,6 +90,19 @@ class PatientMergeWorkflow extends MergeWorkflow<Party> {
         // exclude the patient being merged from the search
         query.setConstraints(not(new ObjectRefConstraint("patient", patient.getObjectReference())));
         return new SelectIMObjectTask<Party>(query, getHelpContext().topic("patient"));
+    }
+
+    /**
+     * Returns the merge confirmation message.
+     *
+     * @return the merge confirmation message
+     */
+    @Override
+    protected String getConfirmationMessage() {
+        Party patientTo = getObject();
+        Party patientFrom = getContext().getPatient();
+        return Messages.format("workflow.merge.message", patientTo.getName(), patientTo.getId(),
+                               patientFrom.getName(), patientFrom.getId());
     }
 
     /**
