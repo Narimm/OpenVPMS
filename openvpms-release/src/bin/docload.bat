@@ -2,4 +2,4 @@
 
 call setenv.bat
 
-java org.openvpms.etl.tools.doc.DocumentLoader -c ../conf/applicationContext.xml %*%
+java -Dlog4j.configuration=file:../conf/log4j.properties org.openvpms.etl.tools.doc.DocumentLoader -c ../conf/applicationContext.xml %*%
