@@ -13,13 +13,13 @@ echo   setup             Load setup data
 goto end
 
 :doBase
-java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/base.xml -b 1000
+java -Dlog4j.configuration=file:../conf/log4j.properties org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/base.xml -b 1000
 goto end
 
 :doSetup
-java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/base.xml,../import/data/setup.xml -b 1000
+java -Dlog4j.configuration=file:../conf/log4j.properties org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml -f ../import/data/base.xml,../import/data/setup.xml -b 1000
 goto end
 
 :doOther
-java org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml %*% -b 1000
+java -Dlog4j.configuration=file:../conf/log4j.properties org.openvpms.tools.data.loader.StaxArchetypeDataLoader -c ../conf/applicationContext.xml %*% -b 1000
 :end

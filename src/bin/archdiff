@@ -2,4 +2,4 @@
 
 . ./setenv.sh
 
-java -classpath $CLASSPATH org.openvpms.tools.archetype.diff.ArchDiff --context ../conf/applicationContext.xml $*
+java -classpath $CLASSPATH -Dlog4j.configuration=file:../conf/log4j.properties org.openvpms.tools.archetype.diff.ArchDiff --context ../conf/applicationContext.xml $*
