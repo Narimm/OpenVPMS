@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.workflow.messaging;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.TaskQueueHandle;
+import nextapp.echo2.webcontainer.ContainerContext;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,25 +47,9 @@ import java.util.Map;
 /**
  * Monitors updates to <em>act.userMessage</em> and <em>act.systemMessage</em> acts, and notifies registered listeners.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class MessageMonitor {
-
-    /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
-
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(MessageMonitor.class);
-
-    /**
-     * The listeners.
-     */
-    private Map<IMObjectReference, List<Listener>> listeners = new HashMap<IMObjectReference, List<Listener>>();
 
     public static interface MessageListener {
 
@@ -75,7 +58,33 @@ public class MessageMonitor {
     }
 
     /**
-     * Constructs a <tt>MessageMonitor</tt>.
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The interval to poll the server for new messages, in seconds.
+     */
+    private int pollInterval = DEFAULT_POLL_INTERVAL;
+
+    /**
+     * The listeners.
+     */
+    private Map<IMObjectReference, List<Listener>> listeners = new HashMap<IMObjectReference, List<Listener>>();
+
+    /**
+     * The default interval to poll the server for new messages, in seconds.
+     */
+    private static final int DEFAULT_POLL_INTERVAL = 30;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(MessageMonitor.class);
+
+
+    /**
+     * Constructs a {@link MessageMonitor}.
      *
      * @param service the archetype service
      */
@@ -94,7 +103,7 @@ public class MessageMonitor {
      * Determines if there are any unread (i.e <em>PENDING</em>) messages for a user.
      *
      * @param user the user
-     * @return <tt>true</tt> if there are unread messages; otherwise <tt>false</tt>
+     * @return {@code true} if there are unread messages; otherwise {@code false}
      */
     public boolean hasNewMessages(User user) {
         ArchetypeQuery query = new ArchetypeQuery(MessageQuery.ARCHETYPES, true, true);
@@ -105,6 +114,12 @@ public class MessageMonitor {
         return iterator.hasNext();
     }
 
+    /**
+     * Adds a listener.
+     *
+     * @param user     the user to add the listener for
+     * @param listener the listener
+     */
     public synchronized void addListener(User user, MessageListener listener) {
         IMObjectReference userRef = user.getObjectReference();
         List<Listener> userListeners = listeners.get(userRef);
@@ -114,9 +129,28 @@ public class MessageMonitor {
         } else {
             purge(userListeners);
         }
-        userListeners.add(new Listener(listener));
+        userListeners.add(new Listener(listener, pollInterval));
     }
 
+    /**
+     * Sets the interval to poll the server for new messages, in seconds.
+     * <p/>
+     * Note that the poll interval of existing listeners will not change.
+     *
+     * @param interval the interval, in seconds
+     */
+    public void setPollInterval(int interval) {
+        if (interval > 0) {
+            pollInterval = interval;
+        }
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param user     the user to remove the listener for
+     * @param listener the listener
+     */
     public synchronized void removeListener(User user, MessageListener listener) {
         IMObjectReference userRef = user.getObjectReference();
         List<Listener> userListeners = listeners.get(userRef);
@@ -152,7 +186,7 @@ public class MessageMonitor {
      * Returns the listeners registered for the <em>"to"</em> user of the message.
      *
      * @param message the message
-     * @return the registered, listeners, or <tt>null</tt> if none are registered
+     * @return the registered, listeners, or {@code null} if none are registered
      */
     private synchronized Listener[] getListeners(Act message) {
         Listener[] result = null;
@@ -188,29 +222,30 @@ public class MessageMonitor {
         /**
          * Reference to the application.
          */
-        WeakReference<ApplicationInstance> appRef;
+        final WeakReference<ApplicationInstance> appRef;
 
         /**
          * Reference to the listener.
          */
-        WeakReference<MessageListener> listenerRef;
+        final WeakReference<MessageListener> listenerRef;
 
         /**
          * Application task queue.
          */
-        TaskQueueHandle taskQueue;
+        final TaskQueueHandle taskQueue;
 
         /**
          * Hash code for the listener.
          */
-        int hashCode;
+        final int hashCode;
 
         /**
-         * Constructs a <tt>Listener</tt>.
+         * Constructs a {@link Listener}.
          *
-         * @param listener the listener to delegate messages to
+         * @param listener     the listener to delegate messages to
+         * @param pollInterval the interval to poll the server, in seconds
          */
-        public Listener(MessageListener listener) {
+        public Listener(MessageListener listener, int pollInterval) {
             ApplicationInstance app = ApplicationInstance.getActive();
             if (app == null) {
                 throw new IllegalStateException("No current ApplicationInstance");
@@ -218,13 +253,19 @@ public class MessageMonitor {
             appRef = new WeakReference<ApplicationInstance>(app);
             listenerRef = new WeakReference<MessageListener>(listener);
             taskQueue = app.createTaskQueue();
+            ContainerContext context
+                    = (ContainerContext) app.getContextProperty(ContainerContext.CONTEXT_PROPERTY_NAME);
+
+            if (context != null) {
+                context.setTaskQueueCallbackInterval(taskQueue, pollInterval * 1000);
+            }
             hashCode = listener.hashCode();
         }
 
         /**
          * Returns the message listener.
          *
-         * @return the message listener, or <tt>null</tt> if it has been garbage collected
+         * @return the message listener, or {@code null} if it has been garbage collected
          */
         public MessageListener getMessageListener() {
             return listenerRef.get();
@@ -240,10 +281,12 @@ public class MessageMonitor {
                 app.enqueueTask(taskQueue, new Runnable() {
                     public void run() {
                         MessageListener l = getMessageListener();
-                        try {
-                            l.onMessage(message);
-                        } catch (Throwable exception) {
-                            log.error("MessageListener threw exception, ignoring", exception);
+                        if (l != null) {
+                            try {
+                                l.onMessage(message);
+                            } catch (Throwable exception) {
+                                log.error("MessageListener threw exception, ignoring", exception);
+                            }
                         }
                     }
                 });
@@ -272,7 +315,7 @@ public class MessageMonitor {
          * Indicates whether some other object is "equal to" this one.
          *
          * @param obj the reference object with which to compare.
-         * @return <tt>true</tt> if this object is the same as the obj argument; <tt>false</tt> otherwise.
+         * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
          */
         @Override
         public boolean equals(Object obj) {
