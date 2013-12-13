@@ -68,6 +68,8 @@
 
     <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
         <constructor-arg ref="archetypeRuleService"/>
+        <!-- clients will poll the server every 30 secs for message updates -->
+        <property name="pollInterval" value="30"/>
     </bean>
 
     <!-- Defines the key stroke combination for accelerator keys.
