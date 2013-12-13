@@ -16,9 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.messaging;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.bound.BoundTextArea;
@@ -37,19 +35,15 @@ import org.openvpms.web.echo.factory.LabelFactory;
 public class AbstractMessageLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * Creates a component to display the act date.
+     * Creates a label to display the act date.
      *
      * @param act the act
      * @return a component to display the date
      */
-    protected ComponentState createDate(Act act) {
+    protected Label createDate(Act act) {
         Label label = LabelFactory.create();
         label.setText(MessageTableModel.formatStartTime(act));
-        ComponentState date = new ComponentState(label);
-        GridLayoutData layout = new GridLayoutData();
-        layout.setAlignment(Alignment.ALIGN_RIGHT);
-        label.setLayoutData(layout);
-        return date;
+        return label;
     }
 
     /**
@@ -72,6 +66,5 @@ public class AbstractMessageLayoutStrategy extends AbstractLayoutStrategy {
         textArea.setStyleName(styleName);
         return new ComponentState(textArea, message);
     }
-
 
 }

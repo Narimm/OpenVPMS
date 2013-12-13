@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.messaging;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.text.TextComponent;
@@ -38,6 +39,7 @@ import java.util.List;
 
 import static org.openvpms.web.component.im.layout.ArchetypeNodes.exclude;
 import static org.openvpms.web.component.im.layout.ArchetypeNodes.include;
+import static org.openvpms.web.component.im.layout.ComponentGrid.layout;
 
 
 /**
@@ -121,8 +123,7 @@ public class UserMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
         ComponentSet messageSet = createComponentSet(object, message, context);
         componentGrid.add(fromSet);
         if (!context.isEdit()) {
-            ComponentState date = createDate((Act) object);
-            componentGrid.set(0, 2, date);
+            componentGrid.set(0, 3, layout(Alignment.ALIGN_RIGHT), createDate((Act) object));
         }
         componentGrid.add(headerSet, 1, 2);
         if (customerSet.size() != 0) {

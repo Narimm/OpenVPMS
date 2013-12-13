@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.messaging;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.text.TextComponent;
@@ -38,6 +39,7 @@ import java.util.List;
 
 import static org.openvpms.web.component.im.layout.ArchetypeNodes.exclude;
 import static org.openvpms.web.component.im.layout.ArchetypeNodes.include;
+import static org.openvpms.web.component.im.layout.ComponentGrid.layout;
 
 
 /**
@@ -100,15 +102,13 @@ public class SystemMessageLayoutStrategy extends AbstractMessageLayoutStrategy {
 
         ComponentGrid componentGrid = new ComponentGrid();
         ComponentSet toSet = createComponentSet(object, to, context);
-        if (!context.isEdit()) {
-            ComponentState date = createDate((Act) object);
-            toSet.add(date);
-        }
-
         ComponentSet headerSet = createComponentSet(object, header, context);
         ComponentSet fieldSet = createComponentSet(object, fields, context);
         ComponentSet messageSet = createComponentSet(object, message, context);
-        componentGrid.add(toSet, 2);
+        componentGrid.add(toSet);
+        if (!context.isEdit()) {
+            componentGrid.set(componentGrid.getRows() - 1, 3, layout(Alignment.ALIGN_RIGHT), createDate((Act) object));
+        }
         componentGrid.add(headerSet, 1, 2);
         componentGrid.add(fieldSet, 2);
         componentGrid.add(messageSet, 1, 2);

@@ -300,6 +300,18 @@ public class ComponentGrid {
     }
 
     /**
+     * Helper to create a layout for a grid cell.
+     *
+     * @param alignment the cell alignment. May be {@code null}
+     * @return a new layout
+     */
+    public static GridLayoutData layout(Alignment alignment) {
+        GridLayoutData layoutData = new GridLayoutData();
+        layoutData.setAlignment(alignment);
+        return layoutData;
+    }
+
+    /**
      * Returns the number of columns.
      *
      * @return the number of columns
