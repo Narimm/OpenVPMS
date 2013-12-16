@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -90,10 +88,10 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
      * Document act version short names.
      */
     private static final String[] DOC_VERSION_SHORT_NAMES = new String[]{
-        InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION,
-        PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION,
-        PatientArchetypes.DOCUMENT_IMAGE_VERSION,
-        PatientArchetypes.DOCUMENT_LETTER_VERSION};
+            InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION,
+            PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION,
+            PatientArchetypes.DOCUMENT_IMAGE_VERSION,
+            PatientArchetypes.DOCUMENT_LETTER_VERSION};
 
 
     /**
@@ -150,6 +148,15 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
     }
 
     /**
+     * Determines if charges should be included.
+     *
+     * @param include if {@code true}, include charges, else exclude them
+     */
+    public void setIncludeCharges(boolean include) {
+        getIncludeCharges().setSelected(include);
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the instance name.
      *
      * @param container the container
@@ -180,7 +187,7 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
         Label typeLabel = LabelFactory.create("query.type");
         container.add(typeLabel);
         container.add(shortNameSelector);
-        includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", true);
+        CheckBox includeCharges = getIncludeCharges();
         includeCharges.addActionListener(listener);
 
         sort = ButtonFactory.create(new ActionListener() {
@@ -201,6 +208,18 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
         focusGroup.add(includeCharges);
         focusGroup.add(sort);
         super.doLayout(container);
+    }
+
+    /**
+     * Returns the 'include charges' check box.
+     *
+     * @return the check box
+     */
+    protected CheckBox getIncludeCharges() {
+        if (includeCharges == null) {
+            includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", true);
+        }
+        return includeCharges;
     }
 
     /**

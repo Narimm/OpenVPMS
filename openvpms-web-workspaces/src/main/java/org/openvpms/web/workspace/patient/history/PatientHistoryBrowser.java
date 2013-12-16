@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -61,13 +61,22 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
     @Override
     public void query() {
         if (pagedModel != null) {
-            // ensure the table model has the selected child act short names
-            // prior to performing the query
-            PatientHistoryQuery query = (PatientHistoryQuery) getQuery();
+            // ensure the table model has the selected child act short names prior to performing the query
+            PatientHistoryQuery query = getQuery();
             pagedModel.setShortNames(query.getActItemShortNames());
             pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();
+    }
+
+    /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    @Override
+    public PatientHistoryQuery getQuery() {
+        return (PatientHistoryQuery) super.getQuery();
     }
 
     /**
@@ -116,7 +125,7 @@ public class PatientHistoryBrowser extends IMObjectTableBrowser<Act> {
      */
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
-        PatientHistoryQuery query = (PatientHistoryQuery) getQuery();
+        PatientHistoryQuery query = getQuery();
         pagedModel = new PagedPatientHistoryTableModel((IMObjectTableModel<Act>) model, getContext().getContext(),
                                                        query.getActItemShortNames());
         pagedModel.setSortAscending(query.isSortAscending());
