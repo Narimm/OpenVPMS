@@ -390,6 +390,7 @@ public class ActRelationshipCollectionEditor
 
             collection.add(copy);
             collection.setEditor(copy, editor);
+            setModified(copy, true);
             result.add(copy);
             copy = null;
         }
