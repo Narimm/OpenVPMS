@@ -13,7 +13,7 @@
     <template name="Invoice Items"
               archetype="SUBREPORT"
               reportType="CUSTOMER"
-              path="invoiceItemsa5.jrxml"
+              path="invoiceitemsa5.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Customer invoice items - A5"/>
@@ -37,7 +37,7 @@
     <template name="Credit Items"
               archetype="SUBREPORT"
               reportType="CUSTOMER"
-              path="creditItemsa5.jrxml"
+              path="creditItemsA5.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Customer credit items - A5"/>
@@ -53,7 +53,7 @@
     <template name="Counter Sale Items"
               archetype="SUBREPORT"
               reportType="CUSTOMER"
-              path="countersaleItemsa5.jrxml"
+              path="countersaleItemsA5.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Customer counter sale items - A5"/>
@@ -69,7 +69,7 @@
     <template name="Receipt Items"
               archetype="SUBREPORT"
               reportType="CUSTOMER"
-              path="receiptitemsA5.jrxml"
+              path="receiptItemsA5.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Customer receipt items - A5"/>
@@ -93,7 +93,7 @@
     <template name="Statement"
               archetype="act.customerAccountOpeningBalance"
               reportType="CUSTOMER"
-              path="statement a5.jrxml"
+              path="statement A5.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Customer statement - A5"/>
@@ -187,7 +187,7 @@
               description="Patient prescription"/>
 
     <template name="Vaccination Certificate"
-              path="Vaccination Certificate A5.odt"
+              path="vaccination certificate a5.odt"
               reportType="PATIENT"
               archetype="act.patientDocumentForm"
               mimeType="application/vnd.oasis.opendocument.text"
@@ -253,7 +253,7 @@
     <template name="Clinician Sales Report"
               archetype="REPORT"
               reportType="FINANCIAL"
-              path="Clinician Sales Report.jrxml"
+              path="clinician sales report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists sales per clinician between two dates"/>
@@ -261,7 +261,7 @@
     <template name="Customer Acquisition Report"
               archetype="REPORT"
               reportType="CUSTOMER"
-              path="Customer Acquisition Report.jrxml"
+              path="customer acquisition report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists customers created between two dates"/>
@@ -269,7 +269,7 @@
     <template name="Customer Balance Report"
               archetype="REPORT"
               reportType="FINANCIAL"
-              path="Customer Balance report.jrxml"
+              path="customer balance report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists customers that have a non-zero opening balance for the specified date"/>
@@ -277,7 +277,7 @@
     <template name="Customer List Report"
               archetype="REPORT"
               reportType="CUSTOMER"
-              path="Customer List Report.jrxml"
+              path="customer list report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists customers, optionally filtered by classification"/>
@@ -285,7 +285,7 @@
     <template name="Customer Payments Report"
               archetype="REPORT"
               reportType="FINANCIAL"
-              path="Customer Payments Report.jrxml"
+              path="customer payments report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists customer payments between two dates"/>
@@ -293,7 +293,7 @@
     <template name="Customer Product Sales Report"
               archetype="REPORT"
               reportType="FINANCIAL"
-              path="Customer Product Sales report.jrxml"
+              path="customer product sales report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists product sales by customer"/>
@@ -301,7 +301,7 @@
     <template name="Customer Reconciliation Report"
               archetype="REPORT"
               reportType="FINANCIAL"
-              path="Customer Reconciliation Report.jrxml"
+              path="customer reconciliation report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists transactions for a customer between two dates"/>
@@ -309,7 +309,7 @@
     <template name="Customer Referral Report"
               archetype="REPORT"
               reportType="CUSTOMER"
-              path="Customer Referral Report.jrxml"
+              path="customer referral report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Displays a summary of how customers were referred to the practice"/>
@@ -317,7 +317,7 @@
     <template name="Customer Sales Report"
               archetype="REPORT"
               reportType="FINANCIAL"
-              path="Customer Sales Report.jrxml"
+              path="customer sales report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists gross and nett sales between two dates"/>
@@ -325,7 +325,7 @@
     <template name="Patient Acquisition Report"
               archetype="REPORT"
               reportType="PATIENT"
-              path="Patient Acquisition Report.jrxml"
+              path="patient acquisition report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists patients created between two dates"/>
@@ -333,7 +333,7 @@
     <template name="Patient Deceased Report"
               archetype="REPORT"
               reportType="PATIENT"
-              path="Patient Deceased Report.jrxml"
+              path="patient deceased report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists active patients that have been flagged deceased between two dates"/>
@@ -341,7 +341,7 @@
     <template name="Patient List Report"
               archetype="REPORT"
               reportType="PATIENT"
-              path="Patient List Report.jrxml"
+              path="patient list report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists patients by owner, species and breed, born between two dates"/>
@@ -349,7 +349,7 @@
     <template name="Patient Sterilisation Report"
               archetype="REPORT"
               reportType="PATIENT"
-              path="Patient Sterilisation Report.jrxml"
+              path="patient sterilisation report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists patients born between two dates, that have not been desexed"/>
@@ -357,7 +357,7 @@
     <template name="Practice Clinician Sales Report"
               archetype="REPORT"
               reportType="FINANCIAL"
-              path="Practice Clinician Sales Report.jrxml"
+              path="practice clinician sales report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists aggregate sales by practice location and clinician"/>
@@ -365,7 +365,7 @@
     <template name="Product List Report"
               archetype="REPORT"
               reportType="PRODUCT"
-              path="Product List report.jrxml"
+              path="product list report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists products and their prices as of the current date"/>
@@ -373,7 +373,7 @@
     <template name="Product Price List Report"
               archetype="REPORT"
               reportType="PRODUCT"
-              path="Product Price List report.jrxml"
+              path="product price list report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists products prices, including aggregates"/>
@@ -421,7 +421,7 @@
     <template name="Stock Take List Report"
               archetype="REPORT"
               reportType="PRODUCT"
-              path="Stock Take List.jrxml"
+              path="stock take list.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists stock and their quantities"/>
@@ -429,7 +429,7 @@
     <template name="Stock Valuation Report"
               archetype="REPORT"
               reportType="PRODUCT"
-              path="Stock Valuation Report.jrxml"
+              path="stock valuation report.jrxml"
               mimeType="text/xml"
               docType="document.other"
               description="Lists stock value by stock location"/>
