@@ -635,7 +635,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the prescription, or {@code null} if none exists
      */
     private Act getPrescription() {
-        return prescriptions != null ? prescriptions.getPrescription(getPatient(), getProduct()) : null;
+        Party patient = getPatient();
+        Product product = getProduct();
+        return prescriptions != null && patient != null && product != null ?
+               prescriptions.getPrescription(patient, product) : null;
     }
 
     /**
