@@ -49,15 +49,9 @@ import org.openvpms.web.resource.i18n.Messages;
  * <br/>
  * It provides a selector to filter acts items; filtering must be performed by the caller.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PatientHistoryQuery extends DateRangeActQuery<Act> {
-
-    /**
-     * The act item short names that can be filtered on.
-     */
-    private String[] actItemShortNames;
 
     /**
      * The set of possible act item short names, excluding the <em>act.customerAccountInvoiceItem</em>.
@@ -85,6 +79,16 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
     private Button sort;
 
     /**
+     * The short name model.
+     */
+    private ShortNameListModel model;
+
+    /**
+     * The short name selector.
+     */
+    private SelectField shortNameSelector;
+
+    /**
      * Document act version short names.
      */
     private static final String[] DOC_VERSION_SHORT_NAMES = new String[]{
@@ -95,16 +99,31 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
 
 
     /**
-     * Constructs a new <tt>PatientSummaryQuery</tt>.
+     * Constructs a {@link PatientHistoryQuery}.
      *
      * @param patient the patient to query
      */
     public PatientHistoryQuery(Party patient) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION,
               new String[]{PatientArchetypes.CLINICAL_EVENT}, Act.class);
-        actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
+
+        String[] actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
         shortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
         selectedShortNames = (String[]) ArrayUtils.add(shortNames, CustomerAccountArchetypes.INVOICE_ITEM);
+        model = new ShortNameListModel(actItemShortNames, true, false);
+        shortNameSelector = SelectFieldFactory.create(model);
+        includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", true);
+
+        ActionListener listener = new ActionListener() {
+            public void onAction(ActionEvent event) {
+                updateSelectedShortNames();
+                onQuery();
+            }
+        };
+        shortNameSelector.addActionListener(listener);
+        shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
+
+        includeCharges.addActionListener(listener);
         setAuto(true);
     }
 
@@ -153,7 +172,8 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
      * @param include if {@code true}, include charges, else exclude them
      */
     public void setIncludeCharges(boolean include) {
-        getIncludeCharges().setSelected(include);
+        includeCharges.setSelected(include);
+        updateSelectedShortNames();
     }
 
     /**
@@ -163,32 +183,9 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
      */
     @Override
     protected void doLayout(Component container) {
-        final ShortNameListModel model = new ShortNameListModel(actItemShortNames, true, false);
-        final SelectField shortNameSelector = SelectFieldFactory.create(model);
-        ActionListener listener = new ActionListener() {
-            public void onAction(ActionEvent event) {
-                int index = shortNameSelector.getSelectedIndex();
-                if (model.isAll(index)) {
-                    selectedShortNames = shortNames;
-                } else {
-                    String shortName = model.getShortName(index);
-                    selectedShortNames = getSelectedShortNames(shortName);
-                }
-                if (includeCharges.isSelected()) {
-                    selectedShortNames = (String[]) ArrayUtils.add(selectedShortNames,
-                                                                   CustomerAccountArchetypes.INVOICE_ITEM);
-                }
-                onQuery();
-            }
-        };
-        shortNameSelector.addActionListener(listener);
-        shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
-
         Label typeLabel = LabelFactory.create("query.type");
         container.add(typeLabel);
         container.add(shortNameSelector);
-        CheckBox includeCharges = getIncludeCharges();
-        includeCharges.addActionListener(listener);
 
         sort = ButtonFactory.create(new ActionListener() {
             @Override
@@ -211,15 +208,20 @@ public class PatientHistoryQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Returns the 'include charges' check box.
-     *
-     * @return the check box
+     * Updates the short names to query.
      */
-    protected CheckBox getIncludeCharges() {
-        if (includeCharges == null) {
-            includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", true);
+    private void updateSelectedShortNames() {
+        int index = shortNameSelector.getSelectedIndex();
+        if (model.isAll(index)) {
+            selectedShortNames = shortNames;
+        } else {
+            String shortName = model.getShortName(index);
+            selectedShortNames = getSelectedShortNames(shortName);
         }
-        return includeCharges;
+        if (includeCharges.isSelected()) {
+            selectedShortNames = (String[]) ArrayUtils.add(selectedShortNames,
+                                                           CustomerAccountArchetypes.INVOICE_ITEM);
+        }
     }
 
     /**
