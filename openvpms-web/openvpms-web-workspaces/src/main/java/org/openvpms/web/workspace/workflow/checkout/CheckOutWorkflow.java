@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.checkout;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -261,6 +262,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         public void execute(TaskContext context) {
             Date min = getMinStartTime(CustomerAccountArchetypes.INVOICE, startTime, context);
             min = getMinStartTime(CLINICAL_EVENT, min, context);
+            min = DateRules.getDate(min);  // print all documents done on or after the min date
             PrintDocumentsTask printDocs = new PrintDocumentsTask(min, help);
             printDocs.setRequired(false);
             addTask(printDocs);
