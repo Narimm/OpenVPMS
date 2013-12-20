@@ -39,7 +39,7 @@
 	<data id="CCONTAC" archetype="security.archetypeAuthority" name="Contacts Create" description="Authority to Create Contacts"
 		serviceName="archetypeService" method="create" archetypeShortName="contact.*" />
 	<data id="SCONTAC" archetype="security.archetypeAuthority" name="Contacts Save" description="Authority to Save Contacts"
-		serviceName="archetypeService" method="save" archetypeShortName="contacts.*" />
+		serviceName="archetypeService" method="save" archetypeShortName="contact.*" />
 	<data id="RCONTAC" archetype="security.archetypeAuthority" name="Contacts Remove" description="Authority to Remove Contacts"
 		serviceName="archetypeService" method="remove" archetypeShortName="contact.*" />
 
