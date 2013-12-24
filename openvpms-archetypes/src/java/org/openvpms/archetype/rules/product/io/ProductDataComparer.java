@@ -547,7 +547,7 @@ public class ProductDataComparer {
         Date to = price.getTo();
         List<PriceData> matches = new ArrayList<PriceData>();
         for (PriceData other : prices) {
-            if (other.getId() != price.getId() && DateRules.intersects(from, to, other.getFrom(), price.getTo())) {
+            if (other.getId() != price.getId() && DateRules.intersects(from, to, other.getFrom(), other.getTo())) {
                 matches.add(other);
             }
         }
