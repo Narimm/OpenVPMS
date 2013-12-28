@@ -123,9 +123,9 @@ public class ResultSetCRUDWindow<T extends IMObject> extends AbstractCRUDWindow<
             final ViewResultSetDialog<T> dialog = new ViewResultSetDialog<T>(title, object, set, edit,
                                                                              getContext(), getHelpContext()) {
                 @Override
-                protected void view(T object) {
+                protected void view(T object, List<Selection> path) {
                     setTitle(DescriptorHelper.getDisplayName(object));
-                    super.view(object);
+                    super.view(object, path);
                 }
             };
             dialog.addWindowPaneListener(new PopupDialogListener() {

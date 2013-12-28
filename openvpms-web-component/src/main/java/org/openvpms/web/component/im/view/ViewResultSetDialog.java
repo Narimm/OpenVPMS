@@ -118,7 +118,7 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
         };
         setModal(true);
         if (iter.hasNext()) {
-            view(iter.next());
+            view(iter.next(), null);
         }
         enableButtons(true, false);
     }
@@ -154,7 +154,8 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
                     object = iter.previous();
                 }
             }
-            view(object);
+            List<Selection> path = viewer != null ? viewer.getSelectionPath() : null;
+            view(object, path);
             enableButtons(false, false);
         }
     }
@@ -172,7 +173,8 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
                     object = iter.next();
                 }
             }
-            view(object);
+            List<Selection> path = viewer != null ? viewer.getSelectionPath() : null;
+            view(object, path);
             enableButtons(false, true);
         }
     }
@@ -211,8 +213,9 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
      * Views an object.
      *
      * @param object the object to view
+     * @param path   the selection path. May be {@code null}
      */
-    protected void view(T object) {
+    protected void view(T object, List<Selection> path) {
         selected = object;
         HelpContext help = getHelpContext().topic(object, "view");
         LayoutContext context = new DefaultLayoutContext(this.context, help);
@@ -225,6 +228,9 @@ public class ViewResultSetDialog<T extends IMObject> extends PopupDialog {
         }
         this.viewer = viewer;
         pane.add(this.viewer.getComponent());
+        if (path != null) {
+            viewer.setSelectionPath(path);
+        }
     }
 
     /**
