@@ -13,6 +13,7 @@
  *
  * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.edit;
 
 import echopointng.KeyStrokes;
@@ -20,6 +21,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
@@ -33,6 +35,7 @@ import org.openvpms.web.echo.help.HelpContext;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 
 /**
@@ -222,19 +225,26 @@ public abstract class AbstractEditDialog extends PopupDialog {
         if (editor != null) {
             setTitle(editor.getTitle());
             editor.addPropertyChangeListener(
-                IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                        onComponentChange(event);
-                    }
-                });
+                    IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
+                    new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent event) {
+                            onComponentChange(event);
+                        }
+                    });
         }
         this.editor = editor;
+        List<Selection> path;
         if (previous != null) {
+            path = previous.getSelectionPath();
             removeEditor(previous);
+        } else {
+            path = null;
         }
         if (editor != null) {
             addEditor(editor);
+            if (path != null) {
+                editor.setSelectionPath(path);
+            }
         }
     }
 
