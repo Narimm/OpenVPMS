@@ -415,6 +415,16 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
+     * Returns the selection path.
+     *
+     * @return the selection path
+     */
+    @Override
+    public List<Selection> getSelectionPath() {
+        return getView().getSelectionPath();
+    }
+
+    /**
      * Returns the rendered object.
      *
      * @return the rendered object

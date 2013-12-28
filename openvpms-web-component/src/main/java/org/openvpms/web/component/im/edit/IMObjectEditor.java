@@ -105,6 +105,13 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable, Cancellable
     void setSelectionPath(List<Selection> path);
 
     /**
+     * Returns the selection path.
+     *
+     * @return the selection path
+     */
+    List<Selection> getSelectionPath();
+
+    /**
      * Returns a property, given its node descriptor's name.
      *
      * @param name the descriptor's name
