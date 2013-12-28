@@ -585,7 +585,9 @@ public class ReminderGenerator extends AbstractBatchProcessor {
             statistics.clear();
             processor.restart();
             workflow = new WorkflowImpl(help);
-            workflow.addTask(new BatchProcessorTask(processor));
+            BatchProcessorTask task = new BatchProcessorTask(processor);
+            task.setTerminateOnError(false);
+            workflow.addTask(task);
             workflow.addTaskListener(new DefaultTaskListener() {
                 public void taskEvent(TaskEvent event) {
                     if (TaskEvent.Type.COMPLETED.equals(event.getType())) {

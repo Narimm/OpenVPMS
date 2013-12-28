@@ -21,6 +21,7 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TaskQueueHandle;
+import nextapp.echo2.webcontainer.ContainerContext;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -320,6 +321,12 @@ public abstract class ProgressBarProcessor<T>
         if (taskQueue == null) {
             ApplicationInstance app = ApplicationInstance.getActive();
             taskQueue = app.createTaskQueue();
+            ContainerContext context
+                    = (ContainerContext) app.getContextProperty(ContainerContext.CONTEXT_PROPERTY_NAME);
+            if (context != null) {
+                // set the task queue to call back in 500ms
+                context.setTaskQueueCallbackInterval(taskQueue, 500);
+            }
         }
         return taskQueue;
     }
