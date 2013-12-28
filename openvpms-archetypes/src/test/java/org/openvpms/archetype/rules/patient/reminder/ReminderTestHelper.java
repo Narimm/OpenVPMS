@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -104,18 +104,31 @@ public class ReminderTestHelper extends TestHelper {
      */
     public static void addTemplate(Entity reminderType, int reminderCount, int overdueInterval,
                                    DateUnits overdueUnits) {
-        EntityBean bean = new EntityBean(reminderType);
         Entity template = (Entity) create("entity.documentTemplate");
         EntityBean templateBean = new EntityBean(template);
         templateBean.setValue("name", "ZDummyTemplate-" + System.currentTimeMillis());
         templateBean.setValue("archetype", "act.patientDocumentForm");
-        templateBean.save();
+        addTemplate(reminderType, template, reminderCount, overdueInterval, overdueUnits);
+    }
+
+    /**
+     * Adds a document template to a reminder type.
+     *
+     * @param reminderType    the reminder type
+     * @param template        the document template
+     * @param reminderCount   the reminder count
+     * @param overdueInterval the overdue interval
+     * @param overdueUnits    the overdue interval units
+     */
+    public static void addTemplate(Entity reminderType, Entity template, int reminderCount, int overdueInterval,
+                                   DateUnits overdueUnits) {
+        EntityBean bean = new EntityBean(reminderType);
         EntityRelationship relationship = bean.addRelationship("entityRelationship.reminderTypeTemplate", template);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("reminderCount", reminderCount);
         relBean.setValue("interval", overdueInterval);
         relBean.setValue("units", overdueUnits.toString());
-        bean.save();
+        save(reminderType, template);
     }
 
     /**
