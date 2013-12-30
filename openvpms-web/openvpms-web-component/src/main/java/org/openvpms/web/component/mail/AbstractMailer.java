@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -37,8 +35,7 @@ import java.util.List;
 /**
  * Abstract implementation of the {@link Mailer} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class AbstractMailer implements Mailer {
 
@@ -211,7 +208,7 @@ public abstract class AbstractMailer implements Mailer {
     public void send(String address) {
         MimeMessage message = sender.createMimeMessage();
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             populateMessage(helper, address);
             sender.send(message);
         } catch (OpenVPMSException exception) {
@@ -230,12 +227,13 @@ public abstract class AbstractMailer implements Mailer {
      * @throws UnsupportedEncodingException if the character encoding is not supported
      */
     protected void populateMessage(MimeMessageHelper helper, String address)
-        throws MessagingException, UnsupportedEncodingException {
+            throws MessagingException, UnsupportedEncodingException {
         helper.setFrom(getFrom(), getFromName());
         helper.setTo(address);
         helper.setSubject(getSubject());
         if (body != null) {
             helper.setText(body);
+
         } else {
             helper.setText("");
         }
