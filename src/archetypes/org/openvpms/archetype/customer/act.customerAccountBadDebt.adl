@@ -11,12 +11,12 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.customerAccountBadDebt.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Bad Debt">
-        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"
               derivedValue="'Customer Bad Debt'"/>
