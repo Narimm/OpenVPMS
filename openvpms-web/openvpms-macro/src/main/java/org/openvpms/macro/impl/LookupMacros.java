@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
@@ -30,9 +30,12 @@ import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.Variables;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -56,6 +59,13 @@ public class LookupMacros implements Macros {
      * The macro factory.
      */
     private final MacroFactory factory;
+
+
+    /**
+     * The per-thread variables. These are required so that variables may be supplied to nested macros when they
+     * are invoked via macro:eval().
+     */
+    private final ThreadLocal<ScopedVariables> scopedVariables = new ThreadLocal<ScopedVariables>();
 
     /**
      * The logger.
@@ -131,13 +141,16 @@ public class LookupMacros implements Macros {
         Token token = Token.parse(macro);
         Macro m = macros.get(token.getToken());
         if (m != null) {
+            ScopedVariables scoped = pushVariables(variables);
             try {
-                MacroContext context = new MacroContext(macros, factory, object, variables);
+                MacroContext context = new MacroContext(macros, factory, object, scoped);
                 result = context.run(m, token.getNumericPrefix());
             } catch (MacroException exception) {
                 throw exception;
             } catch (Throwable exception) {
                 throw new MacroException("Failed to evaluate macro=" + macro, exception);
+            } finally {
+                popVariables(variables, scoped);
             }
         }
         return result;
@@ -171,26 +184,31 @@ public class LookupMacros implements Macros {
      * @return the text will macros substituted for their values
      */
     public String runAll(String text, Object object, Variables variables) {
-        MacroContext context = new MacroContext(macros, factory, object, variables);
-
-        StringTokenizer tokens = new StringTokenizer(text, " \t\n\r", true);
         StringBuilder result = new StringBuilder();
-        while (tokens.hasMoreTokens()) {
-            Token token = Token.parse(tokens.nextToken());
-            Macro macro = macros.get(token.getToken());
-            if (macro != null) {
-                try {
-                    String value = context.run(macro, token.getNumericPrefix());
-                    if (value != null) {
-                        result.append(value);
+        ScopedVariables scoped = pushVariables(variables);
+        try {
+            MacroContext context = new MacroContext(macros, factory, object, scoped);
+
+            StringTokenizer tokens = new StringTokenizer(text, " \t\n\r", true);
+            while (tokens.hasMoreTokens()) {
+                Token token = Token.parse(tokens.nextToken());
+                Macro macro = macros.get(token.getToken());
+                if (macro != null) {
+                    try {
+                        String value = context.run(macro, token.getNumericPrefix());
+                        if (value != null) {
+                            result.append(value);
+                        }
+                    } catch (Throwable exception) {
+                        log.warn(exception, exception);
+                        result.append(token.getText());
                     }
-                } catch (Throwable exception) {
-                    log.warn(exception, exception);
+                } else {
                     result.append(token.getText());
                 }
-            } else {
-                result.append(token.getText());
             }
+        } finally {
+            popVariables(variables, scoped);
         }
         return result.toString();
     }
@@ -243,6 +261,27 @@ public class LookupMacros implements Macros {
      */
     private void delete(Lookup lookup) {
         macros.remove(lookup.getCode());
+    }
+
+    private ScopedVariables pushVariables(Variables variables) {
+        ScopedVariables scoped = scopedVariables.get();
+        if (scoped == null && variables != null) {
+            scoped = new ScopedVariables();
+            scopedVariables.set(scoped);
+        }
+        if (scoped != null && variables != null) {
+            scoped.push(variables);
+        }
+        return scoped;
+    }
+
+    private void popVariables(Variables variables, ScopedVariables scoped) {
+        if (scoped != null && variables != null) {
+            scoped.pop();
+            if (scoped.isEmpty()) {
+                scopedVariables.set(null);
+            }
+        }
     }
 
     /**
@@ -336,6 +375,57 @@ public class LookupMacros implements Macros {
          */
         private static boolean isNumeric(char ch) {
             return Character.isDigit(ch) || ch == '.' || ch == '/';
+        }
+    }
+
+    private static class ScopedVariables implements Variables {
+
+        private final List<Variables> stack = new ArrayList<Variables>();
+
+        public void push(Variables variables) {
+            stack.add(variables);
+        }
+
+        public void pop() {
+            stack.remove(stack.size() - 1);
+        }
+
+        /**
+         * Returns a variable value.
+         *
+         * @param name the variable name
+         * @return the variable value. May be {@code null}
+         */
+        @Override
+        public Object get(String name) {
+            for (ListIterator<Variables> iterator = stack.listIterator(stack.size()); iterator.hasPrevious(); ) {
+                Variables variables = iterator.previous();
+                if (variables.exists(name)) {
+                    return variables.get(name);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Determines if a variable exists.
+         *
+         * @param name the variable name
+         * @return {@code true} if the variable exists
+         */
+        @Override
+        public boolean exists(String name) {
+            for (ListIterator<Variables> iterator = stack.listIterator(stack.size()); iterator.hasPrevious(); ) {
+                Variables variables = iterator.previous();
+                if (variables.exists(name)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean isEmpty() {
+            return stack.isEmpty();
         }
     }
 
