@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table.act;
@@ -124,6 +124,11 @@ public class ActAmountTableModel<T extends Act> extends BaseIMObjectTableModel<T
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         SortConstraint[] result;
         switch (column) {
+            case ID_INDEX:
+                result = new SortConstraint[]{
+                        new NodeSortConstraint("id", ascending)
+                };
+                break;
             case DATE_INDEX:
                 result = new SortConstraint[]{
                         new NodeSortConstraint("startTime", ascending)
@@ -156,6 +161,7 @@ public class ActAmountTableModel<T extends Act> extends BaseIMObjectTableModel<T
      */
     protected TableColumnModel createColumnModel(boolean showArchetype, boolean showStatus, boolean showAmount) {
         TableColumnModel model = new DefaultTableColumnModel();
+        model.addColumn(createTableColumn(ID_INDEX, "table.imobject.id"));
         model.addColumn(createTableColumn(DATE_INDEX, "table.act.date"));
         if (showArchetype) {
             model.addColumn(createTableColumn(ARCHETYPE_INDEX, "table.act.type"));
