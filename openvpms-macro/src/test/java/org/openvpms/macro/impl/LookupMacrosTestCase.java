@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
@@ -24,10 +24,14 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.MapVariables;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -311,6 +315,39 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that a macro can call another macro using macro:eval(), and the variables are also available to the
+     * child.
+     */
+    @Test
+    public void testRunMacroCallingMacroWithVariable() {
+        MacroTestHelper.createMacro("m_customerId", "openvpms:get($customer, 'id')");
+        MacroTestHelper.createMacro("@cid", "macro:eval('m_customerId')");
+
+        // define the the $customer variable and verify it can be accessed by the underlying m_customerId macro
+        MapVariables variables = new MapVariables();
+        variables.add("customer", customer);
+
+        assertEquals("-1", macros.run("@cid", new Object(), variables));
+        assertEquals("-1", macros.runAll("@cid", new Object(), variables));
+    }
+
+    /**
+     * Verifies that the $number variable is scoped, so that a nested macro may have a different value for $number
+     * than the outer macro.
+     */
+    @Test
+    public void testRunNumberVariableScoping() {
+        MacroTestHelper.createMacro("testNumber", "$number");
+        MacroTestHelper.createMacro("testNestedNumber", "concat($number, macro:eval('2testNumber'))");
+
+        assertEquals("3", macros.run("3testNumber", new Object()));
+        assertEquals("3", macros.runAll("3testNumber", new Object()));
+
+        assertEquals("32", macros.run("3testNestedNumber", new Object()));
+        assertEquals("32", macros.runAll("3testNestedNumber", new Object()));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -327,6 +364,11 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("recursivemacro1", "$recursivemacro2");
         MacroTestHelper.createMacro("recursivemacro2", "$recursivemacro1");
         macros = new LookupMacros(lookupService, getArchetypeService(), new DocumentHandlers());
+
+        // register the macro functions
+        Map properties = new HashMap();
+        properties.put("macro", new MacroFunctions(macros));
+        new JXPathHelper(properties);
     }
 
 }
