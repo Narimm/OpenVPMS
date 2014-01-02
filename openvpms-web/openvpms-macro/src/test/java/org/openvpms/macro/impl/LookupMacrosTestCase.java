@@ -367,8 +367,28 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
 
         // register the macro functions
         Map properties = new HashMap();
-        properties.put("macro", new MacroFunctions(macros));
+        properties.put("macro", new TestMacroFunctions(macros));
         new JXPathHelper(properties);
+    }
+
+    /**
+     * Hack to ensure that {@link MacroFunctions} is always working with the current instance of {@link LookupMacros}.
+     * <p/>
+     * This is required as JXPathHelper caches functions in a singleton.
+     */
+    private static class TestMacroFunctions extends MacroFunctions {
+
+        private static Macros macros;
+
+        public TestMacroFunctions(Macros macros) {
+            super(macros);
+            this.macros = macros;
+        }
+
+        @Override
+        public String eval(String macro, Object context) {
+            return macros.run(macro, context);
+        }
     }
 
 }
