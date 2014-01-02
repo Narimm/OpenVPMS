@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
@@ -161,6 +162,7 @@ public class TitlePane extends ContentPane {
                     locations = practiceRules.getLocations(practice);
                 }
             }
+            IMObjectSorter.sort(locations, "name");
         }
         return locations;
     }
