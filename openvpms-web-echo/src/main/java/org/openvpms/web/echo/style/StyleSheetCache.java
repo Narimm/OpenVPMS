@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.style;
@@ -74,6 +74,7 @@ public class StyleSheetCache extends AbstractStyleSheetCache {
         this(defaultBaseName, null);
     }
 
+
     /**
      * Constructs a {@link StyleSheetCache}.
      *
@@ -90,10 +91,10 @@ public class StyleSheetCache extends AbstractStyleSheetCache {
             String name = overrideBaseName + ".properties";
             Map<String, String> overrides = getProperties(name, false);
             if (overrides != null) {
-                if (log.isInfoEnabled()) {
-                    log.info("Overriding default stylesheet properties using " + name);
-                }
+                log.info("Overriding default stylesheet properties using " + name);
                 properties.putAll(overrides);
+            } else {
+                log.info("No style overrides found for: " + name);
             }
         }
         setDefaultProperties(properties);
