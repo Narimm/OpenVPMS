@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -704,12 +704,16 @@ class ScheduleEventCache {
          * @return the event, or {@code null} if the event no longer applies
          */
         public synchronized PropertySet getEvent(long scheduleId, Date day, EventHandle handle) {
+            PropertySet result;
             if (modCount == handle.getModCount()) {
-                return event;
+                result = event;
             } else if (isFor(scheduleId, day)) {
                 handle.setModCount(modCount);  // update the modCount
+                result = event;
+            } else {
+                result = null; // handle is out date
             }
-            return null; // handle is out date
+            return result;
         }
 
         /**

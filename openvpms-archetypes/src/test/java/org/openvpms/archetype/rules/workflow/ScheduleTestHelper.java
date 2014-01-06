@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -76,7 +76,7 @@ public class ScheduleTestHelper extends TestHelper {
      * Helper to create a new <em>entity.appointmentType</em>.
      *
      * @param name the appointment type name
-     * @param save if <tt>true</tt> save the appointment type
+     * @param save if {@code true} save the appointment type
      * @return a new appointment type
      */
     public static Entity createAppointmentType(String name, boolean save) {
@@ -89,7 +89,7 @@ public class ScheduleTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create and save a <tt>party.organisationSchedule</em>.
+     * Helper to create and save a {@code party.organisationSchedule</em>.
      *
      * @return a new schedule
      */
@@ -98,12 +98,12 @@ public class ScheduleTestHelper extends TestHelper {
     }
 
     /**
-     * Helper to create and save new <tt>party.organisationSchedule</em>.
+     * Helper to create and save new {@code party.organisationSchedule</em>.
      *
      * @param slotSize        the schedule slot size
      * @param slotUnits       the schedule slot units
      * @param noSlots         the appointment no. of slots
-     * @param appointmentType the appointment type. May be <tt>null</tt>
+     * @param appointmentType the appointment type. May be {@code null}
      * @return a new schedule
      */
     public static Party createSchedule(int slotSize, String slotUnits,
@@ -169,7 +169,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param endTime   the act end time
      * @param schedule  the schedule
      * @param customer  the customer
-     * @param patient   the patient. May be <tt>null</tt>
+     * @param patient   the patient. May be {@code null}
      * @return a new act
      */
     public static Act createAppointment(Date startTime, Date endTime,
@@ -188,9 +188,9 @@ public class ScheduleTestHelper extends TestHelper {
      * @param schedule        the schedule
      * @param appointmentType the appointment type
      * @param customer        the customer
-     * @param patient         the patient. May be <tt>null</tt>
-     * @param clinician       the clinician. May be <tt>null</tt>
-     * @param author          the author. May be <tt>null</tt>
+     * @param patient         the patient. May be {@code null}
+     * @param clinician       the clinician. May be {@code null}
+     * @param author          the author. May be {@code null}
      * @return a new act
      */
     public static Act createAppointment(Date startTime, Date endTime,
@@ -251,7 +251,7 @@ public class ScheduleTestHelper extends TestHelper {
      * Helper to create a new <em>entity.taskType</em>.
      *
      * @param name the task type name
-     * @param save if <tt>true</tt> save the task type
+     * @param save if {@code true} save the task type
      * @return a new task type
      */
     public static Entity createTaskType(String name, boolean save) {
@@ -275,7 +275,7 @@ public class ScheduleTestHelper extends TestHelper {
     /**
      * Helper to create a new <em>party.organisationWorkList</em>, linked to a task type.
      *
-     * @param taskType the task type. May be <tt>null</tt>
+     * @param taskType the task type. May be {@code null}
      * @param noSlots  the no. of slots
      * @return a new work list
      */
@@ -333,7 +333,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param endTime   the act end time
      * @param schedule  the schedule
      * @param customer  the customer
-     * @param patient   the patient. May be <tt>null</tt>
+     * @param patient   the patient. May be {@code null}
      * @return a new act
      */
     public static Act createTask(Date startTime, Date endTime, Party schedule,
@@ -348,20 +348,37 @@ public class ScheduleTestHelper extends TestHelper {
      * @param endTime   the act end time
      * @param worklist  the work list
      * @param customer  the customer
-     * @param patient   the patient. May be <tt>null</tt>
-     * @param clinician the clinician. May be <tt>null</tt>
-     * @param author    the author. May be <tt>null</tt>
+     * @param patient   the patient. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
+     * @param author    the author. May be {@code null}
      * @return a new act
      */
     public static Act createTask(Date startTime, Date endTime, Party worklist, Party customer, Party patient,
                                  User clinician, User author) {
+        return createTask(startTime, endTime, worklist, customer, patient, createTaskType(), clinician, author);
+    }
+
+    /**
+     * Helper to create an <em>act.customerTask</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param worklist  the work list
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param taskType  the task type
+     * @param clinician the clinician. May be {@code null}
+     * @param author    the author. May be {@code null}
+     * @return a new act
+     */
+    public static Act createTask(Date startTime, Date endTime, Party worklist, Party customer, Party patient,
+                                 Entity taskType, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.TASK);
 
         ActBean bean = new ActBean(act);
         bean.setValue("startTime", startTime);
         bean.setValue("endTime", endTime);
         bean.setValue("status", TaskStatus.IN_PROGRESS);
-        Entity taskType = createTaskType();
         bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
         if (patient != null) {
             bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
@@ -380,12 +397,13 @@ public class ScheduleTestHelper extends TestHelper {
     /**
      * Helper to create an in-memory cache.
      *
+     * @param maxElementsInMemory specifies the maximum number of cached objects in memory
      * @return a new cache
      */
-    public static Ehcache createCache() {
+    public static Ehcache createCache(int maxElementsInMemory) {
         EhCacheFactoryBean bean = new EhCacheFactoryBean();
         bean.setCacheName("foo" + System.nanoTime());
-        bean.setMaxElementsInMemory(30);
+        bean.setMaxElementsInMemory(maxElementsInMemory);
         bean.setEternal(true);
         bean.setOverflowToDisk(false);
         try {

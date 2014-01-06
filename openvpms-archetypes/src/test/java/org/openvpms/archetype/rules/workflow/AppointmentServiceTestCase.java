@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -33,12 +33,15 @@ import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.test.TestHelper.createPatient;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
@@ -72,7 +75,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         // retrieve the appointments for date1 and date2 and verify they are
         // empty.
         // This caches the appointments for each date.
-        service = createScheduleService();
+        service = createScheduleService(30);
         List<PropertySet> results = service.getEvents(schedule, date1);
         assertEquals(0, results.size());
 
@@ -106,7 +109,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         // retrieve the appointments for date1 and date2 and verify they are
         // empty.
         // This caches the appointments for each date.
-        service = createScheduleService();
+        service = createScheduleService(30);
         List<PropertySet> results = service.getEvents(schedule, date1);
         assertEquals(0, results.size());
 
@@ -157,7 +160,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
             bean.save();
         }
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         List<PropertySet> results = service.getEvents(schedule, date);
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
@@ -174,7 +177,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date date1 = getDate("2008-01-01");
         Date date2 = getDate("2008-03-01");
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         service.getEvents(schedule, date1);
         assertEquals(0, service.getEvents(schedule, date1).size());
         assertEquals(0, service.getEvents(schedule, date2).size());
@@ -203,7 +206,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
 
         // create and save appointment for date1
         Act appointment1 = createAppointment(date1);
-        service = createScheduleService();
+        service = createScheduleService(30);
         List<PropertySet> results = service.getEvents(schedule, date1);
         assertEquals(1, results.size());
         PropertySet set = results.get(0);
@@ -231,7 +234,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     @Test
     public void testUpdateReason() {
         Date date = getDate("2008-01-01");
-        service = createScheduleService();
+        service = createScheduleService(30);
 
         // create and save appointment for date
         Act appointment = createAppointment(date);
@@ -264,7 +267,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date date = getDate("2008-01-01");
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         // create and save appointment for date
         Act appointment = createAppointment(date, schedule, patient, false);
         String code = "XREASON" + System.currentTimeMillis();
@@ -304,7 +307,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date end = getDate("2008-01-05");
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService();
+        service = createScheduleService(30);
 
         // retrieve the appointments from start to end and verify they are empty.
         // This caches the appointments for each date.
@@ -340,6 +343,39 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
+     * Tests repeatedly reading the same sets of events for a cache size smaller than the number of dates read.
+     */
+    @Test
+    public void testRepeatedSequentialRead() {
+        Date start = getDate("2008-01-01");
+        Party patient = createPatient();
+
+        Set[] days = new Set[10];
+
+        // create some appointments
+        for (int i = 0; i < 10; ++i) {
+            Set<Long> appointments = new HashSet<Long>();
+            Date date = DateRules.getDate(start, i, DateUnits.DAYS);
+            for (int j = 0; j < 100; ++j) {
+                Act appointment = createAppointment(date, schedule, patient, true);
+                appointments.add(appointment.getId());
+            }
+            days[i] = appointments;
+        }
+
+        service = createScheduleService(6); // cache 6 days
+
+        // repeatedly read 10 days worth of appointments. This will force the cache to shed and re-read data.
+        for (int j = 0; j < 10; ++j) {
+            for (int k = 0; k < 10; ++k) {
+                Date date = DateRules.getDate(start, k, DateUnits.DAYS);
+                Set<Long> ids = getIds(date, schedule, service);
+                assertEquals(days[k], ids);
+            }
+        }
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -364,12 +400,13 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     /**
      * Creates a new {@link ScheduleService}.
      *
+     * @param scheduleCacheSize the maximum number of schedule days to cache
      * @return the new service
      */
     @Override
-    protected AppointmentService createScheduleService() {
+    protected AppointmentService createScheduleService(int scheduleCacheSize) {
         return new AppointmentService(getArchetypeService(), applicationContext.getBean(ILookupService.class),
-                                      ScheduleTestHelper.createCache());
+                                      ScheduleTestHelper.createCache(scheduleCacheSize));
     }
 
     /**

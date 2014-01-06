@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -34,7 +34,9 @@ import org.springframework.beans.factory.DisposableBean;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -97,7 +99,7 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Entity schedule2 = createSchedule();
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         service.getEvents(schedule1, date);
         assertEquals(0, service.getEvents(schedule1, date).size());
 
@@ -121,7 +123,7 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Entity schedule = createSchedule();
         Party patient1 = TestHelper.createPatient();
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         service.getEvents(schedule, date);
         Assert.assertEquals(0, service.getEvents(schedule, date).size());
 
@@ -168,7 +170,7 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Entity schedule = createSchedule();
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         service.getEvents(schedule, date);
         Assert.assertEquals(0, service.getEvents(schedule, date).size());
 
@@ -201,7 +203,7 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Entity schedule = createSchedule();
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         service.getEvents(schedule, date);
         Assert.assertEquals(0, service.getEvents(schedule, date).size());
 
@@ -233,7 +235,7 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
     public void testConcurrentChangeSchedule() throws Exception {
         for (int i = 0; i < 100; i++) {
             System.out.println("Concurrent read/write run: " + i + " ");
-            ScheduleService service = createScheduleService();
+            ScheduleService service = createScheduleService(30);
             try {
                 checkConcurrentChangeSchedule(service);
                 System.out.println("OK");
@@ -252,7 +254,7 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
     public void testConcurrentChangePatient() throws Exception {
         for (int i = 0; i < 100; i++) {
             System.out.println("Concurrent read/write run: " + i + " ");
-            ScheduleService service = createScheduleService();
+            ScheduleService service = createScheduleService(30);
             try {
                 checkConcurrentChangePatient(service);
                 System.out.println("OK");
@@ -265,9 +267,10 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
     /**
      * Creates a new {@link ScheduleService}.
      *
+     * @param scheduleCacheSize the maximum number of schedule days to cache
      * @return the new service
      */
-    protected abstract ScheduleService createScheduleService();
+    protected abstract ScheduleService createScheduleService(int scheduleCacheSize);
 
     /**
      * Creates a new schedule.
@@ -300,6 +303,23 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         } else {
             bean.setParticipant(ScheduleArchetypes.WORKLIST_PARTICIPATION, schedule);
         }
+    }
+
+    /**
+     * Helper to return the event ids for a schedule and date.
+     *
+     * @param date     the date
+     * @param schedule the schedule
+     * @param service  the schedule service
+     * @return the event ids
+     */
+    protected Set<Long> getIds(Date date, Entity schedule, ScheduleService service) {
+        Set<Long> result = new HashSet<Long>();
+        List<PropertySet> events = service.getEvents(schedule, date);
+        for (PropertySet event : events) {
+            result.add(event.getReference(ScheduleEvent.ACT_REFERENCE).getId());
+        }
+        return result;
     }
 
     /**
