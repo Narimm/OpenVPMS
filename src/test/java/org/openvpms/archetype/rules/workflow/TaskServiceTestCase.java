@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -31,7 +31,9 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import static org.junit.Assert.assertEquals;
@@ -85,7 +87,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         Date date2 = getDate("2008-01-02");
         Date date3 = getDate("2008-01-03");
 
-        service = createScheduleService();
+        service = createScheduleService(30);
 
         // retrieve the tasks for date1 and date2 and verify they are empty.
         // This caches the tasks for each date.
@@ -124,7 +126,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         Date date2 = getDate("2008-01-02");
         Date date3 = getDate("2008-01-03");
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         List<PropertySet> results = service.getEvents(workList, date1);
         assertEquals(0, results.size());
 
@@ -154,7 +156,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         Date date1 = getDate("2008-01-01");
         Date date2 = getDate("2008-03-01");
 
-        service = createScheduleService();
+        service = createScheduleService(30);
         service.getEvents(workList, date1);
         assertEquals(0, service.getEvents(workList, date1).size());
         assertEquals(0, service.getEvents(workList, date2).size());
@@ -178,7 +180,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     @Test
     public void testGetEvents() {
         final int count = 10;
-        service = createScheduleService();
+        service = createScheduleService(30);
         Party patient = TestHelper.createPatient();
         Act[] tasks = new Act[count];
         Date date = getDate("2007-01-01");
@@ -208,7 +210,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     public void testConcurrentReadWrite() throws Exception {
         for (int i = 0; i < 100; i++) {
             System.out.println("Concurrent read/write run: " + i + " ");
-            TaskService service = createScheduleService();
+            TaskService service = createScheduleService(30);
             try {
                 checkConcurrentReadWrite(service);
                 System.out.println("OK");
@@ -229,7 +231,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     public void testConcurrentReadWrite2() throws Exception {
         for (int i = 0; i < 100; i++) {
             System.out.println("Concurrent read/write run: " + i + " ");
-            TaskService service = createScheduleService();
+            TaskService service = createScheduleService(30);
             try {
                 checkConcurrentReadWrite2(service);
                 System.out.println("OK");
@@ -240,13 +242,42 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
+     * Tests repeatedly reading the same sets of events for a cache size smaller than the number of dates read.
+     */
+    @Test
+    public void testRepeatedSequentialRead() {
+        Date start = getDate("2008-01-01");
+
+        // create some open tasks
+        Set<Long> tasks = new HashSet<Long>();
+        for (int i = 0; i < 100; ++i) {
+            Act task = createTask(start);
+            tasks.add(task.getId());
+        }
+
+        service = createScheduleService(6); // cache 6 days
+
+        // repeatedly read 10 days worth of tasks. This will force the cache to shed and re-read data.
+        for (int j = 0; j < 10; ++j) {
+            // read 10 days worth of tasks.
+            for (int k = 0; k < 10; ++k) {
+                Date date = DateRules.getDate(start, k, DateUnits.DAYS);
+                Set<Long> ids = getIds(date, workList, service);
+                assertEquals(tasks, ids);
+            }
+        }
+    }
+
+    /**
      * Creates a new {@link ScheduleService}.
      *
+     * @param scheduleCacheSize the maximum number of schedule days to cache
      * @return the new service
      */
     @Override
-    protected TaskService createScheduleService() {
-        return new TaskService(getArchetypeService(), applicationContext.getBean(ILookupService.class), ScheduleTestHelper.createCache());
+    protected TaskService createScheduleService(int scheduleCacheSize) {
+        return new TaskService(getArchetypeService(), applicationContext.getBean(ILookupService.class),
+                               ScheduleTestHelper.createCache(scheduleCacheSize));
     }
 
     /**

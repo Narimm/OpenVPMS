@@ -11,22 +11,24 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.archetype.rules.patient.reminder;
+package org.openvpms.archetype.test.tools;
 
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -38,14 +40,15 @@ import java.io.InputStream;
 import java.util.Date;
 
 import static org.junit.Assert.assertNotNull;
+import static org.openvpms.archetype.test.TestHelper.createClinician;
+import static org.openvpms.archetype.test.TestHelper.save;
 
 /**
- * Tool to generate reminders.
+ * Tool to generate <em>act.customerTask</em> acts.
  *
  * @author Tim Anderson
  */
-public class TestReminderGenerator {
-
+public class TestTaskGenerator {
 
     /**
      * Main line.
@@ -60,20 +63,27 @@ public class TestReminderGenerator {
             new FileSystemXmlApplicationContext(contextPath);
         }
 
-        Entity[] reminderTypes = new Entity[10];
-        Entity documentTemplate = createDocumentTemplate();
-        for (int i = 0; i < reminderTypes.length; ++i) {
-            Entity reminderType = ReminderTestHelper.createReminderType();
-            ReminderTestHelper.addTemplate(reminderType, documentTemplate, 0, 1, DateUnits.DAYS);
-            reminderTypes[i] = reminderType;
+        Party[] workLists = new Party[10];
+        for (int i = 0; i < workLists.length; ++i) {
+            Entity taskType = ScheduleTestHelper.createTaskType("XTaskType-" + (i + 1), true);
+            Party workList = ScheduleTestHelper.createWorkList(100, taskType);
+            workList.setName("XWorkList-" + (i + 1));
+            save(workList);
+            workLists[i] = workList;
         }
+        ScheduleTestHelper.createWorkListView(workLists);
 
-        Date date = DateRules.getTomorrow();
+        Date startTime = DateRules.getDate(DateRules.getTomorrow());
+        User clinician = createClinician();
         for (int i = 0; i < 100; ++i) {
-            Party customer = TestHelper.createCustomer();
+            Party customer = TestHelper.createCustomer("", "ZCustomer " + (i + 1), true);
             Party patient = TestHelper.createPatient(customer);
-            for (Entity reminderType : reminderTypes) {
-                ReminderTestHelper.createReminderWithDueDate(patient, reminderType, date);
+            patient.setName("ZPatient " + (i + 1));
+            for (Party workList : workLists) {
+                Act task = ScheduleTestHelper.createTask(startTime, null, workList, customer, patient, clinician,
+                                                         clinician);
+                save(task);
+
             }
         }
     }
@@ -113,7 +123,8 @@ public class TestReminderGenerator {
             name = document.getName();
         }
         template.setName(name);
-        TestHelper.save(document, template, act);
+        save(document, template, act);
         return template;
     }
+
 }
