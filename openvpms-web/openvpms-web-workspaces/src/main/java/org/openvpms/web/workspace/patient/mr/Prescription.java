@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -52,16 +52,24 @@ public class Prescription {
      */
     private final PrescriptionRules rules;
 
+    /**
+     * The parent prescriptions.
+     */
+    private final Prescriptions prescriptions;
+
 
     /**
      * Constructs a {@link Prescription}.
      *
-     * @param prescription the prescription
-     * @param rules        the prescription rules
+     * @param prescription  the prescription
+     * @param rules         the prescription rules
+     * @param prescriptions the parent prescriptions
      */
-    public Prescription(Act prescription, PrescriptionRules rules) {
+    public Prescription(Act prescription, PrescriptionRules rules, Prescriptions prescriptions) {
         this.prescription = new ActBean(prescription);
         this.rules = rules;
+        this.prescriptions = prescriptions;
+
         patient = this.prescription.getNodeParticipantRef("patient");
         product = this.prescription.getNodeParticipantRef("product");
     }
@@ -109,6 +117,7 @@ public class Prescription {
      */
     public void addMedication(Act medication) {
         prescription.addNodeRelationship("dispensing", medication);
+        prescriptions.addMedication(medication);
     }
 
     /**

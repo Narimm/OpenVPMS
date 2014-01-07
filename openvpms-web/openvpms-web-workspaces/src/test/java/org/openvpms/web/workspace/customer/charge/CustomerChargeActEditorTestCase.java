@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -654,6 +654,67 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         prescription = get(prescription);
         ActBean bean = new ActBean(prescription);
         assertTrue(bean.getNodeActs("dispensing").isEmpty());
+    }
+
+    /**
+     * Verifies that an unsaved invoice item can be deleted, when there is a prescription associated with the item's
+     * product.
+     */
+    @Test
+    public void testDeleteUnsavedInvoiceItemWithPrescription() {
+        checkDeleteUnsavedItemWithPrescription((FinancialAct) create(CustomerAccountArchetypes.INVOICE));
+    }
+
+    /**
+     * Verifies that an unsaved credit item can be deleted, when there is a prescription associated with the item's
+     * product. As it is a credit item, the prescription shouldn't be used.
+     */
+    @Test
+    public void testDeleteUnsavedCreditItem() {
+        checkDeleteUnsavedItemWithPrescription((FinancialAct) create(CustomerAccountArchetypes.CREDIT));
+    }
+
+    /**
+     * Verifies that an unsaved counter item can be deleted, when there is a prescription associated with the item's
+     * product. As it is a counter item, the prescription shouldn't be used.
+     */
+    @Test
+    public void testDeleteUnsavedCounterItem() {
+        checkDeleteUnsavedItemWithPrescription((FinancialAct) create(CustomerAccountArchetypes.COUNTER));
+    }
+
+    /**
+     * Verifies that an unsaved charge item can be deleted, when there is a prescription associated with the item's
+     * product.
+     */
+    private void checkDeleteUnsavedItemWithPrescription(FinancialAct charge) {
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, ONE);
+        Product product2 = createProduct(ProductArchetypes.MEDICATION, ONE);
+
+        Act prescription = PrescriptionTestHelper.createPrescription(patient, product1, clinician);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        // add items for product1 and product2, but delete product1 item before save
+        CustomerChargeActItemEditor itemEditor1 = addItem(editor, patient, product1, ONE, queue);
+        addItem(editor, patient, product2, ONE, queue);
+        editor.removeItem((Act) itemEditor1.getObject());
+        assertTrue(editor.isValid());
+        assertTrue(SaveHelper.save(editor));
+
+        // verify there are no acts linked to the prescription
+        prescription = get(prescription);
+        ActBean bean = new ActBean(prescription);
+        assertTrue(bean.getNodeActs("dispensing").isEmpty());
+
+        // reload the charge and verify the editor is valid
+        charge = get(charge);
+        editor = createCustomerChargeActEditor(charge, layoutContext);
+        editor.getComponent();
+        assertTrue(editor.isValid());
     }
 
     /**
