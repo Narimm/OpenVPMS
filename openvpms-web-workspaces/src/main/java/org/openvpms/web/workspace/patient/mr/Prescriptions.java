@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -71,7 +71,7 @@ public class Prescriptions {
                 IMObjectReference product = medBean.getNodeParticipantRef("product");
                 Act prescription = medBean.getSourceAct(PatientArchetypes.PRESCRIPTION_MEDICATION);
                 if (product != null && prescription != null) {
-                    prescriptions.put(prescription.getObjectReference(), new Prescription(prescription, rules));
+                    prescriptions.put(prescription.getObjectReference(), new Prescription(prescription, rules, this));
                     medications.put(medication.getObjectReference(), medication);
                 }
             }
@@ -123,7 +123,7 @@ public class Prescriptions {
         if (result == null) {
             Act act = rules.getPrescription(patient, product, exclude);
             if (act != null) {
-                result = new Prescription(act, rules);
+                result = new Prescription(act, rules, this);
                 prescriptions.put(act.getObjectReference(), result);
             }
         }
@@ -136,7 +136,19 @@ public class Prescriptions {
      * @param act the prescription act
      */
     public void add(Act act) {
-        prescriptions.put(act.getObjectReference(), new Prescription(act, rules));
+        prescriptions.put(act.getObjectReference(), new Prescription(act, rules, this));
+    }
+
+    /**
+     * Adds an <em>act.patientMedication</em> act.
+     * <p/>
+     * This is used to track unsaved medication acts to ensure references to them are removed if they are deleted before
+     * being saved.
+     *
+     * @param medication the medication
+     */
+    public void addMedication(Act medication) {
+        medications.put(medication.getObjectReference(), medication);
     }
 
     /**
@@ -148,7 +160,7 @@ public class Prescriptions {
     public Prescription create(Act act) {
         Prescription result = prescriptions.get(act.getObjectReference());
         if (result == null) {
-            result = new Prescription(act, rules);
+            result = new Prescription(act, rules, this);
             prescriptions.put(act.getObjectReference(), result);
         }
         return result;
@@ -198,7 +210,7 @@ public class Prescriptions {
     }
 
     /**
-     * Returns the medication associated with a charge item.
+     * Returns the medication reference associated with a charge item.
      *
      * @param item the charge item
      * @return the medication, or {@code null} if none is found
@@ -240,7 +252,7 @@ public class Prescriptions {
             if (result == null) {
                 Act act = (Act) IMObjectHelper.getObject(relationship.getSource(), null);
                 if (act != null) {
-                    result = new Prescription(act, rules);
+                    result = new Prescription(act, rules, this);
                     prescriptions.put(act.getObjectReference(), result);
                 }
             }

@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -68,7 +70,11 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
     public ChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
         editorQueue = new DefaultEditorQueue(context.getContext());
-        prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
+        if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE)) {
+            prescriptions = new Prescriptions(getCurrentActs(), ServiceHelper.getBean(PrescriptionRules.class));
+        } else {
+            prescriptions = null;
+        }
     }
 
     /**
@@ -111,7 +117,9 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
     @Override
     public void remove(IMObject object) {
         super.remove(object);
-        prescriptions.removeItem((Act) object);
+        if (prescriptions != null) {
+            prescriptions.removeItem((Act) object);
+        }
     }
 
     /**
@@ -159,7 +167,7 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
      */
     @Override
     protected boolean doSave() {
-        boolean result = prescriptions.save();
+        boolean result = (prescriptions == null) || prescriptions.save();
         // Need to save prescriptions first, as invoice item deletion can cause StaleObjectStateExceptions otherwise
 
         if (result) {
