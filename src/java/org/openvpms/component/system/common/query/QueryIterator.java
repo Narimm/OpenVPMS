@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.query;
@@ -29,8 +27,7 @@ import java.util.NoSuchElementException;
  * Iterator for the results of an {@link IArchetypeQuery}.
  * This uses paging to limit the no. of results retrieved.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class QueryIterator<T> implements Iterator<T> {
 
@@ -56,7 +53,7 @@ public abstract class QueryIterator<T> implements Iterator<T> {
 
 
     /**
-     * Constructs a new <code>QueryIterator</code>.
+     * Constructs a new {@code QueryIterator}.
      *
      * @param query   the query
      * @param service the archetype service
@@ -67,17 +64,16 @@ public abstract class QueryIterator<T> implements Iterator<T> {
     }
 
     /**
-     * Returns <tt>true</tt> if the iteration has more elements. (In other
-     * words, returns <tt>true</tt> if <tt>next</tt> would return an element
-     * rather than throwing an exception.)
+     * Returns {@code true} if the iteration has more elements. (In other words, returns {@code true} if {@code next}
+     * would return an element rather than throwing an exception.)
      *
-     * @return <tt>true</tt> if the iterator has more elements.
+     * @return {@code true} if the iterator has more elements.
      * @throws ArchetypeServiceException if a query fails
      */
     public boolean hasNext() {
         if (page == null || !iterator.hasNext()) {
-            if (page == null ||
-                    query.getMaxResults() != IArchetypeQuery.ALL_RESULTS) {
+            if (page == null || (query.getMaxResults() != IArchetypeQuery.ALL_RESULTS
+                                 && page.getResults().size() >= query.getMaxResults())) {
                 page = getPage(service, query);
                 if (query.getMaxResults() != IArchetypeQuery.ALL_RESULTS) {
                     int first = query.getFirstResult() + query.getMaxResults();
@@ -102,8 +98,7 @@ public abstract class QueryIterator<T> implements Iterator<T> {
     }
 
     /**
-     * Removes from the underlying collection the last element returned by the
-     * iterator (optional operation).
+     * Removes from the underlying collection the last element returned by the iterator (optional operation).
      *
      * @throws UnsupportedOperationException if invoked
      */
@@ -117,7 +112,6 @@ public abstract class QueryIterator<T> implements Iterator<T> {
      * @return the next page
      * @throws ArchetypeServiceException if the query fails
      */
-    protected abstract IPage<T> getPage(IArchetypeService service,
-                                        IArchetypeQuery query);
+    protected abstract IPage<T> getPage(IArchetypeService service, IArchetypeQuery query);
 
 }
