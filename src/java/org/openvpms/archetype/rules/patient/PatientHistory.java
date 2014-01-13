@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
 
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -29,11 +30,14 @@ import java.util.Date;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_MEDICATION;
 import static org.openvpms.component.system.common.query.Constraints.between;
 import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.exists;
 import static org.openvpms.component.system.common.query.Constraints.gte;
+import static org.openvpms.component.system.common.query.Constraints.idEq;
 import static org.openvpms.component.system.common.query.Constraints.join;
 import static org.openvpms.component.system.common.query.Constraints.lte;
 import static org.openvpms.component.system.common.query.Constraints.shortName;
 import static org.openvpms.component.system.common.query.Constraints.sort;
+import static org.openvpms.component.system.common.query.Constraints.subQuery;
 import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 
 /**
@@ -47,6 +51,12 @@ public class PatientHistory {
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * Products to query.
+     */
+    private static final String[] PRODUCTS = {ProductArchetypes.MEDICATION, ProductArchetypes.SERVICE,
+                                              ProductArchetypes.MERCHANDISE};
 
     /**
      * Constructs a {@link PatientHistory}.
@@ -104,9 +114,17 @@ public class PatientHistory {
     public Iterable<Act> getMedication(Party patient, String productTypeName, Date from, Date to) {
         ArchetypeQuery query = createMedicationQuery(patient);
         if (productTypeName != null) {
-            query.add(join("product").add(join("entity").add(join("type").add(
-                    join("source").add(eq("name", productTypeName))))));
+            // Original query. In MySQL 5.1 and 5.5, this uses the wrong index, resulting in very slow queries
+            // query.add(join("product").add(join("entity").add(join("type").add(
+            // join("source").add(eq("name", productTypeName))))));
+
+            // New version, that uses a correlated sub-query.
+            query.add(join("product", "p1"));
+            query.add(exists(
+                    subQuery(PRODUCTS, "p2").add(join("type").add(join("source").add(eq("name", productTypeName)).add(
+                            idEq("p1.entity", "p2"))))));
         }
+
         if (from != null || to != null) {
             if (from != null && to != null) {
                 query.add(between("startTime", from, to));
