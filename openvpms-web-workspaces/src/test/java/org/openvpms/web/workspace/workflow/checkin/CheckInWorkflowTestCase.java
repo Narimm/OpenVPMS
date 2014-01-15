@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -114,10 +114,14 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCheckInFromAppointmentNoPatient() {
-        Act appointment = createAppointment(customer, null, clinician);
+        Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
+        Date arrivalTime = TestHelper.getDatetime("2013-01-01 08:50:00"); // arrived early
+        Act appointment = createAppointment(startTime, customer, null, clinician);
+
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
-        workflow.setPatient(patient);                              // need to pre-set patient and worklist
+        workflow.setPatient(patient);                              // need to pre-set patient and work list
         workflow.setWorkList(workList);                            // so they can be selected in popups
+        workflow.setArrivalTime(arrivalTime);
         workflow.start();
 
         // as the appointment has no patient, a pop should be displayed to select one
@@ -147,8 +151,11 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCheckInFromAppointmentWithPatient() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
+        Date arrivalTime = TestHelper.getDatetime("2013-01-01 09:33:00"); // arrived late
+        Act appointment = createAppointment(startTime, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
+        workflow.setArrivalTime(arrivalTime);
         runCheckInToVisit(workflow);
 
         // edit the clinical event
@@ -248,9 +255,11 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testSkipSelectWorkList() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
+        Act appointment = createAppointment(startTime, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setWorkList(workList);        // need to pre-set work list so it can be selected in popup
+        workflow.setArrivalTime(startTime);
         workflow.start();
 
         // skip work-list selection and verify no task is created
@@ -427,6 +436,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         Act appointment = createAppointment(date2, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
+        workflow.setArrivalTime(date2);
 
         runCheckInToVisit(workflow);
 
@@ -462,8 +472,10 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testChangeClinicianOnInvoiceItem() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
+        Act appointment = createAppointment(startTime, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
+        workflow.setArrivalTime(startTime);
         workflow.start();
 
         fireDialogButton(workflow.getSelectionDialog(), PopupDialog.SKIP_ID);

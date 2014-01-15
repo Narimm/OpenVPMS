@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -174,6 +174,8 @@ public class CheckInWorkflow extends WorkflowImpl {
         initial.setPractice(external.getPractice());
         initial.setLocation(external.getLocation());
 
+        Date arrivalTime = getArrivalTime();
+
         if (patient == null) {
             // select/create a patient
             EditIMObjectTask patientEditor = new EditIMObjectTask(PatientArchetypes.PATIENT, true);
@@ -181,16 +183,15 @@ public class CheckInWorkflow extends WorkflowImpl {
             addTask(new UpdateIMObjectTask(PatientArchetypes.PATIENT, new TaskProperties(), true));
         }
 
-        Date date = (appointment != null) ? appointment.getActivityStartTime() : new Date();
         if (selectWorkList(schedule)) {
             // optionally select a work list and edit a customer task
-            addTask(new CustomerTaskWorkflow(date, taskDescription, help));
+            addTask(new CustomerTaskWorkflow(arrivalTime, taskDescription, help));
         }
 
         // get the act.patientClinicalEvent.
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", reason);
-        addTask(new GetClinicalEventTask(date, eventProps));
+        addTask(new GetClinicalEventTask(arrivalTime, eventProps));
 
         // prompt for a patient weight.
         addTask(new PatientWeightTask(help));
@@ -212,7 +213,7 @@ public class CheckInWorkflow extends WorkflowImpl {
             // update the appointment status
             TaskProperties appProps = new TaskProperties();
             appProps.add("status", AppointmentStatus.CHECKED_IN);
-            addTask(new UpdateAppointmentTask(appointment, appProps));
+            addTask(new UpdateAppointmentTask(appointment, arrivalTime, appProps));
         }
 
         // add a task to update the global context at the end of the workflow
@@ -222,6 +223,22 @@ public class CheckInWorkflow extends WorkflowImpl {
                 external.setCustomer(context.getCustomer());
             }
         });
+    }
+
+    /**
+     * Returns the time that the customer arrived for the appointment.
+     * <p/>
+     * This is used to:
+     * <ul>
+     * <li>select a Visit</li>
+     * <li>set the start time of a customer task</li>
+     * <li>set the arrivalTime on the appointment</li>
+     * </ul>
+     *
+     * @return the arrival time. Defaults to now.
+     */
+    protected Date getArrivalTime() {
+        return new Date();
     }
 
     /**
@@ -310,13 +327,20 @@ public class CheckInWorkflow extends WorkflowImpl {
     private class UpdateAppointmentTask extends UpdateIMObjectTask {
 
         /**
+         * The customer arrival time.
+         */
+        private final Date arrivalTime;
+
+        /**
          * Constructs an {@code UpdateAppointmentTask}.
          *
-         * @param object     the object to update
-         * @param properties properties to populate the object with
+         * @param object      the object to update
+         * @param arrivalTime the customer arrival time
+         * @param properties  properties to populate the object with
          */
-        public UpdateAppointmentTask(IMObject object, TaskProperties properties) {
+        public UpdateAppointmentTask(IMObject object, Date arrivalTime, TaskProperties properties) {
             super(object, properties);
+            this.arrivalTime = arrivalTime;
         }
 
         /**
@@ -331,7 +355,7 @@ public class CheckInWorkflow extends WorkflowImpl {
                                 TaskContext context) {
             super.populate(object, properties, context);
             ActBean bean = new ActBean((Act) object);
-            bean.setValue("arrivalTime", new Date());
+            bean.setValue("arrivalTime", arrivalTime);
             if (bean.getParticipantRef("participation.patient") == null) {
                 bean.addParticipation("participation.patient", context.getPatient());
             }
