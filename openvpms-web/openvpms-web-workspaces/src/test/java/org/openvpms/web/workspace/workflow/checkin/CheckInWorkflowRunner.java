@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
@@ -57,6 +58,7 @@ import org.openvpms.web.workspace.workflow.TestEditVisitTask;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -80,7 +82,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
 
 
     /**
-     * Constructs a {@code WorkflowRunner}.
+     * Constructs a {@link CheckInWorkflowRunner}.
      *
      * @param appointment the appointment
      * @param practice    the practice
@@ -108,6 +110,15 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
      */
     public void setWorkList(Party workList) {
         getWorkflow().setWorkList(workList);
+    }
+
+    /**
+     * Sets the customer arrival time.
+     *
+     * @param arrivalTime the arrival time
+     */
+    public void setArrivalTime(Date arrivalTime) {
+        getWorkflow().setArrivalTime(arrivalTime);
     }
 
     /**
@@ -216,6 +227,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         assertTrue(!task.isNew());  // has been saved
         assertEquals(status, task.getStatus());
         ActBean bean = new ActBean(task);
+        assertEquals(0, DateRules.compareTo(getWorkflow().getArrivalTime(), task.getActivityStartTime()));
         assertEquals(bean.getNodeParticipant("worklist"), workList);
         assertEquals(bean.getNodeParticipant("customer"), customer);
         assertEquals(bean.getNodeParticipant("patient"), patient);
@@ -262,6 +274,8 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         assertNotNull(event);
         assertFalse(event.isNew());  // should be saved
         ActBean bean = new ActBean(event);
+        assertEquals("Expected " + getWorkflow().getArrivalTime() + ", got " + event.getActivityStartTime(),
+                     0, DateRules.compareTo(getWorkflow().getArrivalTime(), event.getActivityStartTime()));
         assertEquals(patient, bean.getNodeParticipant("patient"));
         assertEquals(clinician, bean.getNodeParticipant("clinician"));
         assertEquals(status, event.getStatus());
@@ -324,15 +338,17 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
     /**
      * Helper to run the workflow through to completion.
      *
-     * @param patient
-     * @param customer
-     * @param workList
-     * @param clinician
+     * @param patient     the patient
+     * @param customer    the customer
+     * @param workList    the work list
+     * @param arrivalTime the customer arrival time
+     * @param clinician   the clinician
      * @return the event
      */
-    public Act runWorkflow(Party patient, Party customer, Party workList, User clinician) {
+    public Act runWorkflow(Party patient, Party customer, Party workList, Date arrivalTime, User clinician) {
         setPatient(patient);                              // need to pre-set patient and work list
         setWorkList(workList);                            // so they can be selected in popups
+        setArrivalTime(arrivalTime);
         start();
 
         ActBean bean = new ActBean(appointment);
@@ -371,6 +387,8 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         appointment = IMObjectHelper.reload(appointment);
         if (appointmentUpdated) {
             assertEquals(AppointmentStatus.CHECKED_IN, appointment.getStatus());
+            ActBean bean = new ActBean(appointment);
+            assertEquals(0, DateRules.compareTo(getWorkflow().getArrivalTime(), bean.getDate("arrivalTime")));
         } else {
             assertEquals(AppointmentStatus.PENDING, appointment.getStatus());
         }
@@ -400,6 +418,11 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         private Party workList;
 
         /**
+         * The customer arrival time.
+         */
+        private Date arrivalTime;
+
+        /**
          * Constructs a {@code TestCheckInWorkflow} from an appointment.
          *
          * @param appointment the appointment
@@ -427,6 +450,28 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
          */
         public void setWorkList(Party workList) {
             this.workList = workList;
+        }
+
+        /**
+         * Sets the customer arrival time.
+         *
+         * @param arrivalTime the arrival time
+         */
+        public void setArrivalTime(Date arrivalTime) {
+            this.arrivalTime = arrivalTime;
+        }
+
+        /**
+         * Returns the time that the customer arrived for the appointment.
+         *
+         * @return the arrival time. Defaults to now.
+         */
+        @Override
+        public Date getArrivalTime() {
+            if (arrivalTime == null) {
+                arrivalTime = super.getArrivalTime();
+            }
+            return arrivalTime;
         }
 
         /**

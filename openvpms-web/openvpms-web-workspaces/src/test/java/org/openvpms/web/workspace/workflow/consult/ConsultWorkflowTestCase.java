@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -99,7 +99,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
 
-        Act event = runner.runWorkflow(patient, customer, workList, clinician);
+        Act event = runner.runWorkflow(patient, customer, workList, date, clinician);
         assertNotEquals(previousEvent, event); // new event should have been created
 
         checkConsultWorkflow(appointment, event);
@@ -124,7 +124,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
 
-        Act event = runner.runWorkflow(patient, customer, workList, clinician);
+        Act event = runner.runWorkflow(patient, customer, workList, date, clinician);
         assertNotEquals(previousEvent, event); // new event should have been created
 
         Act task = runner.checkTask(workList, customer, patient, TaskStatus.PENDING);
