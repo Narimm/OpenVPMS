@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -464,6 +464,9 @@ EchoTextComponent.MessageProcessor = {
                     case "set-text":
                         EchoTextComponent.MessageProcessor.processSetText(messagePartElement.childNodes[i]);
                         break;
+                    case "set-cursor-position":
+                        EchoTextComponent.MessageProcessor.processSetCursorPosition(messagePartElement.childNodes[i]);
+                        break;
                 }
             }
         }
@@ -505,6 +508,21 @@ EchoTextComponent.MessageProcessor = {
 
             // Remove any updates to text component that occurred during client/server transaction.
             EchoClientMessage.removePropertyElement(textComponent.id, "text");
+        }
+    },
+
+    /**
+     * Processes a <code>set-cursor-position</code> message .
+     *
+     * @param setCursorPositionElement the <code>set-cursor-position</code> element to process
+     */
+    processSetCursorPosition: function (setCursorPositionElement) {
+        for (var item = setCursorPositionElement.firstChild; item; item = item.nextSibling) {
+            var elementId = item.getAttribute("eid");
+            var cursorPosition = item.getAttribute("cursorPosition");
+            var textComponent = EchoTextComponent.getComponent(elementId);
+            var element = document.getElementById(elementId);
+            textComponent.setCursorPosition(element, cursorPosition);
         }
     },
 
