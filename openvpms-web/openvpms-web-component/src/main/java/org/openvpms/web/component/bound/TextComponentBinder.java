@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -19,7 +19,11 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.DocumentEvent;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.macro.Position;
+import org.openvpms.web.component.property.NoOpPropertyTransformer;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.PropertyTransformer;
+import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.DocumentListener;
 import org.openvpms.web.echo.text.TextComponent;
@@ -102,19 +106,36 @@ class TextComponentBinder extends Binder {
      */
     @Override
     protected boolean setProperty(Property property) {
-        Object fieldValue = getFieldValue();
-        String oldValue = (fieldValue != null) ? fieldValue.toString() : "";
-        boolean result = property.setValue(fieldValue);
-        if (result) {
-            String newValue = property.getString();
-            if (!ObjectUtils.equals(oldValue, newValue)) {
-                setField();
-                int oldLength = (oldValue != null) ? oldValue.length() : 0;
-                int newLength = (newValue != null) ? newValue.length() : 0;
-                if (oldLength < newLength) {
-                    int diff = newLength - oldLength;
-                    component.setCursorPosition(component.getCursorPosition() + diff);
-                }
+        Object oldValue = getFieldValue();
+        Object value = oldValue;
+        Position position = null;
+        PropertyTransformer transformer = property.getTransformer();
+        PropertyTransformer oldTransformer = null;
+        if (value instanceof String && transformer instanceof StringPropertyTransformer) {
+            // want to track the cursor position changed by macro expansion, so need to invoke the transformer
+            // directly, prior to setting the (possibly) expanded value on the property.
+            position = new Position(component.getCursorPosition());
+            value = ((StringPropertyTransformer) transformer).apply(value, position);
+
+            // don't want to run macro expansion again
+            oldTransformer = transformer;
+            property.setTransformer(NoOpPropertyTransformer.INSTANCE);
+        }
+
+        boolean result;
+        try {
+            result = property.setValue(value);
+        } finally {
+            if (oldTransformer != null) {
+                // reset the transformer
+                property.setTransformer(oldTransformer);
+            }
+        }
+        String newValue = property.getString();
+        if (!ObjectUtils.equals(oldValue, newValue)) {
+            setField();
+            if (position != null && position.getOldPosition() != position.getNewPosition()) {
+                component.setCursorPosition(position.getNewPosition());
             }
         }
         return result;
