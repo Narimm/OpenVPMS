@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.systemMessage.1.0" latest="true"
@@ -19,6 +19,9 @@
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
               derivedValue="'Message'"/>
+        <node name="from" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="0"
+              filter="participation.author" hidden="true" readOnly="true"/>
+        <!-- to enable sorting -->
         <node name="to" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.user"/>
         <node displayName="Subject" name="description" type="java.lang.String" path="/description" minCardinality="1"/>
