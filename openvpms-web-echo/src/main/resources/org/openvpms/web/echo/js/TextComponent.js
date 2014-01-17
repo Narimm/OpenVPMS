@@ -507,7 +507,7 @@ EchoTextComponent.MessageProcessor = {
             }
 
             // Remove any updates to text component that occurred during client/server transaction.
-            EchoClientMessage.removePropertyElement(textComponent.id, "text");
+            EchoClientMessage.removePropertyElement(elementId, "text");
         }
     },
 

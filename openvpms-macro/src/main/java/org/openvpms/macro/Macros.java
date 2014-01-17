@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro;
@@ -80,8 +80,10 @@ public interface Macros {
      * @param text      the text to parse
      * @param object    the object to evaluate macros against. May be {@code null}
      * @param variables variables to supply to macros. May be {@code null}
+     * @param position  tracks the cursor position. The cursor position will be moved if macros before it are expanded.
+     *                  May be {@code null}
      * @return the text will macros substituted for their values
      */
-    String runAll(String text, Object object, Variables variables);
+    String runAll(String text, Object object, Variables variables, Position position);
 
 }

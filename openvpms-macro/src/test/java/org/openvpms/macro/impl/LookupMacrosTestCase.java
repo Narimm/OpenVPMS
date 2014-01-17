@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
 import org.openvpms.macro.MapVariables;
+import org.openvpms.macro.Position;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
@@ -71,12 +72,17 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     private ILookupService lookupService;
 
     /**
+     * The macro1 macro text expansion.
+     */
+    private static final String MACRO1_TEXT = "expanded text";
+
+    /**
      * Tests the {@link LookupMacros#run(String, Object)} method.
      */
     @Test
     public void testRun() {
         String text1 = macros.run("macro1", customer);
-        assertEquals("macro 1 text", text1);
+        assertEquals(MACRO1_TEXT, text1);
 
         String text2 = macros.run("@macro2", customer);
         assertEquals("onetwothree", text2);
@@ -108,7 +114,7 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     @Test
     public void testRunEmbeddedMacro() {
         String text = macros.run("nested", new Object());
-        assertEquals("nested test: macro 1 text", text);
+        assertEquals("nested test: expanded text", text);
     }
 
     /**
@@ -172,7 +178,7 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     @Test
     public void testRunAll() {
         String text = macros.runAll("test macro1 @macro2 endtest", customer);
-        assertEquals("test macro 1 text onetwothree endtest", text);
+        assertEquals("test expanded text onetwothree endtest", text);
     }
 
     /**
@@ -204,7 +210,7 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     @Test
     public void testRunAllEmbeddedMacro() {
         String text = macros.runAll("nested", null);
-        assertEquals("nested test: macro 1 text", text);
+        assertEquals("nested test: expanded text", text);
     }
 
     /**
@@ -266,7 +272,35 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
 
         MapVariables variables = new MapVariables();
         variables.add("variable", "foo");
-        assertEquals("foo", macros.runAll("variableTest", new Object(), variables));
+        assertEquals("foo", macros.runAll("variableTest", new Object(), variables, null));
+    }
+
+    @Test
+    public void testRunAllCursorPosition() {
+        // check that if the text doesn't contain macros, the cursor doesn't move
+        String text = "foo bar";
+        checkRunAllCursorPosition(text, text, 0, 0);
+        checkRunAllCursorPosition(text, text, text.length(), text.length());
+
+        // if the cursor is on a macro, check that it moves to the end of the text
+        checkRunAllCursorPosition("macro1", MACRO1_TEXT, 0, MACRO1_TEXT.length());
+        checkRunAllCursorPosition("macro1", MACRO1_TEXT, 5, MACRO1_TEXT.length());
+        checkRunAllCursorPosition("@empty", "", 5, 0);
+
+        // check that if the cursor is before macros, it doesn't move
+        checkRunAllCursorPosition("x @empty x", "x  x", 1, 1);
+
+        // check that if the cursor is after macros, it remains positioned on the same text
+        checkRunAllCursorPosition("x @empty x", "x  x", 9, 3);
+        checkRunAllCursorPosition("@empty macro1 x", " " + MACRO1_TEXT + " x", 14, 15);
+    }
+
+    private void checkRunAllCursorPosition(String text, String expectedText, int startPosition, int expectedPosition) {
+        Position position = new Position(startPosition);
+        String expanded = macros.runAll(text, customer, null, position);
+        assertEquals(expectedText, expanded);
+        assertEquals(startPosition, position.getOldPosition());
+        assertEquals(expectedPosition, position.getNewPosition());
     }
 
 
@@ -276,7 +310,7 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     @Test
     public void testDeactivateMacro() {
         String text = macros.run("macro1", customer);
-        assertEquals("macro 1 text", text);
+        assertEquals(MACRO1_TEXT, text);
 
         macro1.setActive(false);
         save(macro1);
@@ -328,7 +362,7 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
         variables.add("customer", customer);
 
         assertEquals("-1", macros.run("@cid", new Object(), variables));
-        assertEquals("-1", macros.runAll("@cid", new Object(), variables));
+        assertEquals("-1", macros.runAll("@cid", new Object(), variables, null));
     }
 
     /**
@@ -354,8 +388,9 @@ public class LookupMacrosTestCase extends ArchetypeServiceTest {
     public void setUp() {
         customer = TestHelper.createCustomer(false);
 
-        macro1 = MacroTestHelper.createMacro("macro1", "'macro 1 text'");
+        macro1 = MacroTestHelper.createMacro("macro1", "'" + MACRO1_TEXT + "'");
         macro2 = MacroTestHelper.createMacro("@macro2", "concat('one', 'two', 'three')");
+        MacroTestHelper.createMacro("@empty", "''");
         MacroTestHelper.createMacro("displayName", "openvpms:get(., 'displayName')");
         MacroTestHelper.createMacro("exceptionMacro", "openvpms:get(., 'invalidnode')");
         MacroTestHelper.createMacro("nested", "concat('nested test: ', $macro1)");

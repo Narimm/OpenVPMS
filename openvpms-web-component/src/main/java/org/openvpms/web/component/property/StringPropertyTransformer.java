@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.macro.Macros;
+import org.openvpms.macro.Position;
 import org.openvpms.macro.Variables;
 import org.openvpms.web.echo.text.TextHelper;
 import org.openvpms.web.resource.i18n.Messages;
@@ -139,6 +140,19 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
      * @throws PropertyException if the object is invalid
      */
     public Object apply(Object object) {
+        return apply(object, null);
+    }
+
+    /**
+     * Transform an object to the required type, performing validation.
+     *
+     * @param object   the object to convert
+     * @param position tracks the cursor position. The cursor position will be moved if macros before it are expanded.
+     *                 May be {@code null}
+     * @return the transformed object, or {@code object} if no transformation is required
+     * @throws PropertyException if the object is invalid
+     */
+    public String apply(Object object, Position position) {
         Property property = getProperty();
         String result = null;
         if (object instanceof String) {
@@ -148,7 +162,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
                 throw new PropertyException(property, msg);
             }
             if (expandMacros && macros != null) {
-                result = macros.runAll(str, context, variables);
+                result = macros.runAll(str, context, variables, position);
             } else {
                 result = str;
             }

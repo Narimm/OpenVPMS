@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeServiceListen
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
+import org.openvpms.macro.Position;
 import org.openvpms.macro.Variables;
 
 import java.util.ArrayList;
@@ -168,7 +169,7 @@ public class LookupMacros implements Macros {
      * @return the text will macros substituted for their values
      */
     public String runAll(String text, Object object) {
-        return runAll(text, object, null);
+        return runAll(text, object, null, null);
     }
 
     /**
@@ -181,11 +182,15 @@ public class LookupMacros implements Macros {
      * @param text      the text to parse
      * @param object    the object to evaluate macros against
      * @param variables variables to supply to macros. May be {@code null}
+     * @param position  tracks the cursor position. The cursor position will be moved if macros before it are expanded.
+     *                  May be {@code null}
      * @return the text will macros substituted for their values
      */
-    public String runAll(String text, Object object, Variables variables) {
+    public String runAll(String text, Object object, Variables variables, Position position) {
         StringBuilder result = new StringBuilder();
         ScopedVariables scoped = pushVariables(variables);
+        int oldPos = position != null ? position.getOldPosition() : -1;
+        int index = 0;   // index into the text
         try {
             MacroContext context = new MacroContext(macros, factory, object, scoped);
 
@@ -193,18 +198,42 @@ public class LookupMacros implements Macros {
             while (tokens.hasMoreTokens()) {
                 Token token = Token.parse(tokens.nextToken());
                 Macro macro = macros.get(token.getToken());
+                int tokenLength = token.getText().length();
+                String value;
+                boolean expanded = false;
                 if (macro != null) {
                     try {
-                        String value = context.run(macro, token.getNumericPrefix());
-                        if (value != null) {
-                            result.append(value);
-                        }
+                        value = context.run(macro, token.getNumericPrefix());
+                        expanded = true;
                     } catch (Throwable exception) {
                         log.warn(exception, exception);
-                        result.append(token.getText());
+                        value = token.getText();
                     }
                 } else {
-                    result.append(token.getText());
+                    value = token.getText();
+                }
+                if (value != null) {
+                    result.append(value);
+                }
+                if (oldPos != -1 && index <= oldPos) {
+                    index += tokenLength;
+                    if (index >= oldPos) {
+                        int newPos;
+                        if (expanded) {
+                            // move the position to the end of the expanded text
+                            newPos = result.length();
+                        } else if (result.length() > index) {
+                            // new text is longer, so adjust the cursor position
+                            newPos = oldPos + (result.length() - index);
+                        } else if (index > result.length()) {
+                            // new text is shorter, so adjust the cursor position
+                            newPos = oldPos - (index - result.length());
+                        } else {
+                            newPos = oldPos;
+                        }
+                        position.setNewPosition(newPos);
+                        oldPos = -1;
+                    }
                 }
             }
         } finally {
