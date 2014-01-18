@@ -114,7 +114,7 @@ class TextComponentBinder extends Binder {
         if (value instanceof String && transformer instanceof StringPropertyTransformer) {
             // want to track the cursor position changed by macro expansion, so need to invoke the transformer
             // directly, prior to setting the (possibly) expanded value on the property.
-            // If the transformation, fails, just invoke setValue() with the original value so it can
+            // If the transformation, fails, just invoke setValue() with the original value so the property can
             // trap the error.
             try {
                 position = new Position(component.getCursorPosition());
