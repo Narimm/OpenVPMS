@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -27,7 +27,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.component.app.ContextException;
@@ -51,6 +50,9 @@ import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 
 import java.util.List;
+
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.join;
 
 /**
  * Task to optionally print <em>act.patientDocumentForm</em> and <em>act.patientDocumentLetter</em> for a patient.
@@ -173,19 +175,24 @@ class PrintPatientDocumentsTask extends Tasks {
     /**
      * Determines if a schedule/work list has any active templates linked to it.
      *
-     * @param schedule the schedule/work list
+     * @param schedule the schedule/work list. May be {@code null}
      * @return {@code true} if there are any active templates, otherwise {@code false}
      */
     private boolean hasTemplates(Entity schedule) {
-        if (schedule == null || ScheduleDocumentTemplateQuery.useAllTemplates(schedule)) {
-            return true;
+        boolean result = false;
+        if (schedule != null) {
+            if (ScheduleDocumentTemplateQuery.useAllTemplates(schedule)) {
+                result = true;
+            } else {
+                ArchetypeQuery query = new ArchetypeQuery(schedule.getObjectReference());
+                query.add(new NodeSelectConstraint("id"));
+                query.add(join("templates").add(join("target").add(eq("active", true))));
+                query.setMaxResults(1);
+                ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(query);
+                result = iterator.hasNext();
+            }
         }
-        ArchetypeQuery query = new ArchetypeQuery(schedule.getObjectReference());
-        query.add(new NodeSelectConstraint("id"));
-        query.add(Constraints.join("templates").add(Constraints.join("target").add(Constraints.eq("active", true))));
-        query.setMaxResults(1);
-        ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(query);
-        return iterator.hasNext();
+        return result;
     }
 
     private static class PrintPatientActTask extends PrintActTask {
@@ -200,7 +207,6 @@ class PrintPatientDocumentsTask extends Tasks {
             super(act, context, false);
             setRequired(false);
         }
-
 
         /**
          * Starts the task.
