@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -24,6 +24,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ReloadingContext;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.macro.MacroVariables;
+import org.openvpms.web.component.property.ValidationHelper;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -115,8 +117,13 @@ public class SMSDialog extends PopupDialog {
     private boolean send() {
         boolean result = false;
         try {
-            editor.send();
-            result = true;
+            Validator validator = new Validator();
+            if (editor.validate(validator)) {
+                editor.send();
+                result = true;
+            } else {
+                ValidationHelper.showError(validator);
+            }
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
         }
