@@ -11,14 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.list.DefaultListModel;
+import nextapp.echo2.app.list.ListModel;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -27,19 +28,22 @@ import org.openvpms.macro.Variables;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
+import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
+import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
+import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.CountedTextArea;
@@ -77,17 +81,12 @@ public class SMSEditor extends AbstractModifiable {
     /**
      * The text property. Used to support macro expansion.
      */
-    private SimpleProperty property;
+    private SimpleProperty messageProperty;
 
     /**
-     * Determines if this has been modified.
+     * The phone property.
      */
-    private boolean modified;
-
-    /**
-     * The listeners.
-     */
-    private ModifiableListeners listeners = new ModifiableListeners();
+    private SimpleProperty phoneProperty;
 
     /**
      * Focus group.
@@ -98,6 +97,11 @@ public class SMSEditor extends AbstractModifiable {
      * Maximum SMS length.
      */
     private static final int MAX_LENGTH = 160;
+
+    /**
+     * Used to track property modification, and perform validation.
+     */
+    private Editors editors;
 
 
     /**
@@ -118,40 +122,27 @@ public class SMSEditor extends AbstractModifiable {
      */
     public SMSEditor(List<Contact> contacts, Variables variables) {
         int length = (contacts == null) ? 0 : contacts.size();
+        phoneProperty = new SimpleProperty("phone", null, String.class, Messages.get("sms.phone"));
+        phoneProperty.setRequired(true);
         if (length <= 1) {
-            SimpleProperty phoneProperty = new SimpleProperty("phone", String.class);
             phone = BoundTextComponentFactory.create(phoneProperty, 20);
             if (length == 1) {
                 phoneProperty.setValue(formatPhone(contacts.get(0)));
                 phone.setEnabled(false);
-            } else {
-                phoneProperty.addModifiableListener(new ModifiableListener() {
-                    @Override
-                    public void modified(Modifiable modifiable) {
-                        onModified();
-                    }
-                });
             }
         } else {
-            phoneSelector = SelectFieldFactory.create(formatPhones(contacts));
-            phoneSelector.addActionListener(new ActionListener() {
-                public void onAction(ActionEvent event) {
-                    onModified();
-                }
-            });
+            phoneSelector = BoundSelectFieldFactory.create(phoneProperty, formatPhones(contacts));
+            phoneSelector.setSelectedIndex(0);
         }
-        property = new SimpleProperty("property", String.class);
-        property.setMaxLength(MAX_LENGTH);
-        Macros macros = ServiceHelper.getMacros();
-        property.setTransformer(new StringPropertyTransformer(property, false, macros, null, variables));
 
-        message = new BoundCountedTextArea(property, 40, 15);
+        messageProperty = new SimpleProperty("message", null, String.class, Messages.get("sms.message"));
+        messageProperty.setRequired(true);
+        messageProperty.setMaxLength(MAX_LENGTH);
+        Macros macros = ServiceHelper.getMacros();
+        messageProperty.setTransformer(new StringPropertyTransformer(messageProperty, false, macros, null, variables));
+
+        message = new BoundCountedTextArea(messageProperty, 40, 15);
         message.setStyleName(Styles.DEFAULT);
-        message.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onModified();
-            }
-        });
         focus = new FocusGroup("SMSEditor");
         if (phone != null) {
             focus.add(phone);
@@ -160,6 +151,15 @@ public class SMSEditor extends AbstractModifiable {
         }
         focus.add(message);
         focus.setDefault(message);
+
+        PropertySet properties = new PropertySet(phoneProperty, messageProperty);
+        editors = new Editors(properties, new ModifiableListeners(), new ErrorListeners());
+        editors.addModifiableListener(new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                resetValid();
+            }
+        });
     }
 
     /**
@@ -179,12 +179,7 @@ public class SMSEditor extends AbstractModifiable {
      * @return the phone number. May be {@code null}
      */
     public String getPhone() {
-        String result = null;
-        if (phone != null) {
-            result = phone.getText();
-        } else if (phoneSelector.getSelectedItem() != null) {
-            result = phoneSelector.getSelectedItem().toString();
-        }
+        String result = phoneProperty.getString();
         if (result != null) {
             // strip any spaces, hyphens, and brackets, and any characters after the last digit.
             result = result.replaceAll("[\\s\\-()]", "").replaceAll("[^\\d].*", "");
@@ -198,7 +193,7 @@ public class SMSEditor extends AbstractModifiable {
      * @param message the message
      */
     public void setMessage(String message) {
-        property.setValue(message);
+        messageProperty.setValue(message);
     }
 
     /**
@@ -207,8 +202,7 @@ public class SMSEditor extends AbstractModifiable {
      * @return the message to send
      */
     public String getMessage() {
-        Object result = property.getValue();
-        return (result != null) ? result.toString() : null;
+        return messageProperty.getString();
     }
 
     /**
@@ -236,14 +230,14 @@ public class SMSEditor extends AbstractModifiable {
      * @return {@code true} if the object has been modified
      */
     public boolean isModified() {
-        return modified;
+        return editors.isModified();
     }
 
     /**
      * Clears the modified status of the object.
      */
     public void clearModified() {
-        modified = false;
+        editors.clearModified();
     }
 
     /**
@@ -252,7 +246,7 @@ public class SMSEditor extends AbstractModifiable {
      * @param listener the listener to add
      */
     public void addModifiableListener(ModifiableListener listener) {
-        listeners.addListener(listener);
+        editors.addModifiableListener(listener);
     }
 
     /**
@@ -262,7 +256,7 @@ public class SMSEditor extends AbstractModifiable {
      * @param index    the index to add the listener at. The 0-index listener is notified first
      */
     public void addModifiableListener(ModifiableListener listener, int index) {
-        listeners.addListener(listener, index);
+        editors.addModifiableListener(listener, index);
     }
 
     /**
@@ -271,7 +265,7 @@ public class SMSEditor extends AbstractModifiable {
      * @param listener the listener to remove
      */
     public void removeModifiableListener(ModifiableListener listener) {
-        listeners.removeListener(listener);
+        editors.removeModifiableListener(listener);
     }
 
     /**
@@ -281,7 +275,7 @@ public class SMSEditor extends AbstractModifiable {
      */
     @Override
     public void addErrorListener(ErrorListener listener) {
-        // no-op
+        editors.addErrorListener(listener);
     }
 
     /**
@@ -291,7 +285,7 @@ public class SMSEditor extends AbstractModifiable {
      */
     @Override
     public void removeErrorListener(ErrorListener listener) {
-        // no-op
+        editors.removeErrorListener(listener);
     }
 
     /**
@@ -301,7 +295,22 @@ public class SMSEditor extends AbstractModifiable {
      * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     protected boolean doValidation(Validator validator) {
-        return !StringUtils.isEmpty(getPhone()) && !StringUtils.isEmpty(getMessage());
+        boolean valid = editors.validate(validator);
+        if (valid && StringUtils.trimToEmpty(getMessage()).isEmpty()) {
+            validator.add(messageProperty, new ValidatorError(
+                    messageProperty, Messages.format("property.error.required", messageProperty.getDisplayName())));
+            valid = false;
+        }
+        return valid;
+    }
+
+    /**
+     * Resets the cached validity state of the object, to force revalidation of the object and its descendants.
+     */
+    @Override
+    public void resetValid() {
+        super.resetValid();
+        editors.resetValid();
     }
 
     /**
@@ -312,7 +321,7 @@ public class SMSEditor extends AbstractModifiable {
      * @param contacts the SMS contacts
      * @return a list of phone numbers
      */
-    private String[] formatPhones(List<Contact> contacts) {
+    private ListModel formatPhones(List<Contact> contacts) {
         List<String> phones = new ArrayList<String>();
         String preferred = null;
         for (Contact contact : contacts) {
@@ -328,7 +337,7 @@ public class SMSEditor extends AbstractModifiable {
             phones.remove(preferred);
             phones.add(0, preferred);
         }
-        return phones.toArray(new String[phones.size()]);
+        return new DefaultListModel(phones.toArray(new String[phones.size()]));
     }
 
     /**
@@ -349,11 +358,4 @@ public class SMSEditor extends AbstractModifiable {
         return phone;
     }
 
-    /**
-     * Invoked when the phone or message updates. Refreshes the display and notifies listeners.
-     */
-    private void onModified() {
-        modified = true;
-        listeners.notifyListeners(this);
-    }
 }
