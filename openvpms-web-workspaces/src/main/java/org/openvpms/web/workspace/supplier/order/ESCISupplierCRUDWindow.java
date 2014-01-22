@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -39,6 +39,8 @@ import org.quartz.SimpleTrigger;
 
 import java.util.Date;
 import java.util.Iterator;
+
+import static org.openvpms.component.system.common.query.Constraints.shortName;
 
 
 /**
@@ -123,12 +125,12 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
      */
     private String getESCIJobName() {
         String name = null;
-        ArchetypeQuery query = new ArchetypeQuery("entity.jobESCI", true);
+        ArchetypeQuery query = new ArchetypeQuery(shortName("job", "entity.jobESCIInboxReader", true));
         query.setMaxResults(1);
-        query.add(new NodeSelectConstraint("name"));
+        query.add(new NodeSelectConstraint("job.name"));
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(query);
         if (iterator.hasNext()) {
-            name = iterator.next().getString("name");
+            name = iterator.next().getString("job.name");
         }
         return name;
     }

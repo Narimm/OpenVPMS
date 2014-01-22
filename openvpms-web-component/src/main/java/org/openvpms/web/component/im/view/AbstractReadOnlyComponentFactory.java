@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -190,6 +190,9 @@ public abstract class AbstractReadOnlyComponentFactory
                     result = LabelFactory.create();
                 }
             }
+        } else if (property.getMinCardinality() == 0 && property.getMaxCardinality() == 0) {
+            // nothing to display, so return an empty label
+            result = LabelFactory.create();
         }
         if (result == null) {
             IMObjectCollectionViewer viewer = IMObjectCollectionViewerFactory.create(property, parent,
