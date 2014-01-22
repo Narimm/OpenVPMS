@@ -217,7 +217,8 @@ class IdLoader extends AbstractLoader {
         // sort the files on increasing last modified timestamp and name
         Collections.sort(files, new Comparator<File>() {
             public int compare(File o1, File o2) {
-                int result = (int) (o1.lastModified() - o2.lastModified());
+                // sort on timestamps - would use Long.compare(x, y), but that is a JDK 7 function. TODO
+                int result = Long.valueOf(o1.lastModified()).compareTo(o2.lastModified());
                 if (result == 0) {
                     result = o1.compareTo(o2);
                 }
