@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -185,23 +185,37 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         SupplierRules rules = new SupplierRules(ServiceHelper.getArchetypeService());
         if (rules.getSupplierStockLocation(act) != null) {
             // ESCI is configured for the supplier, so submit the order
-            try {
-                OrderServiceAdapter service = ServiceHelper.getOrderService();
-                service.submitOrder(act);
-                scheduleCheckInbox(true); // poll in 30 secs to see if there are any responses
+            if (submitOrder(act)) {
                 InformationDialog.show(Messages.get("supplier.order.sent.title"),
                                        Messages.get("supplier.order.sent.message"));
-            } catch (Throwable exception) {
-                // failed to submit the order, so revert to IN_PROGRESS
-                act.setStatus(ActStatus.IN_PROGRESS);
-                SaveHelper.save(act);
-
-                ErrorHelper.show(exception);
-                onRefresh(act);
+                scheduleCheckInbox(true); // poll in 30 secs to see if there are any responses
             }
         } else {
             print(act);
         }
+    }
+
+    /**
+     * Submits the order to the supplier, via ESCI.
+     *
+     * @param act the order
+     * @return {@code true} if the order was submitted successfully
+     */
+    private boolean submitOrder(FinancialAct act) {
+        boolean submitted = false;
+        try {
+            OrderServiceAdapter service = ServiceHelper.getOrderService();
+            service.submitOrder(act);
+            submitted = true;
+        } catch (Throwable exception) {
+            // failed to submit the order, so revert to IN_PROGRESS
+            act.setStatus(ActStatus.IN_PROGRESS);
+            SaveHelper.save(act);
+
+            ErrorHelper.show(exception);
+            onRefresh(act);
+        }
+        return submitted;
     }
 
     /**
