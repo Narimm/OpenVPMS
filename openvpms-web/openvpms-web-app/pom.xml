@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -64,14 +64,6 @@
                 <includes>
                     <include>**/*.xml</include>
                 </includes>
-            </resource>
-            <resource>
-                <includes>
-                    <include>*.properties</include>
-                </includes>
-                <directory>${basedir}/src/conf/version</directory>
-                <targetPath>META-INF/</targetPath>
-                <filtering>true</filtering>
             </resource>
             <resource>
                 <includes>
@@ -136,24 +128,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.0-beta-2</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <doCheck>false</doCheck>
-                    <doUpdate>false</doUpdate>
-                    <revisionOnScmFailure>-1</revisionOnScmFailure>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
