@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -281,7 +281,13 @@ public class ProductImportDialog extends PopupDialog {
 
         private Object getValue(Object oldValue, Object newValue) {
             Object result;
-            if (!ObjectUtils.equals(oldValue, newValue)) {
+            boolean equals;
+            if (oldValue instanceof BigDecimal && newValue instanceof BigDecimal) {
+                equals = ((BigDecimal) oldValue).compareTo((BigDecimal) newValue) == 0;
+            } else {
+                equals = ObjectUtils.equals(oldValue, newValue);
+            }
+            if (!equals) {
                 GridLayoutData oldLayout = new GridLayoutData();
                 oldLayout.setAlignment(Alignment.ALIGN_RIGHT);
                 oldLayout.setInsets(new Insets(0, 0, 5, 0));
