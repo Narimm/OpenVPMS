@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -197,6 +197,7 @@ class OrderGenerator {
 
                 BigDecimal amount = stock.getToOrder().multiply(stock.getUnitPrice());
                 BigDecimal tax = taxRules.calculateTax(amount, stock.getProduct(), false);
+                tax = MathRules.round(tax, 2);  // TODO - should round according to currency conventions
 
                 itemBean.setValue("tax", tax);
                 service.deriveValues(item);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -51,6 +52,11 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      */
     private TaxRules taxRules;
 
+    /**
+     * GST tax rate.
+     */
+    private Lookup gst;
+
 
     /**
      * Sets up the test case.
@@ -59,7 +65,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
     public void setUp() {
         super.setUp();
         Party practice = (Party) create(PracticeArchetypes.PRACTICE);
-        Lookup gst = TestHelper.createTaxType(BigDecimal.TEN);
+        gst = TestHelper.createTaxType(BigDecimal.TEN);
         practice.addClassification(gst);
         taxRules = new TaxRules(practice);
     }
@@ -219,6 +225,80 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
     }
 
     /**
+     * Verifies that tax amounts are rounded correctly, if a product is taxed.
+     */
+    @Test
+    public void testCreateOrderForProductWithTax() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier = TestHelper.createSupplier();
+        Product product = TestHelper.createProduct();
+        product.addClassification(gst);
+        save(product);
+
+        BigDecimal total = new BigDecimal("1292.54");
+        BigDecimal taxAmount = new BigDecimal("117.50");
+        BigDecimal quantity = new BigDecimal("96");
+        addRelationships(product, stockLocation, supplier, true, 0, quantity.intValue(), 0, new BigDecimal("12.24"), 1);
+
+        List<FinancialAct> order = generator.createOrder(supplier, stockLocation, false);
+        assertEquals(2, order.size());
+        FinancialAct act = order.get(0);
+        FinancialAct item1 = order.get(1);
+        checkEquals(total, act.getTotal());
+        checkEquals(taxAmount, act.getTaxAmount());
+        checkEquals(quantity, item1.getQuantity());
+        checkEquals(total, item1.getTotal());
+        checkEquals(taxAmount, item1.getTaxAmount());
+        checkEquals(quantity, item1.getQuantity());
+        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
+        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
+        save(order);
+    }
+
+    /**
+     * Verifies that products are ordered if there is no stock, and there are completed orders.
+     */
+    @Test
+    public void testCreateOrderWithPriorDeliveries() {
+        OrderGenerator generator = new OrderGenerator(taxRules, getArchetypeService());
+        Party stockLocation = SupplierTestHelper.createStockLocation();
+        Party supplier = TestHelper.createSupplier();
+        Product product = TestHelper.createProduct();
+        save(product);
+
+        // create a cancelled order of 200 units
+        createOrder(product, supplier, stockLocation, 200, OrderStatus.CANCELLED, 0, 0, DeliveryStatus.PENDING);
+
+        // create a fully delivered order of 100 units
+        createOrder(product, supplier, stockLocation, 100, OrderStatus.ACCEPTED, 100, 0, DeliveryStatus.FULL);
+
+        // create a part delivered order. 50 units left to deliver
+        createOrder(product, supplier, stockLocation, 100, OrderStatus.ACCEPTED, 50, 0, DeliveryStatus.PART);
+
+        // 0 units on hand, want 100
+        addRelationships(product, stockLocation, supplier, true, 0, 100, 100, new BigDecimal("2.0"), 1);
+
+        BigDecimal total = new BigDecimal("110.0");
+        BigDecimal taxAmount = new BigDecimal("10.0");
+        BigDecimal quantity = new BigDecimal("50");
+
+        List<FinancialAct> order = generator.createOrder(supplier, stockLocation, true);
+        assertEquals(2, order.size());
+        FinancialAct act = order.get(0);
+        FinancialAct item1 = order.get(1);
+        checkEquals(total, act.getTotal());
+        checkEquals(taxAmount, act.getTaxAmount());
+        checkEquals(quantity, item1.getQuantity());
+        checkEquals(total, item1.getTotal());
+        checkEquals(taxAmount, item1.getTaxAmount());
+        checkEquals(quantity, item1.getQuantity());
+        assertTrue(TypeHelper.isA(act, SupplierArchetypes.ORDER));
+        assertTrue(TypeHelper.isA(item1, SupplierArchetypes.ORDER_ITEM));
+        save(order);
+    }
+
+    /**
      * Verifies the values in a {@code Stock} match that expected.
      *
      * @param stock         the stock to check
@@ -287,10 +367,32 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      */
     private FinancialAct createOrder(Product product, Party supplier, Party stockLocation, int quantity,
                                      String status) {
+        return createOrder(product, supplier, stockLocation, quantity, status, 0, 0, DeliveryStatus.PENDING);
+    }
+
+    /**
+     * Creates an order.
+     *
+     * @param product       the product to order
+     * @param supplier      the supplier to order from
+     * @param stockLocation the stock location for delivery to
+     * @param quantity      the order quantity
+     * @param status        the order status
+     * @return a new order
+     */
+    private FinancialAct createOrder(Product product, Party supplier, Party stockLocation, int quantity,
+                                     String status, int receivedQuantity, int cancelledQuantity,
+                                     DeliveryStatus deliveryStatus) {
         FinancialAct orderItem = createOrderItem(product, BigDecimal.valueOf(quantity), 1, BigDecimal.ONE);
+        ActBean itemBean = new ActBean(orderItem);
+        itemBean.setValue("receivedQuantity", BigDecimal.valueOf(receivedQuantity));
+        itemBean.setValue("cancelledQuantity", BigDecimal.valueOf(cancelledQuantity));
         FinancialAct order = createOrder(supplier, stockLocation, orderItem);
+        ActBean orderBean = new ActBean(order);
         order.setStatus(status);
-        save(order);
+        orderBean.setValue("deliveryStatus", deliveryStatus.toString());
+
+        save(order, orderItem);
         return order;
     }
 
