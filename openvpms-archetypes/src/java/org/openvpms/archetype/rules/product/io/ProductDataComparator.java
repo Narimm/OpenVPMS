@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -19,7 +19,6 @@ package org.openvpms.archetype.rules.product.io;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -50,7 +49,7 @@ import static org.openvpms.archetype.rules.product.io.ProductIOException.ErrorCo
  *
  * @author Tim Anderson
  */
-public class ProductDataComparer {
+public class ProductDataComparator {
 
     /**
      * The price rules.
@@ -63,18 +62,18 @@ public class ProductDataComparer {
     private final IArchetypeService service;
 
     /**
-     * Constructs an {@link ProductDataComparer}.
+     * Constructs a {@link ProductDataComparator}.
      *
      * @param rules   the price rules
      * @param service the archetype service
      */
-    public ProductDataComparer(ProductPriceRules rules, IArchetypeService service) {
+    public ProductDataComparator(ProductPriceRules rules, IArchetypeService service) {
         this.rules = rules;
         this.service = service;
     }
 
     /**
-     * Compares are product with its corresponding imported data, returning the changes.
+     * Compares a product with its corresponding imported data, returning the changes.
      *
      * @param product the product
      * @param data    the product data
@@ -94,6 +93,7 @@ public class ProductDataComparer {
         printedNameChanged = !ObjectUtils.equals(data.getPrintedName(), bean.getString("printedName"));
         if (!fixedPriceData.isEmpty() || !unitPriceData.isEmpty() || printedNameChanged) {
             result = new ProductData(data);
+            result.setReference(product.getObjectReference());
             result.setPrintedName(data.getPrintedName());
             result.getFixedPrices().addAll(fixedPriceData);
             result.getUnitPrices().addAll(unitPriceData);
@@ -421,11 +421,10 @@ public class ProductDataComparer {
                 if (!sameFrom) {
                     throw new ProductIOException(CannotCloseExistingPrice, newPrice.getLine());
                 }
-                Date date = DateRules.getDate(from, -1, DateUnits.DAYS);
-                if (existing.getTo() != null && DateRules.compareDates(existing.getTo(), date) > 0) {
+                if (existing.getTo() != null && DateRules.compareDates(existing.getTo(), from) > 0) {
                     throw new ProductIOException(FromDateGreaterThanToDate, newPrice.getLine());
                 }
-                existing.setTo(date);
+                existing.setTo(from);
                 if (!changed.contains(existing)) {
                     changed.add(existing);
                 }

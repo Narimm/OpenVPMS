@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -46,7 +46,7 @@ public class ProductDataFilter {
     /**
      * The product comparer, used to determine changes.
      */
-    private final ProductDataComparer comparer;
+    private final ProductDataComparator comparer;
 
     /**
      * Constructs an {@link ProductDataFilter}.
@@ -55,7 +55,7 @@ public class ProductDataFilter {
      * @param rules   the price rules
      */
     public ProductDataFilter(ProductPriceRules rules, IArchetypeService service) {
-        comparer = new ProductDataComparer(rules, service);
+        comparer = new ProductDataComparator(rules, service);
         this.service = service;
     }
 
@@ -84,7 +84,6 @@ public class ProductDataFilter {
                     try {
                         ProductData modified = comparer.compare(product, data);
                         if (modified != null) {
-                            modified.setReference(product.getObjectReference());
                             output.add(modified);
                         }
                     } catch (ProductIOException exception) {

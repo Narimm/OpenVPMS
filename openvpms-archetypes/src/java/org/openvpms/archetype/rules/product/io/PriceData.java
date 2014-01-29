@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -56,7 +56,7 @@ public class PriceData {
     /**
      * The price start date. May be {@code null}
      */
-    private final Date from;
+    private Date from;
 
     /**
      * The price end date. May be {@code null}
@@ -191,6 +191,15 @@ public class PriceData {
      */
     public Date getFrom() {
         return from;
+    }
+
+    /**
+     * Sets the price start date.
+     *
+     * @param from the price start date. May be {@code null}
+     */
+    public void setFrom(Date from) {
+        this.from = from;
     }
 
     /**
