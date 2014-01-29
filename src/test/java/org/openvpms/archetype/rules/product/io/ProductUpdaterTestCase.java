@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -88,12 +88,12 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         updater.update(product, data, practice);
         assertEquals(4, product.getProductPrices().size());
 
-        assertEquals(getDate("2013-03-31"), fixed1.getToDate()); // price to date now before the new price start date
+        assertEquals(getDate("2013-04-01"), fixed1.getToDate()); // price to date now the new price start date
 
-        checkPrice(product, createFixedPrice("1.0", "0.5", "100", "2013-01-01", "2013-3-31", true)); // old fixed price
-        checkPrice(product, createFixedPrice("1.08", "0.6", "80", "2013-04-01", null, true));       // new fixed price
+        checkPrice(product, createFixedPrice("1.0", "0.5", "100", "2013-01-01", "2013-04-01", true)); // old fixed price
+        checkPrice(product, createFixedPrice("1.08", "0.6", "80", "2013-04-01", null, true));         // new fixed price
 
-        checkPrice(product, createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-04-02"));       // old unit price
+        checkPrice(product, createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-04-03"));       // old unit price
         checkPrice(product, createUnitPrice("2.55", "1.5", "70", "2013-04-03", null));               // new unit price
     }
 

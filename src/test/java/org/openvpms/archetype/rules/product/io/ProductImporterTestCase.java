@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
 import static org.openvpms.archetype.test.TestHelper.getDate;
@@ -89,11 +90,16 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
     private ProductImporter importer;
 
     /**
+     * The product price rules.
+     */
+    private ProductPriceRules rules;
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        ProductPriceRules rules = new ProductPriceRules(getArchetypeService(), lookups);
+        rules = new ProductPriceRules(getArchetypeService(), lookups);
         importer = new ProductImporter(rules, getArchetypeService());
         practice = (Party) create(PracticeArchetypes.PRACTICE);
         product1 = createProduct("Product 1", "P1");
@@ -135,7 +141,7 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
     }
 
     /**
-     * Verifies that an existing price will be updated if has the same dates.
+     * Verifies that an existing price will be updated if it has the same dates.
      */
     @Test
     public void testUpdateExisting() {
@@ -186,10 +192,50 @@ public class ProductImporterTestCase extends AbstractProductIOTest {
         product1 = get(product1);
         assertEquals(4, product1.getProductPrices().size());
 
-        checkPrice(product1, createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2013-06-01", true));
-        checkPrice(product1, createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-06-02"));
+        checkPrice(product1, createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2013-06-02", true));
+        checkPrice(product1, createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-06-03"));
         checkFixedPrice(product1, fixedPrice, fixedCost, markup, getDate("2013-06-02"), null, true);
         checkUnitPrice(product1, unitPrice, unitCost, markup, getDate("2013-06-03"), null);
+    }
+
+    /**
+     * Applies an {@link ProductDataFilter} before running the import.
+     */
+    @Test
+    public void testFilteredImport() {
+        // clear the existing unit and fixed price end dates
+        fixed1.setToDate(null);
+        unit1.setToDate(null);
+        save(product1);
+        ProductData data = createProduct(product1);
+        data.setReference(null); // populated via the filter
+        BigDecimal fixedPrice = new BigDecimal("2.0");
+        BigDecimal fixedCost = new BigDecimal("1.0");
+        BigDecimal markup = new BigDecimal("100");
+        BigDecimal unitPrice = new BigDecimal("1.0");
+        BigDecimal unitCost = new BigDecimal("0.5");
+        data.addFixedPrice(-1, fixedPrice, fixedCost, getDate("2014-01-01"), getDate("2014-06-01"), true, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, getDate("2014-01-01"), getDate("2014-06-01"), 1);
+
+        List<ProductData> input = Arrays.asList(data);
+        ProductDataFilter filter = new ProductDataFilter(rules, getArchetypeService());
+        ProductDataSet filtered = filter.filter(input);
+        assertTrue(filtered.getErrors().isEmpty());
+
+        input = filtered.getData();
+        assertEquals(1, input.size());
+
+        assertEquals(product1.getObjectReference(), input.get(0).getReference());
+
+        importProducts(input.get(0));
+
+        product1 = get(product1);
+        assertEquals(4, product1.getProductPrices().size());
+
+        checkPrice(product1, createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2014-01-01", true));
+        checkPrice(product1, createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2014-01-01"));
+        checkFixedPrice(product1, fixedPrice, fixedCost, markup, getDate("2014-01-01"), getDate("2014-06-01"), true);
+        checkUnitPrice(product1, unitPrice, unitCost, markup, getDate("2014-01-01"), getDate("2014-06-01"));
     }
 
     /**
