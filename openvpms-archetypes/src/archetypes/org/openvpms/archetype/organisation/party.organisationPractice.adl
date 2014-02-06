@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -73,6 +73,8 @@
         </node>
         <node name="autoLogout" path="/details/autoLogout" type="java.lang.Integer" minCardinality="0"
               defaultValue="30"/>
+        <node name="showClinicianInHistoryItems" path="/details/showClinicianInHistoryItems" type="java.lang.Boolean"
+              defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
