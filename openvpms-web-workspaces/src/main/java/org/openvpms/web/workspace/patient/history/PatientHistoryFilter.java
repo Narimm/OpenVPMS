@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient.history;
 
@@ -22,9 +22,8 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,21 +58,14 @@ class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     private final boolean invoice;
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
-     * Constructs a {@code PatientHistoryFilter}.
+     * Constructs a {@link PatientHistoryFilter}.
      *
      * @param shortNames the history item short names to include
-     * @param context    the context
      */
-    public PatientHistoryFilter(String[] shortNames, Context context) {
-        super(context);
+    public PatientHistoryFilter(String[] shortNames) {
+        super();
         this.shortNames = new ArrayList<String>(Arrays.asList(shortNames));
         invoice = this.shortNames.remove(CustomerAccountArchetypes.INVOICE_ITEM);
-        this.context = context;
     }
 
     /**
@@ -133,12 +125,8 @@ class PatientHistoryFilter extends ActHierarchyFilter<Act> {
                 }
             }
         }
-        for (IMObjectReference chargeItemRef : chargeItemRefs) {
-            Act chargeItem = (Act) IMObjectHelper.getObject(chargeItemRef, context);
-            if (chargeItem != null) {
-                result.add(chargeItem);
-            }
-        }
+        List<Act> chargeItems = ActHelper.getActs(chargeItemRefs);
+        result.addAll(chargeItems);
         return result;
     }
 

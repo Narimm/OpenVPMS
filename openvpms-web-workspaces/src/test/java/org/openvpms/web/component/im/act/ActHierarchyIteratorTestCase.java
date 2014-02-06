@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -24,7 +22,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 
@@ -92,7 +89,7 @@ public class ActHierarchyIteratorTestCase extends AbstractAppTest {
      * @param shortNames the child act short names
      */
     private void checkIterator(PatientHistoryQuery query, int maxDepth, int expected, String... shortNames) {
-        Iterable<Act> summary = new ActHierarchyIterator<Act>(query, shortNames, maxDepth, new LocalContext());
+        Iterable<Act> summary = new ActHierarchyIterator<Act>(query, shortNames, maxDepth);
         int acts = 0;
         Act event = null;
         for (Act act : summary) {

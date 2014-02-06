@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -32,7 +32,7 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class PagedActHierarchyTableModel<T extends Act>
-    extends PagedIMObjectTableModel<T> {
+        extends PagedIMObjectTableModel<T> {
 
     /**
      * The archetype short names of the child acts to display.
@@ -109,7 +109,7 @@ public class PagedActHierarchyTableModel<T extends Act>
      * @return an iterator to flatten the act hierarchy
      */
     protected ActHierarchyIterator<T> createFlattener(List<T> objects, String[] shortNames, Context context) {
-        return new ActHierarchyIterator<T>(objects, shortNames, maxDepth, context);
+        return new ActHierarchyIterator<T>(objects, shortNames, maxDepth);
     }
 
 }

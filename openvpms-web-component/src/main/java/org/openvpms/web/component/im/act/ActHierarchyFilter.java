@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -24,8 +24,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -50,11 +48,6 @@ public class ActHierarchyFilter<T extends Act> {
     private final Predicate predicate;
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * Determines if items should be sorted on ascending timestamp.
      */
     private boolean sortAscending = true;
@@ -62,11 +55,9 @@ public class ActHierarchyFilter<T extends Act> {
 
     /**
      * Constructs an {@code ActHierarchyFilter}.
-     *
-     * @param context the context
      */
-    public ActHierarchyFilter(Context context) {
-        this(null, context);
+    public ActHierarchyFilter() {
+        this(null);
     }
 
     /**
@@ -74,21 +65,18 @@ public class ActHierarchyFilter<T extends Act> {
      *
      * @param shortNames the act short names
      * @param include    if {@code true} include the acts, otherwise exclude them
-     * @param context    the context
      */
-    public ActHierarchyFilter(String[] shortNames, boolean include, Context context) {
-        this(createIsA(shortNames, include), context);
+    public ActHierarchyFilter(String[] shortNames, boolean include) {
+        this(createIsA(shortNames, include));
     }
 
     /**
      * Constructs an {@code ActHierarchyFilter}.
      *
      * @param predicate a predicate to filter relationships. May be {@code null}
-     * @param context   the context
      */
-    public ActHierarchyFilter(Predicate predicate, Context context) {
+    public ActHierarchyFilter(Predicate predicate) {
         this.predicate = predicate;
-        this.context = context;
     }
 
     /**
@@ -100,14 +88,7 @@ public class ActHierarchyFilter<T extends Act> {
     public List<T> filter(T act) {
         List<T> result = new ArrayList<T>();
         if (include(act)) {
-            List<T> items = new ArrayList<T>();
-            Collection<ActRelationship> relationships = getRelationships(act);
-            for (ActRelationship relationship : relationships) {
-                T item = getTarget(relationship);
-                if (item != null && include(item, act)) {
-                    items.add(item);
-                }
-            }
+            List<T> items = getIncludedTargets(act);
             items = filter(act, items);
             if (include(act, items)) {
                 sortItems(items);
@@ -229,7 +210,7 @@ public class ActHierarchyFilter<T extends Act> {
             }
         };
         Comparator comparator = ComparatorUtils.transformedComparator(
-            ComparatorUtils.nullHighComparator(null), transformer);
+                ComparatorUtils.nullHighComparator(null), transformer);
         if (!sortAscending) {
             comparator = ComparatorUtils.reversedComparator(comparator);
         }
@@ -249,14 +230,22 @@ public class ActHierarchyFilter<T extends Act> {
     }
 
     /**
-     * Helper to return the target act in a relationship.
+     * Returns the included target acts in set of relationships.
      *
-     * @param relationship the relationship
-     * @return the target act or {@code null} if none can be found
+     * @param act the parent act
+     * @return the include target acts
      */
     @SuppressWarnings("unchecked")
-    private T getTarget(ActRelationship relationship) {
-        return (T) IMObjectHelper.getObject(relationship.getTarget(), context);
+    private List<T> getIncludedTargets(T act) {
+        List<T> result = new ArrayList<T>();
+        Collection<ActRelationship> relationships = getRelationships(act);
+        for (Act match : ActHelper.getTargetActs(relationships)) {
+            T item = (T) match;
+            if (include(item, act)) {
+                result.add(item);
+            }
+        }
+        return result;
     }
 
 }

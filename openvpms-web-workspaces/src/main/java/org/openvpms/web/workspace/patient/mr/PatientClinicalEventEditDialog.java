@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient.mr;
 
@@ -85,7 +85,7 @@ public class PatientClinicalEventEditDialog extends EditDialog {
                 List<Act> objects = new ArrayList<Act>();
                 objects.add((Act) getEditor().getObject());
                 Context context = getContext();
-                Iterable<Act> acts = new ActHierarchyIterator<Act>(objects, context);
+                Iterable<Act> acts = new ActHierarchyIterator<Act>(objects);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
                                                                                      context);
                 IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);

@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
 import org.apache.commons.collections.Predicate;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.app.Context;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -63,11 +62,10 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
     /**
      * Constructs an {@code ActHierarchyIterator}.
      *
-     * @param acts    the collection of acts
-     * @param context the context
+     * @param acts the collection of acts
      */
-    public ActHierarchyIterator(Iterable<T> acts, Context context) {
-        this(acts, (Predicate) null, -1, context);
+    public ActHierarchyIterator(Iterable<T> acts) {
+        this(acts, (Predicate) null, -1);
     }
 
     /**
@@ -75,10 +73,9 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      *
      * @param acts       the collection of acts
      * @param shortNames the child short names to include
-     * @param context    the context
      */
-    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames, Context context) {
-        this(acts, shortNames, true, -1, context);
+    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames) {
+        this(acts, shortNames, true, -1);
     }
 
     /**
@@ -87,10 +84,9 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      * @param acts       the collection of acts
      * @param shortNames the child short names to include
      * @param maxDepth   the maximum depth to iterate to, or {@code -1} to have unlimited depth
-     * @param context    the context
      */
-    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames, int maxDepth, Context context) {
-        this(acts, shortNames, true, maxDepth, context);
+    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames, int maxDepth) {
+        this(acts, shortNames, true, maxDepth);
     }
 
     /**
@@ -101,8 +97,8 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      * @param include    if {@code true} include the acts, otherwise exclude them
      * @param maxDepth   the maximum depth to iterate to, or {@code -1} to have unlimited depth
      */
-    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames, boolean include, int maxDepth, Context context) {
-        this(acts, new ActHierarchyFilter<T>(shortNames, include, context), maxDepth);
+    public ActHierarchyIterator(Iterable<T> acts, String[] shortNames, boolean include, int maxDepth) {
+        this(acts, new ActHierarchyFilter<T>(shortNames, include), maxDepth);
     }
 
     /**
@@ -112,8 +108,8 @@ public class ActHierarchyIterator<T extends Act> implements Iterable<T> {
      * @param predicate the predicate to select act relationships. If {@code null}, indicates to select all child acts
      * @param maxDepth  the maximum depth to iterate to, or {@code -1} to have unlimited depth
      */
-    public ActHierarchyIterator(Iterable<T> acts, Predicate predicate, int maxDepth, Context context) {
-        this(acts, new ActHierarchyFilter<T>(predicate, context), maxDepth);
+    public ActHierarchyIterator(Iterable<T> acts, Predicate predicate, int maxDepth) {
+        this(acts, new ActHierarchyFilter<T>(predicate), maxDepth);
     }
 
     /**
