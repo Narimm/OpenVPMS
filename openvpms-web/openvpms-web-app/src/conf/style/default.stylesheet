@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <stylesheet>
@@ -327,6 +327,24 @@
                     </properties>
                 </layout-data>
             </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.date" type="echopointng.LabelEx" base-name="default">
+        <properties>
+            <property name="width" value="${history.date.width}"/>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.type" type="echopointng.LabelEx" base-name="default">
+        <properties>
+            <property name="width" value="${history.type.width}"/>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.clinician" type="echopointng.LabelEx" base-name="default">
+        <properties>
+            <property name="width" value="${history.clinician.width}"/>
         </properties>
     </style>
 

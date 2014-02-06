@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -230,7 +230,7 @@ public class PatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> implements
         if (query != null) {
             try {
                 Context context = getContext();
-                PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames(), context);
+                PatientHistoryFilter filter = new PatientHistoryFilter(query.getActItemShortNames());
                 // maxDepth = 2 - display the events, and their immediate children
                 Iterable<Act> summary = new ActHierarchyIterator<Act>(query, filter, 2);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,

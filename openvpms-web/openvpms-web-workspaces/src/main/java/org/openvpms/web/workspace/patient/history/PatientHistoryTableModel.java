@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -44,9 +44,14 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -56,6 +61,7 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
@@ -63,6 +69,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -98,6 +105,22 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      * The patient rules.
      */
     private PatientRules patientRules;
+
+    /**
+     * Determines if the clinician is shown in history items.
+     */
+    private boolean showClinician;
+
+    /**
+     * Cache of clinician names. This is refreshed each time the table is rendered to ensure the data doesn't
+     * become stale.
+     */
+    private Map<Long, String> clinicianNames = new HashMap<Long, String>();
+
+    /**
+     * The last processed row, used to determine if the clinician cache needs to be refreshed.
+     */
+    private int lastRow;
 
     /**
      * Column indicating the selected visit.
@@ -138,6 +161,11 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         model.addColumn(new TableColumn(SPACER_COLUMN));
         setTableColumnModel(model);
         patientRules = ServiceHelper.getBean(PatientRules.class);
+        Party practice = context.getContext().getPractice();
+        if (practice != null) {
+            IMObjectBean bean = new IMObjectBean(practice);
+            showClinician = bean.getBoolean("showClinicianInHistoryItems");
+        }
     }
 
     /**
@@ -203,7 +231,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
             case SUMMARY_COLUMN:
                 try {
                     if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
-                        result = formatEvent(act);
+                        result = formatEvent(act, row);
                     } else {
                         result = formatItem(act, row);
                     }
@@ -230,10 +258,11 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      * Returns a component for an <em>act.patientClinicalEvent</em>.
      *
      * @param act the event
+     * @param row the current row
      * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    private Component formatEvent(Act act) {
+    private Component formatEvent(Act act, int row) {
         ActBean bean = new ActBean(act);
         String started = null;
         String completed = null;
@@ -251,11 +280,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
             completed = DateFormatter.formatDate(endTime, false);
         }
 
-        IMObjectReference clinicianRef
-                = bean.getParticipantRef("participation.clinician");
-
-        clinician = IMObjectHelper.getName(clinicianRef);
-        clinician = getValue(clinician, bean, "clinician");
+        clinician = getClinician(bean, row);
 
         Party patient = (Party) IMObjectHelper.getObject(bean.getNodeParticipantRef("patient"), context.getContext());
         String age = (patient != null) ? patientRules.getPatientAge(patient, act.getActivityStartTime()) : "";
@@ -266,7 +291,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         } else {
             text = Messages.format("patient.record.summary.dateRange", started, completed, reason, clinician, status, age);
         }
-        Label summary = LabelFactory.create(null, "bold");
+        Label summary = LabelFactory.create(null, Styles.BOLD);
         summary.setText(text);
         return summary;
     }
@@ -280,8 +305,10 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      * @throws OpenVPMSException for any error
      */
     private Component formatItem(Act act, int row) {
+        ActBean bean = new ActBean(act);
         Component date = getDate(act, row);
         Component type = getType(act);
+        Component clinician = (showClinician) ? getClinicianLabel(bean, row) : null;
         Component detail;
 
         RowLayoutData layout = new RowLayoutData();
@@ -289,19 +316,26 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
 
         date.setLayoutData(layout);
         type.setLayoutData(layout);
+        if (clinician != null) {
+            clinician.setLayoutData(layout);
+        }
 
-        if (TypeHelper.isA(act, "act.patientInvestigation*")
-            || TypeHelper.isA(act, "act.patientDocument*")) {
+        if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
             detail = getDocumentDetail((DocumentAct) act);
         } else if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION)) {
-            detail = getMedicationDetail(act);
+            detail = getMedicationDetail(bean);
         } else if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            detail = getInvoiceItemDetail((FinancialAct) act);
+            detail = getInvoiceItemDetail(bean);
         } else {
             detail = getDetail(act);
         }
-        Row padding = RowFactory.create("Inset", new Label(""));
-        return RowFactory.create("CellSpacing", padding, date, type, detail);
+        Row padding = RowFactory.create(Styles.INSET, new Label(""));
+        Row item = RowFactory.create(Styles.CELL_SPACING, padding, date, type);
+        if (clinician != null) {
+            item.add(clinician);
+        }
+        item.add(detail);
+        return item;
     }
 
     /**
@@ -326,14 +360,11 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
             }
         }
         if (showDate) {
-            date = new LabelEx(DateFormatter.formatDate(
-                    act.getActivityStartTime(), false));
+            date = new LabelEx(DateFormatter.formatDate(act.getActivityStartTime(), false));
         } else {
             date = new LabelEx("");
         }
-        ComponentFactory.setDefaultStyle(date);
-        date.setWidth(new Extent(150));
-        // hack to work around lack of cell spanning facility in Table. todo
+        date.setStyleName("MedicalRecordSummary.date");
         return date;
     }
 
@@ -349,9 +380,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         Component result;
         String text = DescriptorHelper.getDisplayName(act);
         LabelEx type = new LabelEx(text);
-        type.setWidth(new Extent(150));
-        // hack to work around lack of cell spanning facility in Table. todo
-        ComponentFactory.setDefaultStyle(type);
+        type.setStyleName("MedicalRecordSummary.type");
         if (TypeHelper.isA(act, "act.patientDocument*Version")) {
             result = RowFactory.create("InsetX", type);
         } else {
@@ -359,6 +388,50 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         }
 
         return result;
+    }
+
+    /**
+     * Returns a label indicating the clinician associated with an act.
+     *
+     * @param bean the act bean
+     * @param row  the row being processed
+     * @return a new label
+     */
+    private Component getClinicianLabel(ActBean bean, int row) {
+        String clinician = getClinician(bean, row);
+        LabelEx result = new LabelEx(clinician);
+        result.setStyleName("MedicalRecordSummary.type");
+        return result;
+    }
+
+    /**
+     * Returns the clinician name associated with an act.
+     * <p/>
+     * This caches clinician names for the duration of a single table render, to improve performance.
+     *
+     * @param bean the act
+     * @param row  the row being processed
+     * @return the clinician name or a formatted string indicating the act has no clinician
+     */
+    private String getClinician(ActBean bean, int row) {
+        String clinician = null;
+        if (row < lastRow) {
+            clinicianNames.clear();
+        }
+        lastRow = row;
+        IMObjectReference clinicianRef = bean.getParticipantRef("participation.clinician");
+        if (clinicianRef != null) {
+            clinician = clinicianNames.get(clinicianRef.getId());
+            if (clinician == null) {
+                clinician = IMObjectHelper.getName(clinicianRef);
+                if (clinician != null) {
+                    clinicianNames.put(clinicianRef.getId(), clinician);
+                }
+            }
+        }
+
+        clinician = getValue(clinician, bean, "clinician");
+        return clinician;
     }
 
     /**
@@ -388,13 +461,13 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      * <p/>
      * This includes the invoice item amount, if one is available.
      *
-     * @param act the act
+     * @param bean the act
      * @return a new component
      */
-    private Component getInvoiceItemDetail(FinancialAct act) {
-        ActBean bean = new ActBean(act);
+    private Component getInvoiceItemDetail(ActBean bean) {
         IMObjectReference product = bean.getNodeParticipantRef("product");
         String name = IMObjectHelper.getName(product);
+        FinancialAct act = (FinancialAct) bean.getAct();
         String text = Messages.format("patient.record.summary.invoiceitem", name, act.getQuantity(),
                                       NumberFormatter.formatCurrency(act.getTotal()));
         return getDetail(text);
@@ -406,13 +479,21 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      * @param act the act
      * @return a new component
      */
-    private Component getMedicationDetail(Act act) {
-        String text = getText(act);
-        ActBean bean = new ActBean(act);
-        FinancialAct item = (FinancialAct) bean.getNodeSourceObject("invoiceItem");
-        if (item != null) {
-            text = Messages.format("patient.record.summary.medication", text,
-                                   NumberFormatter.formatCurrency(item.getTotal()));
+    private Component getMedicationDetail(ActBean act) {
+        String text = getText(act.getAct());
+        List<IMObjectReference> refs = act.getNodeSourceObjectRefs("invoiceItem");
+        if (!refs.isEmpty()) {
+            ArchetypeQuery query = new ArchetypeQuery(refs.get(0));
+            query.getArchetypeConstraint().setAlias("act");
+            query.add(new NodeSelectConstraint("total"));
+            query.setMaxResults(1);
+            ObjectSetQueryIterator iter = new ObjectSetQueryIterator(query);
+            if (iter.hasNext()) {
+                ObjectSet set = iter.next();
+                text = Messages.format("patient.record.summary.medication", text,
+                                       NumberFormatter.formatCurrency(set.getBigDecimal("act.total")));
+            }
+
         }
         return getDetail(text);
     }
