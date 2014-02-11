@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -25,8 +23,10 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
+import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -35,37 +35,35 @@ import java.util.List;
 
 
 /**
- * Implementation of {@link LookupQuery} that sources lookups associated
- * with an {@link IMObject IMObject} node.
+ * Implementation of {@link LookupQuery} that sources lookups associated with an {@link IMObject IMObject} node.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class NodeLookupQuery extends AbstractLookupQuery {
 
     /**
-     * The archetype short name, or <tt>null</tt> if an object was specified
+     * The archetype short name, or {@code null} if an object was specified
      */
     private String shortName;
 
     /**
-     * The archetype node, or <tt>null</tt> if an object was specified.
+     * The archetype node, or {@code null} if an object was specified.
      */
     private String node;
 
     /**
-     * The object, or <tt>null</tt> if a short name was specified.
+     * The object, or {@code null} if a short name was specified.
      */
     private IMObject object;
 
     /**
-     * The node descriptor, or <tt<null</tt> if a short name was specified.
+     * The node descriptor.
      */
     private NodeDescriptor descriptor;
 
 
     /**
-     * Creates a new <tt>NodeLookupQuery</tt> for an archetype and node.
+     * Constructs a {@link NodeLookupQuery} for an archetype and node.
      *
      * @param shortName the archetype short name
      * @param node      the node name
@@ -77,8 +75,7 @@ public class NodeLookupQuery extends AbstractLookupQuery {
     }
 
     /**
-     * Creates a new <tt>NodeLookupQuery</tt> for an object and node
-     * descriptor.
+     * Constructs a {@link NodeLookupQuery} for an object and node descriptor.
      *
      * @param object     the object
      * @param descriptor the node descriptor
@@ -95,22 +92,17 @@ public class NodeLookupQuery extends AbstractLookupQuery {
      */
     public List<Lookup> getLookups() {
         List<Lookup> result = Collections.emptyList();
-        IArchetypeService service
-            = ArchetypeServiceHelper.getArchetypeService();
         try {
-            if (shortName != null) {
-                ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(shortName);
-                if (archetype != null) {
-                    NodeDescriptor descriptor = archetype.getNodeDescriptor(
-                        node);
-                    if (descriptor != null) {
-                        result = filter(LookupHelper.get(service, descriptor));
-                    }
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            ILookupService lookupService = LookupServiceHelper.getLookupService();
+            NodeDescriptor node = getDescriptor();
+            if (node != null) {
+                LookupAssertion assertion = LookupAssertionFactory.create(node, service, lookupService);
+                if (object != null) {
+                    result = filter(assertion.getLookups(object));
+                } else {
+                    result = filter(assertion.getLookups());
                 }
-            } else {
-                result = filter(LookupHelper.get(service, descriptor, object));
-
             }
         } catch (OpenVPMSException error) {
             ErrorHelper.show(error);
@@ -122,15 +114,15 @@ public class NodeLookupQuery extends AbstractLookupQuery {
     /**
      * Returns the default lookup.
      *
-     * @return the default lookup, or <tt>null</tt> if none is defined
+     * @return the default lookup, or {@code null} if none is defined
      */
     @Override
     public Lookup getDefault() {
         Lookup result = null;
-        NodeDescriptor nodeDesc = getDescriptor();
-        if (nodeDesc != null) {
+        NodeDescriptor node = getDescriptor();
+        if (node != null) {
             List<Lookup> lookups = getLookups();
-            String code = nodeDesc.getDefaultValue();
+            String code = node.getDefaultValue();
             if (code != null) {
                 // defaultValue is an xpath expression. Rather than evaluating
                 // it, just support the simple case of a quoted string.
@@ -147,23 +139,18 @@ public class NodeLookupQuery extends AbstractLookupQuery {
     /**
      * Returns the node descriptor.
      *
-     * @return the node descriptor, or <tt>null</tt> on error
+     * @return the node descriptor, or {@code null} on error
      */
     private NodeDescriptor getDescriptor() {
-        NodeDescriptor result = null;
-        try {
+        if (descriptor == null) {
             if (shortName != null) {
-                ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(shortName);
+                IArchetypeService archetypeService = ArchetypeServiceHelper.getArchetypeService();
+                ArchetypeDescriptor archetype = archetypeService.getArchetypeDescriptor(shortName);
                 if (archetype != null) {
-                    result = archetype.getNodeDescriptor(node);
+                    descriptor = archetype.getNodeDescriptor(node);
                 }
-            } else {
-                result = descriptor;
             }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
         }
-        return result;
+        return descriptor;
     }
 }
