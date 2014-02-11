@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -267,7 +268,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         String started = null;
         String completed = null;
         String clinician;
-        String reason = getValue(bean, "reason");
+        String reason = getValue(bean, "reason", "patient.record.summary.reason.none");
         String status = ArchetypeServiceFunctions.lookup(act, "status");
 
         Date startTime = bean.getDate("startTime");
@@ -400,7 +401,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
     private Component getClinicianLabel(ActBean bean, int row) {
         String clinician = getClinician(bean, row);
         LabelEx result = new LabelEx(clinician);
-        result.setStyleName("MedicalRecordSummary.type");
+        result.setStyleName("MedicalRecordSummary.clinician");
         return result;
     }
 
@@ -419,7 +420,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
             clinicianNames.clear();
         }
         lastRow = row;
-        IMObjectReference clinicianRef = bean.getParticipantRef("participation.clinician");
+        IMObjectReference clinicianRef = bean.getParticipantRef(UserArchetypes.CLINICIAN_PARTICIPATION);
         if (clinicianRef != null) {
             clinician = clinicianNames.get(clinicianRef.getId());
             if (clinician == null) {
@@ -430,7 +431,9 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
             }
         }
 
-        clinician = getValue(clinician, bean, "clinician");
+        if (StringUtils.isEmpty(clinician)) {
+            clinician = Messages.get("patient.record.summary.clinician.none");
+        }
         return clinician;
     }
 
@@ -451,7 +454,7 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
         if (StringUtils.isEmpty(label.getText())) {
             result = viewer.getComponent();
         } else {
-            result = RowFactory.create("CellSpacing", label, viewer.getComponent());
+            result = RowFactory.create(Styles.CELL_SPACING, label, viewer.getComponent());
         }
         return result;
     }
@@ -573,32 +576,15 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
     }
 
     /**
-     * Helper to return a value from a bean, or a formatted string if the value
-     * is null.
+     * Helper to return a value from a bean, or a formatted string if the value is empty.
      *
-     * @param bean the bean
-     * @param node the node
-     * @return the value, or a formatting string indicating if the value was
-     *         null
+     * @param bean    the bean
+     * @param node    the node
+     * @param message the message key, if the value is empty
+     * @return the value, or a message indicating if the value was empty
      */
-    private String getValue(ActBean bean, String node) {
-        return getValue(bean.getString(node), bean, node);
-    }
-
-    /**
-     * Helper to return a value, or a formatted string if the value is null
-     * or empty.
-     *
-     * @param value the value
-     * @param bean  the bean the value came from
-     * @param node  the value node
-     * @return the value, or a formatting string indicating if the value was
-     *         null
-     */
-    private String getValue(String value, ActBean bean, String node) {
-        if (StringUtils.isEmpty(value)) {
-            return Messages.format("patient.record.summary.novalue", bean.getDisplayName(node));
-        }
-        return value;
+    private String getValue(ActBean bean, String node, String message) {
+        String value = bean.getString(node);
+        return (!StringUtils.isEmpty(value)) ? value : Messages.get(message);
     }
 }
