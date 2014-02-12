@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.supplierDelivery.1.0" latest="true"
@@ -81,6 +81,17 @@
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
                         <property name="shortName" value="actRelationship.supplierDeliveryOrder"/>
+                    </propertyMap>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="invoice" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
+              filter="actRelationship.supplierDeliveryInvoice" hidden="true">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.supplierDeliveryInvoice"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

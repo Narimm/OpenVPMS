@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.supplierReturn.1.0" latest="true"
@@ -51,7 +51,8 @@
             </assertion>
         </node>
         <node name="items" path="/sourceActRelationships"
-              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
+              type="java.util.HashSet" baseName="SourceActRelationship"
+              filter="actRelationship.supplierReturnItem" minCardinality="1" maxCardinality="*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
@@ -60,6 +61,17 @@
                     </propertyMap>
                 </propertyList>
                 <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="returnCredit" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
+              filter="actRelationship.supplierReturnCredit" hidden="true">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="actRelationship.supplierReturnCredit"/>
+                    </propertyMap>
+                </propertyList>
             </assertion>
         </node>
         <node name="author" path="/participations" type="java.util.HashSet"
