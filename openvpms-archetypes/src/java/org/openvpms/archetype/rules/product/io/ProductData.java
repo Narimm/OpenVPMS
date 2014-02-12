@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -46,6 +46,11 @@ public class ProductData {
      * The printed name. May be {@code null}
      */
     private String printedName;
+
+    /**
+     * The tax rate, expressed as a percentage.
+     */
+    private BigDecimal taxRate;
 
     /**
      * Line that the data was read from.
@@ -83,12 +88,14 @@ public class ProductData {
      * @param id          the product identifier
      * @param name        the product name
      * @param printedName the product printed name. May be {@code null}
+     * @param taxRate     the tax rate, expressed as a percentage
      * @param line        the line the data came from
      */
-    public ProductData(long id, String name, String printedName, int line) {
+    public ProductData(long id, String name, String printedName, BigDecimal taxRate, int line) {
         this.id = id;
         this.name = name;
         this.printedName = printedName;
+        this.taxRate = taxRate;
         this.line = line;
     }
 
@@ -101,6 +108,7 @@ public class ProductData {
         this.id = source.getId();
         this.name = source.getName();
         this.printedName = source.getPrintedName();
+        this.taxRate = source.getTaxRate();
         this.line = source.getLine();
         this.reference = source.getReference();
     }
@@ -157,6 +165,15 @@ public class ProductData {
      */
     public void setPrintedName(String printedName) {
         this.printedName = printedName;
+    }
+
+    /**
+     * Returns the tax rate.
+     *
+     * @return the tax rate, expressed as a percentage. May be {@code null}
+     */
+    public BigDecimal getTaxRate() {
+        return taxRate;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -19,8 +19,11 @@ package org.openvpms.archetype.rules.product.io;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -28,6 +31,7 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.DateFunctions;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,6 +40,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createFixedPrice;
 import static org.openvpms.archetype.rules.product.ProductPriceTestHelper.createUnitPrice;
+import static org.openvpms.archetype.test.TestHelper.createTaxType;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
 /**
@@ -55,6 +60,11 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      * The product price rules.
      */
     private ProductPriceRules rules;
+
+    /**
+     * The tax rules.
+     */
+    private TaxRules taxRules;
 
     /**
      * The document handlers.
@@ -92,9 +102,12 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     @Before
     public void setUp() {
         rules = new ProductPriceRules(getArchetypeService(), lookups);
+        Party practice = TestHelper.getPractice();
+        taxRules = new TaxRules(practice, getArchetypeService(), lookups);
         handlers = new DocumentHandlers();
 
         product = createProduct("Product A", "A");
+        product.addClassification(createTaxType(new BigDecimal("5.0")));
         fixed1 = createFixedPrice("1.0", "0.5", "100", "2012-02-01", "2012-04-01", false);
         fixed2 = createFixedPrice("1.08", "0.6", "80", "2012-04-02", "2012-06-01", true);
         unit1 = createUnitPrice("1.92", "1.2", "60", "2012-02-02", "2012-04-02");
@@ -110,7 +123,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testWriteReadLatestPrices() {
-        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Document document = writer.write(Arrays.asList(product).iterator(), true, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
@@ -138,7 +151,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testWriteReadAllPrices() {
-        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Document document = writer.write(Arrays.asList(product).iterator(), false, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
@@ -163,7 +176,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testWriteReadRangePrices() {
-        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Date from = getDate("2012-02-01");
         Date to = getDate("2012-03-01");
         Document document = writer.write(Arrays.asList(product).iterator(), from, to, true);
@@ -191,7 +204,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         product.removeProductPrice(fixed1);
         product.removeProductPrice(fixed2);
         save(product);
-        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Document document = writer.write(Arrays.asList(product).iterator(), false, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
@@ -216,7 +229,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         product.removeProductPrice(unit1);
         product.removeProductPrice(unit2);
         save(product);
-        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers);
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Document document = writer.write(Arrays.asList(product).iterator(), false, true);
 
         ProductCSVReader reader = new ProductCSVReader(handlers);
@@ -238,7 +251,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testDateParsing() {
-        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, handlers) {
+        ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers) {
             @Override
             protected String getDate(Date date) {
                 return DateFunctions.format(date, "dd/MM/yy");
@@ -278,6 +291,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         assertEquals(expected.getId(), data.getId());
         assertEquals(expected.getName(), data.getName());
         assertEquals(bean.getString("printedName"), data.getPrintedName());
+        checkEquals(taxRules.getTaxRate(expected), data.getTaxRate());
     }
 
     /**
