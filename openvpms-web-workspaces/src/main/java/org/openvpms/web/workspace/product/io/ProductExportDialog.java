@@ -11,15 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
 
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.product.io.ProductCSVWriter;
 import org.openvpms.archetype.rules.product.io.ProductWriter;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -58,6 +61,11 @@ public class ProductExportDialog extends BrowserDialog<Product> {
     private final ProductPriceRules rules;
 
     /**
+     * The tax rules.
+     */
+    private final TaxRules taxRules;
+
+    /**
      * The export button identifier.
      */
     private static final String EXPORT_ID = "button.export";
@@ -75,7 +83,8 @@ public class ProductExportDialog extends BrowserDialog<Product> {
      */
     public ProductExportDialog(LayoutContext context, HelpContext help) {
         super(Messages.get("product.export.title"), BUTTONS, false, help);
-        this.rules = ServiceHelper.getBean(ProductPriceRules.class);
+        rules = ServiceHelper.getBean(ProductPriceRules.class);
+        taxRules = new TaxRules(context.getContext().getPractice());
         ProductExportQuery query = new ProductExportQuery();
         PagedProductPricesTableModel model = new PagedProductPricesTableModel();
         Browser<Product> browser = new DefaultIMObjectTableBrowser<Product>(query, model, context);
@@ -107,7 +116,8 @@ public class ProductExportDialog extends BrowserDialog<Product> {
      */
     private void onExport() {
         ProductExportQuery query = getQuery();
-        ProductWriter exporter = ServiceHelper.getBean(ProductWriter.class);
+        ProductWriter exporter = new ProductCSVWriter(ServiceHelper.getArchetypeService(),
+                                                      rules, taxRules, ServiceHelper.getBean(DocumentHandlers.class));
         Iterator<Product> iterator = new ResultSetIterator<Product>(query.query());
         Document document;
         boolean includeLinkedPrices = query.includeLinkedPrices();
