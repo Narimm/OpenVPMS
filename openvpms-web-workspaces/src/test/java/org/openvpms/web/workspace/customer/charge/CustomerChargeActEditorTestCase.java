@@ -684,6 +684,41 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Verifies that the clinician is propagated to child acts.
+     */
+    @Test
+    public void testInitClinician() {
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, BigDecimal.ONE);
+        Entity reminderType1 = addReminder(product1);
+        Entity investigationType1 = addInvestigation(product1);
+        Entity template1 = addTemplate(product1);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        BigDecimal quantity = ONE;
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, quantity, queue);
+        FinancialAct item = (FinancialAct) itemEditor.getObject();
+
+        assertTrue(editor.isValid());
+        assertTrue(SaveHelper.save(editor));
+
+        Act medication = (Act) new ActBean(item).getNodeTargetObject("dispensing");
+        assertNotNull(medication);
+
+        Act reminder = getReminder(item, reminderType1);
+        Act investigation = getInvestigation(item, investigationType1);
+        Act document = getDocument(item, template1);
+        checkClinician(medication, clinician);
+        checkClinician(reminder, clinician);
+        checkClinician(investigation, clinician);
+        checkClinician(document, clinician);
+    }
+
+    /**
      * Verifies that an unsaved charge item can be deleted, when there is a prescription associated with the item's
      * product.
      */

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.patient;
@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -62,6 +63,13 @@ public class PatientActEditor extends AbstractActEditor {
             }
         } else {
             initParticipant("patient", context.getContext().getPatient());
+        }
+
+        if (act.isNew()) {
+            User clinician = context.getContext().getClinician();
+            if (clinician != null) {
+                initParticipant("clinician", clinician);
+            }
         }
     }
 
