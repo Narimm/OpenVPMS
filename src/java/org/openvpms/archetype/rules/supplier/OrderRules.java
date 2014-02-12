@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -173,17 +173,35 @@ public class OrderRules {
     /**
      * Invoices a supplier from an <em>act.supplierDelivery</em> act.
      * <p/>
-     * The invoice is saved.
+     * Both the invoice and delivery are saved.
      *
-     * @param supplierDelivery the supplier delivery act
+     * @param delivery the supplier delivery act
      * @return the invoice corresponding to the delivery
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws IllegalStateException     if the delivery is already associated with a charge
      */
-    public FinancialAct invoiceSupplier(Act supplierDelivery) {
-        List<IMObject> objects = copy(supplierDelivery,
-                                      DELIVERY,
-                                      new DeliveryHandler(), new Date(), true);
-        return (FinancialAct) objects.get(0);
+    public FinancialAct invoiceSupplier(Act delivery) {
+        if (isInvoiced(delivery)) {
+            throw new IllegalStateException("The delivery has already been invoiced");
+        }
+        ActBean bean = new ActBean(delivery, service);
+        List<IMObject> objects = copy(delivery, DELIVERY, new DeliveryHandler(), new Date(), false);
+        FinancialAct invoice = (FinancialAct) objects.get(0);
+        bean.addNodeRelationship("invoice", invoice);
+        objects.add(delivery);
+        service.save(objects);
+        return invoice;
+    }
+
+    /**
+     * Determines if a delivery has been invoiced.
+     *
+     * @param delivery the delivery
+     * @return {@code true} if the delivery has been invoiced
+     */
+    public boolean isInvoiced(Act delivery) {
+        ActBean bean = new ActBean(delivery, service);
+        return !bean.getNodeTargetObjectRefs("invoice").isEmpty();
     }
 
     /**
@@ -194,11 +212,30 @@ public class OrderRules {
      * @param supplierReturn the supplier return act
      * @return the credit corresponding to the return
      * @throws ArchetypeServiceException for any archetype service error
+     * @throws IllegalStateException     if the return is already associated with a credit
      */
     public FinancialAct creditSupplier(Act supplierReturn) {
-        List<IMObject> objects = copy(supplierReturn, RETURN,
-                                      new ReturnHandler(), new Date(), true);
+        if (isCredited(supplierReturn)) {
+            throw new IllegalStateException("The return is already linked to a credit");
+        }
+        ActBean bean = new ActBean(supplierReturn, service);
+        List<IMObject> objects = copy(supplierReturn, RETURN, new ReturnHandler(), new Date(), false);
+        FinancialAct credit = (FinancialAct) objects.get(0);
+        bean.addNodeRelationship("returnCredit", credit);
+        objects.add(supplierReturn);
+        service.save(objects);
         return (FinancialAct) objects.get(0);
+    }
+
+    /**
+     * Determines if a return has been credited.
+     *
+     * @param supplierReturn the supplier return act
+     * @return {@code true} if the return has been credited
+     */
+    public boolean isCredited(Act supplierReturn) {
+        ActBean bean = new ActBean(supplierReturn, service);
+        return !bean.getNodeTargetObjectRefs("returnCredit").isEmpty();
     }
 
     /**
@@ -336,6 +373,7 @@ public class OrderRules {
 
         public ReturnHandler() {
             super(TYPE_MAP);
+            setExclude("actRelationship.supplierReturnCredit");
         }
     }
 
@@ -352,6 +390,7 @@ public class OrderRules {
             super(TYPE_MAP);
             setReference(ORDER_ITEM);
             setReverse(!delivery);
+            setExclude("actRelationship.supplierDeliveryInvoice");
         }
     }
 

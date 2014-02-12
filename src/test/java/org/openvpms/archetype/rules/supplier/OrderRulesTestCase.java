@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -34,6 +34,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -197,6 +198,19 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
         FinancialAct item = (FinancialAct) acts.get(0);
         assertTrue(TypeHelper.isA(item, SupplierArchetypes.INVOICE_ITEM));
         checkEquals(total, item.getTotal());
+
+        // verify there is a relationship from the delivery to the invoice
+        ActBean deliveryBean = new ActBean(delivery);
+        List<Act> invoices = deliveryBean.getNodeActs("invoice");
+        assertEquals(1, invoices.size());
+        assertEquals(invoice, invoices.get(0));
+
+        try {
+            rules.invoiceSupplier(delivery);
+            fail("Expected invoicing to fail");
+        } catch (IllegalStateException exception) {
+            // the expected
+        }
     }
 
     /**
@@ -225,6 +239,19 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
 
         Act item = acts.get(0);
         assertTrue(TypeHelper.isA(item, SupplierArchetypes.CREDIT_ITEM));
+
+        // verify there is a relationship from the return to the credit
+        ActBean returnBean = new ActBean(orderReturn);
+        List<Act> credits = returnBean.getNodeActs("returnCredit");
+        assertEquals(1, credits.size());
+        assertEquals(credit, credits.get(0));
+
+        try {
+            rules.creditSupplier(orderReturn);
+            fail("Expected crediting to fail");
+        } catch (IllegalStateException exception) {
+            // the expected
+        }
     }
 
     /**
@@ -242,10 +269,15 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
                                       orderItem);
         delivery.setStatus(ActStatus.POSTED);
         save(delivery);
+        rules.invoiceSupplier(delivery); // create an invoice from the delivery
 
         Act reversal = rules.reverseDelivery(delivery);
         checkReversal(reversal, SupplierArchetypes.RETURN,
                       SupplierArchetypes.RETURN_ITEM, orderItem);
+
+        // verify the invoice hasn't been reversed. Probably should be. TODO
+        ActBean bean = new ActBean(reversal);
+        assertTrue(bean.getNodeActs("returnCredit").isEmpty());
     }
 
     /**
@@ -264,9 +296,18 @@ public class OrderRulesTestCase extends AbstractSupplierTest {
         orderReturn.setStatus(ActStatus.POSTED);
         save(orderReturn);
 
+        // create a credit for the return
+        rules.creditSupplier(orderReturn);
+        ActBean returnBean = new ActBean(orderReturn);
+        assertEquals(1, returnBean.getNodeActs("returnCredit").size());
+
         Act reversal = rules.reverseReturn(orderReturn);
         checkReversal(reversal, SupplierArchetypes.DELIVERY,
                       SupplierArchetypes.DELIVERY_ITEM, orderItem);
+
+        // verify the credit hasn't been reversed. Probably should be. TODO
+        ActBean bean = new ActBean(reversal);
+        assertTrue(bean.getNodeActs("invoice").isEmpty());
     }
 
     /**
