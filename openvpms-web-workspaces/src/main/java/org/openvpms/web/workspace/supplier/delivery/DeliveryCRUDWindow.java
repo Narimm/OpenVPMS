@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -28,7 +28,6 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -40,6 +39,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
@@ -160,20 +160,22 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         boolean editEnabled = false;
         boolean deleteEnabled = false;
         boolean postEnabled = false;
-        boolean invoiceReverseEnabled = false;
+        boolean invoiceEnabled = false;
+        boolean reverseEnabled = false;
         if (enable) {
             FinancialAct object = getObject();
-            ActActions<FinancialAct> operations = getActions();
+            DeliveryActions operations = (DeliveryActions) getActions();
             editEnabled = operations.canEdit(object);
             deleteEnabled = operations.canDelete(object);
             postEnabled = operations.canPost(object);
-            invoiceReverseEnabled = !postEnabled;  // can't invoice or reverse a non-posted act
+            invoiceEnabled = operations.canInvoice(object);
+            reverseEnabled = !postEnabled; // can only reverse posted acts
         }
         buttons.setEnabled(EDIT_ID, editEnabled);
         buttons.setEnabled(DELETE_ID, deleteEnabled);
         buttons.setEnabled(POST_ID, postEnabled);
-        buttons.setEnabled(INVOICE_ID, invoiceReverseEnabled);
-        buttons.setEnabled(REVERSE_ID, invoiceReverseEnabled);
+        buttons.setEnabled(INVOICE_ID, invoiceEnabled);
+        buttons.setEnabled(REVERSE_ID, reverseEnabled);
     }
 
     /**
@@ -294,7 +296,11 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      */
     private void invoice(Act act) {
         try {
-            rules.invoiceSupplier(act);
+            if (rules.isInvoiced(act)) {
+                InformationDialog.show(Messages.get("supplier.delivery.invoiced.message"));
+            } else {
+                rules.invoiceSupplier(act);
+            }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -307,7 +313,11 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
      */
     private void credit(Act act) {
         try {
-            rules.creditSupplier(act);
+            if (rules.isCredited(act)) {
+                InformationDialog.show(Messages.get("supplier.delivery.credited.message"));
+            } else {
+                rules.creditSupplier(act);
+            }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
