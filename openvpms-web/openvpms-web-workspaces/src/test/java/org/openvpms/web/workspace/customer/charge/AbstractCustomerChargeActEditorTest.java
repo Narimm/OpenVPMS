@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -135,10 +135,21 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         assertEquals(customer.getObjectReference(), bean.getNodeParticipantRef("customer"));
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         if (bean.hasNode("clinician")) {
-            assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+            checkClinician(charge, clinician);
         }
         checkEquals(tax, bean.getBigDecimal("tax"));
         checkEquals(total, bean.getBigDecimal("amount"));
+    }
+
+    /**
+     * Verifies that an act has the expected clinician.
+     *
+     * @param act       the act to check
+     * @param clinician the expected clinician
+     */
+    protected void checkClinician(Act act, User clinician) {
+        ActBean bean = new ActBean(act);
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
     }
 
     /**
