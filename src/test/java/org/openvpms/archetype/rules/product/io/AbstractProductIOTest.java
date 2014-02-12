@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -66,21 +66,23 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
      * @return the corresponding product data
      */
     protected ProductData createProduct(Product product) {
-        return createProduct(product, true);
+        return createProduct(product, BigDecimal.ZERO, true);
     }
 
     /**
      * Creates a new {@link ProductData} from a {@link Product}.
      *
      * @param product    the product
+     * @param taxRate    the product tax rate, expressed as a percentage
      * @param copyPrices if {@code true} add the product's prices, else exclude them
      * @return the corresponding product data
      */
-    protected ProductData createProduct(Product product, boolean copyPrices) {
+    protected ProductData createProduct(Product product, BigDecimal taxRate, boolean copyPrices) {
         ProductPriceRules rules = new ProductPriceRules(ArchetypeServiceHelper.getArchetypeService(),
                                                         LookupServiceHelper.getLookupService());
         IMObjectBean bean = new IMObjectBean(product);
-        ProductData result = new ProductData(product.getId(), product.getName(), bean.getString("printedName"), 1);
+        ProductData result = new ProductData(product.getId(), product.getName(), bean.getString("printedName"), taxRate,
+                                             1);
         result.setReference(product.getObjectReference());
         if (copyPrices) {
             for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE)) {

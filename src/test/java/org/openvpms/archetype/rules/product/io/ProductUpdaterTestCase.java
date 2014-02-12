@@ -81,7 +81,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductPrice unit1 = createUnitPrice("1.92", "1.2", "60", "2013-02-02", null);
         Product product = createProduct("P1", "Product 1", fixed1, unit1);
 
-        ProductData data = createProduct(product, false);
+        ProductData data = createProduct(product, BigDecimal.ZERO, false);
         data.addPrice(createFixedPriceData(-1, "1.08", "0.6", "2013-04-01", null, true));
         data.addPrice(createUnitPriceData(-1, "2.55", "1.5", "2013-04-03", null));
 
@@ -105,7 +105,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductPrice unit1 = createUnitPrice("1.0", "0.5", "100", "2013-01-01", "2013-03-31");
         Product product = createProduct("P1", "Product 1", unit1);
 
-        ProductData data1 = createProduct(product, false);
+        ProductData data1 = createProduct(product, BigDecimal.ZERO, false);
         PriceData price = createUnitPriceData(unit1.getId(), "1.08", "0.6", "2013-04-01", null);
         data1.addPrice(price);
 
@@ -125,7 +125,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         Product product = createProduct("P1", "Product 1", unit1);
 
         // verify that a unit price can be added that is dated prior to unit1
-        ProductData data1 = createProduct(product, false);
+        ProductData data1 = createProduct(product, BigDecimal.ZERO, false);
         data1.addPrice(createUnitPriceData(-1, "1.0", "0.5", "2013-01-01", "2013-03-31")); // unit0. Prior to unit1.
 
         updater.update(product, data1, practice);
@@ -137,7 +137,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         save(product);
 
         // verify that a unit price can't be added that is dated prior to the existing prices, and overlaps them all
-        ProductData data2 = createProduct(product, false);
+        ProductData data2 = createProduct(product, BigDecimal.ZERO, false);
         data2.addPrice(createUnitPriceData(-1, "1.92", "1.2", "2013-01-02", null)); // overlaps unit1, unit0
         try {
             updater.update(product, data2, practice);
@@ -147,7 +147,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         }
 
         // verify that a unit price can't be added that is dated prior to the existing prices, and overlaps the first
-        ProductData data3 = createProduct(product, false);
+        ProductData data3 = createProduct(product, BigDecimal.ZERO, false);
         data3.addPrice(createUnitPriceData(-1, "1.92", "1.2", "2012-12-31", "2013-01-02")); // overlaps unit0
         try {
             updater.update(product, data3, practice);
@@ -166,7 +166,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         Product product = createProduct("P1", "Product 1", fixed1);
 
         // verify that a unit fixed can be added that is dated prior to fixed1
-        ProductData data1 = createProduct(product, false);
+        ProductData data1 = createProduct(product, BigDecimal.ZERO, false);
         data1.addPrice(createFixedPriceData(-1, "1.0", "0.5", "2013-01-01", "2013-03-31", true));
         // fixed0. Prior to fixed1.
 
@@ -179,7 +179,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         save(product);
 
         // add a price that overlaps both existing prices. This shouldn't change any dates.
-        ProductData data2 = createProduct(product, false);
+        ProductData data2 = createProduct(product, BigDecimal.ZERO, false);
         data2.addPrice(createFixedPriceData(-1, "1.92", "1.2", "2013-01-02", null, true)); // overlaps fixed0, fixed1
         updater.update(product, data2, practice);
 
@@ -197,7 +197,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductPrice unit1 = createUnitPrice("1.92", "1.2", "60", "2013-02-02", null);
         Product product = createProduct("P1", "Product 1", fixed1, unit1);
 
-        ProductData data = createProduct(product, false);
+        ProductData data = createProduct(product, BigDecimal.ZERO, false);
         PriceData fixed2 = createFixedPriceData(-1, "1.08", "0.6", "2013-04-02", null, true);
         data.addPrice(fixed2);
         data.addPrice(fixed2);
@@ -280,7 +280,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductPrice unit2 = createUnitPrice("1.92", "1.2", "60", "2013-04-02", null);
         Product product = createProduct("P1", "Product 1", unit1, unit2);
 
-        ProductData data = createProduct(product, true);
+        ProductData data = createProduct(product, BigDecimal.ZERO, true);
         PriceData unit3 = createUnitPriceData(-1, "1.92", "1.2", "2013-04-02", null); // duplicates unit2
         data.addPrice(unit3);
 
@@ -301,7 +301,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductPrice fixed2 = createFixedPrice("1.92", "1.2", "60", "2013-04-02", null, true);
         Product product = createProduct("P1", "Product 1", fixed1, fixed2);
 
-        ProductData data = createProduct(product, true);
+        ProductData data = createProduct(product, BigDecimal.ZERO, true);
         PriceData fixed3 = createFixedPriceData(-1, "1.92", "1.2", "2013-04-02", null, true); // duplicates fixed2
         data.addPrice(fixed3);
 
@@ -321,7 +321,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         ProductPrice fixed2 = createFixedPrice("1.92", "1.2", "60", "2013-04-02", null, true);
         Product product = createProduct("P1", "Product 1", fixed1, fixed2);
 
-        ProductData data = createProduct(product, true);
+        ProductData data = createProduct(product, BigDecimal.ZERO, true);
         data.getFixedPrices().get(0).setDefault(false);
         data.getFixedPrices().get(1).setDefault(false);
 

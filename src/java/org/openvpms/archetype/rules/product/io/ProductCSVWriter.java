@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -20,6 +20,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -49,7 +50,7 @@ public class ProductCSVWriter implements ProductWriter {
     public static final String[] HEADER = {
             "Product Id", "Product Name", "Product Printed Name", "Fixed Price Id", "Fixed Price", "Fixed Cost",
             "Fixed Price Start Date", "Fixed Price End Date", "Default Fixed Price", "Unit Price Id", "Unit Price",
-            "Unit Cost", "Unit Price Start Date", "Unit Price End Date", "Notes"};
+            "Unit Cost", "Unit Price Start Date", "Unit Price End Date", "Tax Rate", "Notes"};
 
     /**
      * The archetype service.
@@ -60,6 +61,11 @@ public class ProductCSVWriter implements ProductWriter {
      * The product price rules.
      */
     private final ProductPriceRules rules;
+
+    /**
+     * The tax rules.
+     */
+    private final TaxRules taxRules;
 
     /**
      * The document handlers.
@@ -86,12 +92,16 @@ public class ProductCSVWriter implements ProductWriter {
     /**
      * Constructs a {@link ProductCSVWriter}.
      *
+     * @param service  the archetype service
      * @param rules    the price rules
+     * @param taxRules the tax rules
      * @param handlers the document handlers
      */
-    public ProductCSVWriter(IArchetypeService service, ProductPriceRules rules, DocumentHandlers handlers) {
+    public ProductCSVWriter(IArchetypeService service, ProductPriceRules rules, TaxRules taxRules,
+                            DocumentHandlers handlers) {
         this.service = service;
         this.rules = rules;
+        this.taxRules = taxRules;
         this.handlers = handlers;
     }
 
@@ -181,6 +191,7 @@ public class ProductCSVWriter implements ProductWriter {
         List<ProductPrice> unitPrices = getPrices(product, ProductArchetypes.UNIT_PRICE, prices, from, to,
                                                   includeLinkedPrices);
         String printedName = bean.getString("printedName");
+        String tax = taxRules.getTaxRate(product).toString();
 
         int count = Math.max(fixedPrices.size(), unitPrices.size());
         if (count == 0) {
@@ -225,7 +236,7 @@ public class ProductCSVWriter implements ProductWriter {
                 unitEndDate = getDate(unitPrice.getToDate());
             }
             String[] line = {productId, name, printedName, fixedId, fixed, fixedCost, fixedStartDate, fixedEndDate,
-                             defaultFixedPrice, unitId, unit, unitCost, unitStartDate, unitEndDate, notes};
+                             defaultFixedPrice, unitId, unit, unitCost, unitStartDate, unitEndDate, tax, notes};
             writer.writeNext(line);
         }
     }

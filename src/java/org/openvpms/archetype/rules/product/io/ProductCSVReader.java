@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -145,6 +145,11 @@ public class ProductCSVReader implements ProductReader {
      */
     private static final int UNIT_PRICE_END_DATE = 13;
 
+    /**
+     * The product tax rate column.
+     */
+    private static final int TAX_RATE = 14;
+
     static {
         for (DateFormat format : DAY_MONTH_YEAR_FORMATS) {
             format.setLenient(false);
@@ -248,19 +253,21 @@ public class ProductCSVReader implements ProductReader {
         long id = -1;
         String name = null;
         String printedName = null;
+        BigDecimal tax = null;
 
         try {
             id = getId(line, ID, lineNo, true);
             name = getName(line, lineNo);
             printedName = getValue(line, PRINTED_NAME, lineNo, false);
+            tax = getDecimal(line, TAX_RATE, lineNo);
         } catch (ProductIOException exception) {
-            ProductData invalid = new ProductData(id, name, printedName, lineNo);
+            ProductData invalid = new ProductData(id, name, printedName, tax, lineNo);
             invalid.setError(exception.getMessage(), exception.getLine());
             errors.add(invalid);
             return null;
         }
         if (current == null || id != current.getId()) {
-            current = new ProductData(id, name, printedName, lineNo);
+            current = new ProductData(id, name, printedName, tax, lineNo);
             data.add(current);
         }
         try {
