@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -307,10 +307,23 @@ public abstract class AbstractWorkspace<T extends IMObject>
 
     /**
      * Lays out the component.
+     * <p/>
+     * This renders a heading using {@link #createHeading}.
      *
      * @return the component
      */
     protected Component doLayout() {
+        return createHeading();
+    }
+
+    /**
+     * Creates a workspace heading.
+     * <br/>
+     * This registers a keystroke listener to invoke {@link #onHelp()} when the help key is pressed.
+     *
+     * @return a new heading
+     */
+    protected Component createHeading() {
         Component heading = Heading.getHeading(workspacesId, workspaceId);
         KeyStrokeListener listener = new KeyStrokeListener();
         listener.addKeyCombination(getHelpContext().getKeyCode());
