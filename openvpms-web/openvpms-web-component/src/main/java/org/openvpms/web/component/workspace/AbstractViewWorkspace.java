@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -197,7 +197,7 @@ public abstract class AbstractViewWorkspace<T extends IMObject> extends Abstract
     @Override
     protected Component doLayout() {
         root = createRootComponent();
-        Component heading = super.doLayout();
+        Component heading = createHeading();
         Column top = ColumnFactory.create(heading);
         if (selector != null) {
             Component select = selector.getComponent();
