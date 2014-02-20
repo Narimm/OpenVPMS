@@ -149,6 +149,9 @@ public class CheckInWorkflow extends WorkflowImpl {
      */
     private void initialise(Act appointment, Party customer, Party patient, User clinician, String taskDescription,
                             String reason, Context context) {
+        if (context.getPractice() == null) {
+            throw new IllegalStateException("Context has no practice");
+        }
         external = context;
         HelpContext help = getHelpContext();
         initial = new DefaultTaskContext(help);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -69,6 +69,9 @@ public class ConsultWorkflow extends WorkflowImpl {
      */
     public ConsultWorkflow(Act act, final Context external, HelpContext help) {
         super(help);
+        if (external.getPractice() == null) {
+            throw new IllegalStateException("Context has no practice");
+        }
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");

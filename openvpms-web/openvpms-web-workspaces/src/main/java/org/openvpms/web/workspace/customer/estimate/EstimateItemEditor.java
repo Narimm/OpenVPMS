@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.customer.estimate;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
+import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -37,6 +38,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
 import java.math.BigDecimal;
@@ -51,6 +53,11 @@ import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
  * @author Tim Anderson
  */
 public class EstimateItemEditor extends PriceActItemEditor {
+
+    /**
+     * Tax rules.
+     */
+    private final CustomerTaxRules taxRules;
 
     /**
      * Low quantity selling units.
@@ -86,6 +93,8 @@ public class EstimateItemEditor extends PriceActItemEditor {
             // default the act start time to today
             act.setActivityStartTime(new Date());
         }
+        taxRules = new CustomerTaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService(),
+                                        ServiceHelper.getLookupService());
 
         // add a listener to update the discount when the fixed, high unit price
         // or quantity, changes
@@ -174,13 +183,14 @@ public class EstimateItemEditor extends PriceActItemEditor {
             }
 
             if (fixed != null) {
-                fixedPrice.setValue(fixed.getPrice());
+                fixedPrice.setValue(getPrice(product, fixed));
             } else {
                 fixedPrice.setValue(BigDecimal.ZERO);
             }
             if (unit != null) {
-                lowUnitPrice.setValue(unit.getPrice());
-                highUnitPrice.setValue(unit.getPrice());
+                BigDecimal price = getPrice(product, unit);
+                lowUnitPrice.setValue(price);
+                highUnitPrice.setValue(price);
             } else {
                 lowUnitPrice.setValue(BigDecimal.ZERO);
                 highUnitPrice.setValue(BigDecimal.ZERO);
@@ -199,6 +209,19 @@ public class EstimateItemEditor extends PriceActItemEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
         return new EstimateItemLayoutStrategy(fixedPrice);
+    }
+
+    /**
+     * Returns the price of a product.
+     * <p/>
+     * This subtracts any tax exclusions the customer may have.
+     *
+     * @param price the price
+     * @return the price, minus any tax exclusions
+     */
+    private BigDecimal getPrice(Product product, ProductPrice price) {
+        BigDecimal amount = price.getPrice();
+        return taxRules.getTaxExAmount(amount, product, getCustomer());
     }
 
     /**

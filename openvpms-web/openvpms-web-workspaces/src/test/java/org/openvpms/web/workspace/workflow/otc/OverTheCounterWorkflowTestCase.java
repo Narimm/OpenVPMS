@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
@@ -228,6 +228,7 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
     public void setUp() {
         super.setUp();
         context = new LocalContext();
+        context.setPractice(TestHelper.getPractice());
         Party location = TestHelper.createLocation();
         Party till = TestHelper.createTill();
         otc = (Party) create(CustomerArchetypes.OTC);
@@ -240,7 +241,6 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
         author = TestHelper.createUser();
         context.setUser(author);
         context.setTill(till);
-
 
         // register an ErrorHandler to collect errors
         ErrorHandler.setInstance(new ErrorHandler() {
