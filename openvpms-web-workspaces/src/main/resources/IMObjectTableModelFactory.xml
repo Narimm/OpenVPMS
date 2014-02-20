@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <handlers>
@@ -41,7 +41,10 @@
                     </entry>
                     <entry>
                         <string>act.patientMedication</string>
-                        <string>/description</string>
+                        <string>concat(openvpms:get(.,'product.entity.name'), ' - ',/details/label,' Qty : ',
+                            /details/quantity,' Expiry : ', expr:if(boolean(/activityEndTime),
+                            date:formatDate(/activityEndTime), 'None'))
+                        </string>
                     </entry>
                 </java.util.Map>
             </entry>
