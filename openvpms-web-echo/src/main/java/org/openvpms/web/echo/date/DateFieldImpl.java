@@ -1,25 +1,26 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.date;
 
+import echopointng.DateChooser;
 import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.webrender.Connection;
+import nextapp.echo2.webrender.WebRenderServlet;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
@@ -35,11 +36,9 @@ import java.util.TimeZone;
 
 
 /**
- * <code>DateField</code> that supports the entering of relative dates
- * via {@link RelativeDateParser}.
+ * {@code DateField} that supports the entering of relative dates via {@link RelativeDateParser}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DateFieldImpl extends DateField {
 
@@ -49,7 +48,7 @@ public class DateFieldImpl extends DateField {
     private boolean allowNulls = false;
 
     /**
-     * Constructs a new <tt>DateFieldImpl</tt>.
+     * Constructs a {@link DateFieldImpl}.
      */
     public DateFieldImpl() {
         DateFormat edit = DateFormatter.getDateFormat(true);
@@ -63,17 +62,34 @@ public class DateFieldImpl extends DateField {
             public void onAction(ActionEvent e) {
             }
         });
+
+        // register a date chooser that avoids displayedDate updates if the text field has been updated
+        // in the same sync. See OVPMS-1408
+        DateChooser chooser = new DateChooser() {
+            @Override
+            public void processInput(String inputName, Object inputValue) {
+                if ("displayedDate".equals(inputName)) {
+                    Connection connection = WebRenderServlet.getActiveConnection();
+                    if (connection != null && "true".equals(connection.getProperty(getDateUpdatedPropertyKey()))) {
+                        return;
+                    }
+                }
+                super.processInput(inputName, inputValue);
+            }
+        };
+        chooser.setSelectedDate(chooser.getSelectedDate());
+        setDateChooser(chooser);
     }
 
     /**
      * Determines if null or empty strings may be input.
      * <p/>
-     * If <tt>true</tt>, null or empty strings may be input, otherwise they will
+     * If {@code true}, null or empty strings may be input, otherwise they will
      * be ignored, and the field will revert to the prior value.
      * <p/>
-     * Defaults to <tt>false</tt>.
+     * Defaults to {@code false}.
      *
-     * @param allow if <tt>true</tt> null or empty strings may be input
+     * @param allow if {@code true} null or empty strings may be input
      */
     public void setAllowNulls(boolean allow) {
         this.allowNulls = allow;
@@ -81,7 +97,7 @@ public class DateFieldImpl extends DateField {
 
     /**
      * Called to update the calendar selection model from the current text
-     * field contents. Only works if <code>isUpdateFromTextField()</code>
+     * field contents. Only works if {@code isUpdateFromTextField()}
      * currently returns true.
      */
     @Override
@@ -93,12 +109,25 @@ public class DateFieldImpl extends DateField {
                 super.updateDateFromText();
             }
             updateTextFromDate();
+            Connection connection = WebRenderServlet.getActiveConnection();
+            if (connection != null) {
+                connection.setProperty(getDateUpdatedPropertyKey(), "true");
+            }
         }
     }
 
     /**
+     * Returns a unique property name to register that the date has been updated in the current sync.
+     *
+     * @return a unique property name
+     */
+    private String getDateUpdatedPropertyKey() {
+        return getRenderId() + ".dateUpdated";
+    }
+
+    /**
      * Helper class to enable separate date formats to be used for editing and
-     * viewing a <code>DateField</code>. This is required to support display
+     * viewing a {@code DateField}. This is required to support display
      * dates with dd/MM/yyyy format, but also parse years correctly for dates
      * specified as dd/MM/yy.
      */
@@ -108,7 +137,7 @@ public class DateFieldImpl extends DateField {
          * The relative date parser.
          */
         private static final RelativeDateParser _parser
-            = new RelativeDateParser();
+                = new RelativeDateParser();
 
         /**
          * The edit format.
@@ -121,7 +150,7 @@ public class DateFieldImpl extends DateField {
         private final DateFormat _view;
 
         /**
-         * Construct a new <code>DelegatingDateFormat</code>
+         * Construct a new {@code DelegatingDateFormat}
          *
          * @param edit the edit format
          * @param view the view format
@@ -187,9 +216,9 @@ public class DateFieldImpl extends DateField {
          * Parses text from the beginning of the given string to produce a date.
          * The method may not use the entire text of the given string.
          *
-         * @param source A <code>String</code> whose beginning should be
+         * @param source A {@code String} whose beginning should be
          *               parsed.
-         * @return A <code>Date</code> parsed from the string.
+         * @return A {@code Date} parsed from the string.
          * @throws ParseException if the beginning of the specified string
          *                        cannot be parsed.
          */
@@ -203,14 +232,14 @@ public class DateFieldImpl extends DateField {
         }
 
         /**
-         * Parses text from a string to produce a <code>Date</code>.
+         * Parses text from a string to produce a {@code Date}.
          *
-         * @param source A <code>String</code>, part of which should be parsed.
-         * @param pos    A <code>ParsePosition</code> object with index and
+         * @param source A {@code String}, part of which should be parsed.
+         * @param pos    A {@code ParsePosition} object with index and
          *               error index information as described above.
-         * @return A <code>Date</code> parsed from the string. In case of error,
+         * @return A {@code Date} parsed from the string. In case of error,
          *         returns null.
-         * @throws NullPointerException if <code>pos</code> is null.
+         * @throws NullPointerException if {@code pos} is null.
          */
         @Override
         public Object parseObject(String source, ParsePosition pos) {
