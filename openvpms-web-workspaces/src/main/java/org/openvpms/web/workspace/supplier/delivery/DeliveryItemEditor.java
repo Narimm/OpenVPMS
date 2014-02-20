@@ -11,15 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -49,6 +51,11 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
      */
     private String parentStatus;
 
+    /**
+     * Determines if product prices should be updated.
+     */
+    private final boolean updateProductPrices;
+
 
     /**
      * Constructs a {@link DeliveryItemEditor}.
@@ -63,6 +70,8 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
         orderEditor = new ActRelationshipCollectionEditor(order, act, getLayoutContext());
         getEditors().add(orderEditor);
         parentStatus = (parent != null) ? parent.getStatus() : null;
+        Property invoiceLineId = getProperty("supplierInvoiceLineId");
+        updateProductPrices = !(invoiceLineId != null && !StringUtils.isEmpty(invoiceLineId.getString()));
     }
 
     /**
@@ -118,6 +127,18 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Invoked when the product is changed, to update prices.
+     *
+     * @param product the product. May be {@code null}
+     */
+    @Override
+    protected void productModified(Product product) {
+        if (updateProductPrices) {
+            super.productModified(product);
+        }
     }
 
     /**
