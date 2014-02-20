@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.estimate;
@@ -31,7 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import java.math.BigDecimal;
 
 /**
- * Enter description.
+ * Estimate test helper methods.
  *
  * @author Tim Anderson
  */
@@ -48,12 +48,12 @@ public class EstimateTestHelper {
     public static Act createEstimate(Party customer, User author, Act... items) {
         Act estimate = (Act) TestHelper.create(EstimateArchetypes.ESTIMATE);
         ActBean bean = new ActBean(estimate);
+        bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
+        bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
         BigDecimal lowTotal = BigDecimal.ZERO;
         BigDecimal highTotal = BigDecimal.ZERO;
         for (Act item : items) {
             ActBean itemBean = new ActBean(item);
-            bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
-            bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
             bean.addRelationship(EstimateArchetypes.ESTIMATE_ITEM_RELATIONSHIP, item);
             highTotal = highTotal.add(itemBean.getBigDecimal("highTotal"));
             lowTotal = lowTotal.add(itemBean.getBigDecimal("lowTotal"));

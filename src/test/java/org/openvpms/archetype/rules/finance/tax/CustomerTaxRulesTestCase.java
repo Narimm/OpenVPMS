@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.tax;
@@ -35,7 +35,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -95,9 +97,39 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link CustomerTaxRules#calculateTax(FinancialAct, Party)}
-     * method where the product has a 10% tax, but the customer has a tax
-     * exemption.
+     * Tests the {@link CustomerTaxRules#getTaxExemptions(Party)} method.
+     */
+    @Test
+    public void testGetTaxExemptions() {
+        Party customer = createCustomer();
+        assertTrue(rules.getTaxExemptions(customer).isEmpty());
+        customer.addClassification(taxType);
+        List<Lookup> exemptions = rules.getTaxExemptions(customer);
+        assertEquals(1, exemptions.size());
+        assertTrue(exemptions.contains(taxType));
+    }
+
+    /**
+     * Tests the {@link CustomerTaxRules#getTaxExAmount(BigDecimal, Product, Party)} method.
+     */
+    @Test
+    public void getTaxExAmount() {
+        Party customer = createCustomer();
+        Product product = createProduct();
+        product.addClassification(taxType);
+
+        BigDecimal amount1 = rules.getTaxExAmount(BigDecimal.TEN, product, customer);
+        checkEquals(BigDecimal.TEN, amount1);
+
+        customer.addClassification(taxType); // tax exemption
+
+        BigDecimal amount2 = rules.getTaxExAmount(BigDecimal.TEN, product, customer);
+        checkEquals(new BigDecimal("9.091"), amount2);
+    }
+
+    /**
+     * Tests the {@link CustomerTaxRules#calculateTax(FinancialAct, Party)} method where the product has a 10% tax, but
+     * the customer has a tax exemption.
      */
     @Test
     public void testCalculateTaxForCustomerTaxExemption() {
