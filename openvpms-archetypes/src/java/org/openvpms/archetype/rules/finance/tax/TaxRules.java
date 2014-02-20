@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.tax;
@@ -42,6 +40,7 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -49,8 +48,7 @@ import java.util.List;
 /**
  * Tax Rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class TaxRules {
 
@@ -76,7 +74,7 @@ public class TaxRules {
 
 
     /**
-     * Creates a new <tt>TaxRules</tt>.
+     * Constructs a {@link TaxRules}.
      *
      * @param practice the practice, for default tax classifications
      */
@@ -86,16 +84,15 @@ public class TaxRules {
     }
 
     /**
-     * Creates a new <tt>TaxRules</tt>.
+     * Constructs a {@link TaxRules}.
      *
      * @param practice the practice, for default tax classifications
      * @param service  the archetype service
      * @param lookups  the lookup service
      */
-    public TaxRules(Party practice, IArchetypeService service,
-                    ILookupService lookups) {
+    public TaxRules(Party practice, IArchetypeService service, ILookupService lookups) {
         IMObjectBean bean = new IMObjectBean(practice, service);
-        practiceTaxRates = bean.getValues("taxes", Lookup.class);
+        practiceTaxRates = Collections.unmodifiableList(bean.getValues("taxes", Lookup.class));
         this.service = service;
         this.lookups = lookups;
     }
@@ -118,12 +115,10 @@ public class TaxRules {
      *
      * @param amount    the amount
      * @param product   the product
-     * @param inclusive if <tt>true</tt> the amount is tax inclusive, otherwise
-     *                  it is tax exclusive
+     * @param inclusive if {@code true} the amount is tax inclusive, otherwise it is tax exclusive
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal calculateTax(BigDecimal amount, Product product,
-                                   boolean inclusive) {
+    public BigDecimal calculateTax(BigDecimal amount, Product product, boolean inclusive) {
         return calculateTax(amount, getProductTaxRates(product), inclusive);
     }
 
@@ -133,14 +128,11 @@ public class TaxRules {
      *
      * @param amount    the amount
      * @param taxRates  the tax rate classifications
-     * @param inclusive if <tt>true</tt> the amount is tax inclusive, otherwise
-     *                  it is tax exclusive
+     * @param inclusive if {@code true} the amount is tax inclusive, otherwise it is tax exclusive
      * @return the tax on the amount
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal calculateTax(BigDecimal amount,
-                                   Collection<Lookup> taxRates,
-                                   boolean inclusive) {
+    public BigDecimal calculateTax(BigDecimal amount, Collection<Lookup> taxRates, boolean inclusive) {
         BigDecimal rate = getTaxRate(taxRates);
         BigDecimal tax = amount.multiply(rate);
         BigDecimal divisor = BigDecimal.valueOf(100);
@@ -149,6 +141,35 @@ public class TaxRules {
         }
         tax = MathRules.divide(tax, divisor, 3);
         return tax;
+    }
+
+    /**
+     * Returns a list of taxes for a product.
+     * <p/>
+     * If the product has no taxType classifications, it returns any taxType classifications for the
+     * entity.productTypes associated with the product.
+     * <p/>
+     * If there are no taxType classifications associated with the product * types, returns any taxType classifications
+     * associated with the practice.
+     *
+     * @param product the product
+     * @return a list of taxes for the product
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Collection<Lookup> getProductTaxRates(Product product) {
+        EntityBean bean = new EntityBean(product, service);
+        Collection<Lookup> taxes = new HashSet<Lookup>();
+        taxes.addAll(bean.getValues("taxes", Lookup.class));
+        if (taxes.isEmpty()) {
+            List<IMObjectReference> productTypes = bean.getNodeSourceEntityRefs("type");
+            for (IMObjectReference productType : productTypes) {
+                taxes.addAll(getProductTypeTaxRates(productType));
+            }
+        }
+        if (taxes.isEmpty()) {
+            taxes = getPracticeTaxRates();
+        }
+        return taxes;
     }
 
     /**
@@ -166,37 +187,6 @@ public class TaxRules {
             result = result.add(rate);
         }
         return result;
-    }
-
-    /**
-     * Returns a list of taxes for a product.
-     * <p/>
-     * If the product has no taxType
-     * classifications, it returns any taxType classifications for the
-     * entity.productTypes associated with the product.
-     * <p/>
-     * If there are no taxType classifications associated with the product
-     * types, returns any taxType classifications associated with the practice.
-     *
-     * @param product the product
-     * @return a list of taxes for the product
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    protected Collection<Lookup> getProductTaxRates(Product product) {
-        EntityBean bean = new EntityBean(product, service);
-        Collection<Lookup> taxes = new HashSet<Lookup>();
-        taxes.addAll(bean.getValues("taxes", Lookup.class));
-        if (taxes.isEmpty()) {
-            List<IMObjectReference> productTypes
-                    = bean.getNodeSourceEntityRefs("type");
-            for (IMObjectReference productType : productTypes) {
-                taxes.addAll(getProductTypeTaxRates(productType));
-            }
-        }
-        if (taxes.isEmpty()) {
-            taxes = getPracticeTaxRates();
-        }
-        return taxes;
     }
 
     /**
@@ -229,16 +219,13 @@ public class TaxRules {
         List<Lookup> result = new ArrayList<Lookup>();
 
         // query an lookup.taxType lookups associated with the product type
-        ShortNameConstraint taxType = new ShortNameConstraint(
-                "l", TAX_TYPE, true, true);
-        ObjectRefConstraint prodType = new ObjectRefConstraint("productType",
-                                                               productType);
+        ShortNameConstraint taxType = new ShortNameConstraint("l", TAX_TYPE, true, true);
+        ObjectRefConstraint prodType = new ObjectRefConstraint("productType", productType);
         prodType.add(new CollectionNodeConstraint("taxes", taxType));
         ArchetypeQuery query = new ArchetypeQuery(prodType);
         query.add(new NodeSelectConstraint("l", "code"));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        ObjectSetQueryIterator iter
-                = new ObjectSetQueryIterator(service, query);
+        ObjectSetQueryIterator iter = new ObjectSetQueryIterator(service, query);
 
         while (iter.hasNext()) {
             // use the lookup service to retrieve any lookups

@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.tax;
 
-import static org.openvpms.archetype.rules.finance.tax.TaxRuleException.ErrorCode.InvalidActForTax;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -36,12 +33,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.finance.tax.TaxRuleException.ErrorCode.InvalidActForTax;
+
 
 /**
  * Customer Tax Rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class CustomerTaxRules extends TaxRules {
 
@@ -61,7 +59,7 @@ public class CustomerTaxRules extends TaxRules {
 
 
     /**
-     * Constructs a new <tt>CustomerTaxRules</tt>.
+     * Constructs a {@link CustomerTaxRules}.
      *
      * @param practice the practice, for default tax classifications
      */
@@ -70,14 +68,13 @@ public class CustomerTaxRules extends TaxRules {
     }
 
     /**
-     * Constructs  a new <tt>CustomerTaxRules</tt>.
+     * Constructs a {@link CustomerTaxRules}.
      *
      * @param practice the practice, for default tax classifications.
      * @param service  the archetype service
      * @param lookups  the lookup service
      */
-    public CustomerTaxRules(Party practice, IArchetypeService service,
-                            ILookupService lookups) {
+    public CustomerTaxRules(Party practice, IArchetypeService service, ILookupService lookups) {
         super(practice, service, lookups);
     }
 
@@ -124,6 +121,35 @@ public class CustomerTaxRules extends TaxRules {
     }
 
     /**
+     * Returns the tax exemptions for a customer.
+     *
+     * @param customer the customer
+     * @return a list fo tax rate classifications for the customer
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public List<Lookup> getTaxExemptions(Party customer) {
+        IMObjectBean bean = new IMObjectBean(customer, getService());
+        if (bean.hasNode("taxes")) {
+            return bean.getValues("taxes", Lookup.class);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns an amount exclusive of tax that a customer has exemptions for.
+     *
+     * @param amount   the tax-inclusive amount
+     * @param product  the product
+     * @param customer the customer
+     * @return the tax ex-amount
+     */
+    public BigDecimal getTaxExAmount(BigDecimal amount, Product product, Party customer) {
+        Collection<Lookup> productTaxRates = new ArrayList<Lookup>(getProductTaxRates(product));
+        productTaxRates.retainAll(getTaxExemptions(customer));
+        return amount.subtract(calculateTax(amount, productTaxRates, true));
+    }
+
+    /**
      * Calculates the tax for an act, given a list of tax rate classifications.
      * <p/>
      * The tax amount will be calculated and stored in the tax node of the act.
@@ -133,8 +159,7 @@ public class CustomerTaxRules extends TaxRules {
      * @return the tax on the act
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private BigDecimal calculateTaxAmount(FinancialAct act,
-                                          List<Lookup> taxRates) {
+    private BigDecimal calculateTaxAmount(FinancialAct act, List<Lookup> taxRates) {
         BigDecimal tax = BigDecimal.ZERO;
         BigDecimal total = act.getTotal();
         if (total != null) {
@@ -145,8 +170,7 @@ public class CustomerTaxRules extends TaxRules {
     }
 
     /**
-     * Returns the tax rate classifications for an act, excluding any
-     * classifiations associated with the customer.
+     * Returns the tax rate classifications for an act, excluding any classifications associated with the customer.
      *
      * @param act      the act
      * @param customer the customer
@@ -158,8 +182,7 @@ public class CustomerTaxRules extends TaxRules {
         ActBean bean = new ActBean(act);
         Collection<Lookup> taxRates;
         if (bean.isA(CHARGE_ITEM_TYPES)) {
-            Product product
-                    = (Product) bean.getParticipant("participation.product");
+            Product product = (Product) bean.getParticipant("participation.product");
             if (product == null) {
                 taxRates = Collections.emptyList();
             } else {
@@ -168,30 +191,14 @@ public class CustomerTaxRules extends TaxRules {
         } else if (bean.isA(ADJUSTMENT_TYPES)) {
             taxRates = getPracticeTaxRates();
         } else {
-            throw new TaxRuleException(InvalidActForTax,
-                                       act.getArchetypeId().getShortName());
+            throw new TaxRuleException(InvalidActForTax, act.getArchetypeId().getShortName());
         }
         List<Lookup> result = new ArrayList<Lookup>(taxRates);
         if (!result.isEmpty()) {
-            List<Lookup> exclusions = getCustomerTaxRates(customer);
+            List<Lookup> exclusions = getTaxExemptions(customer);
             result.removeAll(exclusions);
         }
         return result;
-    }
-
-    /**
-     * Returns the tax rate classifications for a customer.
-     *
-     * @param customer the customer
-     * @return a list fo tax rate classifications for the customer
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private List<Lookup> getCustomerTaxRates(Party customer) {
-        IMObjectBean bean = new IMObjectBean(customer, getService());
-        if (bean.hasNode("taxes")) {
-            return bean.getValues("taxes", Lookup.class);
-        }
-        return Collections.emptyList();
     }
 
 }
