@@ -90,6 +90,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
      */
     public CheckInWorkflowRunner(Act appointment, Party practice, Context context) {
         super(practice);
+        context.setPractice(practice);
         this.appointment = appointment;
         setWorkflow(new TestCheckInWorkflow(appointment, context, new HelpContext("foo", null)));
     }

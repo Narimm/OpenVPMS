@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
@@ -63,7 +63,7 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs an {@code OverTheCounterWorkflow}.
+     * Constructs an {@link OverTheCounterWorkflow}.
      *
      * @param parent the parent context
      * @param help   the help context
@@ -72,6 +72,9 @@ public class OverTheCounterWorkflow extends WorkflowImpl {
      */
     public OverTheCounterWorkflow(final Context parent, HelpContext help) {
         super(help);
+        if (parent.getPractice() == null) {
+            throw new IllegalStateException("Context has no practice");
+        }
         initial = new DefaultTaskContext(null, help);
         Party location = parent.getLocation();
         if (location == null) {

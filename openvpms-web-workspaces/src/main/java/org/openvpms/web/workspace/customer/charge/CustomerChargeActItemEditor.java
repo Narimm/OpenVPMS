@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -23,7 +23,6 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemDocumentLinker;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.tax.TaxRuleException;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
@@ -42,7 +41,6 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -183,6 +181,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private boolean cancelPrescription;
 
     /**
+     * Customer tax rules.
+     */
+    private CustomerTaxRules taxRules;
+
+    /**
      * Dispensing node name.
      */
     private static final String DISPENSING = "dispensing";
@@ -226,9 +229,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         reminders = createCollectionEditor(REMINDERS, act);
 
         rules = new StockRules();
-        reminderRules = new ReminderRules(ServiceHelper.getArchetypeService(),
-                                          new PatientRules(ServiceHelper.getArchetypeService(),
-                                                           ServiceHelper.getLookupService()));
+        reminderRules = ServiceHelper.getBean(ReminderRules.class);
+        taxRules = new CustomerTaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService(),
+                                        ServiceHelper.getLookupService());
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateMedicationQuantity();
@@ -507,14 +510,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
 
             if (fixedProductPrice != null) {
-                fixedPrice.setValue(fixedProductPrice.getPrice());
+                fixedPrice.setValue(getPrice(product, fixedProductPrice));
                 fixedCost.setValue(getCost(fixedProductPrice));
             } else {
                 fixedPrice.setValue(BigDecimal.ZERO);
                 fixedCost.setValue(BigDecimal.ZERO);
             }
             if (unitProductPrice != null) {
-                unitPrice.setValue(unitProductPrice.getPrice());
+                unitPrice.setValue(getPrice(product, unitProductPrice));
                 unitCost.setValue(getCost(unitProductPrice));
             } else {
                 unitPrice.setValue(BigDecimal.ZERO);
@@ -534,13 +537,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     protected void calculateTax() {
         Party customer = getCustomer();
-        Context context = getLayoutContext().getContext();
-        Party practice = context.getPractice();
-        if (customer != null && getProductRef() != null && practice != null) {
+        if (customer != null && getProductRef() != null) {
             FinancialAct act = (FinancialAct) getObject();
             BigDecimal previousTax = act.getTaxAmount();
-            CustomerTaxRules rules = new CustomerTaxRules(practice);
-            BigDecimal tax = rules.calculateTax(act, customer);
+            BigDecimal tax = taxRules.calculateTax(act, customer);
             if (tax.compareTo(previousTax) != 0) {
                 Property property = getProperty("tax");
                 property.refresh();
@@ -1113,6 +1113,19 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         } else {
             bean.removeParticipation(STOCK_LOCATION_PARTICIPATION);
         }
+    }
+
+    /**
+     * Returns the price of a product.
+     * <p/>
+     * This subtracts any tax exclusions the customer may have.
+     *
+     * @param price the price
+     * @return the price, minus any tax exclusions
+     */
+    private BigDecimal getPrice(Product product, ProductPrice price) {
+        BigDecimal amount = price.getPrice();
+        return taxRules.getTaxExAmount(amount, product, getCustomer());
     }
 
     /**

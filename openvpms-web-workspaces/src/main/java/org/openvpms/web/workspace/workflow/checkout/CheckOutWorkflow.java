@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -82,6 +82,9 @@ public class CheckOutWorkflow extends WorkflowImpl {
      */
     public CheckOutWorkflow(Act act, Context context, HelpContext help) {
         super(help.topic("workflow/checkout"));
+        if (context.getPractice() == null) {
+            throw new IllegalStateException("Context has no practice");
+        }
         external = context;
         initialise(act, getHelpContext());
 

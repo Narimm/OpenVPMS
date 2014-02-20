@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -31,10 +31,12 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -278,6 +280,74 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     }
 
     /**
+     * Verifies that prices and totals are correct when the customer has tax exemptions.
+     */
+    @Test
+    public void testTaxExemption() {
+        IMObjectBean bean = new IMObjectBean(getPractice());
+        List<Lookup> taxes = bean.getValues("taxes", Lookup.class);
+        assertEquals(1, taxes.size());
+        customer.addClassification(taxes.get(0));
+        save(customer);
+
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        Party patient = TestHelper.createPatient();
+        User author = TestHelper.createUser();
+        User clinician = TestHelper.createUser();
+
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal unitCost = BigDecimal.valueOf(5);
+        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal fixedCost = BigDecimal.valueOf(1);
+        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal discount = BigDecimal.ZERO;
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new Money(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
+
+        // set up the context
+        layout.getContext().setUser(author); // to propagate to acts
+
+        // create the editor
+        TestCustomerChargeActItemEditor editor = new TestCustomerChargeActItemEditor(item, charge, layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        // populate quantity, patient, clinician.
+        editor.setQuantity(quantity);
+        editor.setPatient(patient);
+        editor.setClinician(clinician);
+
+        // set the product
+        editor.setProduct(product);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+        editor.setClinician(null);
+
+        checkSave(charge, editor);
+
+        charge = get(charge);
+        item = get(item);
+        assertNotNull(charge);
+        assertNotNull(item);
+
+        // verify the item matches that expected
+        BigDecimal fixedPriceExTax = new BigDecimal("1.82");
+        BigDecimal unitPriceExTax = new BigDecimal("9.09");
+        BigDecimal totalExTax = new BigDecimal("20");
+        checkItem(item, patient, product, author, null, quantity, unitCost, unitPriceExTax, fixedCost,
+                  fixedPriceExTax, discount, BigDecimal.ZERO, totalExTax);
+
+        // verify no errors were logged
+        assertTrue(errors.isEmpty());
+    }
+
+    /**
      * Checks populating an invoice item with a product.
      *
      * @param productShortName the product archetype short name
@@ -504,6 +574,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      */
     private void checkItemWithTemplate(FinancialAct charge, FinancialAct item) {
         LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        context.getContext().setPractice(getPractice());
+
         Party patient = TestHelper.createPatient();
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
@@ -581,8 +653,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     }
 
     private static class TestCustomerChargeActItemEditor extends CustomerChargeActItemEditor {
+
         /**
-         * Constructs a <code>CustomerChargeActItemEditor</tt>.
+         * Constructs a {@link TestCustomerChargeActItemEditor}.
          * <p/>
          * This recalculates the tax amount.
          *
@@ -591,7 +664,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
          * @param context the layout context
          */
         public TestCustomerChargeActItemEditor(Act act, Act parent, LayoutContext context) {
-            super(act, parent, context);    //To change body of overridden methods use File | Settings | File Templates.
+            super(act, parent, context);
         }
 
         @Override

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -571,6 +571,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     private void checkCreate(String shortName, String parentShortName, Class type) {
         LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        context.getContext().setPractice(TestHelper.getPractice());
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName, object);
         IMObject parent = service.create(parentShortName);
