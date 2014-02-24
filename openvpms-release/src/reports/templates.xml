@@ -117,10 +117,10 @@
     <template name="Bank Deposit"
               archetype="act.bankDeposit"
               reportType="FINANCIAL"
-              path="bankDeposit.jrxml"
+              path="Bank Deposit A4.jrxml"
               mimeType="text/xml"
               docType="document.other"
-              description="Bank deposit - A5"/>
+              description="Bank Deposit - A4"/>
 
     <template name="Customer Account Balance Report"
               archetype="CUSTOMER_BALANCE"
