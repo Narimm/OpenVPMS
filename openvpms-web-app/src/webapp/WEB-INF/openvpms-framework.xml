@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -138,10 +138,10 @@
     </bean>
 
     <!--  The AuditRecord DAO bean -->
-    <bean id="auditDao"
+    <!--bean id="auditDao"
           class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
         <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
+    </bean-->
 
     <!-- ================================================================== -->
     <!--                           CACHE MANAGER                            -->
@@ -227,10 +227,10 @@
     </bean>
 
     <!--  The Audit Service -->
-    <bean id="auditService"
+    <!--bean id="auditService"
           class="org.openvpms.component.business.service.audit.AuditService">
         <constructor-arg ref="auditDao"/>
-    </bean>
+    </bean-->
 
     <!-- ================================================================== -->
     <!--                         ARCHETYPE SUPPORT                          -->
@@ -369,7 +369,7 @@
     <!-- ================================================================== -->
 
     <!--  Create a proxy for the ArchetypeService bean -->
-    <bean id="autoProxyCreator"
+    <!--bean id="autoProxyCreator"
           class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
         <property name="beanNames">
             <list>
@@ -381,10 +381,10 @@
                 <value>auditServiceAdvisor</value>
             </list>
         </property>
-    </bean>
+    </bean-->
 
     <!-- The audit service advisor -->
-    <bean id="auditServiceAdvisor"
+    <!--bean id="auditServiceAdvisor"
           class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
         <property name="advice" ref="auditService"/>
         <property name="patterns">
@@ -393,7 +393,7 @@
                 <value>.*ArchetypeService\.remove</value>
             </list>
         </property>
-    </bean>
+    </bean-->
 
     <!-- ================================================================== -->
     <!-- Scheduling                                                         -->
