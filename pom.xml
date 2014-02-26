@@ -16,14 +16,15 @@
   ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.7-beta-2</version>
+        <version>1.7</version>
         <relativePath>../openvpms/pom.xml</relativePath>
     </parent>
 
@@ -150,10 +151,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>com.sun.xml.ws</groupId>
-          <artifactId>jaxws-local-transport</artifactId>
-          <version>2.1.7</version>
-          <scope>test</scope>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-local-transport</artifactId>
+            <version>2.1.7</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
