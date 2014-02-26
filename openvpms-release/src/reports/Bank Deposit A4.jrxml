@@ -107,8 +107,8 @@
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
-					<textElement lineSpacing="Single">
-						<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<textElement>
+						<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA[($V{IS_CHEQUE}.booleanValue()?"Cheques":$V{IS_CREDIT}.booleanValue()?"Credit Card Payments":$V{IS_EFT}.booleanValue()?"EFT Payments":$V{IS_OTHER}.booleanValue()?"Other Payments":"Other Payments")]]></textFieldExpression>
 				</textField>
@@ -122,9 +122,7 @@
 				</line>
 				<textField pattern="¤ #,##0.00">
 					<reportElement x="465" y="2" width="66" height="16"/>
-					<textElement textAlignment="Right" verticalAlignment="Middle" lineSpacing="Single">
-						<font fontName="Arial"/>
-					</textElement>
+					<textElement textAlignment="Right" verticalAlignment="Middle"/>
 					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TYPE_TOTAL}]]></textFieldExpression>
 				</textField>
 			</band>
@@ -137,9 +135,7 @@
 				<printWhenExpression><![CDATA[$V{IS_NOT_CASH}]]></printWhenExpression>
 				<textField pattern="dd/MM/yyyy">
 					<reportElement x="0" y="0" width="71" height="16"/>
-					<textElement lineSpacing="Single">
-						<font fontName="Arial"/>
-					</textElement>
+					<textElement/>
 					<textFieldExpression class="java.util.Date"><![CDATA[$F{act.startTime}]]></textFieldExpression>
 				</textField>
 			</band>
@@ -161,8 +157,8 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Arial" size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Bank Deposit]]></text>
 			</staticText>
@@ -174,9 +170,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<text><![CDATA[Bank:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
@@ -187,9 +181,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{bankDeposit.depositAccount.entity.accountName}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
@@ -200,9 +192,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{bankDeposit.depositAccount.entity.accountNumber}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
@@ -213,9 +203,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" isBlankWhenNull="false">
@@ -226,9 +214,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
@@ -239,9 +225,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{bankDeposit.startTime}]]></textFieldExpression>
 			</textField>
 		</band>
@@ -259,9 +243,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<text><![CDATA[Date/Customer
 ]]></text>
 			</staticText>
@@ -273,9 +255,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<text><![CDATA[Details]]></text>
 			</staticText>
 			<staticText>
@@ -286,9 +266,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<text><![CDATA[Amount]]></text>
 			</staticText>
 			<staticText>
@@ -299,9 +277,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<text><![CDATA[Id]]></text>
 			</staticText>
 		</band>
@@ -319,9 +295,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[(($F{item.bank}== null)? "(bank?)":$F{item.bank}) + ":" + (($F{item.bsb}== null)? "(branch?)":$F{item.bsb}) + "~" + (($F{item.drawer}== null)? "(drawer?)":$F{item.drawer})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
@@ -332,9 +306,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{act.customer.entity.name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
@@ -347,9 +319,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{item.creditCard}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
@@ -360,16 +330,12 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{amount}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0">
 				<reportElement x="174" y="1" width="36" height="18"/>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Long"><![CDATA[$F{act.customer.entity.id}]]></textFieldExpression>
 			</textField>
 		</band>
@@ -390,48 +356,42 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Arial" size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Deposit Summary]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="318" y="65" width="100" height="18"/>
+				<reportElement key="textField" x="318" y="65" width="50" height="18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{COUNT_CHEQUE}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="318" y="89" width="100" height="18"/>
+				<reportElement key="textField" x="318" y="89" width="50" height="18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{COUNT_CREDIT}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="318" y="113" width="100" height="18"/>
+				<reportElement key="textField" x="318" y="113" width="50" height="18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{COUNT_EFT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
@@ -442,9 +402,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CHEQUE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
@@ -455,9 +413,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CREDIT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
@@ -468,9 +424,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_EFT}]]></textFieldExpression>
 			</textField>
 			<staticText>
@@ -481,8 +435,8 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Cheques :]]></text>
 			</staticText>
@@ -494,8 +448,8 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Credit Cards :]]></text>
 			</staticText>
@@ -507,8 +461,8 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[EFT :]]></text>
 			</staticText>
@@ -520,48 +474,42 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Cash:]]></text>
 			</staticText>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField" x="190" y="165" width="100" height="18"/>
+				<reportElement key="textField" x="191" y="165" width="100" height="18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_CASH}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="318" y="139" width="100" height="18"/>
+				<reportElement key="textField" x="319" y="139" width="50" height="18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{COUNT_OTHER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField" x="190" y="139" width="100" height="18"/>
+				<reportElement key="textField" x="191" y="139" width="100" height="18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Arial"/>
-				</textElement>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{TOTAL_OTHER}]]></textFieldExpression>
 			</textField>
 			<staticText>
@@ -572,8 +520,8 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Arial" size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				<textElement>
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Other :]]></text>
 			</staticText>
