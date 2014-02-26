@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -25,11 +23,10 @@ import java.io.Serializable;
 
 
 /**
- * A validation error is generated when a node doesn't comply with its
- * archetype description.
+ * A validation error is generated when an object doesn't comply with its archetype description.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ValidationError implements Serializable {
 
@@ -64,7 +61,7 @@ public class ValidationError implements Serializable {
      * Constructs a new <tt>ValidationError</tt>.
      *
      * @param archetype the archetype short name
-     * @param node      the node name
+     * @param node      the node name. May be {@code null}
      * @param message   the error message
      */
     public ValidationError(String archetype, String node, String message) {
@@ -94,7 +91,7 @@ public class ValidationError implements Serializable {
     /**
      * Returns the node name.
      *
-     * @return the node name
+     * @return the node name. May be {@code null}
      */
     public String getNode() {
         return node;
@@ -103,7 +100,7 @@ public class ValidationError implements Serializable {
     /**
      * Sets the node name.
      *
-     * @param node the node name
+     * @param node the node name. May be {@code null}
      */
     public void setNode(String node) {
         this.node = node;
