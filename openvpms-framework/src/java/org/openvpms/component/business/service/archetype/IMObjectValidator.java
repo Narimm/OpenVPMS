@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.business.service.archetype;
 
@@ -39,8 +37,8 @@ import java.util.regex.Pattern;
 /**
  * Validates {@link IMObject}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 class IMObjectValidator {
 
@@ -286,14 +284,15 @@ class IMObjectValidator {
      *
      * @param errors  the errors to add to if the string is invalid
      * @param object  the object that the error relates to
-     * @param node    the node that validation failed for
+     * @param node    the node that validation failed for. May be {@code null}
      * @param message the error message
      */
     private void addError(List<ValidationError> errors, IMObject object, NodeDescriptor node, String message) {
         String shortName = object.getArchetypeId().getShortName();
-        errors.add(new ValidationError(shortName, node.getName(), message));
+        String nodeName = (node != null) ? node.getName() : null;
+        errors.add(new ValidationError(shortName, nodeName, message));
         if (log.isDebugEnabled()) {
-            log.debug("Validation failed: archetype=" + shortName + ", node=" + node.getName() + ", message=" +
+            log.debug("Validation failed: archetype=" + shortName + ", node=" + nodeName + ", message=" +
                       message);
         }
     }

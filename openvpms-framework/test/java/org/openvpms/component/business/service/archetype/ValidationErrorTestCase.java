@@ -1,26 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -30,12 +29,18 @@ import org.openvpms.component.business.service.archetype.descriptor.cache.IArche
 
 import java.util.Date;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
  * Test that validation errors work correctly.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
 public class ValidationErrorTestCase {
 
@@ -53,7 +58,7 @@ public class ValidationErrorTestCase {
     public void testSimpleValidationException() {
         Party person = new Party();
         person.setArchetypeId(service.getArchetypeDescriptor("party.person")
-                .getType());
+                                      .getType());
         try {
             service.validateObject(person);
             fail("This object should not have passed validation");
@@ -419,6 +424,25 @@ public class ValidationErrorTestCase {
         for (char ch = 32; ch <= 255; ++ch) {
             boolean valid = ch != '\u007F';  // delete char
             checkCharacter(ch, valid, pet, service);
+        }
+    }
+
+    /**
+     * Verifies that validation fails if an archetype doesn't exist
+     */
+    @Test
+    public void testInvalidArchetype() {
+        Entity entity = new Entity();
+        entity.setArchetypeId(new ArchetypeId("entity.invalidArchetype"));
+        try {
+            service.validateObject(entity);
+            fail("Expected ValidationException to be thrown");
+        } catch (ValidationException exception) {
+            assertEquals(1, exception.getErrors().size());
+            ValidationError error = exception.getErrors().get(0);
+            assertEquals("entity.invalidArchetype", error.getArchetype());
+            assertNull(error.getNode());
+            assertEquals("No archetype definition for entity.invalidArchetype", error.getMessage());
         }
     }
 
