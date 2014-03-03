@@ -17,12 +17,15 @@
 package org.openvpms.web.workspace.patient.history;
 
 import echopointng.LabelEx;
+import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.HttpImageReference;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.Style;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
@@ -400,9 +403,18 @@ public class PatientHistoryTableModel extends AbstractIMObjectTableModel<Act> {
      */
     private Component getClinicianLabel(ActBean bean, int row) {
         String clinician = getClinician(bean, row);
-        LabelEx result = new LabelEx(clinician);
-        result.setStyleName("MedicalRecordSummary.clinician");
-        return result;
+        // Need to jump through some hoops to restrict long clinician names from exceeding the column width.
+        Object width = null;
+        Style style = ApplicationInstance.getActive().getStyle(LabelEx.class, "MedicalRecordSummary.clinician");
+        if (style != null) {
+            width = style.getProperty("width");
+        }
+        if (width == null) {
+            width = "150px";
+        }
+        String content = "<div xmlns='http://www.w3.org/1999/xhtml' style='width:" + width + "; overflow:hidden'>"
+                         + clinician + "</div>";
+        return new LabelEx(new XhtmlFragment(content));
     }
 
     /**
