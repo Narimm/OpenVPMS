@@ -229,23 +229,23 @@ class EmailSMSSampler extends AbstractModifiable {
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
+    public void setErrorListener(ErrorListener listener) {
         // no-op
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        // no-op
+    public ErrorListener getErrorListener() {
+        return null;
     }
 
     /**

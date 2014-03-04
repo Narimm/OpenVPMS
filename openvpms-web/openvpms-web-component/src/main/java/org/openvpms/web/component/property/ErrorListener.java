@@ -30,6 +30,7 @@ public interface ErrorListener extends EventListener {
      * Invoked when an error occurs.
      *
      * @param modifiable the source
+     * @param error      the error
      */
-    void error(Modifiable modifiable, String message);
+    void error(Modifiable modifiable, ValidatorError error);
 }

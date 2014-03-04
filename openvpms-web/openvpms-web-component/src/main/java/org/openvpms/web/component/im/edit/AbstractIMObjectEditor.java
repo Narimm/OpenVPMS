@@ -45,7 +45,6 @@ import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ErrorListener;
-import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -101,11 +100,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * The listeners.
      */
     private ModifiableListeners listeners = new ModifiableListeners();
-
-    /**
-     * The error listeners.
-     */
-    private ErrorListeners errorListeners = new ErrorListeners();
 
     /**
      * The child editors.
@@ -170,7 +164,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
         archetype = context.getArchetypeDescriptor(object);
         properties = new PropertySet(object, archetype, context.getVariables());
-        editors = new Editors(properties, listeners, errorListeners);
+        editors = new Editors(properties, listeners);
 
         IMObjectLayoutStrategyFactory strategyFactory = context.getLayoutStrategyFactory();
         if (strategyFactory == null || strategyFactory instanceof ViewLayoutStrategyFactory) {
@@ -280,7 +274,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
                 }
             }
         } else {
-            ValidationHelper.showError(validator);
+            showErrors(validator);
         }
         return result;
     }
@@ -362,23 +356,23 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        editors.addErrorListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        editors.setErrorListener(listener);
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        editors.removeErrorListener(listener);
+    public ErrorListener getErrorListener() {
+        return editors.getErrorListener();
     }
 
     /**
@@ -499,6 +493,16 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     public CollectionProperty getCollectionProperty(String name) {
         return (CollectionProperty) properties.get(name);
     }
+
+    /**
+     * Displays validation errors.
+     *
+     * @param validator the validator
+     */
+    protected void showErrors(Validator validator) {
+        ValidationHelper.showError(validator);
+    }
+
 
     /**
      * Resets the cached validity state of the object.

@@ -571,7 +571,7 @@ public class IMObjectProperty extends AbstractProperty
             validationErrors = new ArrayList<ValidatorError>();
         }
         validationErrors.add(error);
-        onError(error.getMessage());
+        onError(error);
     }
 
     /**

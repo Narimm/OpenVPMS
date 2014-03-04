@@ -61,18 +61,18 @@ public interface Modifiable {
     void removeModifiableListener(ModifiableListener listener);
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
-    void addErrorListener(ErrorListener listener);
+    void setErrorListener(ErrorListener listener);
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
-    void removeErrorListener(ErrorListener listener);
+    ErrorListener getErrorListener();
 
     /**
      * Determines if the object is valid.
