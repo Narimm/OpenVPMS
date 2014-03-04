@@ -225,23 +225,23 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        property.addErrorListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        property.setErrorListener(listener);
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        property.removeErrorListener(listener);
+    public ErrorListener getErrorListener() {
+        return property.getErrorListener();
     }
 
     /**

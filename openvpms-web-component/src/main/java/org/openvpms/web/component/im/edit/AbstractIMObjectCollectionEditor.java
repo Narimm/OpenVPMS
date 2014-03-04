@@ -26,7 +26,6 @@ import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ErrorListener;
-import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -87,9 +86,9 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     private final ModifiableListeners listeners = new ModifiableListeners();
 
     /**
-     * The error listeners.
+     * The error listener.
      */
-    private final ErrorListeners errorListeners = new ErrorListeners();
+    private ErrorListener errorListener;
 
     /**
      * Event broadcaster.
@@ -138,8 +137,10 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      */
     public void dispose() {
         collection.removeModifiableListener(broadcaster);
+        collection.setErrorListener(null);
         for (Editor editor : getEditors()) {
             editor.removeModifiableListener(broadcaster);
+            editor.setErrorListener(null);
             editor.dispose();
         }
     }
@@ -271,23 +272,23 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        errorListeners.addListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        this.errorListener = listener;
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        errorListeners.removeListener(listener);
+    public ErrorListener getErrorListener() {
+        return errorListener;
     }
 
     /**
@@ -465,6 +466,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      */
     protected void addEditor(IMObject object, IMObjectEditor editor) {
         editor.addModifiableListener(broadcaster);
+        editor.setErrorListener(errorListener);
         collection.setEditor(object, editor);
     }
 

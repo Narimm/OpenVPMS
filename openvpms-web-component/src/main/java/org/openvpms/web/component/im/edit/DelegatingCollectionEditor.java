@@ -206,23 +206,23 @@ public abstract class DelegatingCollectionEditor
     }
 
     /**
-     * Adds a listener to be notified of errors.
+     * Sets a listener to be notified of errors.
      *
-     * @param listener the listener to add
+     * @param listener the listener to register. May be {@code null}
      */
     @Override
-    public void addErrorListener(ErrorListener listener) {
-        editor.addErrorListener(listener);
+    public void setErrorListener(ErrorListener listener) {
+        editor.setErrorListener(listener);
     }
 
     /**
-     * Removes a listener.
+     * Returns the listener to be notified of errors.
      *
-     * @param listener the listener to remove
+     * @return the listener. May be {@code null}
      */
     @Override
-    public void removeErrorListener(ErrorListener listener) {
-        editor.removeErrorListener(listener);
+    public ErrorListener getErrorListener() {
+        return editor.getErrorListener();
     }
 
     /**

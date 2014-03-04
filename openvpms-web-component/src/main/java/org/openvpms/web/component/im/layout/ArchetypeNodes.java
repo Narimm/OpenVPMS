@@ -525,7 +525,7 @@ public class ArchetypeNodes {
             NodeDescriptor descriptor = (NodeDescriptor) object;
             String name = descriptor.getName();
             boolean simple = !descriptor.isComplexNode();
-            if (((allSimpleNodes && simple) || (!simple && includeSimpleNodes.contains(name)))
+            if (((allSimpleNodes && simple) || includeSimpleNodes.contains(name))
                 && !includeComplexNodes.contains(name)) {
                 include = include(descriptor);
             }
@@ -554,7 +554,7 @@ public class ArchetypeNodes {
             NodeDescriptor descriptor = (NodeDescriptor) object;
             String name = descriptor.getName();
             boolean complex = descriptor.isComplexNode();
-            if (((allComplexNodes && complex) || (!complex && includeComplexNodes.contains(name)))
+            if (((allComplexNodes && complex) || includeComplexNodes.contains(name))
                 && !includeSimpleNodes.contains(name)) {
                 include = include(descriptor);
             }

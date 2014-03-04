@@ -18,7 +18,6 @@ package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
 import org.junit.Test;
-import org.openvpms.web.component.property.ErrorListeners;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
@@ -47,8 +46,7 @@ public class EditorsTestCase {
         SimpleProperty property2 = new SimpleProperty("p2", String.class);
         PropertySet set = new PropertySet(property1, property2);
         ModifiableListeners listeners = new ModifiableListeners();
-        ErrorListeners errorListeners = new ErrorListeners();
-        Editors editors = new Editors(set, listeners, errorListeners);
+        Editors editors = new Editors(set, listeners);
 
         assertFalse(editors.isModified());
         property1.setValue("foo");
@@ -73,8 +71,7 @@ public class EditorsTestCase {
 
         PropertySet set = new PropertySet(property);
         ModifiableListeners listeners = new ModifiableListeners();
-        ErrorListeners errorListeners = new ErrorListeners();
-        Editors editors = new Editors(set, listeners, errorListeners);
+        Editors editors = new Editors(set, listeners);
 
         CountingListener editorsListener = new CountingListener();
         editors.addModifiableListener(editorsListener);

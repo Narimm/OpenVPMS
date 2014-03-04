@@ -495,9 +495,10 @@ public class SimpleProperty extends AbstractProperty {
         if (cause == null) {
             cause = exception;
         }
-        validationErrors.add(new ValidatorError(this, cause.getMessage()));
+        ValidatorError error = new ValidatorError(this, cause.getMessage());
+        validationErrors.add(error);
         resetValid();
-        onError(cause.getMessage());
+        onError(error);
     }
 
     /**
