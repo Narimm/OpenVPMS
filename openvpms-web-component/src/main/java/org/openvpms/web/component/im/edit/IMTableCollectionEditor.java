@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -45,9 +45,9 @@ import org.openvpms.web.component.im.view.DefaultIMObjectComponent;
 import org.openvpms.web.component.im.view.IMObjectComponent;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -222,11 +222,11 @@ public abstract class IMTableCollectionEditor<T>
      */
     public IMObjectEditor add() {
         IMObjectEditor editor = null;
-        if (addCurrentEdits(new Validator()) && shortName != null) {
+        if (addCurrentEdits(new DefaultValidator()) && shortName != null) {
             IMObject object = create();
             if (object != null) {
                 editor = edit(object);
-                addCurrentEdits(new Validator()); // add the object to the table if it is valid
+                addCurrentEdits(new DefaultValidator()); // add the object to the table if it is valid
             }
         }
         return editor;
@@ -512,7 +512,7 @@ public abstract class IMTableCollectionEditor<T>
     protected void onEdit() {
         IMObject object = getSelected();
         if (object != null) {
-            if (addCurrentEdits(new Validator())) {
+            if (addCurrentEdits(new DefaultValidator())) {
                 // need to add any edits after getting the selected object
                 // as this may change the order within the table
                 setSelected(object);
@@ -562,7 +562,7 @@ public abstract class IMTableCollectionEditor<T>
      * Selects the previous object.
      */
     protected void onPrevious() {
-        if (addCurrentEdits(new Validator())) {
+        if (addCurrentEdits(new DefaultValidator())) {
             IMObject object = selectPrevious();
             if (object != null) {
                 edit(object);
@@ -576,7 +576,7 @@ public abstract class IMTableCollectionEditor<T>
      * Selects the next object.
      */
     protected void onNext() {
-        if (addCurrentEdits(new Validator())) {
+        if (addCurrentEdits(new DefaultValidator())) {
             IMObject object = selectNext();
             if (object != null) {
                 edit(object);

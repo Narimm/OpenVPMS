@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -44,6 +44,7 @@ import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -262,7 +263,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             return false;
         }
         boolean result = false;
-        Validator validator = new Validator();
+        Validator validator = createValidator();
         if (validator.validate(this)) {
             if (!isModified()) {
                 result = true;
@@ -492,6 +493,15 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      */
     public CollectionProperty getCollectionProperty(String name) {
         return (CollectionProperty) properties.get(name);
+    }
+
+    /**
+     * Creates a validator to perform validation on save.
+     *
+     * @return a new validator
+     */
+    protected Validator createValidator() {
+        return new DefaultValidator();
     }
 
     /**

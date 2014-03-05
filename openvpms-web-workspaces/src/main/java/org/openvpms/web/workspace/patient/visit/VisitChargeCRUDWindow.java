@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
@@ -145,7 +146,7 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> {
     public boolean save() {
         boolean result;
         if (editor != null && !posted) {
-            Validator validator = new Validator();
+            Validator validator = new DefaultValidator();
             if (editor.validate(validator)) {
                 result = SaveHelper.save(editor);
                 posted = ActStatus.POSTED.equals(getObject().getStatus());

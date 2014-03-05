@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -402,17 +402,6 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     protected void checkModifiable() {
         if (isDerived()) {
             throw new UnsupportedOperationException("Attempt to modify derived property: " + getDisplayName());
-        }
-    }
-
-    /**
-     * Notify any error listener of an error.
-     *
-     * @param error the error
-     */
-    protected void onError(ValidatorError error) {
-        if (errorListener != null) {
-            errorListener.error(this, error);
         }
     }
 

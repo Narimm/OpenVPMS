@@ -16,16 +16,23 @@
 
 package org.openvpms.web.component.property;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 /**
- * Validates an {@link Modifiable} hierarchy.
+ * Abstract implementation of the {@link Validator} interface.
  *
  * @author Tim Anderson
  */
-public interface Validator {
+public abstract class AbstractValidator implements Validator {
+
+    /**
+     * Modifiable instances with their corresponding errors.
+     */
+    private Map<Modifiable, List<ValidatorError>> errors = new HashMap<Modifiable, List<ValidatorError>>();
 
     /**
      * Validates an object.
@@ -33,7 +40,10 @@ public interface Validator {
      * @param modifiable the object to validate
      * @return {@code true} if the object is valid; otherwise {@code false}
      */
-    boolean validate(Modifiable modifiable);
+    @Override
+    public boolean validate(Modifiable modifiable) {
+        return modifiable.validate(this);
+    }
 
     /**
      * Adds a validation error for an object. This replaces any existing
@@ -42,7 +52,11 @@ public interface Validator {
      * @param modifiable the object
      * @param error      the validation error
      */
-    void add(Modifiable modifiable, ValidatorError error);
+    @Override
+    public void add(Modifiable modifiable, ValidatorError error) {
+        List<ValidatorError> errors = Arrays.asList(error);
+        add(modifiable, errors);
+    }
 
     /**
      * Adds validation errors for an object. This replaces any existing
@@ -51,14 +65,22 @@ public interface Validator {
      * @param modifiable the object
      * @param errors     the validation errors
      */
-    void add(Modifiable modifiable, List<ValidatorError> errors);
+    @Override
+    public void add(Modifiable modifiable, List<ValidatorError> errors) {
+        if (!errors.isEmpty()) {
+            this.errors.put(modifiable, errors);
+        }
+    }
 
     /**
      * Returns all invalid objects.
      *
      * @return all invalid objects
      */
-    Collection<Modifiable> getInvalid();
+    @Override
+    public Collection<Modifiable> getInvalid() {
+        return errors.keySet();
+    }
 
     /**
      * Returns any errors for an object.
@@ -66,6 +88,8 @@ public interface Validator {
      * @param modifiable the object
      * @return errors associated with {@code modifiable}, or {@code null} if there are no errors
      */
-    List<ValidatorError> getErrors(Modifiable modifiable);
-
+    @Override
+    public List<ValidatorError> getErrors(Modifiable modifiable) {
+        return errors.get(modifiable);
+    }
 }

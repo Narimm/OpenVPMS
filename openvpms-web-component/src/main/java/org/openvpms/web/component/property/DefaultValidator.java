@@ -16,31 +16,20 @@
 
 package org.openvpms.web.component.property;
 
-import java.util.EventListener;
-
-
 /**
- * Listener for {@link Modifiable} error events.
+ * Default implementation of the {@link Validator} interface.
  * <p/>
- * ErrorListeners aren't invoked directly by an {@link Modifiable}, but are invoked during validation by
- * {@link DefaultValidator}.
+ * This collects errors; it doesn't notify registered {@link ErrorListener}s.
  *
  * @author Tim Anderson
  */
-public interface ErrorListener extends EventListener {
+public class DefaultValidator extends AbstractValidator {
 
     /**
-     * Invoked when an error occurs.
-     *
-     * @param modifiable the source
-     * @param error      the error
+     * Default constructor.
      */
-    void error(Modifiable modifiable, ValidatorError error);
+    public DefaultValidator() {
+        super();
+    }
 
-    /**
-     * Resets the listener.
-     * <p/>
-     * The {@link Validator} invokes this during each validation pass.
-     */
-    void clear();
 }
