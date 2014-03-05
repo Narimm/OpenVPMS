@@ -44,6 +44,7 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.help.HelpContext;
@@ -594,7 +595,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         addItem(editor, patient, product1, quantity, editor.getQueue());
         assertTrue(editor.isValid());
         charge.setTotal(Money.ONE);
-        Validator validator = new Validator();
+        Validator validator = new DefaultValidator();
         assertFalse(editor.validate(validator));
         List<ValidatorError> list = validator.getErrors(editor);
         assertEquals(1, list.size());

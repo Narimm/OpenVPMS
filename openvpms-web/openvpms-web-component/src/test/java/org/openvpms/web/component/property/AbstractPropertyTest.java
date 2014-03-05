@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -433,7 +433,7 @@ public abstract class AbstractPropertyTest extends ArchetypeServiceTest {
      * @param message  the expected validation error message
      */
     protected void checkValidationError(Property property, String message) {
-        Validator validator = new Validator();
+        Validator validator = new DefaultValidator();
         assertFalse(validator.validate(property));
         List<ValidatorError> list = validator.getErrors(property);
         assertEquals(1, list.size());

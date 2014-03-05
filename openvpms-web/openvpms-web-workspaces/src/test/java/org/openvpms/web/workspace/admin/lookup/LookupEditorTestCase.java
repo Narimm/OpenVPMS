@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.lookup;
@@ -23,6 +23,7 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -66,7 +67,7 @@ public class LookupEditorTestCase extends AbstractAppTest {
         assertEquals("CBA", lookup.getCode());          // verify the code is updated
         assertFalse(editor.isValid());                  // editor should now be invalid
 
-        Validator validator = new Validator();          // ensure the validation error is that expected
+        Validator validator = new DefaultValidator();          // ensure the validation error is that expected
         assertFalse(editor.validate(validator));
         List<ValidatorError> errors = validator.getErrors(editor);
         assertEquals(1, errors.size());

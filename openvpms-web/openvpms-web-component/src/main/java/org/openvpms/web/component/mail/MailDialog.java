@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -35,6 +35,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroDialog;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -294,7 +295,7 @@ public class MailDialog extends PopupDialog {
     private boolean send() {
         boolean result = false;
         try {
-            Validator validator = new Validator();
+            Validator validator = new DefaultValidator();
             if (editor.validate(validator)) {
                 Mailer mailer = new DefaultMailer();
                 mailer.setFrom(editor.getFrom());

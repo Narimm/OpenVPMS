@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.admin.archetype;
 
@@ -31,6 +31,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.AbstractLayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -104,7 +105,7 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
      */
     private void onTest() {
         try {
-            Validator validator = new Validator();
+            Validator validator = new DefaultValidator();
             if (getEditor().validate(validator)) {
                 ArchetypeDescriptor descriptor = (ArchetypeDescriptor) getEditor().getObject();
                 String shortName = descriptor.getShortName();
@@ -209,7 +210,7 @@ public class ArchetypeEditDialog extends EditResultSetDialog<ArchetypeDescriptor
          * Validates the object.
          */
         private void onCheck() {
-            Validator validator = new Validator();
+            Validator validator = new DefaultValidator();
             if (!getEditor().validate(validator)) {
                 ValidationHelper.showError(validator);
             }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -34,6 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -103,7 +104,7 @@ public class CustomerChargeTestHelper {
                 }
             }
         }
-        Validator validator = new Validator();
+        Validator validator = new DefaultValidator();
         boolean valid = itemEditor.validate(validator);
         if (!valid) {
             ValidationHelper.showError(validator);
