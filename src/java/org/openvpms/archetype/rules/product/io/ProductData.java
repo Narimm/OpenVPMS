@@ -195,28 +195,32 @@ public class ProductData {
      * @param id           the price identifier, or {@code -1} if it is a new price
      * @param price        the price
      * @param cost         the cost price
+     * @param maxDiscount  the maximum discount
      * @param from         the price start date. May be {@code null}
      * @param to           the price end date. May be {@code null}
      * @param defaultPrice {@code true} if the price is the default
      * @param line         the line the price was read from
      */
-    public void addFixedPrice(long id, BigDecimal price, BigDecimal cost, Date from, Date to, boolean defaultPrice,
-                              int line) {
-        fixedPrices.add(new PriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, from, to, defaultPrice, line));
+    public void addFixedPrice(long id, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from, Date to,
+                              boolean defaultPrice, int line) {
+        fixedPrices.add(new PriceData(id, ProductArchetypes.FIXED_PRICE, price, cost, maxDiscount, from, to,
+                                      defaultPrice, line));
     }
 
     /**
      * Adds a unit price.
      *
-     * @param id    the price identifier, or {@code -1} if it is a new price
-     * @param price the price
-     * @param cost  the cost price
-     * @param from  the price start date. May be {@code null}
-     * @param to    the price end date. May be {@code null}
-     * @param line  the line the price was read from
+     * @param id          the price identifier, or {@code -1} if it is a new price
+     * @param price       the price
+     * @param cost        the cost price
+     * @param maxDiscount the maximum discount
+     * @param from        the price start date. May be {@code null}
+     * @param to          the price end date. May be {@code null}
+     * @param line        the line the price was read from
      */
-    public void addUnitPrice(long id, BigDecimal price, BigDecimal cost, Date from, Date to, int line) {
-        unitPrices.add(new PriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, from, to, line));
+    public void addUnitPrice(long id, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from, Date to,
+                             int line) {
+        unitPrices.add(new PriceData(id, ProductArchetypes.UNIT_PRICE, price, cost, maxDiscount, from, to, line));
     }
 
     /**
