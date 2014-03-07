@@ -122,6 +122,7 @@ class ProductUpdater {
         price.setToDate(data.getTo());
         bean.setValue("cost", data.getCost());
         bean.setValue("markup", markup);
+        bean.setValue("maxDiscount", data.getMaxDiscount());
         if (bean.hasNode("default")) {
             bean.setValue("default", data.isDefault());
         }
