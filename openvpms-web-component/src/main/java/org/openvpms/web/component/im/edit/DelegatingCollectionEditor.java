@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -238,7 +238,7 @@ public abstract class DelegatingCollectionEditor
      * Validates the object.
      *
      * @param validator the validator
-     * @return {@code true} if the object and its descendents are valid otherwise {@code false}
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     public boolean validate(Validator validator) {
         return editor.validate(validator);
