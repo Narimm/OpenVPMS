@@ -23,7 +23,6 @@ import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.TableLayoutData;
-import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.product.io.PriceData;
@@ -31,10 +30,8 @@ import org.openvpms.archetype.rules.product.io.ProductData;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
@@ -44,7 +41,6 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -65,7 +61,7 @@ public class ProductImportDialog extends PopupDialog {
      * @param help the help context
      */
     public ProductImportDialog(List<ProductData> data, HelpContext help) {
-        super(Messages.get("product.import.title"), "BrowserDialog", OK_CANCEL, help);
+        super(Messages.get("product.import.title"), "ProductImportExportDialog", OK_CANCEL, help);
         setModal(true);
 
         ResultSet<ProductData> resultSet = new ListResultSet<ProductData>(data, 20);
@@ -126,35 +122,7 @@ public class ProductImportDialog extends PopupDialog {
         }
     }
 
-    private static class ProductPriceDataModel extends AbstractIMTableModel<ProductPriceData> {
-
-        private static final int ID = 0;
-        private static final int NAME = 1;
-        private static final int PRINTED_NAME = 2;
-        private static final int FIXED_PRICE = 3;
-        private static final int FIXED_COST = 4;
-        private static final int FIXED_START_DATE = 5;
-        private static final int FIXED_END_DATE = 6;
-        private static final int UNIT_PRICE = 7;
-        private static final int UNIT_COST = 8;
-        private static final int UNIT_START_DATE = 9;
-        private static final int UNIT_END_DATE = 10;
-
-        public ProductPriceDataModel() {
-            DefaultTableColumnModel model = new DefaultTableColumnModel();
-            model.addColumn(createTableColumn(ID, "product.import.id"));
-            model.addColumn(createTableColumn(NAME, "product.import.name"));
-            model.addColumn(createTableColumn(PRINTED_NAME, "product.import.printedName"));
-            model.addColumn(createTableColumn(FIXED_PRICE, "product.import.fixedPrice"));
-            model.addColumn(createTableColumn(FIXED_COST, "product.import.fixedCost"));
-            model.addColumn(createTableColumn(FIXED_START_DATE, "product.import.fixedPriceStartDate"));
-            model.addColumn(createTableColumn(FIXED_END_DATE, "product.import.fixedPriceEndDate"));
-            model.addColumn(createTableColumn(UNIT_PRICE, "product.import.unitPrice"));
-            model.addColumn(createTableColumn(UNIT_COST, "product.import.unitCost"));
-            model.addColumn(createTableColumn(UNIT_START_DATE, "product.import.unitPriceStartDate"));
-            model.addColumn(createTableColumn(UNIT_END_DATE, "product.import.unitPriceEndDate"));
-            setTableColumnModel(model);
-        }
+    private static class ProductPriceDataModel extends ProductImportExportTableModel<ProductPriceData> {
 
         /**
          * Returns the value found at the given coordinate within the table.
@@ -187,6 +155,9 @@ public class ProductImportDialog extends PopupDialog {
                 case FIXED_COST:
                     result = (fixedPrice != null) ? getCost(object, fixedPrice) : null;
                     break;
+                case FIXED_MAX_DISCOUNT:
+                    result = (fixedPrice != null) ? getMaxDiscount(object, fixedPrice) : null;
+                    break;
                 case FIXED_START_DATE:
                     result = (fixedPrice != null) ? getFromDate(object, fixedPrice) : null;
                     break;
@@ -198,6 +169,9 @@ public class ProductImportDialog extends PopupDialog {
                     break;
                 case UNIT_COST:
                     result = (unitPrice != null) ? getCost(object, unitPrice) : null;
+                    break;
+                case UNIT_MAX_DISCOUNT:
+                    result = (unitPrice != null) ? getMaxDiscount(object, unitPrice) : null;
                     break;
                 case UNIT_START_DATE:
                     result = (unitPrice != null) ? getFromDate(object, unitPrice) : null;
@@ -227,6 +201,16 @@ public class ProductImportDialog extends PopupDialog {
                 return getValue(oldValue, price.getCost());
             }
             return getValue(price.getCost(), price.getCost());
+        }
+
+        private Object getMaxDiscount(ProductPriceData object, PriceData price) {
+            ProductPrice current = getProductPrice(object, price);
+            if (current != null) {
+                IMObjectBean bean = new IMObjectBean(current);
+                BigDecimal oldValue = bean.getBigDecimal("maxDiscount");
+                return getValue(oldValue, price.getMaxDiscount());
+            }
+            return getValue(price.getMaxDiscount(), price.getMaxDiscount());
         }
 
         private Object getFromDate(ProductPriceData object, PriceData price) {
@@ -310,15 +294,10 @@ public class ProductImportDialog extends PopupDialog {
                 grid.setLayoutData(layoutData);
                 result = grid;
             } else {
-                if (newValue != null) {
-                    Label label = new Label();
-                    label.setText(newValue.toString());
-                    TableLayoutData layoutData = new TableLayoutData();
-                    layoutData.setAlignment(Alignment.ALIGN_RIGHT);
-                    label.setLayoutData(layoutData);
-                    result = label;
+                if (newValue instanceof BigDecimal) {
+                    result = rightAlign((BigDecimal) newValue);
                 } else {
-                    result = null;
+                    result = rightAlign(newValue);
                 }
             }
             return result;
@@ -338,22 +317,6 @@ public class ProductImportDialog extends PopupDialog {
             Label newLabel = new Label();
             newLabel.setText(newValue != null ? newValue.toString() : Messages.get("product.import.novalue"));
             return newLabel;
-        }
-
-        /**
-         * Returns the sort criteria.
-         *
-         * @param column    the primary sort column
-         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
-         * @return the sort criteria, or {@code null} if the column isn't sortable
-         */
-        @Override
-        public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-            return null;
-        }
-
-        private String formatDate(Date date) {
-            return date != null ? DateFormatter.formatDate(date, false) : null;
         }
 
     }

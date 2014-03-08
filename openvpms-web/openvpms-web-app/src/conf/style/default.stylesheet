@@ -904,6 +904,14 @@
         </properties>
     </style>
 
+    <style name="ProductImportExportDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${dialog.large.width}"/>
+            <property name="height" value="${dialog.large.height}"/>
+            <property name="resizable" value="true"/>
+        </properties>
+    </style>
+
     <style name="IMObjectViewerDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
