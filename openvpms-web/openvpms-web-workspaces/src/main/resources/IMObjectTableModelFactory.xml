@@ -41,9 +41,9 @@
                     </entry>
                     <entry>
                         <string>act.patientMedication</string>
-                        <string>concat(openvpms:get(.,'product.entity.name'), ' - ',/details/label,' Qty : ',
-                            /details/quantity,' Expiry : ', expr:if(boolean(/activityEndTime),
-                            date:formatDate(/activityEndTime), 'None'))
+                        <string>concat(openvpms:get(.,'product.entity.name'), ' - Qty: ',/details/quantity,
+                            ' Expiry: ', expr:if(boolean(/activityEndTime), date:formatDate(/activityEndTime), 'None'),
+                            expr:if(boolean(/details/label),concat('&#10;',/details/label),''))
                         </string>
                     </entry>
                 </java.util.Map>
