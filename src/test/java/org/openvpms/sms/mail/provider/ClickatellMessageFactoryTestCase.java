@@ -82,17 +82,29 @@ public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
         String password = "password";
         String apiId = "apiId";
         String senderId = "foobar";
-        final Entity entity = createConfig(from, user, password, apiId, reply, senderId);
 
+        Entity config1 = createConfig("61", "0", from, user, password, apiId, reply, senderId);
+        Entity config2 = createConfig(null, null, from, user, password, apiId, reply, senderId);
+
+        checkMessage(config1, "0411234567", "61411234567", from, reply, user, password, apiId);
+        checkMessage(config1, "+61411234567", "61411234567", from, reply, user, password, apiId);
+
+        // check configuration with no country prefix nor area code
+        checkMessage(config2, "0411234567", "0411234567", from, reply, user, password, apiId);
+        checkMessage(config2, "+61411234567", "61411234567", from, reply, user, password, apiId);
+    }
+
+    private void checkMessage(Entity config, String phone, String expectedPhone, String from, String reply, String user,
+                              String password, String apiId) {
         MailTemplateFactory templateFactory = new MailTemplateFactory(getArchetypeService());
-        MailMessageFactory factory = new TemplatedMailMessageFactory(templateFactory.getTemplate(entity));
-        String phone = "0411234567";
+        MailMessageFactory factory = new TemplatedMailMessageFactory(templateFactory.getTemplate(config));
         String text = "text\nover\nmultiple\nlines";
+
         MailMessage message = factory.createMessage(phone, text);
         assertEquals(from, message.getFrom());
         assertEquals("sms@messaging.clickatell.com", message.getTo());
         assertEquals(null, message.getSubject());
-        String expectedText = "user:" + user + "\npassword:" + password + "\napi_id:" + apiId + "\nto:" + phone
+        String expectedText = "user:" + user + "\npassword:" + password + "\napi_id:" + apiId + "\nto:" + expectedPhone
                               + "\nreply:" + reply + "\nfrom:foobar"
                               + "\ntext:text\ntext:over\ntext:multiple\ntext:lines";
         assertEquals(expectedText, message.getText());
@@ -101,24 +113,31 @@ public class ClickatellMessageFactoryTestCase extends ArchetypeServiceTest {
     /**
      * Helper to create an <em>entity.SMSConfigEmailClickatell</em>.
      *
-     * @param from     the from address                      \
-     * @param user     the user
-     * @param password the password
-     * @param apiId    the api id
-     * @param replyTo  the replyTo address
-     * @param senderId the sender Id. May be {@code null}
+     * @param countryPrefix the country prefix. May be {@code null}
+     * @param areaPrefix    the area prefix. May be {@code null}
+     * @param from          the from address                      \
+     * @param user          the user
+     * @param password      the password
+     * @param apiId         the api id
+     * @param replyTo       the replyTo address
+     * @param senderId      the sender Id. May be {@code null}
      * @return a new configuration
      */
-    private Entity createConfig(String from, String user, String password, String apiId, String replyTo,
-                                String senderId) {
-        Entity entity = (Entity) create("entity.SMSConfigEmailClickatell");
-        IMObjectBean bean = new IMObjectBean(entity);
+    private Entity createConfig(String countryPrefix, String areaPrefix, String from, String user, String password,
+                                String apiId, String replyTo, String senderId) {
+        Entity config = (Entity) create("entity.SMSConfigEmailClickatell");
+        IMObjectBean bean = new IMObjectBean(config);
         bean.setValue("from", from);
         bean.setValue("user", user);
         bean.setValue("password", password);
         bean.setValue("apiId", apiId);
         bean.setValue("replyTo", replyTo);
         bean.setValue("senderId", senderId);
-        return entity;
+        bean.setValue("areaPrefix", areaPrefix);
+        bean.setValue("countryPrefix", countryPrefix);
+        getArchetypeService().deriveValues(config);
+        getArchetypeService().validateObject(config);
+        return config;
     }
+
 }
