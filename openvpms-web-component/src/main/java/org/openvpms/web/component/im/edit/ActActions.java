@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.edit;
 
@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 
@@ -87,6 +88,8 @@ public abstract class ActActions<T extends Act> extends AbstractIMObjectActions<
 
     /**
      * Updates an act's printed status.
+     * <p/>
+     * This suppresses execution of business rules to allow the printed flag to be set on acts that have been POSTED.
      *
      * @param act the act to update
      * @return {@code true} if the act was saved
@@ -95,7 +98,7 @@ public abstract class ActActions<T extends Act> extends AbstractIMObjectActions<
         boolean saved = false;
         try {
             if (setPrinted(act, true)) {
-                saved = SaveHelper.save(act);
+                saved = SaveHelper.save(act, ServiceHelper.getArchetypeService(false));
             }
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
