@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -23,6 +23,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.layout.ColumnLayoutData;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -33,6 +34,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
@@ -67,6 +69,12 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private AppointmentQuery.TimeRange lastTimeRange;
 
     /**
+     * The appointment rules.
+     */
+    private AppointmentRules rules;
+
+
+    /**
      * Constructs an {@code AppointmentBrowser}.
      *
      * @param location the practice location. May be {@code null}
@@ -74,6 +82,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
      */
     public AppointmentBrowser(Party location, Context context) {
         super(new AppointmentQuery(location), context);
+        rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
     /**
@@ -113,14 +122,14 @@ public class AppointmentBrowser extends ScheduleBrowser {
         if (schedules.size() == 1) {
             Party schedule = (Party) schedules.iterator().next();
             List<PropertySet> sets = events.get(schedule);
-            if (!hasOverlappingEvents(sets)) {
-                grid = new SingleScheduleGrid(getScheduleView(), date, schedule, sets);
+            if (!hasOverlappingEvents(sets, schedule)) {
+                grid = new SingleScheduleGrid(getScheduleView(), date, schedule, sets, rules);
             } else {
                 // there are overlapping appointments, so display them in multiple schedules
-                grid = new MultiScheduleGrid(getScheduleView(), date, events);
+                grid = new MultiScheduleGrid(getScheduleView(), date, events, rules);
             }
         } else {
-            grid = new MultiScheduleGrid(getScheduleView(), date, events);
+            grid = new MultiScheduleGrid(getScheduleView(), date, events, rules);
         }
         AppointmentQuery.TimeRange range = getQuery().getTimeRange();
         return createGridView(grid, range);
@@ -222,19 +231,23 @@ public class AppointmentBrowser extends ScheduleBrowser {
         if (startMins > endMins) {
             startMins = endMins;
         }
-        return new AppointmentGridView(grid, startMins, endMins);
+        return new AppointmentGridView(grid, startMins, endMins, rules);
     }
 
     /**
      * Determines if one or more events have overlapping times.
      *
-     * @param events the events
+     * @param events   the events
+     * @param schedule the schedule, used to determine the slot size
      * @return {@code true} if one or more events have overlapping times
      */
-    private boolean hasOverlappingEvents(List<PropertySet> events) {
+    private boolean hasOverlappingEvents(List<PropertySet> events, Party schedule) {
+        int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, new AppointmentRules());
+        IntersectComparator comparator = new IntersectComparator(slotSize);
         List<PropertySet> list = new ArrayList<PropertySet>();
+
         for (PropertySet event : events) {
-            if (Collections.binarySearch(list, event, IntersectComparator.INSTANCE) >= 0) {
+            if (Collections.binarySearch(list, event, comparator) >= 0) {
                 return true;
             }
             list.add(event);

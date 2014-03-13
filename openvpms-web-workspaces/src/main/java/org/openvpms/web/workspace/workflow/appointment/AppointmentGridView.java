@@ -1,23 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
@@ -28,8 +27,7 @@ import java.util.List;
 /**
  * Provides a time-range view of a set of appointments.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class AppointmentGridView extends AbstractAppointmentGrid {
 
@@ -50,15 +48,15 @@ class AppointmentGridView extends AbstractAppointmentGrid {
 
 
     /**
-     * Creates a new <tt>AppointmentGridView</tt>.
+     * Constructs an {@link AppointmentGridView}.
      *
      * @param grid      the grid to filter appointments from
      * @param startMins the start time of the view, as minutes from midnight
      * @param endMins   the end time of the view, as minutes from midnight
+     * @param rules     the appointment rules
      */
-    public AppointmentGridView(AppointmentGrid grid, int startMins,
-                               int endMins) {
-        super(grid.getScheduleView(), grid.getDate(), startMins, endMins);
+    public AppointmentGridView(AppointmentGrid grid, int startMins, int endMins, AppointmentRules rules) {
+        super(grid.getScheduleView(), grid.getDate(), startMins, endMins, rules);
         this.grid = grid;
         startSlot = grid.getFirstSlot(startMins);
         if (startSlot == -1) {
@@ -92,7 +90,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      *
      * @param schedule the schedule
      * @param slot     the slot
-     * @return the corresponding appointment, or <tt>null</tt> if none is found
+     * @return the corresponding appointment, or {@code null} if none is found
      */
     public PropertySet getEvent(Schedule schedule, int slot) {
         PropertySet result = grid.getEvent(schedule, startSlot + slot);
@@ -158,7 +156,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * the specified minutes.
      *
      * @param minutes the minutes
-     * @return the first slot that minutes intersects, or <tt>-1</tt> if no
+     * @return the first slot that minutes intersects, or {@code -1} if no
      *         slots intersect
      */
     public int getFirstSlot(int minutes) {
@@ -170,7 +168,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * the specified minutes.
      *
      * @param minutes the minutes
-     * @return the last slot that minutes intersects, or <tt>-1</tt> if no
+     * @return the last slot that minutes intersects, or {@code -1} if no
      *         slots intersect
      */
     public int getLastSlot(int minutes) {
@@ -181,7 +179,7 @@ class AppointmentGridView extends AbstractAppointmentGrid {
      * Returns the slot that a time falls in.
      *
      * @param time the time
-     * @return the slot, or <tt>-1</tt> if the time doesn't intersect any slot
+     * @return the slot, or {@code -1} if the time doesn't intersect any slot
      */
     @Override
     public int getSlot(Date time) {
