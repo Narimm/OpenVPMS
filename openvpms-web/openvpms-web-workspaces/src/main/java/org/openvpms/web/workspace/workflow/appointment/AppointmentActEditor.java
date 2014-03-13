@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -44,10 +45,15 @@ import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
+import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import static org.openvpms.web.echo.style.Styles.BOLD;
+import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
+import static org.openvpms.web.echo.style.Styles.INSET;
 
 
 /**
@@ -67,9 +73,19 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     private ModifiableListener patientListener;
 
+    /**
+     * The appointment slot size.
+     */
+    private int slotSize;
 
     /**
-     * Constructs an {@code AppointmentActEditor}.
+     * The appointment rules.
+     */
+    private final AppointmentRules rules;
+
+
+    /**
+     * Constructs an {@link AppointmentActEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -77,6 +93,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     public AppointmentActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        rules = ServiceHelper.getBean(AppointmentRules.class);
         initParticipant("schedule", context.getContext().getSchedule());
 
         Entity appointmentType = (Entity) getParticipant("appointmentType");
@@ -94,7 +111,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             Date scheduleDate = context.getContext().getScheduleDate();
             if (scheduleDate != null) {
                 startTime = getDefaultStartTime(scheduleDate);
-
                 setStartTime(startTime, true);
             }
         }
@@ -115,8 +131,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      */
     public void setSchedule(Entity schedule) {
         setParticipant("schedule", schedule);
-        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
-        editor.setSchedule(schedule);
+        updateSchedule(schedule);
         calculateEndTime();
     }
 
@@ -138,8 +153,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         super.onLayoutCompleted();
 
         Party schedule = (Party) getParticipant("schedule");
-        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
-        editor.setSchedule(schedule);
+        AppointmentTypeParticipationEditor editor = updateSchedule(schedule);
         editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onAppointmentTypeChanged();
@@ -152,11 +166,26 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         }
     }
 
+    private AppointmentTypeParticipationEditor updateSchedule(Entity schedule) {
+        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
+        editor.setSchedule(schedule);
+        slotSize = rules.getSlotSize((Party) schedule);
+        return editor;
+    }
+
     /**
      * Invoked when the start time changes. Calculates the end time.
      */
     @Override
     protected void onStartTimeChanged() {
+        Date start = getStartTime();
+        if (start != null) {
+            Date rounded = SchedulingHelper.getSlotTime(start, slotSize, false);
+            if (DateRules.compareTo(start, rounded) != 0) {
+                setStartTime(rounded, true);
+            }
+        }
+
         try {
             calculateEndTime();
         } catch (OpenVPMSException exception) {
@@ -165,8 +194,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
     }
 
     /**
-     * Invoked when the end time changes. Recalculates the end time if it
-     * is less than the start time.
+     * Invoked when the end time changes. Recalculates the end time if it is less than the start time.
      */
     @Override
     protected void onEndTimeChanged() {
@@ -175,6 +203,11 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         if (start != null && end != null) {
             if (end.compareTo(start) < 0) {
                 calculateEndTime();
+            } else {
+                Date rounded = SchedulingHelper.getSlotTime(end, slotSize, true);
+                if (DateRules.compareTo(end, rounded) != 0) {
+                    setEndTime(rounded, true);
+                }
             }
         }
     }
@@ -231,17 +264,14 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
             patientSummary = getPatientAlerts(patient);
         }
         if (customerSummary != null || patientSummary != null) {
-            result = RowFactory.create("CellSpacing");
+            result = RowFactory.create(CELL_SPACING);
             if (customerSummary != null) {
                 result.add(customerSummary);
             }
             if (patientSummary != null) {
                 result.add(patientSummary);
-//                RowLayoutData layout = new RowLayoutData();
-//                layout.setAlignment(Alignment.ALIGN_TOP);
-//                patientSummary.setLayoutData(layout);
             }
-            result = RowFactory.create("Inset", result);
+            result = RowFactory.create(INSET, result);
         }
         return result;
     }
@@ -258,7 +288,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         CustomerSummary summary = new CustomerSummary(context.getContext(), context.getHelpContext());
         AlertSummary alerts = summary.getAlertSummary(customer);
         if (alerts != null) {
-            result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", "bold"),
+            result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", BOLD),
                                           alerts.getComponent());
         }
         return result;
@@ -278,7 +308,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
         AlertSummary alerts = factory.createPatientSummary(context, help).getAlertSummary(patient);
         if (alerts != null) {
-            result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", "bold"),
+            result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", BOLD),
                                           alerts.getComponent());
         }
         return result;
@@ -335,7 +365,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
         int slotSize = 0;
         Party schedule = (Party) getParticipant("schedule");
         if (schedule != null) {
-            AppointmentRules rules = new AppointmentRules();
             slotSize = rules.getSlotSize(schedule);
         }
 
@@ -367,7 +396,6 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
                 = getAppointmentTypeEditor();
         Entity appointmentType = editor.getEntity();
         if (start != null && schedule != null && appointmentType != null) {
-            AppointmentRules rules = new AppointmentRules();
             Date end = rules.calculateEndTime(start, schedule, appointmentType);
             setEndTime(end);
         }
@@ -391,7 +419,7 @@ public class AppointmentActEditor extends AbstractScheduleActEditor {
      *         if there is no default, or {@code null} if none is found
      */
     private Entity getDefaultAppointmentType(Party schedule) {
-        return new AppointmentRules().getDefaultAppointmentType(schedule);
+        return rules.getDefaultAppointmentType(schedule);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -96,13 +96,14 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
      * @param date         the appointment date
      * @param startMins    the grid start time, as minutes from midnight
      * @param endMins      the grid end time, as minutes from midnight
+     * @param rules        the appointment rules
      */
-    public AbstractAppointmentGrid(Entity scheduleView, Date date, int startMins, int endMins) {
+    public AbstractAppointmentGrid(Entity scheduleView, Date date, int startMins, int endMins, AppointmentRules rules) {
         this.scheduleView = scheduleView;
         this.date = DateRules.getDate(date);
         this.startMins = startMins;
         this.endMins = endMins;
-        rules = new AppointmentRules();
+        this.rules = rules;
     }
 
     /**
@@ -280,6 +281,21 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
     }
 
     /**
+     * Returns the slot size of a schedule.
+     *
+     * @param schedule the schedule
+     * @param rules    the appointment rules
+     * @return the slot size
+     */
+    public static int getSlotSize(Party schedule, AppointmentRules rules) {
+        int slotSize = rules.getSlotSize(schedule);
+        if (slotSize <= 0) {
+            slotSize = DEFAULT_SLOT_SIZE;
+        }
+        return slotSize;
+    }
+
+    /**
      * Sets the no. of minutes from midnight that the grid starts at.
      *
      * @param startMins the minutes from midnight that the grid starts at
@@ -330,7 +346,7 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
         Date start = bean.getDate("startTime");
         int startMins;
         int endMins;
-        int slotSize;
+        int slotSize = getSlotSize(schedule, rules);
 
         if (start != null) {
             startMins = getGridMinutes(start);
@@ -346,11 +362,6 @@ public abstract class AbstractAppointmentGrid implements AppointmentGrid {
         }
         if (endMins < startMins) {
             endMins = startMins;
-        }
-
-        slotSize = rules.getSlotSize(schedule);
-        if (slotSize <= 0) {
-            slotSize = DEFAULT_SLOT_SIZE;
         }
 
         return new Schedule(schedule, startMins, endMins, slotSize);
