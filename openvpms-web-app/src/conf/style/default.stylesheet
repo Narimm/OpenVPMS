@@ -248,12 +248,10 @@
         </properties>
     </style>
 
-    <style name="MedicalRecordSummary.act.patientClinicalEvent"
-           type="nextapp.echo2.app.Component">
+    <style name="MedicalRecordSummary.act.patientClinicalEvent" type="nextapp.echo2.app.Component">
     </style>
 
-    <style name="MedicalRecordSummary.act.patientClinicalNote"
-           type="nextapp.echo2.app.Component">
+    <style name="MedicalRecordSummary.act.patientClinicalNote" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
@@ -265,13 +263,73 @@
         </properties>
     </style>
 
-    <style name="MedicalRecordSummary.act.patientClinicalProblem"
-           type="nextapp.echo2.app.Component">
+    <style name="MedicalRecordSummary.act.patientClinicalProblem" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="${history.problem.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientDocumentAttachment" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.attachment.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientDocumentForm" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.form.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientDocumentImage" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.image.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientDocumentLetter" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.letter.colour}"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientInvestigation"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${history.investigation.colour}"/>
                     </properties>
                 </layout-data>
             </property>
@@ -311,19 +369,6 @@
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
                     <properties>
                         <property name="background" value="${history.weight.colour}"/>
-                    </properties>
-                </layout-data>
-            </property>
-        </properties>
-    </style>
-
-    <style name="MedicalRecordSummary.act.patientInvestigation"
-           type="nextapp.echo2.app.Component">
-        <properties>
-            <property name="layoutData">
-                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
-                    <properties>
-                        <property name="background" value="${history.investigation.colour}"/>
                     </properties>
                 </layout-data>
             </property>
