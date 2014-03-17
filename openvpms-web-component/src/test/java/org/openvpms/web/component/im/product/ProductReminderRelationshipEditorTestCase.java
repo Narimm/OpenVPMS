@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.product;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -30,6 +29,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.test.AbstractAppTest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tim Anderson
  */
-public class ProductReminderRelationshipEditorTestCase extends ArchetypeServiceTest {
+public class ProductReminderRelationshipEditorTestCase extends AbstractAppTest {
 
     /**
      * Verifies that the period, periodUom and interval nodes update when the reminder type changes.
@@ -51,7 +51,7 @@ public class ProductReminderRelationshipEditorTestCase extends ArchetypeServiceT
 
         EntityRelationship rel = (EntityRelationship) create("entityRelationship.productReminder");
         ProductReminderRelationshipEditor editor = new ProductReminderRelationshipEditor(
-            rel, null, new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null)));
+                rel, null, new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null)));
         checkValues(rel, 1, DateUnits.YEARS, false);
 
         editor.getProperty("target").setValue(type1.getObjectReference());
