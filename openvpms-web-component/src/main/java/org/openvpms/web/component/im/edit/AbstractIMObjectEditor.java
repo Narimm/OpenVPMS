@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -270,7 +270,8 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         boolean result = false;
         Validator validator = new Validator();
         if (validator.validate(this)) {
-            if (!isModified()) {
+            boolean isNew = object.isNew();
+            if (!isNew && !isModified()) {
                 result = true;
             } else {
                 result = doSave();
@@ -323,7 +324,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * @return {@code true} if the object has been changed
      */
     public boolean isModified() {
-        return object.isNew() || editors.isModified();
+        return editors.isModified();
     }
 
     /**
