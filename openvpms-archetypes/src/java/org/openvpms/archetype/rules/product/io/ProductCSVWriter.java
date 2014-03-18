@@ -49,8 +49,9 @@ public class ProductCSVWriter implements ProductWriter {
      */
     public static final String[] HEADER = {
             "Product Id", "Product Name", "Product Printed Name", "Fixed Price Id", "Fixed Price", "Fixed Cost",
-            "Fixed Price Start Date", "Fixed Price End Date", "Default Fixed Price", "Unit Price Id", "Unit Price",
-            "Unit Cost", "Unit Price Start Date", "Unit Price End Date", "Tax Rate", "Notes"};
+            "Fixed Price Max Discount", "Fixed Price Start Date", "Fixed Price End Date", "Default Fixed Price",
+            "Unit Price Id", "Unit Price", "Unit Cost", "Unit Price Max Discount", "Unit Price Start Date",
+            "Unit Price End Date", "Tax Rate", "Notes"};
 
     /**
      * The archetype service.
@@ -203,6 +204,7 @@ public class ProductCSVWriter implements ProductWriter {
             String fixedId = null;
             String fixed = null;
             String fixedCost = null;
+            String fixedMaxDiscount = null;
             String fixedStartDate = null;
             String fixedEndDate = null;
             String defaultFixedPrice = null;
@@ -212,6 +214,7 @@ public class ProductCSVWriter implements ProductWriter {
                 fixedId = fixedBean.getString("id");
                 fixed = fixedPrice.getPrice().toString();
                 fixedCost = fixedBean.getBigDecimal("cost").toString();
+                fixedMaxDiscount = fixedBean.getBigDecimal("maxDiscount").toString();
                 fixedStartDate = getDate(fixedPrice.getFromDate());
                 fixedEndDate = getDate(fixedPrice.getToDate());
                 defaultFixedPrice = fixedBean.getString("default", "false").toLowerCase();
@@ -225,6 +228,7 @@ public class ProductCSVWriter implements ProductWriter {
             String unitId = null;
             String unit = null;
             String unitCost = null;
+            String unitMaxDiscount = null;
             String unitStartDate = null;
             String unitEndDate = null;
             if (unitPrice != null) {
@@ -232,11 +236,13 @@ public class ProductCSVWriter implements ProductWriter {
                 unitId = unitBean.getString("id");
                 unit = unitPrice.getPrice().toString();
                 unitCost = unitBean.getBigDecimal("cost").toString();
+                unitMaxDiscount = unitBean.getBigDecimal("maxDiscount").toString();
                 unitStartDate = getDate(unitPrice.getFromDate());
                 unitEndDate = getDate(unitPrice.getToDate());
             }
-            String[] line = {productId, name, printedName, fixedId, fixed, fixedCost, fixedStartDate, fixedEndDate,
-                             defaultFixedPrice, unitId, unit, unitCost, unitStartDate, unitEndDate, tax, notes};
+            String[] line = {productId, name, printedName, fixedId, fixed, fixedCost, fixedMaxDiscount, fixedStartDate,
+                             fixedEndDate, defaultFixedPrice, unitId, unit, unitCost, unitMaxDiscount, unitStartDate,
+                             unitEndDate, tax, notes};
             writer.writeNext(line);
         }
     }

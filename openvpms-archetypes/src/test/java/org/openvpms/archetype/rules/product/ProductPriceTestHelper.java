@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -56,18 +56,20 @@ public class ProductPriceTestHelper {
      * @param price        the price
      * @param cost         the cost price
      * @param markup       the markup
+     * @param maxDiscount  the maximum discount
      * @param from         the active from date. May be {@code null}
      * @param to           the active to date. May be {@code null}
      * @param defaultPrice {@code true} if the price is the default
      * @return a new fixed price
      */
-    public static ProductPrice createFixedPrice(BigDecimal price, BigDecimal cost, BigDecimal markup, String from,
-                                                String to, boolean defaultPrice) {
+    public static ProductPrice createFixedPrice(BigDecimal price, BigDecimal cost, BigDecimal markup,
+                                                BigDecimal maxDiscount, String from, String to, boolean defaultPrice) {
         ProductPrice result = createFixedPrice(from, to, defaultPrice);
         IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("price", price);
         bean.setValue("cost", cost);
         bean.setValue("markup", markup);
+        bean.setValue("maxDiscount", maxDiscount);
         return result;
     }
 
@@ -85,20 +87,21 @@ public class ProductPriceTestHelper {
     /**
      * Helper to create a new unit price.
      *
-     * @param price  the price
-     * @param cost   the cost price
-     * @param markup the markup
-     * @param from   the active from date. May be {@code null}
-     * @param to     the active to date. May be {@code null}
-     * @return a new fixed price
+     * @param price       the price
+     * @param cost        the cost price
+     * @param markup      the markup
+     * @param maxDiscount the maximum discount
+     * @param from        the active from date. May be {@code null}
+     * @param to          the active to date. May be {@code null}   @return a new fixed price
      */
-    public static ProductPrice createUnitPrice(BigDecimal price, BigDecimal cost, BigDecimal markup, String from,
-                                               String to) {
+    public static ProductPrice createUnitPrice(BigDecimal price, BigDecimal cost, BigDecimal markup,
+                                               BigDecimal maxDiscount, String from, String to) {
         ProductPrice result = createUnitPrice(from, to);
         IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("price", price);
         bean.setValue("cost", cost);
         bean.setValue("markup", markup);
+        bean.setValue("maxDiscount", maxDiscount);
         return result;
     }
 
@@ -153,29 +156,33 @@ public class ProductPriceTestHelper {
      * @param price        the price
      * @param cost         the cost price
      * @param markup       the markup
+     * @param maxDiscount  the maximum discount
      * @param from         the active from date. May be {@code null}
      * @param to           the active to date. May be {@code null}
      * @param defaultPrice {@code true} if the price is the default
      * @return a new fixed price
      */
-    public static ProductPrice createFixedPrice(String price, String cost, String markup, String from, String to,
-                                                boolean defaultPrice) {
-        return createFixedPrice(new BigDecimal(price), new BigDecimal(cost), new BigDecimal(markup), from, to,
-                                defaultPrice);
+    public static ProductPrice createFixedPrice(String price, String cost, String markup, String maxDiscount,
+                                                String from, String to, boolean defaultPrice) {
+        return createFixedPrice(new BigDecimal(price), new BigDecimal(cost), new BigDecimal(markup),
+                                new BigDecimal(maxDiscount), from, to, defaultPrice);
     }
 
     /**
      * Helper to create a new unit price.
      *
-     * @param price  the price
-     * @param cost   the cost price
-     * @param markup the markup
-     * @param from   the active from date. May be {@code null}
-     * @param to     the active to date. May be {@code null}
-     * @return a new fixed price
+     * @param price       the price
+     * @param cost        the cost price
+     * @param markup      the markup
+     * @param maxDiscount the maximum discount
+     * @param from        the active from date. May be {@code null}
+     * @param to          the active to date. May be {@code null}
+     * @return a new unit price
      */
-    public static ProductPrice createUnitPrice(String price, String cost, String markup, String from, String to) {
-        return createUnitPrice(new BigDecimal(price), new BigDecimal(cost), new BigDecimal(markup), from, to);
+    public static ProductPrice createUnitPrice(String price, String cost, String markup, String maxDiscount,
+                                               String from, String to) {
+        return createUnitPrice(new BigDecimal(price), new BigDecimal(cost), new BigDecimal(markup),
+                               new BigDecimal(maxDiscount), from, to);
     }
 
     /**

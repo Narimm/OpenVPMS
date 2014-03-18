@@ -54,6 +54,11 @@ public class PriceData {
     private BigDecimal cost;
 
     /**
+     * The maximum discount.
+     */
+    private BigDecimal maxDiscount;
+
+    /**
      * The price start date. May be {@code null}
      */
     private Date from;
@@ -76,16 +81,18 @@ public class PriceData {
     /**
      * Constructs a {@link PriceData}.
      *
-     * @param id        the price identifier, or {@code -1} if it is a new price
-     * @param shortName the price archetype short name
-     * @param price     the price
-     * @param cost      the cost price
-     * @param from      the price start date. May be {@code null}
-     * @param to        the price end date. May be {@code null}
-     * @param line      the line that the price was read from
+     * @param id          the price identifier, or {@code -1} if it is a new price
+     * @param shortName   the price archetype short name
+     * @param price       the price
+     * @param cost        the cost price
+     * @param maxDiscount the maximum discount
+     * @param from        the price start date. May be {@code null}
+     * @param to          the price end date. May be {@code null}
+     * @param line        the line that the price was read from
      */
-    public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, Date from, Date to, int line) {
-        this(id, shortName, price, cost, from, to, false, line);
+    public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from,
+                     Date to, int line) {
+        this(id, shortName, price, cost, maxDiscount, from, to, false, line);
     }
 
     /**
@@ -95,17 +102,19 @@ public class PriceData {
      * @param shortName    the price archetype short name
      * @param price        the price
      * @param cost         the cost price
+     * @param maxDiscount  the maximum discount
      * @param from         the price start date. May be {@code null}
      * @param to           the price end date. May be {@code null}
      * @param defaultPrice if {@code true}, indicates the price is the default price
      * @param line         the line that the price was read from
      */
-    public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, Date from, Date to,
-                     boolean defaultPrice, int line) {
+    public PriceData(long id, String shortName, BigDecimal price, BigDecimal cost, BigDecimal maxDiscount, Date from,
+                     Date to, boolean defaultPrice, int line) {
         this.id = id;
         this.shortName = shortName;
         this.price = price;
         this.cost = cost;
+        this.maxDiscount = maxDiscount;
         this.from = from;
         this.to = to;
         this.defaultPrice = defaultPrice;
@@ -124,6 +133,7 @@ public class PriceData {
         this.price = source.getPrice();
         IMObjectBean bean = new IMObjectBean(source, service);
         this.cost = bean.getBigDecimal("cost");
+        this.maxDiscount = bean.getBigDecimal("maxDiscount");
         this.from = source.getFromDate();
         this.to = source.getToDate();
         this.defaultPrice = ProductImportHelper.isDefault(bean);
@@ -182,6 +192,24 @@ public class PriceData {
      */
     public void setCost(BigDecimal cost) {
         this.cost = cost;
+    }
+
+    /**
+     * Returns the price maximum discount.
+     *
+     * @return the maximum discount, expressed as a percentage
+     */
+    public BigDecimal getMaxDiscount() {
+        return maxDiscount;
+    }
+
+    /**
+     * Sets the price maximum discount.
+     *
+     * @param maxDiscount the maximum discount, expressed as a percentage
+     */
+    public void setMaxDiscount(BigDecimal maxDiscount) {
+        this.maxDiscount = maxDiscount;
     }
 
     /**
