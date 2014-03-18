@@ -265,7 +265,8 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         boolean result = false;
         Validator validator = createValidator();
         if (validator.validate(this)) {
-            if (!isModified()) {
+            boolean isNew = object.isNew();
+            if (!isNew && !isModified()) {
                 result = true;
             } else {
                 result = doSave();
@@ -318,7 +319,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * @return {@code true} if the object has been changed
      */
     public boolean isModified() {
-        return object.isNew() || editors.isModified();
+        return editors.isModified();
     }
 
     /**

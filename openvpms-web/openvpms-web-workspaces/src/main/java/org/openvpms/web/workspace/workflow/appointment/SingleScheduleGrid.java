@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -37,8 +36,7 @@ import java.util.List;
  * This handles overlapping and double booked appointments by ordering them
  * one after another.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SingleScheduleGrid extends AbstractAppointmentGrid {
 
@@ -64,17 +62,17 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
 
 
     /**
-     * Creates a new <tt>SingleScheduleGrid</tt>.
+     * Constructs a {@link SingleScheduleGrid}.
      *
      * @param scheduleView         the schedule view
      * @param date                 the appointment date
      * @param organisationSchedule the schedule
      * @param appointmentSets      the appointments
+     * @param rules                the appointment rules
      */
-    public SingleScheduleGrid(Entity scheduleView, Date date,
-                              Party organisationSchedule,
-                              List<PropertySet> appointmentSets) {
-        super(scheduleView, date, -1, -1);
+    public SingleScheduleGrid(Entity scheduleView, Date date, Party organisationSchedule,
+                              List<PropertySet> appointmentSets, AppointmentRules rules) {
+        super(scheduleView, date, -1, -1, rules);
         schedule = createSchedule(organisationSchedule);
         schedules = Arrays.asList(schedule);
         int startMins = schedule.getStartMins();
@@ -126,7 +124,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param schedule the schedule
      * @param slot     the slot
-     * @return the corresponding appointment, or <tt>null</tt> if none is found
+     * @return the corresponding appointment, or {@code null} if none is found
      */
     public PropertySet getEvent(Schedule schedule, int slot) {
         SlotGroup group = slots.get(slot).getGroup();
@@ -183,7 +181,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * the specified minutes.
      *
      * @param minutes the minutes
-     * @return the first slot that minutes intersects, or <tt>-1</tt> if no
+     * @return the first slot that minutes intersects, or {@code -1} if no
      *         slots intersect
      */
     public int getFirstSlot(int minutes) {
@@ -207,7 +205,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * the specified minutes.
      *
      * @param minutes the minutes
-     * @return the last slot that minutes intersects, or <tt>-1</tt> if no
+     * @return the last slot that minutes intersects, or {@code -1} if no
      *         slots intersect
      */
     public int getLastSlot(int minutes) {
@@ -309,13 +307,13 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         private final int startMins;
 
         /**
-         * The related slots, or <tt>null</tt> if this slot isn't related to
+         * The related slots, or {@code null} if this slot isn't related to
          * any slots.
          */
         private final SlotGroup group;
 
         /**
-         * Creates a new <tt>Slot</tt>.
+         * Creates a new {@code Slot}.
          *
          * @param startMins the start time, as minutes since midnight
          */
@@ -324,10 +322,10 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         }
 
         /**
-         * Creates a new <tt>Slot</tt>.
+         * Creates a new {@code Slot}.
          *
          * @param startMins the start time, as minutes since midnight
-         * @param group     the related slots. May be <tt>null</tt>
+         * @param group     the related slots. May be {@code null}
          */
         public Slot(int startMins, SlotGroup group) {
             this.startMins = startMins;
@@ -346,7 +344,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         /**
          * Returns the related slots.
          *
-         * @return the related slots. May be <tt>null</tt>
+         * @return the related slots. May be {@code null}
          */
         public SlotGroup getGroup() {
             return group;
@@ -374,7 +372,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         private final int startMins;
 
         /**
-         * The end time of the group, as minutes from mightnight.
+         * The end time of the group, as minutes from midnight.
          */
         private final int endMins;
 
@@ -384,7 +382,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         private int startSlot;
 
         /**
-         * Creates a new <tt>SlotGroup</tt>.
+         * Constructs a {@link SlotGroup}.
          *
          * @param appointment the appointment
          * @param startMins   the start time, as minutes from midnight

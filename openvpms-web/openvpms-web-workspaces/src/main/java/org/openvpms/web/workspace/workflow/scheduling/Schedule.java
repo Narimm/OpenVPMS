@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -61,9 +61,14 @@ public class Schedule {
      */
     private List<PropertySet> events = new ArrayList<PropertySet>();
 
+    /**
+     * The comparator to detect intersecting events.
+     */
+    private final Comparator<PropertySet> intersectComparator;
+
 
     /**
-     * Creates a new <tt>Schedule</tt>.
+     * Constructs a {@link Schedule}.
      *
      * @param schedule the event schedule
      */
@@ -72,7 +77,7 @@ public class Schedule {
     }
 
     /**
-     * Creates a new <tt>Schedule</tt>.
+     * Constructs an {@link Schedule}.
      *
      * @param schedule  the event schedule
      * @param startMins the schedule start time, as minutes since midnight
@@ -84,6 +89,7 @@ public class Schedule {
         this.startMins = startMins;
         this.endMins = endMins;
         this.slotSize = slotSize;
+        intersectComparator = new IntersectComparator(slotSize);
     }
 
     /**
@@ -165,7 +171,7 @@ public class Schedule {
      * Returns the event given its reference.
      *
      * @param event the event reference
-     * @return the event, or <tt>null</tt> if it is not found
+     * @return the event, or {@code null} if it is not found
      */
     public PropertySet getEvent(IMObjectReference event) {
         int index = indexOf(event);
@@ -177,7 +183,7 @@ public class Schedule {
      * Returns the index of an event, given its reference.
      *
      * @param event the event reference
-     * @return the index, or <tt>-1</tt> if the event is not found
+     * @return the index, or {@code -1} if the event is not found
      */
     public int indexOf(IMObjectReference event) {
         for (int i = 0; i < events.size(); ++i) {
@@ -194,10 +200,10 @@ public class Schedule {
      * event.
      *
      * @param event the event
-     * @return <tt>true</tt> if the schedule has an intersecting event
+     * @return {@code true} if the schedule has an intersecting event
      */
     public boolean hasIntersectingEvent(PropertySet event) {
-        return Collections.binarySearch(events, event, IntersectComparator.INSTANCE) >= 0;
+        return Collections.binarySearch(events, event, intersectComparator) >= 0;
     }
 
     /**
@@ -205,14 +211,13 @@ public class Schedule {
      *
      * @param time     the time
      * @param slotSize the slot size
-     * @return the corresponding event, or <tt>null</tt> if none is found
+     * @return the corresponding event, or {@code null} if none is found
      */
     public PropertySet getEvent(Date time, int slotSize) {
         PropertySet set = new ObjectSet();
         set.set(ScheduleEvent.ACT_START_TIME, time);
         set.set(ScheduleEvent.ACT_END_TIME, time);
-        int index = Collections.binarySearch(events, set,
-                                             new StartTimeComparator(slotSize));
+        int index = Collections.binarySearch(events, set, new StartTimeComparator(slotSize));
         return (index < 0) ? null : events.get(index);
     }
 
@@ -220,14 +225,13 @@ public class Schedule {
      * Returns the event intersecting the specified time.
      *
      * @param time the time
-     * @return the corresponding event, or <tt>null</tt> if none is found
+     * @return the corresponding event, or {@code null} if none is found
      */
     public PropertySet getIntersectingEvent(Date time) {
         PropertySet set = new ObjectSet();
         set.set(ScheduleEvent.ACT_START_TIME, time);
         set.set(ScheduleEvent.ACT_END_TIME, time);
-        int index = Collections.binarySearch(events, set,
-                                             IntersectComparator.INSTANCE);
+        int index = Collections.binarySearch(events, set, intersectComparator);
         return (index < 0) ? null : events.get(index);
     }
 
