@@ -106,49 +106,59 @@ public class ProductCSVReader implements ProductReader {
     private static final int FIXED_COST = 5;
 
     /**
+     * The fixed price max discount column.
+     */
+    private static final int FIXED_PRICE_MAX_DISCOUNT = 6;
+
+    /**
      * The product fixed price start date column.
      */
-    private static final int FIXED_PRICE_START_DATE = 6;
+    private static final int FIXED_PRICE_START_DATE = 7;
 
     /**
      * The product fixed price end date column.
      */
-    private static final int FIXED_PRICE_END_DATE = 7;
+    private static final int FIXED_PRICE_END_DATE = 8;
 
     /**
      * The product default fixed price column.
      */
-    private static final int DEFAULT_FIXED_PRICE = 8;
+    private static final int DEFAULT_FIXED_PRICE = 9;
 
     /**
      * The product unit price id column.
      */
-    private static final int UNIT_PRICE_ID = 9;
+    private static final int UNIT_PRICE_ID = 10;
 
     /**
      * The product unit price column.
      */
-    private static final int UNIT_PRICE = 10;
+    private static final int UNIT_PRICE = 11;
 
     /**
      * The product unit cost column.
      */
-    private static final int UNIT_COST = 11;
+    private static final int UNIT_COST = 12;
+
+    /**
+     * The unit price max discount column.
+     */
+    private static final int UNIT_PRICE_MAX_DISCOUNT = 13;
 
     /**
      * The product unit price start date column.
      */
-    private static final int UNIT_PRICE_START_DATE = 12;
+    private static final int UNIT_PRICE_START_DATE = 14;
 
     /**
      * The product unit price end date column.
      */
-    private static final int UNIT_PRICE_END_DATE = 13;
+    private static final int UNIT_PRICE_END_DATE = 15;
 
     /**
      * The product tax rate column.
      */
-    private static final int TAX_RATE = 14;
+    private static final int TAX_RATE = 16;
 
     static {
         for (DateFormat format : DAY_MONTH_YEAR_FORMATS) {
@@ -274,20 +284,22 @@ public class ProductCSVReader implements ProductReader {
             long fixedId = getId(line, FIXED_PRICE_ID, lineNo, false);
             BigDecimal fixedPrice = getDecimal(line, FIXED_PRICE, lineNo);
             BigDecimal fixedCost = getDecimal(line, FIXED_COST, lineNo);
+            BigDecimal fixedMaxDiscount = getDecimal(line, FIXED_PRICE_MAX_DISCOUNT, lineNo);
             Date fixedStartDate = getDate(line, FIXED_PRICE_START_DATE, lineNo, fixedPrice != null);
             Date fixedEndDate = getDate(line, FIXED_PRICE_END_DATE, lineNo, false);
             boolean defaultFixedPrice = getBoolean(line, DEFAULT_FIXED_PRICE, lineNo);
             long unitId = getId(line, UNIT_PRICE_ID, lineNo, false);
             BigDecimal unitPrice = getDecimal(line, UNIT_PRICE, lineNo);
             BigDecimal unitCost = getDecimal(line, UNIT_COST, lineNo);
+            BigDecimal unitMaxDiscount = getDecimal(line, UNIT_PRICE_MAX_DISCOUNT, lineNo);
             Date unitStartDate = getDate(line, UNIT_PRICE_START_DATE, lineNo, unitCost != null);
             Date unitEndDate = getDate(line, UNIT_PRICE_END_DATE, lineNo, false);
             if (fixedPrice != null) {
-                current.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedStartDate, fixedEndDate, defaultFixedPrice,
-                                      lineNo);
+                current.addFixedPrice(fixedId, fixedPrice, fixedCost, fixedMaxDiscount, fixedStartDate, fixedEndDate,
+                                      defaultFixedPrice, lineNo);
             }
             if (unitPrice != null) {
-                current.addUnitPrice(unitId, unitPrice, unitCost, unitStartDate, unitEndDate, lineNo);
+                current.addUnitPrice(unitId, unitPrice, unitCost, unitMaxDiscount, unitStartDate, unitEndDate, lineNo);
             }
         } catch (ProductIOException exception) {
             current.setError(exception.getMessage(), exception.getLine());

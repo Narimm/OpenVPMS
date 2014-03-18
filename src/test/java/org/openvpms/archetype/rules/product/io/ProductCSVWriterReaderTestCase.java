@@ -108,10 +108,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
 
         product = createProduct("Product A", "A");
         product.addClassification(createTaxType(new BigDecimal("5.0")));
-        fixed1 = createFixedPrice("1.0", "0.5", "100", "2012-02-01", "2012-04-01", false);
-        fixed2 = createFixedPrice("1.08", "0.6", "80", "2012-04-02", "2012-06-01", true);
-        unit1 = createUnitPrice("1.92", "1.2", "60", "2012-02-02", "2012-04-02");
-        unit2 = createUnitPrice("2.55", "1.5", "70", "2012-04-03", "2012-06-02");
+        fixed1 = createFixedPrice("1.0", "0.5", "100", "10", "2012-02-01", "2012-04-01", false);
+        fixed2 = createFixedPrice("1.08", "0.6", "80", "10", "2012-04-02", "2012-06-01", true);
+        unit1 = createUnitPrice("1.92", "1.2", "60", "10", "2012-02-02", "2012-04-02");
+        unit2 = createUnitPrice("2.55", "1.5", "70", "10", "2012-04-03", "2012-06-02");
         product.addProductPrice(fixed1);
         product.addProductPrice(fixed2);
         product.addProductPrice(unit1);
@@ -304,6 +304,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         IMObjectBean bean = new IMObjectBean(expected);
         assertEquals(expected.getPrice(), data.getPrice());
         assertEquals(bean.getBigDecimal("cost"), data.getCost());
+        assertEquals(bean.getBigDecimal("maxDiscount"), data.getMaxDiscount());
         assertEquals(expected.getFromDate(), data.getFrom());
         assertEquals(expected.getToDate(), data.getTo());
     }

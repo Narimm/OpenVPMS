@@ -499,7 +499,7 @@ public class ProductDataComparator {
     }
 
     /**
-     * Determines if the price and cost of two prices are the same.
+     * Determines if the price, cost and maximum discount of two prices are the same.
      *
      * @param data1 the price data
      * @param data2 the price to compare with
@@ -508,11 +508,12 @@ public class ProductDataComparator {
      */
     private boolean priceEquals(PriceData data1, PriceData data2) {
         return data2.getPrice().compareTo(data1.getPrice()) == 0 && data2.getCost().compareTo(data1.getCost()) == 0
+               && data2.getMaxDiscount().compareTo(data1.getMaxDiscount()) == 0
                && (!FIXED_PRICE.equals(data1.getShortName()) || data1.isDefault() == data2.isDefault());
     }
 
     /**
-     * Determines if the price and cost of two prices are the same.
+     * Determines if the price, cost and maximum discount of two prices are the same.
      *
      * @param data  the price data
      * @param price the price to compare with
@@ -521,9 +522,10 @@ public class ProductDataComparator {
     private boolean priceEquals(PriceData data, ProductPrice price) {
         IMObjectBean bean = new IMObjectBean(price, service);
         BigDecimal cost = bean.getBigDecimal("cost");
+        BigDecimal maxDiscount = bean.getBigDecimal("maxDiscount");
         return price.getPrice().compareTo(data.getPrice()) == 0 && cost.compareTo(data.getCost()) == 0
-               && (!FIXED_PRICE.equals(data.getShortName())
-                   || data.isDefault() == ProductImportHelper.isDefault(bean));
+               && maxDiscount.compareTo(data.getMaxDiscount()) == 0
+               && (!FIXED_PRICE.equals(data.getShortName()) || data.isDefault() == ProductImportHelper.isDefault(bean));
     }
 
 

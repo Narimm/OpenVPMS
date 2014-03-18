@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="act.stockTransfer.1.0" latest="true"
@@ -26,6 +26,7 @@
         <node name="to" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.stockTransferLocation"/>
+        <node name="reason" path="/reason" type="java.lang.String" minCardinality="0"/>
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'IN_PROGRESS'">
             <assertion name="lookup.local">

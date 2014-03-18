@@ -79,8 +79,8 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         comparer = new ProductDataComparator(rules, getArchetypeService());
 
         product = createProduct("Product 1", "P1");
-        fixed1 = createFixedPrice("1.0", "0.5", "100", "2013-02-01", "2013-04-01", true);
-        unit1 = createUnitPrice("1.92", "1.2", "60", "2013-02-02", "2013-04-02");
+        fixed1 = createFixedPrice("1.0", "0.5", "100", "10", "2013-02-01", "2013-04-01", true);
+        unit1 = createUnitPrice("1.92", "1.2", "60", "10", "2013-02-02", "2013-04-02");
         product.addProductPrice(fixed1);
         product.addProductPrice(unit1);
         save(product);
@@ -242,7 +242,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     @Test
     public void testAddUnitPriceWithNoStartDate() {
         ProductData data = createProduct(product);
-        data.addUnitPrice(-1, new BigDecimal("1.0"), new BigDecimal("0.5"), null, null, 1);
+        data.addUnitPrice(-1, new BigDecimal("1.0"), new BigDecimal("0.5"), BigDecimal.TEN, null, null, 1);
 
         try {
             comparer.compare(product, data);
@@ -258,7 +258,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     @Test
     public void testAddFixedPriceWithNoStartDate() {
         ProductData data = createProduct(product);
-        data.addFixedPrice(-1, new BigDecimal("1.0"), new BigDecimal("0.5"), null, null, true, 1);
+        data.addFixedPrice(-1, new BigDecimal("1.0"), new BigDecimal("0.5"), BigDecimal.TEN, null, null, true, 1);
 
         try {
             comparer.compare(product, data);
@@ -278,10 +278,10 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         Date from = getDate("2012-01-01");
         Date to = getDate("2013-02-02");
-        data.addUnitPrice(-1, unitPrice, unitCost, from, to, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, 1);
 
         PriceData changed = checkUnitPriceChange(data);
-        checkPrice(changed, unitCost, unitPrice, from, to);
+        checkPrice(changed, unitCost, unitPrice, BigDecimal.TEN, from, to);
     }
 
     /**
@@ -294,10 +294,10 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         Date from = getDate("2013-04-02");
         Date to = getDate("2013-06-01");
-        data.addUnitPrice(-1, unitPrice, unitCost, from, to, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, 1);
 
         PriceData changed = checkUnitPriceChange(data);
-        checkPrice(changed, unitCost, unitPrice, from, to);
+        checkPrice(changed, unitCost, unitPrice, BigDecimal.TEN, from, to);
     }
 
     /**
@@ -308,7 +308,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         ProductData data = createProduct(product);
         BigDecimal unitCost = new BigDecimal("0.5");
         BigDecimal unitPrice = new BigDecimal("1.0");
-        data.addUnitPrice(-1, unitPrice, unitCost, unit1.getFromDate(), unit1.getToDate(), 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, unit1.getFromDate(), unit1.getToDate(), 1);
 
         try {
             comparer.compare(product, data);
@@ -331,14 +331,14 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal fixedPrice = new BigDecimal("2.0");
         Date from = getDate("2013-04-02");
         Date to = getDate("2013-06-01");
-        data.addFixedPrice(-1, fixedPrice, fixedCost, from, to, true, 1);
+        data.addFixedPrice(-1, fixedPrice, fixedCost, BigDecimal.TEN, from, to, true, 1);
 
         ProductData changed = comparer.compare(product, data);
         assertNotNull(changed);
         assertEquals(2, changed.getFixedPrices().size());
-        checkPrice(changed.getFixedPrices().get(0), new BigDecimal("0.5"), fixed1.getPrice(), fixed1.getFromDate(),
-                   from);
-        checkPrice(changed.getFixedPrices().get(1), fixedCost, fixedPrice, from, to);
+        checkPrice(changed.getFixedPrices().get(0), new BigDecimal("0.5"), fixed1.getPrice(), BigDecimal.TEN,
+                   fixed1.getFromDate(), from);
+        checkPrice(changed.getFixedPrices().get(1), fixedCost, fixedPrice, BigDecimal.TEN, from, to);
     }
 
     /**
@@ -354,14 +354,14 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         Date from = getDate("2013-04-02");
         Date to = getDate("2013-06-01");
-        data.addUnitPrice(-1, unitPrice, unitCost, from, to, 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, from, to, 1);
 
         ProductData changed = comparer.compare(product, data);
         assertNotNull(changed);
         assertEquals(2, changed.getUnitPrices().size());
-        checkPrice(changed.getUnitPrices().get(0), new BigDecimal("1.2"), unit1.getPrice(), unit1.getFromDate(),
-                   from);
-        checkPrice(changed.getUnitPrices().get(1), unitCost, unitPrice, from, to);
+        checkPrice(changed.getUnitPrices().get(0), new BigDecimal("1.2"), unit1.getPrice(), BigDecimal.TEN,
+                   unit1.getFromDate(), from);
+        checkPrice(changed.getUnitPrices().get(1), unitCost, unitPrice, BigDecimal.TEN, from, to);
     }
 
     /**
@@ -396,6 +396,32 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
     }
 
     /**
+     * Verifies that {@link ProductDataComparator} detects changes to the fixed price max discount.
+     */
+    @Test
+    public void testFixedPriceMaxDiscountChange() {
+        ProductData data = createProduct(product);
+        BigDecimal maxDiscount = new BigDecimal("17.5");
+        data.getFixedPrices().get(0).setMaxDiscount(maxDiscount);
+
+        PriceData fixedPrice = checkFixedPriceChange(data);
+        checkEquals(maxDiscount, fixedPrice.getMaxDiscount());
+    }
+
+    /**
+     * Verifies that {@link ProductDataComparator} detects changes to the unit price max discount.
+     */
+    @Test
+    public void testUnitPriceMaxDiscountChange() {
+        ProductData data = createProduct(product);
+        BigDecimal maxDiscount = new BigDecimal("17.5");
+        data.getUnitPrices().get(0).setMaxDiscount(maxDiscount);
+
+        PriceData unitPrice = checkUnitPriceChange(data);
+        checkEquals(maxDiscount, unitPrice.getMaxDiscount());
+    }
+
+    /**
      * Verifies that adding a unit price that overlaps an existing one throws an exception.
      *
      * @param from the price start date. May be {@code null}
@@ -407,7 +433,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         BigDecimal unitPrice = new BigDecimal("1.0");
         Date fromDate = getDate(from);
         Date toDate = getDate(to);
-        data.addFixedPrice(-1, unitPrice, unitCost, fromDate, toDate, true, 1);
+        data.addFixedPrice(-1, unitPrice, unitCost, BigDecimal.TEN, fromDate, toDate, true, 1);
 
         PriceData changed = checkFixedPriceChange(data);
         assertEquals(fromDate, changed.getFrom());
@@ -424,7 +450,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         ProductData data = createProduct(product);
         BigDecimal unitCost = new BigDecimal("0.5");
         BigDecimal unitPrice = new BigDecimal("1.0");
-        data.addUnitPrice(-1, unitPrice, unitCost, getDate(from), getDate(to), 1);
+        data.addUnitPrice(-1, unitPrice, unitCost, BigDecimal.TEN, getDate(from), getDate(to), 1);
 
         try {
             comparer.compare(product, data);
@@ -434,20 +460,21 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         }
     }
 
-
     /**
      * Changes a price.
      *
-     * @param data          the price data
-     * @param expectedCost  the expected cost
-     * @param expectedPrice the expected price
-     * @param expectedFrom  the expected from date. May be {@code null}
-     * @param expectedTo    the expected to date. May be {@code null}
+     * @param data                the price data
+     * @param expectedCost        the expected cost
+     * @param expectedPrice       the expected price
+     * @param expectedMaxDiscount the expected maximum discount
+     * @param expectedFrom        the expected from date. May be {@code null}
+     * @param expectedTo          the expected to date. May be {@code null}
      */
-    private void checkPrice(PriceData data, BigDecimal expectedCost, BigDecimal expectedPrice, Date expectedFrom,
-                            Date expectedTo) {
+    private void checkPrice(PriceData data, BigDecimal expectedCost, BigDecimal expectedPrice,
+                            BigDecimal expectedMaxDiscount, Date expectedFrom, Date expectedTo) {
         checkEquals(expectedCost, data.getCost());
         checkEquals(expectedPrice, data.getPrice());
+        checkEquals(expectedMaxDiscount, data.getMaxDiscount());
         assertEquals(expectedFrom, data.getFrom());
         assertEquals(expectedTo, data.getTo());
     }

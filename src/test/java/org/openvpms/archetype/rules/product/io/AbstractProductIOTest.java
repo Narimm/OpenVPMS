@@ -31,7 +31,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import static org.junit.Assert.assertTrue;
-import static org.openvpms.archetype.test.TestHelper.getDate;
 
 /**
  * Product I/O helper methods.
@@ -88,11 +87,13 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
             for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.FIXED_PRICE)) {
                 IMObjectBean priceBean = new IMObjectBean(price);
                 result.addFixedPrice(price.getId(), price.getPrice(), priceBean.getBigDecimal("cost"),
-                                     price.getFromDate(), price.getToDate(), priceBean.getBoolean("default"), 1);
+                                     priceBean.getBigDecimal("maxDiscount"), price.getFromDate(), price.getToDate(),
+                                     priceBean.getBoolean("default"), 1);
             }
             for (ProductPrice price : rules.getProductPrices(product, ProductArchetypes.UNIT_PRICE)) {
                 IMObjectBean priceBean = new IMObjectBean(price);
                 result.addUnitPrice(price.getId(), price.getPrice(), priceBean.getBigDecimal("cost"),
+                                    priceBean.getBigDecimal("maxDiscount"),
                                     price.getFromDate(), price.getToDate(), 1);
             }
         }
@@ -110,115 +111,69 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
         BigDecimal expectedPrice = expected.getPrice();
         BigDecimal expectedCost = bean.getBigDecimal("cost");
         BigDecimal expectedMarkup = bean.getBigDecimal("markup");
+        BigDecimal expectedMaxDiscount = bean.getBigDecimal("maxDiscount");
         Date expectedFrom = expected.getFromDate();
         Date expectedTo = expected.getToDate();
         boolean isDefault = bean.hasNode("default") && bean.getBoolean("default");
 
         String shortName = expected.getArchetypeId().getShortName();
-        checkPrice(product, shortName, expectedPrice, expectedCost, expectedMarkup, expectedFrom, expectedTo,
-                   isDefault);
+        checkPrice(product, shortName, expectedPrice, expectedCost, expectedMarkup, expectedMaxDiscount, expectedFrom,
+                   expectedTo, isDefault);
     }
 
     /**
      * Verifies that a product contains the expected fixed price.
      *
-     * @param product         the product
-     * @param expectedPrice   the expected price
-     * @param expectedCost    the expected cost
-     * @param expectedMarkup  the expected markup
-     * @param expectedFrom    the expected price start date
-     * @param expectedTo      the expected price end date
-     * @param expectedDefault the expected default
+     * @param product             the product
+     * @param expectedPrice       the expected price
+     * @param expectedCost        the expected cost
+     * @param expectedMarkup      the expected markup
+     * @param expectedMaxDiscount the expected max discount
+     * @param expectedFrom        the expected price start date
+     * @param expectedTo          the expected price end date
+     * @param expectedDefault     the expected default
      */
     protected void checkFixedPrice(Product product, BigDecimal expectedPrice, BigDecimal expectedCost,
-                                   BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo,
-                                   boolean expectedDefault) {
-        checkPrice(product, ProductArchetypes.FIXED_PRICE, expectedPrice, expectedCost, expectedMarkup, expectedFrom,
-                   expectedTo, expectedDefault);
+                                   BigDecimal expectedMarkup, BigDecimal expectedMaxDiscount, Date expectedFrom,
+                                   Date expectedTo, boolean expectedDefault) {
+        checkPrice(product, ProductArchetypes.FIXED_PRICE, expectedPrice, expectedCost, expectedMarkup,
+                   expectedMaxDiscount, expectedFrom, expectedTo, expectedDefault);
     }
 
     /**
      * Verifies that a product contains the expected unit price.
      *
-     * @param product        the product
-     * @param expectedPrice  the expected price
-     * @param expectedCost   the expected cost
-     * @param expectedMarkup the expected markup
-     * @param expectedFrom   the expected price start date
-     * @param expectedTo     the expected price end date
+     * @param product             the product
+     * @param expectedPrice       the expected price
+     * @param expectedCost        the expected cost
+     * @param expectedMarkup      the expected markup
+     * @param expectedMaxDiscount the expected max discount
+     * @param expectedFrom        the expected price start date
+     * @param expectedTo          the expected price end date
      */
     protected void checkUnitPrice(Product product, BigDecimal expectedPrice, BigDecimal expectedCost,
-                                  BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo) {
-        checkPrice(product, ProductArchetypes.UNIT_PRICE, expectedPrice, expectedCost, expectedMarkup, expectedFrom,
-                   expectedTo, false);
-    }
-
-    /**
-     * Verifies that a product contains the expected fixed price.
-     *
-     * @param product         the product
-     * @param expectedPrice   the expected price
-     * @param expectedCost    the expected cost
-     * @param expectedMarkup  the expected markup
-     * @param expectedFrom    the expected price start date
-     * @param expectedTo      the expected price end date
-     * @param expectedDefault the expected default
-     */
-    protected void checkFixedPrice(Product product, String expectedPrice, String expectedCost,
-                                   String expectedMarkup, String expectedFrom, String expectedTo,
-                                   boolean expectedDefault) {
-        checkPrice(product, ProductArchetypes.FIXED_PRICE, expectedPrice, expectedCost, expectedMarkup, expectedFrom,
-                   expectedTo, expectedDefault);
-    }
-
-    /**
-     * Verifies that a product contains the expected unit price.
-     *
-     * @param product        the product
-     * @param expectedPrice  the expected price
-     * @param expectedCost   the expected cost
-     * @param expectedMarkup the expected markup
-     * @param expectedFrom   the expected price start date
-     * @param expectedTo     the expected price end date
-     */
-    protected void checkUnitPrice(Product product, String expectedPrice, String expectedCost,
-                                  String expectedMarkup, String expectedFrom, String expectedTo) {
-        checkPrice(product, ProductArchetypes.UNIT_PRICE, expectedPrice, expectedCost, expectedMarkup, expectedFrom,
-                   expectedTo, false);
+                                  BigDecimal expectedMarkup, BigDecimal expectedMaxDiscount, Date expectedFrom,
+                                  Date expectedTo) {
+        checkPrice(product, ProductArchetypes.UNIT_PRICE, expectedPrice, expectedCost, expectedMarkup,
+                   expectedMaxDiscount, expectedFrom, expectedTo, false);
     }
 
     /**
      * Verifies that a product contains the expected price.
      *
-     * @param product         the product
-     * @param shortName       the price archetype short name
-     * @param expectedPrice   the expected price
-     * @param expectedCost    the expected cost
-     * @param expectedMarkup  the expected markup
-     * @param expectedFrom    the expected price start date
-     * @param expectedTo      the expected price end date
-     * @param expectedDefault the expected default. Only applies to fixed prices
-     */
-    protected void checkPrice(Product product, String shortName, String expectedPrice, String expectedCost,
-                              String expectedMarkup, String expectedFrom, String expectedTo, boolean expectedDefault) {
-        checkPrice(product, shortName, new BigDecimal(expectedPrice), new BigDecimal(expectedCost),
-                   new BigDecimal(expectedMarkup), getDate(expectedFrom), getDate(expectedTo), expectedDefault);
-    }
-
-    /**
-     * Verifies that a product contains the expected price.
-     *
-     * @param product         the product
-     * @param shortName       the price archetype short name
-     * @param expectedPrice   the expected price
-     * @param expectedCost    the expected cost
-     * @param expectedMarkup  the expected markup
-     * @param expectedFrom    the expected price start date
-     * @param expectedTo      the expected price end date
-     * @param expectedDefault the expected default. Only applies to fixed prices
+     * @param product             the product
+     * @param shortName           the price archetype short name
+     * @param expectedPrice       the expected price
+     * @param expectedCost        the expected cost
+     * @param expectedMarkup      the expected markup
+     * @param expectedMaxDiscount the expected maximum discount
+     * @param expectedFrom        the expected price start date
+     * @param expectedTo          the expected price end date
+     * @param expectedDefault     the expected default. Only applies to fixed prices
      */
     protected void checkPrice(Product product, String shortName, BigDecimal expectedPrice, BigDecimal expectedCost,
-                              BigDecimal expectedMarkup, Date expectedFrom, Date expectedTo, boolean expectedDefault) {
+                              BigDecimal expectedMarkup, BigDecimal expectedMaxDiscount, Date expectedFrom,
+                              Date expectedTo, boolean expectedDefault) {
         boolean found = false;
         for (ProductPrice price : product.getProductPrices()) {
             IMObjectBean priceBean = new IMObjectBean(price);
@@ -226,6 +181,7 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
                 && price.getPrice().compareTo(expectedPrice) == 0
                 && priceBean.getBigDecimal("cost").compareTo(expectedCost) == 0
                 && priceBean.getBigDecimal("markup").compareTo(expectedMarkup) == 0
+                && priceBean.getBigDecimal("maxDiscount").compareTo(expectedMaxDiscount) == 0
                 && ObjectUtils.equals(expectedFrom, price.getFromDate())
                 && ObjectUtils.equals(expectedTo, price.getToDate())) {
 
