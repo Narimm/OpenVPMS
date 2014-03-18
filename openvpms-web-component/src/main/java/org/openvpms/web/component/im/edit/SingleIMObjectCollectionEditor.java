@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -35,35 +35,29 @@ import java.util.List;
 /**
  * Editor for collections of {@link IMObject}s with 0..1 or 1..1 cardinality.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @author Tim Anderson
  */
-public abstract class SingleIMObjectCollectionEditor
-        extends AbstractIMObjectCollectionEditor {
+public abstract class SingleIMObjectCollectionEditor extends AbstractIMObjectCollectionEditor {
 
     /**
-     * Constructs a <tt>SingleIMObjectCollectionEditor</tt>.
+     * Constructs a {@link SingleIMObjectCollectionEditor}.
      *
      * @param editor  the collection property
      * @param object  the parent object
      * @param context the layout context
      */
-    public SingleIMObjectCollectionEditor(CollectionProperty editor,
-                                          IMObject object,
-                                          LayoutContext context) {
+    public SingleIMObjectCollectionEditor(CollectionProperty editor, IMObject object, LayoutContext context) {
         super(editor, object, context);
     }
 
     /**
-     * Construct a new <tt>SingleIMObjectCollectionEditor</tt>.
+     * Constructs a {@link SingleIMObjectCollectionEditor}.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
      * @param context the layout context
      */
-    protected SingleIMObjectCollectionEditor(CollectionPropertyEditor editor,
-                                             IMObject object,
-                                             LayoutContext context) {
+    protected SingleIMObjectCollectionEditor(CollectionPropertyEditor editor, IMObject object, LayoutContext context) {
         super(editor, object, context);
     }
 
@@ -105,8 +99,7 @@ public abstract class SingleIMObjectCollectionEditor
     /**
      * Returns the focus group.
      *
-     * @return the focus group, or <tt>null</tt> if the editor hasn't been
-     *         rendered
+     * @return the focus group, or {@code null} if the editor hasn't been rendered
      */
     public FocusGroup getFocusGroup() {
         IMObjectEditor editor = getCurrentEditor();
@@ -129,7 +122,7 @@ public abstract class SingleIMObjectCollectionEditor
      * This validates the current object being edited, and if valid, the collection.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     protected boolean doValidation(Validator validator) {
@@ -154,8 +147,7 @@ public abstract class SingleIMObjectCollectionEditor
     /**
      * Saves any current edits.
      *
-     * @return <tt>true</tt> if edits were saved successfully, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if edits were saved successfully, otherwise {@code false}
      */
     @Override
     protected boolean doSave() {
@@ -173,25 +165,29 @@ public abstract class SingleIMObjectCollectionEditor
     /**
      * Determines if the object being edited is empty.
      *
-     * @return <tt>true</tt> if the object is empty
+     * @return {@code true} if the object is empty
      */
     protected abstract boolean isEmpty();
 
     /**
      * Adds/removes the object to/from the collection.
-     * If the object is empty and the min cardinality is zero, removes the
-     * object from the collection otherwise adds it.
+     * If the object is empty and the min cardinality is zero, removes the object from the collection otherwise adds it.
+     *
+     * @return {@code true} if the object is not empty, and has changed
      */
-    private void mapObject() {
+    private boolean mapObject() {
+        boolean result = false;
         IMObjectEditor editor = getCurrentEditor();
         if (editor != null) {
             CollectionPropertyEditor collection = getCollectionPropertyEditor();
             if (isEmpty()) {
                 collection.remove(editor.getObject());
             } else if (editor.isModified()) {
+                result = true;
                 collection.add(editor.getObject());
             }
         }
+        return result;
     }
 
     /**
@@ -219,7 +215,11 @@ public abstract class SingleIMObjectCollectionEditor
             IMObjectEditor editor = getEditor(object);
             setCurrentEditor(editor);
             component = editor.getComponent();
-            mapObject();
+            if (!mapObject() && object.isNew()) {
+                // there is a single object present, that is empty. If the object is new, make sure the collection
+                // isn't marked as being modified, as the object will be automatically removed prior to save.
+                clearModified();
+            }
         } else {
             String message = Messages.format("imobject.create.failed", shortName);
             Label label = LabelFactory.create();

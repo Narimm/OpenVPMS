@@ -59,11 +59,8 @@ public class SingleParticipationCollectionEditorTestCase extends AbstractAppTest
 
         // create a SingleParticipationCollectionEditor for a clinician participation
         CollectionProperty property = createCollectionProperty(act, "clinician");
-        SingleParticipationCollectionEditor editor = new SingleParticipationCollectionEditor(property, act,
-                                                                                             new DefaultLayoutContext(
-                                                                                                 new LocalContext(),
-                                                                                                 new HelpContext("foo",
-                                                                                                                 null)));
+        DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        SingleParticipationCollectionEditor editor = new SingleParticipationCollectionEditor(property, act, context);
         editor.getComponent();
         assertTrue(editor.isEmpty());
         assertTrue(editor.isValid());

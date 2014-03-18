@@ -16,7 +16,7 @@
 
 package org.openvpms.web.workspace.product.io;
 
-import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
@@ -28,23 +28,19 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.im.query.ResultSetIterator;
-import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTableModel;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -83,6 +79,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
      */
     public ProductExportDialog(LayoutContext context, HelpContext help) {
         super(Messages.get("product.export.title"), BUTTONS, false, help);
+        setStyleName("ProductImportExportDialog");
         rules = ServiceHelper.getBean(ProductPriceRules.class);
         taxRules = new TaxRules(context.getContext().getPractice());
         ProductExportQuery query = new ProductExportQuery();
@@ -208,47 +205,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
 
     }
 
-    private static class ProductPricesModel extends AbstractIMTableModel<ProductPrices> {
-
-        private static final int ID = 0;
-        private static final int NAME = 1;
-        private static final int PRINTED_NAME = 2;
-        private static final int FIXED_PRICE = 3;
-        private static final int FIXED_COST = 4;
-        private static final int FIXED_START_DATE = 5;
-        private static final int FIXED_END_DATE = 6;
-        private static final int UNIT_PRICE = 7;
-        private static final int UNIT_COST = 8;
-        private static final int UNIT_START_DATE = 9;
-        private static final int UNIT_END_DATE = 10;
-
-        public ProductPricesModel() {
-            DefaultTableColumnModel model = new DefaultTableColumnModel();
-            model.addColumn(createTableColumn(ID, "product.import.id"));
-            model.addColumn(createTableColumn(NAME, "product.import.name"));
-            model.addColumn(createTableColumn(PRINTED_NAME, "product.import.printedName"));
-            model.addColumn(createTableColumn(FIXED_PRICE, "product.import.fixedPrice"));
-            model.addColumn(createTableColumn(FIXED_COST, "product.import.fixedCost"));
-            model.addColumn(createTableColumn(FIXED_START_DATE, "product.import.fixedPriceStartDate"));
-            model.addColumn(createTableColumn(FIXED_END_DATE, "product.import.fixedPriceEndDate"));
-            model.addColumn(createTableColumn(UNIT_PRICE, "product.import.unitPrice"));
-            model.addColumn(createTableColumn(UNIT_COST, "product.import.unitCost"));
-            model.addColumn(createTableColumn(UNIT_START_DATE, "product.import.unitPriceStartDate"));
-            model.addColumn(createTableColumn(UNIT_END_DATE, "product.import.unitPriceEndDate"));
-            setTableColumnModel(model);
-        }
-
-        /**
-         * Returns the sort criteria.
-         *
-         * @param column    the primary sort column
-         * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
-         * @return the sort criteria, or {@code null} if the column isn't sortable
-         */
-        @Override
-        public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-            return null;
-        }
+    private static class ProductPricesModel extends ProductImportExportTableModel<ProductPrices> {
 
         /**
          * Returns the value found at the given coordinate within the table.
@@ -280,28 +237,34 @@ public class ProductExportDialog extends BrowserDialog<Product> {
                     }
                     break;
                 case FIXED_PRICE:
-                    result = (fixedPrice != null) ? fixedPrice.getPrice() : null;
+                    result = (fixedPrice != null) ? rightAlign(fixedPrice.getPrice()) : null;
                     break;
                 case FIXED_COST:
                     result = getCost(fixedPrice);
                     break;
+                case FIXED_MAX_DISCOUNT:
+                    result = getMaxDiscount(fixedPrice);
+                    break;
                 case FIXED_START_DATE:
-                    result = (fixedPrice != null) ? formatDate(fixedPrice.getFromDate()) : null;
+                    result = (fixedPrice != null) ? rightAlign(fixedPrice.getFromDate()) : null;
                     break;
                 case FIXED_END_DATE:
-                    result = (fixedPrice != null) ? formatDate(fixedPrice.getToDate()) : null;
+                    result = (fixedPrice != null) ? rightAlign(fixedPrice.getToDate()) : null;
                     break;
                 case UNIT_PRICE:
-                    result = (unitPrice != null) ? unitPrice.getPrice() : null;
+                    result = (unitPrice != null) ? rightAlign(unitPrice.getPrice()) : null;
                     break;
                 case UNIT_COST:
                     result = getCost(unitPrice);
                     break;
+                case UNIT_MAX_DISCOUNT:
+                    result = getMaxDiscount(unitPrice);
+                    break;
                 case UNIT_START_DATE:
-                    result = (unitPrice != null) ? formatDate(unitPrice.getFromDate()) : null;
+                    result = (unitPrice != null) ? rightAlign(unitPrice.getFromDate()) : null;
                     break;
                 case UNIT_END_DATE:
-                    result = (unitPrice != null) ? formatDate(unitPrice.getToDate()) : null;
+                    result = (unitPrice != null) ? rightAlign(unitPrice.getToDate()) : null;
                     break;
                 default:
                     result = null;
@@ -309,16 +272,21 @@ public class ProductExportDialog extends BrowserDialog<Product> {
             return result;
         }
 
-        private Object getCost(ProductPrice price) {
-            if (price != null) {
-                IMObjectBean bean = new IMObjectBean(price);
-                return bean.getString("cost");
-            }
-            return null;
+        private Label getCost(ProductPrice price) {
+            return rightAlign(price, "cost");
         }
 
-        private String formatDate(Date date) {
-            return date != null ? DateFormatter.formatDate(date, false) : null;
+        private Label getMaxDiscount(ProductPrice price) {
+            return rightAlign(price, "maxDiscount");
+        }
+
+        private Label rightAlign(ProductPrice price, String name) {
+            Label result = null;
+            if (price != null) {
+                IMObjectBean bean = new IMObjectBean(price);
+                result = rightAlign(bean.getBigDecimal(name));
+            }
+            return result;
         }
 
     }

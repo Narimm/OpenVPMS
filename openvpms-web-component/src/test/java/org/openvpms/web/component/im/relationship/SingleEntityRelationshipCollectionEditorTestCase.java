@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -63,6 +63,7 @@ public class SingleEntityRelationshipCollectionEditorTestCase extends AbstractAp
                 = new SingleEntityRelationshipCollectionEditor(property, location, layoutContext);
         editor.getComponent();
         assertTrue(editor.isEmpty());
+        assertFalse(editor.isModified());
         assertTrue(editor.isValid());
         assertNull(bean.getNodeTargetObject("stockLocations"));
 
@@ -70,12 +71,14 @@ public class SingleEntityRelationshipCollectionEditorTestCase extends AbstractAp
         EntityRelationshipEditor stockLocationEditor = (EntityRelationshipEditor) editor.getCurrentEditor();
         stockLocationEditor.setTarget(stockLocation);
         assertFalse(editor.isEmpty());
+        assertTrue(editor.isModified());
         assertTrue(editor.isValid());
         assertNotNull(bean.getNodeTargetObject("stockLocations"));
 
         // remove the stock location. The relationship will be removed from the location
         stockLocationEditor.setTarget(null);
         assertTrue(editor.isEmpty());
+        assertTrue(editor.isModified());
         assertTrue(editor.isValid());
         assertNull(bean.getNodeTargetObject("stockLocations"));
     }
@@ -93,6 +96,5 @@ public class SingleEntityRelationshipCollectionEditorTestCase extends AbstractAp
         NodeDescriptor node = archetype.getNodeDescriptor(name);
         assertNotNull(node);
         return new IMObjectProperty(object, node);
-
     }
 }
