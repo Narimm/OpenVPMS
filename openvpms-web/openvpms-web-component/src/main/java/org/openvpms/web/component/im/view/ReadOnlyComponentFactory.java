@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
@@ -40,6 +41,11 @@ import java.text.DateFormat;
  * @author Tim Anderson
  */
 public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
+
+    /**
+     * The maximum no. of columns to display for lookup fields.
+     */
+    private static final int MAX_DISPLAY_LENGTH = 50;
 
     /**
      * Creates a new <tt>ReadOnlyComponentFactory</tt>.
@@ -69,9 +75,8 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      */
     protected Component createLookup(Property property, IMObject context) {
         TextComponent result;
-        final int maxDisplayLength = 50;
         int length = property.getMaxLength();
-        int columns = (length < maxDisplayLength) ? length : maxDisplayLength;
+        int columns = (length < MAX_DISPLAY_LENGTH) ? length : MAX_DISPLAY_LENGTH;
         String value = null;
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor != null) {
@@ -84,7 +89,28 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
                 columns = 20; // value is empty, so shrink the display
             }
         }
-        result = TextComponentFactory.create(columns);
+        result = TextComponentFactory.create();
+
+        // select a width that displays the text in field slightly bigger than text, up to a maximum 50 characters.
+        // This is not perfect, as it is dependent on the font and characters used, but works in most cases.
+        // The alternative would be to calculate the field width in pixels on the browser side based on the characters
+        // present.
+        // See OVPMS-1440
+        int width;
+        int units = Extent.EX;
+        if (columns < 7) {
+            width = columns;
+            units = Extent.EM;
+        } else if (columns < 25) {
+            width = columns + 3 + (columns / 5);
+        } else {
+            width = columns + (columns / 8);
+        }
+        if (width > MAX_DISPLAY_LENGTH) {
+            width = MAX_DISPLAY_LENGTH;
+        }
+        result.setWidth(new Extent(width, units));
+
         result.setText(value);
         ComponentFactory.setStyle(result, getStyle());
         return result;
