@@ -719,6 +719,57 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Verifies that the patient on an invoice item can be changed, and that this is reflected in the patient history.
+     */
+    @Test
+    public void testChangePatient() {
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, BigDecimal.ONE);
+        Party patient2 = TestHelper.createPatient(customer);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        BigDecimal quantity = ONE;
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, quantity, queue);
+        FinancialAct item = (FinancialAct) itemEditor.getObject();
+
+        assertTrue(editor.isValid());
+        assertTrue(SaveHelper.save(editor));
+
+        Act event1 = records.getEvent(patient);  // get the clinical event
+        Act medication = (Act) new ActBean(item).getNodeTargetObject("dispensing");
+        assertNotNull(event1);
+        assertNotNull(medication);
+
+        checkEventRelationship(event1, item);
+        checkEventRelationship(event1, medication);
+
+        // recreate the editor
+        editor = createCustomerChargeActEditor(charge, layoutContext);
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        itemEditor = editor.getEditor(item);
+        itemEditor.getComponent();
+        itemEditor.setPatient(patient2);
+        assertTrue(editor.isValid());
+        assertTrue(SaveHelper.save(editor));
+
+        event1 = get(event1);
+        medication = get(medication);
+
+        Act event2 = records.getEvent(patient2);
+        checkEventRelationship(event2, item);
+        checkEventRelationship(event2, medication);
+
+        checkEventRelationship(event1, item, false);
+        checkEventRelationship(event1, medication, false);
+    }
+
+    /**
      * Verifies that an unsaved charge item can be deleted, when there is a prescription associated with the item's
      * product.
      */
