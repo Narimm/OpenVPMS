@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
@@ -43,8 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -241,7 +240,7 @@ public class MedicalRecordRules {
      * @param startTime the startTime used to select the event
      */
     public void addToEvents(List<Act> acts, Date startTime) {
-        Map<IMObjectReference, List<Act>> events = new HashMap<IMObjectReference, List<Act>>();
+        PatientClinicalEvents events = new PatientClinicalEvents(service);
         Set<Act> changed = addToEvents(acts, startTime, events);
         if (!changed.isEmpty()) {
             service.save(changed);
@@ -292,7 +291,7 @@ public class MedicalRecordRules {
      * @return an event. May be newly created
      */
     public Act getEventForAddition(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
-        Map<IMObjectReference, List<Act>> events = new HashMap<IMObjectReference, List<Act>>();
+        PatientClinicalEvents events = new PatientClinicalEvents(service);
         return getEventForAddition(events, patient, startTime, clinician);
     }
 
@@ -463,8 +462,6 @@ public class MedicalRecordRules {
 
     /**
      * Returns a map of acts keyed on their associated patient reference.
-     * If an act has an <em>actRelationship.patientClinicalEventItem</em> or
-     * <em>actRelationship.patientClinicalEventChargeItem</em> it will be ignored.
      *
      * @param acts the acts
      * @return the acts keyed on patient reference
@@ -473,16 +470,14 @@ public class MedicalRecordRules {
         Map<IMObjectReference, List<Act>> result = new HashMap<IMObjectReference, List<Act>>();
         for (Act act : acts) {
             ActBean bean = new ActBean(act, service);
-            if (!hasClinicalEventRelationship(bean)) {
-                IMObjectReference patient = bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
-                if (patient != null) {
-                    List<Act> list = result.get(patient);
-                    if (list == null) {
-                        list = new ArrayList<Act>();
-                    }
-                    list.add(act);
-                    result.put(patient, list);
+            IMObjectReference patient = bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
+            if (patient != null) {
+                List<Act> list = result.get(patient);
+                if (list == null) {
+                    list = new ArrayList<Act>();
                 }
+                list.add(act);
+                result.put(patient, list);
             }
         }
         return result;
@@ -492,19 +487,39 @@ public class MedicalRecordRules {
      * Adds a list of <em>act.patientMedication</em>, <em>act.patientInvestigation*</em>, <em>act.patientDocument*</em>,
      * and <em>act.customerAccountInvoiceItem</em> acts to an <em>act.patientClinicalEvent</em> associated with each
      * act's patient.
+     * <p/>
+     * If an act already has a relationship, but it belongs to a different patient, the relationship will be removed
+     * and a relationship to the patient's own event added.
      *
      * @param acts      the acts to add
      * @param startTime the startTime used to select the event
-     * @param events    the cache of events keyed on patient reference
+     * @param events    the cache of events
      * @return the changed acts
      */
-    protected Set<Act> addToEvents(List<Act> acts, Date startTime, Map<IMObjectReference, List<Act>> events) {
-        Map<IMObjectReference, List<Act>> map = getByPatient(acts);
+    protected Set<Act> addToEvents(List<Act> acts, Date startTime, PatientClinicalEvents events) {
         Set<Act> changed = new HashSet<Act>();
+        Map<IMObjectReference, List<Act>> map = getByPatient(acts);
         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
             IMObjectReference patient = entry.getKey();
-            Act event = getEventForAddition(events, patient, startTime, getClinician(entry.getValue()));
-            addToEvent(event, entry.getValue(), changed);
+            List<Act> unlinked = new ArrayList<Act>(); // the acts to link to events
+            for (Act act : entry.getValue()) {
+                Act existingEvent = events.getLinkedEvent(act);
+                if (existingEvent != null) {
+                    // the act is already linked to an event
+                    if (!ObjectUtils.equals(events.getPatient(existingEvent), patient)) {
+                        // the existing event is for a different patient. Need to unlink this.
+                        events.removeRelationship(existingEvent, act);
+                        changed.add(existingEvent);
+                        unlinked.add(act);
+                    }
+                } else {
+                    unlinked.add(act);
+                }
+            }
+            if (!unlinked.isEmpty()) {
+                Act event = getEventForAddition(events, patient, startTime, getClinician(unlinked));
+                addToEvent(event, unlinked, changed, events);
+            }
         }
         return changed;
     }
@@ -518,7 +533,7 @@ public class MedicalRecordRules {
      */
     protected Set<Act> addToEvent(Act event, List<Act> acts) {
         Set<Act> changed = new HashSet<Act>();
-        addToEvent(event, acts, changed);
+        addToEvent(event, acts, changed, new PatientClinicalEvents(service));
         return changed;
     }
 
@@ -529,18 +544,10 @@ public class MedicalRecordRules {
      * @param acts    the acts to add
      * @param changed the changed acts
      */
-    private void addToEvent(Act event, List<Act> acts, Set<Act> changed) {
-        ActBean bean = new ActBean(event, service);
+    private void addToEvent(Act event, List<Act> acts, Set<Act> changed, PatientClinicalEvents events) {
         for (Act act : acts) {
-            ActBean item = new ActBean(act, service);
-            if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
-                if (!item.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM)) {
-                    bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, act);
-                    changed.add(event);
-                    changed.add(act);
-                }
-            } else if (!item.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM)) {
-                bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act);
+            if (!events.hasRelationship(act)) {
+                events.addRelationship(event, act);
                 changed.add(event);
                 changed.add(act);
             }
@@ -562,20 +569,17 @@ public class MedicalRecordRules {
      * <li>create a new event, with <em>IN_PROGRESS</em> status and startTime
      * </ol>
      *
-     * @param events    the cache of events keyed on patient reference
+     * @param events    the cache of events
      * @param patient   the patient to use
      * @param timestamp the time to select the event
      * @param clinician the clinician to use when creating new events. May be {@code null}
      * @return an event
      */
-    private Act getEventForAddition(Map<IMObjectReference, List<Act>> events, IMObjectReference patient, Date timestamp,
+    private Act getEventForAddition(PatientClinicalEvents events, IMObjectReference patient, Date timestamp,
                                     IMObjectReference clinician) {
-        List<Act> patientEvents = events.get(patient);
+        List<Act> patientEvents = events.getEvents(patient);
         Act result = null;
-        if (patientEvents == null) {
-            patientEvents = new ArrayList<Act>();
-            events.put(patient, patientEvents);
-        } else {
+        if (patientEvents != null) {
             Date lowerBound = DateRules.getDate(timestamp);
             Date upperBound = getEndTime(timestamp);
             long resultDistance = 0;
@@ -599,7 +603,7 @@ public class MedicalRecordRules {
         if (result == null) {
             result = getEvent(patient, timestamp); // hit the database
             if (result != null) {
-                patientEvents.add(result);
+                events.addEvent(result);
             }
         }
         if (result != null && !canAddToEvent(result, timestamp)) {
@@ -607,14 +611,8 @@ public class MedicalRecordRules {
         }
         if (result == null) {
             result = createEvent(patient, timestamp, clinician);
-            patientEvents.add(result);
+            events.addEvent(result);
         }
-        Collections.sort(patientEvents, new Comparator<Act>() {
-            public int compare(Act o1, Act o2) {
-                return DateRules.compareTo(o1.getActivityStartTime(), o2.getActivityStartTime());
-            }
-        });
-
         return result;
     }
 
@@ -683,19 +681,6 @@ public class MedicalRecordRules {
             }
         }
         return null;
-    }
-
-    /**
-     * Determines if an act has a relationship to a clinical event.
-     *
-     * @param bean the act bean
-     * @return {@code true} if the act has a relationship, otherwise {@code false}
-     */
-    private boolean hasClinicalEventRelationship(ActBean bean) {
-        if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
-            return bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
-        }
-        return bean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM);
     }
 
     /**

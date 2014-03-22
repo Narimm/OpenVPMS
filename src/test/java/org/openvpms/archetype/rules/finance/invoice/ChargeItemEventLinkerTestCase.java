@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -29,6 +29,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -44,6 +45,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
@@ -237,6 +239,53 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         }
     }
 
+    /**
+     * Verifies that when the patient on an item changes, the link to the old event is removed, and moved to an event
+     * associated with the new patient.
+     */
+    @Test
+    public void testChangePatient() {
+        Date startTime = new Date();
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+        FinancialAct item1 = createInvoiceItem(startTime, patient1);
+        FinancialAct item2 = createInvoiceItem(startTime, patient2);
+
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
+        List<FinancialAct> items = Arrays.asList(item1, item2);
+        linker.link(items);
+
+        Act event1 = rules.getEvent(patient1, startTime);
+        assertNotNull(event1);
+
+        Act event2 = rules.getEvent(patient2, startTime);
+        assertNotNull(event2);
+        assertFalse(event1.equals(event2));
+
+        checkEvent(item1, event1, author, location);
+        checkEvent(item2, event2, author, location);
+
+        // now change the patient for item2
+        ActBean itemBean = new ActBean(item2);
+        Participation participation = itemBean.getParticipation(PatientArchetypes.PATIENT_PARTICIPATION);
+        participation.setEntity(patient1.getObjectReference());
+        itemBean.save();
+
+        // verify event1 still linked to item, and now linked to item2
+        linker.link(items);
+        checkEvent(item1, event1, author, location);
+
+        // event1 should now be linked to item2
+        event1 = get(event1);
+        ActBean event1Bean = new ActBean(event1);
+        assertTrue(event1Bean.hasRelationship(CLINICAL_EVENT_CHARGE_ITEM, item2));
+
+        // event2 should no longer have a link to item2
+        event2 = get(event2);
+        ActBean event2Bean = new ActBean(event2);
+        assertFalse(event2Bean.hasRelationship(CLINICAL_EVENT_CHARGE_ITEM, item2));
+    }
+
 
     /**
      * Sets up the test case.
@@ -281,6 +330,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         } else {
             assertEquals(location.getObjectReference(), eventBean.getNodeParticipantRef("location"));
         }
+        assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_CHARGE_ITEM, item));
         assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, investigations.get(0)));
         assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, dispensing.get(0)));
         assertTrue(eventBean.hasRelationship(CLINICAL_EVENT_ITEM, documents.get(0)));
