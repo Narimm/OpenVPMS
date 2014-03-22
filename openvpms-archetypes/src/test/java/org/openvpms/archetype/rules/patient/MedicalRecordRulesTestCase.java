@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -27,6 +27,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -476,6 +477,51 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link MedicalRecordRules#addToEvents} method where an event relationship already exists, but
+     * to a different patient.
+     */
+    @Test
+    public void testAddToEventsForDifferentPatient() {
+        Date date = getDate("2014-03-22");
+        Party patient2 = TestHelper.createPatient();
+        Party patient3 = TestHelper.createPatient();
+        Act med1 = PatientTestHelper.createMedication(patient);
+        Act med2 = PatientTestHelper.createMedication(patient);
+        Act med3 = PatientTestHelper.createMedication(patient2);
+        Act med4 = PatientTestHelper.createMedication(patient2);
+
+        List<Act> acts = Arrays.asList(med1, med2, med3, med4);
+
+        Act event1 = createEvent(date);
+        save(event1);
+        rules.addToEvents(acts, date);
+
+        event1 = rules.getEvent(patient, date);
+        checkContains(event1, med1, med2);
+
+        Act event2 = rules.getEvent(patient2, date);
+        assertNotNull(event2);
+        checkContains(event2, med3, med4);
+
+        // now change the patient for med2 and med4 to patient3
+        setPatient(med2, patient3);
+        setPatient(med4, patient3);
+        rules.addToEvents(acts, date);
+
+        event1 = rules.getEvent(patient, date);
+        assertNotNull(event1);
+        checkContains(event1, med1);
+
+        event2 = rules.getEvent(patient2, date);
+        assertNotNull(event2);
+        checkContains(event2, med3);
+
+        Act event3 = rules.getEvent(patient3, date);
+        assertNotNull(event3);
+        checkContains(event3, med2, med4);
+    }
+
+    /**
      * Tests the {@link MedicalRecordRules#addToHistoricalEvents} method.
      */
     @Test
@@ -751,5 +797,17 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         }
     }
 
+    /**
+     * Helper to change the patient for an act.
+     *
+     * @param act     the act
+     * @param patient the new patient
+     */
+    private void setPatient(Act act, Party patient) {
+        ActBean itemBean = new ActBean(act);
+        Participation participation = itemBean.getParticipation(PatientArchetypes.PATIENT_PARTICIPATION);
+        participation.setEntity(patient.getObjectReference());
+        itemBean.save();
+    }
 
 }

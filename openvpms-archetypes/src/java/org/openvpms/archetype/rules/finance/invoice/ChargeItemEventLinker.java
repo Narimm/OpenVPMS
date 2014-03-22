@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
 
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientClinicalEvents;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -30,18 +30,15 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 
 /**
  * Helper to links charge item dispensing, investigation and document acts to patient clinical events.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ChargeItemEventLinker {
 
@@ -129,8 +126,8 @@ public class ChargeItemEventLinker {
      * @param items the charge items
      */
     public void link(List<FinancialAct> items) {
-        //  cache of patient clinical events keyed on patient reference
-        Map<IMObjectReference, List<Act>> events = new HashMap<IMObjectReference, List<Act>>();
+        //  cache of patient clinical events
+        PatientClinicalEvents events = new PatientClinicalEvents(service);
 
         Set<Act> toSave = new HashSet<Act>();            // the acts to save
 
@@ -204,7 +201,7 @@ public class ChargeItemEventLinker {
          * @return the changed events
          */
         @Override
-        public Set<Act> addToEvents(List<Act> acts, Date startTime, Map<IMObjectReference, List<Act>> events) {
+        public Set<Act> addToEvents(List<Act> acts, Date startTime, PatientClinicalEvents events) {
             return super.addToEvents(acts, startTime, events);
         }
 
