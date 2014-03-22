@@ -183,12 +183,11 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         EntityBean bean = new EntityBean(product);
 
         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            ActBean eventBean = (event != null) ? new ActBean(event) : null;
             if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
                 // verify there is a medication act that is linked to the event
                 Act medication = checkMedication(item, patient, product, author, clinician);
-                if (eventBean != null) {
-                    assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, medication));
+                if (event != null) {
+                    checkEventRelationship(event, medication);
                 }
                 ++count;
             } else {
@@ -199,8 +198,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
             for (Entity investigationType : investigations) {
                 // verify there is an investigation for each investigation type, and it is linked to the event
                 Act investigation = checkInvestigation(item, patient, investigationType, author, clinician);
-                if (eventBean != null) {
-                    assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, investigation));
+                if (event != null) {
+                    checkEventRelationship(event, investigation);
                 }
                 ++count;
             }
@@ -215,8 +214,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
             for (Entity template : templates) {
                 // verify there is a document for each template, and it is linked to the event
                 Act document = checkDocument(item, patient, product, template, author, clinician);
-                if (eventBean != null) {
-                    assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, document));
+                if (event != null) {
+                    checkEventRelationship(event, document);
                 }
                 ++count;
             }
@@ -228,6 +227,30 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
             assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
         }
         assertEquals(childActs, count);
+    }
+
+    /**
+     * Verifies that a relationship exists between an event and an act.
+     *
+     * @param event the event
+     * @param act   the act
+     */
+    protected void checkEventRelationship(Act event, Act act) {
+        checkEventRelationship(event, act, true);
+    }
+
+    /**
+     * Verifies that a relationship exists/doesn't exist between an event and an act.
+     *
+     * @param event  the event
+     * @param act    the act
+     * @param exists if {@code true} the relationship must exist
+     */
+    protected void checkEventRelationship(Act event, Act act, boolean exists) {
+        ActBean eventBean = new ActBean(event);
+        String shortName = TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)
+                           ? PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM : PatientArchetypes.CLINICAL_EVENT_ITEM;
+        assertEquals(exists, eventBean.hasRelationship(shortName, act));
     }
 
     /**
