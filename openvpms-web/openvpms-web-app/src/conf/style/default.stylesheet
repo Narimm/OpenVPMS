@@ -965,6 +965,12 @@
         </properties>
     </style>
 
+    <style name="Selector" base-name="default" type="nextapp.echo2.app.text.TextComponent">
+        <properties>
+            <property name="width" value="${selector.width}"/>
+        </properties>
+    </style>
+
     <style name="CellSpacing" type="nextapp.echo2.app.Row">
         <properties>
             <property name="cellSpacing" value="${padding.medium}"/>

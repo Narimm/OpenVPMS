@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.select;
@@ -30,6 +30,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.TextComponentFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -303,17 +304,17 @@ public abstract class Selector<T extends IMObject> {
             // labels to take up as much space as possible, ensuring that the
             // button is displayed hard on the right.
             // Seems more successful than using alignments
-            child = RowFactory.create("CellSpacing", objectComponent);
+            child = RowFactory.create(Styles.CELL_SPACING, objectComponent);
             RowLayoutData layout = new RowLayoutData();
             layout.setWidth(new Extent(100, Extent.PERCENT));
             child.setLayoutData(layout);
             child = RowFactory.create(child, getButtons(component));
             child.setLayoutData(layout);
         } else if (buttonStyle == ButtonStyle.RIGHT && !fillWidth) {
-            child = RowFactory.create("CellSpacing", RowFactory.create(objectComponent, getButtons(component)));
+            child = RowFactory.create(Styles.CELL_SPACING, RowFactory.create(objectComponent, getButtons(component)));
         } else if (buttonStyle == ButtonStyle.LEFT) {
             // display button(s) on the left
-            child = RowFactory.create("CellSpacing", objectComponent);
+            child = RowFactory.create(Styles.CELL_SPACING, objectComponent);
             child.add(getButtons(component), 0);
         } else {
             // no buttons
@@ -342,6 +343,7 @@ public abstract class Selector<T extends IMObject> {
         if (editable) {
             if (objectText == null) {
                 objectText = TextComponentFactory.create();
+                objectText.setStyleName("Selector");
                 if (fillWidth) {
                     objectText.setWidth(new Extent(100, Extent.PERCENT));
                 }
