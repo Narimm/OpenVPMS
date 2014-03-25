@@ -12,6 +12,10 @@
         </constructor-arg>
     </bean>
 
+    <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
@@ -30,6 +34,7 @@
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions">
                         <constructor-arg index="0" ref="archetypeService"/>
                         <constructor-arg index="1" ref="patientRules"/>
+                        <constructor-arg index="2" ref="customerAccountRules"/>
                     </bean>
                 </entry>
                 <entry key="math">
