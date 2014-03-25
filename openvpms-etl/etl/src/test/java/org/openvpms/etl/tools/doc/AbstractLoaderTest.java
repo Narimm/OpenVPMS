@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -58,6 +59,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      * The archetype service.
      */
     @Autowired
+    @Qualifier("archetypeService")
     protected IArchetypeService service;
 
     /**
