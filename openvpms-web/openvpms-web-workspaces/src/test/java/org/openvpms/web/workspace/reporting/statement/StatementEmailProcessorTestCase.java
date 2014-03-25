@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2012 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.reporting.statement;
 
@@ -23,6 +23,7 @@ import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.statement.AbstractStatementTest;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
@@ -38,6 +39,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.OpenVPMSApp;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -104,7 +106,9 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         addCustomerEmail(customer);
         save(customer);
 
-        StatementRules rules = new StatementRules(practice);
+        StatementRules rules = new StatementRules(practice, getArchetypeService(),
+                                                  ServiceHelper.getLookupService(),
+                                                  ServiceHelper.getBean(CustomerAccountRules.class));
         assertFalse(rules.hasStatement(customer, statementDate));
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(0, acts.size());
@@ -118,7 +122,9 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         checkAct(acts.get(0), invoice1.get(0), POSTED);
 
         final List<Statement> statements = new ArrayList<Statement>();
-        StatementProcessor processor = new StatementProcessor(statementDate, practice);
+        StatementProcessor processor = new StatementProcessor(statementDate, practice, getArchetypeService(),
+                                                              ServiceHelper.getLookupService(),
+                                                              ServiceHelper.getBean(CustomerAccountRules.class));
         processor.addListener(new ProcessorListener<Statement>() {
             public void process(Statement statement) {
                 statements.add(statement);
@@ -127,7 +133,7 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         processor.process(customer);
         assertEquals(1, statements.size());
         StatementEmailProcessor emailprocessor =
-            new StatementEmailProcessor(sender, "Foo", "foo@bar.com", getPractice());
+                new StatementEmailProcessor(sender, "Foo", "foo@bar.com", getPractice());
         emailprocessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);
     }

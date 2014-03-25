@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -37,7 +37,7 @@ import java.util.Map;
  * @author Tim Anderson
  */
 public abstract class AbstractStatementProcessorListener
-    implements ProcessorListener<Statement> {
+        implements ProcessorListener<Statement> {
 
     /**
      * The statement rules.
@@ -56,8 +56,9 @@ public abstract class AbstractStatementProcessorListener
      * @param practice the practice
      */
     public AbstractStatementProcessorListener(Party practice) {
-        account = new CustomerAccountRules(ServiceHelper.getArchetypeService());
-        rules = new StatementRules(practice);
+        account = ServiceHelper.getBean(CustomerAccountRules.class);
+        rules = new StatementRules(practice, ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService(),
+                                   account);
     }
 
     /**

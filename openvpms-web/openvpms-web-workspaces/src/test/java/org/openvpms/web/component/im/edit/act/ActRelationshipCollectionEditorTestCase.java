@@ -18,6 +18,7 @@ package org.openvpms.web.component.im.edit.act;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierTestHelper;
@@ -28,6 +29,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -36,6 +38,7 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.workspace.customer.charge.ChargeContext;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -196,7 +199,20 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
         boolean result = template.execute(new TransactionCallback<Boolean>() {
             public Boolean doInTransaction(TransactionStatus status) {
-                return SaveHelper.save(parent) && itemsEditor.save();
+                PatientHistoryChanges changes = new PatientHistoryChanges(null, null, getArchetypeService());
+                ChargeContext context = new ChargeContext();
+                context.setHistoryChanges(changes);
+                for (IMObjectEditor editor : itemsEditor.getEditors()) {
+                    if (editor instanceof CustomerChargeActItemEditor) {
+                        ((CustomerChargeActItemEditor) editor).setChargeContext(context);
+                    }
+                }
+                boolean saved = SaveHelper.save(parent) && itemsEditor.save();
+                if (saved) {
+                    context.save();
+                }
+                context.setHistoryChanges(null);
+                return saved;
             }
         });
         assertTrue(result);

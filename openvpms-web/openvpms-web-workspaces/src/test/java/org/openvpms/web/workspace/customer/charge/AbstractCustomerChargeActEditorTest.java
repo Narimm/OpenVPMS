@@ -254,6 +254,20 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
+     * Verifies that an event has relationships to the specified acts, and that those relationships are the only
+     * ones present.
+     *
+     * @param event the event
+     * @param acts  the expected acts
+     */
+    protected void checkEventRelationships(Act event, Act... acts) {
+        assertEquals(event.getSourceActRelationships().size(), acts.length);
+        for (Act act : acts) {
+            checkEventRelationship(event, act);
+        }
+    }
+
+    /**
      * Finds a charge item in a list of items, by product.
      *
      * @param items   the items

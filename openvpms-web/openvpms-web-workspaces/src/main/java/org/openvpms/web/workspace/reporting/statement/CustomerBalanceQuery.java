@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -25,6 +25,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -52,6 +53,7 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -309,10 +311,11 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
             int from = overdue ? getNumber(periodFrom) : -1;
             int to = overdue ? getNumber(periodTo) : -1;
             boolean credit = excludeCredit.isSelected();
+            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
             query = new CustomerBalanceSummaryQuery(
                     getDate(), nonOverdue, from, to, credit, getAccountType(),
                     getWildcardedText(customerFrom),
-                    getWildcardedText(customerTo));
+                    getWildcardedText(customerTo), rules);
             while (query.hasNext()) {
                 sets.add(query.next());
             }

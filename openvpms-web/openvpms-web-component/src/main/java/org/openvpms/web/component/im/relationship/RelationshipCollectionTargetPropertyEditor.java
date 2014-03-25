@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -201,15 +201,26 @@ public abstract class RelationshipCollectionTargetPropertyEditor
         if (!removed.isEmpty()) {
             IMObject[] toRemove = removed.toArray(new IMObject[removed.size()]);
             boolean deleted;
+            RemoveHandler handler = getRemoveHandler();
             for (IMObject object : toRemove) {
                 IMObjectEditor editor = getEditor(object);
                 if (editor != null) {
-                    deleted = editor.delete();
-                    if (deleted) {
-                        setEditor(object, null);
+                    if (handler != null) {
+                        handler.remove(editor);
+                        deleted = true;
+                    } else {
+                        deleted = editor.delete();
+                        if (deleted) {
+                            setEditor(object, null);
+                        }
                     }
                 } else {
-                    deleted = SaveHelper.delete(object, new DefaultIMObjectDeletionListener());
+                    if (handler != null) {
+                        handler.remove(object);
+                        deleted = true;
+                    } else {
+                        deleted = SaveHelper.delete(object, new DefaultIMObjectDeletionListener());
+                    }
                 }
                 if (deleted) {
                     removed.remove(object);

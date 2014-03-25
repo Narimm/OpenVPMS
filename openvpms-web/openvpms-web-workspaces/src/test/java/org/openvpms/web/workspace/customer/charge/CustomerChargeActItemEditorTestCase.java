@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
@@ -647,7 +648,16 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
         return template.execute(new TransactionCallback<Boolean>() {
             public Boolean doInTransaction(TransactionStatus status) {
-                return SaveHelper.save(charge) && editor.save();
+                PatientHistoryChanges changes = new PatientHistoryChanges(null, null, getArchetypeService());
+                ChargeContext context = new ChargeContext();
+                context.setHistoryChanges(changes);
+                editor.setChargeContext(context);
+                boolean saved = SaveHelper.save(charge) && editor.save();
+                if (saved) {
+                    context.save();
+                }
+                context.setHistoryChanges(null);
+                return saved;
             }
         });
     }
