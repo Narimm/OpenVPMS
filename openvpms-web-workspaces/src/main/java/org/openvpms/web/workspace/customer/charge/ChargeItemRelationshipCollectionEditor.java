@@ -61,6 +61,12 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
     private final Prescriptions prescriptions;
 
     /**
+     * The charge context.
+     */
+    private final ChargeContext chargeContext;
+
+
+    /**
      * Constructs a {@link ChargeItemRelationshipCollectionEditor}.
      *
      * @param property the collection property
@@ -75,6 +81,16 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
         } else {
             prescriptions = null;
         }
+        chargeContext = new ChargeContext();
+    }
+
+    /**
+     * Returns the charge context.
+     *
+     * @return the charge context
+     */
+    public ChargeContext getChargeContext() {
+        return chargeContext;
     }
 
     /**
@@ -132,6 +148,7 @@ public class ChargeItemRelationshipCollectionEditor extends AltModelActRelations
             CustomerChargeActItemEditor itemEditor = (CustomerChargeActItemEditor) editor;
             itemEditor.setEditorQueue(editorQueue);
             itemEditor.setPrescriptions(prescriptions);
+            itemEditor.setChargeContext(chargeContext);
         }
 
         // Set startTime to to last used value

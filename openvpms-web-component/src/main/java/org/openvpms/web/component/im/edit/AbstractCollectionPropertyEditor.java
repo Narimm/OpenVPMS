@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -43,8 +43,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractCollectionPropertyEditor extends AbstractModifiable
-        implements CollectionPropertyEditor {
+public abstract class AbstractCollectionPropertyEditor extends AbstractModifiable implements CollectionPropertyEditor {
 
     /**
      * The property being edited.
@@ -67,9 +66,14 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      */
     private boolean saved;
 
+    /**
+     * The remove handler.
+     */
+    private RemoveHandler handler;
+
 
     /**
-     * Constructs an {@code AbstractCollectionPropertyEditor}.
+     * Constructs an {@link AbstractCollectionPropertyEditor}.
      *
      * @param property the collection property
      */
@@ -300,6 +304,28 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
      */
     public int getMaxCardinality() {
         return property.getMaxCardinality();
+    }
+
+    /**
+     * Registers a handler to be notified to remove an object from the collection.
+     * <p/>
+     * The handler is only invoked when the collection is saved. It takes on the responsibility of object removal.
+     *
+     * @param handler the handler. May be {@code null}
+     */
+    @Override
+    public void setRemoveHandler(RemoveHandler handler) {
+        this.handler = handler;
+    }
+
+    /**
+     * Returns the removal handler.
+     *
+     * @return the handler. May be {@code null}
+     */
+    @Override
+    public RemoveHandler getRemoveHandler() {
+        return handler;
     }
 
     /**

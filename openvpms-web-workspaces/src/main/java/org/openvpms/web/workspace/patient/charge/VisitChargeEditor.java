@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.charge;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -212,15 +213,17 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
 
     /**
      * Links the charge items to their corresponding clinical events.
+     *
+     * @param changes the patient history changes
      */
     @Override
-    protected void linkToEvents() {
+    protected void linkToEvents(PatientHistoryChanges changes) {
         List<FinancialAct> items = getItems().getPatientActs();
         event = IMObjectHelper.reload(event); // make sure the most recent instance is being used
         if (event != null && !items.isEmpty()) {
-            ChargeItemEventLinker linker = new ChargeItemEventLinker(null, null,
-                                                                     ServiceHelper.getArchetypeService());
-            linker.link(event, items);
+            changes.addEvent(event);
+            ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
+            linker.prepare(event, items, changes);
         }
     }
 
