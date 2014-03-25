@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock;
@@ -22,7 +20,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -39,13 +36,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_LOCATION_PARTICIPATION;
+
 
 /**
  * Updates stock levels associated with <em>act.customerAccount*Item</em>
  * acts that have an associated <em>participation.stockLocation</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ChargeStockUpdater {
 
@@ -66,7 +64,7 @@ public class ChargeStockUpdater {
 
 
     /**
-     * Creates a new <tt>ChargeStockUpdater</tt>.
+     * Constructs a {@link ChargeStockUpdater}.
      *
      * @param service the service
      */
@@ -143,8 +141,6 @@ public class ChargeStockUpdater {
             if (!MathRules.equals(quantity, priorQty)) {
                 BigDecimal diff = quantity.subtract(priorQty);
                 updateStockQuantities(current, diff, credit);
-                bean.setParticipant(STOCK_LOCATION_PARTICIPATION,
-                                    current.getLocationRef());
             }
         } else {
             bean.removeParticipation(STOCK_LOCATION_PARTICIPATION);
@@ -163,8 +159,7 @@ public class ChargeStockUpdater {
         Party location = stock.getLocation();
         Product product = stock.getProduct();
         if (location != null && product != null
-                && TypeHelper.isA(product, ProductArchetypes.MEDICATION,
-                                  ProductArchetypes.MERCHANDISE)) {
+            && TypeHelper.isA(product, ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE)) {
             if (!credit) {
                 quantity = quantity.negate();
             }
@@ -217,25 +212,21 @@ public class ChargeStockUpdater {
     }
 
     /**
-     * Returns the stock quantity associated with the persistent instance
-     * of an act.
+     * Returns the stock quantity associated with the persistent instance of an act.
      *
      * @param act the act
-     * @return the saved instance, or <tt>null</tt> if there is none
+     * @return the saved instance, or {@code null} if there is none
      * @throws ArchetypeServiceException for any archetype service error
      */
     private StockQty getSavedStockQty(FinancialAct act) {
-        FinancialAct result = null;
-        if (!act.isNew()) {
-            result = (FinancialAct) get(act.getObjectReference());
-        }
+        FinancialAct result = (FinancialAct) get(act.getObjectReference());
         return (result != null) ? new StockQty(result) : null;
     }
 
     /**
      * Retrieves an object using its reference.
      *
-     * @param ref the reference. May be <tt>null</tt>
+     * @param ref the reference. May be {@code null}
      * @return the object or tt>
      */
     private IMObject get(IMObjectReference ref) {
@@ -267,7 +258,7 @@ public class ChargeStockUpdater {
 
 
         /**
-         * Creates a new <tt>StockQty</tt>.
+         * Creates a new {@code StockQty}.
          *
          * @param act the act
          */
@@ -276,7 +267,7 @@ public class ChargeStockUpdater {
         }
 
         /**
-         * Creates a new <tt>StockQty</tt>.
+         * Creates a new {@code StockQty}.
          *
          * @param bean the act bean
          */
@@ -287,18 +278,9 @@ public class ChargeStockUpdater {
         }
 
         /**
-         * Returns the location reference.
-         *
-         * @return the location reference. May be <tt>null</tt>
-         */
-        public IMObjectReference getLocationRef() {
-            return location;
-        }
-
-        /**
          * Returns the product reference.
          *
-         * @return the product reference. May be <tt>null</tt>
+         * @return the product reference. May be {@code null}
          */
         public IMObjectReference getProductRef() {
             return product;
@@ -307,7 +289,7 @@ public class ChargeStockUpdater {
         /**
          * Returns the product.
          *
-         * @return the product, or <tt>null</tt> if none is found
+         * @return the product, or {@code null} if none is found
          * @throws ArchetypeServiceException for any archetype service error
          */
         public Product getProduct() {
@@ -317,7 +299,7 @@ public class ChargeStockUpdater {
         /**
          * Returns the stock location.
          *
-         * @return the stock location, or <tt>null</tt> if none is found
+         * @return the stock location, or {@code null} if none is found
          * @throws ArchetypeServiceException for any archetype service error
          */
         public Party getLocation() {
@@ -336,19 +318,19 @@ public class ChargeStockUpdater {
         /**
          * Determines if the act state is valid.
          *
-         * @return <tt>true</tt> if the product and location references are
+         * @return {@code true} if the product and location references are
          *         non-null, and the quantity is non-zero
          */
         public boolean isValid() {
             return product != null && location != null
-                    && quantity.compareTo(BigDecimal.ZERO) != 0;
+                   && quantity.compareTo(BigDecimal.ZERO) != 0;
         }
 
         /**
          * Determines if this stock quantity has the same product as another.
          *
          * @param other the other stock quantity
-         * @return <tt>true</tt> if they have the same product
+         * @return {@code true} if they have the same product
          */
         public boolean hasProduct(StockQty other) {
             return ObjectUtils.equals(product, other.getProductRef());

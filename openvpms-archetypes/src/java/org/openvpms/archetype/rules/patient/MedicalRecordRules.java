@@ -47,10 +47,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -240,11 +238,9 @@ public class MedicalRecordRules {
      * @param startTime the startTime used to select the event
      */
     public void addToEvents(List<Act> acts, Date startTime) {
-        PatientClinicalEvents events = new PatientClinicalEvents(service);
-        Set<Act> changed = addToEvents(acts, startTime, events);
-        if (!changed.isEmpty()) {
-            service.save(changed);
-        }
+        PatientHistoryChanges changes = new PatientHistoryChanges(null, null, service);
+        addToEvents(acts, startTime, changes);
+        changes.save();
     }
 
     /**
@@ -291,7 +287,7 @@ public class MedicalRecordRules {
      * @return an event. May be newly created
      */
     public Act getEventForAddition(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
-        PatientClinicalEvents events = new PatientClinicalEvents(service);
+        PatientHistoryChanges events = new PatientHistoryChanges(null, null, service);
         return getEventForAddition(events, patient, startTime, clinician);
     }
 
@@ -493,23 +489,20 @@ public class MedicalRecordRules {
      *
      * @param acts      the acts to add
      * @param startTime the startTime used to select the event
-     * @param events    the cache of events
-     * @return the changed acts
+     * @param changes   the changes to patient history
      */
-    protected Set<Act> addToEvents(List<Act> acts, Date startTime, PatientClinicalEvents events) {
-        Set<Act> changed = new HashSet<Act>();
+    protected void addToEvents(List<Act> acts, Date startTime, PatientHistoryChanges changes) {
         Map<IMObjectReference, List<Act>> map = getByPatient(acts);
         for (Map.Entry<IMObjectReference, List<Act>> entry : map.entrySet()) {
             IMObjectReference patient = entry.getKey();
             List<Act> unlinked = new ArrayList<Act>(); // the acts to link to events
             for (Act act : entry.getValue()) {
-                Act existingEvent = events.getLinkedEvent(act);
+                Act existingEvent = changes.getLinkedEvent(act);
                 if (existingEvent != null) {
                     // the act is already linked to an event
-                    if (!ObjectUtils.equals(events.getPatient(existingEvent), patient)) {
+                    if (!ObjectUtils.equals(changes.getPatient(existingEvent), patient)) {
                         // the existing event is for a different patient. Need to unlink this.
-                        events.removeRelationship(existingEvent, act);
-                        changed.add(existingEvent);
+                        changes.removeRelationship(existingEvent, act);
                         unlinked.add(act);
                     }
                 } else {
@@ -517,24 +510,10 @@ public class MedicalRecordRules {
                 }
             }
             if (!unlinked.isEmpty()) {
-                Act event = getEventForAddition(events, patient, startTime, getClinician(unlinked));
-                addToEvent(event, unlinked, changed, events);
+                Act event = getEventForAddition(changes, patient, startTime, getClinician(unlinked));
+                addToEvent(event, unlinked, changes);
             }
         }
-        return changed;
-    }
-
-    /**
-     * Adds acts to an event, where no relationship exists.
-     *
-     * @param event the event
-     * @param acts  the acts to add
-     * @return the changed acts
-     */
-    protected Set<Act> addToEvent(Act event, List<Act> acts) {
-        Set<Act> changed = new HashSet<Act>();
-        addToEvent(event, acts, changed, new PatientClinicalEvents(service));
-        return changed;
     }
 
     /**
@@ -542,14 +521,13 @@ public class MedicalRecordRules {
      *
      * @param event   the event
      * @param acts    the acts to add
-     * @param changed the changed acts
+     * @param changes tracks changes to the patient history
      */
-    private void addToEvent(Act event, List<Act> acts, Set<Act> changed, PatientClinicalEvents events) {
+    protected void addToEvent(Act event, List<Act> acts, PatientHistoryChanges changes) {
+        changes.addEvent(event);
         for (Act act : acts) {
-            if (!events.hasRelationship(act)) {
-                events.addRelationship(event, act);
-                changed.add(event);
-                changed.add(act);
+            if (!changes.hasRelationship(act)) {
+                changes.addRelationship(event, act);
             }
         }
     }
@@ -575,7 +553,7 @@ public class MedicalRecordRules {
      * @param clinician the clinician to use when creating new events. May be {@code null}
      * @return an event
      */
-    private Act getEventForAddition(PatientClinicalEvents events, IMObjectReference patient, Date timestamp,
+    private Act getEventForAddition(PatientHistoryChanges events, IMObjectReference patient, Date timestamp,
                                     IMObjectReference clinician) {
         List<Act> patientEvents = events.getEvents(patient);
         Act result = null;

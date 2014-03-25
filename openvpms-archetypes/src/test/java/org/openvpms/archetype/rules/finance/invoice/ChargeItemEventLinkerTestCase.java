@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -88,8 +89,9 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         FinancialAct item = createInvoiceItem(startTime, patient);
 
         assertNull(rules.getEvent(patient, startTime));
-        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
-        linker.link(item);
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
+        PatientHistoryChanges changes = new PatientHistoryChanges(author, location, getArchetypeService());
+        linker.link(item, changes);
 
         Act event = rules.getEvent(patient, startTime);
         assertNotNull(event);
@@ -97,7 +99,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         checkEvent(item, event, author, location);
 
         // verify that linking again succeeds
-        linker.link(item);
+        linker.link(item, changes);
         checkEvent(item, event, author, location);
     }
 
@@ -112,10 +114,10 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         FinancialAct item1 = createInvoiceItem(startTime, patient);
         FinancialAct item2 = createInvoiceItem(startTime, patient);
 
-        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
         List<FinancialAct> items = Arrays.asList(item1, item2);
-        linker.link(items);
 
+        linker.link(items, new PatientHistoryChanges(author, location, getArchetypeService()));
         Act event = rules.getEvent(patient, startTime);
         assertNotNull(event);
 
@@ -123,7 +125,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         checkEvent(item2, event, author, location);
 
         // verify that linking again succeeds
-        linker.link(items);
+        linker.link(items, new PatientHistoryChanges(author, location, getArchetypeService()));
         checkEvent(item1, event, author, location);
         checkEvent(item2, event, author, location);
     }
@@ -139,9 +141,9 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         FinancialAct item1 = createInvoiceItem(startTime1, patient);
         FinancialAct item2 = createInvoiceItem(startTime2, patient);
 
-        ChargeItemEventLinker linker1 = new ChargeItemEventLinker(author, location, getArchetypeService());
+        ChargeItemEventLinker linker1 = new ChargeItemEventLinker(getArchetypeService());
         List<FinancialAct> items = Arrays.asList(item1, item2);
-        linker1.link(items);
+        linker1.link(items, new PatientHistoryChanges(author, location, getArchetypeService()));
 
         Act event1 = rules.getEvent(patient, startTime1);
         Act event2 = rules.getEvent(patient, startTime2);
@@ -153,7 +155,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         checkEvent(item2, event2, author, location);
 
         // verify that linking again succeeds
-        linker1.link(items);
+        linker1.link(items, new PatientHistoryChanges(author, location, getArchetypeService()));
         checkEvent(item1, event1, author, location);
         checkEvent(item2, event2, author, location);
 
@@ -162,8 +164,8 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         FinancialAct item3 = createInvoiceItem(startTime1, patient);
         User author2 = TestHelper.createUser();
         Party location2 = TestHelper.createLocation();
-        ChargeItemEventLinker linker2 = new ChargeItemEventLinker(author2, location2, getArchetypeService());
-        linker2.link(item3);
+        ChargeItemEventLinker linker2 = new ChargeItemEventLinker(getArchetypeService());
+        linker2.link(item3, new PatientHistoryChanges(author2, location2, getArchetypeService()));
         Act event1Updated = rules.getEvent(patient, startTime1);
         assertEquals(event1Updated.getId(), event1.getId());
         checkEvent(item1, event1Updated, author, location);
@@ -181,9 +183,9 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         FinancialAct item1 = createInvoiceItem(startTime, patient1);
         FinancialAct item2 = createInvoiceItem(startTime, patient2);
 
-        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
         List<FinancialAct> items = Arrays.asList(item1, item2);
-        linker.link(items);
+        linker.link(items, new PatientHistoryChanges(author, location, getArchetypeService()));
 
         Act event1 = rules.getEvent(patient1, startTime);
         assertNotNull(event1);
@@ -196,7 +198,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         checkEvent(item2, event2, author, location);
 
         // verify that linking again succeeds
-        linker.link(items);
+        linker.link(items, new PatientHistoryChanges(author, location, getArchetypeService()));
         checkEvent(item1, event1, author, location);
         checkEvent(item2, event2, author, location);
     }
@@ -214,18 +216,18 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
 
         FinancialAct item = createInvoiceItem(date1, patient);
 
-        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
-        linker.link(event1, item);
-        checkEvent(item, event1, null, null);
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
+        linker.link(event1, item, new PatientHistoryChanges(author, location, getArchetypeService()));
+        checkEvent(item, event1, author, location);
 
         // try linking to event1 again. Should be a no-op
-        linker.link(event1, item);
-        checkEvent(item, event1, null, null);
+        linker.link(event1, item, new PatientHistoryChanges(author, location, getArchetypeService()));
+        checkEvent(item, event1, author, location);
 
         // try linking to event2, and verify that the item is still linked to event1
-        linker.link(event2, item);
+        linker.link(event2, item, new PatientHistoryChanges(author, location, getArchetypeService()));
         item = get(item);
-        checkEvent(item, event1, null, null);
+        checkEvent(item, event1, author, location);
 
         // verify the item and its child acts don't have any links to event2
         ActBean event2Bean = new ActBean(event2);
@@ -251,9 +253,9 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         FinancialAct item1 = createInvoiceItem(startTime, patient1);
         FinancialAct item2 = createInvoiceItem(startTime, patient2);
 
-        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
         List<FinancialAct> items = Arrays.asList(item1, item2);
-        linker.link(items);
+        linker.link(items, new PatientHistoryChanges(author, location, getArchetypeService()));
 
         Act event1 = rules.getEvent(patient1, startTime);
         assertNotNull(event1);
@@ -272,7 +274,7 @@ public class ChargeItemEventLinkerTestCase extends ArchetypeServiceTest {
         itemBean.save();
 
         // verify event1 still linked to item, and now linked to item2
-        linker.link(items);
+        linker.link(items, new PatientHistoryChanges(author, location, getArchetypeService()));
         checkEvent(item1, event1, author, location);
 
         // event1 should now be linked to item2

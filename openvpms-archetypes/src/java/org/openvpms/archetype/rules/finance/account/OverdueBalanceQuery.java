@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -21,7 +19,6 @@ package org.openvpms.archetype.rules.finance.account;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.util.Date;
@@ -32,8 +29,7 @@ import java.util.NoSuchElementException;
 /**
  * Query for customers with overdue balances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OverdueBalanceQuery {
 
@@ -63,26 +59,19 @@ public class OverdueBalanceQuery {
     private int to;
 
     /**
-     * The customer account type classification. May be <tt>null</tt>.
+     * The customer account type classification. May be {@code null}.
      */
     private Lookup accountType;
 
-
     /**
-     * Creates a new <code>OverdueBalanceQuery</code>.
-     */
-    public OverdueBalanceQuery() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <code>OverdueBalanceQuery</code>.
+     * Constructs an {@link OverdueBalanceQuery}.
      *
      * @param service the archetype service
+     * @param rules   the customer account rules
      */
-    public OverdueBalanceQuery(IArchetypeService service) {
+    public OverdueBalanceQuery(IArchetypeService service, CustomerAccountRules rules) {
         this.service = service;
-        this.rules = new CustomerAccountRules(service);
+        this.rules = rules;
         date = new Date();
     }
 
@@ -119,7 +108,7 @@ public class OverdueBalanceQuery {
      *
      * @param accountType the customer account type (an instance of
      *                    <em>lookup.customerAccountType</em>).
-     *                    If <tt>null</tt> indicates to query all account types.
+     *                    If {@code null} indicates to query all account types.
      */
     public void setAccountType(Lookup accountType) {
         this.accountType = accountType;
@@ -187,9 +176,9 @@ public class OverdueBalanceQuery {
         }
 
         /**
-         * Returns <tt>true</tt> if the iteration has more elements.
+         * Returns {@code true} if the iteration has more elements.
          *
-         * @return <tt>true</tt> if the iterator has more elements
+         * @return {@code true} if the iterator has more elements
          */
         public boolean hasNext() {
             boolean result = false;

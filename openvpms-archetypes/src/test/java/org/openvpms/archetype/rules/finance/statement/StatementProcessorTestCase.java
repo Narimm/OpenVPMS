@@ -1,27 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.archetype.component.processor.ProcessorListener;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -41,23 +35,26 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Tests the {@link StatementProcessor} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StatementProcessorTestCase extends AbstractStatementTest {
 
     /**
-     * Verifies that the statement processor cannot be constructed with
-     * an invalid date.
+     * Verifies that the statement processor cannot be constructed with an invalid date.
      */
     @Test
     public void testStatementDate() {
         Date now = new Date();
         try {
-            new StatementProcessor(now, getPractice());
+            new StatementProcessor(now, getPractice(), service, lookups, accountRules);
             fail("Expected StatementProcessorException to be thrown");
         } catch (StatementProcessorException expected) {
             assertEquals(
@@ -68,7 +65,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
         try {
-            new StatementProcessor(calendar.getTime(), getPractice());
+            new StatementProcessor(calendar.getTime(), getPractice(), service, lookups, accountRules);
         } catch (StatementProcessorException exception) {
             fail("Construction failed with exception: " + exception);
         }
@@ -178,9 +175,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
         // process the customer's statement for 5/2. Amounts should be overdue
         // and a fee generated. COMPLETED acts should be posted.
         // The invoice4 invoice won't be included.
-        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate,
-                                                            true,
-                                                            getPractice());
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups,
+                                                            accountRules);
         eop.process(customer);
 
         List<Act> acts = processStatement(statementDate, customer);
@@ -227,9 +223,8 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
         // run EOP for 31/12/2007.
         Date statementDate1 = getDate("2007-12-31");
-        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate1,
-                                                            true,
-                                                            getPractice());
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate1, true, getPractice(), service, lookups,
+                                                            accountRules);
         eop.process(customer);
 
         // create a payment for 14/1/2008
@@ -254,7 +249,7 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
 
         // run EOP for the 31/1
         Date statementDate5 = getDate("2008-01-31");
-        eop = new EndOfPeriodProcessor(statementDate5, true, getPractice());
+        eop = new EndOfPeriodProcessor(statementDate5, true, getPractice(), service, lookups, accountRules);
         eop.process(customer);
 
         // check statement for 1/2. Balance should  be zero.
@@ -355,9 +350,9 @@ public class StatementProcessorTestCase extends AbstractStatementTest {
                                        boolean reprint,
                                        boolean expectStatement) {
         List<Act> acts;
-        StatementRules rules = new StatementRules(getPractice());
-        StatementProcessor processor
-                = new StatementProcessor(statementDate, getPractice());
+        StatementRules rules = new StatementRules(getPractice(), service, lookups, accountRules);
+        StatementProcessor processor = new StatementProcessor(statementDate, getPractice(), service, lookups,
+                                                              accountRules);
         processor.setReprint(reprint);
         Listener listener = new Listener();
         processor.addListener(listener);

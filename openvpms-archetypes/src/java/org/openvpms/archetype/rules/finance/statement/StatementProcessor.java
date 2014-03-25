@@ -1,37 +1,33 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.component.processor.AbstractProcessor;
-import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
@@ -41,12 +37,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
+
 
 /**
  * Processor for customer statements.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StatementProcessor extends AbstractProcessor<Party, Statement> {
 
@@ -81,26 +78,13 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      *
      * @param statementDate the statement date. Must be a date prior to today.
      * @param practice      the practice
-     * @throws StatementProcessorException if the statement date is invalid
-     */
-    public StatementProcessor(Date statementDate, Party practice) {
-        this(statementDate, practice,
-             ArchetypeServiceHelper.getArchetypeService(),
-             LookupServiceHelper.getLookupService());
-    }
-
-    /**
-     * Creates a new <tt>StatementProcessor</tt>.
-     *
-     * @param statementDate the statement date. Must be a date prior to today.
-     * @param practice      the practice
      * @param service       the archetype service
      * @param lookups       the lookup service
+     * @param accountRules  the customer account rules
      * @throws StatementProcessorException if the statement date is invalid
      */
-    public StatementProcessor(Date statementDate, Party practice,
-                              IArchetypeService service,
-                              ILookupService lookups) {
+    public StatementProcessor(Date statementDate, Party practice, IArchetypeService service,
+                              ILookupService lookups, CustomerAccountRules accountRules) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -108,7 +92,7 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
             throw new StatementProcessorException(InvalidStatementDate,
                                                   statementDate);
         }
-        rules = new StatementRules(practice, service, lookups);
+        rules = new StatementRules(practice, service, lookups, accountRules);
         actHelper = new StatementActHelper(service);
         this.statementDate = actHelper.getStatementTimestamp(statementDate);
     }
