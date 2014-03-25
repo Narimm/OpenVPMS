@@ -11,17 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
@@ -83,12 +83,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
-
-    /**
-     * The rules.
-     */
-    private CustomerAccountRules rules;
-
 
     /**
      * Verifies that when a posted <em>act.customerAccountChargesInvoice</em>
@@ -258,6 +252,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testGetBalance() {
+        CustomerAccountRules rules = getRules();
         Party customer = getCustomer();
         Money hundred = new Money(100);
         Money sixty = new Money(60);
@@ -325,6 +320,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testGetRunningBalance() {
+        CustomerAccountRules rules = getRules();
         Party customer = getCustomer();
         Money hundred = new Money(100);
         Money sixty = new Money(60);
@@ -335,13 +331,10 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         save(invoice);
 
         // check the balance for a payment
-        checkEquals(hundred,
-                    rules.getBalance(customer, BigDecimal.ZERO, true));
+        checkEquals(hundred, rules.getBalance(customer, BigDecimal.ZERO, true));
 
         // check the balance for a refund
-        checkEquals(BigDecimal.ZERO,
-                    rules.getBalance(customer, BigDecimal.ZERO,
-                                     false));
+        checkEquals(BigDecimal.ZERO, rules.getBalance(customer, BigDecimal.ZERO, false));
 
         // simulate payment of 60. Running balance should be 40
         checkEquals(forty, rules.getBalance(customer, sixty, true));
@@ -367,6 +360,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testGetCurrentOverdueBalance() {
+        CustomerAccountRules rules = getRules();
+
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
         customer.addClassification(createAccountType(30, DateUnits.DAYS));
@@ -410,6 +405,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testGetOverdueBalance() {
+        CustomerAccountRules rules = getRules();
+
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
         customer.addClassification(createAccountType(30, DateUnits.DAYS));
@@ -458,6 +455,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testGetCreditAmount() {
+        CustomerAccountRules rules = getRules();
+
         final Money amount = new Money(100);
         List<FinancialAct> credits = createChargesCredit(amount);
         FinancialAct creditAdjust = createCreditAdjust(amount);
@@ -485,6 +484,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testGetUnbilledAmount() {
+        CustomerAccountRules rules = getRules();
+
         final Money amount = new Money(100);
         List<FinancialAct> invoices = createChargesInvoice(amount);
         List<FinancialAct> counters = createChargesCounter(amount);
@@ -608,6 +609,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testReverseAllocated() {
+        CustomerAccountRules rules = getRules();
+
         Money amount = new Money(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
         save(invoice);
@@ -626,6 +629,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testReverseUnallocated() {
+        CustomerAccountRules rules = getRules();
+
         Money amount = new Money(100);
         List<FinancialAct> invoice = createChargesInvoice(amount);
         save(invoice);
@@ -641,6 +646,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testReversePartiallyAllocated() {
+        CustomerAccountRules rules = getRules();
+
         Money amount = new Money(100);
         Money sixty = new Money(60);
         Money forty = new Money(40);
@@ -757,6 +764,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testGetInvoice() {
+        CustomerAccountRules rules = getRules();
+
         Party customer = getCustomer();
         assertNull(rules.getInvoice(customer));
 
@@ -790,6 +799,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      */
     @Test
     public void testReverseInvoiceRemovesEntriesFromHistory() {
+        CustomerAccountRules rules = getRules();
+
         PatientRules patientRules = new PatientRules(getArchetypeService(), LookupServiceHelper.getLookupService());
         Party patient = getPatient();
         User author = TestHelper.createUser();
@@ -824,8 +835,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         eventBean.save();
 
         // link the charge item and medication to the event
-        ChargeItemEventLinker linker = new ChargeItemEventLinker(author, location, getArchetypeService());
-        linker.link(event, invoiceActs.get(1));
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
+        linker.link(event, invoiceActs.get(1), new PatientHistoryChanges(author, location, getArchetypeService()));
 
         // verify they are linked
         List<Act> charges = eventBean.getNodeActs("chargeItems");
@@ -874,14 +885,6 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // verify stock has reverted to its initial value
         checkStock(stock, new BigDecimal("10"));
-    }
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void onSetUp() {
-        rules = new CustomerAccountRules(getArchetypeService());
     }
 
     /**
@@ -960,6 +963,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param amount the expected amount
      */
     private void checkBalance(BigDecimal amount) {
+        CustomerAccountRules rules = getRules();
+
         Party customer = getCustomer();
         checkEquals(amount, rules.getBalance(customer));
         checkEquals(amount, rules.getDefinitiveBalance(customer));
@@ -1096,8 +1101,8 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param itemShortName the reversal act child short name.
      *                      May be <tt>null</tt>
      */
-    private void checkReverse(FinancialAct act, String shortName,
-                              String itemShortName) {
+    private void checkReverse(FinancialAct act, String shortName, String itemShortName) {
+        CustomerAccountRules rules = getRules();
         BigDecimal amount = act.getTotal();
         act.setStatus(ActStatus.POSTED);
         save(act);

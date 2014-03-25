@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
 
+import org.junit.Before;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
@@ -68,6 +69,19 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
 
 
     /**
+     * The customer account rules.
+     */
+    private CustomerAccountRules rules;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        rules = applicationContext.getBean(CustomerAccountRules.class);
+    }
+
+    /**
      * Returns the customer.
      *
      * @return the customer
@@ -110,6 +124,15 @@ public abstract class AbstractCustomerAccountTest extends ArchetypeServiceTest {
             product = TestHelper.createProduct();
         }
         return product;
+    }
+
+    /**
+     * Returns the customer account rules.
+     *
+     * @return the rules
+     */
+    protected CustomerAccountRules getRules() {
+        return rules;
     }
 
     /**

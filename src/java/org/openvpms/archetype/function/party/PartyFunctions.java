@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.party;
@@ -71,16 +71,17 @@ public class PartyFunctions {
 
 
     /**
-     * Constructs a {@code PartyFunctions}.
+     * Constructs a {@link PartyFunctions}.
      *
-     * @param service      the archetype service
-     * @param patientRules the patient rules
+     * @param service       the archetype service
+     * @param patientRules  the patient rules
+     * @param customerRules the customer account rules
      */
-    public PartyFunctions(IArchetypeService service, PatientRules patientRules) {
+    public PartyFunctions(IArchetypeService service, PatientRules patientRules, CustomerAccountRules customerRules) {
         this.service = service;
         this.patientRules = patientRules;
+        this.customerAccountRules = customerRules;
         partyRules = new PartyRules(service);
-        customerAccountRules = new CustomerAccountRules(service);
         supplierRules = new SupplierRules(service);
     }
 

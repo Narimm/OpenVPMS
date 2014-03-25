@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -21,7 +19,6 @@ package org.openvpms.archetype.rules.finance.account;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.*;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -56,12 +53,15 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
+
 
 /**
  * Queries customer balance summaries.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
 
@@ -206,143 +206,121 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
 
 
     /**
-     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> for all
-     * accounts with both current and overdue balances.
+     * Constructs a {@link CustomerBalanceSummaryQuery} for all accounts with both current and overdue balances.
      *
-     * @param date the date
+     * @param date  the date
+     * @param rules the customer account rules
      */
-    public CustomerBalanceSummaryQuery(Date date) {
-        this(date, 0, 0, null, null, null);
+    public CustomerBalanceSummaryQuery(Date date, CustomerAccountRules rules) {
+        this(date, 0, 0, null, null, null, rules);
     }
 
     /**
-     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> for all accounts
+     * Constructs a {@link CustomerBalanceSummaryQuery} for all accounts
      * with both current and overdue balances having a particular account type.
      *
      * @param date        the date
      * @param accountType the account type
+     * @param rules       the customer account rules
      */
-    public CustomerBalanceSummaryQuery(Date date, Lookup accountType) {
-        this(date, accountType, null, null);
+    public CustomerBalanceSummaryQuery(Date date, Lookup accountType, CustomerAccountRules rules) {
+        this(date, accountType, null, null, rules);
     }
 
     /**
-     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> for all accounts
+     * Constructs a {@link CustomerBalanceSummaryQuery} for all accounts
      * with both current and overdue balances having a particular account type.
      *
      * @param date         the date
      * @param accountType  the account type
-     * @param customerFrom the customer name to start from. May contain
-     *                     wildcards or be <tt>null</tt>
-     *                     If <tt>null</tt> indicates all customers
-     * @param customerTo   the customer name to end on. May contain wildcards.
-     *                     If <tt>null</tt> indicates all customers from
-     *                     <tt>customerFrom</tt>
+     * @param customerFrom the customer name to start from. May contain wildcards or be {@code null}
+     *                     If {@code null} indicates all customers
+     * @param customerTo   the customer name to end on. May contain wildcards. If {@code null} indicates all customers
+     *                     from {@code customerFrom}
+     * @param rules        the customer account rules
      */
-    public CustomerBalanceSummaryQuery(Date date, Lookup accountType,
-                                       String customerFrom, String customerTo) {
-        this(date, true, 0, 0, false, accountType, customerFrom, customerTo);
+    public CustomerBalanceSummaryQuery(Date date, Lookup accountType, String customerFrom, String customerTo,
+                                       CustomerAccountRules rules) {
+        this(date, true, 0, 0, false, accountType, customerFrom, customerTo, rules);
     }
 
     /**
-     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> that returns
+     * Constructs a {@link CustomerBalanceSummaryQuery} that returns
      * overdue balances within the specified date range.
      *
      * @param date        the date
-     * @param overdueFrom the overdue-from date. Use <code>&lt;= 0</code> to
-     *                    indicate all dates
-     * @param overdueTo   the overdue-to date. Use <code>&lt;= 0</code> to
-     *                    indicate all dates
-     * @param accountType the account type. May be <tt>null</tt> to indicate
-     *                    all account types
+     * @param overdueFrom the overdue-from date. Use {@code &lt;= 0} to indicate all dates
+     * @param overdueTo   the overdue-to date. Use {@code &lt;= 0} to indicate all dates
+     * @param accountType the account type. May be {@code null} to indicate all account types
+     * @param rules       the customer account rules
      */
-    public CustomerBalanceSummaryQuery(Date date, int overdueFrom,
-                                       int overdueTo, Lookup accountType) {
-        this(date, overdueFrom, overdueTo, accountType, null, null);
+    public CustomerBalanceSummaryQuery(Date date, int overdueFrom, int overdueTo, Lookup accountType,
+                                       CustomerAccountRules rules) {
+        this(date, overdueFrom, overdueTo, accountType, null, null, rules);
     }
 
     /**
-     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> that returns
+     * Constructs a {@link CustomerBalanceSummaryQuery} that returns
      * overdue balances within the specified date and customer range.
      *
      * @param date         the date
-     * @param overdueFrom  the overdue-from date. Use <code>&lt;= 0</code> to
-     *                     indicate all dates
-     * @param overdueTo    the overdue-to date. Use <code>&lt;= 0</code> to
-     *                     indicate all dates
-     * @param accountType  the account type. May be <tt>null</tt> to indicate
-     *                     all account types
-     * @param customerFrom the customer name to start from. May contain
-     *                     wildcards or be <tt>null</tt>
-     *                     If <tt>null</tt> indicates all customers
-     * @param customerTo   the customer name to end on. May contain wildcards.
-     *                     If <tt>null</tt> indicates all customers from
-     *                     <tt>customerFrom</tt>
+     * @param overdueFrom  the overdue-from date. Use {@code &lt;= 0} to indicate all dates
+     * @param overdueTo    the overdue-to date. Use {@code &lt;= 0} to indicate all dates
+     * @param accountType  the account type. May be {@code null} to indicate all account types
+     * @param customerFrom the customer name to start from. May contain wildcards or be {@code null}
+     *                     If {@code null} indicates all customers
+     * @param customerTo   the customer name to end on. May contain wildcards. If {@code null} indicates all customers
+     *                     from {@code customerFrom}
+     * @param rules        the customer account rules
      */
-    public CustomerBalanceSummaryQuery(Date date, int overdueFrom,
-                                       int overdueTo, Lookup accountType,
-                                       String customerFrom, String customerTo) {
-        this(date, false, overdueFrom, overdueTo, false, accountType,
-             customerFrom, customerTo);
+    public CustomerBalanceSummaryQuery(Date date, int overdueFrom, int overdueTo, Lookup accountType,
+                                       String customerFrom, String customerTo, CustomerAccountRules rules) {
+        this(date, false, overdueFrom, overdueTo, false, accountType, customerFrom, customerTo, rules);
     }
 
     /**
-     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> that returns
+     * Constructs a {@link CustomerBalanceSummaryQuery} that returns
      * balances for the specified criteria.
      *
      * @param date          the date
-     * @param nonOverdue    if <tt>true</tt>, include non-overdue accounts
-     * @param overdueFrom   the overdue-from date. Use <code>&lt;= 0</code> to
-     *                      indicate all dates
-     * @param overdueTo     the overdue-to date. Use <code>&lt;= 0</code> to
-     *                      indicate all dates
-     * @param excludeCredit if <tt>true</tt> exclude accounts with credit
-     *                      balances
-     * @param accountType   the account type. May be <tt>null</tt> to indicate
-     *                      all account types
-     * @param customerFrom  the customer name to start from. May contain
-     *                      wildcards or be <tt>null</tt>
-     *                      If <tt>null</tt> indicates all customers
+     * @param nonOverdue    if {@code true}, include non-overdue accounts
+     * @param overdueFrom   the overdue-from date. Use {@code &lt;= 0} to indicate all dates
+     * @param overdueTo     the overdue-to date. Use {@code &lt;= 0} to indicate all dates
+     * @param excludeCredit if {@code true} exclude accounts with credit balances
+     * @param accountType   the account type. May be {@code null} to indicate all account types
+     * @param customerFrom  the customer name to start from. May contain wildcards or be {@code null}.
+     *                      If {@code null} indicates all customers
      * @param customerTo    the customer name to end on. May contain wildcards.
+     * @param rules         the customer account rules
      */
-    public CustomerBalanceSummaryQuery(Date date, boolean nonOverdue,
-                                       int overdueFrom, int overdueTo,
-                                       boolean excludeCredit,
-                                       Lookup accountType,
-                                       String customerFrom, String customerTo) {
+    public CustomerBalanceSummaryQuery(Date date, boolean nonOverdue, int overdueFrom, int overdueTo,
+                                       boolean excludeCredit, Lookup accountType, String customerFrom,
+                                       String customerTo, CustomerAccountRules rules) {
         this(date, nonOverdue, overdueFrom, overdueTo, excludeCredit,
              accountType, customerFrom, customerTo,
-             ArchetypeServiceHelper.getArchetypeService());
+             ArchetypeServiceHelper.getArchetypeService(), rules);
     }
 
     /**
-     * Constructs a new <tt>CustomerBalanceSummaryQuery</tt> that returns
+     * Constructs a {@link CustomerBalanceSummaryQuery} that returns
      * balances for the specified criteria.
      *
      * @param date          the date
-     * @param nonOverdue    if <tt>true</tt>, include non-overdue accounts
-     * @param overdueFrom   the overdue-from date. Use <code>&lt;= 0</code> to
-     *                      indicate all dates
-     * @param overdueTo     the overdue-to date. Use <code>&lt;= 0</code> to
-     *                      indicate all dates
-     * @param excludeCredit if <tt>true</tt> exclude accounts with credit
-     *                      balances
-     * @param accountType   the account type. May be <tt>null</tt> to indicate
-     *                      all account types
-     * @param customerFrom  the customer name to start from. May contain
-     *                      wildcards or be <tt>null</tt>
-     *                      If <tt>null</tt> indicates all customers
-     * @param customerTo    the customer name to end on. May contain wildcards.
-     *                      If <tt>null</tt> indicates all customers from
-     *                      <tt>customerFrom</tt>
+     * @param nonOverdue    if {@code true}, include non-overdue accounts
+     * @param overdueFrom   the overdue-from date. Use {@code &lt;= 0} to indicate all dates
+     * @param overdueTo     the overdue-to date. Use {@code &lt;= 0} to indicate all dates
+     * @param excludeCredit if {@code true} exclude accounts with credit balances
+     * @param accountType   the account type. May be {@code null} to indicate all account types
+     * @param customerFrom  the customer name to start from. May contain wildcards or be {@code null}
+     *                      If {@code null} indicates all customers
+     * @param customerTo    the customer name to end on. May contain wildcards. If {@code null} indicates all customers
+     *                      from {@code customerFrom}
      * @param service       the archetype service
      */
-    public CustomerBalanceSummaryQuery(Date date, boolean nonOverdue,
-                                       int overdueFrom, int overdueTo,
-                                       boolean excludeCredit,
-                                       Lookup accountType,
+    public CustomerBalanceSummaryQuery(Date date, boolean nonOverdue, int overdueFrom, int overdueTo,
+                                       boolean excludeCredit, Lookup accountType,
                                        String customerFrom, String customerTo,
-                                       IArchetypeService service) {
+                                       IArchetypeService service, CustomerAccountRules rules) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.HOUR_OF_DAY, 23);
@@ -356,7 +334,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         this.overdue = overdueFrom >= 0 && overdueTo >= 0;
         this.from = overdueFrom;
         this.to = overdueTo;
-        rules = new CustomerAccountRules(service);
+        this.rules = rules;
         Collection<String> names = Arrays.asList(
                 "e.name", "e.archetypeId", "e.id", "e.linkId",
                 "a.archetypeId", "a.id", "a.linkId",
@@ -404,9 +382,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     }
 
     /**
-     * Returns <tt>true</tt> if the iteration has more elements.
+     * Returns {@code true} if the iteration has more elements.
      *
-     * @return <tt>true</tt> if the iterator has more elements.
+     * @return {@code true} if the iterator has more elements.
      */
     public boolean hasNext() {
         if (next == null) {
@@ -446,7 +424,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     /**
      * Returns the next set in the iteration.
      *
-     * @return the next set or <tt>null</tt> if overdue balances are being
+     * @return the next set or {@code null} if overdue balances are being
      *         queried and the current balance is not overdue
      */
     private ObjectSet doNext() {
@@ -524,8 +502,8 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
                     }
                 }
                 if (!credit && startTime.compareTo(overdueFrom) < 0
-                        && (overdueTo == null || (overdueTo != null
-                        && startTime.compareTo(overdueTo) > 0))) {
+                    && (overdueTo == null || (overdueTo != null
+                                              && startTime.compareTo(overdueTo) > 0))) {
                     overdueBalance = calculator.addAmount(overdueBalance,
                                                           unallocated, credit);
                 }
@@ -573,7 +551,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * Returns a lookup given its code.
      *
      * @param code the lookup code
-     * @return the lookup corresponding to <tt>code</tt> or <tt>null</tt>
+     * @return the lookup corresponding to {@code code} or {@code null}
      *         if none is found
      */
     private Lookup getLookup(String code) {
@@ -635,7 +613,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         private boolean queriedLastInvoice;
 
         /**
-         * Constructs a new <tt>BalanceObjectSet</tt>.
+         * Constructs a {@link BalanceObjectSet}.
          *
          * @param customer the customer
          */
@@ -657,7 +635,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
          * Returns the value of a object.
          *
          * @param name the object name
-         * @return the object value. May be <code>null</code>
+         * @return the object value. May be {@code null}
          */
         @Override
         public Object get(String name) {
@@ -682,7 +660,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         /**
          * Returns the last payment date.
          *
-         * @return the last payment date, or <tt>null</tt>
+         * @return the last payment date, or {@code null}
          */
         private Date getLastPaymentDate() {
             getLastPaymentDetails();
@@ -692,7 +670,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         /**
          * Returns the last payment amount.
          *
-         * @return the last payment amount, or <tt>null</tt>
+         * @return the last payment amount, or {@code null}
          */
         private BigDecimal getLastPaymentAmount() {
             getLastPaymentDetails();
@@ -713,7 +691,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         /**
          * Returns the last invoice date.
          *
-         * @return the last invoice date, or <tt>null</tt>
+         * @return the last invoice date, or {@code null}
          */
         private Date getLastInvoiceDate() {
             getLastInvoiceDetails();
@@ -723,7 +701,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
         /**
          * Returns the last invoice amount.
          *
-         * @return the last invoice amount, or <tt>null</tt>
+         * @return the last invoice amount, or {@code null}
          */
         private BigDecimal getLastInvoiceAmount() {
             getLastInvoiceDetails();
@@ -747,7 +725,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
          * @param shortName the act short name
          * @param dateKey   the key to store the date under
          * @param amountKey the key to store the amount under
-         * @return <tt>true</tt> if an act corresponding to the short name
+         * @return {@code true} if an act corresponding to the short name
          *         exists
          */
         private boolean query(String shortName, String dateKey,

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock;
@@ -34,8 +32,13 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -52,8 +55,7 @@ import java.util.List;
  * <em>archetypeService.remove.act.customerAccountCounterItem.before</em>
  * rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ChargeStockUpdaterTestCase extends AbstractStockTest {
 
@@ -77,6 +79,11 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
      */
     private Party stockLocation;
 
+    /**
+     * The transaction manager.
+     */
+    private PlatformTransactionManager txnManager;
+
 
     /**
      * Verifies that stock is updated for an invoice.
@@ -89,57 +96,168 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
     /**
      * Verifies that stock is updated when an invoice is removed.
      */
-    @Test public void testInvoiceRemoval() {
+    @Test
+    public void testInvoiceRemoval() {
         checkChargeRemoval(createInvoice());
     }
 
     /**
      * Verifies that stock is updated when an invoice item is removed.
      */
-    @Test public void testInvoiceItemRemoval() {
+    @Test
+    public void testInvoiceItemRemoval() {
         checkItemRemoval(createInvoice());
     }
 
     /**
      * Verifies that stock is updated for a counter charge.
      */
-    @Test public void testCounterChargeStockUpdate() {
+    @Test
+    public void testCounterChargeStockUpdate() {
         checkStockUpdate(createCounterCharge());
     }
 
     /**
      * Verifies that stock is updated when a counter charge item is removed.
      */
-    @Test public void testCounterChargeRemoval() {
+    @Test
+    public void testCounterChargeRemoval() {
         checkChargeRemoval(createCounterCharge());
     }
 
     /**
      * Verifies that stock is updated when a counter charge item is removed.
      */
-    @Test public void testCounterChargeItemRemoval() {
+    @Test
+    public void testCounterChargeItemRemoval() {
         checkItemRemoval(createCounterCharge());
     }
 
     /**
      * Verifies that stock is updated for a credit charge.
      */
-    @Test public void testCreditChargeStockUpdate() {
+    @Test
+    public void testCreditChargeStockUpdate() {
         checkStockUpdate(createCreditCharge());
     }
 
     /**
      * Verifies that stock is updated when a credit charge is removed.
      */
-    @Test public void testCreditChargeRemoval() {
+    @Test
+    public void testCreditChargeRemoval() {
         checkChargeRemoval(createCreditCharge());
     }
 
     /**
      * Verifies that stock is updated when a credit charge item is removed.
      */
-    @Test public void testCreditChargeItemRemoval() {
+    @Test
+    public void testCreditChargeItemRemoval() {
         checkItemRemoval(createCreditCharge());
+    }
+
+    /**
+     * Verifies that stock is updated correctly if a charge is saved multiple times in a transaction.
+     */
+    @Test
+    public void testMultipleSaveInTxn() {
+        final List<FinancialAct> acts = createInvoice();
+        FinancialAct item = acts.get(1);
+        BigDecimal initialQuantity = BigDecimal.ZERO;
+        BigDecimal quantity = BigDecimal.valueOf(5);
+
+        item.setQuantity(quantity);
+
+        checkEquals(initialQuantity, getStock(stockLocation, product));
+        BigDecimal expected = getQuantity(initialQuantity, quantity, false);
+
+        TransactionTemplate template = new TransactionTemplate(txnManager);
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                save(acts);
+                save(acts);
+            }
+        });
+        checkEquals(expected, getStock(stockLocation, product));
+
+        save(acts);  // stock shouldn't change if resaved
+        checkEquals(expected, getStock(stockLocation, product));
+    }
+
+    /**
+     * Verifies that the stock is updated correctly if referred to by two different items in a transaction.
+     */
+    @Test
+    public void testMultipleStockUpdatesInTxn() {
+        final List<FinancialAct> acts = new ArrayList<FinancialAct>(createInvoice());
+        final FinancialAct item1 = acts.get(1);
+        final FinancialAct item2 = FinancialTestHelper.createItem(CustomerAccountArchetypes.INVOICE_ITEM, Money.ONE,
+                                                                  patient, product);
+        addStockLocation(item2);
+        acts.add(item2);
+
+        BigDecimal initialQuantity = BigDecimal.ZERO;
+        BigDecimal quantity = BigDecimal.valueOf(5);
+
+        item1.setQuantity(quantity);
+        item2.setQuantity(quantity);
+
+        checkEquals(initialQuantity, getStock(stockLocation, product));
+        BigDecimal expected = getQuantity(initialQuantity, quantity.add(quantity), false);
+
+        TransactionTemplate template = new TransactionTemplate(txnManager);
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                save(acts);
+            }
+        });
+        checkEquals(expected, getStock(stockLocation, product));
+
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                item1.setQuantity(BigDecimal.ONE);
+                save(item1);
+                remove(item2);
+            }
+        });
+        expected = getQuantity(initialQuantity, BigDecimal.ONE, false);
+        checkEquals(expected, getStock(stockLocation, product));
+    }
+
+    /**
+     * Verifies that stock is updated correctly if an item is saved twice in the one transaction, but the first
+     * save is incomplete.
+     */
+    @Test
+    public void testPartialSaveInTxn() {
+        final List<FinancialAct> acts = createInvoice();
+        final FinancialAct invoice = acts.get(0);
+        final FinancialAct item = acts.get(1);
+        BigDecimal initialQuantity = BigDecimal.ZERO;
+        BigDecimal quantity = BigDecimal.valueOf(5);
+
+        item.setQuantity(quantity);
+
+        checkEquals(initialQuantity, getStock(stockLocation, product));
+        BigDecimal expected = getQuantity(initialQuantity, quantity, false);
+
+        TransactionTemplate template = new TransactionTemplate(txnManager);
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                save(item);
+                save(item);
+                save(invoice);
+            }
+        });
+        checkEquals(expected, getStock(stockLocation, product));
+
+        save(acts);  // stock shouldn't change if resaved
+        checkEquals(expected, getStock(stockLocation, product));
     }
 
     /**
@@ -151,10 +269,11 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient();
         stockLocation = createStockLocation();
+        txnManager = applicationContext.getBean(PlatformTransactionManager.class);
     }
 
     /**
-     * Verifies that stock is updated when a charge is saved.
+     * Verifies that stock is updated when for a charge.
      *
      * @param acts the charge act and item
      */
@@ -220,7 +339,6 @@ public class ChargeStockUpdaterTestCase extends AbstractStockTest {
 
         checkEquals(BigDecimal.ZERO, getStock(stockLocation, product));
     }
-
 
     private void checkItemRemoval(List<FinancialAct> acts) {
         BigDecimal quantity = new BigDecimal(10);

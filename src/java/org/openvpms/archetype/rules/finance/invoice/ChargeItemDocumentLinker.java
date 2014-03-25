@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -20,10 +20,10 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -36,7 +36,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,18 +61,7 @@ public class ChargeItemDocumentLinker {
     private final IArchetypeService service;
 
     /**
-     * The acts to remove.
-     */
-    private List<Act> toRemove = new ArrayList<Act>();
-
-    /**
-     * The acts to save.
-     */
-    private Map<IMObjectReference, Act> toSave = new HashMap<IMObjectReference, Act>();
-
-
-    /**
-     * Constructs a {@code ChargeItemDocumentLinker}.
+     * Constructs a {@link ChargeItemDocumentLinker}.
      *
      * @param item    the item
      * @param service the archetype service
@@ -98,27 +86,29 @@ public class ChargeItemDocumentLinker {
      * </ol>
      * This is the same as invoking:
      * <pre>
-     * prepare();
-     * commit();
+     * prepare(changes);
+     * changes.save();
      * </pre>
-     * Use {@link #prepare} and {@link #commit(boolean)} if the charge item must be saved independently.
      *
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void link() {
-        prepare();
-        commit();
+        PatientHistoryChanges changes = new PatientHistoryChanges(null, null, service);
+        prepare(changes);
+        changes.save();
     }
 
     /**
-     * Prepares the charge item and documents for commit.
+     * Prepares the charge item and documents for save.
+     * <p/>
+     * Invoke {@link PatientHistoryChanges#save()} to commit the changes.
      *
+     * @param changes the patient history changes
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public void prepare() {
+    public void prepare(PatientHistoryChanges changes) {
         // map of template references to their corresponding entity relationship, obtained from the product
-        Map<IMObjectReference, EntityRelationship> productTemplates
-                = new HashMap<IMObjectReference, EntityRelationship>();
+        Map<IMObjectReference, EntityRelationship> productTemplates = new HashMap<IMObjectReference, EntityRelationship>();
 
         // template references associated with the current document acts
         Set<IMObjectReference> templateRefs = new HashSet<IMObjectReference>();
@@ -146,7 +136,8 @@ public class ChargeItemDocumentLinker {
             ActBean bean = new ActBean(document, service);
             if (productChanged(bean, product) || patientChanged(bean, itemBean) || authorChanged(bean, itemBean)
                 || clinicianChanged(bean, itemBean)) {
-                removeDocument(document, itemBean, documents);
+                changes.removeItemDocument(item, document);
+                documents.remove(document);
             } else {
                 IMObjectReference templateRef = bean.getNodeParticipantRef("documentTemplate");
                 if (templateRef != null) {
@@ -161,40 +152,10 @@ public class ChargeItemDocumentLinker {
             if (!templateRefs.contains(typeRef)) {
                 Entity entity = (Entity) getObject(typeRef);
                 if (entity != null) {
-                    addDocument(itemBean, entity);
+                    addDocument(itemBean, entity, changes);
                 }
             }
         }
-    }
-
-    /**
-     * Commits the changes, including the charge item.
-     *
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void commit() {
-        commit(true);
-    }
-
-    /**
-     * Commits the changes, optionally including the charge item.
-     *
-     * @param saveItem if {@code true} save the charge item as well
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public void commit(boolean saveItem) {
-        List<Act> save = new ArrayList<Act>(toSave.values());
-        if (saveItem) {
-            save.add(0, item);
-        }
-        if (!save.isEmpty()) {
-            service.save(save);
-        }
-        for (IMObject object : toRemove) {
-            service.remove(object);
-        }
-        toSave.clear();
-        toRemove.clear();
     }
 
     /**
@@ -202,9 +163,10 @@ public class ChargeItemDocumentLinker {
      *
      * @param itemBean the invoice item
      * @param document the document template
+     * @param changes  the patient history changes
      * @throws ArchetypeServiceException for any error
      */
-    private void addDocument(ActBean itemBean, Entity document) {
+    private void addDocument(ActBean itemBean, Entity document, PatientHistoryChanges changes) {
         EntityBean bean = new EntityBean(document, service);
         String shortName = bean.getString("archetype");
         if (StringUtils.isEmpty(shortName)) {
@@ -233,39 +195,7 @@ public class ChargeItemDocumentLinker {
                 IMObjectReference product = itemBean.getParticipantRef(ProductArchetypes.PRODUCT_PARTICIPATION);
                 documentAct.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
             }
-            toSave.put(act.getObjectReference(), act);
-            itemBean.addRelationship("actRelationship.invoiceItemDocument", documentAct.getAct());
-        }
-    }
-
-    /**
-     * Removes a document.
-     *
-     * @param document  the document to remove
-     * @param itemBean  the invoice item that links to the document
-     * @param documents the documents associated with the invoice item
-     */
-    private void removeDocument(Act document, ActBean itemBean, List<Act> documents) {
-        toSave.put(document.getObjectReference(), document); // need to save the document with relationships removed
-                                                             // prior to removing the document itself... TODO
-        toRemove.add(document);
-        ActRelationship r = itemBean.getRelationship(document);
-        itemBean.removeRelationship(r);
-        document.removeActRelationship(r);
-        documents.remove(document);
-
-        ActRelationship[] relationships = document.getTargetActRelationships().toArray(
-                new ActRelationship[document.getTargetActRelationships().size()]);
-        for (ActRelationship relationship : relationships) {
-            Act source = toSave.get(relationship.getSource());
-            if (source == null) {
-                source = (Act) getObject(relationship.getSource());
-            }
-            if (source != null) {
-                document.removeActRelationship(relationship);
-                source.removeActRelationship(relationship);
-                toSave.put(source.getObjectReference(), source);
-            }
+            changes.addItemDocument(item, act);
         }
     }
 

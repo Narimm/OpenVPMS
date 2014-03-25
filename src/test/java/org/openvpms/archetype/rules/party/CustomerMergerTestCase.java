@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -35,6 +35,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +76,12 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     private PatientRules patientRules;
 
     /**
+     * The customer account rules.
+     */
+    @Autowired
+    private CustomerAccountRules customerAccountRules;
+
+    /**
      * The practice.
      */
     private Party practice;
@@ -99,9 +106,8 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
 
         Party merged = checkMerge(from, to);
 
-        // verify contacts copied accross
-        assertEquals(fromContactsSize + toContactsSize,
-                     merged.getContacts().size());
+        // verify contacts copied across
+        assertEquals(fromContactsSize + toContactsSize, merged.getContacts().size());
     }
 
     /**
@@ -274,8 +280,6 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         Party toPatient = TestHelper.createPatient();
         Product product = TestHelper.createProduct();
 
-        CustomerAccountRules rules = new CustomerAccountRules(getArchetypeService());
-
         // add some transaction history for the 'from' customer
         Date firstStartTime = getDatetime("2007-01-02 10:0:0");
         addInvoice(firstStartTime, eighty, from, fromPatient,
@@ -291,14 +295,14 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         runEOP(to, getDate("2007-02-01"));
 
         // verify balances prior to merge
-        assertEquals(0, forty.compareTo(rules.getBalance(from)));
-        assertEquals(0, fifty.compareTo(rules.getBalance(to)));
+        assertEquals(0, forty.compareTo(customerAccountRules.getBalance(from)));
+        assertEquals(0, fifty.compareTo(customerAccountRules.getBalance(to)));
 
         to = checkMerge(from, to);
 
         // verify balances after merge
-        assertEquals(0, BigDecimal.ZERO.compareTo(rules.getBalance(from)));
-        assertEquals(0, ninety.compareTo(rules.getBalance(to)));
+        assertEquals(0, BigDecimal.ZERO.compareTo(customerAccountRules.getBalance(from)));
+        assertEquals(0, ninety.compareTo(customerAccountRules.getBalance(to)));
 
         // now verify that the only opening and closing balance acts for the
         // to customer are prior to the first act of the from customer
@@ -339,8 +343,9 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * @param statementDate the statement date
      */
     private void runEOP(Party customer, Date statementDate) {
-        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate,
-                                                            true, practice);
+        ILookupService lookups = applicationContext.getBean(ILookupService.class);
+        EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate, true, practice, getArchetypeService(),
+                                                            lookups, customerAccountRules);
         eop.process(customer);
     }
 
