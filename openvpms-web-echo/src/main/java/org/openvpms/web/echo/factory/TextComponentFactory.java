@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
@@ -95,6 +95,47 @@ public class TextComponentFactory extends ComponentFactory {
         password.setDocument(new TextDocument());
         setDefaultStyle(password);
         return password;
+    }
+
+    /**
+     * Creates a new text field that has a width based on the number of characters present.
+     * <p/>
+     * This selects a width that displays the text in field slightly bigger than the text, up to maxLength characters.
+     * This is not perfect, as it is dependent on the font and characters used, but works in most cases.
+     * The alternative would be to calculate the field width in pixels on the browser side based on the characters.
+     * See OVPMS-1440.
+     *
+     * @param value     the text value. May be {@code null}
+     * @param minLength the minimum display length
+     * @param maxLength the maximum display length
+     * @return a new text field
+     */
+    public static TextComponent create(String value, int minLength, int maxLength) {
+        int columns = (value != null) ? value.length() : minLength;
+        if (columns < minLength) {
+            columns = minLength;
+        }
+        if (columns > maxLength) {
+            columns = maxLength;
+        }
+        TextComponent result = create();
+
+        int width;
+        int units = Extent.EX;
+        if (columns < 7) {
+            width = columns;
+            units = Extent.EM;
+        } else if (columns < 25) {
+            width = columns + 3 + (columns / 5);
+        } else {
+            width = columns + (columns / 8);
+        }
+        if (width > maxLength) {
+            width = maxLength;
+        }
+        result.setWidth(new Extent(width, units));
+        result.setText(value);
+        return result;
     }
 
     /**
