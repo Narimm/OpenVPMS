@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -127,6 +127,7 @@ public class ArchetypeNodes {
         this.includeComplexNodes = new LinkedHashSet<String>(nodes.includeComplexNodes);
         this.exclude = new HashSet<String>(exclude);
         this.excludeIfEmpty = new HashSet<String>(excludeIfEmpty);
+        this.order = new ArrayList<String>(nodes.order);
     }
 
     /**
