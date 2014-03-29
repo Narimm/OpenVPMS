@@ -745,25 +745,25 @@
     <data collection="product" archetype="participation.product" entity="id:P710" act="id:TR158"  />
     <data collection="clinician" archetype="participation.clinician" entity="id:AT" act="id:TR158"  />
 </data>
-<data id="TR159" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="50.00" tax="-4.54" status="POSTED" notes="" reference="00000047">
+<data id="TR159" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="50.00" tax="4.54" status="POSTED" notes="" reference="00000047">
     <data collection="customer" archetype="participation.customer" entity="id:C3" act="id:TR159"  />
 </data>
-<data id="TR160" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="190.66" tax="-17.33" status="POSTED" notes="" reference="00000048">
+<data id="TR160" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="190.66" tax="17.33" status="POSTED" notes="" reference="00000048">
     <data collection="customer" archetype="participation.customer" entity="id:C9" act="id:TR160"  />
 </data>
-<data id="TR161" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="93.10" tax="-8.46" status="POSTED" notes="" reference="00000049">
+<data id="TR161" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="93.10" tax="8.46" status="POSTED" notes="" reference="00000049">
     <data collection="customer" archetype="participation.customer" entity="id:C12" act="id:TR161"  />
 </data>
-<data id="TR162" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="680.10" tax="-61.82" status="POSTED" notes="" reference="00000050">
+<data id="TR162" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="680.10" tax="61.82" status="POSTED" notes="" reference="00000050">
     <data collection="customer" archetype="participation.customer" entity="id:C10" act="id:TR162"  />
 </data>
-<data id="TR163" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="496.35" tax="-45.12" status="POSTED" notes="" reference="00000051">
+<data id="TR163" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="496.35" tax="45.12" status="POSTED" notes="" reference="00000051">
     <data collection="customer" archetype="participation.customer" entity="id:C2" act="id:TR163"  />
 </data>
 <data id="TR164" archetype="act.customerAccountDebitAdjust" startTime="30/08/2002" amount="50.00" tax="4.54" status="POSTED" notes="TEST" reference="00000052">
     <data collection="customer" archetype="participation.customer" entity="id:C3" act="id:TR164"  />
 </data>
-<data id="TR165" archetype="act.customerAccountCreditAdjust" startTime="30/08/2002" amount="25.00" tax="-2.27" status="POSTED" notes="TEST" reference="00000053">
+<data id="TR165" archetype="act.customerAccountCreditAdjust" startTime="30/08/2002" amount="25.00" tax="2.27" status="POSTED" notes="TEST" reference="00000053">
     <data collection="customer" archetype="participation.customer" entity="id:C3" act="id:TR165"  />
 </data>
 </archetype>

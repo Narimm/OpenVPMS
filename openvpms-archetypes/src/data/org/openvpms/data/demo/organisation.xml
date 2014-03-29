@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
 -->
 <archetype>
 	<data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Demonstration Practice" currency="AUD">
@@ -41,7 +39,7 @@
 	<data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT2" />
 	<data archetype="entityRelationship.locationTill" source="id:OL2" target="id:OT3" />
 	<data id="OSL1" archetype="party.organisationStockLocation" name="Main Clinic Stock"/>
-	<data archetype="entityRelationship.locationStockLocation" source="id:OL1" target="id:OSL1" default="true"/>
+	<data archetype="entityRelationship.locationStockLocation" source="id:OL1" target="id:OSL1"/>
 	<data id="OSL2" archetype="party.organisationStockLocation" name="Branch Clinic Stock"/>
 	<data archetype="entityRelationship.locationStockLocation" source="id:OL2" target="id:OSL2" />
 </archetype>
