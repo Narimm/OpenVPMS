@@ -11,49 +11,31 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
 
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
  * Helper to links charge item dispensing, investigation and document acts to patient clinical events.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class ChargeItemEventLinker {
-
-    /**
-     * The author for new clinical events. May be <tt>null</tt>
-     */
-    private final User author;
-
-    /**
-     * The location for new clinical events. May be <tt>null</tt>
-     */
-    private final Party location;
 
     /**
      * The archetype service.
@@ -67,15 +49,11 @@ public class ChargeItemEventLinker {
 
 
     /**
-     * Constructs a <tt>ChargeItemEventLinker</tt>.
+     * Constructs a {@link ChargeItemEventLinker}.
      *
-     * @param author   the author for new clinical events. May be <tt>null</tt>
-     * @param location the location for new clinical events. May be <tt>null</tt>
-     * @param service  the archetype service
+     * @param service the archetype service
      */
-    public ChargeItemEventLinker(User author, Party location, IArchetypeService service) {
-        this.author = author;
-        this.location = location;
+    public ChargeItemEventLinker(IArchetypeService service) {
         this.service = service;
         rules = new Rules(service);
     }
@@ -83,10 +61,11 @@ public class ChargeItemEventLinker {
     /**
      * Links a charge item's dispensing, investigation and document acts to the associated patient's clinical events.
      *
-     * @param item the charge item
+     * @param item    the charge item
+     * @param changes the patient history changes
      */
-    public void link(FinancialAct item) {
-        link(Arrays.asList(item));
+    public void link(FinancialAct item, PatientHistoryChanges changes) {
+        link(Arrays.asList(item), changes);
     }
 
     /**
@@ -94,11 +73,12 @@ public class ChargeItemEventLinker {
      * <p/>
      * The item must be linked to the same patient as the event.
      *
-     * @param event the event to link to
-     * @param item  the charge item
+     * @param event   the event to link to
+     * @param item    the charge item
+     * @param changes the patient history changes
      */
-    public void link(Act event, FinancialAct item) {
-        link(event, Arrays.asList(item));
+    public void link(Act event, FinancialAct item, PatientHistoryChanges changes) {
+        link(event, Arrays.asList(item), changes);
     }
 
     /**
@@ -106,19 +86,28 @@ public class ChargeItemEventLinker {
      * <p/>
      * The items must be linked to the same patient as the event.
      *
-     * @param event the event to link to
-     * @param items the charge iems
+     * @param event   the event to link to
+     * @param items   the charge items
+     * @param changes the patient history changes
      */
-    public void link(Act event, List<FinancialAct> items) {
-        Set<Act> toSave = new HashSet<Act>();            // the acts to save
+    public void link(Act event, List<FinancialAct> items, PatientHistoryChanges changes) {
+        prepare(event, items, changes);
+        changes.save();
+    }
 
+    /**
+     * Links items to an event, recording the modifications in the supplied {@code changes}.
+     * <p/>
+     * Invoke {@link PatientHistoryChanges#save()} to commit the changes.
+     *
+     * @param event   the event
+     * @param items   the charge items
+     * @param changes the patient history changes
+     */
+    public void prepare(Act event, List<FinancialAct> items, PatientHistoryChanges changes) {
         for (FinancialAct item : items) {
-            List<Act> acts = getActs(item);
-            Set<Act> changed = rules.addToEvent(event, acts);
-            toSave.addAll(changed);
-        }
-        if (!toSave.isEmpty()) {
-            service.save(toSave);
+            List<Act> acts = getActs(item, changes);
+            rules.addToEvent(event, acts, changes);
         }
     }
 
@@ -126,58 +115,62 @@ public class ChargeItemEventLinker {
      * Links multiple charge item's dispensing, investigation and document acts to the associated patient's clinical
      * events.
      *
-     * @param items the charge items
+     * @param items   the charge items
+     * @param changes the patient history changes
      */
-    public void link(List<FinancialAct> items) {
-        //  cache of patient clinical events keyed on patient reference
-        Map<IMObjectReference, List<Act>> events = new HashMap<IMObjectReference, List<Act>>();
+    public void link(List<FinancialAct> items, PatientHistoryChanges changes) {
+        prepare(items, changes);
+        changes.save();
+    }
 
-        Set<Act> toSave = new HashSet<Act>();            // the acts to save
-
+    /**
+     * Links multiple charge item's dispensing, investigation and document acts to the associated patient's clinical
+     * events. The modifications are recorded in the supplied {@code changes}.
+     * <p/>
+     * Invoke {@link PatientHistoryChanges#save()} to commit the changes.
+     *
+     * @param items   the charge items
+     * @param changes the patient history changes
+     */
+    public void prepare(List<FinancialAct> items, PatientHistoryChanges changes) {
         for (FinancialAct item : items) {
-            List<Act> acts = getActs(item);
+            List<Act> acts = getActs(item, changes);
             Date startTime = item.getActivityStartTime();
             if (startTime == null) {
                 startTime = new Date();
             }
-            Set<Act> changed = rules.addToEvents(acts, startTime, events);
-            toSave.addAll(changed);
-        }
-
-        if (!toSave.isEmpty()) {
-            if (author != null || location != null) {
-                // add author participation to new events
-                for (Act changed : toSave) {
-                    if (changed.isNew() && TypeHelper.isA(changed, PatientArchetypes.CLINICAL_EVENT)) {
-                        ActBean bean = new ActBean(changed, service);
-                        if (author != null) {
-                            bean.addNodeParticipation("author", author);
-                        }
-                        if (location != null) {
-                            bean.addNodeParticipation("location", location);
-                        }
-                    }
-                }
-            }
-            service.save(toSave);
+            rules.addToEvents(acts, startTime, changes);
         }
     }
 
     /**
      * Returns the dispensing, investigations, and documents acts linked to a charge item.
      *
-     * @param item the charge item
+     * @param item    the charge item
+     * @param changes the patient history changes
      * @return the acts
      */
-    private List<Act> getActs(FinancialAct item) {
+    private List<Act> getActs(FinancialAct item, PatientHistoryChanges changes) {
         List<Act> acts = new ArrayList<Act>();
         ActBean bean = new ActBean(item, service);
         acts.add(item);
-        acts.addAll(bean.getNodeActs("dispensing"));
-        acts.addAll(bean.getNodeActs("investigations"));
-        acts.addAll(bean.getNodeActs("documents"));
+        acts.addAll(getActs(bean, "dispensing", changes));
+        acts.addAll(getActs(bean, "investigations", changes));
+        acts.addAll(getActs(bean, "documents", changes));
         return acts;
     }
+
+    private List<Act> getActs(ActBean bean, String node, PatientHistoryChanges changes) {
+        List<Act> result = new ArrayList<Act>();
+        for (IMObjectReference ref : bean.getNodeTargetObjectRefs(node)) {
+            Act act = (Act) changes.getObject(ref);
+            if (act != null) {
+                result.add(act);
+            }
+        }
+        return result;
+    }
+
 
     /**
      * Helper to make the clumsy but relatively efficient addToEvents() method accessible.
@@ -185,7 +178,7 @@ public class ChargeItemEventLinker {
     private class Rules extends MedicalRecordRules {
 
         /**
-         * Constructs a <tt>Rules</tt>.
+         * Constructs a {@code Rules}.
          *
          * @param service the archetype service
          */
@@ -200,24 +193,23 @@ public class ChargeItemEventLinker {
          *
          * @param acts      the acts to add
          * @param startTime the startTime used to select the event
-         * @param events    the cache of events keyed on patient reference
-         * @return the changed events
+         * @param changes   the cache of events keyed on patient reference
          */
         @Override
-        public Set<Act> addToEvents(List<Act> acts, Date startTime, Map<IMObjectReference, List<Act>> events) {
-            return super.addToEvents(acts, startTime, events);
+        public void addToEvents(List<Act> acts, Date startTime, PatientHistoryChanges changes) {
+            super.addToEvents(acts, startTime, changes);
         }
 
         /**
          * Adds acts to an event, where no relationship exists.
          *
-         * @param event the event
-         * @param acts  the acts to add
-         * @return the changed acts
+         * @param event   the event
+         * @param acts    the acts to add
+         * @param changes tracks changes to the patient history
          */
         @Override
-        public Set<Act> addToEvent(Act event, List<Act> acts) {
-            return super.addToEvent(event, acts);
+        public void addToEvent(Act event, List<Act> acts, PatientHistoryChanges changes) {
+            super.addToEvent(event, acts, changes);
         }
     }
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -76,7 +77,8 @@ public class CustomerAccountRules {
      *
      * @param service the archetype service
      */
-    public CustomerAccountRules(IArchetypeService service) {
+    public CustomerAccountRules(IArchetypeRuleService service) {
+        // NOTE: need an IArchetypeRuleService as the reverse() methods need to fire rules to update the balance
         this.service = service;
         calculator = new BalanceCalculator(service);
     }
