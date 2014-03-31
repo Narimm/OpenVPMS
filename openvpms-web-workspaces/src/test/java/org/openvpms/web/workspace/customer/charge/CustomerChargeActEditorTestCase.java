@@ -720,6 +720,66 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
     }
 
     /**
+     * Verifies that the patient on an invoice item can be changed, and that this is reflected in the patient history.
+     */
+    @Test
+    public void testChangePatient() {
+        Product product1 = createProduct(ProductArchetypes.MEDICATION, BigDecimal.ONE);
+        Entity investigationType1 = addInvestigation(product1);
+        Entity template1 = addTemplate(product1);
+
+        Party patient2 = TestHelper.createPatient(customer);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        ChargeEditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        BigDecimal quantity = ONE;
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, quantity, queue);
+        FinancialAct item = (FinancialAct) itemEditor.getObject();
+
+        assertTrue(editor.isValid());
+        assertTrue(SaveHelper.save(editor));
+
+        Act event1 = records.getEvent(patient);  // get the clinical event
+        Act medication = (Act) new ActBean(item).getNodeTargetObject("dispensing");
+        assertNotNull(event1);
+        assertNotNull(medication);
+
+        Act investigation = getInvestigation(item, investigationType1);
+        Act document = getDocument(item, template1);
+
+        checkEventRelationships(event1, item, medication, investigation, document);
+
+        // recreate the editor, and change the patient to patient2.
+        editor = createCustomerChargeActEditor(charge, layoutContext);
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        item = (FinancialAct) editor.getItems().getActs().get(0);
+        itemEditor = editor.getEditor(item);
+        itemEditor.getComponent();
+        itemEditor.setPatient(patient2);
+        assertTrue(editor.isValid());
+        assertTrue(SaveHelper.save(editor));
+
+        event1 = get(event1);
+        medication = get(medication);
+
+        // verify that the records are now linked to event2
+        Act event2 = records.getEvent(patient2);
+        investigation = getInvestigation(item, investigationType1);
+        document = getDocument(item, template1);
+
+        checkEventRelationships(event2, item, medication, investigation, document);
+
+        // event1 should no longer be linked to any acts
+        assertEquals(0, event1.getSourceActRelationships().size());
+    }
+
+    /**
      * Verifies that an unsaved charge item can be deleted, when there is a prescription associated with the item's
      * product.
      */
@@ -914,26 +974,35 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         Product product1 = createProduct(ProductArchetypes.MEDICATION);
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE);
         Product product3 = createProduct(ProductArchetypes.SERVICE);
+        Product product4 = createProduct(ProductArchetypes.MERCHANDISE);
 
         BigDecimal product1InitialStock = BigDecimal.valueOf(100);
         BigDecimal product2InitialStock = BigDecimal.valueOf(50);
+        BigDecimal product4InitialStock = BigDecimal.valueOf(25);
         initStock(product1, stockLocation, product1InitialStock);
         initStock(product2, stockLocation, product2InitialStock);
+        initStock(product4, stockLocation, product4InitialStock);
 
         TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
         editor.getComponent();
         assertTrue(editor.isValid());
 
         BigDecimal quantity1 = BigDecimal.valueOf(5);
-        BigDecimal quantity2 = BigDecimal.valueOf(10);
+        BigDecimal quantity2 = BigDecimal.TEN;
+        BigDecimal quantity4a = BigDecimal.ONE;
+        BigDecimal quantity4b = BigDecimal.TEN;
+        BigDecimal quantity4 = quantity4a.add(quantity4b);
 
         CustomerChargeActItemEditor item1 = addItem(editor, patient, product1, quantity1, editor.getQueue());
         CustomerChargeActItemEditor item2 = addItem(editor, patient, product2, quantity2, editor.getQueue());
+        addItem(editor, patient, product4, quantity4a, editor.getQueue());
+        addItem(editor, patient, product4, quantity4b, editor.getQueue());
         assertTrue(SaveHelper.save(editor));
 
         boolean add = TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT);
         BigDecimal product1Stock = checkStock(product1, stockLocation, product1InitialStock, quantity1, add);
         BigDecimal product2Stock = checkStock(product2, stockLocation, product2InitialStock, quantity2, add);
+        checkStock(product4, stockLocation, product4InitialStock, quantity4, add);
 
         item1.setQuantity(BigDecimal.ZERO);
         item1.setQuantity(quantity1);
@@ -955,6 +1024,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
         assertTrue(delete(editor));
         checkStock(product1, stockLocation, product1InitialStock);
         checkStock(product2, stockLocation, product2InitialStock);
+        checkStock(product4, stockLocation, product4InitialStock);
     }
 
     /**
@@ -1120,7 +1190,7 @@ public class CustomerChargeActEditorTestCase extends AbstractCustomerChargeActEd
      * @param balance  the expected balance
      */
     private void checkBalance(Party customer, BigDecimal unbilled, BigDecimal balance) {
-        CustomerAccountRules rules = new CustomerAccountRules(getArchetypeService());
+        CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
         checkEquals(unbilled, rules.getUnbilledAmount(customer));
         checkEquals(balance, rules.getBalance(customer));
     }

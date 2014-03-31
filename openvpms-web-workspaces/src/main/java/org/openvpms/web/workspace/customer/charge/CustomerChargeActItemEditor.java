@@ -36,6 +36,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -184,6 +185,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Customer tax rules.
      */
     private CustomerTaxRules taxRules;
+
+    /**
+     * The charge context.
+     */
+    private ChargeContext chargeContext;
 
     /**
      * Dispensing node name.
@@ -387,6 +393,48 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Sets the charge context.
+     *
+     * @param context the charge context
+     */
+    public void setChargeContext(ChargeContext context) {
+        this.chargeContext = context;
+        // register the context to delete acts after everything else has been saved to avoid Hibernate errors.
+        if (dispensing != null) {
+            dispensing.getEditor().setRemoveHandler(context);
+        }
+        if (investigations != null) {
+            investigations.getEditor().setRemoveHandler(context);
+        }
+        if (reminders != null) {
+            reminders.getEditor().setRemoveHandler(context);
+        }
+    }
+
+    /**
+     * Save any edits.
+     * <p/>
+     * This implementation saves the current object before children, to ensure deletion of child acts
+     * don't result in StaleObjectStateException exceptions.
+     * <p/>
+     * This implementation will throw an exception if the product is an <em>product.template</em>.
+     * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
+     * acts. TODO
+     *
+     * @return {@code true} if the save was successful
+     * @throws IllegalStateException if the product is a template
+     */
+    @Override
+    protected boolean doSave() {
+        if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+            if (chargeContext.getHistoryChanges() == null) {
+                throw new IllegalStateException("PatientHistoryChanges haven't been registered");
+            }
+        }
+        return super.doSave();
+    }
+
+    /**
      * Saves the object.
      * <p/>
      * For invoice items, this implementation also creates/deletes document acts related to the document templates
@@ -396,16 +444,16 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     @Override
     protected boolean saveObject() {
-        ChargeItemDocumentLinker linker = null;
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+
         if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
-            linker = new ChargeItemDocumentLinker((FinancialAct) getObject(), ServiceHelper.getArchetypeService());
-            linker.prepare();
+            if (chargeContext == null) {
+                throw new IllegalStateException("PatientHistoryChanges haven't been registered");
+            }
+            ChargeItemDocumentLinker linker = new ChargeItemDocumentLinker((FinancialAct) getObject(), service);
+            linker.prepare(chargeContext.getHistoryChanges());
         }
-        boolean saved = super.saveObject();
-        if (saved && linker != null) {
-            linker.commit(false);
-        }
-        return saved;
+        return super.saveObject();
     }
 
     /**

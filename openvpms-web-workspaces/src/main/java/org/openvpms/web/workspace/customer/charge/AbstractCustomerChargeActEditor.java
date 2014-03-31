@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -65,6 +66,8 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
      * Determines if a default item should added if no items are present.
      */
     private boolean addDefaultItem;
+
+    private PatientHistoryChanges changes;
 
     /**
      * Constructs an {@link AbstractCustomerChargeActEditor}.
@@ -231,32 +234,54 @@ public class AbstractCustomerChargeActEditor extends FinancialActEditor {
     @Override
     protected boolean doSave() {
         List<Act> reminders = getNewReminders();
-        boolean saved = super.doSave();
-        if (saved && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
-            // link the items to their corresponding clinical events
-            linkToEvents();
+        ChargeContext chargeContext = null;
+        boolean saved;
+        try {
+            if (getItems() instanceof ChargeItemRelationshipCollectionEditor) {
+                changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
+                                                    getLayoutContext().getContext().getLocation(),
+                                                    ServiceHelper.getArchetypeService());
+                ChargeItemRelationshipCollectionEditor items = (ChargeItemRelationshipCollectionEditor) getItems();
+                chargeContext = items.getChargeContext();
+                chargeContext.setHistoryChanges(changes);
+            }
 
-            // mark reminders that match the new reminders completed
-            if (!reminders.isEmpty()) {
-                ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
-                rules.markMatchingRemindersCompleted(reminders);
+            saved = super.doSave();
+            if (saved) {
+                if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE)) {
+                    // link the items to their corresponding clinical events
+                    linkToEvents(changes);
+
+                    // mark reminders that match the new reminders completed
+                    if (!reminders.isEmpty()) {
+                        ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
+                        rules.markMatchingRemindersCompleted(reminders);
+                    }
+                }
+                if (chargeContext != null) {
+                    chargeContext.save();
+                }
+            }
+        } finally {
+            if (chargeContext != null) {
+                chargeContext.setHistoryChanges(null);  // clear the history changes
             }
         }
-        return super.doSave();
+        return saved;
     }
 
     /**
      * Links the charge items to their corresponding clinical events.
+     *
+     * @param changes the patient history changes
      */
-    protected void linkToEvents() {
-        Party location = getLayoutContext().getContext().getLocation();
-        ChargeItemEventLinker linker = new ChargeItemEventLinker(getAuthor(), location,
-                                                                 ServiceHelper.getArchetypeService());
+    protected void linkToEvents(PatientHistoryChanges changes) {
+        ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
         List<FinancialAct> items = new ArrayList<FinancialAct>();
         for (Act act : getItems().getActs()) {
             items.add((FinancialAct) act);
         }
-        linker.link(items);
+        linker.prepare(items, changes);
     }
 
     /**

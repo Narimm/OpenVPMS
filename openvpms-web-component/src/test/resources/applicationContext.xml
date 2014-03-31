@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -158,6 +158,7 @@
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions">
                         <constructor-arg index="0" ref="archetypeService"/>
                         <constructor-arg index="1" ref="patientRules"/>
+                        <constructor-arg index="2" ref="customerAccountRules"/>
                     </bean>
                 </entry>
                 <entry key="date" value="org.openvpms.component.system.common.jxpath.DateFunctions"/>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -42,7 +42,12 @@ import java.text.DateFormat;
 public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
 
     /**
-     * Creates a new <tt>ReadOnlyComponentFactory</tt>.
+     * The maximum no. of columns to display for lookup fields.
+     */
+    public static final int MAX_DISPLAY_LENGTH = 50;
+
+    /**
+     * Constructs a {@link ReadOnlyComponentFactory}.
      *
      * @param context the layout context
      */
@@ -51,7 +56,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
     }
 
     /**
-     * Creates a new <tt>ReadOnlyComponentFactory</tt>.
+     * Constructs a {@link ReadOnlyComponentFactory}.
      *
      * @param context the layout context
      * @param style   the style name to use
@@ -69,23 +74,19 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      */
     protected Component createLookup(Property property, IMObject context) {
         TextComponent result;
-        final int maxDisplayLength = 50;
         int length = property.getMaxLength();
-        int columns = (length < maxDisplayLength) ? length : maxDisplayLength;
         String value = null;
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor != null) {
             value = LookupNameHelper.getLookupName(descriptor, context);
-            if (value != null && value.length() > 0) {
-                if (value.length() < columns) {
-                    columns = value.length();
-                }
-            } else if (columns > 20) {
-                columns = 20; // value is empty, so shrink the display
-            }
         }
-        result = TextComponentFactory.create(columns);
-        result.setText(value);
+        if (value != null && value.length() > 0) {
+            length = value.length();
+        } else if (length > 20) {
+            length = 20; // value is empty, so shrink the display
+        }
+
+        result = TextComponentFactory.create(value, length, MAX_DISPLAY_LENGTH);
         ComponentFactory.setStyle(result, getStyle());
         return result;
     }

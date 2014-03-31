@@ -1,24 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -42,8 +41,7 @@ import java.util.Map;
  * {@link IMObjectRelationship} instances associated with an {@link IMObject}.
  * This performs a query to reduce the number of database accesses.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class RelationshipStateQuery {
 
@@ -63,26 +61,22 @@ public class RelationshipStateQuery {
     private final String[] relationshipShortNames;
 
     /**
-     * Determines if <tt>parent</tt> is the source or target of the
-     * relationships.
+     * Determines if {@code parent} is the source or target of the relationships.
      */
     private final boolean source;
 
     /**
-     * The short names of the entities to query, obtained from the
-     * relationships.
+     * The short names of the entities to query, obtained from the relationships.
      */
     private final String[] shortNames;
 
     /**
-     * The primary relationship node name. If parent is the source,
-     * it will be "source", otherwise "target".
+     * The primary relationship node name. If parent is the source, it will be "source", otherwise "target".
      */
     private final String primaryNode;
 
     /**
-     * The secondary relationship node name. If parent is the source,
-     * it will be "target", otherwise "source".
+     * The secondary relationship node name. If parent is the source, it will be "target", otherwise "source".
      */
     private final String secondaryNode;
 
@@ -114,45 +108,59 @@ public class RelationshipStateQuery {
     /**
      * The default state factory.
      */
-    private static final RelationshipStateFactory DEFAULT_FACTORY
-        = new RelationshipStateFactory();
+    private static final RelationshipStateFactory DEFAULT_FACTORY = new RelationshipStateFactory();
 
 
     /**
-     * Creates a new <tt>RelationshipStateQuery</tt>.
+     * Constructs a {@link RelationshipStateQuery}.
      *
      * @param parent                 the parent object
      * @param relationships          the relationships
      * @param relationshipShortNames the relationship short names
      */
-    public RelationshipStateQuery(IMObject parent, List<IMObject> relationships,
-                                  String[] relationshipShortNames) {
+    public RelationshipStateQuery(IMObject parent, List<IMObject> relationships, String[] relationshipShortNames) {
         this(parent, relationships, relationshipShortNames, DEFAULT_FACTORY);
     }
 
     /**
-     * Creates a new <tt>RelationshipStateQuery</tt>.
+     * Constructs a {@link RelationshipStateQuery}.
      *
      * @param parent                 the parent object
      * @param relationships          the relationships
      * @param relationshipShortNames the relationship short names
      * @param factory                the relationship state factory
      */
-    public RelationshipStateQuery(IMObject parent, List<IMObject> relationships,
-                                  String[] relationshipShortNames,
+    public RelationshipStateQuery(IMObject parent, List<IMObject> relationships, String[] relationshipShortNames,
                                   RelationshipStateFactory factory) {
         this.parent = parent;
         this.relationships = relationships;
         this.relationshipShortNames = relationshipShortNames;
         this.factory = factory;
-        String[] sourceShortNames = DescriptorHelper.getNodeShortNames(
-            relationshipShortNames, "source");
-        source = TypeHelper.isA(parent, sourceShortNames);
+        IMObjectReference ref = parent.getObjectReference();
+        String[] sourceShortNames = DescriptorHelper.getNodeShortNames(relationshipShortNames, "source");
+        String[] targetShortNames = null;
+        boolean isSource = true;
+        if (TypeHelper.isA(parent, sourceShortNames)) {
+            targetShortNames = DescriptorHelper.getNodeShortNames(relationshipShortNames, "target");
+            if (TypeHelper.isA(parent, targetShortNames)) {
+                // both the source and target match the parent archetype, so go through the relationships to determine
+                // which to display
+                for (IMObject object : relationships) {
+                    IMObjectRelationship relationship = (IMObjectRelationship) object;
+                    if (relationship.getSource() != null && !relationship.getSource().equals(ref)) {
+                        isSource = false;
+                        break;
+                    }
+                }
+            }
+        } else {
+            isSource = false;
+        }
+        source = isSource;
         if (source) {
             primaryNode = "source";
             secondaryNode = "target";
-            shortNames = DescriptorHelper.getNodeShortNames(
-                relationshipShortNames, secondaryNode);
+            shortNames = targetShortNames;
         } else {
             primaryNode = "target";
             secondaryNode = "source";
@@ -177,7 +185,7 @@ public class RelationshipStateQuery {
     /**
      * Determines if th parent is the source or target of the relationships.
      *
-     * @return <tt>true</tt> if the parent is the source
+     * @return {@code true} if the parent is the source
      */
     public boolean parentIsSource() {
         return source;
@@ -193,14 +201,11 @@ public class RelationshipStateQuery {
      */
     public Map<IMObjectRelationship, RelationshipState> query() {
         // create a map of relationships keyed on their id
-        Map<Long, IMObjectRelationship> relsById
-            = new HashMap<Long, IMObjectRelationship>();
+        Map<Long, IMObjectRelationship> relsById = new HashMap<Long, IMObjectRelationship>();
         for (IMObject relationship : relationships) {
-            relsById.put(relationship.getId(),
-                         (IMObjectRelationship) relationship);
+            relsById.put(relationship.getId(), (IMObjectRelationship) relationship);
         }
-        Map<IMObjectRelationship, RelationshipState> result
-            = new HashMap<IMObjectRelationship, RelationshipState>();
+        Map<IMObjectRelationship, RelationshipState> result = new HashMap<IMObjectRelationship, RelationshipState>();
         if (!relsById.isEmpty()) {
             // query the the database for matching relationship states, and
             // create RelationshipState instances for each returned ObjectSet
@@ -239,8 +244,8 @@ public class RelationshipStateQuery {
                         targetDesc = parent.getDescription();
                     }
                     RelationshipState state = factory.create(
-                        r, sourceId, sourceName, sourceDesc, targetId,
-                        targetName, targetDesc, active);
+                            r, sourceId, sourceName, sourceDesc, targetId,
+                            targetName, targetDesc, active);
                     result.put(r, state);
                 } else {
                     // no corresponding IMObjectRelationship, so discard it
@@ -275,12 +280,9 @@ public class RelationshipStateQuery {
      * @return a new archetype query
      */
     protected ArchetypeQuery createQuery() {
-        ShortNameConstraint relationships = new ShortNameConstraint(
-            "rel", relationshipShortNames, false, false);
-        ObjectRefConstraint primary = new ObjectRefConstraint(
-            primaryNode, parent.getObjectReference());
-        ShortNameConstraint secondary = new ShortNameConstraint(
-            secondaryNode, shortNames, false, false);
+        ShortNameConstraint relationships = new ShortNameConstraint("rel", relationshipShortNames, false, false);
+        ObjectRefConstraint primary = new ObjectRefConstraint(primaryNode, parent.getObjectReference());
+        ShortNameConstraint secondary = new ShortNameConstraint(secondaryNode, shortNames, false, false);
 
         ArchetypeQuery query = new ArchetypeQuery(relationships);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);

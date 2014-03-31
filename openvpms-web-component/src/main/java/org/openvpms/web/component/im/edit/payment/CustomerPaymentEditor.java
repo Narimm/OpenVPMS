@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.payment;
@@ -63,7 +63,7 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
 
 
     /**
-     * Constructs a new {@code CustomerPaymentEditor}.
+     * Constructs a {@link CustomerPaymentEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -74,7 +74,7 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
     }
 
     /**
-     * Creates a new {@code CustomerPaymentEditor}.
+     * Constructs a {@link CustomerPaymentEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -115,7 +115,7 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
         BigDecimal previous = BigDecimal.ZERO;
         BigDecimal total = BigDecimal.ZERO;
         if (customer != null) {
-            CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
+            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
 
             total = rules.getBalance(customer);
             overdue = rules.getOverdueBalance(customer, new Date());
