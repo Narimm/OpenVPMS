@@ -259,6 +259,7 @@
                     <bean class="org.openvpms.archetype.function.party.PartyFunctions">
                         <constructor-arg ref="archetypeRuleService"/>
                         <constructor-arg ref="patientRules"/>
+                        <constructor-arg ref="customerAccountRules"/>
                     </bean>
                 </entry>
                 <entry key="reminder">

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.LocalContext;
@@ -107,7 +108,9 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
             public void show(HelpContext context) {
             }
         });
-        LayoutContext context = new DefaultLayoutContext(new LocalContext(), help);
+        LocalContext local = new LocalContext();
+        local.setPractice(TestHelper.getPractice());
+        LayoutContext context = new DefaultLayoutContext(local, help);
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName, object);
         IMObjectEditor editor = IMObjectEditorFactory.create(object, context);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -31,7 +31,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
@@ -84,9 +83,8 @@ public class CustomerSummary extends PartySummary {
      */
     public CustomerSummary(Context context, HelpContext help) {
         super(context, help.topic("customer/summary"));
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        partyRules = new CustomerRules(service);
-        accountRules = new CustomerAccountRules(service);
+        partyRules = ServiceHelper.getBean(CustomerRules.class);
+        accountRules = ServiceHelper.getBean(CustomerAccountRules.class);
     }
 
     /**

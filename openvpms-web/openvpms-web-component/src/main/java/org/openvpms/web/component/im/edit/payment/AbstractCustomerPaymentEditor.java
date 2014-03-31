@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.payment;
@@ -159,7 +159,7 @@ public abstract class AbstractCustomerPaymentEditor extends PaymentEditor {
             if (expectedAmount == null) {
                 // default the amount to the outstanding balance +/- the running total.
                 boolean payment = TypeHelper.isA(act, "act.customerAccountPayment*");
-                CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
+                CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
                 balance = rules.getBalance(customer, runningTotal, payment);
                 act.setTotal(new Money(balance));
             } else {

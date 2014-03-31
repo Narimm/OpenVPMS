@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.component.processor.ProcessorListener;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessor;
@@ -172,7 +173,9 @@ class StatementGenerator extends AbstractStatementGenerator {
                                                   "Practice " + practice.getName() + " email contact address is empty");
         }
 
-        processor = new StatementProcessor(date, practice);
+        processor = new StatementProcessor(date, practice, ServiceHelper.getArchetypeService(),
+                                           ServiceHelper.getLookupService(),
+                                           ServiceHelper.getBean(CustomerAccountRules.class));
         progressBarProcessor = new StatementProgressBarProcessor(processor, customers);
 
         StatementPrintProcessor printer = new StatementPrintProcessor(progressBarProcessor, getCancelListener(),

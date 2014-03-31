@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
@@ -194,7 +194,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     protected void onCheck() {
         final Party customer = getContext().getCustomer();
         if (customer != null) {
-            CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
+            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
             try {
                 BigDecimal expected = rules.getDefinitiveBalance(customer);
                 BigDecimal actual = rules.getBalance(customer);
@@ -239,7 +239,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     private void reverse(FinancialAct act) {
         try {
-            CustomerAccountRules rules = new CustomerAccountRules(ServiceHelper.getArchetypeService());
+            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
             String notes = Messages.format("customer.account.reverse.notes", DescriptorHelper.getDisplayName(act),
                                            act.getId());
             rules.reverse(act, new Date(), notes);
