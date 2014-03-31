@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -19,7 +19,6 @@ package org.openvpms.archetype.rules.finance.statement;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.AccountType;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -57,8 +56,9 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
     @Test
     public void testStatementDate() {
         Date now = new Date();
+
         try {
-            new EndOfPeriodProcessor(now, true, getPractice());
+            new EndOfPeriodProcessor(now, true, getPractice(), service, lookups, accountRules);
             fail("Expected StatementProcessorException to be thrown");
         } catch (StatementProcessorException expected) {
             assertEquals(
@@ -69,7 +69,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
         try {
-            new EndOfPeriodProcessor(calendar.getTime(), true, getPractice());
+            new EndOfPeriodProcessor(calendar.getTime(), true, getPractice(), service, lookups, accountRules);
         } catch (StatementProcessorException exception) {
             fail("Construction failed with exception: " + exception);
         }
@@ -88,7 +88,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
      */
     @Test
     public void testEndOfPeriod() {
-        StatementRules rules = new StatementRules(getPractice());
+        StatementRules rules = new StatementRules(getPractice(), service, lookups, accountRules);
         Party customer = getCustomer();
 
         // 30 days account fee days i.e 30 days before overdue fees are
@@ -114,7 +114,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkAct(acts.get(0), invoice1.get(0), POSTED);
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         assertTrue(rules.hasStatement(customer, statementDate));
@@ -182,7 +182,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         Date statementDate = getDate("2007-02-01");    // perform end-of-period
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify the acts for the period match that expected
@@ -224,7 +224,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         Date statementDate = getDate("2007-02-01");    // perform end-of-period
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate, false, getPractice());
+                = new EndOfPeriodProcessor(statementDate, false, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify the acts for the period match that expected
@@ -259,7 +259,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Date statementDate = DateRules.getDate(datetime, 29, DateUnits.DAYS);
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 2 acts: the original invoice and closing balance
@@ -274,8 +274,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // run end of period 30 days from when the invoice was posted
         statementDate = DateRules.getDate(statementDate, 30, DateUnits.DAYS);
 
-        processor = new EndOfPeriodProcessor(statementDate, true,
-                                             getPractice());
+        processor = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 3 acts: an opening balance, an overdue fee,
@@ -289,8 +288,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkClosingBalance(acts.get(2), closingBalance, amount);
 
         // verify the fee has been added to the balance
-        CustomerAccountRules rules = new CustomerAccountRules(getArchetypeService());
-        checkEquals(closingBalance, rules.getBalance(customer));
+        checkEquals(closingBalance, accountRules.getBalance(customer));
     }
 
     /**
@@ -316,7 +314,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // run end of period 29 days from when the invoice was posted
         Date statementDate = DateRules.getDate(datetime, 29, DateUnits.DAYS);
 
-        EndOfPeriodProcessor processor = new EndOfPeriodProcessor(statementDate, true, getPractice());
+        EndOfPeriodProcessor processor = new EndOfPeriodProcessor(statementDate, true, getPractice(),
+                                                                  service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 2 acts: the original invoice and closing balance
@@ -331,7 +330,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         // run end of period 30 days from when the invoice was posted
         statementDate = DateRules.getDate(statementDate, 30, DateUnits.DAYS);
 
-        processor = new EndOfPeriodProcessor(statementDate, true, getPractice());
+        processor = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 3 acts: an opening balance, an overdue fee,
@@ -346,8 +345,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkClosingBalance(acts.get(2), closingBalance, amount);
 
         // verify the fee has been added to the balance
-        CustomerAccountRules rules = new CustomerAccountRules(getArchetypeService());
-        checkEquals(closingBalance, rules.getBalance(customer));
+        checkEquals(closingBalance, accountRules.getBalance(customer));
     }
 
     /**
@@ -359,7 +357,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Party customer = getCustomer();
         Date statementDate = getDate("2007-05-02");
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(0, acts.size());
@@ -395,14 +393,13 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(payment);
 
         // should be a zero balance
-        CustomerAccountRules rules = new CustomerAccountRules(getArchetypeService());
-        checkEquals(BigDecimal.ZERO, rules.getBalance(customer));
+        checkEquals(BigDecimal.ZERO, accountRules.getBalance(customer));
 
         // now run end-of-period
         Date statementDate = getDate("2007-05-02");
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(3, acts.size());
@@ -442,14 +439,13 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         save(payment);
 
         // should be a negative 100 balance
-        CustomerAccountRules rules = new CustomerAccountRules(getArchetypeService());
-        checkEquals(amount.negate(), rules.getBalance(customer));
+        checkEquals(amount.negate(), accountRules.getBalance(customer));
 
         // now run end-of-period
         Date statementDate = getDate("2007-02-01");
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
         List<Act> acts = getActs(customer, statementDate);
         assertEquals(2, acts.size());
@@ -464,11 +460,10 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         FinancialAct opening = (FinancialAct) acts.get(0);
         checkOpeningBalance(opening, amount);
         assertTrue(opening.isCredit());
-        checkEquals(amount.negate(), rules.getBalance(customer));
+        checkEquals(amount.negate(), accountRules.getBalance(customer));
 
         // run end of period again
-        processor = new EndOfPeriodProcessor(nextStatementDate, true,
-                                             getPractice());
+        processor = new EndOfPeriodProcessor(nextStatementDate, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
         acts = getActs(customer, nextStatementDate);
         assertEquals(2, acts.size());
@@ -510,7 +505,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Date statementDate1 = getDate("2007-02-01");
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 3 acts: invoice1, an overdue fee,
@@ -531,9 +526,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkOpeningBalance(acts.get(0), balance);
         checkAct(acts.get(1), invoice2.get(0), POSTED);
 
-        // run end of period for statemenDate2
-        processor = new EndOfPeriodProcessor(statementDate2, true,
-                                             getPractice());
+        // run end of period for statementDate2
+        processor = new EndOfPeriodProcessor(statementDate2, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 4 acts: an opening balance, invoice2, a new overdue
@@ -590,7 +584,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Date statementDate1 = getDate("2008-04-30");
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 2 acts: invoice1, and a closing balance
@@ -610,9 +604,8 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         acts = getActs(customer, statementDate2);
         assertEquals(2, acts.size());
 
-        // run end of period for statemenDate2
-        processor = new EndOfPeriodProcessor(statementDate2, true,
-                                             getPractice());
+        // run end of period for statementDate2
+        processor = new EndOfPeriodProcessor(statementDate2, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 3 acts: an opening balance, payment, and a closing
@@ -664,7 +657,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Date statementDate1 = getDate("2008-04-30");
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 2 acts: invoice1, and a closing balance
@@ -682,8 +675,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // run end of period for the 30/05
         Date statementDate2 = getDate("2008-05-30");
-        processor = new EndOfPeriodProcessor(statementDate2, true,
-                                             getPractice());
+        processor = new EndOfPeriodProcessor(statementDate2, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 3 acts: an opening balance, payment, and a closing
@@ -739,7 +731,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Date statementDate1 = getDate("2008-04-30");
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 2 acts: invoice1, and a closing balance
@@ -757,8 +749,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // run end of period for the 31/05
         Date statementDate2 = getDate("2008-05-31");
-        processor = new EndOfPeriodProcessor(statementDate2, true,
-                                             getPractice());
+        processor = new EndOfPeriodProcessor(statementDate2, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 4 acts: an opening balance, payment, fee, and a
@@ -773,8 +764,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkClosingBalance(acts.get(3), closingBalance, amount3);
 
         // verify the fee has been added to the balance
-        CustomerAccountRules rules = new CustomerAccountRules(getArchetypeService());
-        checkEquals(closingBalance, rules.getBalance(customer));
+        checkEquals(closingBalance, accountRules.getBalance(customer));
 
         // check there is an opening balance for the next statement date
         Date statementDate3 = getDate("2008-06-30");
@@ -820,7 +810,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         Date statementDate1 = getDate("2007-04-30");
 
         EndOfPeriodProcessor processor
-                = new EndOfPeriodProcessor(statementDate1, true, getPractice());
+                = new EndOfPeriodProcessor(statementDate1, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 2 acts: invoice1, and a closing balance
@@ -832,8 +822,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // run end of period for the 31/05
         Date statementDate2 = getDate("2007-05-31");
-        processor = new EndOfPeriodProcessor(statementDate2, true,
-                                             getPractice());
+        processor = new EndOfPeriodProcessor(statementDate2, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 2 acts: an opening balance, and a closing balance.
@@ -845,8 +834,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
 
         // run end of period for the 30/6
         Date statementDate3 = getDate("2007-06-30");
-        processor = new EndOfPeriodProcessor(statementDate3, true,
-                                             getPractice());
+        processor = new EndOfPeriodProcessor(statementDate3, true, getPractice(), service, lookups, accountRules);
         processor.process(customer);
 
         // verify there are 3 acts: an opening balance, fee, and a closing
@@ -859,8 +847,7 @@ public class EndOfPeriodProcessorTestCase extends AbstractStatementTest {
         checkClosingBalance(acts.get(2), closingBalance, amount);
 
         // verify the fee has been added to the balance
-        CustomerAccountRules rules = new CustomerAccountRules(getArchetypeService());
-        checkEquals(closingBalance, rules.getBalance(customer));
+        checkEquals(closingBalance, accountRules.getBalance(customer));
 
         // check there is an opening balance for the next statement date
         Date statementDate4 = getDate("2007-07-31");

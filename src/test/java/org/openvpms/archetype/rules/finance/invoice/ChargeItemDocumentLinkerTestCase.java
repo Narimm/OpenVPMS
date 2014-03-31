@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -75,6 +76,8 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
         Product product1 = createProduct(template1);
         User author = TestHelper.createUser();
         User clinician = TestHelper.createClinician();
+        Party location = TestHelper.createLocation();
+        PatientHistoryChanges changes = new PatientHistoryChanges(author, location, getArchetypeService());
         Product product2 = createProduct(template2);
         Product product3 = createProduct(template1, template2);
         Product product4 = createProduct();
@@ -90,8 +93,7 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
         checkDocument(document1, patient, product1, template1, author, clinician, item);
 
         bean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product2);
-        linker.prepare();
-        linker.commit();
+        linker.link();
         documents = bean.getNodeActs("documents");
         assertEquals(1, documents.size());
         Act document2 = documents.get(0);
@@ -99,8 +101,8 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
 
         // now test a product with 2 documents
         bean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product3);
-        linker.prepare();
-        saveInTxn(item, linker);
+        linker.prepare(changes);
+        saveInTxn(changes);
         documents = bean.getNodeActs("documents");
         assertEquals(2, documents.size());
         Act doc3template1 = getDocument(documents, template1);
@@ -283,18 +285,16 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Saves the charge item and linker in a transaction.
+     * Saves the changes in a transaction.
      *
-     * @param item   the item
-     * @param linker the linker
+     * @param changes the changes
      */
-    private void saveInTxn(final FinancialAct item, final ChargeItemDocumentLinker linker) {
+    private void saveInTxn(final PatientHistoryChanges changes) {
         PlatformTransactionManager mgr = (PlatformTransactionManager) applicationContext.getBean("txnManager");
         TransactionTemplate template = new TransactionTemplate(mgr);
         template.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus status) {
-                save(item);
-                linker.commit(false);
+                changes.save();
                 return null;
             }
         });

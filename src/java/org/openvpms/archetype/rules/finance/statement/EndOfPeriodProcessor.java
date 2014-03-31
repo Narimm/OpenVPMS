@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -25,11 +25,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.math.BigDecimal;
@@ -105,31 +103,13 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      *                             today.
      * @param postCompletedCharges if <tt>true</tt>, post completed charges
      * @param practice             the practice
-     * @throws StatementProcessorException if the statement date is invalid
-     */
-    public EndOfPeriodProcessor(Date statementDate,
-                                boolean postCompletedCharges,
-                                Party practice) {
-        this(statementDate, postCompletedCharges, practice,
-             ArchetypeServiceHelper.getArchetypeService(),
-             LookupServiceHelper.getLookupService());
-    }
-
-    /**
-     * Creates a new <tt>EndOfPeriodProcessor</tt>.
-     *
-     * @param statementDate        the statement date. Must be a date prior to
-     *                             today.
-     * @param postCompletedCharges if <tt>true</tt>, post completed charges
-     * @param practice             the practice
      * @param service              the archetype service
      * @param lookups              the lookup service
+     * @param rules                the customer account rules
      * @throws StatementProcessorException if the statement date is invalid
      */
-    public EndOfPeriodProcessor(Date statementDate,
-                                boolean postCompletedCharges,
-                                Party practice, IArchetypeService service,
-                                ILookupService lookups) {
+    public EndOfPeriodProcessor(Date statementDate, boolean postCompletedCharges, Party practice,
+                                IArchetypeService service, ILookupService lookups, CustomerAccountRules rules) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -138,8 +118,8 @@ public class EndOfPeriodProcessor implements Processor<Party> {
                                                   statementDate);
         }
         acts = new StatementActHelper(service);
-        account = new CustomerAccountRules(service);
-        statement = new StatementRules(practice, service, lookups);
+        account = rules;
+        statement = new StatementRules(practice, service, lookups, rules);
         timestamp = acts.getStatementTimestamp(statementDate);
         this.postCompletedCharges = postCompletedCharges;
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -81,7 +81,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         payment.setStatus(ActStatus.POSTED);
         save(payment);
 
-        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(now);
+        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(now, getRules());
         assertTrue(query.hasNext());
         ObjectSet set = null;
         while (query.hasNext()) {
@@ -117,6 +117,8 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
      */
     @Test
     public void testQueryByAccountType() {
+        CustomerAccountRules rules = getRules();
+
         // add a 30 day payment term for accounts to the customer
         Party customer = getCustomer();
         Lookup accountType1 = createAccountType(30, DateUnits.DAYS);
@@ -133,12 +135,12 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
 
         // verify there is 1 act for accountType1
         CustomerBalanceSummaryQuery query
-                = new CustomerBalanceSummaryQuery(new Date(), accountType1);
+                = new CustomerBalanceSummaryQuery(new Date(), accountType1, rules);
         checkSummaries(1, query);
 
         // verify there is 0 acts for accountType2
         CustomerBalanceSummaryQuery query2
-                = new CustomerBalanceSummaryQuery(new Date(), accountType2);
+                = new CustomerBalanceSummaryQuery(new Date(), accountType2, rules);
         checkSummaries(0, query2);
     }
 
@@ -229,6 +231,8 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
      */
     @Test
     public void testQueryByCustomerRange() {
+        CustomerAccountRules rules = getRules();
+
         // create some customers with names starting with A, B and Z
         Party customerA = TestHelper.createCustomer(
                 "Foo", "A" + System.currentTimeMillis(), true);
@@ -259,19 +263,17 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
 
         // check queries
         CustomerBalanceSummaryQuery query1 = new CustomerBalanceSummaryQuery(
-                new Date(), null, customerA.getName(), null);
+                new Date(), null, customerA.getName(), null, rules);
         CustomerBalanceSummaryQuery query2 = new CustomerBalanceSummaryQuery(
-                new Date(), null, customerA.getName(), customerZ.getName());
+                new Date(), null, customerA.getName(), customerZ.getName(), rules);
         CustomerBalanceSummaryQuery query3 = new CustomerBalanceSummaryQuery(
-                new Date(), null, customerB.getName(), customerZ.getName());
+                new Date(), null, customerB.getName(), customerZ.getName(), rules);
         CustomerBalanceSummaryQuery query4 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, customerA.getName(), null);
+                new Date(), accountType, customerA.getName(), null, rules);
         CustomerBalanceSummaryQuery query5 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, customerA.getName(),
-                customerZ.getName());
+                new Date(), accountType, customerA.getName(), customerZ.getName(), rules);
         CustomerBalanceSummaryQuery query6 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, customerB.getName(),
-                customerZ.getName());
+                new Date(), accountType, customerB.getName(), customerZ.getName(), rules);
 
         checkCustomers(query1, customers, customerA, customerB, customerZ);
         checkCustomers(query2, customers, customerA, customerB, customerZ);
@@ -284,18 +286,15 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         // NOTE: for reasons not immediately clear, the <= operator for
         // values containing % appears to operate as a <. E.g, compare query2
         // with wildcard2.
-        CustomerBalanceSummaryQuery wildcard1 = new CustomerBalanceSummaryQuery(
-                new Date(), null, "A*", null);
-        CustomerBalanceSummaryQuery wildcard2 = new CustomerBalanceSummaryQuery(
-                new Date(), null, "A*", "Z*");
-        CustomerBalanceSummaryQuery wildcard3 = new CustomerBalanceSummaryQuery(
-                new Date(), null, "B*", "Z*");
+        CustomerBalanceSummaryQuery wildcard1 = new CustomerBalanceSummaryQuery(new Date(), null, "A*", null, rules);
+        CustomerBalanceSummaryQuery wildcard2 = new CustomerBalanceSummaryQuery(new Date(), null, "A*", "Z*", rules);
+        CustomerBalanceSummaryQuery wildcard3 = new CustomerBalanceSummaryQuery(new Date(), null, "B*", "Z*", rules);
         CustomerBalanceSummaryQuery wildcard4 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, "A*", null);
+                new Date(), accountType, "A*", null, rules);
         CustomerBalanceSummaryQuery wildcard5 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, "A*", "Z*");
+                new Date(), accountType, "A*", "Z*", rules);
         CustomerBalanceSummaryQuery wildcard6 = new CustomerBalanceSummaryQuery(
-                new Date(), accountType, "B*", "Z*");
+                new Date(), accountType, "B*", "Z*", rules);
 
         checkCustomers(wildcard1, customers, customerA, customerB, customerZ);
         checkCustomers(wildcard2, customers, customerA, customerB);
@@ -310,6 +309,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
      */
     @Test
     public void testExcludeCreditBalance() {
+        CustomerAccountRules rules = getRules();
         Party customer1 = getCustomer();
         Party customer2 = TestHelper.createCustomer();
 
@@ -332,7 +332,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         // verify the credit balance is included
         CustomerBalanceSummaryQuery includeBalanceQuery
                 = new CustomerBalanceSummaryQuery(now, true, 0, 0, false,
-                                                  null, null, null);
+                                                  null, null, null, rules);
         Map<IMObjectReference, ObjectSet> sets = getSets(includeBalanceQuery);
         Set<IMObjectReference> customers = sets.keySet();
         assertTrue(customers.contains(customer1.getObjectReference()));
@@ -341,7 +341,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         // verify the credit balance is excluded
         CustomerBalanceSummaryQuery excludeBalanceQuery
                 = new CustomerBalanceSummaryQuery(now, true, 0, 0, true,
-                                                  null, null, null);
+                                                  null, null, null, rules);
 
         sets = getSets(excludeBalanceQuery);
         customers = sets.keySet();
@@ -355,6 +355,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
      */
     @Test
     public void testForSameName() {
+        CustomerAccountRules rules = getRules();
         Party customer1 = getCustomer();
         long id = System.currentTimeMillis();
         Party customer2 = TestHelper.createCustomer();
@@ -389,9 +390,7 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
         // verify the query returns two sets, one for each customer, with
         // the correct balance
         CustomerBalanceSummaryQuery query
-                = new CustomerBalanceSummaryQuery(now, null,
-                                                  customer1.getName(),
-                                                  customer1.getName());
+                = new CustomerBalanceSummaryQuery(now, null, customer1.getName(), customer1.getName(), rules);
         Map<IMObjectReference, ObjectSet> sets = getSets(query);
         assertEquals(2, sets.size());
         ObjectSet cust1Set = sets.get(customer1.getObjectReference());
@@ -434,8 +433,8 @@ public class CustomerBalanceSummaryQueryTestCase extends AbstractCustomerAccount
                                                                     int from,
                                                                     int to) {
         List<IMObjectReference> result = new ArrayList<IMObjectReference>();
-        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(
-                date, from, to, null);
+        CustomerAccountRules rules = getRules();
+        CustomerBalanceSummaryQuery query = new CustomerBalanceSummaryQuery(date, from, to, null, rules);
         while (query.hasNext()) {
             ObjectSet set = query.next();
             IMObjectReference ref = set.getReference(
