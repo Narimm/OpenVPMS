@@ -1,25 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.util.Collections;
@@ -28,12 +26,11 @@ import java.util.List;
 
 
 /**
- * Helper for collections of entity relationships.
+ * Helper for collections of sequenced relationships.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-class EntityRelationshipCollectionHelper {
+class SequencedRelationshipCollectionHelper {
 
     /**
      * Sorts a list of relationship states on sequence.
@@ -54,7 +51,7 @@ class EntityRelationshipCollectionHelper {
         boolean hasSequence = true;
         for (String shortName : shortNames) {
             ArchetypeDescriptor descriptor
-                = DescriptorHelper.getArchetypeDescriptor(shortName);
+                    = DescriptorHelper.getArchetypeDescriptor(shortName);
             if (descriptor != null
                 && descriptor.getNodeDescriptor("sequence") == null) {
                 hasSequence = false;
@@ -71,7 +68,7 @@ class EntityRelationshipCollectionHelper {
      * @version $LastChangedDate: 2006-05-02 05:16:31Z $
      */
     private static class SequenceComparator
-        implements Comparator<RelationshipState> {
+            implements Comparator<RelationshipState> {
 
         /**
          * Singleton instance.
@@ -92,8 +89,8 @@ class EntityRelationshipCollectionHelper {
          *                            being compared by this Comparator.
          */
         public int compare(RelationshipState o1, RelationshipState o2) {
-            EntityRelationship r1 = (EntityRelationship) o1.getRelationship();
-            EntityRelationship r2 = (EntityRelationship) o2.getRelationship();
+            SequencedRelationship r1 = (SequencedRelationship) o1.getRelationship();
+            SequencedRelationship r2 = (SequencedRelationship) o2.getRelationship();
             return r1.getSequence() - r2.getSequence();
         }
     }

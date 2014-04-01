@@ -17,33 +17,30 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * Editor for collections of {@link EntityRelationship}s with cardinality > 1, or that have multiple archetypes.
+ * Editor for collections of {@link EntityLink}s with cardinality > 1, or that have multiple archetypes.
  * <p/>
  * If the relationships have a <em>sequence</em> node, the collection will be ordered on it, and controls displayed to
  * move relationships up or down within the collection.
  *
  * @author Tim Anderson
  */
-public class MultipleEntityRelationshipCollectionEditor
-        extends MultipleSequencedRelationshipCollectionEditor {
-
+public class MultipleEntityLinkCollectionEditor extends MultipleSequencedRelationshipCollectionEditor {
 
     /**
-     * Constructs a {@link MultipleEntityRelationshipCollectionEditor}.
+     * Constructs a {@link MultipleEntityLinkCollectionEditor}.
      *
      * @param property the collection property
      * @param object   the object being edited
      * @param context  the layout context
      */
-    public MultipleEntityRelationshipCollectionEditor(CollectionProperty property, Entity object,
-                                                      LayoutContext context) {
-        super(new EntityRelationshipCollectionPropertyEditor(property, object), object, context);
+    public MultipleEntityLinkCollectionEditor(CollectionProperty property, Entity object, LayoutContext context) {
+        super(new EntityLinkCollectionPropertyEditor(property, object), object, context);
     }
 
 }

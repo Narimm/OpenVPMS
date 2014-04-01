@@ -17,33 +17,34 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.DelegatingCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 
-
 /**
- * Editor for collections of {@link EntityRelationship}s with cardinality > 1, or that have multiple archetypes.
- * <p/>
- * If the relationships have a <em>sequence</em> node, the collection will be ordered on it, and controls displayed to
- * move relationships up or down within the collection.
+ * Entity link collection editor.
  *
  * @author Tim Anderson
  */
-public class MultipleEntityRelationshipCollectionEditor
-        extends MultipleSequencedRelationshipCollectionEditor {
-
+public class EntityLinkCollectionEditor extends DelegatingCollectionEditor {
 
     /**
-     * Constructs a {@link MultipleEntityRelationshipCollectionEditor}.
+     * Constructs an {@link EntityLinkCollectionEditor}.
      *
      * @param property the collection property
-     * @param object   the object being edited
+     * @param object   the parent object
      * @param context  the layout context
      */
-    public MultipleEntityRelationshipCollectionEditor(CollectionProperty property, Entity object,
-                                                      LayoutContext context) {
-        super(new EntityRelationshipCollectionPropertyEditor(property, object), object, context);
+    public EntityLinkCollectionEditor(CollectionProperty property, Entity object, LayoutContext context) {
+        String[] shortNames = property.getArchetypeRange();
+        int max = property.getMaxCardinality();
+        AbstractIMObjectCollectionEditor editor;
+        if (max == 1 && shortNames.length == 1) {
+            editor = new SingleEntityLinkCollectionEditor(property, object, context);
+        } else {
+            editor = new MultipleEntityLinkCollectionEditor(property, object, context);
+        }
+        setEditor(editor);
     }
-
 }
