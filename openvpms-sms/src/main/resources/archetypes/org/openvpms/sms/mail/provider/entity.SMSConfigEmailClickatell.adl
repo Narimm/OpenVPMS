@@ -12,26 +12,31 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
 -->
 <archetypes>
     <archetype name="entity.SMSConfigEmailClickatell.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.common.Entity" displayName="SMS Configuration: Clickatell SMTP Connection">
+               type="org.openvpms.component.business.domain.im.common.Entity"
+               displayName="SMS Configuration: Clickatell SMTP Connection">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" type="java.lang.String" path="/name" minCardinality="1" defaultValue="'Clickatell SMTP Connection Configuration'"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1"
+              defaultValue="'Clickatell SMTP Connection Configuration'"/>
         <node name="description" type="java.lang.String" path="/description"/>
-        <node name="website" displayName="Web Site" type="java.lang.String" path="/details/website" readOnly="true" defaultValue="'http://www.clickatell.com'"/>
+        <node name="website" displayName="Web Site" type="java.lang.String" path="/details/website" readOnly="true"
+              defaultValue="'http://www.clickatell.com'"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="countryPrefix" path="/details/countryPrefix" type="java.lang.String" minCardinality="0"/>
         <node name="areaPrefix" path="/details/areaPrefix" type="java.lang.String" minCardinality="0"/>
         <node name="user" path="/details/user" type="java.lang.String" minCardinality="1"/>
         <node name="password" path="/details/password" type="java.lang.String" minCardinality="1"/>
         <node name="apiId" displayName="API ID" path="/details/apiId" type="java.lang.String" minCardinality="1"/>
-        <node name="to" path="/details/to" type="java.lang.String" minCardinality="1" defaultValue="'sms@messaging.clickatell.com'" hidden="true"/>
+        <node name="to" path="/details/to" type="java.lang.String" minCardinality="1"
+              defaultValue="'sms@messaging.clickatell.com'" hidden="true"/>
         <node name="from" path="/details/from" type="java.lang.String" minCardinality="1"/>
         <node name="replyTo" path="/details/replyTo" type="java.lang.String" minCardinality="0"/>
-        <node name="textExpression" path="/details/textExpression" type="java.lang.String" minCardinality="1" hidden="true"
-              defaultValue="'concat(&quot;user:&quot;, $user, &quot;&#xA;password:&quot;, $password, &quot;&#xA;api_id:&quot;, $apiId, &quot;&#xA;to:&quot;, $phone, &quot;&#xA;reply:&quot;, $replyTo, &quot;&#xA;text:&quot;, replace($message, &quot;&#xA;&quot;,&quot;&#xA;text:&quot;))'"/>
+        <node name="senderId" displayName="Sender ID" path="/details/senderId" type="java.lang.String"
+              minCardinality="0" maxLength="16"/>
+        <node name="textExpression" path="/details/textExpression" type="java.lang.String" minCardinality="1"
+              hidden="true"
+              defaultValue="'concat(&quot;user:&quot;, $user, $nl, &quot;password:&quot;, $password, $nl, &quot;api_id:&quot;, $apiId, $nl, &quot;to:&quot;, $phone, $nl, &quot;reply:&quot;, $replyTo, expr:if(boolean($senderId), concat($nl, &quot;from:&quot;, $senderId), &quot;&quot;), $nl, &quot;text:&quot;, replace($message, $nl, concat($nl, &quot;text:&quot;)))'"/>
     </archetype>
 </archetypes>
