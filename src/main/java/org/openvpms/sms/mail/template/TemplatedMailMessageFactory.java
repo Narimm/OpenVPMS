@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.sms.mail.template;
@@ -21,6 +19,7 @@ package org.openvpms.sms.mail.template;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Variables;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.i18n.SMSMessages;
 import org.openvpms.sms.mail.MailMessage;
@@ -34,8 +33,7 @@ import java.util.Map;
 /**
  * A {@link MailMessageFactory} that generates email messages from an xpath email template.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class TemplatedMailMessageFactory implements MailMessageFactory {
 
@@ -46,7 +44,7 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
 
 
     /**
-     * Constructs a <tt>TemplatedMailMessageFactory</tt>.
+     * Constructs a {@link TemplatedMailMessageFactory}.
      *
      * @param template the template
      */
@@ -55,7 +53,7 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
     }
 
     /**
-     * Constructs a <tt>TemplatedMailMessageFactory</tt>.
+     * Constructs a {@link TemplatedMailMessageFactory}.
      *
      * @param config the template source
      */
@@ -76,7 +74,9 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
         MailTemplate template = config.getTemplate();
         phone = getPhone(phone, template);
 
-        JXPathContext context = JXPathContext.newContext(new Object());
+        JXPathContext context = JXPathHelper.newContext(new Object()); // want to be able to use extension functions
+        context.setLenient(false);                                     // but don't want lenient evaluation
+
         Variables variables = context.getVariables();
         variables.declareVariable("phone", phone);
         variables.declareVariable("message", text);
@@ -154,8 +154,8 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
      * Evaluates an expression.
      *
      * @param context    the jxpath context
-     * @param text       the static text. If no expression is provided, this will be returned. May be <tt>null</tt>
-     * @param expression the xpath expression. May be <tt>null</tt>
+     * @param text       the static text. If no expression is provided, this will be returned. May be {@code null}
+     * @param expression the xpath expression. May be {@code null}
      * @return the value of the expression
      */
     private String evaluate(String text, String expression, JXPathContext context) {
@@ -179,7 +179,7 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
      * Verifies an email address is valid.
      *
      * @param address the address
-     * @return <tt>true</tt> if the address is valid, otherwise false
+     * @return {@code true} if the address is valid, otherwise false
      * @throws SMSException if the address is invalid
      */
     private boolean isValid(String address) {
