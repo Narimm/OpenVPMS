@@ -11,26 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.functor;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 
 import java.util.Comparator;
 
 /**
- * Helper to order {@link EntityRelationship} instances using their {@link EntityRelationship#getSequence()}.
+ * Helper to order {@link SequencedRelationship} instances using their {@link SequencedRelationship#getSequence()}.
  *
  * @author Tim Anderson
  */
-public class SequenceComparator implements Comparator<EntityRelationship> {
+public class SequenceComparator implements Comparator<SequencedRelationship> {
 
     /**
      * Singleton instance.
      */
-    public static final Comparator<EntityRelationship> INSTANCE = new SequenceComparator();
+    public static final Comparator<SequencedRelationship> INSTANCE = new SequenceComparator();
 
     /**
      * Default constructor.
@@ -49,7 +49,7 @@ public class SequenceComparator implements Comparator<EntityRelationship> {
      *         than the second.
      */
     @Override
-    public int compare(EntityRelationship o1, EntityRelationship o2) {
+    public int compare(SequencedRelationship o1, SequencedRelationship o2) {
         return o1.getSequence() - o2.getSequence();
     }
 }

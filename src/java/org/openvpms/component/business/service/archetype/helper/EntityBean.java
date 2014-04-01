@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -20,6 +20,7 @@ import org.apache.commons.collections.Predicate;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
@@ -405,7 +406,7 @@ public class EntityBean extends IMObjectBean {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Entity> getNodeTargetEntities(String node) {
-        return getNodeTargetEntities(node, (Comparator<EntityRelationship>) null);
+        return getNodeTargetEntities(node, (Comparator<SequencedRelationship>) null);
     }
 
     /**
@@ -418,7 +419,7 @@ public class EntityBean extends IMObjectBean {
      * @return a list of active target entities
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public List<Entity> getNodeTargetEntities(String node, Comparator<EntityRelationship> comparator) {
+    public List<Entity> getNodeTargetEntities(String node, Comparator<SequencedRelationship> comparator) {
         return getNodeTargetObjects(node, Entity.class, comparator);
     }
 

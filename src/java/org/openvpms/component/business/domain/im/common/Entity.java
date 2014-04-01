@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
@@ -61,6 +61,11 @@ public class Entity extends IMObject {
      * participates in.
      */
     private Set<EntityRelationship> targetEntityRelationships = new HashSet<EntityRelationship>();
+
+    /**
+     * The entity links.
+     */
+    private Set<EntityLink> entityLinks = new HashSet<EntityLink>();
 
     /**
      * Default constructor.
@@ -155,8 +160,7 @@ public class Entity extends IMObject {
     /**
      * @param entityRelationships The sourceEntityRelationships to set.
      */
-    protected void setSourceEntityRelationships(
-            Set<EntityRelationship> entityRelationships) {
+    protected void setSourceEntityRelationships(Set<EntityRelationship> entityRelationships) {
         this.sourceEntityRelationships = entityRelationships;
     }
 
@@ -258,6 +262,34 @@ public class Entity extends IMObject {
         Set<EntityRelationship> relationships = new HashSet<EntityRelationship>(sourceEntityRelationships);
         relationships.addAll(targetEntityRelationships);
         return relationships;
+    }
+
+    /**
+     * Adds an entity link.
+     *
+     * @param link the link to add
+     */
+    public void addEntityLink(EntityLink link) {
+        link.setSource(this.getObjectReference());
+        entityLinks.add(link);
+    }
+
+    /**
+     * Removes an entity link.
+     *
+     * @param link the link to remove
+     */
+    public void removeEntityLink(EntityLink link) {
+        entityLinks.remove(link);
+    }
+
+    /**
+     * Returns the entity links.
+     *
+     * @return the entity links
+     */
+    public Set<EntityLink> getEntityLinks() {
+        return entityLinks;
     }
 
     /**

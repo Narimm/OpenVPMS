@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
@@ -28,8 +26,7 @@ import java.util.Set;
 /**
  * Data object interface corresponding to the {@link Entity} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public interface EntityDO extends IMObjectDO {
 
@@ -103,6 +100,27 @@ public interface EntityDO extends IMObjectDO {
      * @return the relationships
      */
     Set<EntityRelationshipDO> getEntityRelationships();
+
+    /**
+     * Returns the links for this entity.
+     *
+     * @return the links
+     */
+    Set<EntityLinkDO> getEntityLinks();
+
+    /**
+     * Adds a link to another entity.
+     *
+     * @param link the link
+     */
+    void addEntityLink(EntityLinkDO link);
+
+    /**
+     * Removes a link to another entity.
+     *
+     * @param link the link
+     */
+    void removeEntityLink(EntityLinkDO link);
 
     /**
      * Returns the classifications for this entity.
